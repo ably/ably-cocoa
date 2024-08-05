@@ -2,7 +2,7 @@ import Ably
 import Nimble
 import XCTest
 
-func countChannels(_ channels: ARTRealtimeChannels) -> Int {
+func countChannels(_ channels: RealtimeChannels) -> Int {
     var i = 0
     for _ in channels {
         i += 1
@@ -10,11 +10,11 @@ func countChannels(_ channels: ARTRealtimeChannels) -> Int {
     return i
 }
 
-private var ttlAndIdleIntervalPassedTestsClient: ARTRealtime!
+private var ttlAndIdleIntervalPassedTestsClient: Realtime!
 private var ttlAndIdleIntervalPassedTestsConnectionId = ""
 private let customTtlInterval: TimeInterval = 0.1
 private let customIdleInterval: TimeInterval = 0.1
-private var ttlAndIdleIntervalNotPassedTestsClient: ARTRealtime!
+private var ttlAndIdleIntervalNotPassedTestsClient: Realtime!
 private var ttlAndIdleIntervalNotPassedTestsConnectionId = ""
 private let expectedHostOrder = [3, 4, 0, 2, 1]
 private let shuffleArrayInExpectedHostOrder = { (array: NSMutableArray) in
@@ -24,12 +24,12 @@ private let shuffleArrayInExpectedHostOrder = { (array: NSMutableArray) in
     }
 }
 private func testUsesAlternativeHostOnResponse(_ caseTest: FakeNetworkResponse, channelName: String) {
-    let options = ARTClientOptions(key: "xxxx:xxxx")
+    let options = ClientOptions(key: "xxxx:xxxx")
     options.autoConnect = false
     options.testOptions.realtimeRequestTimeout = 1.0
     let transportFactory = TestProxyTransportFactory()
     options.testOptions.transportFactory = transportFactory
-    let client = ARTRealtime(options: options)
+    let client = Realtime(options: options)
     defer { client.dispose(); client.close() }
     client.channels.get(channelName)
 
@@ -98,12 +98,12 @@ private func testMovesToDisconnectedWithNetworkingError(_ error: Error, for test
     }
 }
 
-private var internetConnectionNotAvailableTestsClient: ARTRealtime!
+private var internetConnectionNotAvailableTestsClient: Realtime!
 private let fixtures: [String: Any] = try! JSONUtility.jsonObject(
     data: try! Data(contentsOf: URL(fileURLWithPath: pathForTestResource(testResourcesPath + "messages-encoding.json")))
 )!
 
-private func expectDataToMatch(_ message: ARTMessage, _ fixtureMessage: Any) {
+private func expectDataToMatch(_ message: Message, _ fixtureMessage: Any) {
     let dictionaryValue = fixtureMessage as! [String: Any]
     
     switch dictionaryValue["expectedType"] as! String {
@@ -128,15 +128,15 @@ private func expectDataToMatch(_ message: ARTMessage, _ fixtureMessage: Any) {
     }
 }
 
-private var jsonOptions: ARTClientOptions!
-private var msgpackOptions: ARTClientOptions!
+private var jsonOptions: ClientOptions!
+private var msgpackOptions: ClientOptions!
 
 private func setupDependencies(for test: Test) throws {
     if jsonOptions == nil {
         jsonOptions = try AblyTests.commonAppSetup(for: test)
         jsonOptions.useBinaryProtocol = false
         // Keep the same key and channel prefix
-        msgpackOptions = (jsonOptions.copy() as! ARTClientOptions)
+        msgpackOptions = (jsonOptions.copy() as! ClientOptions)
         msgpackOptions.useBinaryProtocol = true
     }
 }
@@ -166,15 +166,15 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
         options.testOptions.transportFactory = TestProxyTransportFactory()
-        let client = ARTRealtime(options: options)
-        let defaultMaxMessageSize = ARTDefault.maxMessageSize()
+        let client = Realtime(options: options)
+        let defaultMaxMessageSize = Default.maxMessageSize()
         XCTAssertEqual(defaultMaxMessageSize, 65536)
         defer {
-            ARTDefault.setMaxMessageSize(defaultMaxMessageSize)
+            Default.setMaxMessageSize(defaultMaxMessageSize)
             client.dispose()
             client.close()
         }
-        ARTDefault.setMaxMessageSize(1)
+        Default.setMaxMessageSize(1)
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { _ in
@@ -190,11 +190,11 @@ class RealtimeClientConnectionTests: XCTestCase {
     // RTN2
 
     func test__017__Connection__url__should_connect_to_the_default_host() {
-        let options = ARTClientOptions(key: "keytest:secret")
+        let options = ClientOptions(key: "keytest:secret")
         options.autoConnect = false
         options.testOptions.transportFactory = TestProxyTransportFactory()
 
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         client.connect()
         defer { client.dispose(); client.close() }
 
@@ -211,7 +211,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.autoConnect = false
         options.testOptions.transportFactory = TestProxyTransportFactory()
 
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         client.connect()
         defer { client.dispose(); client.close() }
 
@@ -248,7 +248,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.echoMessages = false
         options.testOptions.transportFactory = TestProxyTransportFactory()
 
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         client.connect()
         defer { client.dispose(); client.close() }
 
@@ -286,7 +286,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         // Default
         XCTAssertTrue(options.autoConnect, "autoConnect should be true by default")
 
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer { client.dispose(); client.close() }
         // The only way to control this functionality is with the options flag
         client.connection.on { stateChange in
@@ -308,7 +308,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
 
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer { client.dispose(); client.close() }
         var waiting = true
 
@@ -339,7 +339,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer { client.dispose(); client.close() }
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connecting) { _ in
@@ -349,7 +349,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 }
                 XCTAssertNotNil(webSocketTransport.websocketURL)
 
-                // This test should not directly validate version against ARTDefault.version(), as
+                // This test should not directly validate version against Default.version(), as
                 // ultimately the version header has been derived from that value.
                 expect(webSocketTransport.websocketURL?.query).to(haveParam("v", withValue: "2"))
 
@@ -368,7 +368,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.autoConnect = false
         options.testOptions.transportFactory = TestProxyTransportFactory()
 
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         client.connect()
 
         waitUntil(timeout: testTimeout) { done in
@@ -402,10 +402,10 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
 
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer { client.dispose(); client.close() }
         let connection = client.connection
-        var events: [ARTRealtimeConnectionState] = []
+        var events: [RealtimeConnectionState] = []
 
         waitUntil(timeout: testTimeout) { done in
             var alreadyDisconnected = false
@@ -462,21 +462,21 @@ class RealtimeClientConnectionTests: XCTestCase {
             return
         }
 
-        XCTAssertEqual(events[0].rawValue, ARTRealtimeConnectionState.initialized.rawValue, "Should be INITIALIZED state")
-        XCTAssertEqual(events[1].rawValue, ARTRealtimeConnectionState.connecting.rawValue, "Should be CONNECTING state")
-        XCTAssertEqual(events[2].rawValue, ARTRealtimeConnectionState.connected.rawValue, "Should be CONNECTED state")
-        XCTAssertEqual(events[3].rawValue, ARTRealtimeConnectionState.disconnected.rawValue, "Should be DISCONNECTED state")
-        XCTAssertEqual(events[4].rawValue, ARTRealtimeConnectionState.closing.rawValue, "Should be CLOSING state")
-        XCTAssertEqual(events[5].rawValue, ARTRealtimeConnectionState.closed.rawValue, "Should be CLOSED state")
-        XCTAssertEqual(events[6].rawValue, ARTRealtimeConnectionState.suspended.rawValue, "Should be SUSPENDED state")
-        XCTAssertEqual(events[7].rawValue, ARTRealtimeConnectionState.failed.rawValue, "Should be FAILED state")
+        XCTAssertEqual(events[0].rawValue, RealtimeConnectionState.initialized.rawValue, "Should be INITIALIZED state")
+        XCTAssertEqual(events[1].rawValue, RealtimeConnectionState.connecting.rawValue, "Should be CONNECTING state")
+        XCTAssertEqual(events[2].rawValue, RealtimeConnectionState.connected.rawValue, "Should be CONNECTED state")
+        XCTAssertEqual(events[3].rawValue, RealtimeConnectionState.disconnected.rawValue, "Should be DISCONNECTED state")
+        XCTAssertEqual(events[4].rawValue, RealtimeConnectionState.closing.rawValue, "Should be CLOSING state")
+        XCTAssertEqual(events[5].rawValue, RealtimeConnectionState.closed.rawValue, "Should be CLOSED state")
+        XCTAssertEqual(events[6].rawValue, RealtimeConnectionState.suspended.rawValue, "Should be SUSPENDED state")
+        XCTAssertEqual(events[7].rawValue, RealtimeConnectionState.failed.rawValue, "Should be FAILED state")
     }
 
     // RTN4h
     func test__021__Connection__event_emitter__should_never_emit_a_ConnectionState_event_for_a_state_equal_to_the_previous_state() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -493,13 +493,13 @@ class RealtimeClientConnectionTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.update) { stateChange in
                 XCTAssertNil(stateChange.reason)
-                XCTAssertEqual(client.connection.state, ARTRealtimeConnectionState.connected)
-                XCTAssertEqual(stateChange.current, ARTRealtimeConnectionState.connected)
+                XCTAssertEqual(client.connection.state, RealtimeConnectionState.connected)
+                XCTAssertEqual(stateChange.current, RealtimeConnectionState.connected)
                 XCTAssertEqual(stateChange.current, stateChange.previous)
                 done()
             }
 
-            let authMessage = ARTProtocolMessage()
+            let authMessage = ProtocolMessage()
             authMessage.action = .auth
             client.internal.transport?.receive(authMessage)
         }
@@ -511,10 +511,10 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
 
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer { client.dispose(); client.close() }
         let connection = client.connection
-        var events: [ARTRealtimeConnectionState] = []
+        var events: [RealtimeConnectionState] = []
 
         waitUntil(timeout: testTimeout) { done in
             connection.on { stateChange in
@@ -540,17 +540,17 @@ class RealtimeClientConnectionTests: XCTestCase {
             return
         }
 
-        XCTAssertEqual(events[0].rawValue, ARTRealtimeConnectionState.connecting.rawValue, "Should be CONNECTING state")
-        XCTAssertEqual(events[1].rawValue, ARTRealtimeConnectionState.connected.rawValue, "Should be CONNECTED state")
+        XCTAssertEqual(events[0].rawValue, RealtimeConnectionState.connecting.rawValue, "Should be CONNECTING state")
+        XCTAssertEqual(events[1].rawValue, RealtimeConnectionState.connected.rawValue, "Should be CONNECTED state")
     }
 
     // RTN4c
     func test__023__Connection__event_emitter__should_emit_states_when_connection_is_closed() throws {
         let test = Test()
-        let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
+        let client = Realtime(options: try AblyTests.commonAppSetup(for: test))
         let connection = client.connection
         defer { client.dispose(); client.close() }
-        var events: [ARTRealtimeConnectionState] = []
+        var events: [RealtimeConnectionState] = []
 
         waitUntil(timeout: testTimeout) { done in
             connection.on { stateChange in
@@ -577,8 +577,8 @@ class RealtimeClientConnectionTests: XCTestCase {
             return
         }
 
-        XCTAssertEqual(events[0].rawValue, ARTRealtimeConnectionState.closing.rawValue, "Should be CLOSING state")
-        XCTAssertEqual(events[1].rawValue, ARTRealtimeConnectionState.closed.rawValue, "Should be CLOSED state")
+        XCTAssertEqual(events[0].rawValue, RealtimeConnectionState.closing.rawValue, "Should be CLOSING state")
+        XCTAssertEqual(events[1].rawValue, RealtimeConnectionState.closed.rawValue, "Should be CLOSED state")
     }
 
     // RTN4d
@@ -586,10 +586,10 @@ class RealtimeClientConnectionTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer { client.dispose(); client.close() }
         let connection = client.connection
-        XCTAssertEqual(connection.state.rawValue, ARTRealtimeConnectionState.initialized.rawValue, "Missing INITIALIZED state")
+        XCTAssertEqual(connection.state.rawValue, RealtimeConnectionState.initialized.rawValue, "Missing INITIALIZED state")
 
         waitUntil(timeout: testTimeout) { done in
             connection.on { stateChange in
@@ -598,9 +598,9 @@ class RealtimeClientConnectionTests: XCTestCase {
                 XCTAssertNil(error)
                 switch state {
                 case .connecting:
-                    XCTAssertEqual(connection.state.rawValue, ARTRealtimeConnectionState.connecting.rawValue, "Missing CONNECTING state")
+                    XCTAssertEqual(connection.state.rawValue, RealtimeConnectionState.connecting.rawValue, "Missing CONNECTING state")
                 case .connected:
-                    XCTAssertEqual(connection.state.rawValue, ARTRealtimeConnectionState.connected.rawValue, "Missing CONNECTED state")
+                    XCTAssertEqual(connection.state.rawValue, RealtimeConnectionState.connected.rawValue, "Missing CONNECTED state")
                     done()
                 default:
                     break
@@ -615,14 +615,14 @@ class RealtimeClientConnectionTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
-            client.connection.once(ARTRealtimeConnectionEvent.connected) { stateChange in
-                expect(stateChange).to(beAKindOf(ARTConnectionStateChange.self))
-                XCTAssertEqual(stateChange.current, ARTRealtimeConnectionState.connected)
-                XCTAssertEqual(stateChange.previous, ARTRealtimeConnectionState.connecting)
+            client.connection.once(RealtimeConnectionEvent.connected) { stateChange in
+                expect(stateChange).to(beAKindOf(ConnectionStateChange.self))
+                XCTAssertEqual(stateChange.current, RealtimeConnectionState.connected)
+                XCTAssertEqual(stateChange.previous, RealtimeConnectionState.connecting)
                 done()
             }
             client.connect()
@@ -633,21 +633,21 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__026__Connection__event_emitter__should_have_the_reason_which_contains_an_ErrorInfo() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer { client.dispose(); client.close() }
         let connection = client.connection
 
-        var errorInfo: ARTErrorInfo?
+        var errorInfo: ErrorInfo?
         waitUntil(timeout: testTimeout) { done in
             connection.on { stateChange in
                 let state = stateChange.current
                 let reason = stateChange.reason
                 switch state {
                 case .connected:
-                    XCTAssertEqual(stateChange.event, ARTRealtimeConnectionEvent.connected)
+                    XCTAssertEqual(stateChange.event, RealtimeConnectionEvent.connected)
                     client.internal.onError(AblyTests.newErrorProtocolMessage())
                 case .failed:
-                    XCTAssertEqual(stateChange.event, ARTRealtimeConnectionEvent.failed)
+                    XCTAssertEqual(stateChange.event, RealtimeConnectionEvent.failed)
                     errorInfo = reason
                     done()
                 default:
@@ -688,12 +688,12 @@ class RealtimeClientConnectionTests: XCTestCase {
                 }
                 XCTAssertEqual(error.code, 1234)
                 XCTAssertEqual(error.message, "fabricated error")
-                XCTAssertEqual(stateChange.event, ARTRealtimeConnectionEvent.update)
+                XCTAssertEqual(stateChange.event, RealtimeConnectionEvent.update)
                 done()
             }
 
             let connectedMessageWithError = originalConnectedMessage
-            connectedMessageWithError.error = ARTErrorInfo.create(withCode: 1234, message: "fabricated error")
+            connectedMessageWithError.error = ErrorInfo.create(withCode: 1234, message: "fabricated error")
             client.internal.transport?.receive(connectedMessageWithError)
         }
     }
@@ -703,7 +703,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.echoMessages = false
-        var disposable = [ARTRealtime]()
+        var disposable = [Realtime]()
         let numClients = 50
         let numMessages = 5
         let channelName = "chat"
@@ -719,7 +719,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(numClients, done: done)
             for _ in 1 ... numClients {
-                let client = ARTRealtime(options: options)
+                let client = Realtime(options: options)
                 disposable.append(client)
                 let channel = client.channels.get(channelName)
                 channel.attach { error in
@@ -740,7 +740,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             var messagesSent = 0
             for client in disposable {
                 let channel = client.channels.get(channelName)
-                XCTAssertEqual(channel.state, ARTRealtimeChannelState.attached)
+                XCTAssertEqual(channel.state, RealtimeChannelState.attached)
 
                 channel.subscribe { message in
                     XCTAssertEqual(message.data as? String, "message_string")
@@ -768,7 +768,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
         options.testOptions.transportFactory = TestProxyTransportFactory()
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         client.connect()
         defer {
             client.dispose()
@@ -794,7 +794,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         if let transport = client.internal.transport as? TestProxyTransport {
             // CONNECTED ProtocolMessage
-            expect(transport.protocolMessagesReceived.map { $0.action }).to(contain(ARTProtocolMessageAction.connected))
+            expect(transport.protocolMessagesReceived.map { $0.action }).to(contain(ProtocolMessageAction.connected))
         } else {
             XCTFail("MockTransport is not working")
         }
@@ -810,7 +810,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.autoConnect = false
         options.clientId = "client_string"
         options.testOptions.transportFactory = TestProxyTransportFactory()
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         client.connect()
         defer { client.dispose(); client.close() }
 
@@ -840,7 +840,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.autoConnect = false
         options.clientId = "client_string"
         options.testOptions.transportFactory = TestProxyTransportFactory()
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         client.connect()
         defer { client.dispose(); client.close() }
 
@@ -883,7 +883,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.token = try getTestToken(for: test, key: options.key, capability: "{ \"\(options.testOptions.channelNamePrefix!)-\(channelName)\":[\"subscribe\"] }")
         options.autoConnect = false
         options.testOptions.transportFactory = TestProxyTransportFactory()
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         client.connect()
         defer { client.dispose(); client.close() }
 
@@ -913,7 +913,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.autoConnect = false
         options.clientId = "client_string"
         options.testOptions.transportFactory = TestProxyTransportFactory()
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         client.connect()
         defer { client.dispose(); client.close() }
 
@@ -956,7 +956,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.autoConnect = false
         options.clientId = "client_string"
         options.testOptions.transportFactory = TestProxyTransportFactory()
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         client.connect()
         defer { client.dispose(); client.close() }
 
@@ -1200,7 +1200,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.autoConnect = false
         options.clientId = "client_string"
         options.testOptions.transportFactory = TestProxyTransportFactory()
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         client.connect()
         defer { client.dispose(); client.close() }
 
@@ -1239,7 +1239,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.autoConnect = false
         options.clientId = "client_string"
         options.testOptions.transportFactory = TestProxyTransportFactory()
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         client.connect()
         defer { client.dispose(); client.close() }
 
@@ -1268,7 +1268,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__038__Connection__connection_id__should_be_null_until_connected() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         let connection = client.connection
         defer {
             client.dispose()
@@ -1296,7 +1296,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__039__Connection__connection_id__should_have_unique_IDs() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        var disposable = [ARTRealtime]()
+        var disposable = [Realtime]()
         defer {
             for client in disposable {
                 client.dispose()
@@ -1309,7 +1309,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             for _ in 1 ... max {
-                disposable.append(ARTRealtime(options: options))
+                disposable.append(Realtime(options: options))
                 let currentConnection = disposable.last!.connection
                 currentConnection.on { stateChange in
                     let state = stateChange.current
@@ -1345,7 +1345,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__139__Connection__connection_id_and_key__should_be_nil_when_sdk_is_in_CLOSING_and_CLOSED_states() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer { client.dispose(); client.close() }
         
         waitUntil(timeout: testTimeout) { done in
@@ -1376,7 +1376,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__140__Connection__connection_id_and_key__should_be_nil_when_sdk_is_in_SUSPENDED_state() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer { client.dispose(); client.close() }
         
         waitUntil(timeout: testTimeout) { done in
@@ -1402,7 +1402,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__141__Connection__connection_id_and_key__should_be_nil_when_sdk_is_in_FAILED_state() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -1413,7 +1413,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 if stateChange.current == .connected {
                     expect(client.connection.id).toNot(beNil())
                     expect(client.connection.key).toNot(beNil())
-                    client.internal.onError(ARTProtocolMessage())
+                    client.internal.onError(ProtocolMessage())
                     partialDone()
                 }
                 else if stateChange.current == .failed {
@@ -1431,7 +1431,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__040__Connection__connection_key__should_be_null_until_connected() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer {
             client.dispose()
             client.close()
@@ -1459,7 +1459,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__041__Connection__connection_key__should_have_unique_connection_keys() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        var disposable = [ARTRealtime]()
+        var disposable = [Realtime]()
         defer {
             for client in disposable {
                 client.dispose()
@@ -1471,7 +1471,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             for _ in 1 ... max {
-                disposable.append(ARTRealtime(options: options))
+                disposable.append(Realtime(options: options))
                 let currentConnection = disposable.last!.connection
                 currentConnection.on { stateChange in
                     let state = stateChange.current
@@ -1503,7 +1503,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     // RTN11b
     func test__007__Connection__should_make_a_new_connection_with_a_new_transport_instance_if_the_state_is_CLOSING() throws {
         let test = Test()
-        let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
+        let client = Realtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -1607,11 +1607,11 @@ class RealtimeClientConnectionTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer { client.dispose() }
 
         client.connect()
-        var lastStateChange: ARTConnectionStateChange?
+        var lastStateChange: ConnectionStateChange?
         client.connection.on { stateChange in
             lastStateChange = stateChange
         }
@@ -1620,7 +1620,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         XCTAssertNil(lastStateChange)
 
         expect(lastStateChange).toEventuallyNot(beNil(), timeout: testTimeout)
-        expect(lastStateChange!.current).toEventually(equal(ARTRealtimeConnectionState.closed), timeout: testTimeout)
+        expect(lastStateChange!.current).toEventually(equal(RealtimeConnectionState.closed), timeout: testTimeout)
     }
 
     // RTN12a
@@ -1629,14 +1629,14 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
         options.testOptions.transportFactory = TestProxyTransportFactory()
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         client.connect()
         defer {
             client.dispose()
         }
 
         let transport = client.internal.transport as! TestProxyTransport
-        var states: [ARTRealtimeConnectionState] = []
+        var states: [RealtimeConnectionState] = []
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.on { stateChange in
@@ -1663,8 +1663,8 @@ class RealtimeClientConnectionTests: XCTestCase {
             fail("Invalid number of connection states. Expected CLOSING and CLOSE states")
             return
         }
-        XCTAssertEqual(states[0], ARTRealtimeConnectionState.closing)
-        XCTAssertEqual(states[1], ARTRealtimeConnectionState.closed)
+        XCTAssertEqual(states[0], RealtimeConnectionState.closing)
+        XCTAssertEqual(states[1], RealtimeConnectionState.closed)
     }
 
     // RTN12b
@@ -1673,7 +1673,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
         options.testOptions.transportFactory = TestProxyTransportFactory()
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         client.connect()
         defer {
             client.dispose()
@@ -1683,7 +1683,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let transport = client.internal.transport as! TestProxyTransport
         transport.actionsIgnored += [.closed]
 
-        var states: [ARTRealtimeConnectionState] = []
+        var states: [RealtimeConnectionState] = []
         var start: NSDate?
         var end: NSDate?
 
@@ -1708,15 +1708,15 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
 
         expect(start).toEventuallyNot(beNil(), timeout: testTimeout)
-        expect(end).toEventuallyNot(beNil(), timeout: DispatchTimeInterval.milliseconds(Int(1000.0 * ARTDefault.realtimeRequestTimeout())))
+        expect(end).toEventuallyNot(beNil(), timeout: DispatchTimeInterval.milliseconds(Int(1000.0 * Default.realtimeRequestTimeout())))
 
         if states.count != 2 {
             fail("Invalid number of connection states. Expected CLOSING and CLOSE states")
             return
         }
 
-        XCTAssertEqual(states[0], ARTRealtimeConnectionState.closing)
-        XCTAssertEqual(states[1], ARTRealtimeConnectionState.closed)
+        XCTAssertEqual(states[0], RealtimeConnectionState.closing)
+        XCTAssertEqual(states[1], RealtimeConnectionState.closed)
     }
 
     // RTN12c
@@ -1725,7 +1725,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
         options.testOptions.transportFactory = TestProxyTransportFactory()
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         client.connect()
         defer {
             client.dispose()
@@ -1733,7 +1733,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
 
         let transport = client.internal.transport as! TestProxyTransport
-        var states: [ARTRealtimeConnectionState] = []
+        var states: [RealtimeConnectionState] = []
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.on { stateChange in
@@ -1763,9 +1763,9 @@ class RealtimeClientConnectionTests: XCTestCase {
             return
         }
 
-        XCTAssertEqual(states[0], ARTRealtimeConnectionState.connected)
-        XCTAssertEqual(states[1], ARTRealtimeConnectionState.closing)
-        XCTAssertEqual(states[2], ARTRealtimeConnectionState.closed)
+        XCTAssertEqual(states[0], RealtimeConnectionState.connected)
+        XCTAssertEqual(states[1], RealtimeConnectionState.closing)
+        XCTAssertEqual(states[2], RealtimeConnectionState.closed)
     }
 
     // RTN12d
@@ -1773,21 +1773,21 @@ class RealtimeClientConnectionTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.disconnectedRetryTimeout = 1.0
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer {
             client.close()
             client.dispose()
         }
 
-        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+        expect(client.connection.state).toEventually(equal(RealtimeConnectionState.connected), timeout: testTimeout)
 
         client.internal.onDisconnected()
-        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.disconnected), timeout: testTimeout)
+        expect(client.connection.state).toEventually(equal(RealtimeConnectionState.disconnected), timeout: testTimeout)
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             client.connection.once { stateChange in
-                XCTAssertEqual(stateChange.current, ARTRealtimeConnectionState.closed)
+                XCTAssertEqual(stateChange.current, RealtimeConnectionState.closed)
                 partialDone()
             }
 
@@ -1795,7 +1795,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
             delay(options.disconnectedRetryTimeout + 0.5) {
                 // Make sure the retry doesn't happen.
-                XCTAssertEqual(client.connection.state, ARTRealtimeConnectionState.closed)
+                XCTAssertEqual(client.connection.state, RealtimeConnectionState.closed)
                 partialDone()
             }
         }
@@ -1806,21 +1806,21 @@ class RealtimeClientConnectionTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.suspendedRetryTimeout = 1.0
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer {
             client.close()
             client.dispose()
         }
 
-        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+        expect(client.connection.state).toEventually(equal(RealtimeConnectionState.connected), timeout: testTimeout)
 
         client.internal.onSuspended()
-        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.suspended), timeout: testTimeout)
+        expect(client.connection.state).toEventually(equal(RealtimeConnectionState.suspended), timeout: testTimeout)
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             client.connection.once { stateChange in
-                XCTAssertEqual(stateChange.current, ARTRealtimeConnectionState.closed)
+                XCTAssertEqual(stateChange.current, RealtimeConnectionState.closed)
                 partialDone()
             }
 
@@ -1828,7 +1828,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
             delay(options.suspendedRetryTimeout + 0.5) {
                 // Make sure the retry doesn't happen.
-                XCTAssertEqual(client.connection.state, ARTRealtimeConnectionState.closed)
+                XCTAssertEqual(client.connection.state, RealtimeConnectionState.closed)
                 partialDone()
             }
         }
@@ -1842,13 +1842,13 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         options.suspendedRetryTimeout = 0.1
         options.autoConnect = false
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer {
             client.close()
             client.dispose()
         }
 
-        var error: ARTErrorInfo?
+        var error: ErrorInfo?
         func ping() {
             error = nil
             waitUntil(timeout: testTimeout) { done in
@@ -1859,32 +1859,32 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
         }
 
-        XCTAssertEqual(client.connection.state, ARTRealtimeConnectionState.initialized)
+        XCTAssertEqual(client.connection.state, RealtimeConnectionState.initialized)
         ping()
         XCTAssertNotNil(error)
 
         client.connect()
-        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+        expect(client.connection.state).toEventually(equal(RealtimeConnectionState.connected), timeout: testTimeout)
         client.internal.onSuspended()
 
-        XCTAssertEqual(client.connection.state, ARTRealtimeConnectionState.suspended)
+        XCTAssertEqual(client.connection.state, RealtimeConnectionState.suspended)
         ping()
         XCTAssertNotNil(error)
 
-        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+        expect(client.connection.state).toEventually(equal(RealtimeConnectionState.connected), timeout: testTimeout)
         client.close()
 
-        XCTAssertEqual(client.connection.state, ARTRealtimeConnectionState.closing)
+        XCTAssertEqual(client.connection.state, RealtimeConnectionState.closing)
         ping()
         XCTAssertNotNil(error)
 
-        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.closed), timeout: testTimeout)
+        expect(client.connection.state).toEventually(equal(RealtimeConnectionState.closed), timeout: testTimeout)
         ping()
         XCTAssertNotNil(error)
 
         client.internal.onError(AblyTests.newErrorProtocolMessage())
 
-        XCTAssertEqual(client.connection.state, ARTRealtimeConnectionState.failed)
+        XCTAssertEqual(client.connection.state, RealtimeConnectionState.failed)
         ping()
         XCTAssertNotNil(error)
     }
@@ -1946,7 +1946,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         options.key = String(options.key!.reversed())
         options.autoConnect = false
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer {
             client.dispose()
             client.close()
@@ -1981,7 +1981,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.token = try getTestToken(for: test, key: options.key, ttl: tokenTtl)
         options.testOptions.transportFactory = TestProxyTransportFactory()
 
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer {
             client.dispose()
             client.close()
@@ -2036,7 +2036,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
         options.autoConnect = false
 
-        let realtime = ARTRealtime(options: options)
+        let realtime = Realtime(options: options)
         defer { realtime.close() }
 
         var hookToken: AspectToken?
@@ -2047,7 +2047,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 partialDone()
             }
             hookToken = realtime.internal.testSuite_getArgument(from: NSSelectorFromString("onError:"), at: 0) { arg0 in
-                guard let message = arg0 as? ARTProtocolMessage, let error = message.error else {
+                guard let message = arg0 as? ProtocolMessage, let error = message.error else {
                     fail("Expecting a protocol message with Token error"); partialDone(); return
                 }
                 XCTAssertEqual(error.code, ARTErrorCode.tokenExpired.intValue)
@@ -2075,7 +2075,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
         }
 
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer {
             client.dispose()
             client.close()
@@ -2115,7 +2115,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
         }
 
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer {
             client.dispose()
             client.close()
@@ -2164,7 +2164,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let realtimeRequestTimeout = 0.5
         options.testOptions.realtimeRequestTimeout = realtimeRequestTimeout
 
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer { client.dispose(); client.close() }
         var start, end: NSDate?
         waitUntil(timeout: testTimeout) { done in
@@ -2187,8 +2187,8 @@ class RealtimeClientConnectionTests: XCTestCase {
     func testRTN14dAndRTB1(
         test: Test,
         extraTimeNeededToObserveEachRetry: TimeInterval = 0,
-        modifyOptions: (ARTClientOptions) -> Void,
-        checkError: (ARTErrorInfo) -> Void
+        modifyOptions: (ClientOptions) -> Void,
+        checkError: (ErrorInfo) -> Void
     ) throws {
         let options = try AblyTests.commonAppSetup(for: test)
         options.disconnectedRetryTimeout = 1.0
@@ -2217,11 +2217,11 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         let connectionStateTtl = timeNeededToObserveRetries + 1.0 // i.e. make sure that we don't become suspended before we've observed as many retries as we wish to
 
-        let previousConnectionStateTtl = ARTDefault.connectionStateTtl()
-        defer { ARTDefault.setConnectionStateTtl(previousConnectionStateTtl) }
-        ARTDefault.setConnectionStateTtl(connectionStateTtl)
+        let previousConnectionStateTtl = Default.connectionStateTtl()
+        defer { Default.setConnectionStateTtl(previousConnectionStateTtl) }
+        Default.setConnectionStateTtl(connectionStateTtl)
 
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         client.internal.shouldImmediatelyReconnect = false
         defer {
             client.connection.off()
@@ -2230,7 +2230,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         struct ObservedStateChange {
             var observedAt: Date
-            var stateChange: ARTConnectionStateChange
+            var stateChange: ConnectionStateChange
         }
         let retrySequenceDataGatherer = DataGatherer(description: "Observe emitted state changes") { submit in
             var observedStateChanges: [ObservedStateChange] = []
@@ -2343,7 +2343,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             // Force a timeout
         }
 
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         client.internal.shouldImmediatelyReconnect = false
         defer { client.dispose(); client.close() }
 
@@ -2379,7 +2379,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let mockJitterCoefficientGenerator = MockJitterCoefficientGenerator(coefficients: jitterCoefficients)
         options.testOptions.jitterCoefficientGenerator = mockJitterCoefficientGenerator
 
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         client.internal.setReachabilityClass(TestReachability.self)
         defer {
             client.simulateRestoreInternetConnection(transportFactory: transportFactory)
@@ -2399,7 +2399,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.connect()
         }
 
-        var events: [ARTRealtimeConnectionState] = []
+        var events: [RealtimeConnectionState] = []
         client.connection.on { stateChange in
             events.append(stateChange.current)
         }
@@ -2467,11 +2467,11 @@ class RealtimeClientConnectionTests: XCTestCase {
             // Force a timeout
         }
 
-        let previousConnectionStateTtl = ARTDefault.connectionStateTtl()
-        defer { ARTDefault.setConnectionStateTtl(previousConnectionStateTtl) }
-        ARTDefault.setConnectionStateTtl(expectedTime)
+        let previousConnectionStateTtl = Default.connectionStateTtl()
+        defer { Default.setConnectionStateTtl(previousConnectionStateTtl) }
+        Default.setConnectionStateTtl(expectedTime)
 
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         client.internal.shouldImmediatelyReconnect = false
         defer { client.dispose(); client.close() }
 
@@ -2509,7 +2509,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -2542,7 +2542,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
 
-        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+        expect(client.connection.state).toEventually(equal(RealtimeConnectionState.connected), timeout: testTimeout)
         let expectedConnectionKey = client.connection.key!
         client.internal.onDisconnected()
 
@@ -2577,7 +2577,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         channel.publish(nil, data: "queued message")
         expect(client.internal.queuedMessages).toEventually(haveCount(1), timeout: testTimeout)
         
-        XCTAssertEqual(channel.state, ARTRealtimeChannelState.attaching, "Channel should be still attaching.")
+        XCTAssertEqual(channel.state, RealtimeChannelState.attaching, "Channel should be still attaching.")
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
                 let transport = client.internal.transport as! TestProxyTransport
@@ -2585,7 +2585,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 XCTAssertEqual(connectedPM.connectionId, expectedConnectionId)
                 XCTAssertNil(stateChange.reason)
                 XCTAssertEqual((transport.protocolMessagesSent.filter { $0.action == .attach }).count, 1)
-                XCTAssertEqual(channel.state, ARTRealtimeChannelState.attaching, "Channel should be attaching now.")
+                XCTAssertEqual(channel.state, RealtimeChannelState.attaching, "Channel should be attaching now.")
                 done()
             }
         }
@@ -2603,22 +2603,22 @@ class RealtimeClientConnectionTests: XCTestCase {
         let channel2 = client.channels.get(test.uniqueChannelName(prefix: "second_"))
 
         XCTAssertTrue(client.waitUntilConnected())
-        expect(channel1.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
-        expect(channel2.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+        expect(channel1.state).toEventually(equal(RealtimeChannelState.attached), timeout: testTimeout)
+        expect(channel2.state).toEventually(equal(RealtimeChannelState.attached), timeout: testTimeout)
         let expectedConnectionId = client.connection.id
 
         let transport = client.internal.transport as! TestProxyTransport
         XCTAssertEqual((transport.protocolMessagesSent.filter { $0.action == .attach }).count, 2, "Should contain 2 attach messages.") // for channel 1 and 2
         
         channel2.detach()
-        XCTAssertEqual(channel2.state, ARTRealtimeChannelState.detaching)
+        XCTAssertEqual(channel2.state, RealtimeChannelState.detaching)
         
         client.internal.onDisconnected()
         
         channel1.publish(nil, data: "queued message")
         expect(client.internal.queuedMessages).toEventually(haveCount(1), timeout: testTimeout)
         
-        XCTAssertEqual(channel1.state, ARTRealtimeChannelState.attached, "Channel should be still attached.")
+        XCTAssertEqual(channel1.state, RealtimeChannelState.attached, "Channel should be still attached.")
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
                 let transport = client.internal.transport as! TestProxyTransport
@@ -2626,8 +2626,8 @@ class RealtimeClientConnectionTests: XCTestCase {
                 XCTAssertEqual(connectedPM.connectionId, expectedConnectionId)
                 XCTAssertNil(stateChange.reason)
                 XCTAssertEqual((transport.protocolMessagesSent.filter { $0.action == .attach }).count, 1)
-                XCTAssertEqual(channel1.state, ARTRealtimeChannelState.attaching, "Channel should be attaching now.")
-                XCTAssertNotEqual(channel2.state, ARTRealtimeChannelState.attaching, "Channel 2 should not be attaching.")
+                XCTAssertEqual(channel1.state, RealtimeChannelState.attaching, "Channel should be attaching now.")
+                XCTAssertNotEqual(channel2.state, RealtimeChannelState.attaching, "Channel 2 should not be attaching.")
                 done()
             }
         }
@@ -2650,8 +2650,8 @@ class RealtimeClientConnectionTests: XCTestCase {
         transport.actionsIgnored += [.attached]
         XCTAssertEqual((transport.protocolMessagesSent.filter { $0.action == .attach }).count, 1)
         
-        XCTAssertEqual(channel.state, ARTRealtimeChannelState.attaching)
-        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.suspended), timeout: testTimeout)
+        XCTAssertEqual(channel.state, RealtimeChannelState.attaching)
+        expect(channel.state).toEventually(equal(RealtimeChannelState.suspended), timeout: testTimeout)
         
         client.internal.onDisconnected()
         
@@ -2665,11 +2665,11 @@ class RealtimeClientConnectionTests: XCTestCase {
                 XCTAssertEqual(connectedPM.connectionId, expectedConnectionId)
                 XCTAssertNil(stateChange.reason)
                 XCTAssertEqual((transport.protocolMessagesSent.filter { $0.action == .attach }).count, 1)
-                XCTAssertEqual(channel.state, ARTRealtimeChannelState.attaching, "Channel should be attaching now.")
+                XCTAssertEqual(channel.state, RealtimeChannelState.attaching, "Channel should be attaching now.")
                 done()
             }
         }
-        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+        expect(channel.state).toEventually(equal(RealtimeChannelState.attached), timeout: testTimeout)
     }
     
     // RTN15c7
@@ -2741,7 +2741,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(test.uniqueChannelName())
 
-        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+        expect(client.connection.state).toEventually(equal(RealtimeConnectionState.connected), timeout: testTimeout)
 
         client.internal.onDisconnected()
 
@@ -2762,7 +2762,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 done()
             }
         }
-        XCTAssertEqual(channel.state, ARTRealtimeChannelState.failed)
+        XCTAssertEqual(channel.state, RealtimeChannelState.failed)
         XCTAssertTrue(channel.errorReason === protocolError.error)
     }
 
@@ -2774,7 +2774,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         defer { client.dispose(); client.close() }
         let restOptions = try AblyTests.clientOptions(for: test, key: options.key!)
         restOptions.testOptions.channelNamePrefix = options.testOptions.channelNamePrefix
-        let rest = ARTRest(options: restOptions)
+        let rest = Rest(options: restOptions)
         
         let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
@@ -2829,7 +2829,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
-            let expectedMessage = ARTMessage(name: "ios", data: "message1")
+            let expectedMessage = Message(name: "ios", data: "message1")
 
             channel.subscribe { message in
                 XCTAssertEqual(message.name, expectedMessage.name)
@@ -2850,13 +2850,13 @@ class RealtimeClientConnectionTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
 
-        let client1 = ARTRealtime(options: options)
+        let client1 = Realtime(options: options)
         defer { client1.close() }
         
         let channelName = test.uniqueChannelName()
         let channel1 = client1.channels.get(channelName)
 
-        let client2 = ARTRealtime(options: options)
+        let client2 = Realtime(options: options)
         defer { client2.close() }
         let channel2 = client2.channels.get(channelName)
 
@@ -2874,7 +2874,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         client1.internal.onDisconnected()
 
-        channel2.publish(expectedMessages.map { ARTMessage(name: nil, data: $0) }) { errorInfo in
+        channel2.publish(expectedMessages.map { Message(name: nil, data: $0) }) { errorInfo in
             XCTAssertNil(errorInfo)
         }
 
@@ -2885,7 +2885,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
         }
 
-        expect(client1.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+        expect(client1.connection.state).toEventually(equal(RealtimeConnectionState.connected), timeout: testTimeout)
         expect(receivedMessages).toEventually(equal(expectedMessages), timeout: testTimeout)
     }
 
@@ -2897,13 +2897,13 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.autoConnect = false
         options.testOptions.transportFactory = TestProxyTransportFactory()
 
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         client.connect()
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(test.uniqueChannelName())
 
         channel.attach()
-        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+        expect(channel.state).toEventually(equal(RealtimeChannelState.attached), timeout: testTimeout)
 
         client.internal.onDisconnected()
 
@@ -2947,7 +2947,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 fail("TestProxyTransport not setup"); done(); return
             }
 
-            var sentPendingMessage: ARTMessage?
+            var sentPendingMessage: Message?
             channel.publish(nil, data: "message") { _ in
                 if resumed {
                     guard let transport2 = client.internal.transport as? TestProxyTransport else {
@@ -2978,7 +2978,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
             client.internal.testSuite_injectIntoMethod(before: Selector(("resendPendingMessagesWithResumed:"))) {
                 XCTAssertEqual(client.internal.pendingMessages.count, 1)
-                let pm: ARTProtocolMessage? = (client.internal.pendingMessages.firstObject as? ARTPendingMessage)?.msg
+                let pm: ProtocolMessage? = (client.internal.pendingMessages.firstObject as? ARTPendingMessage)?.msg
                 sentPendingMessage = pm?.messages?[0]
             }
             client.internal.testSuite_injectIntoMethod(after: Selector(("resendPendingMessagesWithResumed:"))) {
@@ -3043,7 +3043,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                     if let error = error {
                         fail(error.message)
                     }
-                    XCTAssertEqual(channel.state, ARTRealtimeChannelState.attached)
+                    XCTAssertEqual(channel.state, RealtimeChannelState.attached)
                     ttlAndIdleIntervalPassedTestsClient.internal.onDisconnected()
                 }
                 ttlAndIdleIntervalPassedTestsClient.connection.once(.disconnected) { _ in
@@ -3102,14 +3102,14 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.token = try getTestToken(for: test, key: options.key, ttl: tokenTtl)
         options.testOptions.transportFactory = TestProxyTransportFactory()
 
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer {
             client.dispose()
             client.close()
         }
 
         client.connect()
-        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+        expect(client.connection.state).toEventually(equal(RealtimeConnectionState.connected), timeout: testTimeout)
         let firstTransport = client.internal.transport as? TestProxyTransport
 
         waitUntil(timeout: testTimeout) { done in
@@ -3155,12 +3155,12 @@ class RealtimeClientConnectionTests: XCTestCase {
         let tokenTtl = 3.0
         let tokenDetails = try getTestTokenDetails(for: test, key: key, ttl: tokenTtl)
         options.token = tokenDetails.token
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.failed) { stateChange in
-                XCTAssertEqual(stateChange.previous, ARTRealtimeConnectionState.connected)
+                XCTAssertEqual(stateChange.previous, RealtimeConnectionState.connected)
                 XCTAssertEqual(stateChange.reason?.code, ARTErrorCode.tokenExpired.intValue)
                 done()
             }
@@ -3183,7 +3183,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
         options.testOptions.transportFactory = TestProxyTransportFactory()
 
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer {
             client.dispose()
             client.close()
@@ -3192,7 +3192,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             // Wait for token to expire
             client.connection.once(.disconnected) { stateChange in
-                XCTAssertEqual(stateChange.previous, ARTRealtimeConnectionState.connected)
+                XCTAssertEqual(stateChange.previous, RealtimeConnectionState.connected)
                 guard let error = stateChange.reason else {
                     fail("Error is nil"); done(); return
                 }
@@ -3220,13 +3220,13 @@ class RealtimeClientConnectionTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
 
-        let clientSend = ARTRealtime(options: options)
+        let clientSend = Realtime(options: options)
         defer { clientSend.close() }
         
         let channelName = test.uniqueChannelName()
         let channelSend = clientSend.channels.get(channelName)
 
-        let clientReceive = ARTRealtime(options: options)
+        let clientReceive = Realtime(options: options)
         defer { clientReceive.close() }
         let channelReceive = clientReceive.channels.get(channelName)
 
@@ -3252,7 +3252,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
         }
 
-        let clientRecover = ARTRealtime(options: options)
+        let clientRecover = Realtime(options: options)
         defer { clientRecover.close() }
         let channelRecover = clientRecover.channels.get(channelName)
 
@@ -3268,10 +3268,10 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__082__Connection__Connection_recovery__when_a_connection_is_successfully_recovered__Connection_id_will_be_identical_to_the_id_of_the_connection_that_was_recovered_and_Connection_key_will_always_be_updated_to_the_ConnectionDetails_connectionKey_provided_in_the_first_CONNECTED_ProtocolMessage() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let clientOriginal = ARTRealtime(options: options)
+        let clientOriginal = Realtime(options: options)
         defer { clientOriginal.close() }
 
-        expect(clientOriginal.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+        expect(clientOriginal.connection.state).toEventually(equal(RealtimeConnectionState.connected), timeout: testTimeout)
 
         let expectedConnectionId = clientOriginal.connection.id
 
@@ -3297,7 +3297,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     func skipped__test__083__Connection__Connection_recovery__Connection_recoveryKey_should_become_becomes_null_when_a_connection_is_explicitly_CLOSED_or_CLOSED() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer { client.dispose(); client.close() }
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { _ in
@@ -3492,7 +3492,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
                 expect(client.connection.createRecoveryKey()).notTo(beNil())
-                client.internal.onError(ARTProtocolMessage())
+                client.internal.onError(ProtocolMessage())
             }
             client.connection.once(.failed) { stateChange in
                 expect(client.connection.createRecoveryKey()).to(beNil())
@@ -3656,7 +3656,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             recoverClient.connection.once(.failed) { stateChange in
-                XCTAssertEqual(stateChange.previous, ARTRealtimeConnectionState.connecting)
+                XCTAssertEqual(stateChange.previous, RealtimeConnectionState.connecting)
                 XCTAssertEqual(recoverClient.connection.errorReason?.code, ARTErrorCode.tokenRevoked.intValue)
                 done()
             }
@@ -3688,7 +3688,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             recoverClient.connection.once(.disconnected) { stateChange in
-                XCTAssertEqual(stateChange.previous, ARTRealtimeConnectionState.connecting)
+                XCTAssertEqual(stateChange.previous, RealtimeConnectionState.connecting)
                 partialDone()
             }
             recoverClient.connection.once(.connected) { stateChange in
@@ -3738,7 +3738,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
         
-        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+        expect(client.connection.state).toEventually(equal(RealtimeConnectionState.connected), timeout: testTimeout)
         
         let expectedConnectionId = client.connection.id
         
@@ -3819,10 +3819,10 @@ class RealtimeClientConnectionTests: XCTestCase {
     // RTN17
 
     // RTN17b
-    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
     func test__086__Connection__Host_Fallback__failing_connections_with_custom_endpoint_should_result_in_an_error_immediately() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.environment = "test" // do not use the default endpoint
         XCTAssertFalse(options.fallbackHostsUseDefault)
         XCTAssertNil(options.fallbackHosts)
@@ -3846,8 +3846,8 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.disconnected) { stateChange in
-                XCTAssertEqual(stateChange.previous, ARTRealtimeConnectionState.connecting)
-                XCTAssertEqual(stateChange.current, ARTRealtimeConnectionState.disconnected)
+                XCTAssertEqual(stateChange.previous, RealtimeConnectionState.connecting)
+                XCTAssertEqual(stateChange.current, RealtimeConnectionState.disconnected)
                 guard let reason = stateChange.reason else {
                     fail("Reason is empty"); done(); return
                 }
@@ -3870,10 +3870,10 @@ class RealtimeClientConnectionTests: XCTestCase {
     }
 
     // RTN17b
-    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
     func test__087__Connection__Host_Fallback__failing_connections_with_custom_endpoint_should_result_in_time_outs() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.environment = "test" // do not use the default endpoint
         options.testOptions.realtimeRequestTimeout = 1.0
         XCTAssertFalse(options.fallbackHostsUseDefault)
@@ -3897,8 +3897,8 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.on(.disconnected) { stateChange in
-                XCTAssertEqual(stateChange.previous, ARTRealtimeConnectionState.connecting)
-                XCTAssertEqual(stateChange.current, ARTRealtimeConnectionState.disconnected)
+                XCTAssertEqual(stateChange.previous, RealtimeConnectionState.connecting)
+                XCTAssertEqual(stateChange.current, RealtimeConnectionState.disconnected)
                 guard let reason = stateChange.reason else {
                     fail("Reason is empty"); done(); return
                 }
@@ -3914,12 +3914,12 @@ class RealtimeClientConnectionTests: XCTestCase {
     // RTN17b
     func test__088__Connection__Host_Fallback__applies_when_the_default_realtime_ably_io_endpoint_is_being_used() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
         options.testOptions.realtimeRequestTimeout = 1.0
         let transportFactory = TestProxyTransportFactory()
         options.testOptions.transportFactory = transportFactory
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer { client.dispose(); client.close() }
         client.channels.get(test.uniqueChannelName())
 
@@ -3958,13 +3958,13 @@ class RealtimeClientConnectionTests: XCTestCase {
 
     func test__089__Connection__Host_Fallback__applies_when_an_array_of_ClientOptions_fallbackHosts_is_provided() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
         options.fallbackHosts = ["f.ably-realtime.com", "g.ably-realtime.com", "h.ably-realtime.com", "i.ably-realtime.com", "j.ably-realtime.com"]
         options.testOptions.realtimeRequestTimeout = 1.0
         let transportFactory = TestProxyTransportFactory()
         options.testOptions.transportFactory = transportFactory
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer { client.dispose(); client.close() }
         client.channels.get(test.uniqueChannelName())
 
@@ -4033,18 +4033,18 @@ class RealtimeClientConnectionTests: XCTestCase {
     }
 
     func test__090__Connection__Host_Fallback__should_not_use_an_alternative_host_when_the_client_receives_a_bad_request() throws {
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
         options.disconnectedRetryTimeout = 1.0 // so that the test doesn't have to wait a long time to observe a retry
         options.testOptions.realtimeRequestTimeout = 1.0
         let transportFactory = TestProxyTransportFactory()
         options.testOptions.transportFactory = transportFactory
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
 
         transportFactory.fakeNetworkResponse = .host400BadRequest
 
         let dataGatherer = DataGatherer(description: "Observe emitted state changes and transport connection attempts") { submit in
-            var stateChanges: [ARTConnectionStateChange] = []
+            var stateChanges: [ConnectionStateChange] = []
             var urlConnections = [URL]()
 
             client.connection.on { stateChange in
@@ -4077,12 +4077,12 @@ class RealtimeClientConnectionTests: XCTestCase {
     // RTN17a
     func test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_realtime_ably_io() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
         options.testOptions.realtimeRequestTimeout = 1.0
         let transportFactory = TestProxyTransportFactory()
         options.testOptions.transportFactory = transportFactory
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer { client.dispose(); client.close() }
         client.channels.get(test.uniqueChannelName())
 
@@ -4131,13 +4131,13 @@ class RealtimeClientConnectionTests: XCTestCase {
     // RTN17c
     func test__092__Connection__Host_Fallback__should_retry_hosts_in_random_order_after_checkin_if_an_internet_connection_is_available() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
         options.testOptions.realtimeRequestTimeout = 5.0
         options.testOptions.shuffleArray = shuffleArrayInExpectedHostOrder
         let transportFactory = TestProxyTransportFactory()
         options.testOptions.transportFactory = transportFactory
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer { client.dispose(); client.close() }
         client.channels.get(test.uniqueChannelName())
 
@@ -4153,7 +4153,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
         
         var urls = [URL]()
-        let expectedFallbackHosts = Array(expectedHostOrder.map { ARTDefault.fallbackHosts()[$0] })
+        let expectedFallbackHosts = Array(expectedHostOrder.map { Default.fallbackHosts()[$0] })
         let allFallbackHostsTriedOfFailedExp = XCTestExpectation(description: "TestProxyTransport should spit 5 fallback hosts on networkConnectEvent")
         
         transportFactory.networkConnectEvent = { transport, url in
@@ -4207,12 +4207,12 @@ class RealtimeClientConnectionTests: XCTestCase {
     // RTN17c
     func test__093__Connection__Host_Fallback__doesn_t_try_fallback_host_if_Internet_connection_check_fails() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
         options.testOptions.realtimeRequestTimeout = 1.0
         let transportFactory = TestProxyTransportFactory()
         options.testOptions.transportFactory = transportFactory
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer { client.dispose(); client.close() }
         client.channels.get(test.uniqueChannelName())
 
@@ -4256,14 +4256,14 @@ class RealtimeClientConnectionTests: XCTestCase {
         let hostPrefixes = Array("fghij")
         let expectedFallbackHosts = Array(expectedHostOrder.map { "\(hostPrefixes[$0]).ably-realtime.com" })
 
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
         options.fallbackHosts = expectedFallbackHosts.sorted() // will be picked "randomly" as of expectedHostOrder
         options.testOptions.realtimeRequestTimeout = 5.0
         options.testOptions.shuffleArray = shuffleArrayInExpectedHostOrder
         let transportFactory = TestProxyTransportFactory()
         options.testOptions.transportFactory = transportFactory
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer { client.dispose(); client.close() }
         client.channels.get(test.uniqueChannelName())
 
@@ -4329,12 +4329,12 @@ class RealtimeClientConnectionTests: XCTestCase {
 
     func test__095__Connection__Host_Fallback__won_t_use_fallback_hosts_feature_if_an_empty_array_is_provided() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
         options.fallbackHosts = []
         let transportFactory = TestProxyTransportFactory()
         options.testOptions.transportFactory = transportFactory
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         let channel = client.channels.get(test.uniqueChannelName())
 
         let testHttpExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
@@ -4364,11 +4364,11 @@ class RealtimeClientConnectionTests: XCTestCase {
 
     // RTN17e
     func test__096__Connection__Host_Fallback__client_is_connected_to_a_fallback_host_endpoint_should_do_HTTP_requests_to_the_same_data_centre() {
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
         let transportFactory = TestProxyTransportFactory()
         options.testOptions.transportFactory = transportFactory
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
 
         let testHttpExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.rest.httpExecutor = testHttpExecutor
@@ -4614,7 +4614,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
 
-        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+        expect(client.connection.state).toEventually(equal(RealtimeConnectionState.connected), timeout: testTimeout)
 
         guard let transport = client.internal.transport as? TestProxyTransport else {
             fail("TestProxyTransport is not setup"); return
@@ -4636,7 +4636,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 expect(transport).toNot(beIdenticalTo(newTransport))
                 done()
             }
-            XCTAssertEqual(channel.state, ARTRealtimeChannelState.attaching)
+            XCTAssertEqual(channel.state, RealtimeChannelState.attaching)
             transport.ignoreSends = false
             AblyTests.queue.async {
                 client.internal.onDisconnected()
@@ -4653,7 +4653,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
         let transport = client.internal.transport as! TestProxyTransport
 
-        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+        expect(client.connection.state).toEventually(equal(RealtimeConnectionState.connected), timeout: testTimeout)
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { _ in done() }
@@ -4673,7 +4673,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 XCTAssertEqual(newTransport.protocolMessagesSent.filter { $0.action == .detach }.count, 1)
                 done()
             }
-            XCTAssertEqual(channel.state, ARTRealtimeChannelState.detaching)
+            XCTAssertEqual(channel.state, RealtimeChannelState.detaching)
             transport.ignoreSends = false
             client.internal.onDisconnected()
         }
@@ -4686,7 +4686,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     func beforeEach__Connection__Operating_System_events_for_network_internet_connectivity_changes__should_immediately_change_the_state_to_DISCONNECTED_if_the_operating_system_indicates_that_the_underlying_internet_connection_is_no_longer_available(for test: Test) throws {
         let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
-        internetConnectionNotAvailableTestsClient = ARTRealtime(options: options)
+        internetConnectionNotAvailableTestsClient = Realtime(options: options)
         internetConnectionNotAvailableTestsClient.internal.setReachabilityClass(TestReachability.self)
     }
 
@@ -4762,13 +4762,13 @@ class RealtimeClientConnectionTests: XCTestCase {
     // RTN20b
     func test__106__Connection__Operating_System_events_for_network_internet_connectivity_changes__should_immediately_attempt_to_connect_if_the_operating_system_indicates_that_the_underlying_internet_connection_is_now_available_when_DISCONNECTED_or_SUSPENDED() throws {
         let test = Test()
-        var client: ARTRealtime!
+        var client: Realtime!
         let options = try AblyTests.commonAppSetup(for: test)
         // Ensure it won't reconnect because of timeouts.
         options.disconnectedRetryTimeout = testTimeout.incremented(by: 10).toTimeInterval()
         options.suspendedRetryTimeout = testTimeout.incremented(by: 10).toTimeInterval()
         options.autoConnect = false
-        client = ARTRealtime(options: options)
+        client = Realtime(options: options)
         client.internal.setReachabilityClass(TestReachability.self)
         defer { client.dispose(); client.close() }
 
@@ -4806,7 +4806,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.realtimeHost = "10.255.255.1" // non-routable IP address
         options.autoConnect = false
         options.testOptions.reconnectionRealtimeHost = realtimeHost
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         client.internal.setReachabilityClass(TestReachability.self)
         defer { client.dispose(); client.close() }
         
@@ -4825,11 +4825,11 @@ class RealtimeClientConnectionTests: XCTestCase {
                 // a) address is non-routable
                 // b) it will be called by the system once reachability callback is set (during transition to CONNECTING)
                 reachability.simulate(false)
-                XCTAssertEqual(client.connection.state, ARTRealtimeConnectionState.disconnected)
+                XCTAssertEqual(client.connection.state, RealtimeConnectionState.disconnected)
                 client.connect()
-                XCTAssertEqual(client.connection.state, ARTRealtimeConnectionState.connecting)
+                XCTAssertEqual(client.connection.state, RealtimeConnectionState.connecting)
                 reachability.simulate(true)
-                XCTAssertEqual(client.connection.state, ARTRealtimeConnectionState.connecting)
+                XCTAssertEqual(client.connection.state, RealtimeConnectionState.connecting)
             }
             client.connection.once(.connected) { stateChange in
                 XCTAssertEqual(reconnectMethodCallCount, 1)
@@ -4842,7 +4842,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         
         let options2 = try AblyTests.commonAppSetup(for: test)
         options2.autoConnect = false
-        let client2 = ARTRealtime(options: options2)
+        let client2 = Realtime(options: options2)
         client2.internal.setReachabilityClass(TestReachability.self)
         defer { client2.dispose(); client2.close() }
         
@@ -4858,7 +4858,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                     XCTFail("expected test reachability"); return
                 }
                 reachability.simulate(true)
-                XCTAssertEqual(client2.connection.state, ARTRealtimeConnectionState.connecting)
+                XCTAssertEqual(client2.connection.state, RealtimeConnectionState.connecting)
             }
             client2.connection.once(.connected) { stateChange in
                 XCTAssertEqual(reconnectMethodCallCount, 0)
@@ -4875,7 +4875,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.autoConnect = false
         options.useTokenAuth = true
         options.testOptions.transportFactory = TestProxyTransportFactory()
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer { client.dispose(); client.close() }
         
         let channelName = test.uniqueChannelName()
@@ -4908,7 +4908,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 done()
             }
 
-            let authMessage = ARTProtocolMessage()
+            let authMessage = ProtocolMessage()
             authMessage.action = .auth
             client.internal.transport?.receive(authMessage)
         }
@@ -4931,11 +4931,11 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         let restOptions = try AblyTests.clientOptions(for: test, key: options.key!)
         restOptions.testOptions.channelNamePrefix = options.testOptions.channelNamePrefix
-        let rest = ARTRest(options: restOptions)
+        let rest = Rest(options: restOptions)
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
-            let expectedMessage = ARTMessage(name: "ios", data: "message1")
+            let expectedMessage = Message(name: "ios", data: "message1")
 
             channel.subscribe { message in
                 XCTAssertEqual(message.name, expectedMessage.name)
@@ -4957,7 +4957,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.token = try getTestToken(for: test, key: options.key!, ttl: 5.0)
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer { client.dispose(); client.close() }
         
         let channelName = test.uniqueChannelName()
@@ -5011,11 +5011,11 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         let restOptions = try AblyTests.clientOptions(for: test, key: options.key!)
         restOptions.testOptions.channelNamePrefix = options.testOptions.channelNamePrefix
-        let rest = ARTRest(options: restOptions)
+        let rest = Rest(options: restOptions)
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
-            let expectedMessage = ARTMessage(name: "ios", data: "message1")
+            let expectedMessage = Message(name: "ios", data: "message1")
 
             channel.subscribe { message in
                 XCTAssertEqual(message.name, expectedMessage.name)
@@ -5067,7 +5067,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.connection.on(.disconnected) { stateChange in
                 let now = Date()
 
-                XCTAssertEqual(stateChange.previous, ARTRealtimeConnectionState.connected)
+                XCTAssertEqual(stateChange.previous, RealtimeConnectionState.connected)
 
                 guard let noActivityHasStartedAt = noActivityHasStartedAt else {
                     fail("No activity date is missing"); partialDone(); return
@@ -5100,7 +5100,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__012__Connection__the_client_may_receive_a_CONNECTED_ProtocolMessage_from_Ably_at_any_point_and_should_emit_an_UPDATE_event() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -5111,16 +5111,16 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
 
         waitUntil(timeout: testTimeout) { done in
-            let authMessage = ARTProtocolMessage()
-            authMessage.action = ARTProtocolMessageAction.connected
-            authMessage.error = ARTErrorInfo.create(withCode: 1234, message: "fabricated error")
+            let authMessage = ProtocolMessage()
+            authMessage.action = ProtocolMessageAction.connected
+            authMessage.error = ErrorInfo.create(withCode: 1234, message: "fabricated error")
 
             let listener = client.connection.once(.connected) { _ in
                 fail("shouldn't emit CONNECTED")
             }
             client.connection.once(.update) { stateChange in
-                XCTAssertEqual(client.connection.state, ARTRealtimeConnectionState.connected)
-                XCTAssertEqual(stateChange.current, ARTRealtimeConnectionState.connected)
+                XCTAssertEqual(client.connection.state, RealtimeConnectionState.connected)
+                XCTAssertEqual(stateChange.current, RealtimeConnectionState.connected)
                 XCTAssertEqual(stateChange.current, stateChange.previous)
                 XCTAssertTrue(stateChange.reason === authMessage.error)
                 delay(0.5) { // Give some time for the other listener to be triggered.
@@ -5166,14 +5166,14 @@ class RealtimeClientConnectionTests: XCTestCase {
                 }
                 XCTAssertEqual(error.code, 1234)
                 XCTAssertEqual(client.connection.errorReason?.code, 1234)
-                XCTAssertEqual(client.connection.state, ARTRealtimeConnectionState.connected)
-                XCTAssertEqual(stateChange.current, ARTRealtimeConnectionState.connected)
+                XCTAssertEqual(client.connection.state, RealtimeConnectionState.connected)
+                XCTAssertEqual(stateChange.current, RealtimeConnectionState.connected)
                 XCTAssertEqual(stateChange.current, stateChange.previous)
                 done()
             }
 
             let connectedMessageWithError = originalConnectedMessage
-            connectedMessageWithError.error = ARTErrorInfo.create(withCode: 1234, message: "fabricated error")
+            connectedMessageWithError.error = ErrorInfo.create(withCode: 1234, message: "fabricated error")
             client.internal.transport?.receive(connectedMessageWithError)
         }
     }
@@ -5182,20 +5182,20 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__014__Connection__should_not_move_to_FAILED_if_received_DISCONNECT_with_an_error() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer {
             client.dispose()
             client.close()
         }
 
-        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+        expect(client.connection.state).toEventually(equal(RealtimeConnectionState.connected), timeout: testTimeout)
 
-        let protoMsg = ARTProtocolMessage()
+        let protoMsg = ProtocolMessage()
         protoMsg.action = .disconnect
-        protoMsg.error = ARTErrorInfo.create(withCode: 123, message: "test error")
+        protoMsg.error = ErrorInfo.create(withCode: 123, message: "test error")
         client.internal.transport?.receive(protoMsg)
 
-        XCTAssertEqual(client.connection.state, ARTRealtimeConnectionState.disconnected)
+        XCTAssertEqual(client.connection.state, RealtimeConnectionState.disconnected)
         XCTAssertEqual(client.connection.errorReason, protoMsg.error)
     }
 
@@ -5209,7 +5209,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
         channel.attach()
 
-        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+        expect(channel.state).toEventually(equal(RealtimeChannelState.attached), timeout: testTimeout)
         if channel.state != .attached {
             return
         }
@@ -5217,7 +5217,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let messages = fixtures["messages"] as! [[String: Any]]
         
         for fixtureMessage in messages {
-            var receivedMessage: ARTMessage?
+            var receivedMessage: Message?
 
             waitUntil(timeout: testTimeout) { done in
                 channel.subscribe { message in
@@ -5277,7 +5277,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     func skipped__test__112__Connection__with_fixture_messages__should_send_messages_through_raw_JSON_POST_and_retrieve_equal_messages_through_MsgPack_and_JSON() throws {
         let test = Test()
         try setupDependencies(for: test)
-        let restPublishClient = ARTRest(options: jsonOptions)
+        let restPublishClient = Rest(options: jsonOptions)
         let realtimeSubscribeClientMsgPack = AblyTests.newRealtime(msgpackOptions).client
         let realtimeSubscribeClientJSON = AblyTests.newRealtime(jsonOptions).client
         defer {
@@ -5331,9 +5331,9 @@ class RealtimeClientConnectionTests: XCTestCase {
     func skipped__test__113__Connection__with_fixture_messages__should_send_messages_through_MsgPack_and_JSON_and_retrieve_equal_messages_through_raw_JSON_GET() throws {
         let test = Test()
         try setupDependencies(for: test)
-        let restPublishClientMsgPack = ARTRest(options: msgpackOptions)
-        let restPublishClientJSON = ARTRest(options: jsonOptions)
-        let restRetrieveClient = ARTRest(options: jsonOptions)
+        let restPublishClientMsgPack = Rest(options: msgpackOptions)
+        let restPublishClientJSON = Rest(options: jsonOptions)
+        let restRetrieveClient = Rest(options: jsonOptions)
 
         let restPublishChannelMsgPack = restPublishClientMsgPack.channels.get(test.uniqueChannelName())
         let restPublishChannelJSON = restPublishClientJSON.channels.get(restPublishChannelMsgPack.name)
@@ -5385,7 +5385,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__015__Connection__should_abort_reconnection_with_new_token_if_the_server_has_requested_it_to_authorize_and_after_it_the_connection_has_been_closed() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -5408,7 +5408,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
         }
 
-        let authMessage = ARTProtocolMessage()
+        let authMessage = ProtocolMessage()
         authMessage.action = .auth
         client.internal.transport?.receive(authMessage)
 

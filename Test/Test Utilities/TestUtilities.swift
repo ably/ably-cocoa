@@ -67,7 +67,7 @@ class AblyTests {
         return encoded
     }
 
-    class func checkError(_ errorInfo: ARTErrorInfo?, withAlternative message: String) {
+    class func checkError(_ errorInfo: ErrorInfo?, withAlternative message: String) {
         if let error = errorInfo {
             XCTFail("\((error ).code): \(error.message)")
         }
@@ -76,7 +76,7 @@ class AblyTests {
         }
     }
 
-    class func checkError(_ errorInfo: ARTErrorInfo?) {
+    class func checkError(_ errorInfo: ErrorInfo?) {
         checkError(errorInfo, withAlternative: "")
     }
 
@@ -104,7 +104,7 @@ class AblyTests {
         return DispatchQueue.getSpecific(key: queueIdentityKey)?.label
     }
 
-    class func commonAppSetup(for test: Test, debug: Bool = false, forceNewApp: Bool = false) throws -> ARTClientOptions {
+    class func commonAppSetup(for test: Test, debug: Bool = false, forceNewApp: Bool = false) throws -> ClientOptions {
         let options = try AblyTests.clientOptions(for: test, debug: debug)
         options.testOptions.channelNamePrefix = "test-\(test.id)-\(UUID().uuidString)"
 
@@ -141,8 +141,8 @@ class AblyTests {
         return options
     }
 
-    class func clientOptions(for test: Test, debug: Bool = false, key: String? = nil, requestToken: Bool = false) throws -> ARTClientOptions {
-        let options = ARTClientOptions()
+    class func clientOptions(for test: Test, debug: Bool = false, key: String? = nil, requestToken: Bool = false) throws -> ClientOptions {
+        let options = ClientOptions()
         options.environment = getEnvironment()
         if debug {
             options.logLevel = .verbose
@@ -158,38 +158,38 @@ class AblyTests {
         return options
     }
 
-    class func newErrorProtocolMessage(message: String = "Fail test") -> ARTProtocolMessage {
-        let protocolMessage = ARTProtocolMessage()
+    class func newErrorProtocolMessage(message: String = "Fail test") -> ProtocolMessage {
+        let protocolMessage = ProtocolMessage()
         protocolMessage.action = .error
-        protocolMessage.error = ARTErrorInfo.create(withCode: 0, message: message)
+        protocolMessage.error = ErrorInfo.create(withCode: 0, message: message)
         return protocolMessage
     }
 
-    class func newPresenceProtocolMessage(id: String, channel: String, action: ARTPresenceAction, clientId: String, connectionId: String) -> ARTProtocolMessage {
-        let protocolMessage = ARTProtocolMessage()
+    class func newPresenceProtocolMessage(id: String, channel: String, action: PresenceAction, clientId: String, connectionId: String) -> ProtocolMessage {
+        let protocolMessage = ProtocolMessage()
         protocolMessage.action = .presence
         protocolMessage.channel = channel
         protocolMessage.timestamp = Date()
         protocolMessage.presence = [
-            ARTPresenceMessage(clientId: clientId, action: action, connectionId: connectionId, id: id, timestamp: Date())
+            PresenceMessage(clientId: clientId, action: action, connectionId: connectionId, id: id, timestamp: Date())
         ]
         return protocolMessage
     }
 
     struct RealtimeTestEnvironment {
-        let client: ARTRealtime
+        let client: Realtime
         let transportFactory: TestProxyTransportFactory
     }
 
-    class func newRealtime(_ options: ARTClientOptions, onTransportCreated event: ((ARTRealtimeTransport) -> Void)? = nil) -> RealtimeTestEnvironment {
-        let modifiedOptions = options.copy() as! ARTClientOptions
+    class func newRealtime(_ options: ClientOptions, onTransportCreated event: ((ARTRealtimeTransport) -> Void)? = nil) -> RealtimeTestEnvironment {
+        let modifiedOptions = options.copy() as! ClientOptions
 
         let autoConnect = modifiedOptions.autoConnect
         modifiedOptions.autoConnect = false
         let transportFactory = TestProxyTransportFactory()
         transportFactory.transportCreatedEvent = event
         modifiedOptions.testOptions.transportFactory = transportFactory
-        let realtime = ARTRealtime(options: modifiedOptions)
+        let realtime = Realtime(options: modifiedOptions)
         realtime.internal.setReachabilityClass(TestReachability.self)
         if autoConnect {
             realtime.connect()
@@ -201,8 +201,8 @@ class AblyTests {
         return ProcessInfo.processInfo.globallyUniqueString
     }
 
-    class func addMembersSequentiallyToChannel(_ channelName: String, members: Int = 1, startFrom: Int = 1, data: AnyObject? = nil, options: ARTClientOptions) -> ARTRealtime {
-        let client = ARTRealtime(options: options)
+    class func addMembersSequentiallyToChannel(_ channelName: String, members: Int = 1, startFrom: Int = 1, data: AnyObject? = nil, options: ClientOptions) -> Realtime {
+        let client = Realtime(options: options)
         let channel = client.channels.get(channelName)
 
         waitUntil(timeout: testTimeout) { done in
@@ -222,8 +222,8 @@ class AblyTests {
         return client
     }
 
-    class func addMembersSequentiallyToChannel(_ channelName: String, members: Int = 1, startFrom: Int = 1, data: AnyObject? = nil, options: ARTClientOptions, done: @escaping ()->()) -> ARTRealtime {
-        let client = ARTRealtime(options: options)
+    class func addMembersSequentiallyToChannel(_ channelName: String, members: Int = 1, startFrom: Int = 1, data: AnyObject? = nil, options: ClientOptions, done: @escaping ()->()) -> Realtime {
+        let client = Realtime(options: options)
         let channel = client.channels.get(channelName)
 
         class Total {
@@ -411,7 +411,7 @@ func ==(lhs: ARTAuthOptions, rhs: ARTAuthOptions) -> Bool {
         lhs.key == rhs.key
 }
 
-func ==(lhs: ARTJsonCompatible?, rhs: ARTJsonCompatible?) -> Bool {
+func ==(lhs: JsonCompatible?, rhs: JsonCompatible?) -> Bool {
     guard let lhs = lhs else {
         return rhs == nil
     }
@@ -429,10 +429,10 @@ func ==(lhs: ARTJsonCompatible?, rhs: ARTJsonCompatible?) -> Bool {
 
 class PublishTestMessage {
 
-    var completion: ((ARTErrorInfo?) -> Void)? = nil
-    var error: ARTErrorInfo? = nil
+    var completion: ((ErrorInfo?) -> Void)? = nil
+    var error: ErrorInfo? = nil
 
-    init(client: ARTRest, channelName: String, failOnError: Bool = true, completion: ((ARTErrorInfo?) -> Void)? = nil) {
+    init(client: Rest, channelName: String, failOnError: Bool = true, completion: ((ErrorInfo?) -> Void)? = nil) {
         client.channels.get(channelName).publish(nil, data: "message") { error in
             self.error = error
             if let callback = completion {
@@ -444,9 +444,9 @@ class PublishTestMessage {
         }
     }
 
-    init(client: ARTRealtime, channelName: String, failOnError: Bool = true, completion: ((ARTErrorInfo?) -> Void)? = nil) {
-        let complete: (ARTErrorInfo?) -> Void = { errorInfo in
-            // ARTErrorInfo to NSError
+    init(client: Realtime, channelName: String, failOnError: Bool = true, completion: ((ErrorInfo?) -> Void)? = nil) {
+        let complete: (ErrorInfo?) -> Void = { errorInfo in
+            // ErrorInfo to NSError
             self.error = errorInfo
 
             if let callback = completion {
@@ -481,23 +481,23 @@ class PublishTestMessage {
 }
 
 /// Rest - Publish message
-@discardableResult func publishTestMessage(_ rest: ARTRest, channelName: String, completion: Optional<(ARTErrorInfo?)->()>) -> PublishTestMessage {
+@discardableResult func publishTestMessage(_ rest: Rest, channelName: String, completion: Optional<(ErrorInfo?)->()>) -> PublishTestMessage {
     return PublishTestMessage(client: rest, channelName: channelName, failOnError: false, completion: completion)
 }
 
-@discardableResult func publishTestMessage(_ rest: ARTRest, channelName: String, failOnError: Bool = true) -> PublishTestMessage {
+@discardableResult func publishTestMessage(_ rest: Rest, channelName: String, failOnError: Bool = true) -> PublishTestMessage {
     return PublishTestMessage(client: rest, channelName: channelName, failOnError: failOnError)
 }
 
 /// Realtime - Publish message with callback
 /// (publishes if connection state changes to CONNECTED and channel state changes to ATTACHED)
-@discardableResult func publishFirstTestMessage(_ realtime: ARTRealtime, channelName: String, completion: Optional<(ARTErrorInfo?)->()>) -> PublishTestMessage {
+@discardableResult func publishFirstTestMessage(_ realtime: Realtime, channelName: String, completion: Optional<(ErrorInfo?)->()>) -> PublishTestMessage {
     return PublishTestMessage(client: realtime, channelName: channelName, failOnError: false, completion: completion)
 }
 
 /// Realtime - Publish message
 /// (publishes if connection state changes to CONNECTED and channel state changes to ATTACHED)
-@discardableResult func publishFirstTestMessage(_ realtime: ARTRealtime, channelName: String, failOnError: Bool = true) -> PublishTestMessage {
+@discardableResult func publishFirstTestMessage(_ realtime: Realtime, channelName: String, failOnError: Bool = true) -> PublishTestMessage {
     return PublishTestMessage(client: realtime, channelName: channelName, failOnError: failOnError)
 }
 
@@ -514,7 +514,7 @@ func getTestToken(for test: Test, key: String? = nil, clientId: String? = nil, c
 
 /// Access TokenDetails
 func getTestTokenDetails(for test: Test, key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, queryTime: Bool? = nil, completion: @escaping (Swift.Result<ARTTokenDetails, Error>) -> Void) {
-    let options: ARTClientOptions
+    let options: ClientOptions
     if let key = key {
         do {
             options = try AblyTests.clientOptions(for: test)
@@ -536,7 +536,7 @@ func getTestTokenDetails(for test: Test, key: String? = nil, clientId: String? =
         options.queryTime = queryTime
     }
 
-    let client = ARTRest(options: options)
+    let client = Rest(options: options)
 
     var tokenParams: ARTTokenParams? = nil
     if let capability = capability {
@@ -632,10 +632,10 @@ public func getEnvironment() -> String {
     return env
 }
 
-public func buildMessagesThatExceedMaxMessageSize() -> [ARTMessage] {
-    var messages = [ARTMessage]()
+public func buildMessagesThatExceedMaxMessageSize() -> [Message] {
+    var messages = [Message]()
     for index in 0...5000 {
-        let m = ARTMessage(name: "name-\(index)", data: "data-\(index)")
+        let m = Message(name: "name-\(index)", data: "data-\(index)")
         messages.append(m)
     }
     return messages
@@ -829,7 +829,7 @@ class MockHTTP: ARTHttp {
         }
     }
 
-    override public func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) -> (ARTCancellable & NSObjectProtocol)? {
+    override public func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) -> (Cancellable & NSObjectProtocol)? {
         queue.async {
             switch self.rule {
             case .none:
@@ -915,19 +915,19 @@ class MockHTTPExecutor: NSObject, ARTHTTPAuthenticatedExecutor {
     fileprivate var errorSimulator: NSError?
 
     private(set) var logger = InternalLog(logger: MockVersion2Log())
-    var clientOptions = ARTClientOptions()
+    var clientOptions = ClientOptions()
     var encoder = ARTJsonLikeEncoder()
     var requests: [URLRequest] = []
 
-    func options() -> ARTClientOptions {
+    func options() -> ClientOptions {
         return self.clientOptions
     }
 
-    func defaultEncoder() -> ARTEncoder {
+    func defaultEncoder() -> Encoder {
         return self.encoder
     }
 
-    func execute(_ request: NSMutableURLRequest, withAuthOption authOption: ARTAuthentication, completion callback: @escaping (HTTPURLResponse?, Data?, Error?) -> Void) -> (ARTCancellable & NSObjectProtocol)? {
+    func execute(_ request: NSMutableURLRequest, withAuthOption authOption: Authentication, completion callback: @escaping (HTTPURLResponse?, Data?, Error?) -> Void) -> (Cancellable & NSObjectProtocol)? {
         self.requests.append(request as URLRequest)
 
         if let simulatedError = errorSimulator, var _ = request.url {
@@ -940,7 +940,7 @@ class MockHTTPExecutor: NSObject, ARTHTTPAuthenticatedExecutor {
         return nil
     }
 
-    func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) -> (ARTCancellable & NSObjectProtocol)? {
+    func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) -> (Cancellable & NSObjectProtocol)? {
         self.requests.append(request)
         
         if let simulatedError = errorSimulator, var _ = request.url {
@@ -1029,7 +1029,7 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
         }
     }
 
-    public func execute(_ request: URLRequest, completion callback: HTTPExecutorCallback? = nil) -> (ARTCancellable & NSObjectProtocol)? {
+    public func execute(_ request: URLRequest, completion callback: HTTPExecutorCallback? = nil) -> (Cancellable & NSObjectProtocol)? {
         self._requests.append(request)
 
         if let performEvent = callbackBeforeRequest {
@@ -1112,34 +1112,34 @@ class TestProxyTransport: ARTWebSocketTransport {
         return _factory
     }
 
-    init(factory: TestProxyTransportFactory, rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, logger: InternalLog, webSocketFactory: WebSocketFactory) {
+    init(factory: TestProxyTransportFactory, rest: ARTRestInternal, options: ClientOptions, resumeKey: String?, logger: InternalLog, webSocketFactory: WebSocketFactory) {
         self._factory = factory
         super.init(rest: rest, options: options, resumeKey: resumeKey, logger: logger, webSocketFactory: webSocketFactory)
     }
 
     fileprivate(set) var lastUrl: URL?
 
-    private var _protocolMessagesReceived: [ARTProtocolMessage] = []
-    var protocolMessagesReceived: [ARTProtocolMessage] {
-        var result: [ARTProtocolMessage] = []
+    private var _protocolMessagesReceived: [ProtocolMessage] = []
+    var protocolMessagesReceived: [ProtocolMessage] {
+        var result: [ProtocolMessage] = []
         queue.sync {
             result = self._protocolMessagesReceived
         }
         return result
     }
 
-    private var _protocolMessagesSent: [ARTProtocolMessage] = []
-    var protocolMessagesSent: [ARTProtocolMessage] {
-        var result: [ARTProtocolMessage] = []
+    private var _protocolMessagesSent: [ProtocolMessage] = []
+    var protocolMessagesSent: [ProtocolMessage] {
+        var result: [ProtocolMessage] = []
         queue.sync {
             result = self._protocolMessagesSent
         }
         return result
     }
 
-    private var _protocolMessagesSentIgnored: [ARTProtocolMessage] = []
-    var protocolMessagesSentIgnored: [ARTProtocolMessage] {
-        var result: [ARTProtocolMessage] = []
+    private var _protocolMessagesSentIgnored: [ProtocolMessage] = []
+    var protocolMessagesSentIgnored: [ProtocolMessage] {
+        var result: [ProtocolMessage] = []
         queue.sync {
             result = self._protocolMessagesSentIgnored
         }
@@ -1149,21 +1149,21 @@ class TestProxyTransport: ARTWebSocketTransport {
     fileprivate(set) var rawDataSent = [Data]()
     fileprivate(set) var rawDataReceived = [Data]()
 
-    private var replacingAcksWithNacks: ARTErrorInfo?
+    private var replacingAcksWithNacks: ErrorInfo?
 
     var ignoreWebSocket = false
     var ignoreSends = false
-    var actionsIgnored = [ARTProtocolMessageAction]()
+    var actionsIgnored = [ProtocolMessageAction]()
 
     var queue: DispatchQueue {
         return websocket?.delegateDispatchQueue ?? AblyTests.queue
     }
 
-    private var callbackBeforeProcessingIncomingMessage: ((ARTProtocolMessage) -> Void)?
-    private var callbackAfterProcessingIncomingMessage: ((ARTProtocolMessage) -> Void)?
-    private var callbackBeforeProcessingOutgoingMessage: ((ARTProtocolMessage) -> Void)?
-    private var callbackBeforeIncomingMessageModifier: ((ARTProtocolMessage) -> ARTProtocolMessage?)?
-    private var callbackAfterIncomingMessageModifier: ((ARTProtocolMessage) -> ARTProtocolMessage?)?
+    private var callbackBeforeProcessingIncomingMessage: ((ProtocolMessage) -> Void)?
+    private var callbackAfterProcessingIncomingMessage: ((ProtocolMessage) -> Void)?
+    private var callbackBeforeProcessingOutgoingMessage: ((ProtocolMessage) -> Void)?
+    private var callbackBeforeIncomingMessageModifier: ((ProtocolMessage) -> ProtocolMessage?)?
+    private var callbackAfterIncomingMessageModifier: ((ProtocolMessage) -> ProtocolMessage?)?
 
     // Represents a request to replace the implementation of a method.
     private class Hook {
@@ -1183,19 +1183,19 @@ class TestProxyTransport: ARTWebSocketTransport {
     /// Used for synchronising access to webSocketOpenHook.
     private let webSocketOpenHookSempahore = DispatchSemaphore(value: 1)
 
-    func setListenerBeforeProcessingIncomingMessage(_ callback: ((ARTProtocolMessage) -> Void)?) {
+    func setListenerBeforeProcessingIncomingMessage(_ callback: ((ProtocolMessage) -> Void)?) {
         queue.sync {
             self.callbackBeforeProcessingIncomingMessage = callback
         }
     }
 
-    func setListenerAfterProcessingIncomingMessage(_ callback: ((ARTProtocolMessage) -> Void)?) {
+    func setListenerAfterProcessingIncomingMessage(_ callback: ((ProtocolMessage) -> Void)?) {
         queue.sync {
             self.callbackAfterProcessingIncomingMessage = callback
         }
     }
 
-    func setListenerBeforeProcessingOutgoingMessage(_ callback: ((ARTProtocolMessage) -> Void)?) {
+    func setListenerBeforeProcessingOutgoingMessage(_ callback: ((ProtocolMessage) -> Void)?) {
         queue.sync {
             self.callbackBeforeProcessingOutgoingMessage = callback
         }
@@ -1204,18 +1204,18 @@ class TestProxyTransport: ARTWebSocketTransport {
     /// The modifier will be called on the internal queue.
     ///
     /// If `callback` returns nil, the message will be ignored.
-    func setBeforeIncomingMessageModifier(_ callback: ((ARTProtocolMessage) -> ARTProtocolMessage?)?) {
+    func setBeforeIncomingMessageModifier(_ callback: ((ProtocolMessage) -> ProtocolMessage?)?) {
         self.callbackBeforeIncomingMessageModifier = callback
     }
 
     /// The modifier will be called on the internal queue.
     ///
     /// If `callback` returns nil, the message will be ignored.
-    func setAfterIncomingMessageModifier(_ callback: ((ARTProtocolMessage) -> ARTProtocolMessage?)?) {
+    func setAfterIncomingMessageModifier(_ callback: ((ProtocolMessage) -> ProtocolMessage?)?) {
         self.callbackAfterIncomingMessageModifier = callback
     }
 
-    func enableReplaceAcksWithNacks(with errorInfo: ARTErrorInfo) {
+    func enableReplaceAcksWithNacks(with errorInfo: ErrorInfo) {
         queue.sync {
             self.replacingAcksWithNacks = errorInfo
         }
@@ -1334,13 +1334,13 @@ class TestProxyTransport: ARTWebSocketTransport {
         }
     }
 
-    override func setupWebSocket(_ params: [String: URLQueryItem], with options: ARTClientOptions, resumeKey: String?) -> URL {
+    override func setupWebSocket(_ params: [String: URLQueryItem], with options: ClientOptions, resumeKey: String?) -> URL {
         let url = super.setupWebSocket(params, with: options, resumeKey: resumeKey)
         lastUrl = url
         return url
     }
 
-    func send(_ message: ARTProtocolMessage) {
+    func send(_ message: ProtocolMessage) {
         let data = try! encoder.encode(message)
         send(data, withSource: message)
     }
@@ -1353,7 +1353,7 @@ class TestProxyTransport: ARTWebSocketTransport {
             return false
         }
 
-        if let msg = decodedObject as? ARTProtocolMessage {
+        if let msg = decodedObject as? ProtocolMessage {
             if ignoreSends {
                 _protocolMessagesSentIgnored.append(msg)
                 return false
@@ -1369,7 +1369,7 @@ class TestProxyTransport: ARTWebSocketTransport {
         return super.send(data, withSource: decodedObject)
     }
 
-    override func receive(_ original: ARTProtocolMessage) {
+    override func receive(_ original: ProtocolMessage) {
         if original.action == .ack || original.action == .presence {
             if let error = replacingAcksWithNacks {
                 original.action = .nack
@@ -1406,7 +1406,7 @@ class TestProxyTransport: ARTWebSocketTransport {
         }
     }
 
-    override func receive(with data: Data) -> ARTProtocolMessage? {
+    override func receive(with data: Data) -> ProtocolMessage? {
         rawDataReceived.append(data)
         return super.receive(with: data)
     }
@@ -1445,7 +1445,7 @@ class TestProxyTransport: ARTWebSocketTransport {
 
     func simulateTransportSuccess(clientId: String? = nil) {
         self.ignoreWebSocket = true
-        let msg = ARTProtocolMessage()
+        let msg = ProtocolMessage()
         msg.action = .connected
         msg.connectionId = "x-xxxxxxxx"
         msg.connectionKey = "xxxxxxx-xxxxxxxxxxxxxx-xxxxxxxx"
@@ -1504,10 +1504,10 @@ extension Dictionary {
 
 }
 
-extension ARTMessage {
+extension Message {
 
     open override func isEqual(_ object: Any?) -> Bool {
-        if let other = object as? ARTMessage {
+        if let other = object as? Message {
             return self.name == other.name &&
                 self.encoding == other.encoding &&
                 self.data as! NSObject == other.data as! NSObject
@@ -1604,7 +1604,7 @@ extension String {
 
 }
 
-extension ARTRealtime {
+extension Realtime {
     
     var transportFactory: TestProxyTransportFactory? {
         self.internal.options.testOptions.transportFactory as? TestProxyTransportFactory
@@ -1695,15 +1695,15 @@ extension ARTRealtime {
     }
 
     func dispose() {
-        let names = self.channels.map({ ($0 as! ARTRealtimeChannel).name })
+        let names = self.channels.map({ ($0 as! RealtimeChannel).name })
         for name in names {
             self.channels.release(name)
         }
         self.connection.off()
     }
     
-    func requestPresenceSyncForChannel(_ channel: ARTRealtimeChannel) {
-        let syncMessage = ARTProtocolMessage()
+    func requestPresenceSyncForChannel(_ channel: RealtimeChannel) {
+        let syncMessage = ProtocolMessage()
         syncMessage.action = .sync
         syncMessage.channel = channel.name
         guard let transport = self.internal.transport as? TestProxyTransport else {
@@ -1730,9 +1730,9 @@ extension ARTWebSocketTransport {
 
     func simulateIncomingError() {
         // Simulate receiving an ERROR ProtocolMessage, which should put a client into the FAILED state (per RTN15i)
-        let protocolMessage = ARTProtocolMessage()
+        let protocolMessage = ProtocolMessage()
         protocolMessage.action = .error
-        protocolMessage.error = ARTErrorInfo.create(withCode: 50000 /* arbitrarily chosen */, message: "Fail test")
+        protocolMessage.error = ErrorInfo.create(withCode: 50000 /* arbitrarily chosen */, message: "Fail test")
         receive(protocolMessage)
     }
 }
@@ -1756,9 +1756,9 @@ extension ARTAuthInternal {
 
 }
 
-extension ARTPresenceMessage {
+extension PresenceMessage {
 
-    convenience init(clientId: String, action: ARTPresenceAction, connectionId: String, id: String, timestamp: Date = Date()) {
+    convenience init(clientId: String, action: PresenceAction, connectionId: String, id: String, timestamp: Date = Date()) {
         self.init()
         self.action = action
         self.clientId = clientId
@@ -1769,7 +1769,7 @@ extension ARTPresenceMessage {
 
 }
 
-extension ARTMessage {
+extension Message {
 
     convenience init(id: String, name: String? = nil, data: Any) {
         self.init(name: name, data: data)
@@ -1778,39 +1778,39 @@ extension ARTMessage {
 
 }
 
-extension ARTRealtimeConnectionState : CustomStringConvertible {
+extension RealtimeConnectionState : CustomStringConvertible {
     public var description : String {
-        return ARTRealtimeConnectionStateToStr(self)
+        return RealtimeConnectionStateToStr(self)
     }
 }
 
-extension ARTRealtimeConnectionEvent : CustomStringConvertible {
+extension RealtimeConnectionEvent : CustomStringConvertible {
     public var description : String {
-        return ARTRealtimeConnectionEventToStr(self)
+        return RealtimeConnectionEventToStr(self)
     }
 }
 
-extension ARTProtocolMessageAction : CustomStringConvertible {
+extension ProtocolMessageAction : CustomStringConvertible {
     public var description : String {
-        return ARTProtocolMessageActionToStr(self)
+        return ProtocolMessageActionToStr(self)
     }
 }
 
-extension ARTRealtimeChannelState : CustomStringConvertible {
+extension RealtimeChannelState : CustomStringConvertible {
     public var description : String {
-        return ARTRealtimeChannelStateToStr(self)
+        return RealtimeChannelStateToStr(self)
     }
 }
 
-extension ARTChannelEvent : CustomStringConvertible {
+extension ChannelEvent : CustomStringConvertible {
     public var description : String {
-        return ARTChannelEventToStr(self)
+        return ChannelEventToStr(self)
     }
 }
 
-extension ARTPresenceAction : CustomStringConvertible {
+extension PresenceAction : CustomStringConvertible {
     public var description : String {
-        return ARTPresenceActionToStr(self)
+        return PresenceActionToStr(self)
     }
 }
 
@@ -1943,7 +1943,7 @@ extension HTTPURLResponse {
 
 }
 
-extension ARTHTTPPaginatedResponse {
+extension HTTPPaginatedResponse {
 
     var headers: NSDictionary {
         return response.objc_allHeaderFields
@@ -1955,7 +1955,7 @@ protocol ARTHasInternal {
     func unwrapAsync(_: @escaping (Internal) -> ())
 }
 
-extension ARTRealtime: ARTHasInternal {
+extension Realtime: ARTHasInternal {
     typealias Internal = ARTRealtimeInternal
     func unwrapAsync(_ use: @escaping (Internal) -> ()) {
         self.internalAsync(use)

@@ -3,7 +3,7 @@ import Foundation
 import Nimble
 import XCTest
 
-private func postTestStats(_ stats: [[String: Any]], for test: Test) throws -> ARTClientOptions {
+private func postTestStats(_ stats: [[String: Any]], for test: Test) throws -> ClientOptions {
     let options = try AblyTests.commonAppSetup(for: test, forceNewApp: true)
 
     let keyBase64 = encodeBase64(options.key ?? "")
@@ -20,7 +20,7 @@ private func postTestStats(_ stats: [[String: Any]], for test: Test) throws -> A
     return options
 }
 
-private func queryStats(_ client: ARTRest, _ query: ARTStatsQuery, file: FileString = #file, line: UInt = #line) throws -> ARTPaginatedResult<ARTStats> {
+private func queryStats(_ client: Rest, _ query: StatsQuery, file: FileString = #file, line: UInt = #line) throws -> PaginatedResult<Stats> {
     let (stats, error) = try AblyTests.waitFor(timeout: testTimeout, file: file, line: line) { value in
         expect {
             try client.stats(query, callback: { result, err in
@@ -76,7 +76,7 @@ private let statsFixtures: [[String: Any]] = [
     ],
 ]
 
-private var statsOptions = ARTClientOptions()
+private var statsOptions = ClientOptions()
 
 class RestClientStatsTests: XCTestCase {
     // XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
@@ -103,8 +103,8 @@ class RestClientStatsTests: XCTestCase {
         let test = Test()
         try beforeEach__RestClient__stats__result(for: test)
 
-        let client = ARTRest(options: statsOptions)
-        let query = ARTStatsQuery()
+        let client = Rest(options: statsOptions)
+        let query = StatsQuery()
         query.start = date
         query.direction = .forwards
 
@@ -126,8 +126,8 @@ class RestClientStatsTests: XCTestCase {
         let test = Test()
         try beforeEach__RestClient__stats__result(for: test)
 
-        let client = ARTRest(options: statsOptions)
-        let query = ARTStatsQuery()
+        let client = Rest(options: statsOptions)
+        let query = StatsQuery()
         query.start = date
         query.direction = .forwards
         query.unit = .hour
@@ -149,8 +149,8 @@ class RestClientStatsTests: XCTestCase {
         let test = Test()
         try beforeEach__RestClient__stats__result(for: test)
 
-        let client = ARTRest(options: statsOptions)
-        let query = ARTStatsQuery()
+        let client = Rest(options: statsOptions)
+        let query = StatsQuery()
         query.end = calendar.date(byAdding: .day, value: 1, to: date, options: NSCalendar.Options(rawValue: 0))
         query.direction = .forwards
         query.unit = .month
@@ -168,8 +168,8 @@ class RestClientStatsTests: XCTestCase {
         let test = Test()
         try beforeEach__RestClient__stats__result(for: test)
 
-        let client = ARTRest(options: statsOptions)
-        let query = ARTStatsQuery()
+        let client = Rest(options: statsOptions)
+        let query = StatsQuery()
         query.end = calendar.date(byAdding: .month, value: 1, to: date, options: NSCalendar.Options(rawValue: 0))
         query.direction = .forwards
         query.unit = .month
@@ -187,8 +187,8 @@ class RestClientStatsTests: XCTestCase {
         let test = Test()
         try beforeEach__RestClient__stats__result(for: test)
 
-        let client = ARTRest(options: statsOptions)
-        let query = ARTStatsQuery()
+        let client = Rest(options: statsOptions)
+        let query = StatsQuery()
         query.end = date.addingTimeInterval(60) // 20XX-02-03:16:04
         query.limit = 1
 
@@ -205,8 +205,8 @@ class RestClientStatsTests: XCTestCase {
         let test = Test()
         try beforeEach__RestClient__stats__result(for: test)
 
-        let client = ARTRest(options: statsOptions)
-        let query = ARTStatsQuery()
+        let client = Rest(options: statsOptions)
+        let query = StatsQuery()
         query.end = date.addingTimeInterval(60) // 20XX-02-03:16:04
         query.limit = 1
         query.direction = .forwards
@@ -224,8 +224,8 @@ class RestClientStatsTests: XCTestCase {
         let test = Test()
         try beforeEach__RestClient__stats__result(for: test)
 
-        let client = ARTRest(options: statsOptions)
-        let query = ARTStatsQuery()
+        let client = Rest(options: statsOptions)
+        let query = StatsQuery()
         query.end = date.addingTimeInterval(120) // 20XX-02-03:16:05
         query.limit = 1
 
@@ -235,7 +235,7 @@ class RestClientStatsTests: XCTestCase {
         XCTAssertTrue(firstPage.hasNext)
         XCTAssertFalse(firstPage.isLast)
 
-        let secondPage: ARTPaginatedResult<ARTStats> = try AblyTests.waitFor(timeout: testTimeout) { value in
+        let secondPage: PaginatedResult<Stats> = try AblyTests.waitFor(timeout: testTimeout) { value in
             firstPage.next { page, err in
                 XCTAssertNil(err)
                 value(page)
@@ -247,7 +247,7 @@ class RestClientStatsTests: XCTestCase {
         XCTAssertTrue(secondPage.hasNext)
         XCTAssertFalse(secondPage.isLast)
 
-        let thirdPage: ARTPaginatedResult<ARTStats> = try AblyTests.waitFor(timeout: testTimeout) { value in
+        let thirdPage: PaginatedResult<Stats> = try AblyTests.waitFor(timeout: testTimeout) { value in
             secondPage.next { page, err in
                 XCTAssertNil(err)
                 value(page)
@@ -258,7 +258,7 @@ class RestClientStatsTests: XCTestCase {
         XCTAssertEqual((thirdPage.items)[0].inbound.all.messages.data, 5000)
         XCTAssertTrue(thirdPage.isLast)
 
-        let firstPageAgain: ARTPaginatedResult<ARTStats> = try AblyTests.waitFor(timeout: testTimeout) { value in
+        let firstPageAgain: PaginatedResult<Stats> = try AblyTests.waitFor(timeout: testTimeout) { value in
             thirdPage.first { page, err in
                 XCTAssertNil(err)
                 value(page)
@@ -273,8 +273,8 @@ class RestClientStatsTests: XCTestCase {
         let test = Test()
         try beforeEach__RestClient__stats__result(for: test)
 
-        let client = ARTRest(options: statsOptions)
-        let query = ARTStatsQuery()
+        let client = Rest(options: statsOptions)
+        let query = StatsQuery()
         query.end = date.addingTimeInterval(120) // 20XX-02-03:16:05
         query.limit = 1
         query.direction = .forwards
@@ -285,7 +285,7 @@ class RestClientStatsTests: XCTestCase {
         XCTAssertTrue(firstPage.hasNext)
         XCTAssertFalse(firstPage.isLast)
 
-        let secondPage: ARTPaginatedResult<ARTStats> = try AblyTests.waitFor(timeout: testTimeout) { value in
+        let secondPage: PaginatedResult<Stats> = try AblyTests.waitFor(timeout: testTimeout) { value in
             firstPage.next { page, err in
                 XCTAssertNil(err)
                 value(page)
@@ -297,7 +297,7 @@ class RestClientStatsTests: XCTestCase {
         XCTAssertTrue(secondPage.hasNext)
         XCTAssertFalse(secondPage.isLast)
 
-        let thirdPage: ARTPaginatedResult<ARTStats> = try AblyTests.waitFor(timeout: testTimeout) { value in
+        let thirdPage: PaginatedResult<Stats> = try AblyTests.waitFor(timeout: testTimeout) { value in
             secondPage.next { page, err in
                 XCTAssertNil(err)
                 value(page)
@@ -308,7 +308,7 @@ class RestClientStatsTests: XCTestCase {
         XCTAssertEqual((thirdPage.items)[0].inbound.all.messages.data, 7000)
         XCTAssertTrue(thirdPage.isLast)
 
-        let firstPageAgain: ARTPaginatedResult<ARTStats> = try AblyTests.waitFor(timeout: testTimeout) { value in
+        let firstPageAgain: PaginatedResult<Stats> = try AblyTests.waitFor(timeout: testTimeout) { value in
             thirdPage.first { page, err in
                 XCTAssertNil(err)
                 value(page)
@@ -324,8 +324,8 @@ class RestClientStatsTests: XCTestCase {
     // RSC6b1
 
     func test__009__RestClient__stats__query__start__should_return_an_error_when_later_than_end() {
-        let client = ARTRest(key: "fake:key")
-        let query = ARTStatsQuery()
+        let client = Rest(key: "fake:key")
+        let query = StatsQuery()
 
         query.start = NSDate.distantFuture
         query.end = NSDate.distantPast
@@ -336,22 +336,22 @@ class RestClientStatsTests: XCTestCase {
     // RSC6b2
 
     func test__010__RestClient__stats__query__direction__should_be_backwards_by_default() {
-        let query = ARTStatsQuery()
+        let query = StatsQuery()
 
-        XCTAssertEqual(query.direction, ARTQueryDirection.backwards)
+        XCTAssertEqual(query.direction, QueryDirection.backwards)
     }
 
     // RSC6b3
 
     func test__011__RestClient__stats__query__limit__should_have_a_default_value_of_100() {
-        let query = ARTStatsQuery()
+        let query = StatsQuery()
 
         XCTAssertEqual(query.limit, 100)
     }
 
     func test__012__RestClient__stats__query__limit__should_return_an_error_when_greater_than_1000() {
-        let client = ARTRest(key: "fake:key")
-        let query = ARTStatsQuery()
+        let client = Rest(key: "fake:key")
+        let query = StatsQuery()
 
         query.limit = 1001
 
@@ -361,8 +361,8 @@ class RestClientStatsTests: XCTestCase {
     // RSC6b4
 
     func test__013__RestClient__stats__query__unit__should_default_to_minute() {
-        let query = ARTStatsQuery()
+        let query = StatsQuery()
 
-        XCTAssertEqual(query.unit, ARTStatsGranularity.minute)
+        XCTAssertEqual(query.unit, StatsGranularity.minute)
     }
 }

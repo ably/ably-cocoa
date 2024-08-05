@@ -11,6 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  The protocol upon which the `ARTRestChannel` is implemented.
  */
+NS_SWIFT_NAME(RestChannelProtocol)
 @protocol ARTRestChannelProtocol <ARTChannelProtocol>
 
 /// :nodoc: TODO: docstring
@@ -46,6 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Enables messages to be published and historic messages to be retrieved for a channel.
  */
+NS_SWIFT_NAME(RestChannel)
 @interface ARTRestChannel : NSObject <ARTRestChannelProtocol>
 
 /**

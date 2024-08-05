@@ -10,6 +10,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  The protocol upon which the `ARTPushChannelSubscriptions` is implemented.
  */
+NS_SWIFT_NAME(PushChannelSubscriptionsProtocol)
 @protocol ARTPushChannelSubscriptionsProtocol
 
 /// :nodoc:
@@ -62,6 +63,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @see See `ARTPushChannelSubscriptionsProtocol` for details.
  */
+NS_SWIFT_NAME(PushChannelSubscriptions)
 @interface ARTPushChannelSubscriptions : NSObject <ARTPushChannelSubscriptionsProtocol>
 
 @end

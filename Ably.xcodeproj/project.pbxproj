@@ -281,9 +281,6 @@
 		56190954238C3D3200A862A6 /* CryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 56190953238C3D3200A862A6 /* CryptoTest.m */; };
 		56190955238C3D3200A862A6 /* CryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 56190953238C3D3200A862A6 /* CryptoTest.m */; };
 		56190956238C3D3200A862A6 /* CryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 56190953238C3D3200A862A6 /* CryptoTest.m */; };
-		8099DE8F2BF18E360071AB2A /* PlaceholderSwift.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8099DE8E2BF18E360071AB2A /* PlaceholderSwift.swift */; };
-		8099DE902BF18E360071AB2A /* PlaceholderSwift.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8099DE8E2BF18E360071AB2A /* PlaceholderSwift.swift */; };
-		8099DE912BF18E360071AB2A /* PlaceholderSwift.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8099DE8E2BF18E360071AB2A /* PlaceholderSwift.swift */; };
 		80E519C72BBCBE21006545B4 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 80E519C62BBCBE20006545B4 /* PrivacyInfo.xcprivacy */; };
 		80E519C82BBCBE21006545B4 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 80E519C62BBCBE20006545B4 /* PrivacyInfo.xcprivacy */; };
 		80E519C92BBCBE21006545B4 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 80E519C62BBCBE20006545B4 /* PrivacyInfo.xcprivacy */; };
@@ -1231,7 +1228,6 @@
 		21FD9F262A015BE400216482 /* Test.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test.swift; sourceTree = "<group>"; };
 		560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARTDefaultTests.swift; sourceTree = "<group>"; };
 		56190953238C3D3200A862A6 /* CryptoTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CryptoTest.m; sourceTree = "<group>"; };
-		8099DE8E2BF18E360071AB2A /* PlaceholderSwift.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderSwift.swift; sourceTree = "<group>"; };
 		80E519C62BBCBE20006545B4 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		841134772722205400CFA837 /* ARTArchiveTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTArchiveTests.m; sourceTree = "<group>"; };
 		8412FDE12661AC37001FE9E6 /* AblyDeltaCodec.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = AblyDeltaCodec.xcframework; path = Carthage/Build/AblyDeltaCodec.xcframework; sourceTree = "<group>"; };
@@ -1750,14 +1746,6 @@
 			path = "Test Utilities";
 			sourceTree = "<group>";
 		};
-		8099DE8D2BF18E130071AB2A /* PushSwift */ = {
-			isa = PBXGroup;
-			children = (
-				8099DE8E2BF18E360071AB2A /* PlaceholderSwift.swift */,
-			);
-			path = PushSwift;
-			sourceTree = "<group>";
-		};
 		856AAC8B1B6E304B00B07119 /* Test */ = {
 			isa = PBXGroup;
 			children = (
@@ -1783,7 +1771,6 @@
 				D5A22170266F3CB700C87C42 /* Package.swift */,
 				D75B85F921BAF8F900FD8DD2 /* Ably.xcconfig */,
 				D7EE14F51F07964500C178D5 /* Version.xcconfig */,
-				8099DE8D2BF18E130071AB2A /* PushSwift */,
 				96BF61331A35B2AB004CF2B3 /* Source */,
 				217D17EE25421FC100DFF07E /* SocketRocket */,
 				856AAC8B1B6E304B00B07119 /* Test */,
@@ -3170,7 +3157,6 @@
 				961343D91A42E0B7006DC822 /* ARTClientOptions.m in Sources */,
 				96BF615F1A35C1C8004CF2B3 /* ARTTypes.m in Sources */,
 				217D1838254222F600DFF07E /* NSRunLoop+ARTSRWebSocket.m in Sources */,
-				8099DE8F2BF18E360071AB2A /* PlaceholderSwift.swift in Sources */,
 				D7D8F82E1BC2C706009718F2 /* ARTTokenParams.m in Sources */,
 				D746AE411BBC5B14003ECEF8 /* ARTEventEmitter.m in Sources */,
 				2104EFA82A4CC30C00CC1184 /* ARTAttachRetryState.m in Sources */,
@@ -3411,7 +3397,6 @@
 				D710D55E21949C97008F54AD /* ARTPushActivationStateMachine.m in Sources */,
 				D710D49C21949ACA008F54AD /* ARTNSMutableRequest+ARTRest.m in Sources */,
 				217D184F254222F700DFF07E /* NSRunLoop+ARTSRWebSocket.m in Sources */,
-				8099DE902BF18E360071AB2A /* PlaceholderSwift.swift in Sources */,
 				D710D66C21949E78008F54AD /* ARTMsgPackEncoder.m in Sources */,
 				D710D48621949A5B008F54AD /* ARTDefault.m in Sources */,
 				2104EFA92A4CC30C00CC1184 /* ARTAttachRetryState.m in Sources */,
@@ -3536,7 +3521,6 @@
 				D710D56421949C98008F54AD /* ARTPushActivationStateMachine.m in Sources */,
 				D710D4A621949ACB008F54AD /* ARTNSMutableRequest+ARTRest.m in Sources */,
 				217D1866254222FA00DFF07E /* NSRunLoop+ARTSRWebSocket.m in Sources */,
-				8099DE912BF18E360071AB2A /* PlaceholderSwift.swift in Sources */,
 				D710D65221949E77008F54AD /* ARTMsgPackEncoder.m in Sources */,
 				D710D48821949A5C008F54AD /* ARTDefault.m in Sources */,
 				2104EFAA2A4CC30C00CC1184 /* ARTAttachRetryState.m in Sources */,
@@ -3667,7 +3651,6 @@
 		856AAC931B6E304B00B07119 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -3696,7 +3679,6 @@
 		856AAC941B6E304B00B07119 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -3935,7 +3917,6 @@
 		D7093C13219E2DB200723F17 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -3972,7 +3953,6 @@
 		D7093C14219E2DB200723F17 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -4007,7 +3987,6 @@
 		D7093C69219EE1AE00723F17 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -4043,7 +4022,6 @@
 		D7093C6A219EE1AE00723F17 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -4297,7 +4275,6 @@
 		EB3630A923804F7C00B83598 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -4333,7 +4310,6 @@
 		EB3630AA23804F7C00B83598 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";

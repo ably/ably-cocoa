@@ -5,6 +5,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /// :nodoc:
+NS_SWIFT_NAME(RealtimeChannelsProtocol)
 @protocol ARTRealtimeChannelsProtocol
 
 // We copy this from the parent class and replace ChannelType by ARTRealtimeChannel * because
@@ -17,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 /// :nodoc:
+NS_SWIFT_NAME(RealtimeChannels)
 @interface ARTRealtimeChannels : NSObject<ARTRealtimeChannelsProtocol>
 
 - (ARTRealtimeChannel *)get:(NSString *)name;

@@ -8,6 +8,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+NS_SWIFT_NAME(PushActivationState)
 @interface ARTPushActivationState : NSObject <NSSecureCoding>
 
 - (instancetype)init NS_UNAVAILABLE;
@@ -25,23 +26,29 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 /// Persistent State
+NS_SWIFT_NAME(PushActivationPersistantState)
 @interface ARTPushActivationPersistentState : ARTPushActivationState
 @end
 
 #pragma mark - States
 
+NS_SWIFT_NAME(PushActivationStateNotActivated)
 @interface ARTPushActivationStateNotActivated : ARTPushActivationPersistentState
 @end
 
+NS_SWIFT_NAME(PushActivationStateWaitingForDeviceRegistration)
 @interface ARTPushActivationStateWaitingForDeviceRegistration : ARTPushActivationState
 @end
 
+NS_SWIFT_NAME(PushActivationStateWaitingForPushDeviceDetails)
 @interface ARTPushActivationStateWaitingForPushDeviceDetails : ARTPushActivationPersistentState
 @end
 
+NS_SWIFT_NAME(PushActivationStateWaitingForNewPushDeviceDetails)
 @interface ARTPushActivationStateWaitingForNewPushDeviceDetails : ARTPushActivationPersistentState
 @end
 
+NS_SWIFT_NAME(PushActivationStateWaitingForRegistrationSync)
 @interface ARTPushActivationStateWaitingForRegistrationSync : ARTPushActivationState
 
 - (instancetype)initWithMachine:(ARTPushActivationStateMachine *)machine logger:(ARTInternalLog *)logger NS_UNAVAILABLE;
@@ -54,14 +61,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+NS_SWIFT_NAME(PushActivationStateAfterRegistrationSyncFailed)
 @interface ARTPushActivationStateAfterRegistrationSyncFailed : ARTPushActivationPersistentState
 @end
 
+NS_SWIFT_NAME(PushActivationStateWaitingForDeregistration)
 @interface ARTPushActivationStateWaitingForDeregistration : ARTPushActivationState
 @end
 
 // Deprecated states; kept around for persistence backwards-compatibility
 
+NS_SWIFT_NAME(PushActivationDeprecatedPersistentState)
 @interface ARTPushActivationDeprecatedPersistentState : ARTPushActivationPersistentState
 
 - (instancetype)initWithMachine:(ARTPushActivationStateMachine *)machine NS_UNAVAILABLE;
@@ -70,6 +80,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+NS_SWIFT_NAME(PushActivationStateAfterRegistrationUpdateFailed)
 @interface ARTPushActivationStateAfterRegistrationUpdateFailed : ARTPushActivationDeprecatedPersistentState
 @end
 

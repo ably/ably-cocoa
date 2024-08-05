@@ -4,17 +4,17 @@ import XCTest
 
 class PushChannelTests: XCTestCase {
     private struct TestEnvironment {
-        var rest: ARTRest
+        var rest: Rest
         var mockHttpExecutor: MockHTTPExecutor
         var userQueue: DispatchQueue
 
         init(test: Test) {
             mockHttpExecutor = MockHTTPExecutor()
-            let options = ARTClientOptions(key: "xxxx:xxxx")
+            let options = ClientOptions(key: "xxxx:xxxx")
             userQueue = AblyTests.createUserQueue(for: test)
             options.dispatchQueue = userQueue
             options.internalDispatchQueue = AblyTests.queue
-            rest = ARTRest(options: options)
+            rest = Rest(options: options)
             rest.internal.options.clientId = "tester"
             rest.internal.httpExecutor = mockHttpExecutor
             rest.internal.resetDeviceSingleton()
@@ -48,7 +48,7 @@ class PushChannelTests: XCTestCase {
         let testEnvironment = TestEnvironment(test: test)
         let rest = testEnvironment.rest
 
-        let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
+        let testIdentityTokenDetails = DeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
@@ -84,7 +84,7 @@ class PushChannelTests: XCTestCase {
         let testEnvironment = TestEnvironment(test: test)
         let rest = testEnvironment.rest
 
-        let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
+        let testIdentityTokenDetails = DeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
@@ -110,7 +110,7 @@ class PushChannelTests: XCTestCase {
         let testEnvironment = TestEnvironment(test: test)
         let rest = testEnvironment.rest
 
-        let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
+        let testIdentityTokenDetails = DeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
@@ -162,7 +162,7 @@ class PushChannelTests: XCTestCase {
         let testEnvironment = TestEnvironment(test: test)
         let rest = testEnvironment.rest
 
-        let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
+        let testIdentityTokenDetails = DeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
@@ -196,7 +196,7 @@ class PushChannelTests: XCTestCase {
         let testEnvironment = TestEnvironment(test: test)
         let rest = testEnvironment.rest
 
-        let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
+        let testIdentityTokenDetails = DeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
@@ -222,7 +222,7 @@ class PushChannelTests: XCTestCase {
         let testEnvironment = TestEnvironment(test: test)
         let rest = testEnvironment.rest
 
-        let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
+        let testIdentityTokenDetails = DeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
@@ -313,7 +313,7 @@ class PushChannelTests: XCTestCase {
 
         let channel = testEnvironment.rest.channels.get(test.uniqueChannelName())
         expect { try channel.push.listSubscriptions([:]) { _, _ in } }.to(throwError { (error: NSError) in
-            XCTAssertEqual(error.code, ARTDataQueryError.missingRequiredFields.rawValue)
+            XCTAssertEqual(error.code, DataQueryError.missingRequiredFields.rawValue)
         })
     }
 
@@ -327,7 +327,7 @@ class PushChannelTests: XCTestCase {
         ]
         let channel = testEnvironment.rest.channels.get(test.uniqueChannelName())
         expect { try channel.push.listSubscriptions(params) { _, _ in } }.to(throwError { (error: NSError) in
-            XCTAssertEqual(error.code, ARTDataQueryError.invalidParameters.rawValue)
+            XCTAssertEqual(error.code, DataQueryError.invalidParameters.rawValue)
         })
     }
 
@@ -339,12 +339,12 @@ class PushChannelTests: XCTestCase {
         options.clientId = "tester"
         // Prevent channel name to be prefixed by test-*
         options.testOptions.channelNamePrefix = nil
-        let rest = ARTRest(options: options)
+        let rest = Rest(options: options)
         rest.internal.storage = MockDeviceStorage()
         rest.internal.setupLocalDevice_nosync()
 
         // Activate device
-        let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
+        let testIdentityTokenDetails = DeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 

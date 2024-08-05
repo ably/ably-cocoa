@@ -28,7 +28,7 @@ final class ClientInformationTests: XCTestCase {
     func testAgentIdentifierWithAdditionalAgents_withNilAdditionalAgents() {
         let expectedIdentifier = [
             "ably-cocoa/1.2.31",
-            ARTDefault.platformAgent()
+            Default.platformAgent()
         ].sorted().joined(separator: " ")
         
         XCTAssertEqual(ARTClientInformation.agentIdentifier(withAdditionalAgents: nil), expectedIdentifier)
@@ -45,7 +45,7 @@ final class ClientInformationTests: XCTestCase {
             "ably-cocoa/1.2.31",
             "demolib/0.0.1",
             "morelib",
-            ARTDefault.platformAgent()
+            Default.platformAgent()
         ].sorted().joined(separator: " ")
         
         XCTAssertEqual(ARTClientInformation.agentIdentifier(withAdditionalAgents: additionalAgents), expectedIdentifier)

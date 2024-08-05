@@ -6,12 +6,6 @@
 #import "ARTInternalLog.h"
 #import "ARTJsonEncoder.h"
 #import "ARTJsonLikeEncoder.h"
-#import <Ably/Ably-Swift.h>
-
-@class PlaceholderSwiftClass;
-@interface randomSwift : NSObject<PlaceholderSwiftProtocol>
-
-@end
 
 @implementation ARTPushAdmin {
     ARTQueuedDealloc *_dealloc;

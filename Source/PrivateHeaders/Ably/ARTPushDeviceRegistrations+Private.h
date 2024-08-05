@@ -4,6 +4,7 @@
 @class ARTRestInternal;
 @class ARTInternalLog;
 
+NS_SWIFT_NAME(PushDeviceRegistrationsInternal)
 @interface ARTPushDeviceRegistrationsInternal : NSObject <ARTPushDeviceRegistrationsProtocol>
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest logger:(ARTInternalLog *)logger;

@@ -9,6 +9,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+NS_SWIFT_NAME(PushActivationStateMachine)
 @interface ARTPushActivationStateMachine : NSObject
 
 @property (readonly, nonatomic) ARTPushActivationEvent *lastEvent;

@@ -9,11 +9,11 @@ class RestClientPresenceTests: XCTestCase {
     func skipped__test__002__Presence__get__should_return_a_PaginatedResult_page_containing_the_first_page_of_members() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
-        var disposable = [ARTRealtime]()
+        var disposable = [Realtime]()
         defer {
             for clientItem in disposable {
                 clientItem.dispose()
@@ -32,7 +32,7 @@ class RestClientPresenceTests: XCTestCase {
                 XCTAssertNil(error)
 
                 let membersPage = membersPage!
-                expect(membersPage).to(beAnInstanceOf(ARTPaginatedResult<ARTPresenceMessage>.self))
+                expect(membersPage).to(beAnInstanceOf(PaginatedResult<PresenceMessage>.self))
                 XCTAssertEqual(membersPage.items.count, 100)
 
                 let members = membersPage.items
@@ -47,7 +47,7 @@ class RestClientPresenceTests: XCTestCase {
                 membersPage.next { nextPage, error in
                     XCTAssertNil(error)
                     let nextPage = nextPage!
-                    expect(nextPage).to(beAnInstanceOf(ARTPaginatedResult<ARTPresenceMessage>.self))
+                    expect(nextPage).to(beAnInstanceOf(PaginatedResult<PresenceMessage>.self))
                     XCTAssertEqual(nextPage.items.count, 50)
 
                     let members = nextPage.items
@@ -67,10 +67,10 @@ class RestClientPresenceTests: XCTestCase {
     // RSP3a1
     func test__003__Presence__get__limit_should_support_up_to_1000_items() throws {
         let test = Test()
-        let client = ARTRest(options: try AblyTests.commonAppSetup(for: test))
+        let client = Rest(options: try AblyTests.commonAppSetup(for: test))
         let channel = client.channels.get(test.uniqueChannelName())
 
-        let query = ARTPresenceQuery()
+        let query = PresenceQuery()
         XCTAssertEqual(query.limit, 100)
 
         query.limit = 1001
@@ -86,10 +86,10 @@ class RestClientPresenceTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         let channelName = test.uniqueChannelName()
         
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         let channel = client.channels.get(channelName)
 
-        let realtime = ARTRealtime(options: options)
+        let realtime = Realtime(options: options)
         defer { realtime.close() }
         let realtimeChannel = realtime.channels.get(channelName)
 
@@ -99,7 +99,7 @@ class RestClientPresenceTests: XCTestCase {
 
         expect(realtimeChannel.internal.presence.members).toEventually(haveCount(3), timeout: testTimeout)
 
-        let query = ARTPresenceQuery()
+        let query = PresenceQuery()
         query.clientId = "john"
 
         waitUntil(timeout: testTimeout) { done in
@@ -120,12 +120,12 @@ class RestClientPresenceTests: XCTestCase {
     func test__005__Presence__get__connectionId_should_filter_members_by_the_provided_connectionId() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         
         let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
-        var disposable = [ARTRealtime]()
+        var disposable = [Realtime]()
         defer {
             for clientItem in disposable {
                 clientItem.dispose()
@@ -139,7 +139,7 @@ class RestClientPresenceTests: XCTestCase {
         // Another connection
         disposable += [AblyTests.addMembersSequentiallyToChannel(channelName, members: 3, startFrom: 7, options: options)]
 
-        let query = ARTRealtimePresenceQuery()
+        let query = RealtimePresenceQuery()
         // Return all members from last connection (connectionId from the last connection)
         query.connectionId = disposable.last!.connection.id!
 
@@ -165,12 +165,12 @@ class RestClientPresenceTests: XCTestCase {
     func test__006__Presence__history__should_return_a_PaginatedResult_page_containing_the_first_page_of_members() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         
         let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
-        var realtime: ARTRealtime!
+        var realtime: Realtime!
         defer { realtime.dispose(); realtime.close() }
 
         let expectedData = "online"
@@ -183,7 +183,7 @@ class RestClientPresenceTests: XCTestCase {
                 guard let membersPage = membersPage else {
                     fail("Page is empty"); done(); return
                 }
-                expect(membersPage).to(beAnInstanceOf(ARTPaginatedResult<ARTPresenceMessage>.self))
+                expect(membersPage).to(beAnInstanceOf(PaginatedResult<PresenceMessage>.self))
                 XCTAssertEqual(membersPage.items.count, 100)
 
                 let members = membersPage.items
@@ -200,7 +200,7 @@ class RestClientPresenceTests: XCTestCase {
                     guard let nextPage = nextPage else {
                         fail("nextPage is empty"); done(); return
                     }
-                    expect(nextPage).to(beAnInstanceOf(ARTPaginatedResult<ARTPresenceMessage>.self))
+                    expect(nextPage).to(beAnInstanceOf(PaginatedResult<PresenceMessage>.self))
                     XCTAssertEqual(nextPage.items.count, 50)
 
                     let members = nextPage.items
@@ -227,12 +227,12 @@ class RestClientPresenceTests: XCTestCase {
     func skipped__test__007__Presence__history__query_argument__direction_should_change_the_order_of_the_members() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         
         let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
-        var disposable = [ARTRealtime]()
+        var disposable = [Realtime]()
         defer {
             for clientItem in disposable {
                 clientItem.dispose()
@@ -242,8 +242,8 @@ class RestClientPresenceTests: XCTestCase {
 
         disposable += [AblyTests.addMembersSequentiallyToChannel(channelName, members: 10, data: nil, options: options)]
 
-        let query = ARTDataQuery()
-        XCTAssertEqual(query.direction, ARTQueryDirection.backwards)
+        let query = DataQuery()
+        XCTAssertEqual(query.direction, QueryDirection.backwards)
 
         waitUntil(timeout: testTimeout) { done in
             expect {
@@ -282,16 +282,16 @@ class RestClientPresenceTests: XCTestCase {
     func test__009__Presence__history__query_argument__limit_supports_up_to_1000_members() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         
         let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
-        var realtime: ARTRealtime!
+        var realtime: Realtime!
         defer { realtime.dispose(); realtime.close() }
         realtime = AblyTests.addMembersSequentiallyToChannel(channelName, members: 1, options: options)
 
-        let query = ARTDataQuery()
+        let query = DataQuery()
         XCTAssertEqual(query.limit, 100)
         query.limit = 1
 
@@ -310,7 +310,7 @@ class RestClientPresenceTests: XCTestCase {
         query.limit = 1001
 
         expect { try channel.presence.history(query) { _, _ in } }.to(throwError { (error: Error) in
-            XCTAssertEqual(error._code, ARTDataQueryError.limit.rawValue)
+            XCTAssertEqual(error._code, DataQueryError.limit.rawValue)
         })
     }
 
@@ -318,12 +318,12 @@ class RestClientPresenceTests: XCTestCase {
     func test__008__Presence__history__connectionId_should_filter_members_by_the_provided_connectionId() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         
         let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
-        var disposable = [ARTRealtime]()
+        var disposable = [Realtime]()
         defer {
             for clientItem in disposable {
                 clientItem.dispose()
@@ -337,7 +337,7 @@ class RestClientPresenceTests: XCTestCase {
         // Another connection
         disposable += [AblyTests.addMembersSequentiallyToChannel(channelName, members: 3, startFrom: 7, options: options)]
 
-        let query = ARTRealtimePresenceQuery()
+        let query = RealtimePresenceQuery()
         // Return all members from last connection (connectionId from the last connection)
         query.connectionId = disposable.last!.connection.id!
 
@@ -365,12 +365,12 @@ class RestClientPresenceTests: XCTestCase {
     func test__010__Presence__history__query_argument__start_and_end_should_filter_members_between_those_two_times() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         
         let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
-        var disposable = [ARTRealtime]()
+        var disposable = [Realtime]()
         defer {
             for clientItem in disposable {
                 clientItem.dispose()
@@ -378,7 +378,7 @@ class RestClientPresenceTests: XCTestCase {
             }
         }
 
-        let query = ARTDataQuery()
+        let query = DataQuery()
 
         disposable += [AblyTests.addMembersSequentiallyToChannel(channelName, members: 25, options: options)]
 
@@ -420,22 +420,22 @@ class RestClientPresenceTests: XCTestCase {
     // RSP4b1
     func test__011__Presence__history__query_argument__start_must_be_equal_to_or_less_than_end_and_is_unaffected_by_the_request_direction() throws {
         let test = Test()
-        let client = ARTRest(options: try AblyTests.commonAppSetup(for: test))
+        let client = Rest(options: try AblyTests.commonAppSetup(for: test))
         let channel = client.channels.get(test.uniqueChannelName())
 
-        let query = ARTDataQuery()
+        let query = DataQuery()
         query.direction = .backwards
         query.end = NSDate() as Date
         query.start = query.end!.addingTimeInterval(10.0)
 
         expect { try channel.presence.history(query) { _, _ in } }.to(throwError { (error: Error) in
-            XCTAssertEqual(error._code, ARTDataQueryError.timestampRange.rawValue)
+            XCTAssertEqual(error._code, DataQueryError.timestampRange.rawValue)
         })
 
         query.direction = .forwards
 
         expect { try channel.presence.history(query) { _, _ in } }.to(throwError { (error: Error) in
-            XCTAssertEqual(error._code, ARTDataQueryError.timestampRange.rawValue)
+            XCTAssertEqual(error._code, DataQueryError.timestampRange.rawValue)
         })
     }
 
@@ -443,7 +443,7 @@ class RestClientPresenceTests: XCTestCase {
     func test__001__Presence__presence_messages_retrieved_are_decoded_in_the_same_way_that_messages_are_decoded() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         
         let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
@@ -454,7 +454,7 @@ class RestClientPresenceTests: XCTestCase {
             channel.publish(nil, data: expectedData) { _ in done() }
         }
 
-        let realtime = ARTRealtime(options: options)
+        let realtime = Realtime(options: options)
         defer { realtime.dispose(); realtime.close() }
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
@@ -469,7 +469,7 @@ class RestClientPresenceTests: XCTestCase {
         }
 
         typealias Done = () -> Void
-        func checkReceivedMessage<T: ARTBaseMessage>(_ done: @escaping Done) -> (ARTPaginatedResult<T>?, ARTErrorInfo?) -> Void {
+        func checkReceivedMessage<T: BaseMessage>(_ done: @escaping Done) -> (PaginatedResult<T>?, ErrorInfo?) -> Void {
             return { membersPage, error in
                 XCTAssertNil(error)
                 let member = membersPage!.items[0]
@@ -479,7 +479,7 @@ class RestClientPresenceTests: XCTestCase {
         }
 
         var decodeNumberOfCalls = 0
-        let hook = channel.internal.dataEncoder.testSuite_injectIntoMethod(after: #selector(ARTDataEncoder.decode(_:encoding:))) {
+        let hook = channel.internal.dataEncoder.testSuite_injectIntoMethod(after: #selector(DataEncoder.decode(_:encoding:))) {
             decodeNumberOfCalls += 1
         }
         defer { hook.remove() }

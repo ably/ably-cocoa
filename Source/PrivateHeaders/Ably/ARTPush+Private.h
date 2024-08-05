@@ -8,6 +8,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+NS_SWIFT_NAME(PushInternal)
 @interface ARTPushInternal : NSObject <ARTPushProtocol>
 
 @property (nonatomic, readonly) ARTPushAdminInternal *admin;

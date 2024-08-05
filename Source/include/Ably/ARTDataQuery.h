@@ -6,13 +6,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// :nodoc:
 typedef NS_ENUM(NSUInteger, ARTQueryDirection) {
-    ARTQueryDirectionForwards,
-    ARTQueryDirectionBackwards
-};
+    ARTQueryDirectionForwards NS_SWIFT_NAME(forwards),
+    ARTQueryDirectionBackwards NS_SWIFT_NAME(backwards)
+} NS_SWIFT_NAME(QueryDirection);
 
 /**
  This object is used for providing parameters into methods with paginated results.
  */
+NS_SWIFT_NAME(DataQuery)
 @interface ARTDataQuery : NSObject
 
 /**
@@ -40,6 +41,7 @@ typedef NS_ENUM(NSUInteger, ARTQueryDirection) {
 /**
  This object is used for providing parameters into `ARTRealtimePresence`'s methods with paginated results.
  */
+NS_SWIFT_NAME(RealtimeHistoryQuery)
 @interface ARTRealtimeHistoryQuery : ARTDataQuery
 
 /**

@@ -5,10 +5,10 @@ import XCTest
 private var testHTTPExecutor: TestProxyHTTPExecutor!
 
 private func testOptionsGiveBasicAuthFalse(_ caseSetter: (ARTAuthOptions) -> Void) {
-    let options = ARTClientOptions()
+    let options = ClientOptions()
     caseSetter(options)
 
-    let client = ARTRest(options: options)
+    let client = Rest(options: options)
 
     XCTAssertFalse(client.auth.internal.options.isBasicAuth())
 }
@@ -24,8 +24,8 @@ private let shuffleArrayInExpectedHostOrder = { (array: NSMutableArray) in
 private let _fallbackHosts = ["f.ably-realtime.com", "g.ably-realtime.com", "h.ably-realtime.com", "i.ably-realtime.com", "j.ably-realtime.com"]
 
 private func testUsesAlternativeHost(_ caseTest: FakeNetworkResponse, channelName: String) {
-    let options = ARTClientOptions(key: "xxxx:xxxx")
-    let client = ARTRest(options: options)
+    let options = ClientOptions(key: "xxxx:xxxx")
+    let client = Rest(options: options)
     let internalLog = InternalLog(clientOptions: options)
     let mockHTTP = MockHTTP(logger: internalLog)
     testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -48,8 +48,8 @@ private func testUsesAlternativeHost(_ caseTest: FakeNetworkResponse, channelNam
 }
 
 private func testStoresSuccessfulFallbackHostAsDefaultHost(_ caseTest: FakeNetworkResponse, channelName: String) {
-    let options = ARTClientOptions(key: "xxxx:xxxx")
-    let client = ARTRest(options: options)
+    let options = ClientOptions(key: "xxxx:xxxx")
+    let client = Rest(options: options)
     let internalLog = InternalLog(clientOptions: options)
     let mockHTTP = MockHTTP(logger: internalLog)
     testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -84,10 +84,10 @@ private func testStoresSuccessfulFallbackHostAsDefaultHost(_ caseTest: FakeNetwo
 }
 
 private func testRestoresDefaultPrimaryHostAfterTimeoutExpires(_ caseTest: FakeNetworkResponse, channelName: String) {
-    let options = ARTClientOptions(key: "xxxx:xxxx")
+    let options = ClientOptions(key: "xxxx:xxxx")
     options.logLevel = .debug
     options.fallbackRetryTimeout = 1
-    let client = ARTRest(options: options)
+    let client = Rest(options: options)
     let internalLog = InternalLog(clientOptions: options)
     let mockHTTP = MockHTTP(logger: internalLog)
     testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -114,10 +114,10 @@ private func testRestoresDefaultPrimaryHostAfterTimeoutExpires(_ caseTest: FakeN
 }
 
 private func testUsesAnotherFallbackHost(_ caseTest: FakeNetworkResponse, channelName: String) {
-    let options = ARTClientOptions(key: "xxxx:xxxx")
+    let options = ClientOptions(key: "xxxx:xxxx")
     options.fallbackRetryTimeout = 10
     options.logLevel = .debug
-    let client = ARTRest(options: options)
+    let client = Rest(options: options)
     let internalLog = InternalLog(clientOptions: options)
     let mockHTTP = MockHTTP(logger: internalLog)
     testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -151,7 +151,7 @@ class RestClientTests: XCTestCase {
     func test__001__RestClient__All_REST_requests_should_include_the_current_API_version() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
         let channel = client.channels.get(test.uniqueChannelName())
@@ -160,7 +160,7 @@ class RestClientTests: XCTestCase {
                 XCTAssertNil(error)
                 let version = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["X-Ably-Version"]
 
-                // This test should not directly validate version against ARTDefault.version(), as
+                // This test should not directly validate version against Default.version(), as
                 // ultimately the version header has been derived from that value.
                 XCTAssertEqual(version, "2")
 
@@ -175,7 +175,7 @@ class RestClientTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
 
-        let client = ARTRest(key: options.key!)
+        let client = Rest(key: options.key!)
         client.internal.prioritizedHost = options.restHost
 
         let publishTask = publishTestMessage(client, channelName: test.uniqueChannelName())
@@ -184,12 +184,12 @@ class RestClientTests: XCTestCase {
     }
 
     func test__016__RestClient__initializer__should_throw_when_provided_an_invalid_key() {
-        expect { ARTRest(key: "invalid_key") }.to(raiseException())
+        expect { Rest(key: "invalid_key") }.to(raiseException())
     }
 
     func test__017__RestClient__initializer__should_result_in_error_status_when_provided_a_bad_key() {
         let test = Test()
-        let client = ARTRest(key: "fake:key")
+        let client = Rest(key: "fake:key")
 
         let publishTask = publishTestMessage(client, channelName: test.uniqueChannelName(), failOnError: false)
 
@@ -198,10 +198,10 @@ class RestClientTests: XCTestCase {
 
     func test__018__RestClient__initializer__should_accept_a_token() throws {
         let test = Test()
-        ARTClientOptions.setDefaultEnvironment(getEnvironment())
-        defer { ARTClientOptions.setDefaultEnvironment(nil) }
+        ClientOptions.setDefaultEnvironment(getEnvironment())
+        defer { ClientOptions.setDefaultEnvironment(nil) }
 
-        let client = ARTRest(token: try getTestToken(for: test))
+        let client = Rest(token: try getTestToken(for: test))
         let publishTask = publishTestMessage(client, channelName: test.uniqueChannelName())
         expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
     }
@@ -209,7 +209,7 @@ class RestClientTests: XCTestCase {
     func test__019__RestClient__initializer__should_accept_an_options_object() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
 
         let publishTask = publishTestMessage(client, channelName: test.uniqueChannelName())
 
@@ -219,7 +219,7 @@ class RestClientTests: XCTestCase {
     func test__020__RestClient__initializer__should_accept_an_options_object_with_token_authentication() throws {
         let test = Test()
         let options = try AblyTests.clientOptions(for: test, requestToken: true)
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
 
         let publishTask = publishTestMessage(client, channelName: test.uniqueChannelName())
 
@@ -230,7 +230,7 @@ class RestClientTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.clientOptions(for: test)
         options.token = "invalid_token"
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
 
         let publishTask = publishTestMessage(client, channelName: test.uniqueChannelName(), failOnError: false)
 
@@ -239,23 +239,23 @@ class RestClientTests: XCTestCase {
 
     // RSC2
     func test__022__RestClient__logging__should_output_to_the_system_log_and_the_log_level_should_be_Warn() {
-        ARTClientOptions.setDefaultEnvironment(getEnvironment())
+        ClientOptions.setDefaultEnvironment(getEnvironment())
         defer {
-            ARTClientOptions.setDefaultEnvironment(nil)
+            ClientOptions.setDefaultEnvironment(nil)
         }
 
-        let options = ARTClientOptions(key: "xxxx:xxxx")
-        options.logHandler = ARTLog(capturingOutput: true)
-        let client = ARTRest(options: options)
+        let options = ClientOptions(key: "xxxx:xxxx")
+        options.logHandler = Log(capturingOutput: true)
+        let client = Rest(options: options)
 
         client.internal.logger_onlyForUseInClassMethodsAndTests.log("This is a warning", with: .warn, file: "foo.m", line: 10)
 
-        XCTAssertEqual(client.internal.logger_onlyForUseInClassMethodsAndTests.logLevel, ARTLogLevel.warn)
+        XCTAssertEqual(client.internal.logger_onlyForUseInClassMethodsAndTests.logLevel, LogLevel.warn)
         guard let line = options.logHandler.captured.last else {
             fail("didn't log line.")
             return
         }
-        XCTAssertEqual(line.level, ARTLogLevel.warn)
+        XCTAssertEqual(line.level, LogLevel.warn)
         XCTAssertEqual(line.toString(), "WARN: (foo.m:10) This is a warning")
     }
 
@@ -263,8 +263,8 @@ class RestClientTests: XCTestCase {
     func test__023__RestClient__logging__should_have_a_mutable_log_level() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        options.logHandler = ARTLog(capturingOutput: true)
-        let client = ARTRest(options: options)
+        options.logHandler = Log(capturingOutput: true)
+        let client = Rest(options: options)
         client.internal.logger_onlyForUseInClassMethodsAndTests.logLevel = .error
 
         let logTime = NSDate()
@@ -278,25 +278,31 @@ class RestClientTests: XCTestCase {
     func test__024__RestClient__logging__should_accept_a_custom_logger() throws {
         let test = Test()
         
-        enum Log {
-            static var interceptedLog: (String, ARTLogLevel) = ("", .none)
+        enum InterceptedLogger {
+            static var interceptedLog: (String, LogLevel) = ("", .none)
         }
-        class MyLogger: ARTLog {
-            override func log(_ message: String, with level: ARTLogLevel) {
-                Log.interceptedLog = (message, level)
-            }
-        }
+        
+        class MyLogger: Log {
 
+            override func log(_ message: String, with level: LogLevel) {
+                // Default implementation or can be abstract
+                InterceptedLogger.interceptedLog = (message, level)
+            }
+            
+            static var interceptedLog: (String, LogLevel) = ("", .none)
+
+        }
+        
         let options = try AblyTests.commonAppSetup(for: test)
         let customLogger = MyLogger()
         options.logHandler = customLogger
         options.logLevel = .verbose
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
 
         client.internal.logger_onlyForUseInClassMethodsAndTests.log("This is a warning", with: .warn, file: "foo.m", line: 10)
 
-        XCTAssertEqual(Log.interceptedLog.0, "(foo.m:10) This is a warning")
-        XCTAssertEqual(Log.interceptedLog.1, ARTLogLevel.warn)
+        XCTAssertEqual(MyLogger.interceptedLog.0, "(foo.m:10) This is a warning")
+        XCTAssertEqual(MyLogger.interceptedLog.1, LogLevel.warn)
 
         XCTAssertEqual(client.internal.logger_onlyForUseInClassMethodsAndTests.logLevel, customLogger.logLevel)
     }
@@ -306,9 +312,9 @@ class RestClientTests: XCTestCase {
     // RSC11a
     func test__025__RestClient__endpoint__should_accept_a_custom_host_and_send_requests_to_the_specified_host() {
         let test = Test()
-        let options = ARTClientOptions(key: "fake:key")
+        let options = ClientOptions(key: "fake:key")
         options.restHost = "fake.ably.io"
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
@@ -319,10 +325,10 @@ class RestClientTests: XCTestCase {
 
     func test__026__RestClient__endpoint__should_ignore_an_environment_when_restHost_is_customized() {
         let test = Test()
-        let options = ARTClientOptions(key: "fake:key")
+        let options = ClientOptions(key: "fake:key")
         options.environment = "test"
         options.restHost = "fake.ably.io"
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
@@ -334,9 +340,9 @@ class RestClientTests: XCTestCase {
     // RSC11b
     func test__027__RestClient__endpoint__should_accept_an_environment_when_restHost_is_left_unchanged() {
         let test = Test()
-        let options = ARTClientOptions(key: "fake:key")
+        let options = ClientOptions(key: "fake:key")
         options.environment = "myEnvironment"
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
@@ -347,8 +353,8 @@ class RestClientTests: XCTestCase {
 
     func test__028__RestClient__endpoint__should_default_to_https___rest_ably_io() {
         let test = Test()
-        let options = ARTClientOptions(key: "fake:key")
-        let client = ARTRest(options: options)
+        let options = ClientOptions(key: "fake:key")
+        let client = Rest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
@@ -361,7 +367,7 @@ class RestClientTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.clientOptions(for: test, requestToken: true)
         options.tls = false
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
@@ -372,22 +378,22 @@ class RestClientTests: XCTestCase {
 
     // RSC11b
     func test__030__RestClient__endpoint__should_not_prepend_the_environment_if_environment_is_configured_as__production_() {
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.environment = "production"
-        let client = ARTRest(options: options)
-        XCTAssertEqual(client.internal.options.restHost, ARTDefault.restHost())
-        XCTAssertEqual(client.internal.options.realtimeHost, ARTDefault.realtimeHost())
+        let client = Rest(options: options)
+        XCTAssertEqual(client.internal.options.restHost, Default.restHost())
+        XCTAssertEqual(client.internal.options.realtimeHost, Default.realtimeHost())
     }
 
     // RSC13
 
     func test__031__RestClient__should_use_the_the_connection_and_request_timeouts_specified__timeout_for_any_single_HTTP_request_and_response() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.restHost = "10.255.255.1" // non-routable IP address
         XCTAssertEqual(options.httpRequestTimeout, 10.0) // Seconds
         options.httpRequestTimeout = 1.0
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         let channel = client.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             let start = NSDate()
@@ -405,10 +411,10 @@ class RestClientTests: XCTestCase {
 
     func test__032__RestClient__should_use_the_the_connection_and_request_timeouts_specified__max_number_of_fallback_hosts() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         XCTAssertEqual(options.httpMaxRetryCount, 3)
         options.httpMaxRetryCount = 1
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -433,10 +439,10 @@ class RestClientTests: XCTestCase {
 
     func test__033__RestClient__should_use_the_the_connection_and_request_timeouts_specified__max_elapsed_time_in_which_fallback_host_retries_for_HTTP_requests_will_be_attempted() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         XCTAssertEqual(options.httpMaxRetryDuration, 15.0) // Seconds
         options.httpMaxRetryDuration = 1.0
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -457,7 +463,7 @@ class RestClientTests: XCTestCase {
     func test__002__RestClient__should_provide_access_to_the_AuthOptions_object_passed_in_ClientOptions() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
 
         let authOptions = client.auth.internal.options
 
@@ -467,11 +473,11 @@ class RestClientTests: XCTestCase {
     // RSC12
     func test__003__RestClient__REST_endpoint_host_should_be_configurable_in_the_Client_constructor_with_the_option_restHost() throws {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         XCTAssertEqual(options.restHost, "rest.ably.io")
         options.restHost = "rest.ably.test"
         XCTAssertEqual(options.restHost, "rest.ably.test")
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
@@ -491,7 +497,7 @@ class RestClientTests: XCTestCase {
     func test__034__RestClient__time__should_return_server_time() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
 
         var time: NSDate?
 
@@ -507,7 +513,7 @@ class RestClientTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
 
-        let clientHttps = ARTRest(options: options)
+        let clientHttps = Rest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         clientHttps.internal.httpExecutor = testHTTPExecutor
 
@@ -526,7 +532,7 @@ class RestClientTests: XCTestCase {
         options.clientId = "client_http"
         options.useTokenAuth = true
         options.tls = false
-        let clientHttp = ARTRest(options: options)
+        let clientHttp = Rest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         clientHttp.internal.httpExecutor = testHTTPExecutor
 
@@ -550,8 +556,8 @@ class RestClientTests: XCTestCase {
             completion(testTokenDetails, nil)
         }
 
-        let client = ARTRest(options: options)
-        expect(client.auth).to(beAnInstanceOf(ARTAuth.self))
+        let client = Rest(options: options)
+        expect(client.auth).to(beAnInstanceOf(Auth.self))
 
         waitUntil(timeout: testTimeout) { done in
             client.auth.authorize(nil, options: nil) { tokenDetails, error in
@@ -576,7 +582,7 @@ class RestClientTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.token = try getTestToken(for: test, ttl: 0.5)
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
         let auth = client.auth
@@ -606,7 +612,7 @@ class RestClientTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.clientOptions(for: test)
         options.token = try getTestToken(for: test, capability: "{ \"main\":[\"subscribe\"] }")
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
@@ -638,11 +644,11 @@ class RestClientTests: XCTestCase {
         guard let components = options.key?.components(separatedBy: ":"), let keyName = components.first, let keySecret = components.last else {
             fail("Invalid API key: \(options.key ?? "nil")"); return
         }
-        ARTClientOptions.setDefaultEnvironment(getEnvironment())
+        ClientOptions.setDefaultEnvironment(getEnvironment())
         defer {
-            ARTClientOptions.setDefaultEnvironment(nil)
+            ClientOptions.setDefaultEnvironment(nil)
         }
-        let rest = ARTRest(key: "\(keyName):\(keySecret)")
+        let rest = Rest(key: "\(keyName):\(keySecret)")
         waitUntil(timeout: testTimeout) { done in
             rest.channels.get(test.uniqueChannelName()).publish(nil, data: "testing") { error in
                 XCTAssertNil(error)
@@ -654,7 +660,7 @@ class RestClientTests: XCTestCase {
     // RSC14b
 
     func test__038__RestClient__Authentication__basic_authentication_flag__should_be_true_when_initialized_with_a_key() {
-        let client = ARTRest(key: "key:secret")
+        let client = Rest(key: "key:secret")
         XCTAssertTrue(client.auth.internal.options.isBasicAuth())
     }
 
@@ -685,14 +691,14 @@ class RestClientTests: XCTestCase {
     // RSC14c
     func test__036__RestClient__Authentication__should_error_when_expired_token_and_no_means_to_renew() throws {
         let test = Test()
-        let client = ARTRest(options: try AblyTests.commonAppSetup(for: test))
+        let client = Rest(options: try AblyTests.commonAppSetup(for: test))
         let auth = client.auth
 
         let tokenParams = ARTTokenParams()
         let tokenTtl = 3.0
         tokenParams.ttl = NSNumber(value: tokenTtl) // Seconds
 
-        let options: ARTClientOptions = try AblyTests.waitFor(timeout: testTimeout) { value in
+        let options: ClientOptions = try AblyTests.waitFor(timeout: testTimeout) { value in
             auth.requestToken(tokenParams, with: nil) { tokenDetails, error in
                 if let e = error {
                     XCTFail(e.localizedDescription)
@@ -706,7 +712,7 @@ class RestClientTests: XCTestCase {
                     return
                 }
 
-                let options: ARTClientOptions
+                let options: ClientOptions
                 do {
                     options = try AblyTests.clientOptions(for: test)
                 } catch {
@@ -730,7 +736,7 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        let rest = ARTRest(options: options)
+        let rest = Rest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
 
@@ -755,7 +761,7 @@ class RestClientTests: XCTestCase {
     // RSC14d
     func test__037__RestClient__Authentication__should_renew_the_token_when_it_has_expired() throws {
         let test = Test()
-        let client = ARTRest(options: try AblyTests.commonAppSetup(for: test))
+        let client = Rest(options: try AblyTests.commonAppSetup(for: test))
         let auth = client.auth
 
         let tokenParams = ARTTokenParams()
@@ -776,7 +782,7 @@ class RestClientTests: XCTestCase {
                     return
                 }
 
-                let options: ARTClientOptions
+                let options: ClientOptions
                 do {
                     options = try AblyTests.clientOptions(for: test)
                 } catch {
@@ -795,7 +801,7 @@ class RestClientTests: XCTestCase {
                     clientId: currentTokenDetails.clientId
                 )
 
-                let rest = ARTRest(options: options)
+                let rest = Rest(options: options)
                 testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
                 rest.internal.httpExecutor = testHTTPExecutor
 
@@ -822,13 +828,13 @@ class RestClientTests: XCTestCase {
 
     // TO3k7
 
-    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
     func test__051__RestClient__Host_Fallback__fallbackHostsUseDefault_option__allows_the_default_fallback_hosts_to_be_used_when__environment__is_not_production() {
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.environment = "not-production"
         options.fallbackHostsUseDefault = true
 
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         XCTAssertTrue(client.internal.options.fallbackHostsUseDefault)
         // Not production
         XCTAssertNotNil(client.internal.options.environment)
@@ -836,44 +842,44 @@ class RestClientTests: XCTestCase {
 
         let hosts = ARTFallbackHosts.hosts(from: client.internal.options)
         let fallback = ARTFallback(fallbackHosts: hosts, shuffleArray: ARTFallback_shuffleArray)
-        XCTAssertEqual(fallback.hosts.count, ARTDefault.fallbackHosts().count)
+        XCTAssertEqual(fallback.hosts.count, Default.fallbackHosts().count)
 
-        ARTDefault.fallbackHosts().forEach {
+        Default.fallbackHosts().forEach {
             expect(fallback.hosts).to(contain($0))
         }
     }
 
-    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
     func test__052__RestClient__Host_Fallback__fallbackHostsUseDefault_option__allows_the_default_fallback_hosts_to_be_used_when_a_custom_Realtime_or_REST_host_endpoint_is_being_used() {
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.restHost = "fake1.ably.io"
         options.realtimeHost = "fake2.ably.io"
         options.fallbackHostsUseDefault = true
 
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         XCTAssertTrue(client.internal.options.fallbackHostsUseDefault)
         // Custom
-        XCTAssertNotEqual(client.internal.options.restHost, ARTDefault.restHost())
-        XCTAssertNotEqual(client.internal.options.realtimeHost, ARTDefault.realtimeHost())
+        XCTAssertNotEqual(client.internal.options.restHost, Default.restHost())
+        XCTAssertNotEqual(client.internal.options.realtimeHost, Default.realtimeHost())
 
         let hosts = ARTFallbackHosts.hosts(from: client.internal.options)
         let fallback = ARTFallback(fallbackHosts: hosts, shuffleArray: ARTFallback_shuffleArray)
-        XCTAssertEqual(fallback.hosts.count, ARTDefault.fallbackHosts().count)
+        XCTAssertEqual(fallback.hosts.count, Default.fallbackHosts().count)
 
-        ARTDefault.fallbackHosts().forEach {
+        Default.fallbackHosts().forEach {
             expect(fallback.hosts).to(contain($0))
         }
     }
 
-    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
     func test__053__RestClient__Host_Fallback__fallbackHostsUseDefault_option__should_be_inactive_by_default() {
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         XCTAssertFalse(options.fallbackHostsUseDefault)
     }
 
-    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
     func test__054__RestClient__Host_Fallback__fallbackHostsUseDefault_option__should_never_accept_to_configure__fallbackHost__and_set__fallbackHostsUseDefault__to__true_() {
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         XCTAssertNil(options.fallbackHosts)
         XCTAssertFalse(options.fallbackHostsUseDefault)
 
@@ -893,8 +899,8 @@ class RestClientTests: XCTestCase {
     // RSC15b1
     func test__055__RestClient__Host_Fallback__Fallback_behavior__should_be_applied_when_restHost__port_and_tlsPort_has_not_been_set_to_an_explicit_value() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
-        let client = ARTRest(options: options)
+        let options = ClientOptions(key: "xxxx:xxxx")
+        let client = Rest(options: options)
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -920,9 +926,9 @@ class RestClientTests: XCTestCase {
     // RSC15b1
     func test__056__RestClient__Host_Fallback__Fallback_behavior__should_NOT_be_applied_when_ClientOptions_restHost_has_been_set() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.restHost = "fake.ably.io"
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -946,10 +952,10 @@ class RestClientTests: XCTestCase {
     // RSC15b1
     func test__057__RestClient__Host_Fallback__Fallback_behavior__should_NOT_be_applied_when_ClientOptions_port_has_been_set() {
         let test = Test()
-        let options = ARTClientOptions(token: "xxxx")
+        let options = ClientOptions(token: "xxxx")
         options.tls = false
         options.port = 999
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -973,9 +979,9 @@ class RestClientTests: XCTestCase {
     // RSC15b1
     func test__058__RestClient__Host_Fallback__Fallback_behavior__should_NOT_be_applied_when_ClientOptions_tlsPort_has_been_set() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.tlsPort = 999
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -999,9 +1005,9 @@ class RestClientTests: XCTestCase {
     // RSC15b2
     func test__059__RestClient__Host_Fallback__Fallback_behavior__should_be_applied_when_ClientOptions_fallbackHosts_is_provided() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.fallbackHosts = ["a.cocoa.ably", "b.cocoa.ably"]
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -1024,12 +1030,12 @@ class RestClientTests: XCTestCase {
     }
 
     // RSC15b3, RSC15g4
-    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
     func test__060__RestClient__Host_Fallback__Fallback_behavior__should_be_applied_when_ClientOptions_fallbackHosts_is_not_provided_and_deprecated_fallbackHostsUseDefault_is_on() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.fallbackHostsUseDefault = true
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -1054,9 +1060,9 @@ class RestClientTests: XCTestCase {
     // RSC15k
     func test__045__RestClient__Host_Fallback__failing_HTTP_requests_with_custom_endpoint_should_result_in_an_error_immediately() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.restHost = "fake.ably.io"
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -1077,9 +1083,9 @@ class RestClientTests: XCTestCase {
     // RSC15g1
     func test__061__RestClient__Host_Fallback__fallback_hosts_list_and_priorities__should_use_ClientOptions_fallbackHosts_when_list_is_provided() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.fallbackHosts = ["f.ably-realtime.com"]
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -1103,9 +1109,9 @@ class RestClientTests: XCTestCase {
     // RSC15g2
     func test__062__RestClient__Host_Fallback__fallback_hosts_list_and_priorities__should_use_environment_fallback_hosts_when_ClientOptions_environment_is_set_to_a_value_other_than__production__and_ClientOptions_fallbackHosts_is_not_set() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.environment = "test"
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -1130,9 +1136,9 @@ class RestClientTests: XCTestCase {
     // RSC15g2
     func test__063__RestClient__Host_Fallback__fallback_hosts_list_and_priorities__should_NOT_use_environment_fallback_hosts_when_ClientOptions_environment_is_set_to__production_() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.environment = "production"
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -1158,9 +1164,9 @@ class RestClientTests: XCTestCase {
     // RSC15g3
     func test__064__RestClient__Host_Fallback__fallback_hosts_list_and_priorities__should_use_default_fallback_hosts_when_both_ClientOptions_fallbackHosts_and_ClientOptions_environment_are_not_set() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.environment = ""
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -1184,13 +1190,13 @@ class RestClientTests: XCTestCase {
     }
 
     // RSC15g4
-    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
     func test__046__RestClient__Host_Fallback__applies_when_ClientOptions_fallbackHostsUseDefault_is_true() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.environment = "test"
         options.fallbackHostsUseDefault = true
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -1213,9 +1219,9 @@ class RestClientTests: XCTestCase {
     // RSC15g1
     func test__047__RestClient__Host_Fallback__won_t_apply_fallback_hosts_if_ClientOptions_fallbackHosts_array_is_empty() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.fallbackHosts = [] // to test TO3k6
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -1237,9 +1243,9 @@ class RestClientTests: XCTestCase {
     // RSC15g3
     func test__048__RestClient__Host_Fallback__won_t_apply_custom_fallback_hosts_if_ClientOptions_fallbackHosts_and_ClientOptions_environment_are_not_set__use_defaults_instead() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.fallbackHosts = nil
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -1265,10 +1271,10 @@ class RestClientTests: XCTestCase {
     // RSC15e
     func test__049__RestClient__Host_Fallback__every_new_HTTP_request_is_first_attempted_to_the_default_primary_host_rest_ably_io() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.httpMaxRetryCount = 1
         options.fallbackRetryTimeout = 1 // RSC15j exception
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -1292,16 +1298,16 @@ class RestClientTests: XCTestCase {
         }
 
         XCTAssertEqual(testHTTPExecutor.requests.count, 3)
-        XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests.at(0)?.url?.absoluteString, pattern: "//\(ARTDefault.restHost())"))
+        XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests.at(0)?.url?.absoluteString, pattern: "//\(Default.restHost())"))
         XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests.at(1)?.url?.absoluteString, pattern: "//[a-e].ably-realtime.com"))
-        XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests.at(2)?.url?.absoluteString, pattern: "//\(ARTDefault.restHost())"))
+        XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests.at(2)?.url?.absoluteString, pattern: "//\(Default.restHost())"))
     }
 
     // RSC15a
 
     // RSC15h
     func test__065__RestClient__Host_Fallback__retry_hosts_in_random_order__default_fallback_hosts_should_match__a_e__ably_realtime_com() {
-        let defaultFallbackHosts = ARTDefault.fallbackHosts()
+        let defaultFallbackHosts = Default.fallbackHosts()
         defaultFallbackHosts.forEach { host in
             expect(host).to(match("[a-e].ably-realtime.com"))
         }
@@ -1310,7 +1316,7 @@ class RestClientTests: XCTestCase {
 
     // RSC15i
     func test__066__RestClient__Host_Fallback__retry_hosts_in_random_order__environment_fallback_hosts_have_the_format__environment___a_e__fallback_ably_realtime_com() {
-        let environmentFallbackHosts = ARTDefault.fallbackHosts(withEnvironment: "sandbox")
+        let environmentFallbackHosts = Default.fallbackHosts(withEnvironment: "sandbox")
         environmentFallbackHosts.forEach { host in
             expect(host).to(match("sandbox-[a-e]-fallback.ably-realtime.com"))
         }
@@ -1319,9 +1325,9 @@ class RestClientTests: XCTestCase {
 
     func test__067__RestClient__Host_Fallback__retry_hosts_in_random_order__until_httpMaxRetryCount_has_been_reached() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.testOptions.shuffleArray = shuffleArrayInExpectedHostOrder
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         options.httpMaxRetryCount = 3
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
@@ -1342,14 +1348,14 @@ class RestClientTests: XCTestCase {
             NSRegularExpression.extract(request.url!.absoluteString, pattern: "[a-e].ably-realtime.com")
         }
         let resultFallbackHosts = testHTTPExecutor.requests.compactMap(extractHostname)
-        let expectedFallbackHosts = Array(expectedHostOrder.map { ARTDefault.fallbackHosts()[$0] }[0 ..< Int(options.httpMaxRetryCount)])
+        let expectedFallbackHosts = Array(expectedHostOrder.map { Default.fallbackHosts()[$0] }[0 ..< Int(options.httpMaxRetryCount)])
 
         XCTAssertEqual(resultFallbackHosts, expectedFallbackHosts)
     }
 
     func test__068__RestClient__Host_Fallback__retry_hosts_in_random_order__use_custom_fallback_hosts_if_set() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.httpMaxRetryCount = 10
         let customFallbackHosts = ["j.ably-realtime.com",
                                    "i.ably-realtime.com",
@@ -1358,7 +1364,7 @@ class RestClientTests: XCTestCase {
                                    "f.ably-realtime.com"]
         options.fallbackHosts = customFallbackHosts
         options.testOptions.shuffleArray = shuffleArrayInExpectedHostOrder
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -1385,10 +1391,10 @@ class RestClientTests: XCTestCase {
 
     func test__069__RestClient__Host_Fallback__retry_hosts_in_random_order__until_all_fallback_hosts_have_been_tried() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.httpMaxRetryCount = 10
         options.testOptions.shuffleArray = shuffleArrayInExpectedHostOrder
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -1402,25 +1408,25 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        XCTAssertEqual(testHTTPExecutor.requests.count, ARTDefault.fallbackHosts().count + 1)
+        XCTAssertEqual(testHTTPExecutor.requests.count, Default.fallbackHosts().count + 1)
 
         let extractHostname = { (request: URLRequest) in
             NSRegularExpression.extract(request.url!.absoluteString, pattern: "[a-e].ably-realtime.com")
         }
         let resultFallbackHosts = testHTTPExecutor.requests.compactMap(extractHostname)
-        let expectedFallbackHosts = expectedHostOrder.map { ARTDefault.fallbackHosts()[$0] }
+        let expectedFallbackHosts = expectedHostOrder.map { Default.fallbackHosts()[$0] }
 
         XCTAssertEqual(resultFallbackHosts, expectedFallbackHosts)
     }
 
     func test__070__RestClient__Host_Fallback__retry_hosts_in_random_order__until_httpMaxRetryCount_has_been_reached__if_custom_fallback_hosts_are_provided_in_ClientOptions_fallbackHosts__then_they_will_be_used_instead() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.httpMaxRetryCount = 4
         options.fallbackHosts = _fallbackHosts
         options.testOptions.shuffleArray = shuffleArrayInExpectedHostOrder
 
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -1448,12 +1454,12 @@ class RestClientTests: XCTestCase {
 
     func test__071__RestClient__Host_Fallback__retry_hosts_in_random_order__until_all_fallback_hosts_have_been_tried__if_custom_fallback_hosts_are_provided_in_ClientOptions_fallbackHosts__then_they_will_be_used_instead() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.httpMaxRetryCount = 10
         options.fallbackHosts = _fallbackHosts
         options.testOptions.shuffleArray = shuffleArrayInExpectedHostOrder
 
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -1467,7 +1473,7 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        XCTAssertEqual(testHTTPExecutor.requests.count, ARTDefault.fallbackHosts().count + 1)
+        XCTAssertEqual(testHTTPExecutor.requests.count, Default.fallbackHosts().count + 1)
 
         let extractHostname = { (request: URLRequest) in
             NSRegularExpression.extract(request.url!.absoluteString, pattern: "[f-j].ably-realtime.com")
@@ -1481,11 +1487,11 @@ class RestClientTests: XCTestCase {
 
     func test__072__RestClient__Host_Fallback__retry_hosts_in_random_order__all_fallback_requests_headers_should_contain__Host__header_with_fallback_host_address() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.httpMaxRetryCount = 10
         options.fallbackHosts = _fallbackHosts
 
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -1499,7 +1505,7 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        XCTAssertEqual(testHTTPExecutor.requests.count, ARTDefault.fallbackHosts().count + 1)
+        XCTAssertEqual(testHTTPExecutor.requests.count, Default.fallbackHosts().count + 1)
 
         let fallbackRequests = testHTTPExecutor.requests.filter {
             NSRegularExpression.match($0.url!.absoluteString, pattern: "[f-j].ably-realtime.com")
@@ -1514,11 +1520,11 @@ class RestClientTests: XCTestCase {
 
     func test__073__RestClient__Host_Fallback__retry_hosts_in_random_order__if_an_empty_array_of_fallback_hosts_is_provided__then_fallback_host_functionality_is_disabled() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.httpMaxRetryCount = 5
         options.fallbackHosts = []
 
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -1556,8 +1562,8 @@ class RestClientTests: XCTestCase {
     // RSC15d
     func test__050__RestClient__Host_Fallback__should_not_use_an_alternative_host_when_the_client_receives_an_bad_request() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
-        let client = ARTRest(options: options)
+        let options = ClientOptions(key: "xxxx:xxxx")
+        let client = Rest(options: options)
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -1628,7 +1634,7 @@ class RestClientTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         XCTAssertTrue(options.useBinaryProtocol)
 
-        let rest = ARTRest(options: options)
+        let rest = Rest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
@@ -1666,7 +1672,7 @@ class RestClientTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         options.useBinaryProtocol = false
 
-        let rest = ARTRest(options: options)
+        let rest = Rest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
@@ -1700,7 +1706,7 @@ class RestClientTests: XCTestCase {
     func test__010__RestClient__X_Ably_Version_must_be_included_in_all_REST_requests() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
@@ -1711,7 +1717,7 @@ class RestClientTests: XCTestCase {
                     return
                 }
 
-                // This test should not directly validate version against ARTDefault.version(), as
+                // This test should not directly validate version against Default.version(), as
                 // ultimately the version header has been derived from that value.
                 XCTAssertEqual(headerAblyVersion, "2")
 
@@ -1726,7 +1732,7 @@ class RestClientTests: XCTestCase {
     func test__011__RestClient__The_Agent_library_identifier_is_composed_of_a_series_of_key__value__entries_joined_by_spaces() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
         let channel = client.channels.get(test.uniqueChannelName())
@@ -1748,7 +1754,7 @@ class RestClientTests: XCTestCase {
         let options = try AblyTests.clientOptions(for: test)
         let tokenTtl = 0.1
         options.token = try getTestToken(for: test, ttl: tokenTtl)
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         waitUntil(timeout: testTimeout) { done in
             delay(tokenTtl + AblyTests.tokenExpiryTolerance) {
                 client.channels.get(test.uniqueChannelName()).publish(nil, data: "message") { error in
@@ -1756,7 +1762,7 @@ class RestClientTests: XCTestCase {
                         fail("Error is empty"); done()
                         return
                     }
-                    XCTAssertEqual(error.code, Int(ARTState.requestTokenFailed.rawValue))
+                    XCTAssertEqual(error.code, Int(State.requestTokenFailed.rawValue))
                     expect(error.message).to(contain("no means to renew the token is provided"))
                     done()
                 }
@@ -1770,7 +1776,7 @@ class RestClientTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         waitUntil(timeout: testTimeout) { done in
             URLSession.shared.dataTask(with: URL(string: "https://ably.io")!) { _, _, _ in
-                let rest = ARTRest(options: options)
+                let rest = Rest(options: options)
                 rest.channels.get(test.uniqueChannelName()).history { _, _ in
                     done()
                 }
@@ -1782,13 +1788,13 @@ class RestClientTests: XCTestCase {
     func test__014__RestClient__client_should_handle_error_messages_in_plaintext_and_HTML_format() {
         let request = URLRequest(url: URL(string: "https://www.example.com")!)
         waitUntil(timeout: testTimeout) { done in
-            let rest = ARTRest(key: "xxxx:xxxx")
+            let rest = Rest(key: "xxxx:xxxx")
             rest.internal.execute(request, completion: { response, _, error in
                 guard let contentType = response?.allHeaderFields["Content-Type"] as? String else {
                     fail("Response should have a Content-Type"); done(); return
                 }
                 expect(contentType).to(contain("text/html"))
-                guard let error = error as? ARTErrorInfo else {
+                guard let error = error as? ErrorInfo else {
                     fail("Error is nil"); done(); return
                 }
                 XCTAssertEqual(error.statusCode, 200)
@@ -1803,7 +1809,7 @@ class RestClientTests: XCTestCase {
     // RSC19a
 
     func test__086__RestClient__request__method_signature_and_arguments__should_add_query_parameters() throws {
-        let rest = ARTRest(key: "xxxx:xxxx")
+        let rest = Rest(key: "xxxx:xxxx")
         let mockHttpExecutor = MockHTTPExecutor()
         rest.internal.httpExecutor = mockHttpExecutor
         let params = ["foo": "1"]
@@ -1831,7 +1837,7 @@ class RestClientTests: XCTestCase {
     }
 
     func test__087__RestClient__request__method_signature_and_arguments__should_add_a_HTTP_body() throws {
-        let rest = ARTRest(key: "xxxx:xxxx")
+        let rest = Rest(key: "xxxx:xxxx")
         let mockHttpExecutor = MockHTTPExecutor()
         rest.internal.httpExecutor = mockHttpExecutor
         let bodyDict = ["blockchain": true]
@@ -1858,7 +1864,7 @@ class RestClientTests: XCTestCase {
     }
 
     func test__088__RestClient__request__method_signature_and_arguments__should_add_a_HTTP_header() throws {
-        let rest = ARTRest(key: "xxxx:xxxx")
+        let rest = Rest(key: "xxxx:xxxx")
         let mockHttpExecutor = MockHTTPExecutor()
         rest.internal.httpExecutor = mockHttpExecutor
         let headers = ["X-foo": "ok"]
@@ -1883,7 +1889,7 @@ class RestClientTests: XCTestCase {
     }
 
     func test__089__RestClient__request__method_signature_and_arguments__should_error_if_method_is_invalid() {
-        let rest = ARTRest(key: "xxxx:xxxx")
+        let rest = Rest(key: "xxxx:xxxx")
         let mockHTTPExecutor = MockHTTPExecutor()
         rest.internal.httpExecutor = mockHTTPExecutor
 
@@ -1892,7 +1898,7 @@ class RestClientTests: XCTestCase {
                 fail("Completion closure should not be called")
             }
         } catch let error as NSError {
-            XCTAssertEqual(error.code, ARTCustomRequestError.invalidMethod.rawValue)
+            XCTAssertEqual(error.code, CustomRequestError.invalidMethod.rawValue)
             expect(error.localizedDescription).to(contain("Method isn't valid"))
         }
 
@@ -1901,13 +1907,13 @@ class RestClientTests: XCTestCase {
                 fail("Completion closure should not be called")
             }
         } catch let error as NSError {
-            XCTAssertEqual(error.code, ARTCustomRequestError.invalidMethod.rawValue)
+            XCTAssertEqual(error.code, CustomRequestError.invalidMethod.rawValue)
             expect(error.localizedDescription).to(contain("Method isn't valid"))
         }
     }
 
     func test__090__RestClient__request__method_signature_and_arguments__should_error_if_path_is_invalid() {
-        let rest = ARTRest(key: "xxxx:xxxx")
+        let rest = Rest(key: "xxxx:xxxx")
         let mockHTTPExecutor = MockHTTPExecutor()
         rest.internal.httpExecutor = mockHTTPExecutor
 
@@ -1916,13 +1922,13 @@ class RestClientTests: XCTestCase {
                 fail("Completion closure should not be called")
             }
         } catch let error as NSError {
-            XCTAssertEqual(error.code, ARTCustomRequestError.invalidPath.rawValue)
+            XCTAssertEqual(error.code, CustomRequestError.invalidPath.rawValue)
             expect(error.localizedDescription).to(contain("Path cannot be empty"))
         }
     }
 
     func test__091__RestClient__request__method_signature_and_arguments__should_error_if_body_is_not_a_Dictionary_or_an_Array() {
-        let rest = ARTRest(key: "xxxx:xxxx")
+        let rest = Rest(key: "xxxx:xxxx")
         let mockHttpExecutor = MockHTTPExecutor()
         rest.internal.httpExecutor = mockHttpExecutor
 
@@ -1931,7 +1937,7 @@ class RestClientTests: XCTestCase {
                 fail("Completion closure should not be called")
             }
         } catch let error as NSError {
-            XCTAssertEqual(error.code, ARTCustomRequestError.invalidBody.rawValue)
+            XCTAssertEqual(error.code, CustomRequestError.invalidBody.rawValue)
             expect(error.localizedDescription).to(contain("should be a Dictionary or an Array"))
         }
     }
@@ -1939,7 +1945,7 @@ class RestClientTests: XCTestCase {
     func test__092__RestClient__request__method_signature_and_arguments__should_do_a_request_and_receive_a_valid_response() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let rest = ARTRest(options: options)
+        let rest = Rest(options: options)
         let channel = rest.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.publish("a", data: nil) { error in
@@ -1951,7 +1957,7 @@ class RestClientTests: XCTestCase {
         let proxyHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = proxyHTTPExecutor
 
-        var httpPaginatedResponse: ARTHTTPPaginatedResponse!
+        var httpPaginatedResponse: HTTPPaginatedResponse!
         waitUntil(timeout: testTimeout) { done in
             do {
                 try rest.request("get", path: "/channels/\(channel.name)", params: nil, body: nil, headers: nil) { paginatedResponse, error in
@@ -1989,7 +1995,7 @@ class RestClientTests: XCTestCase {
     func test__093__RestClient__request__method_signature_and_arguments__should_handle_response_failures() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let rest = ARTRest(options: options)
+        let rest = Rest(options: options)
         let channel = rest.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.publish("a", data: nil) { error in
@@ -2042,7 +2048,7 @@ class RestClientTests: XCTestCase {
         options.authParams?.append(URLQueryItem(name: "type", value: "text"))
         options.authParams?.append(URLQueryItem(name: "body", value: token))
 
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         waitUntil(timeout: testTimeout) { done in
             let channel = client.channels.get(test.uniqueChannelName())
             channel.publish("test", data: "test-data") { error in
@@ -2063,10 +2069,10 @@ class RestClientTests: XCTestCase {
 
     func test__095__RestClient__request_IDs__should_add__request_id__query_parameter() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.addRequestIds = true
 
-        let restA = ARTRest(options: options)
+        let restA = Rest(options: options)
         let mockHttpExecutor = MockHTTPExecutor()
         restA.internal.httpExecutor = mockHttpExecutor
         waitUntil(timeout: testTimeout) { done in
@@ -2084,7 +2090,7 @@ class RestClientTests: XCTestCase {
         mockHttpExecutor.reset()
 
         options.addRequestIds = false
-        let restB = ARTRest(options: options)
+        let restB = Rest(options: options)
         restB.internal.httpExecutor = mockHttpExecutor
         waitUntil(timeout: testTimeout) { done in
             restB.channels.get(test.uniqueChannelName()).publish(nil, data: "something") { error in
@@ -2102,12 +2108,12 @@ class RestClientTests: XCTestCase {
 
     func test__096__RestClient__request_IDs__should_remain_the_same_if_a_request_is_retried_to_a_fallback_host() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.httpMaxRetryCount = 5
         options.addRequestIds = true
         options.logLevel = .debug
 
-        let client = ARTRest(options: options)
+        let client = Rest(options: options)
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
@@ -2143,10 +2149,10 @@ class RestClientTests: XCTestCase {
 
     func test__097__RestClient__request_IDs__ErrorInfo_should_have__requestId__property() {
         let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
+        let options = ClientOptions(key: "xxxx:xxxx")
         options.addRequestIds = true
 
-        let rest = ARTRest(options: options)
+        let rest = Rest(options: options)
         let mockHttpExecutor = MockHTTPExecutor()
         mockHttpExecutor.simulateIncomingErrorOnNextRequest(NSError(domain: "ably-test", code: ARTErrorCode.invalidMessageDataOrEncoding.intValue, userInfo: ["Message": "Ably test message"]))
         rest.internal.httpExecutor = mockHttpExecutor

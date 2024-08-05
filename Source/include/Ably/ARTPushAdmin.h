@@ -4,15 +4,11 @@
 #import <Ably/ARTPushChannelSubscriptions.h>
 
 NS_ASSUME_NONNULL_BEGIN
-//@import Push;
 
-//
-//@interface test : RandomSwiftClass;
-//
-//@end
 /**
  The protocol upon which the `ARTPushAdmin` is implemented.
  */
+NS_SWIFT_NAME(PushAdminProtocol)
 @protocol ARTPushAdminProtocol
 
 /// :nodoc:
@@ -32,6 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Enables the management of device registrations and push notification subscriptions. Also enables the publishing of push notifications to devices.
  */
+NS_SWIFT_NAME(PushAdmin)
 @interface ARTPushAdmin : NSObject <ARTPushAdminProtocol>
 
 /**

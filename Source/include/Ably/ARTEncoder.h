@@ -12,17 +12,19 @@
 @class ARTPushChannelSubscription;
 @class ARTLocalDevice;
 
+NS_SWIFT_NAME(PushRecipient)
 @protocol ARTPushRecipient;
 
 /// :nodoc:
 typedef NS_ENUM(NSUInteger, ARTEncoderFormat) {
-    ARTEncoderFormatJson,
-    ARTEncoderFormatMsgPack
-};
+    ARTEncoderFormatJson NS_SWIFT_NAME(json),
+    ARTEncoderFormatMsgPack NS_SWIFT_NAME(msgPack)
+} NS_SWIFT_NAME(EncoderFormat);
 
 NS_ASSUME_NONNULL_BEGIN
 
 /// :nodoc:
+NS_SWIFT_NAME(Encoder)
 @protocol ARTEncoder
 
 - (NSString *)mimeType;

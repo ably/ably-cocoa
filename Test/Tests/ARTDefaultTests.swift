@@ -5,7 +5,7 @@ import Ably.ARTDefault // System under Test
 class ARTDefaultTests: XCTestCase {
     
     func testVersions() {
-        XCTAssertEqual(ARTDefault.apiVersion(), "2")
-        XCTAssertEqual(ARTDefault.libraryVersion(), "1.2.31")
+        XCTAssertEqual(Default.apiVersion(), "2")
+        XCTAssertEqual(Default.libraryVersion(), "1.2.31")
     }
 }

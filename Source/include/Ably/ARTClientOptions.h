@@ -12,6 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Passes additional client-specific properties to the REST `-[ARTRestProtocol initWithOptions:]` or the Realtime `-[ARTRealtimeProtocol initWithOptions:]`.
  */
+NS_SWIFT_NAME(ClientOptions)
 @interface ARTClientOptions : ARTAuthOptions
 
 /**
