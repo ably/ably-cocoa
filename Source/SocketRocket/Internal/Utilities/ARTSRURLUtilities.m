@@ -80,6 +80,12 @@ extern NSString *_Nullable ARTSRStreamNetworkServiceTypeFromURLRequest(NSURLRequ
             networkServiceType = NSStreamNetworkServiceTypeVoice;
             break;
 
+#if (TARGET_OS_MACCATALYST || TARGET_OS_MAC) && !TARGET_OS_TV && !TARGET_OS_IOS
+        case NSURLNetworkServiceTypeVoIP:
+            networkServiceType = NSStreamNetworkServiceTypeVoIP;
+            break;
+#endif
+
 #if _ARTSR_XCODE_VERSION_11_OR_LATER
         case NSURLNetworkServiceTypeAVStreaming:
             networkServiceType = NSStreamNetworkServiceTypeVideo;
