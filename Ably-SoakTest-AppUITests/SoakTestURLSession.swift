@@ -11,13 +11,13 @@ import Ably.Private
 
 class SoakTestURLSession : NSObject, ARTURLSession {
     let queue: DispatchQueue
-    var cancellables: [ARTCancellable] = []
+    var cancellables: [Cancellable] = []
 
     required init(_ queue: DispatchQueue) {
         self.queue = queue
     }
     
-    func get(_ request: URLRequest, completion callback: @escaping (HTTPURLResponse?, Data?, Error?) -> Void) -> ARTCancellable & NSObjectProtocol {
+    func get(_ request: URLRequest, completion callback: @escaping (HTTPURLResponse?, Data?, Error?) -> Void) -> Cancellable & NSObjectProtocol {
         let cancellable = CancellableInQueue(queue: queue)
         cancellables.append(cancellable)
 
@@ -62,7 +62,7 @@ class SoakTestURLSession : NSObject, ARTURLSession {
     }
 }
 
-class CancellableInQueue : NSObject, ARTCancellable {
+class CancellableInQueue : NSObject, Cancellable {
     let queue: DispatchQueue
     var cancelled = false
 

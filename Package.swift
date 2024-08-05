@@ -47,8 +47,7 @@ let package = Package(
                 .headerSearchPath("SocketRocket/Internal/Delegate"),
                 .headerSearchPath("SocketRocket/Internal/IOConsumer"),
             ]
-        ),
-        .target(name: "Push", dependencies: ["Ably"], path: "PushSwift")
+        )
     ]
 )
 
