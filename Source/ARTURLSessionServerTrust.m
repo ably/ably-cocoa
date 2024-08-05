@@ -14,7 +14,15 @@
         _queue = queue;
         NSURLSessionConfiguration *config = [NSURLSessionConfiguration ephemeralSessionConfiguration];
 
+        // version check required for macOS 10.15
+#if TARGET_OS_MACCATALYST
         config.TLSMinimumSupportedProtocolVersion = tls_protocol_version_TLSv12;
+#else
+        if (@available(iOS 13.0, macOS 10.15, tvOS 13.0, *)) {
+            config.TLSMinimumSupportedProtocolVersion = tls_protocol_version_TLSv12;
+        } else {
+        }
+#endif
         _session = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:nil];
     }
     return self;
