@@ -223,7 +223,7 @@ class PushAdminTests: XCTestCase {
         }
     }
 
-    func skipped__test__002__publish__should_publish_successfully() throws {
+    func test__002__publish__should_publish_successfully() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let realtime = Realtime(options: options)
@@ -257,7 +257,7 @@ class PushAdminTests: XCTestCase {
         }
     }
 
-    func skipped__test__003__publish__should_fail_with_a_bad_recipient() throws {
+    func test__003__publish__should_fail_with_a_bad_recipient() throws {
         let test = Test()
         let realtime = Realtime(options: try AblyTests.commonAppSetup(for: test))
         defer { realtime.dispose(); realtime.close() }
@@ -285,7 +285,7 @@ class PushAdminTests: XCTestCase {
         }
     }
 
-    func skipped__test__004__publish__should_fail_with_an_empty_recipient() throws {
+    func test__004__publish__should_fail_with_an_empty_recipient() throws {
         let test = Test()
         let realtime = Realtime(options: try AblyTests.commonAppSetup(for: test))
         defer { realtime.dispose(); realtime.close() }

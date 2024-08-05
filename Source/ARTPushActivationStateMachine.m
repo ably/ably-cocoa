@@ -37,6 +37,7 @@ NS_ASSUME_NONNULL_END
     ARTPushActivationState *_current;
     dispatch_queue_t _queue;
     dispatch_queue_t _userQueue;
+    NSMutableArray<ARTPushActivationEvent *> *_pendingEvents;
 }
 
 - (instancetype)initWithRest:(ARTRestInternal *const)rest
@@ -74,6 +75,14 @@ NS_ASSUME_NONNULL_END
         }
     }
     return self;
+}
+
+- (NSArray<ARTPushActivationEvent *> *)pendingEvents {
+    __block NSArray<ARTPushActivationEvent *> *ret;
+    dispatch_sync(_queue, ^{
+        ret = [self->_pendingEvents copy];
+    });
+    return ret;
 }
 
 - (ARTPushActivationEvent *)lastEvent {
@@ -132,7 +141,7 @@ dispatch_async(_queue, ^{
         if (maybeNext == nil) {
             break;
         }
-        [_pendingEvents art_dequeue];
+        [_pendingEvents art_dequeue]; // consuming event
 
         ARTLogDebug(_logger, @"%@: transition: %@ -> %@", NSStringFromClass(self.class), NSStringFromClass(_current.class), NSStringFromClass(maybeNext.class));
         if (self.transitions) self.transitions(event, _current, maybeNext);

@@ -33,6 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (ARTErrorInfo *)errorReason_nosync;
 - (NSString * _Nullable)clientId_nosync;
 - (BOOL)canBeReattached;
+- (BOOL)shouldAttach;
 
 @property (readonly, weak, nonatomic) ARTRealtimeInternal *realtime; // weak because realtime owns self
 @property (readonly, nonatomic) ARTRestChannelInternal *restChannel;
@@ -47,7 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTRealtimeChannelOptions *)options logger:(ARTInternalLog *)logger;
 
-- (void)reattachWithParams:(ARTAttachRequestParams *)params;
+- (void)proceedAttachDetachWithParams:(ARTAttachRequestParams *)params;
 
 - (void)_attach:(nullable ARTCallback)callback;
 - (void)_detach:(nullable ARTCallback)callback;
@@ -76,7 +77,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setSuspended:(ARTChannelStateChangeParams *)params;
 - (void)setFailed:(ARTChannelStateChangeParams *)params;
-- (void)throwOnDisconnectedOrFailed;
 
 - (void)detachChannel:(ARTChannelStateChangeParams *)params;
 

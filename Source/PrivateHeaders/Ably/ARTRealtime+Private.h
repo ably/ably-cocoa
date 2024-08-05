@@ -51,7 +51,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 // State properties
 - (BOOL)shouldSendEvents;
-- (BOOL)shouldQueueEvents;
 
 // Message sending
 - (void)sendQueuedMessages;

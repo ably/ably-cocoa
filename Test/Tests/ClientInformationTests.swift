@@ -9,7 +9,7 @@ final class ClientInformationTests: XCTestCase {
         
         XCTAssertEqual(agents.keys.count, 2)
         
-        XCTAssertEqual(agents["ably-cocoa"], "1.2.31")
+        XCTAssertEqual(agents["ably-cocoa"], "1.2.33")
         
         #if os(iOS)
         XCTAssertTrue(agents.keys.contains("iOS"))
@@ -27,7 +27,7 @@ final class ClientInformationTests: XCTestCase {
     // CR3, CR3b
     func testAgentIdentifierWithAdditionalAgents_withNilAdditionalAgents() {
         let expectedIdentifier = [
-            "ably-cocoa/1.2.31",
+            "ably-cocoa/1.2.33",
             Default.platformAgent()
         ].sorted().joined(separator: " ")
         
@@ -42,7 +42,7 @@ final class ClientInformationTests: XCTestCase {
         ]
         
         let expectedIdentifier = [
-            "ably-cocoa/1.2.31",
+            "ably-cocoa/1.2.33",
             "demolib/0.0.1",
             "morelib",
             Default.platformAgent()

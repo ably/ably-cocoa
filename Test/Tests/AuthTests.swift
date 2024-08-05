@@ -1000,7 +1000,7 @@ class AuthTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             realtime.connection.once(.failed) { stateChange in
-                XCTAssertEqual(stateChange.reason?.code, ARTErrorCode.invalidCredentials.intValue)
+                XCTAssertEqual(stateChange.reason?.code, ARTErrorCode.incompatibleCredentials.intValue)
                 done()
             }
             realtime.connect()
@@ -1914,7 +1914,7 @@ class AuthTests: XCTestCase {
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
-                expect(error.message).to(contain("mismatched clientId"))
+                expect(error.message).to(contain("invalid clientId"))
                 done()
             }
         }
@@ -3430,7 +3430,7 @@ class AuthTests: XCTestCase {
 
     // RSA10k
 
-    func skipped__test__115__authorize__server_time_offset__should_obtain_server_time_once_and_persist_the_offset_from_the_local_clock() throws {
+    func test__115__authorize__server_time_offset__should_obtain_server_time_once_and_persist_the_offset_from_the_local_clock() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let rest = Rest(options: options)
@@ -4058,7 +4058,7 @@ class AuthTests: XCTestCase {
         expect { try ARTTokenDetails.fromJson("[]" as JsonCompatible) }.to(throwError())
     }
 
-    func skipped__test__140__JWT_and_realtime__client_initialized_with_a_JWT_token_in_ClientOptions__with_valid_credentials__pulls_stats_successfully() throws {
+    func test__140__JWT_and_realtime__client_initialized_with_a_JWT_token_in_ClientOptions__with_valid_credentials__pulls_stats_successfully() throws {
         let test = Test()
         let options = try AblyTests.clientOptions(for: test)
         options.token = try getJWTToken(for: test)
@@ -4210,7 +4210,7 @@ class AuthTests: XCTestCase {
 
     // RSA8g
 
-    func skipped__test__146__JWT_and_realtime__when_using_authCallback__with_valid_credentials__pulls_stats_successfully() throws {
+    func test__146__JWT_and_realtime__when_using_authCallback__with_valid_credentials__pulls_stats_successfully() throws {
         let test = Test()
         let options = try AblyTests.clientOptions(for: test)
         options.authCallback = { _, completion in

@@ -647,12 +647,6 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
-            channel2.presence.enterClient("Client 2", data: nil) { error in
-                XCTAssertNil(error)
-                XCTAssertEqual(client2.internal.queuedMessages.count, 0)
-                XCTAssertEqual(channel2.state, RealtimeChannelState.attached)
-                partialDone()
-            }
             channel2.presence.subscribe(.enter) { _ in
                 if channel2.presence.syncComplete {
                     XCTAssertEqual(channel2.internal.presence.members.count, 2)
@@ -662,8 +656,13 @@ class RealtimeClientPresenceTests: XCTestCase {
                 channel2.presence.unsubscribe()
                 partialDone()
             }
-
-            XCTAssertEqual(client2.internal.queuedMessages.count, 1)
+            channel2.presence.enterClient("Client 2", data: nil) { error in
+                XCTAssertNil(error)
+                XCTAssertEqual(client2.internal.queuedMessages.count, 0)
+                XCTAssertEqual(channel2.state, RealtimeChannelState.attached)
+                partialDone()
+            }
+            XCTAssertEqual(channel2.internal.presence.pendingPresence.count, 1)
             XCTAssertFalse(channel2.presence.syncComplete)
             XCTAssertEqual(channel2.internal.presence.members.count, 0)
         }
@@ -894,16 +893,22 @@ class RealtimeClientPresenceTests: XCTestCase {
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(test.uniqueChannelName())
 
+        // Initialized
         XCTAssertEqual(channel.state, RealtimeChannelState.initialized)
         channel.presence.subscribe { _ in }
         XCTAssertEqual(channel.state, RealtimeChannelState.attaching)
         expect(channel.state).toEventually(equal(RealtimeChannelState.attached), timeout: testTimeout)
-
+        
+        // Detaching
+        channel.detach()
+        channel.presence.subscribe { _ in }
+        XCTAssertEqual(channel.state, RealtimeChannelState.detaching)
+        expect(channel.state).toEventually(equal(RealtimeChannelState.attached), timeout: testTimeout)
+        
+        // Detached
         channel.detach()
         expect(channel.state).toEventually(equal(RealtimeChannelState.detached), timeout: testTimeout)
-
-        channel.presence.subscribe(.present) { _ in }
-        XCTAssertEqual(channel.state, RealtimeChannelState.attaching)
+        channel.presence.subscribe { _ in }
         expect(channel.state).toEventually(equal(RealtimeChannelState.attached), timeout: testTimeout)
     }
 
@@ -920,12 +925,10 @@ class RealtimeClientPresenceTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             channel.presence.subscribe(attachCallback: { errorInfo in
                 XCTAssertNotNil(errorInfo)
-
-                channel.presence.subscribe(.enter, onAttach: { errorInfo in
-                    XCTAssertNotNil(errorInfo)
-                    done()
-                }) { _ in }
-            }) { _ in }
+                done()
+            }, callback: { _ in
+                fail("Should not be called")
+            })
         }
     }
 
@@ -938,14 +941,13 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             let error = AblyTests.newErrorProtocolMessage()
-            channel.presence.subscribe(attachCallback: { errorInfo in
-                XCTAssertNotNil(errorInfo)
-
-                channel.presence.subscribe(.enter, onAttach: { errorInfo in
-                    XCTAssertNotNil(errorInfo)
-                    done()
-                }) { _ in }
-            }) { _ in }
+            channel.presence.subscribe(attachCallback: { error in
+                XCTAssertEqual(channel.state, RealtimeChannelState.failed)
+                XCTAssertNotNil(error)
+                done()
+            }, callback: { _ in
+                fail("Should not be called")
+            })
             AblyTests.queue.async {
                 channel.internal.onError(error)
             }
@@ -1698,7 +1700,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 return protocolMessage
             }
             channel.internal.presence.testSuite_injectIntoMethod(after: #selector(ARTRealtimePresenceInternal.endSync)) {
-                XCTAssertFalse(channel.internal.presence.syncInProgress)
+                XCTAssertFalse(channel.internal.presence.syncInProgress_nosync())
                 XCTAssertEqual(channel.internal.presence.members.count, 19)
                 XCTAssertEqual(channel.internal.presence.members.filter { _, presence in presence.clientId == "user10" && presence.action == .present }.count, 1) // LEAVE for user10 is ignored, because it's timestamped before SYNC
                 XCTAssertEqual(channel.internal.presence.members.filter { _, presence in presence.clientId == "user12" && presence.action == .present }.count, 0) // LEAVE for user12 is not ignored, because it's timestamped after SYNC
@@ -1757,7 +1759,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             channel.internal.presence.testSuite_injectIntoMethod(after: #selector(ARTRealtimePresenceInternal.endSync)) {
-                XCTAssertFalse(channel.internal.presence.syncInProgress)
+                XCTAssertFalse(channel.internal.presence.syncInProgress_nosync())
                 partialDone()
             }
             channel.attach { error in
@@ -1833,35 +1835,37 @@ class RealtimeClientPresenceTests: XCTestCase {
             fail("TestProxyTransport is not set"); return
         }
         
+        var leaveMessage: ProtocolMessage!
+        
+        let hook = channel.presence.internal.testSuite_injectIntoMethod(before: #selector(ARTRealtimePresenceInternal.endSync)) {
+            if leaveMessage != nil {
+                transport.receive(leaveMessage)
+                let absentMember = channel.internal.presence.members.first { _, m in m.action == .absent }.map { $0.value }
+                XCTAssertNotNil(absentMember)
+                XCTAssertEqual(absentMember?.clientId, "user11")
+            }
+        }
+        defer { hook.remove() }
+        
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
 
             channel.presence.subscribe(.leave) { leave in
                 XCTAssertEqual(leave.clientId, "user11")
-                let absentMember = channel.internal.presence.members.first { _, m in m.clientId == "user11" }.map { $0.value }
-                if channel.internal.presence.syncInProgress {
-                    XCTAssertEqual(absentMember?.action, .absent)
-                } else {
-                    XCTAssertEqual(absentMember?.action, .leave)
-                }
                 partialDone()
             }
 
             channel.attach { error in
                 XCTAssertNil(error)
-                XCTAssertTrue(channel.internal.presence.syncInProgress)
-
-                // Inject a fabricated Presence message
-                let leaveMessage = ProtocolMessage()
+                
+                // Initialize a fabricated Presence message to inject it before second sync ends
+                leaveMessage = ProtocolMessage()
                 leaveMessage.action = .presence
                 leaveMessage.channel = channel.name
                 leaveMessage.timestamp = Date()
                 leaveMessage.presence = [
                     PresenceMessage(clientId: "user11", action: .leave, connectionId: "another", id: "another:123:0", timestamp: Date()),
                 ]
-                channel.internalAsync { _ in
-                    transport.receive(leaveMessage)
-                }
                 partialDone()
             }
         }
@@ -2327,73 +2331,6 @@ class RealtimeClientPresenceTests: XCTestCase {
             channel.presence.leave(nil) { error in
                 XCTAssertEqual(error?.code, Int(ARTErrorCode.invalidClientId.rawValue))
                 done()
-            }
-        }
-    }
-
-    // RTP6
-
-    // RTP6c
-    func test__075__Presence__subscribe__should_implicitly_attach_the_channel() throws {
-        let test = Test()
-        let client = Realtime(options: try AblyTests.commonAppSetup(for: test))
-        defer { client.dispose(); client.close() }
-        let channel = client.channels.get(test.uniqueChannelName())
-
-        XCTAssertEqual(channel.state, RealtimeChannelState.initialized)
-        channel.presence.subscribe { _ in }
-        XCTAssertEqual(channel.state, RealtimeChannelState.attaching)
-        expect(channel.state).toEventually(equal(RealtimeChannelState.attached), timeout: testTimeout)
-
-        channel.detach()
-        expect(channel.state).toEventually(equal(RealtimeChannelState.detached), timeout: testTimeout)
-
-        channel.presence.subscribe(.present) { _ in }
-        XCTAssertEqual(channel.state, RealtimeChannelState.attaching)
-        expect(channel.state).toEventually(equal(RealtimeChannelState.attached), timeout: testTimeout)
-    }
-
-    // RTP6c
-    func test__076__Presence__subscribe__should_result_in_an_error_if_the_channel_is_in_the_FAILED_state() throws {
-        let test = Test()
-        let client = Realtime(options: try AblyTests.commonAppSetup(for: test))
-        defer { client.dispose(); client.close() }
-        let channel = client.channels.get(test.uniqueChannelName())
-
-        let protocolError = AblyTests.newErrorProtocolMessage()
-        AblyTests.queue.async {
-            channel.internal.onError(protocolError)
-        }
-
-        waitUntil(timeout: testTimeout) { done in
-            channel.presence.subscribe(attachCallback: { error in
-                XCTAssertEqual(channel.state, RealtimeChannelState.failed)
-                XCTAssertNotNil(error)
-                done()
-            }, callback: { _ in
-                fail("Should not be called")
-            })
-        }
-    }
-
-    // RTP6c
-    func test__077__Presence__subscribe__should_result_in_an_error_if_the_channel_moves_to_the_FAILED_state() throws {
-        let test = Test()
-        let client = Realtime(options: try AblyTests.commonAppSetup(for: test))
-        defer { client.dispose(); client.close() }
-        let channel = client.channels.get(test.uniqueChannelName())
-
-        waitUntil(timeout: testTimeout) { done in
-            let error = AblyTests.newErrorProtocolMessage()
-            channel.presence.subscribe(attachCallback: { error in
-                XCTAssertEqual(channel.state, RealtimeChannelState.failed)
-                XCTAssertNotNil(error)
-                done()
-            }, callback: { _ in
-                fail("Should not be called")
-            })
-            AblyTests.queue.async {
-                channel.internal.onError(error)
             }
         }
     }
@@ -2995,7 +2932,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 done()
             }
             XCTAssertEqual(client.connection.state, RealtimeConnectionState.connecting)
-            XCTAssertEqual(client.internal.queuedMessages.count, 1)
+            XCTAssertEqual(channel.internal.presence.pendingPresence.count, 1)
         }
     }
 
@@ -3069,7 +3006,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enterClient("user", data: nil) { error in
-                XCTAssertEqual(error?.code, ARTErrorCode.invalidTransportHandle.intValue)
+                XCTAssertEqual(error?.code, ARTErrorCode.unableToEnterPresenceChannelInvalidState.intValue)
                 XCTAssertEqual(channel.presence.internal.pendingPresence.count, 0)
                 done()
             }
@@ -3353,6 +3290,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             expect(client.connection.state).toEventually(equal(.closed), timeout: testTimeout)
         }
         let channel = client.channels.get(channelName)
+        channel.attach()
         expect(channel.internal.presence.syncInProgress).toEventually(beTrue(), timeout: testTimeout)
         
         waitUntil(timeout: testTimeout) { done in

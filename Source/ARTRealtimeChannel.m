@@ -305,6 +305,17 @@ dispatch_sync(_queue, ^{
     }
 }
 
+- (BOOL)shouldAttach {
+    switch (self.state_nosync) {
+        case ARTRealtimeChannelInitialized:
+        case ARTRealtimeChannelDetaching:
+        case ARTRealtimeChannelDetached:
+            return YES;
+        default:
+            return NO;
+    }
+}
+
 - (ARTErrorInfo *)errorReason_nosync {
     return _errorReason;
 }
@@ -397,21 +408,11 @@ dispatch_sync(_queue, ^{
     }
 }
 
-- (void)throwOnDisconnectedOrFailed {
-    if (self.realtime.connection.state_nosync == ARTRealtimeFailed || self.realtime.connection.state_nosync == ARTRealtimeDisconnected) {
-        [ARTException raise:@"realtime cannot perform action in disconnected or failed state" format:@"state: %d", (int)self.realtime.connection.state_nosync];
-    }
-}
-
-- (ARTEventListener *)subscribe:(ARTMessageCallback)callback {
-    return [self subscribeWithAttachCallback:nil callback:callback];
-}
-
-- (ARTEventListener *)subscribeWithAttachCallback:(ARTCallback)onAttach callback:(ARTMessageCallback)cb {
+- (ARTEventListener *)_subscribe:(nullable NSString *)name onAttach:(nullable ARTCallback)onAttach callback:(nullable ARTMessageCallback)cb {
     if (cb) {
         ARTMessageCallback userCallback = cb;
         cb = ^(ARTMessage *_Nonnull m) {
-            if (self.state_nosync != ARTRealtimeChannelAttached) { //RTL17
+            if (self.state_nosync != ARTRealtimeChannelAttached) { // RTL17
                 return;
             }
             dispatch_async(self->_userQueue, ^{
@@ -431,53 +432,33 @@ dispatch_sync(_queue, ^{
     __block ARTEventListener *listener = nil;
 dispatch_sync(_queue, ^{
     if (self.state_nosync == ARTRealtimeChannelFailed) {
-        if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in FAILED state."]);
-        ARTLogWarn(self.logger, @"R:%p C:%p (%@) subscribe has been ignored (attempted to subscribe while channel is in FAILED state)", self->_realtime, self, self.name);
+        if (onAttach) onAttach([ARTErrorInfo createWithCode:ARTErrorChannelOperationFailedInvalidState message:@"attempted to subscribe while channel is in FAILED state."]);
+        ARTLogWarn(self.logger, @"R:%p C:%p (%@) subscribe of '%@' has been ignored (attempted to subscribe while channel is in FAILED state)", self->_realtime, self, self.name, name == nil ? @"all" : name);
         return;
     }
-    if (self.state_nosync == ARTRealtimeChannelInitialized) { //RTL7c
+    if (self.shouldAttach) { // RTL7c
         [self _attach:onAttach];
     }
-    listener = [self.messagesEventEmitter on:cb];
-    ARTLogVerbose(self.logger, @"R:%p C:%p (%@) subscribe to all events", self->_realtime, self, self.name);
+    listener = name == nil ? [self.messagesEventEmitter on:cb] : [self.messagesEventEmitter on:name callback:cb];
+    ARTLogVerbose(self.logger, @"R:%p C:%p (%@) subscribe to '%@' event(s)", self->_realtime, self, self.name, name == nil ? @"all" : name);
 });
     return listener;
+}
+
+- (ARTEventListener *)subscribe:(ARTMessageCallback)cb {
+    return [self _subscribe:nil onAttach:nil callback:cb];
+}
+
+- (ARTEventListener *)subscribeWithAttachCallback:(ARTCallback)onAttach callback:(ARTMessageCallback)cb {
+    return [self _subscribe:nil onAttach:onAttach callback:cb];
 }
 
 - (ARTEventListener *)subscribe:(NSString *)name callback:(ARTMessageCallback)cb {
-    return [self subscribe:name onAttach:nil callback:cb];
+    return [self _subscribe:name onAttach:nil callback:cb];
 }
 
 - (ARTEventListener *)subscribe:(NSString *)name onAttach:(ARTCallback)onAttach callback:(ARTMessageCallback)cb {
-    if (cb) {
-        ARTMessageCallback userCallback = cb;
-        cb = ^(ARTMessage *_Nonnull m) {
-            dispatch_async(self->_userQueue, ^{
-                userCallback(m);
-            });
-        };
-    }
-    if (onAttach) {
-        ARTCallback userOnAttach = onAttach;
-        onAttach = ^(ARTErrorInfo *_Nullable e) {
-            dispatch_async(self->_userQueue, ^{
-                userOnAttach(e);
-            });
-        };
-    }
-
-    __block ARTEventListener *listener = nil;
-dispatch_sync(_queue, ^{
-    if (self.state_nosync == ARTRealtimeChannelFailed) {
-        if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in FAILED state."]);
-        ARTLogWarn(self.logger, @"R:%p C:%p (%@) subscribe of '%@' has been ignored (attempted to subscribe while channel is in FAILED state)", self->_realtime, self, self.name, name);
-        return;
-    }
-    [self _attach:onAttach];
-    listener = [self.messagesEventEmitter on:name callback:cb];
-    ARTLogVerbose(self.logger, @"R:%p C:%p (%@) subscribe to event '%@'", self->_realtime, self, self.name, name);
-});
-    return listener;
+    return [self _subscribe:name onAttach:onAttach callback:cb];
 }
 
 - (void)unsubscribe {
@@ -873,6 +854,15 @@ dispatch_sync(_queue, ^{
     }
 }
 
+- (void)proceedAttachDetachWithParams:(ARTAttachRequestParams *)params {
+    if (self.state_nosync == ARTChannelEventDetaching) {
+        ARTLogDebug(self.logger, @"RT:%p C:%p (%@) %@ proceeding with detach", _realtime, self, self.name, ARTRealtimeChannelStateToStr(self.state_nosync));
+        [self internalDetach:nil];
+    } else {
+        [self reattachWithParams:params];
+    }
+}
+
 - (void)internalAttach:(ARTCallback)callback withParams:(ARTAttachRequestParams *)params {
     switch (self.state_nosync) {
         case ARTRealtimeChannelDetaching: {
@@ -896,13 +886,15 @@ dispatch_sync(_queue, ^{
 
     if (callback) [_attachedEventEmitter once:callback];
     // Set state: Attaching
-    const ARTState state = params.reason ? ARTStateError : ARTStateOk;
-    ARTChannelStateChangeParams *const stateChangeParams = [[ARTChannelStateChangeParams alloc] initWithState:state errorInfo:params.reason storeErrorInfo:NO retryAttempt:params.retryAttempt];
-    [self performTransitionToState:ARTRealtimeChannelAttaching withParams:stateChangeParams];
-    [self attachAfterChecks:callback];
+    if (self.state_nosync != ARTRealtimeChannelAttaching) {
+        const ARTState state = params.reason ? ARTStateError : ARTStateOk;
+        ARTChannelStateChangeParams *const stateChangeParams = [[ARTChannelStateChangeParams alloc] initWithState:state errorInfo:params.reason storeErrorInfo:NO retryAttempt:params.retryAttempt];
+        [self performTransitionToState:ARTRealtimeChannelAttaching withParams:stateChangeParams];
+    }
+    [self attachAfterChecks];
 }
 
-- (void)attachAfterChecks:(ARTCallback)callback {
+- (void)attachAfterChecks {
     ARTProtocolMessage *attachMessage = [[ARTProtocolMessage alloc] init];
     attachMessage.action = ARTProtocolMessageAttach;
     attachMessage.channel = self.name;
@@ -949,17 +941,6 @@ dispatch_sync(_queue, ^{
             ARTLogDebug(self.logger, @"RT:%p C:%p (%@) can't detach when not attached", _realtime, self, self.name);
             if (callback) callback(nil);
             return;
-        case ARTRealtimeChannelAttaching: {
-            ARTLogDebug(self.logger, @"RT:%p C:%p (%@) waiting for the completion of the attaching operation", _realtime, self, self.name);
-            [_attachedEventEmitter once:^(ARTErrorInfo *errorInfo) {
-                if (callback && errorInfo) {
-                    callback(errorInfo);
-                    return;
-                }
-                [self _detach:callback];
-            }];
-            return;
-        }
         case ARTRealtimeChannelDetaching:
             ARTLogDebug(self.logger, @"RT:%p C:%p (%@) already detaching", _realtime, self, self.name);
             if (callback) [_detachedEventEmitter once:callback];
@@ -982,6 +963,27 @@ dispatch_sync(_queue, ^{
         default:
             break;
     }
+    [self internalDetach:callback];
+}
+
+- (void)internalDetach:(ARTCallback)callback {
+    switch (self.state_nosync) {
+        case ARTRealtimeChannelAttaching: {
+            ARTLogDebug(self.logger, @"RT:%p C:%p (%@) waiting for the completion of the attaching operation", _realtime, self, self.name);
+            [_attachedEventEmitter once:^(ARTErrorInfo *errorInfo) {
+                if (callback && errorInfo) {
+                    callback(errorInfo);
+                    return;
+                }
+                [self _detach:callback];
+            }];
+            return;
+        }
+        default:
+            break;
+    }
+
+    _errorReason = nil;
 
     if (![self.realtime isActive]) {
         ARTLogDebug(self.logger, @"RT:%p C:%p (%@) can't detach when not in an active state", _realtime, self, self.name);
@@ -994,10 +996,10 @@ dispatch_sync(_queue, ^{
     ARTChannelStateChangeParams *const params = [[ARTChannelStateChangeParams alloc] initWithState:ARTStateOk];
     [self performTransitionToState:ARTRealtimeChannelDetaching withParams:params];
 
-    [self detachAfterChecks:callback];
+    [self detachAfterChecks];
 }
 
-- (void)detachAfterChecks:(ARTCallback)callback {
+- (void)detachAfterChecks {
     ARTProtocolMessage *detachMessage = [[ARTProtocolMessage alloc] init];
     detachMessage.action = ARTProtocolMessageDetach;
     detachMessage.channel = self.name;
@@ -1015,18 +1017,8 @@ dispatch_sync(_queue, ^{
         [self performTransitionToState:ARTRealtimeChannelAttached withParams:params];
         [self->_detachedEventEmitter emit:nil with:errorInfo];
     }] startTimer];
-
-    if (![self.realtime shouldQueueEvents]) {
-        ARTEventListener *reconnectedListener = [self.realtime.connectedEventEmitter once:^(NSNull *n) {
-            // Disconnected and connected while detaching, re-detach.
-            [self detachAfterChecks:callback];
-        }];
-        [_detachedEventEmitter once:^(ARTErrorInfo *err) {
-            [self.realtime.connectedEventEmitter off:reconnectedListener];
-        }];
-    }
-
-    if (self.presence.syncInProgress) {
+    
+    if (self.presence.syncInProgress_nosync) {
         [self.presence failsSync:[ARTErrorInfo createWithCode:ARTErrorChannelOperationFailed message:@"channel is being DETACHED"]];
     }
 }
@@ -1074,10 +1066,7 @@ dispatch_sync(_queue, ^{
     for (ARTMessage *message in messages) {
         size += [message messageSize];
     }
-    NSInteger maxSize = [ARTDefault maxMessageSize];
-    if (self.realtime.connection.maxMessageSize) {
-        maxSize = self.realtime.connection.maxMessageSize;
-    }
+    NSInteger maxSize = _realtime.connection.maxMessageSize;
     return size > maxSize;
 }
 

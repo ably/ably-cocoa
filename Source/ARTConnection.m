@@ -1,10 +1,12 @@
 #import "ARTConnection+Private.h"
-
+#import "ARTDefault.h"
 #import "ARTRealtime+Private.h"
 #import "ARTEventEmitter+Private.h"
 #import "ARTQueuedDealloc.h"
 #import "ARTRealtimeChannels+Private.h"
 #import "ARTRealtimeChannel+Private.h"
+#import "ARTDefault+Private.h"
+#import "ARTClientOptions+Private.h"
 
 #define IsInactiveConnectionState(state) (state == ARTRealtimeClosing || state == ARTRealtimeClosed || state == ARTRealtimeFailed || state == ARTRealtimeSuspended)
 
@@ -192,6 +194,12 @@ dispatch_sync(_queue, ^{
 - (NSString *)key_nosync {
     return _key;
 } 
+
+- (NSInteger)maxMessageSize {
+    if (_maxMessageSize)
+        return _maxMessageSize;
+    return _realtime.options.isProductionEnvironment ? [ARTDefault maxProductionMessageSize] : [ARTDefault maxSandboxMessageSize];
+}
 
 - (ARTRealtimeConnectionState)state_nosync {
     return _state;

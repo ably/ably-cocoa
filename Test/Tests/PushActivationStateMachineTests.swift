@@ -203,7 +203,9 @@ class PushActivationStateMachineTests: XCTestCase {
         beforeEach__Activation_state_machine__State_NotActivated()
 
         stateMachine.send(PushActivationEventGotPushDeviceDetails())
+        
         expect(stateMachine.current).to(beAKindOf(PushActivationStateNotActivated.self))
+        XCTAssertEqual(stateMachine.pendingEvents.count, 0)
     }
 
     // RSH3b
@@ -982,7 +984,7 @@ class PushActivationStateMachineTests: XCTestCase {
         expect(stateMachine.pendingEvents).toEventually(haveCount(1), timeout: testTimeout)
         stateMachine.transitions = nil
 
-        let pendingEvent = try XCTUnwrap(stateMachine.pendingEvents.firstObject, "Pending event is missing")
+        let pendingEvent = try XCTUnwrap(stateMachine.pendingEvents.first, "Pending event is missing")
         expect(pendingEvent).to(beAKindOf(PushActivationEventCalledActivate.self))
 
         waitUntil(timeout: testTimeout) { done in

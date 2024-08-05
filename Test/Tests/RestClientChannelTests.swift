@@ -391,6 +391,7 @@ class RestClientChannelTests: XCTestCase {
         let chanelName = test.uniqueChannelName(prefix: "ch1")
         
         let subscriber = realtime.channels.get(chanelName)
+        subscriber.attach()
         waitUntil(timeout: testTimeout) { done in
             subscriber.once(.attached) { _ in
                 done()
@@ -423,6 +424,7 @@ class RestClientChannelTests: XCTestCase {
         let chanelName = test.uniqueChannelName(prefix: "ch1")
         
         let subscriber = realtime.channels.get(chanelName)
+        subscriber.attach()
         waitUntil(timeout: testTimeout) { done in
             subscriber.once(.attached) { _ in
                 done()
@@ -453,6 +455,7 @@ class RestClientChannelTests: XCTestCase {
         let chanelName = test.uniqueChannelName(prefix: "ch1")
         
         let subscriber = realtime.channels.get(chanelName)
+        subscriber.attach()
         waitUntil(timeout: testTimeout) { done in
             subscriber.once(.attached) { _ in
                 done()
@@ -484,6 +487,7 @@ class RestClientChannelTests: XCTestCase {
         let chanelName = test.uniqueChannelName(prefix: "ch1")
         
         let subscriber = realtime.channels.get(chanelName)
+        subscriber.attach()
         waitUntil(timeout: testTimeout) { done in
             subscriber.once(.attached) { _ in
                 done()
@@ -1207,7 +1211,7 @@ class RestClientChannelTests: XCTestCase {
 
     // RSP3
 
-    func skipped__test__035__presence__get__should_return_presence_fixture_data() throws {
+    func test__035__presence__get__should_return_presence_fixture_data() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.testOptions.channelNamePrefix = nil

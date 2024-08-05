@@ -155,7 +155,7 @@ class RealtimeClientChannelTests: XCTestCase {
     }
 
     // RTL1
-    func skipped__test__001__Channel__should_process_all_incoming_messages_and_presence_messages_as_soon_as_a_Channel_becomes_attached() throws {
+    func test__001__Channel__should_process_all_incoming_messages_and_presence_messages_as_soon_as_a_Channel_becomes_attached() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client1 = AblyTests.newRealtime(options).client
@@ -563,6 +563,7 @@ class RealtimeClientChannelTests: XCTestCase {
                     XCTAssertFalse(stateChange.resumed)
                 }
             }
+            channel.attach()
             channel.publish(nil, data: "A message")
         }
         
@@ -583,6 +584,7 @@ class RealtimeClientChannelTests: XCTestCase {
                     XCTAssertFalse(stateChange.resumed)
                 }
             }
+            recoveredChannel.attach()
         }
     }
     
@@ -712,7 +714,6 @@ class RealtimeClientChannelTests: XCTestCase {
                 done()
             }
         }
-        expect(channel.state).toEventually(equal(.attached), timeout: testTimeout)
     }
 
     // TO3g and https://github.com/ably/ably-cocoa/issues/1004
@@ -727,25 +728,17 @@ class RealtimeClientChannelTests: XCTestCase {
         defer { client.dispose(); client.close() }
         client.internal.setReachabilityClass(TestReachability.self)
         let channel = client.channels.get(test.uniqueChannelName())
-
-        waitUntil(timeout: testTimeout) { done in
-            client.connection.once(.connected) { _ in
-                done()
-            }
-            client.connect()
-        }
-
+        
+        client.connect()
+        expect(client.connection.state).toEventually(equal(.connected), timeout: testTimeout)
+        
+        channel.attach()
+        expect(channel.state).toEventually(equal(.attached), timeout: testTimeout)
+        
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "message") { error in
                 XCTAssertNil(error)
                 done()
-            }
-        }
-
-        XCTAssertEqual(channel.state, .attached)
-        channel.on { stateChange in
-            if stateChange.current != .attached {
-                fail("Channel state should not change")
             }
         }
 
@@ -766,7 +759,7 @@ class RealtimeClientChannelTests: XCTestCase {
         }
 
         channel.off()
-        XCTAssertEqual(channel.state, .attached)
+        expect(channel.state).toEventually(equal(RealtimeChannelState.attached), timeout: testTimeout)
     }
 
     // RTL3b
@@ -882,10 +875,13 @@ class RealtimeClientChannelTests: XCTestCase {
     }
 
     // RTL3d
-    func test__013__Channel__connection_state__if_the_connection_state_enters_the_CONNECTED_state__then_a_SUSPENDED_channel_will_initiate_an_attach_operation() throws {
+    func test__013__Channel__connection_state__if_the_connection_state_enters_the_CONNECTED_state__then_a_SUSPENDED_channel_will_transition_to_ATTACHING_and_goes_back_to_SUSPNDED_on_timeout() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
+        options.testOptions.transportFactory = TestProxyTransportFactory()
         options.suspendedRetryTimeout = 1.0
+        options.channelRetryTimeout = 1.0
+        options.testOptions.realtimeRequestTimeout = 1.0
         let client = Realtime(options: options)
         defer { client.dispose(); client.close() }
 
@@ -908,29 +904,28 @@ class RealtimeClientChannelTests: XCTestCase {
         }
 
         expect(client.connection.state).toEventually(equal(RealtimeConnectionState.connected), timeout: testTimeout)
-        expect(channel.state).toEventually(equal(RealtimeChannelState.attached), timeout: testTimeout)
-    }
-
-    // RTL3d
-    func test__014__Channel__connection_state__if_the_attach_operation_for_the_channel_times_out_and_the_channel_returns_to_the_SUSPENDED_state() throws {
-        let test = Test()
-        let client = AblyTests.newRealtime(try AblyTests.commonAppSetup(for: test)).client
-        defer { client.dispose(); client.close() }
-
-        let channel = client.channels.get(test.uniqueChannelName())
+        
+        XCTAssertEqual(channel.state, RealtimeChannelState.attaching)
+        
+        let transport = client.internal.transport as! TestProxyTransport
+        transport.actionsIgnored += [.attached]
+        
         waitUntil(timeout: testTimeout) { done in
-            channel.attach { error in
-                XCTAssertNil(error)
-                done()
+            let splitDone = AblyTests.splitDone(2, done: done)
+            var wasSuspended = false
+            channel.once(.suspended) { stateChange in
+                XCTAssertEqual(stateChange.reason?.message.contains("attach timed out"), true)
+                transport.actionsIgnored.removeAll()
+                wasSuspended = true
+                splitDone()
+            }
+            // make sure the channel will attach eventually (RTL4f)
+            channel.once(.attached) { stateChange in
+                XCTAssertTrue(wasSuspended)
+                XCTAssertNil(stateChange.reason)
+                splitDone()
             }
         }
-
-        client.simulateSuspended(beforeSuspension: { done in
-            channel.once(.suspended) { stateChange in
-                XCTAssertNil(stateChange.reason)
-                done()
-            }
-        })
     }
 
     // RTL3d - https://github.com/ably/ably-cocoa/issues/881
@@ -1214,8 +1209,8 @@ class RealtimeClientChannelTests: XCTestCase {
                 XCTAssertNil(stateChange.reason)
                 done()
             }
-
             client.connect()
+            channel.attach()
         }
         XCTAssertEqual(channel.state, .attached)
     }
@@ -1241,7 +1236,7 @@ class RealtimeClientChannelTests: XCTestCase {
         }
     }
 
-    func skipped__test__045__Channel__attach__happens_when_connection_is_CONNECTED_if_it_s_currently__DISCONNECTED() throws {
+    func test__045__Channel__attach__happens_when_connection_is_CONNECTED_if_it_s_currently__DISCONNECTED() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client = Realtime(options: options)
@@ -2325,6 +2320,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 XCTAssertNil(error)
                 done()
             }
+            XCTAssertEqual(client.internal.queuedMessages.count, 0)
             XCTAssertEqual((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter { $0.action == .message }.count, 1)
         }
 
@@ -2378,10 +2374,12 @@ class RealtimeClientChannelTests: XCTestCase {
         transport.actionsIgnored += [.attached]
 
         waitUntil(timeout: testTimeout) { done in
+            XCTAssertEqual(channel.state, RealtimeChannelState.attaching)
             channel.publish(nil, data: "message") { error in
                 XCTAssertNil(error)
                 done()
             }
+            XCTAssertEqual(client.internal.queuedMessages.count, 0)
             XCTAssertEqual((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter { $0.action == .message }.count, 1)
         }
 
@@ -2468,80 +2466,6 @@ class RealtimeClientChannelTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             XCTAssertEqual(rtl6c2TestsClient.connection.state, RealtimeConnectionState.disconnected)
-            rtl16c2TestsPublish(done)
-            XCTAssertEqual(rtl6c2TestsClient.internal.queuedMessages.count, 1)
-        }
-
-        afterEach__Channel__publish__Connection_state_conditions__the_message()
-    }
-
-    func test__079__Channel__publish__Connection_state_conditions__the_message__should_NOT_be_queued_instead_it_should_be_published_if_the_channel_is__INITIALIZED() throws {
-        let test = Test()
-        try beforeEach__Channel__publish__Connection_state_conditions__the_message(for: test, channelName: test.uniqueChannelName())
-
-        rtl6c2TestsClient.connect()
-        XCTAssertEqual(rtl6c2TestsChannel.state, RealtimeChannelState.initialized)
-
-        expect(rtl6c2TestsClient.connection.state).toEventually(equal(RealtimeConnectionState.connected), timeout: testTimeout)
-
-        waitUntil(timeout: testTimeout) { done in
-            rtl16c2TestsPublish(done)
-            XCTAssertEqual(rtl6c2TestsClient.internal.queuedMessages.count, 0)
-            XCTAssertEqual((rtl6c2TestsClient.internal.transport as! TestProxyTransport).protocolMessagesSent.filter { $0.action == .message }.count, 1)
-        }
-
-        afterEach__Channel__publish__Connection_state_conditions__the_message()
-    }
-
-    func test__080__Channel__publish__Connection_state_conditions__the_message__should_NOT_be_queued_instead_it_should_be_published_if_the_channel_is__ATTACHING() throws {
-        let test = Test()
-        try beforeEach__Channel__publish__Connection_state_conditions__the_message(for: test, channelName: test.uniqueChannelName())
-
-        rtl6c2TestsClient.connect()
-        expect(rtl6c2TestsClient.connection.state).toEventually(equal(RealtimeConnectionState.connected), timeout: testTimeout)
-
-        waitUntil(timeout: testTimeout) { done in
-            rtl6c2TestsChannel.attach()
-            XCTAssertEqual(rtl6c2TestsChannel.state, RealtimeChannelState.attaching)
-            rtl16c2TestsPublish(done)
-            XCTAssertEqual(rtl6c2TestsClient.internal.queuedMessages.count, 0)
-            XCTAssertEqual((rtl6c2TestsClient.internal.transport as! TestProxyTransport).protocolMessagesSent.filter { $0.action == .message }.count, 1)
-        }
-
-        afterEach__Channel__publish__Connection_state_conditions__the_message()
-    }
-
-    func test__081__Channel__publish__Connection_state_conditions__the_message__should_NOT_be_queued_instead_it_should_be_published_if_the_channel_is__ATTACHED() throws {
-        let test = Test()
-        try beforeEach__Channel__publish__Connection_state_conditions__the_message(for: test, channelName: test.uniqueChannelName())
-
-        waitUntil(timeout: testTimeout) { done in
-            rtl6c2TestsChannel.attach { error in
-                XCTAssertNil(error)
-                done()
-            }
-            rtl6c2TestsClient.connect()
-        }
-
-        waitUntil(timeout: testTimeout) { done in
-            let tokenParams = ARTTokenParams()
-            tokenParams.ttl = 5.0
-            rtl6c2TestsClient.auth.authorize(tokenParams, options: nil) { tokenDetails, error in
-                XCTAssertNil(error)
-                XCTAssertNotNil(tokenDetails)
-                done()
-            }
-        }
-
-        waitUntil(timeout: testTimeout) { done in
-            rtl6c2TestsClient.connection.once(.disconnected) { _ in
-                done()
-            }
-        }
-
-        XCTAssertEqual(rtl6c2TestsChannel.state, RealtimeChannelState.attached)
-
-        waitUntil(timeout: testTimeout) { done in
             rtl16c2TestsPublish(done)
             XCTAssertEqual(rtl6c2TestsClient.internal.queuedMessages.count, 1)
         }
@@ -2852,8 +2776,7 @@ class RealtimeClientChannelTests: XCTestCase {
         XCTAssertEqual(protocolMessages.count, 1)
     }
 
-    // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
-    func skipped__test__090__Channel__publish__message_bundling__should_only_bundle_messages_when_it_respects_all_of_the_constraints() throws {
+    func test__090__Channel__publish__message_bundling__should_only_bundle_messages_when_it_respects_all_of_the_constraints() throws {
         let test = Test()
         let defaultMaxMessageSize = Default.maxMessageSize()
         Default.setMaxMessageSize(256)
@@ -2937,6 +2860,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 XCTAssertNil(stateChange.reason)
                 done()
             }
+            channel.attach()
         }
 
         let expectationEvent0 = XCTestExpectation(description: "event0")
@@ -3393,11 +3317,24 @@ class RealtimeClientChannelTests: XCTestCase {
         let test = Test()
         let client = Realtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
-
         let channel = client.channels.get(test.uniqueChannelName())
 
+        // Initialized
+        XCTAssertEqual(channel.state, RealtimeChannelState.initialized)
         channel.subscribe { _ in }
-
+        XCTAssertEqual(channel.state, RealtimeChannelState.attaching)
+        expect(channel.state).toEventually(equal(RealtimeChannelState.attached), timeout: testTimeout)
+        
+        // Detaching
+        channel.detach()
+        channel.subscribe { _ in }
+        XCTAssertEqual(channel.state, RealtimeChannelState.detaching)
+        expect(channel.state).toEventually(equal(RealtimeChannelState.attached), timeout: testTimeout)
+        
+        // Detached
+        channel.detach()
+        expect(channel.state).toEventually(equal(RealtimeChannelState.detached), timeout: testTimeout)
+        channel.subscribe { _ in }
         expect(channel.state).toEventually(equal(RealtimeChannelState.attached), timeout: testTimeout)
     }
 
@@ -4683,6 +4620,7 @@ class RealtimeClientChannelTests: XCTestCase {
                     partialDone()
                 }
             }
+            channel.attach()
         }
 
         waitUntil(timeout: testTimeout) { done in
