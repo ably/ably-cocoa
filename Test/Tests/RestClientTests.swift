@@ -278,18 +278,16 @@ class RestClientTests: XCTestCase {
     func test__024__RestClient__logging__should_accept_a_custom_logger() throws {
         let test = Test()
         
-        enum InterceptedLogger {
+        enum InterceptedLog {
             static var interceptedLog: (String, LogLevel) = ("", .none)
         }
         
         class MyLogger: Log {
-
             override func log(_ message: String, with level: LogLevel) {
-                // Default implementation or can be abstract
-                InterceptedLogger.interceptedLog = (message, level)
+                InterceptedLog.interceptedLog = (message, level)
             }
             
-            static var interceptedLog: (String, LogLevel) = ("", .none)
+            static var interceptedLog: (String, LogLevel) = InterceptedLog.interceptedLog
 
         }
         

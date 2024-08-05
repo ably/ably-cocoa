@@ -12,7 +12,7 @@ import Ably
 
 class TestsTests: XCTestCase {
 
-    let options: ARTClientOptions! = nil
+    let options: ClientOptions! = nil
 
     func testAblyWorks() {
         var responseData: Data?
@@ -46,9 +46,9 @@ class TestsTests: XCTestCase {
             return
         }
 
-        let options = ARTClientOptions(key: key as String)
+        let options = ClientOptions(key: key as String)
         options.environment = "sandbox"
-        let client = ARTRealtime(options: options)
+        let client = Realtime(options: options)
 
         let receiveExpectation = self.expectation(description: "message received")
 
@@ -63,9 +63,9 @@ class TestsTests: XCTestCase {
         self.waitForExpectations(timeout: 10, handler: nil)
 
         let backgroundRealtimeExpectation = self.expectation(description: "Realtime in a Background Queue")
-        var realtime: ARTRealtime! //strong reference
+        var realtime: Realtime! //strong reference
         URLSession.shared.dataTask(with: URL(string: "https://ably.io")!) { _,_,_  in
-            realtime = ARTRealtime(key: key as String)
+            realtime = Realtime(key: key as String)
             realtime.channels.get("foo").attach { _ in
                 do { backgroundRealtimeExpectation.fulfill() }
             }
@@ -73,9 +73,9 @@ class TestsTests: XCTestCase {
         self.waitForExpectations(timeout: 10, handler: nil)
 
         let backgroundRestExpectation = self.expectation(description: "Rest in a Background Queue")
-        var rest: ARTRest! //strong reference
+        var rest: Rest! //strong reference
         URLSession.shared.dataTask(with: URL(string: "https://ably.io")!) { _,_,_  in
-            rest = ARTRest(key: key as String)
+            rest = Rest(key: key as String)
             rest.channels.get("foo").history { result, error in
                 do { backgroundRestExpectation.fulfill() }
             }
