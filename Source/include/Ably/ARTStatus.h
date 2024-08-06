@@ -22,7 +22,7 @@ typedef NS_ENUM(NSUInteger, ARTState) {
     ARTStateAuthUrlIncompatibleContent NS_SWIFT_NAME(authUrlIncompatibleContent),
     ARTStateBadConnectionState NS_SWIFT_NAME(badConnectionState),
     ARTStateError NS_SWIFT_NAME(error) = 99999
-} NS_SWIFT_NAME(State);
+} NS_SWIFT_NAME(AblyState); // `State` clashes with SwiftUI so using AblyState instead
 
 /**
  The list of all public error codes returned under the error domain ARTAblyErrorDomain
