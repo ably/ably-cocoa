@@ -545,7 +545,8 @@ class AuthTests: XCTestCase {
         var authCallbackHasBeenInvoked = false
         options.authCallback = { _, completion in
             authCallbackHasBeenInvoked = true
-            completion(nil, ErrorInfo(domain: "io.ably.cocoa", code: ARTErrorCode.forbidden.intValue, userInfo: ["ErrorInfoStatusCode": 403]))
+            let code = ErrorInfo.create(withCode: ARTErrorCode.forbidden.intValue, status: 403, message: "")
+            completion(nil, code)
         }
         let realtime = Realtime(options: options)
         defer { realtime.dispose(); realtime.close() }
