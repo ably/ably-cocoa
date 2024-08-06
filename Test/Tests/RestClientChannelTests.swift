@@ -500,7 +500,7 @@ class RestClientChannelTests: XCTestCase {
                 fail("Should not receive the message")
             }
             publisher.publish("check clientId", data: nil, clientId: "foo") { error in
-                XCTAssertEqual(error?.code, Int(State.mismatchedClientId.rawValue))
+                XCTAssertEqual(error?.code, Int(AblyState.mismatchedClientId.rawValue))
                 done()
             }
         }

@@ -1760,7 +1760,7 @@ class RestClientTests: XCTestCase {
                         fail("Error is empty"); done()
                         return
                     }
-                    XCTAssertEqual(error.code, Int(State.requestTokenFailed.rawValue))
+                    XCTAssertEqual(error.code, Int(AblyState.requestTokenFailed.rawValue))
                     expect(error.message).to(contain("no means to renew the token is provided"))
                     done()
                 }
