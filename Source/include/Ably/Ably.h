@@ -63,4 +63,3 @@ FOUNDATION_EXPORT const unsigned char ablyVersionString[];
 #import <Ably/ARTPendingMessage.h>
 #import <Ably/ARTStringifiable.h>
 #import <Ably/ARTClientInformation.h>
-#import <Ably/Ably-Swift.h>

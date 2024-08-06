@@ -281,9 +281,6 @@
 		56190954238C3D3200A862A6 /* CryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 56190953238C3D3200A862A6 /* CryptoTest.m */; };
 		56190955238C3D3200A862A6 /* CryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 56190953238C3D3200A862A6 /* CryptoTest.m */; };
 		56190956238C3D3200A862A6 /* CryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 56190953238C3D3200A862A6 /* CryptoTest.m */; };
-		807107BB2C619E7100461AC6 /* Ably-Swift.h in Headers */ = {isa = PBXBuildFile; fileRef = 807107BA2C619E7100461AC6 /* Ably-Swift.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		807107BC2C619E7100461AC6 /* Ably-Swift.h in Headers */ = {isa = PBXBuildFile; fileRef = 807107BA2C619E7100461AC6 /* Ably-Swift.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		807107BD2C619E7100461AC6 /* Ably-Swift.h in Headers */ = {isa = PBXBuildFile; fileRef = 807107BA2C619E7100461AC6 /* Ably-Swift.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		80E519C72BBCBE21006545B4 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 80E519C62BBCBE20006545B4 /* PrivacyInfo.xcprivacy */; };
 		80E519C82BBCBE21006545B4 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 80E519C62BBCBE20006545B4 /* PrivacyInfo.xcprivacy */; };
 		80E519C92BBCBE21006545B4 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 80E519C62BBCBE20006545B4 /* PrivacyInfo.xcprivacy */; };
@@ -1231,7 +1228,6 @@
 		21FD9F262A015BE400216482 /* Test.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test.swift; sourceTree = "<group>"; };
 		560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARTDefaultTests.swift; sourceTree = "<group>"; };
 		56190953238C3D3200A862A6 /* CryptoTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CryptoTest.m; sourceTree = "<group>"; };
-		807107BA2C619E7100461AC6 /* Ably-Swift.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "Ably-Swift.h"; path = "include/Ably/Ably-Swift.h"; sourceTree = "<group>"; };
 		80E519C62BBCBE20006545B4 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		841134772722205400CFA837 /* ARTArchiveTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTArchiveTests.m; sourceTree = "<group>"; };
 		8412FDE12661AC37001FE9E6 /* AblyDeltaCodec.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = AblyDeltaCodec.xcframework; path = Carthage/Build/AblyDeltaCodec.xcframework; sourceTree = "<group>"; };
@@ -1806,7 +1802,6 @@
 			isa = PBXGroup;
 			children = (
 				D7534C311D79E5C20054C182 /* Ably.h */,
-				807107BA2C619E7100461AC6 /* Ably-Swift.h */,
 				1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */,
 				D7DC8AF01C6A9FFC005AF165 /* ARTDefault+Private.h */,
 				1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */,
@@ -2253,7 +2248,6 @@
 				D7DEAFD11E65926D00D23F24 /* ARTLocalDevice.h in Headers */,
 				21113B5129DC6AAF00652C86 /* ARTTestClientOptions.h in Headers */,
 				EB8AC6431C6515ED002ABA92 /* ARTTokenParams+Private.h in Headers */,
-				807107BB2C619E7100461AC6 /* Ably-Swift.h in Headers */,
 				2105ED2629E830D600DE6D67 /* ARTInternalLog+Testing.h in Headers */,
 				D746AE1D1BBB5207003ECEF8 /* ARTDataQuery.h in Headers */,
 				D71966E41E5DF360000974DD /* ARTPushActivationStateMachine.h in Headers */,
@@ -2444,7 +2438,6 @@
 				D710D51821949C42008F54AD /* ARTPushChannelSubscription.h in Headers */,
 				D710D4B421949B47008F54AD /* ARTAuth+Private.h in Headers */,
 				D710D4C221949B9C008F54AD /* ARTRealtimeTransport.h in Headers */,
-				807107BC2C619E7100461AC6 /* Ably-Swift.h in Headers */,
 				D710D58121949D28008F54AD /* ARTTokenRequest.h in Headers */,
 				D710D68421949ECE008F54AD /* ARTNSDictionary+ARTDictionaryUtil.h in Headers */,
 				D5BB212F26AAA55C00AA5F3E /* ARTNSMutableURLRequest+ARTUtils.h in Headers */,
@@ -2612,7 +2605,6 @@
 				D710D69C21949F00008F54AD /* ARTJsonEncoder.h in Headers */,
 				D710D5C921949D50008F54AD /* ARTTokenParams+Private.h in Headers */,
 				D710D52A21949C44008F54AD /* ARTPushChannelSubscription.h in Headers */,
-				807107BD2C619E7100461AC6 /* Ably-Swift.h in Headers */,
 				D710D4BA21949B48008F54AD /* ARTAuth+Private.h in Headers */,
 				D710D4C621949B9D008F54AD /* ARTRealtimeTransport.h in Headers */,
 				D710D5A721949D2A008F54AD /* ARTTokenRequest.h in Headers */,
@@ -2727,7 +2719,6 @@
 				856AAC871B6E304B00B07119 /* Frameworks */,
 				856AAC881B6E304B00B07119 /* Resources */,
 				D736A1221F917830005ABE81 /* Copy Carthage Frameworks to Test bundle */,
-				807107BE2C61A05E00461AC6 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -2747,7 +2738,6 @@
 				96BF612D1A35B2AB004CF2B3 /* Frameworks */,
 				96BF612E1A35B2AB004CF2B3 /* Headers */,
 				96BF612F1A35B2AB004CF2B3 /* Resources */,
-				804A521B2BF4389000CE0ACD /* Run Script */,
 			);
 			buildRules = (
 			);
@@ -2804,7 +2794,6 @@
 				D710D457219495E2008F54AD /* Sources */,
 				D710D458219495E2008F54AD /* Frameworks */,
 				D710D459219495E2008F54AD /* Resources */,
-				807107B82C619D3C00461AC6 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -2823,7 +2812,6 @@
 				D710D471219495FC008F54AD /* Sources */,
 				D710D472219495FC008F54AD /* Frameworks */,
 				D710D473219495FC008F54AD /* Resources */,
-				807107B92C619D4800461AC6 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -3014,79 +3002,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		804A521B2BF4389000CE0ACD /* Run Script */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Run Script";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "#!/bin/bash\n\n# Define the target directory where files will be copied\ntarget_dir=\"${SRCROOT}/Source/include/Ably\"\n\n# Ensure the target include path exists\nmkdir -p \"${target_dir}\"\n\n# Define the path to the Swift generated headers\n\n\nswift_headers_dir=\"${BUILT_PRODUCTS_DIR}/Ably.framework/Headers\"\n\n# Check if there are any Swift generated header files to copy\nif ls \"${swift_headers_dir}\"/*-Swift.h 1> /dev/null 2>&1; then\n    # Copy Swift generated header files to the target directory\n    cp \"${swift_headers_dir}\"/*-Swift.h \"${target_dir}\"\n    echo \"Swift generated header files copied to ${target_dir}\"\nelse\n    echo \"No Swift generated header files found in ${swift_headers_dir}\"\nfi\n";
-		};
-		807107B82C619D3C00461AC6 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "#!/bin/bash\n\n# Define the target directory where files will be copied\ntarget_dir=\"${SRCROOT}/Source/include/Ably\"\n\n# Ensure the target include path exists\nmkdir -p \"${target_dir}\"\n\n# Define the path to the Swift generated headers\n\n\nswift_headers_dir=\"${BUILT_PRODUCTS_DIR}/Ably.framework/Headers\"\n\n# Check if there are any Swift generated header files to copy\nif ls \"${swift_headers_dir}\"/*-Swift.h 1> /dev/null 2>&1; then\n    # Copy Swift generated header files to the target directory\n    cp \"${swift_headers_dir}\"/*-Swift.h \"${target_dir}\"\n    echo \"Swift generated header files copied to ${target_dir}\"\nelse\n    echo \"No Swift generated header files found in ${swift_headers_dir}\"\nfi\n";
-		};
-		807107B92C619D4800461AC6 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "#!/bin/bash\n\n# Define the target directory where files will be copied\ntarget_dir=\"${SRCROOT}/Source/include/Ably\"\n\n# Ensure the target include path exists\nmkdir -p \"${target_dir}\"\n\n# Define the path to the Swift generated headers\n\n\nswift_headers_dir=\"${BUILT_PRODUCTS_DIR}/Ably.framework/Headers\"\n\n# Check if there are any Swift generated header files to copy\nif ls \"${swift_headers_dir}\"/*-Swift.h 1> /dev/null 2>&1; then\n    # Copy Swift generated header files to the target directory\n    cp \"${swift_headers_dir}\"/*-Swift.h \"${target_dir}\"\n    echo \"Swift generated header files copied to ${target_dir}\"\nelse\n    echo \"No Swift generated header files found in ${swift_headers_dir}\"\nfi\n";
-		};
-		807107BE2C61A05E00461AC6 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "#!/bin/bash\n\n# Define the target directory where files will be copied\ntarget_dir=\"${SRCROOT}/Source/include/Ably\"\n\n# Ensure the target include path exists\nmkdir -p \"${target_dir}\"\n\n# Define the path to the Swift generated headers\n\n\nswift_headers_dir=\"${BUILT_PRODUCTS_DIR}/Ably.framework/Headers\"\n\n# Check if there are any Swift generated header files to copy\nif ls \"${swift_headers_dir}\"/*-Swift.h 1> /dev/null 2>&1; then\n    # Copy Swift generated header files to the target directory\n    cp \"${swift_headers_dir}\"/*-Swift.h \"${target_dir}\"\n    echo \"Swift generated header files copied to ${target_dir}\"\nelse\n    echo \"No Swift generated header files found in ${swift_headers_dir}\"\nfi\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		856AAC861B6E304B00B07119 /* Sources */ = {
