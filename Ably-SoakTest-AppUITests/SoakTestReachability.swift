@@ -13,8 +13,8 @@ class SoakTestReachability : NSObject, ARTReachability {
     let queue: DispatchQueue
     var callback: ((Bool) -> Void)?
     var isReachable = true
-
-    required init(logger: ARTLog, queue: DispatchQueue) {
+    
+    required init(logger: InternalLog, queue: DispatchQueue) {
         self.queue = queue
         super.init()
         waitAndToggle()

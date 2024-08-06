@@ -8,33 +8,34 @@ typedef NS_ENUM(NSUInteger, ARTPresenceAction) {
     /**
      * A member is not present in the channel.
      */
-    ARTPresenceAbsent,
+    ARTPresenceAbsent NS_SWIFT_NAME(absent),
     /**
      * When subscribing to presence events on a channel that already has members present, this event is emitted for every member already present on the channel before the subscribe listener was registered.
      */
-    ARTPresencePresent,
+    ARTPresencePresent NS_SWIFT_NAME(present),
     /**
      * A new member has entered the channel.
      */
-    ARTPresenceEnter,
+    ARTPresenceEnter NS_SWIFT_NAME(enter),
     /**
      * A member who was present has now left the channel. This may be a result of an explicit request to leave or implicitly when detaching from the channel. Alternatively, if a member's connection is abruptly disconnected and they do not resume their connection within a minute, Ably treats this as a leave event as the client is no longer present.
      */
-    ARTPresenceLeave,
+    ARTPresenceLeave NS_SWIFT_NAME(leave),
     /**
      * An already present member has updated their member data. Being notified of member data updates can be very useful, for example, it can be used to update the status of a user when they are typing a message.
      */
-    ARTPresenceUpdate
-};
+    ARTPresenceUpdate NS_SWIFT_NAME(update)
+} NS_SWIFT_NAME(PresenceAction);
 
 /// :nodoc:
-NSString *_Nonnull ARTPresenceActionToStr(ARTPresenceAction action);
+NSString * _Nonnull ARTPresenceActionToStr(ARTPresenceAction action) NS_SWIFT_NAME(PresenceActionToStr(_:));
 
 NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Contains an individual presence update sent to, or received from, Ably.
  */
+NS_SWIFT_NAME(PresenceMessage)
 @interface ARTPresenceMessage : ARTBaseMessage
 
 /**

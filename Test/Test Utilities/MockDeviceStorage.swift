@@ -1,6 +1,6 @@
 import Ably
 
-class MockDeviceStorage: NSObject, ARTDeviceStorage {
+class MockDeviceStorage: NSObject, DeviceStorage {
     
     private let accessQueue = DispatchQueue(label: "io.ably.MockDeviceStorage")
 
@@ -10,7 +10,7 @@ class MockDeviceStorage: NSObject, ARTDeviceStorage {
     private var simulateData: [String: Data] = [:]
     private var simulateString: [String: String] = [:]
 
-    init(startWith state: ARTPushActivationState? = nil) {
+    init(startWith state: PushActivationState? = nil) {
         super.init()
         if let state = state {
             simulateOnNextRead(data: state.archive(), for: ARTPushActivationCurrentStateKey)

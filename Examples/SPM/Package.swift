@@ -7,7 +7,7 @@ import Darwin.C
 let package = Package(
     name: "SPMIntegration",
     platforms: [
-        .iOS(.v9),
+        .iOS(.v14),
         .macOS(.v10_11)
     ],
     dependencies: [

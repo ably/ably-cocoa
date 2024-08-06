@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  The protocol upon which the `ARTAuth` is implemented.
  */
+NS_SWIFT_NAME(AuthProtocol)
 @protocol ARTAuthProtocol
 
 /**
@@ -88,6 +89,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @see See `ARTAuthProtocol` for details.
  */
+NS_SWIFT_NAME(Auth)
 @interface ARTAuth : NSObject <ARTAuthProtocol>
 
 @end

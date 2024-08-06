@@ -5,6 +5,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /// :nodoc:
+NS_SWIFT_NAME(RestChannelsProtocol)
 @protocol ARTRestChannelsProtocol
 
 // We copy this from the parent class and replace ChannelType by ARTRestChannel * because
@@ -16,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 /// :nodoc:
+NS_SWIFT_NAME(RestChannels)
 @interface ARTRestChannels : NSObject<ARTRestChannelsProtocol>
 
 - (ARTRestChannel *)get:(NSString *)name;

@@ -10,6 +10,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /// :nodoc:
+NS_SWIFT_NAME(DataEncoderOutput)
 @interface ARTDataEncoderOutput : NSObject
 
 @property (readonly, nonatomic, nullable) id data;
@@ -21,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 /// :nodoc:
+NS_SWIFT_NAME(DataEncoder)
 @interface ARTDataEncoder : NSObject
 
 - (instancetype)initWithCipherParams:(ARTCipherParams *_Nullable)params logger:(ARTInternalLog *)logger error:(NSError *_Nullable*_Nullable)error;

@@ -7,6 +7,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+NS_SWIFT_NAME(PushAdminInternal)
 @interface ARTPushAdminInternal : NSObject <ARTPushAdminProtocol>
 
 @property (nonatomic, readonly) ARTPushDeviceRegistrationsInternal *deviceRegistrations;

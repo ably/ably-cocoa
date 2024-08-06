@@ -7,6 +7,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Contains the details of the push registration of a device.
  */
+NS_SWIFT_NAME(DevicePushDetails)
 @interface ARTDevicePushDetails : NSObject
 
 /**

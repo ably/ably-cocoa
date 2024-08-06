@@ -12,8 +12,8 @@ private var receivedBar: Int?
 private var receivedBarOnce: Int?
 private var receivedAll: Int?
 private var receivedAllOnce: Int?
-private weak var listenerFoo1: ARTEventListener?
-private weak var listenerAll: ARTEventListener?
+private weak var listenerFoo1: EventListener?
+private weak var listenerAll: EventListener?
 private let data = ["test": "test"]
 private let extras = ["push": ["key": "value"]]
 private let clientId = "clientId"
@@ -66,15 +66,15 @@ class UtilitiesTests: XCTestCase {
     func test__002__Utilities__JSON_Encoder__should_encode_a_protocol_message_that_has_invalid_data() {
         beforeEach__Utilities__JSON_Encoder()
 
-        let pm = ARTProtocolMessage()
+        let pm = ProtocolMessage()
         pm.action = .message
         pm.channel = "foo"
-        pm.messages = [ARTMessage(name: "status", data: NSDate(), clientId: "user")]
+        pm.messages = [Message(name: "status", data: NSDate(), clientId: "user")]
         var result: Data?
         expect { result = try jsonEncoder.encode(pm) }.to(throwError { error in
             let e = error as NSError
             XCTAssertEqual(e.domain, ARTAblyErrorDomain)
-            XCTAssertEqual(e.code, Int(ARTClientCodeError.invalidType.rawValue))
+            XCTAssertEqual(e.code, Int(ClientCodeError.invalidType.rawValue))
             expect(e.localizedDescription).to(contain("Invalid type in JSON write"))
         })
         XCTAssertNil(result)
@@ -109,7 +109,7 @@ class UtilitiesTests: XCTestCase {
         beforeEach__Utilities__JSON_Encoder()
 
         let options = try AblyTests.commonAppSetup(for: test)
-        let realtime = ARTRealtime(options: options)
+        let realtime = Realtime(options: options)
         defer { realtime.close() }
         let channel = realtime.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
@@ -123,7 +123,7 @@ class UtilitiesTests: XCTestCase {
             }
         }
         waitUntil(timeout: testTimeout) { done in
-            channel.publish([ARTMessage(name: nil, data: NSDate()), ARTMessage(name: nil, data: NSDate())]) { error in
+            channel.publish([Message(name: nil, data: NSDate()), Message(name: nil, data: NSDate())]) { error in
                 guard let error = error else {
                     fail("Error shouldn't be nil"); done(); return
                 }
@@ -139,7 +139,7 @@ class UtilitiesTests: XCTestCase {
         beforeEach__Utilities__JSON_Encoder()
 
         let options = try AblyTests.commonAppSetup(for: test)
-        let realtime = ARTRealtime(options: options)
+        let realtime = Realtime(options: options)
         defer { realtime.close() }
         let channel = realtime.channels.get(test.uniqueChannelName())
 
@@ -177,7 +177,7 @@ class UtilitiesTests: XCTestCase {
         beforeEach__Utilities__JSON_Encoder()
 
         let options = try AblyTests.commonAppSetup(for: test)
-        let rest = ARTRest(options: options)
+        let rest = Rest(options: options)
         let channel = rest.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.publish("test", data: NSDate()) { error in
@@ -190,7 +190,7 @@ class UtilitiesTests: XCTestCase {
             }
         }
         waitUntil(timeout: testTimeout) { done in
-            channel.publish([ARTMessage(name: nil, data: NSDate()), ARTMessage(name: nil, data: NSDate())]) { error in
+            channel.publish([Message(name: nil, data: NSDate()), Message(name: nil, data: NSDate())]) { error in
                 guard let error = error else {
                     fail("Error shouldn't be nil"); done(); return
                 }
@@ -206,7 +206,7 @@ class UtilitiesTests: XCTestCase {
         beforeEach__Utilities__JSON_Encoder()
 
         let options = try AblyTests.commonAppSetup(for: test)
-        let rest = ARTRest(options: options)
+        let rest = Rest(options: options)
         let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
         let channel = rest.channels.get(test.uniqueChannelName())
@@ -446,7 +446,7 @@ class UtilitiesTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.logLevel = .verbose
-        let realtime = ARTRealtime(options: options)
+        let realtime = Realtime(options: options)
         defer { realtime.close() }
         let channel = realtime.channels.get(test.uniqueChannelName())
 
@@ -465,22 +465,22 @@ class UtilitiesTests: XCTestCase {
     }
 
     func test__022__Utilities__maxMessageSize__calculates_maxMessageSize_of_a_Message_with_name_and_data() {
-        let message = ARTMessage(name: "this is name", data: data)
+        let message = Message(name: "this is name", data: data)
         let expectedSize = "{\"test\":\"test\"}".count + message.name!.count
         XCTAssertEqual(message.messageSize(), expectedSize)
     }
 
     func test__023__Utilities__maxMessageSize__calculates_maxMessageSize_of_a_Message_with_name__data_and_extras() {
-        let message = ARTMessage(name: "this is name", data: data)
-        message.extras = extras as ARTJsonCompatible
+        let message = Message(name: "this is name", data: data)
+        message.extras = extras as JsonCompatible
         let expectedSize = "{\"test\":\"test\"}".count + "{\"push\":{\"key\":\"value\"}}".count + message.name!.count
         XCTAssertEqual(message.messageSize(), expectedSize)
     }
 
     func test__024__Utilities__maxMessageSize__calculates_maxMessageSize_of_a_Message_with_name__data__clientId_and_extras() {
-        let message = ARTMessage(name: "this is name", data: data)
+        let message = Message(name: "this is name", data: data)
         message.clientId = clientId
-        message.extras = extras as ARTJsonCompatible
+        message.extras = extras as JsonCompatible
         let expectedSize = "{\"test\":\"test\"}".count + "{\"push\":{\"key\":\"value\"}}".count + clientId.count + message.name!.count
         XCTAssertEqual(message.messageSize(), expectedSize)
     }

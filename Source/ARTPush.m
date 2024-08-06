@@ -106,7 +106,7 @@
 
 #if TARGET_OS_IOS
 
-- (void)getActivationMachine:(void (^)(ARTPushActivationStateMachine *const))block {
+- (void)getActivationMachine:(void (^)(ARTPushActivationStateMachine *const))block NS_EXTENSION_UNAVAILABLE("") {
     if (!block) {
         [NSException raise:NSInvalidArgumentException
                     format:@"block is nil."];

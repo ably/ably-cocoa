@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  The protocol upon which the top level object `ARTRest` is implemented.
  */
+NS_SWIFT_NAME(RestProtocol)
 @protocol ARTRestProtocol
 
 /// :nodoc:
@@ -99,6 +100,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * A client that offers a simple stateless API to interact directly with Ably's REST API.
  */
+NS_SWIFT_NAME(Rest)
 @interface ARTRest : NSObject <ARTRestProtocol>
 
 /**

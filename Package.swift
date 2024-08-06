@@ -6,7 +6,7 @@ let package = Package(
     name: "ably-cocoa",
     platforms: [
         .macOS(.v10_11),
-        .iOS(.v9),
+        .iOS(.v13),
         .tvOS(.v10)
     ],
     products: [

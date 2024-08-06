@@ -10,6 +10,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  This object is used for providing parameters into `ARTRestPresence`'s methods with paginated results.
  */
+NS_SWIFT_NAME(PresenceQuery)
 @interface ARTPresenceQuery : NSObject
 
 /**
@@ -41,6 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  The protocol upon which the `ARTRestPresence` is implemented.
  */
+NS_SWIFT_NAME(RestPresenceProtocol)
 @protocol ARTRestPresenceProtocol
 
 /// :nodoc: TODO: docstring
@@ -78,6 +80,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @see See `ARTRestPresenceProtocol` for details.
  */
+NS_SWIFT_NAME(RestPresence)
 @interface ARTRestPresence : ARTPresence <ARTRestPresenceProtocol>
 @end
 
