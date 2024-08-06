@@ -252,7 +252,7 @@ class AuthTests: XCTestCase {
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
-                XCTAssertEqual(UInt(error.code), State.requestTokenFailed.rawValue)
+                XCTAssertEqual(UInt(error.code), AblyState.requestTokenFailed.rawValue)
                 done()
             }
         }
@@ -464,7 +464,7 @@ class AuthTests: XCTestCase {
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
-                XCTAssertEqual(error.code, Int(State.requestTokenFailed.rawValue))
+                XCTAssertEqual(error.code, Int(AblyState.requestTokenFailed.rawValue))
                 expect(error.message).to(contain("no means to renew the token is provided"))
 
                 XCTAssertEqual(proxyHTTPExecutor.requests.count, 0)
@@ -505,7 +505,7 @@ class AuthTests: XCTestCase {
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
-                XCTAssertEqual(error.code, Int(State.requestTokenFailed.rawValue))
+                XCTAssertEqual(error.code, Int(AblyState.requestTokenFailed.rawValue))
                 expect(error.message).to(contain("no means to renew the token is provided"))
                 XCTAssertEqual(proxyHTTPExecutor.requests.count, 1)
                 XCTAssertEqual(proxyHTTPExecutor.responses.count, 1)
@@ -3011,7 +3011,7 @@ class AuthTests: XCTestCase {
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
-                XCTAssertEqual((error as! ErrorInfo).code, Int(State.authUrlIncompatibleContent.rawValue))
+                XCTAssertEqual((error as! ErrorInfo).code, Int(AblyState.authUrlIncompatibleContent.rawValue))
                 XCTAssertNil(tokenDetails)
                 done()
             }
@@ -3220,7 +3220,7 @@ class AuthTests: XCTestCase {
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
-                XCTAssertEqual(UInt((error as! ErrorInfo).code), State.requestTokenFailed.rawValue)
+                XCTAssertEqual(UInt((error as! ErrorInfo).code), AblyState.requestTokenFailed.rawValue)
                 XCTAssertNil(tokenDetails)
                 XCTAssertNil(rest.auth.internal.options.authUrl)
                 XCTAssertNil(rest.auth.internal.options.authParams)
@@ -3235,7 +3235,7 @@ class AuthTests: XCTestCase {
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
-                XCTAssertEqual(UInt((error as! ErrorInfo).code), State.requestTokenFailed.rawValue)
+                XCTAssertEqual(UInt((error as! ErrorInfo).code), AblyState.requestTokenFailed.rawValue)
                 XCTAssertNil(tokenDetails)
                 XCTAssertNil(rest.auth.internal.options.authUrl)
                 XCTAssertNil(rest.auth.internal.options.authParams)
@@ -3285,7 +3285,7 @@ class AuthTests: XCTestCase {
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
-                XCTAssertEqual(UInt((error as! ErrorInfo).code), State.requestTokenFailed.rawValue)
+                XCTAssertEqual(UInt((error as! ErrorInfo).code), AblyState.requestTokenFailed.rawValue)
                 XCTAssertNil(tokenDetails)
                 XCTAssertFalse(authCallbackHasBeenInvoked)
                 XCTAssertNil(rest.auth.internal.options.authCallback)
@@ -3298,7 +3298,7 @@ class AuthTests: XCTestCase {
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
-                XCTAssertEqual(UInt((error as! ErrorInfo).code), State.requestTokenFailed.rawValue)
+                XCTAssertEqual(UInt((error as! ErrorInfo).code), AblyState.requestTokenFailed.rawValue)
                 XCTAssertNil(tokenDetails)
                 XCTAssertFalse(authCallbackHasBeenInvoked)
                 XCTAssertNil(rest.auth.internal.options.authCallback)

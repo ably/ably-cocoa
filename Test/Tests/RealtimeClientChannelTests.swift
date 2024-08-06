@@ -3160,7 +3160,7 @@ class RealtimeClientChannelTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish([Message(name: nil, data: "message", clientId: "tester")]) { error in
-                XCTAssertEqual(error?.code, Int(State.mismatchedClientId.rawValue))
+                XCTAssertEqual(error?.code, Int(AblyState.mismatchedClientId.rawValue))
                 done()
             }
         }

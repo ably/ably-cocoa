@@ -1108,7 +1108,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter(nil) { error in
-                XCTAssertEqual(error?.code, Int(State.noClientId.rawValue))
+                XCTAssertEqual(error?.code, Int(AblyState.noClientId.rawValue))
                 done()
             }
         }
@@ -1127,7 +1127,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter(nil) { error in
-                XCTAssertEqual(error?.code, Int(State.noClientId.rawValue))
+                XCTAssertEqual(error?.code, Int(AblyState.noClientId.rawValue))
                 done()
             }
         }

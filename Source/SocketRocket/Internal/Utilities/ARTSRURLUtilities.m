@@ -80,6 +80,7 @@ extern NSString *_Nullable ARTSRStreamNetworkServiceTypeFromURLRequest(NSURLRequ
             networkServiceType = NSStreamNetworkServiceTypeVoice;
             break;
 
+#pragma clang diagnostic ignored "-Wswitch"
 #if (TARGET_OS_MACCATALYST || TARGET_OS_MAC) && !TARGET_OS_TV && !TARGET_OS_IOS
         case NSURLNetworkServiceTypeVoIP:
             networkServiceType = NSStreamNetworkServiceTypeVoIP;
