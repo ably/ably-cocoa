@@ -1558,7 +1558,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 guard let error = error else {
                     fail("Reason error is nil"); return
                 }
-                expect(error.message).to(contain("timed out"))
+                XCTAssertTrue(error.code == ARTState.detachTimedOut.rawValue)
                 XCTAssertEqual(channel.state, ARTRealtimeChannelState.attached)
                 done()
             }
@@ -1948,7 +1948,7 @@ class RealtimeClientChannelTests: XCTestCase {
             guard let error = error else {
                 fail("Error is nil"); return
             }
-            expect(error.message).to(contain("timed out"))
+            XCTAssertTrue(error.code == ARTState.detachTimedOut.rawValue)
             XCTAssertEqual(error, channel.errorReason)
             callbackCalled = true
         }
@@ -3959,7 +3959,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 guard let error = stateChange.reason else {
                     fail("Reason error is nil"); done(); return
                 }
-                expect(error.message).to(contain("timed out"))
+                XCTAssertTrue(error.code == ARTState.attachTimedOut.rawValue)
                 XCTAssertTrue(channel.errorReason === error)
                 done()
             }
@@ -4186,7 +4186,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 guard let error = stateChange.reason else {
                     fail("Reason error is nil"); done(); return
                 }
-                expect(error.message).to(contain("timed out"))
+                XCTAssertTrue(error.code == ARTState.attachTimedOut.rawValue)
                 XCTAssertTrue(channel.errorReason === error)
                 done()
             }

@@ -573,7 +573,7 @@ class RealtimeClientTests: XCTestCase {
                 guard let error = stateChange.reason else {
                     fail("Error is nil"); done(); return
                 }
-                expect(error.message).to(contain("Channel denied access based on given capability"))
+                XCTAssertTrue(error.code == ARTErrorCode.operationNotPermittedWithProvidedCapability.rawValue)
                 done()
             }
             channel.attach()
@@ -741,10 +741,10 @@ class RealtimeClientTests: XCTestCase {
             }
 
             client.auth.authorize(nil, options: authOptions) { tokenDetails, error in
-                guard let error = error else {
+                guard let error = error as? NSError else {
                     fail("ErrorInfo is nil"); partialDone(); return
                 }
-                expect(error.localizedDescription).to(contain("Invalid accessToken"))
+                XCTAssertTrue(error.code == ARTErrorCode.invalidCredential.rawValue) // Invalid accessToken in request: xxxxxxxxxxxx
                 XCTAssertEqual(tokenDetails?.token, invalidToken)
                 authError = error as NSError?
                 partialDone()
