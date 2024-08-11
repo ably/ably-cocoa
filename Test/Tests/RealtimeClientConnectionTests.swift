@@ -508,6 +508,36 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
     }
 
+    func test__021b__Connection__event_emitter__should_never_emit_a_ConnectionState_event_for_a_state_equal_to_the_previous_state_CONNECTING() throws {
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        options.autoConnect = false
+
+        let client = ARTRealtime(options: options)
+        defer { client.dispose(); client.close() }
+        
+        var events: [ARTRealtimeConnectionState] = []
+
+        waitUntil(timeout: testTimeout) { done in
+            client.connection.on { stateChange in
+                XCTAssertNil(stateChange.reason)
+                let state = stateChange.current
+                switch state {
+                case .connecting:
+                    events += [state]
+                case .connected:
+                    done()
+                default:
+                    break
+                }
+            }
+            client.connect()
+            client.connect()
+        }
+        XCTAssertEqual(events.count, 1)
+        XCTAssertEqual(events[0].rawValue, ARTRealtimeConnectionState.connecting.rawValue, "Should be CONNECTING state")
+    }
+    
     // RTN4b
     func test__022__Connection__event_emitter__should_emit_states_on_a_new_connection() throws {
         let test = Test()
