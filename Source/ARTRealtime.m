@@ -435,6 +435,10 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
 }
 
 - (void)_connect {
+    if (self.connection.state_nosync == ARTRealtimeConnecting) {
+        ARTLogError(self.logger, @"R:%p Ignoring new connection attempt - already in the CONNECTING state.", self);
+        return;
+    }
     if (self.connection.state_nosync == ARTRealtimeClosing) {
         // New connection
         _transport = nil;
