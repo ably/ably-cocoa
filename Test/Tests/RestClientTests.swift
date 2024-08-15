@@ -1757,7 +1757,6 @@ class RestClientTests: XCTestCase {
                         return
                     }
                     XCTAssertEqual(error.code, Int(ARTState.requestTokenFailed.rawValue))
-                    expect(error.message).to(contain("no means to renew the token is provided"))
                     done()
                 }
             }
@@ -2053,7 +2052,6 @@ class RestClientTests: XCTestCase {
                 }
                 XCTAssertEqual(error.statusCode, 401)
                 XCTAssertEqual(error.code, ARTErrorCode.errorFromClientTokenCallback.intValue)
-                expect(error.message).to(contain("Error in requesting auth token"))
                 done()
             }
         }

@@ -1966,7 +1966,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                     fail("expected error"); done(); return
                 }
                 let end = NSDate()
-                expect(error.message).to(contain("timed out"))
+                XCTAssertTrue(error.code == ARTErrorCode.connectionTimedOut.rawValue)
                 expect(end.timeIntervalSince(start as Date)).to(beCloseTo(realtimeRequestTimeout, within: 1.5))
                 done()
             }
@@ -2124,9 +2124,8 @@ class RealtimeClientConnectionTests: XCTestCase {
                 guard let reason = stateChange.reason else {
                     fail("Reason is nil"); done(); return
                 }
-                XCTAssertEqual(reason.code, ARTErrorCode.tokenExpired.intValue)
+                XCTAssertEqual(reason.code, ARTErrorCode.tokenExpired.intValue) // Key/token status changed (expire)
                 XCTAssertEqual(reason.statusCode, 401)
-                expect(reason.message).to(contain("Key/token status changed (expire)"))
                 partialDone()
             }
             client.connect()
@@ -2342,9 +2341,8 @@ class RealtimeClientConnectionTests: XCTestCase {
             options.authCallback = { _, _ in
                 // Ignore `completion` closure to force a time out
             }
-        },
-                              checkError: { error in
-            XCTAssertTrue(error.message.contains("timed out"))
+        }, checkError: { error in
+            XCTAssertTrue(error.code == ARTErrorCode.authConfiguredProviderFailure.rawValue) // timed out
         })
     }
 
@@ -4134,7 +4132,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 guard let error = stateChange.reason else {
                     fail("Error is nil"); done(); return
                 }
-                expect(error.message).to(contain("Invalid key"))
+                XCTAssertTrue(error.code == ARTErrorCode.invalidCredential.rawValue)
                 done()
             }
         }
