@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Passes authentication-specific properties in authentication requests to Ably. Properties set using `ARTAuthOptions` are used instead of the default values set when the client library is instantiated, as opposed to being merged with them.
  */
+NS_SWIFT_SENDABLE
 @interface ARTAuthOptions : NSObject<NSCopying>
 
 /**

@@ -7,6 +7,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Describes the interval unit over which statistics are gathered.
  */
+NS_SWIFT_SENDABLE
 typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
     /**
      * Interval unit over which statistics are gathered as minutes.
@@ -29,6 +30,7 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 /**
  This object is used for providing parameters into `ARTStats`'s methods with paginated results.
  */
+NS_SWIFT_SENDABLE
 @interface ARTStatsQuery : ARTDataQuery
 
 /**
@@ -41,6 +43,7 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 /**
  * Contains the aggregate counts for messages and data transferred.
  */
+NS_SWIFT_SENDABLE
 @interface ARTStatsMessageCount : NSObject
 
 /**
@@ -68,6 +71,7 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 /**
  * Contains a breakdown of summary stats data for different (channel vs presence) message types.
  */
+NS_SWIFT_SENDABLE
 @interface ARTStatsMessageTypes : NSObject
 
 /**
@@ -101,6 +105,7 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 /**
  * Contains a breakdown of summary stats data for traffic over various transport types.
  */
+NS_SWIFT_SENDABLE
 @interface ARTStatsMessageTraffic : NSObject
 
 /**
@@ -140,6 +145,7 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 /**
  * Contains the aggregate data for usage of a resource in a specific scope.
  */
+NS_SWIFT_SENDABLE
 @interface ARTStatsResourceCount : NSObject
 
 /**
@@ -185,6 +191,7 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 /**
  * Contains a breakdown of summary stats data for different (`TLS` vs non-`TLS`) connection types.
  */
+NS_SWIFT_SENDABLE
 @interface ARTStatsConnectionTypes : NSObject
 
 /**
@@ -218,6 +225,7 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 /**
  * Contains the aggregate counts for requests made.
  */
+NS_SWIFT_SENDABLE
 @interface ARTStatsRequestCount : NSObject
 
 /**
@@ -251,6 +259,7 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 /**
  * Details the stats on push notifications.
  */
+NS_SWIFT_SENDABLE
 @interface ARTStatsPushCount : NSObject
 
 /**
@@ -302,6 +311,7 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 /**
  * Contains application statistics for a specified time interval and time period.
  */
+NS_SWIFT_SENDABLE
 @interface ARTStats : NSObject
 
 /// :nodoc:

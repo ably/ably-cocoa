@@ -83,6 +83,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @see See `ARTPushChannelProtocol` for details.
  */
+NS_SWIFT_SENDABLE
 @interface ARTPushChannel : NSObject <ARTPushChannelProtocol>
 
 @end

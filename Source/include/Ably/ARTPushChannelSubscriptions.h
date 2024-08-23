@@ -62,6 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @see See `ARTPushChannelSubscriptionsProtocol` for details.
  */
+NS_SWIFT_SENDABLE
 @interface ARTPushChannelSubscriptions : NSObject <ARTPushChannelSubscriptionsProtocol>
 
 @end

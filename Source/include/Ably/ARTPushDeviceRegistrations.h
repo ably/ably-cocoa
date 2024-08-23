@@ -61,6 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @see See `ARTPushDeviceRegistrationsProtocol` for details.
  */
+NS_SWIFT_SENDABLE
 @interface ARTPushDeviceRegistrations : NSObject <ARTPushDeviceRegistrationsProtocol>
 
 @end

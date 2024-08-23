@@ -4,6 +4,7 @@
 /**
  * Describes the possible actions members in the presence set can emit.
  */
+NS_SWIFT_SENDABLE
 typedef NS_ENUM(NSUInteger, ARTPresenceAction) {
     /**
      * A member is not present in the channel.
@@ -35,6 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Contains an individual presence update sent to, or received from, Ably.
  */
+NS_SWIFT_SENDABLE
 @interface ARTPresenceMessage : ARTBaseMessage
 
 /**

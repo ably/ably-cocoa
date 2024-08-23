@@ -8,6 +8,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Contains the device identity token and secret of a device. `ARTLocalDevice` extends `ARTDeviceDetails`.
  */
+NS_SWIFT_SENDABLE
 @interface ARTLocalDevice : ARTDeviceDetails
 
 /**

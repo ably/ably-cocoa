@@ -111,6 +111,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Enables a device to be registered and deregistered from receiving push notifications.
  */
+NS_SWIFT_SENDABLE
 @interface ARTPush : NSObject <ARTPushProtocol>
 
 /**

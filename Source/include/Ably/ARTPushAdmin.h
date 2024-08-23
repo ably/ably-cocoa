@@ -27,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Enables the management of device registrations and push notification subscriptions. Also enables the publishing of push notifications to devices.
  */
+NS_SWIFT_SENDABLE
 @interface ARTPushAdmin : NSObject <ARTPushAdminProtocol>
 
 /**

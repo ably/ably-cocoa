@@ -99,6 +99,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * A client that offers a simple stateless API to interact directly with Ably's REST API.
  */
+NS_SWIFT_SENDABLE
 @interface ARTRest : NSObject <ARTRestProtocol>
 
 /**

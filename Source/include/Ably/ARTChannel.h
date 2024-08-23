@@ -79,6 +79,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @see See `ARTChannelProtocol` for details.
  */
+NS_SWIFT_SENDABLE
 @interface ARTChannel : NSObject<ARTChannelProtocol>
 
 /// :nodoc:
