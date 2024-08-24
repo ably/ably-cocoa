@@ -150,6 +150,16 @@
     [_internal time:cb];
 }
 
+- (BOOL)request:(NSString *)method
+           path:(NSString *)path
+         params:(nullable NSStringDictionary *)params
+           body:(nullable id)body
+        headers:(nullable NSStringDictionary *)headers
+       callback:(ARTHTTPPaginatedCallback)callback
+          error:(NSError *_Nullable *_Nullable)errorPtr {
+    return [_internal request:method path:path params:params body:body headers:headers callback:callback error:errorPtr];
+}
+
 - (void)ping:(ARTCallback)cb {
     [_internal ping:cb];
 }
@@ -480,6 +490,16 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
 
 - (void)time:(ARTDateTimeCallback)cb {
     [self.rest time:cb];
+}
+
+- (BOOL)request:(NSString *)method
+           path:(NSString *)path
+         params:(nullable NSStringDictionary *)params
+           body:(nullable id)body
+        headers:(nullable NSStringDictionary *)headers
+       callback:(ARTHTTPPaginatedCallback)callback
+          error:(NSError *_Nullable *_Nullable)errorPtr {
+    return [self.rest request:method path:path params:params body:body headers:headers callback:callback error:errorPtr];
 }
 
 - (void)ping:(ARTCallback) cb {
