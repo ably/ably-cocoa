@@ -30,7 +30,6 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Passes additional properties to an `ARTRealtimeChannel` object, such as encryption, an `ARTChannelMode` and channel parameters.
  */
-NS_SWIFT_SENDABLE
 @interface ARTRealtimeChannelOptions : ARTChannelOptions
 
 /**

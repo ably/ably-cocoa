@@ -9,7 +9,6 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Contains an individual message that is sent to, or received from, Ably.
  */
-NS_SWIFT_SENDABLE
 @interface ARTMessage : ARTBaseMessage
 
 /// The event name, if available

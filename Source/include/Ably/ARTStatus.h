@@ -190,7 +190,6 @@ FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
  *
  * @see For possible `NSError.code` see Ably [error codes](https://github.com/ably/ably-common/blob/main/protocol/errors.json).
  */
-NS_SWIFT_SENDABLE
 @interface ARTErrorInfo : NSError
 
 /**
@@ -259,7 +258,6 @@ NS_SWIFT_SENDABLE
  * :nodoc: TODO: docstring
  * An object representing a status of an operation.
  */
-NS_SWIFT_SENDABLE
 @interface ARTStatus : NSObject
 
 @property (nullable, readonly, nonatomic) ARTErrorInfo *errorInfo;

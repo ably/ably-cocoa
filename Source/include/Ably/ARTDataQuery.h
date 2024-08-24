@@ -14,7 +14,6 @@ typedef NS_ENUM(NSUInteger, ARTQueryDirection) {
 /**
  This object is used for providing parameters into methods with paginated results.
  */
-NS_SWIFT_SENDABLE
 @interface ARTDataQuery : NSObject
 
 /**
@@ -42,7 +41,6 @@ NS_SWIFT_SENDABLE
 /**
  This object is used for providing parameters into `ARTRealtimePresence`'s methods with paginated results.
  */
-NS_SWIFT_SENDABLE
 @interface ARTRealtimeHistoryQuery : ARTDataQuery
 
 /**

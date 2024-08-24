@@ -30,7 +30,6 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 /**
  This object is used for providing parameters into `ARTStats`'s methods with paginated results.
  */
-NS_SWIFT_SENDABLE
 @interface ARTStatsQuery : ARTDataQuery
 
 /**
@@ -43,7 +42,6 @@ NS_SWIFT_SENDABLE
 /**
  * Contains the aggregate counts for messages and data transferred.
  */
-NS_SWIFT_SENDABLE
 @interface ARTStatsMessageCount : NSObject
 
 /**
@@ -71,7 +69,6 @@ NS_SWIFT_SENDABLE
 /**
  * Contains a breakdown of summary stats data for different (channel vs presence) message types.
  */
-NS_SWIFT_SENDABLE
 @interface ARTStatsMessageTypes : NSObject
 
 /**
@@ -105,7 +102,6 @@ NS_SWIFT_SENDABLE
 /**
  * Contains a breakdown of summary stats data for traffic over various transport types.
  */
-NS_SWIFT_SENDABLE
 @interface ARTStatsMessageTraffic : NSObject
 
 /**
@@ -145,7 +141,6 @@ NS_SWIFT_SENDABLE
 /**
  * Contains the aggregate data for usage of a resource in a specific scope.
  */
-NS_SWIFT_SENDABLE
 @interface ARTStatsResourceCount : NSObject
 
 /**
@@ -191,7 +186,6 @@ NS_SWIFT_SENDABLE
 /**
  * Contains a breakdown of summary stats data for different (`TLS` vs non-`TLS`) connection types.
  */
-NS_SWIFT_SENDABLE
 @interface ARTStatsConnectionTypes : NSObject
 
 /**
@@ -225,7 +219,6 @@ NS_SWIFT_SENDABLE
 /**
  * Contains the aggregate counts for requests made.
  */
-NS_SWIFT_SENDABLE
 @interface ARTStatsRequestCount : NSObject
 
 /**
@@ -259,7 +252,6 @@ NS_SWIFT_SENDABLE
 /**
  * Details the stats on push notifications.
  */
-NS_SWIFT_SENDABLE
 @interface ARTStatsPushCount : NSObject
 
 /**
@@ -311,7 +303,6 @@ NS_SWIFT_SENDABLE
 /**
  * Contains application statistics for a specified time interval and time period.
  */
-NS_SWIFT_SENDABLE
 @interface ARTStats : NSObject
 
 /// :nodoc:

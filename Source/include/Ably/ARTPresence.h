@@ -7,7 +7,6 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /// :nodoc:
-NS_SWIFT_SENDABLE
 @interface ARTPresence : NSObject
 
 - (void)history:(ARTPaginatedPresenceCallback)callback;

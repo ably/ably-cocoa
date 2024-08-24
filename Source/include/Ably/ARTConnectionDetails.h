@@ -5,7 +5,6 @@
 /**
  * Contains any constraints a client should adhere to and provides additional metadata about a `ARTConnection`, such as if a request to `-[ARTChannelProtocol publish:callback:]` a message that exceeds the maximum message size should be rejected immediately without communicating with Ably.
  */
-NS_SWIFT_SENDABLE
 @interface ARTConnectionDetails : NSObject
 
 NS_ASSUME_NONNULL_BEGIN

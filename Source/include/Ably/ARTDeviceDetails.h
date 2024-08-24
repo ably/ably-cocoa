@@ -8,7 +8,6 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Contains the properties of a device registered for push notifications.
  */
-NS_SWIFT_SENDABLE
 @interface ARTDeviceDetails : NSObject
 
 /**

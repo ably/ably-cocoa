@@ -9,7 +9,6 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Contains the properties of a request for a token to Ably. Tokens are generated using `-[ARTAuthProtocol requestToken:]`.
  */
-NS_SWIFT_SENDABLE
 @interface ARTTokenRequest : NSObject
 
 /**

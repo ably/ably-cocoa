@@ -36,7 +36,6 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Contains an individual presence update sent to, or received from, Ably.
  */
-NS_SWIFT_SENDABLE
 @interface ARTPresenceMessage : ARTBaseMessage
 
 /**
