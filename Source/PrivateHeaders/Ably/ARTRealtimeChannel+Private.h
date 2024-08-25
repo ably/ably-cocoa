@@ -34,6 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString * _Nullable)clientId_nosync;
 - (BOOL)canBeReattached;
 - (BOOL)shouldAttach;
+- (ARTChannelProperties *)properties_nosync;
 
 @property (readonly, weak, nonatomic) ARTRealtimeInternal *realtime; // weak because realtime owns self
 @property (readonly, nonatomic) ARTRestChannelInternal *restChannel;
@@ -92,6 +93,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)internalSync:(void (^)(ARTRealtimeChannelInternal *))use;
 
 - (instancetype)initWithInternal:(ARTRealtimeChannelInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
+
+@end
+
+@interface ARTChannelProperties ()
+
+- (instancetype)initWithAttachSerial:(nullable NSString *)attachSerial channelSerial:(nullable NSString *)channelSerial;
 
 @end
 

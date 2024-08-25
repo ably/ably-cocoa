@@ -11,6 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class ARTRealtimePresence;
 @class ARTRealtimeChannelOptions;
+@class ARTChannelProperties;
 #if TARGET_OS_IPHONE
 @class ARTPushChannel;
 #endif
@@ -24,6 +25,11 @@ NS_ASSUME_NONNULL_BEGIN
  * The current `ARTRealtimeChannelState` of the channel.
  */
 @property (readonly) ARTRealtimeChannelState state;
+
+/**
+ * An `ARTChannelProperties` object.
+ */
+@property (readonly) ARTChannelProperties *properties;
 
 /**
  * An `ARTErrorInfo` object describing the last error which occurred on the channel, if any.
@@ -142,6 +148,18 @@ NS_ASSUME_NONNULL_BEGIN
  * `ARTRealtimeChannel` implements `ARTEventEmitter` and emits `ARTChannelEvent` events, where a `ARTChannelEvent` is either a `ARTRealtimeChannelState` or an `ARTChannelEventUpdate`.
  */
 ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
+
+@end
+
+/**
+ * Describes the properties of the channel state.
+ */
+@interface ARTChannelProperties : NSObject
+/**
+ * Starts unset when a channel is instantiated, then updated with the `channelSerial` from each `ARTChannelEventAttached` event that matches the channel. Used as the value for `ARTRealtimeHistoryQuery.untilAttach`.
+ */
+@property (nonatomic, readonly, nullable) NSString *attachSerial; // CP2a
+@property (nonatomic, readonly, nullable) NSString *channelSerial; // CP2b
 
 @end
 

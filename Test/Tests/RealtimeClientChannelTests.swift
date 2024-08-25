@@ -134,7 +134,7 @@ private func testWithUntilAttach(_ untilAttach: Bool, for test: Test, channelNam
     let queryString = testHTTPExecutor.requests.last!.url!.query
 
     if query.untilAttach {
-        expect(queryString).to(contain("fromSerial=\(channel.internal.attachSerial!)"))
+        expect(queryString).to(contain("fromSerial=\(channel.properties.attachSerial!)"))
     } else {
         expect(queryString).toNot(contain("fromSerial"))
     }
@@ -4256,14 +4256,14 @@ class RealtimeClientChannelTests: XCTestCase {
                 expect(error).to(beNil())
                 let attachMessage = transport.protocolMessagesReceived.filter { $0.action == .attached }[0]
                 if attachMessage.channelSerial != nil {
-                    expect(attachMessage.channelSerial).to(equal(channel.internal.channelSerial))
+                    expect(attachMessage.channelSerial).to(equal(channel.properties.channelSerial))
                 }
                 partialDone()
                 
                 channel.subscribe { message in
                     let messageMessage = transport.protocolMessagesReceived.filter { $0.action == .message }[0]
                     if messageMessage.channelSerial != nil {
-                        expect(messageMessage.channelSerial).to(equal(channel.internal.channelSerial))
+                        expect(messageMessage.channelSerial).to(equal(channel.properties.channelSerial))
                     }
                     channel.presence.enterClient("client1", data: "Hey")
                     partialDone()
@@ -4271,7 +4271,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 channel.presence.subscribe { presenceMessage in
                     let presenceMessage = transport.protocolMessagesReceived.filter { $0.action == .presence }[0]
                     if presenceMessage.channelSerial != nil {
-                        expect(presenceMessage.channelSerial).to(equal(channel.internal.channelSerial))
+                        expect(presenceMessage.channelSerial).to(equal(channel.properties.channelSerial))
                     }
                     partialDone()
                 }
