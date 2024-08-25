@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 /// :nodoc:
+NS_SWIFT_SENDABLE
 @interface ARTRestChannels : NSObject<ARTRestChannelsProtocol>
 
 - (ARTRestChannel *)get:(NSString *)name;
