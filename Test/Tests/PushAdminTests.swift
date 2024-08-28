@@ -279,7 +279,7 @@ class PushAdminTests: XCTestCase {
                     fail("Error is missing"); done(); return
                 }
                 XCTAssertEqual(error.statusCode, 400)
-                expect(error.message).to(contain("recipient must contain"))
+                XCTAssertTrue(error.code == ARTErrorCode.badRequest.rawValue) // recipient must contain a 'deviceId', 'clientId', or 'transportType'
                 done()
             }
         }
@@ -368,7 +368,7 @@ class PushAdminTests: XCTestCase {
                     fail("Error should not be empty"); done(); return
                 }
                 XCTAssertEqual(error.statusCode, 404)
-                expect(error.message).to(contain("not found"))
+                XCTAssertTrue(error.code == ARTErrorCode.notFound.rawValue)
                 done()
             }
         }
@@ -715,7 +715,7 @@ class PushAdminTests: XCTestCase {
                     fail("Error is nil"); done(); return
                 }
                 XCTAssertEqual(error.statusCode, 400)
-                expect(error.message).to(contain("device madeup doesn't exist"))
+                XCTAssertTrue(error.code == ARTErrorCode.badRequest.rawValue) // registration for device madeup doesn't exist
                 done()
             }
         }

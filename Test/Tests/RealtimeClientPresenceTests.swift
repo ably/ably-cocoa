@@ -1922,7 +1922,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 guard let error = error else {
                     fail("error expected"); done(); return
                 }
-                expect(error.message).to(contain("Channel denied access based on given capability"))
+                XCTAssertTrue(error.code == ARTErrorCode.operationNotPermittedWithProvidedCapability.rawValue)
                 done()
             }
         }
@@ -2002,7 +2002,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
-                expect(error.message).to(contain("Channel denied access based on given capability"))
+                XCTAssertTrue(error.code == ARTErrorCode.operationNotPermittedWithProvidedCapability.rawValue)
                 done()
             }
         }

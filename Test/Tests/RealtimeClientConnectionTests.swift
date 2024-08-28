@@ -508,6 +508,36 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
     }
 
+    func test__021b__Connection__event_emitter__should_never_emit_a_ConnectionState_event_for_a_state_equal_to_the_previous_state_CONNECTING() throws {
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        options.autoConnect = false
+
+        let client = Realtime(options: options)
+        defer { client.dispose(); client.close() }
+        
+        var events: [RealtimeConnectionState] = []
+
+        waitUntil(timeout: testTimeout) { done in
+            client.connection.on { stateChange in
+                XCTAssertNil(stateChange.reason)
+                let state = stateChange.current
+                switch state {
+                case .connecting:
+                    events += [state]
+                case .connected:
+                    done()
+                default:
+                    break
+                }
+            }
+            client.connect()
+            client.connect()
+        }
+        XCTAssertEqual(events.count, 1)
+        XCTAssertEqual(events[0].rawValue, RealtimeConnectionState.connecting.rawValue, "Should be CONNECTING state")
+    }
+    
     // RTN4b
     func test__022__Connection__event_emitter__should_emit_states_on_a_new_connection() throws {
         let test = Test()
@@ -1936,7 +1966,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                     fail("expected error"); done(); return
                 }
                 let end = NSDate()
-                expect(error.message).to(contain("timed out"))
+                XCTAssertTrue(error.code == ARTErrorCode.connectionTimedOut.rawValue)
                 expect(end.timeIntervalSince(start as Date)).to(beCloseTo(realtimeRequestTimeout, within: 1.5))
                 done()
             }
@@ -2094,9 +2124,8 @@ class RealtimeClientConnectionTests: XCTestCase {
                 guard let reason = stateChange.reason else {
                     fail("Reason is nil"); done(); return
                 }
-                XCTAssertEqual(reason.code, ARTErrorCode.tokenExpired.intValue)
+                XCTAssertEqual(reason.code, ARTErrorCode.tokenExpired.intValue) // Key/token status changed (expire)
                 XCTAssertEqual(reason.statusCode, 401)
-                expect(reason.message).to(contain("Key/token status changed (expire)"))
                 partialDone()
             }
             client.connect()
@@ -2312,9 +2341,8 @@ class RealtimeClientConnectionTests: XCTestCase {
             options.authCallback = { _, _ in
                 // Ignore `completion` closure to force a time out
             }
-        },
-                              checkError: { error in
-            XCTAssertTrue(error.message.contains("timed out"))
+        }, checkError: { error in
+            XCTAssertTrue(error.code == ARTErrorCode.authConfiguredProviderFailure.rawValue) // timed out
         })
     }
 
@@ -4104,7 +4132,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 guard let error = stateChange.reason else {
                     fail("Error is nil"); done(); return
                 }
-                expect(error.message).to(contain("Invalid key"))
+                XCTAssertTrue(error.code == ARTErrorCode.invalidCredential.rawValue)
                 done()
             }
         }

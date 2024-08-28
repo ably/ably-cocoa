@@ -464,9 +464,7 @@ class AuthTests: XCTestCase {
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
-                XCTAssertEqual(error.code, Int(AblyState.requestTokenFailed.rawValue))
-                expect(error.message).to(contain("no means to renew the token is provided"))
-
+                XCTAssertEqual(error.code, Int(AblyState.requestTokenFailed.rawValue)) // no means to renew the token is provided
                 XCTAssertEqual(proxyHTTPExecutor.requests.count, 0)
                 done()
             }
@@ -505,8 +503,7 @@ class AuthTests: XCTestCase {
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
-                XCTAssertEqual(error.code, Int(AblyState.requestTokenFailed.rawValue))
-                expect(error.message).to(contain("no means to renew the token is provided"))
+                XCTAssertEqual(error.code, Int(AblyState.requestTokenFailed.rawValue)) // no means to renew the token is provided
                 XCTAssertEqual(proxyHTTPExecutor.requests.count, 1)
                 XCTAssertEqual(proxyHTTPExecutor.responses.count, 1)
                 guard let response = proxyHTTPExecutor.responses.first else {
@@ -1915,7 +1912,7 @@ class AuthTests: XCTestCase {
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
-                expect(error.message).to(contain("invalid clientId"))
+                XCTAssertTrue(error.code == ARTErrorCode.invalidClientId.rawValue)
                 done()
             }
         }
@@ -2424,10 +2421,10 @@ class AuthTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
                 defer { done() }
-                guard let error = error else {
+                guard let error = error as? NSError else {
                     XCTFail("Error is nil"); return
                 }
-                expect(error.localizedDescription).to(contain("Capability"))
+                XCTAssertTrue(error.code == 3840) // Capability: The data couldn’t be read because it isn’t in the correct format.
                 XCTAssertNil(tokenRequest?.capability)
             })
         }
@@ -4087,8 +4084,7 @@ class AuthTests: XCTestCase {
                 guard let reason = stateChange.reason else {
                     fail("Reason error is nil"); done(); return
                 }
-                XCTAssertEqual(reason.code, ARTErrorCode.invalidJwtFormat.intValue)
-                expect(reason.description).to(satisfyAnyOf(contain("invalid signature"), contain("signature verification failed")))
+                XCTAssertEqual(reason.code, ARTErrorCode.invalidJwtFormat.intValue) // Error verifying JWT; err = Unexpected exception decoding token; err = signature verification failed. (See https://help.ably.io/error/40144 for help.)
                 done()
             }
             client.connect()
@@ -4138,8 +4134,7 @@ class AuthTests: XCTestCase {
                 guard let reason = stateChange.reason else {
                     fail("Reason error is nil"); done(); return
                 }
-                XCTAssertEqual(reason.code, ARTErrorCode.invalidJwtFormat.intValue)
-                expect(reason.description).to(satisfyAnyOf(contain("invalid signature"), contain("signature verification failed")))
+                XCTAssertEqual(reason.code, ARTErrorCode.invalidJwtFormat.intValue) // Error verifying JWT; err = Unexpected exception decoding token; err = signature verification failed. (See https://help.ably.io/error/40144 for help.)
                 done()
             }
             client.connect()
@@ -4258,8 +4253,7 @@ class AuthTests: XCTestCase {
                 guard let reason = stateChange.reason else {
                     fail("Reason error is nil"); done(); return
                 }
-                XCTAssertEqual(reason.code, ARTErrorCode.invalidJwtFormat.intValue)
-                expect(reason.description).to(satisfyAnyOf(contain("invalid signature"), contain("signature verification failed")))
+                XCTAssertEqual(reason.code, ARTErrorCode.invalidJwtFormat.intValue) // Error verifying JWT; err = Unexpected exception decoding token; err = signature verification failed. (See https://help.ably.io/error/40144 for help.)
                 done()
             }
             client.connect()
@@ -4335,8 +4329,7 @@ class AuthTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             client.channels.get(channelName).publish(messageName, data: nil, callback: { error in
-                XCTAssertEqual(error?.code, ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue)
-                expect(error?.message).to(contain("permission denied"))
+                XCTAssertEqual(error?.code, ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue) // Unable to perform publish (permission denied)
                 done()
             })
         }

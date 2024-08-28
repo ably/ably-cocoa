@@ -62,7 +62,7 @@ NSString *generateNonce(void) {
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"%@ - \n\t current: %@; \n\t previous: %@; \n\t reason: %@; \n\t retryIn: %f; \n\t retryAttempt: %@; \n", [super description], ARTRealtimeConnectionStateToStr(_current), ARTRealtimeConnectionStateToStr(_previous), _reason, _retryIn, _retryAttempt];
+    return [NSString stringWithFormat:@"%@ - \n\t event: %@; \n\t current: %@; \n\t previous: %@; \n\t reason: %@; \n\t retryIn: %f; \n\t retryAttempt: %@; \n", [super description], ARTRealtimeConnectionEventToStr(_event), ARTRealtimeConnectionStateToStr(_current), ARTRealtimeConnectionStateToStr(_previous), _reason, _retryIn, _retryAttempt];
 }
 
 - (void)setRetryIn:(NSTimeInterval)retryIn {
