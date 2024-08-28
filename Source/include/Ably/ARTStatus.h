@@ -3,7 +3,7 @@
 /// :nodoc:
 typedef NS_ENUM(NSUInteger, ARTState) {
     ARTStateOk NS_SWIFT_NAME(ok) = 0,
-    ARTStateConnectionClosedByClient NS_SWIFT_NAME(connetionClosedByClient),
+    ARTStateConnectionClosedByClient NS_SWIFT_NAME(connectionClosedByClient),
     ARTStateConnectionDisconnected NS_SWIFT_NAME(connectionDisconnected),
     ARTStateConnectionSuspended NS_SWIFT_NAME(connectionSuspended),
     ARTStateConnectionFailed NS_SWIFT_NAME(connectionFailed),
