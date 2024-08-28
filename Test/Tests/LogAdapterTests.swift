@@ -2,7 +2,7 @@ import XCTest
 import Ably.Private
 
 class LogAdapterTests: XCTestCase {
-    class MockLog: Log {
+    class MockLog: AblyLogger {
         var lastReceivedLogMessageArguments: (message: String, level: LogLevel)?
 
         override func log(_ message: String, with level: LogLevel) {
@@ -26,7 +26,7 @@ class LogAdapterTests: XCTestCase {
     }
 
     func test_logLevel() {
-        let underlyingLogger = Log()
+        let underlyingLogger = AblyLogger()
         underlyingLogger.logLevel = .info
         let logger = LogAdapter(logger: underlyingLogger)
 
@@ -34,7 +34,7 @@ class LogAdapterTests: XCTestCase {
     }
 
     func test_setLogLevel() {
-        let underlyingLogger = Log()
+        let underlyingLogger = AblyLogger()
         underlyingLogger.logLevel = .info
         let logger = LogAdapter(logger: underlyingLogger)
 

@@ -245,7 +245,7 @@ class RestClientTests: XCTestCase {
         }
 
         let options = ClientOptions(key: "xxxx:xxxx")
-        options.logHandler = Log(capturingOutput: true)
+        options.logHandler = AblyLogger(capturingOutput: true)
         let client = Rest(options: options)
 
         client.internal.logger_onlyForUseInClassMethodsAndTests.log("This is a warning", with: .warn, file: "foo.m", line: 10)
@@ -263,7 +263,7 @@ class RestClientTests: XCTestCase {
     func test__023__RestClient__logging__should_have_a_mutable_log_level() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        options.logHandler = Log(capturingOutput: true)
+        options.logHandler = AblyLogger(capturingOutput: true)
         let client = Rest(options: options)
         client.internal.logger_onlyForUseInClassMethodsAndTests.logLevel = .error
 
@@ -282,7 +282,7 @@ class RestClientTests: XCTestCase {
             static var interceptedLog: (String, LogLevel) = ("", .none)
         }
         
-        class MyLogger: Log {
+        class MyLogger: AblyLogger {
             override func log(_ message: String, with level: LogLevel) {
                 InterceptedLog.interceptedLog = (message, level)
             }

@@ -15,7 +15,7 @@ typedef NS_ENUM(NSUInteger, ARTLogLevel) {
 } NS_SWIFT_NAME(LogLevel);
 
 /// :nodoc:
-NS_SWIFT_NAME(Log)
+NS_SWIFT_NAME(AblyLogger)
 @interface ARTLog : NSObject
 
 @property (nonatomic) ARTLogLevel logLevel;

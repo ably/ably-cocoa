@@ -1582,7 +1582,7 @@ class RestClientChannelTests: XCTestCase {
 
         let options = try AblyTests.commonAppSetup(for: test)
         options.useBinaryProtocol = false
-        options.logHandler = Log(capturingOutput: true)
+        options.logHandler = AblyLogger(capturingOutput: true)
         let client = Rest(options: options)
         let channelOptions = ChannelOptions(cipher: ["key": Crypto.generateRandomKey()] as CipherParamsCompatible)
         let channel = client.channels.get(test.uniqueChannelName(), options: channelOptions)

@@ -47,7 +47,7 @@ private func rtl6c4TestsPublish(_ done: @escaping () -> Void) {
 private func testHandlesDecodingErrorInFixture(_ cryptoFixtureFileName: String, for test: Test, channelName: String) throws {
     let options = try AblyTests.commonAppSetup(for: test)
     options.autoConnect = false
-    options.logHandler = Log(capturingOutput: true)
+    options.logHandler = AblyLogger(capturingOutput: true)
     options.testOptions.transportFactory = TestProxyTransportFactory()
     let client = Realtime(options: options)
     client.connect()
@@ -3377,7 +3377,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
-        options.logHandler = Log(capturingOutput: true)
+        options.logHandler = AblyLogger(capturingOutput: true)
         options.testOptions.transportFactory = TestProxyTransportFactory()
         let client = Realtime(options: options)
         client.connect()

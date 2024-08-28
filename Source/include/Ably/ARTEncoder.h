@@ -24,7 +24,7 @@ typedef NS_ENUM(NSUInteger, ARTEncoderFormat) {
 NS_ASSUME_NONNULL_BEGIN
 
 /// :nodoc:
-NS_SWIFT_NAME(Encoder)
+NS_SWIFT_NAME(AblyEncoder)
 @protocol ARTEncoder
 
 - (NSString *)mimeType;

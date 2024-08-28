@@ -923,7 +923,7 @@ class MockHTTPExecutor: NSObject, ARTHTTPAuthenticatedExecutor {
         return self.clientOptions
     }
 
-    func defaultEncoder() -> Encoder {
+    func defaultEncoder() -> AblyEncoder {
         return self.encoder
     }
 

@@ -1,6 +1,6 @@
 #import <Foundation/Foundation.h>
 
-NS_SWIFT_NAME(Encoder)
+NS_SWIFT_NAME(AblyEncoder)
 @protocol ARTEncoder;
 
 NS_ASSUME_NONNULL_BEGIN
