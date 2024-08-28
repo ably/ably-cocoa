@@ -6,12 +6,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// :nodoc:
 typedef NS_ENUM(NSUInteger, ARTLogLevel) {
-    ARTLogLevelVerbose NS_SWIFT_NAME(verbose),
-    ARTLogLevelDebug NS_SWIFT_NAME(debug),
-    ARTLogLevelInfo NS_SWIFT_NAME(info),
-    ARTLogLevelWarn NS_SWIFT_NAME(warn),
-    ARTLogLevelError NS_SWIFT_NAME(error),
-    ARTLogLevelNone NS_SWIFT_NAME(none)
+    ARTLogLevelVerbose,
+    ARTLogLevelDebug,
+    ARTLogLevelInfo,
+    ARTLogLevelWarn,
+    ARTLogLevelError,
+    ARTLogLevelNone
 } NS_SWIFT_NAME(LogLevel);
 
 /// :nodoc:

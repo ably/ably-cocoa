@@ -17,8 +17,8 @@ NS_SWIFT_NAME(PushRecipient)
 
 /// :nodoc:
 typedef NS_ENUM(NSUInteger, ARTEncoderFormat) {
-    ARTEncoderFormatJson NS_SWIFT_NAME(json),
-    ARTEncoderFormatMsgPack NS_SWIFT_NAME(msgPack)
+    ARTEncoderFormatJson,
+    ARTEncoderFormatMsgPack
 } NS_SWIFT_NAME(EncoderFormat);
 
 NS_ASSUME_NONNULL_BEGIN
