@@ -1,4 +1,5 @@
 #import "ARTLocalDevice+Private.h"
+#import "ARTDeviceDetails+Private.h"
 #import "ARTDevicePushDetails.h"
 #import "ARTPush.h"
 #import "ARTEncoder.h"

@@ -1,5 +1,6 @@
 #import "ARTDeviceDetails.h"
 #import "ARTDevicePushDetails.h"
+#import "ARTDeviceDetails+Private.h"
 
 @implementation ARTDeviceDetails
 
