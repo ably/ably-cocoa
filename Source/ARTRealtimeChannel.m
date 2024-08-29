@@ -640,7 +640,7 @@ dispatch_sync(_queue, ^{
     if (message.resumed) {
         ARTLogDebug(self.logger, @"R:%p C:%p (%@) channel has resumed", _realtime, self, self.name);
     }
-
+    // RTL15a
     self.attachSerial = message.channelSerial;
     // RTL15b
     if (message.channelSerial) {
