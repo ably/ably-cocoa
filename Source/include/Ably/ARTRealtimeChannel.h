@@ -159,6 +159,9 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
  * Starts unset when a channel is instantiated, then updated with the `channelSerial` from each `ARTChannelEventAttached` event that matches the channel. Used as the value for `ARTRealtimeHistoryQuery.untilAttach`.
  */
 @property (nonatomic, readonly, nullable) NSString *attachSerial; // CP2a
+/**
+ * Updated by the framework whenever there is some activity on the channel (user message received, presence updated or a channel attached).
+ */
 @property (nonatomic, readonly, nullable) NSString *channelSerial; // CP2b
 
 @end
