@@ -9,12 +9,12 @@
 #import <Ably/ARTRealtimeTransport.h>
 #import <Ably/ARTAuth+Private.h>
 #import <Ably/ARTRest+Private.h>
+#import <Ably/ARTRealtimeChannels+Private.h>
 
 @class ARTRestInternal;
 @class ARTErrorInfo;
 @class ARTProtocolMessage;
 @class ARTConnectionInternal;
-@class ARTRealtimeChannelsInternal;
 
 NS_ASSUME_NONNULL_BEGIN
 

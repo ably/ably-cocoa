@@ -4,6 +4,7 @@
 #import <Ably/ARTRealtimeChannels.h>
 #import <Ably/ARTEventEmitter.h>
 #import <Ably/ARTConnection.h>
+#import <Ably/ARTRealtimeChannels.h>
 
 @class ARTStatus;
 @class ARTMessage;
@@ -20,7 +21,6 @@
 @class ARTAuth;
 @class ARTPush;
 @class ARTProtocolMessage;
-@class ARTRealtimeChannels;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -40,6 +40,11 @@ NS_ASSUME_NONNULL_BEGIN
  * A client ID, used for identifying this client when publishing messages or for presence purposes. The `clientId` can be any non-empty string, except it cannot contain a `*`. This option is primarily intended to be used in situations where the library is instantiated with a key. A `clientId` may also be implicit in a token used to instantiate the library; an error will be raised if a `clientId` specified here conflicts with the `clientId` implicit in the token.
  */
 @property (readonly, nullable) NSString *clientId;
+
+/**
+ * An `ARTChannels` object. TODO docs
+ */
+@property (readonly) id<ARTRealtimeChannelsProtocol> channels;
 
 /// :nodoc:
 - (instancetype)init NS_UNAVAILABLE;
