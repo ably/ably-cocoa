@@ -1687,10 +1687,12 @@ class RealtimeClientChannelTests: XCTestCase {
             }
         }
 
-        channelOptions.modes = [.subscribe]
+        let channelOptions2 = ARTRealtimeChannelOptions()
+        channelOptions2.params = ["rewind": "1"]
+        channelOptions2.modes = [.subscribe]
         let client2 = ARTRealtime(options: options)
         defer { client2.dispose(); client2.close() }
-        let channelWithoutAttachResume = client2.channels.get(channelName, options: channelOptions)
+        let channelWithoutAttachResume = client2.channels.get(channelName, options: channelOptions2)
         waitUntil(timeout: testTimeout) { done in
             channelWithoutAttachResume.subscribe { message in
                 XCTAssertEqual(message.name, "test")
@@ -4784,5 +4786,44 @@ class RealtimeClientChannelTests: XCTestCase {
                 channel.internal.onMessage(p)
             }
         }
+    }
+    
+    // TB1
+    func test__140__ChannelOptions__options_provided_when_instantiating_a_channel_should_be_frozen() throws {
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        options.autoConnect = false
+        let realtime = AblyTests.newRealtime(options).client
+        defer { realtime.dispose(); realtime.close() }
+        
+        let (keyData, ivData, _) = AblyTests.loadCryptoTestData("crypto-data-128")
+        let cipherParams = ARTCipherParams(algorithm: "aes", key: keyData as ARTCipherKeyCompatible, iv: ivData)
+        
+        let channelOptions = ARTRealtimeChannelOptions()
+        
+        // not frozen
+        channelOptions.cipher = cipherParams
+        channelOptions.modes = [.publish]
+        channelOptions.params = ["rewind": "1"]
+        
+        _ = realtime.channels.get(test.uniqueChannelName(), options: channelOptions)
+        
+        let exception1 = tryInObjC {
+            channelOptions.cipher = cipherParams // frozen
+        }
+        XCTAssertNotNil(exception1)
+        XCTAssertEqual(exception1!.name, NSExceptionName.objectInaccessibleException)
+        
+        let exception2 = tryInObjC {
+            channelOptions.modes = [.publish] // frozen
+        }
+        XCTAssertNotNil(exception2)
+        XCTAssertEqual(exception2!.name, NSExceptionName.objectInaccessibleException)
+        
+        let exception3 = tryInObjC {
+            channelOptions.params = ["rewind": "1"] // frozen
+        }
+        XCTAssertNotNil(exception3)
+        XCTAssertEqual(exception3!.name, NSExceptionName.objectInaccessibleException)
     }
 }
