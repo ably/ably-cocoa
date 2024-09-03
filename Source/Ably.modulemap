@@ -45,6 +45,7 @@ framework module Ably {
         header "ARTFallbackHosts.h"
         header "ARTLocalDevice+Private.h"
         header "ARTDeviceDetails+Private.h"
+        header "ARTDevicePushDetails+Private.h"
         header "ARTPush+Private.h"
         header "ARTPushAdmin+Private.h"
         header "ARTPushDeviceRegistrations+Private.h"
