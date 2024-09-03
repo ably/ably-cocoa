@@ -134,7 +134,7 @@ private func testWithUntilAttach(_ untilAttach: Bool, for test: Test, channelNam
     let queryString = testHTTPExecutor.requests.last!.url!.query
 
     if query.untilAttach {
-        expect(queryString).to(contain("fromSerial=\(channel.internal.attachSerial!)"))
+        expect(queryString).to(contain("fromSerial=\(channel.properties.attachSerial!)"))
     } else {
         expect(queryString).toNot(contain("fromSerial"))
     }
@@ -4238,7 +4238,7 @@ class RealtimeClientChannelTests: XCTestCase {
     
     // RTL15
     
-    // RTL15b
+    // RTL15a/RTL15b
     func test__200__channel_serial_is_updated_whenever_a_protocol_message_with_either_message_presence_or_attached_actions_is_received_in_a_channel() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
@@ -4256,14 +4256,15 @@ class RealtimeClientChannelTests: XCTestCase {
                 expect(error).to(beNil())
                 let attachMessage = transport.protocolMessagesReceived.filter { $0.action == .attached }[0]
                 if attachMessage.channelSerial != nil {
-                    expect(attachMessage.channelSerial).to(equal(channel.internal.channelSerial))
+                    expect(attachMessage.channelSerial).to(equal(channel.properties.attachSerial)) // RTL15a
+                    expect(attachMessage.channelSerial).to(equal(channel.properties.channelSerial)) // RTL15b
                 }
                 partialDone()
                 
                 channel.subscribe { message in
                     let messageMessage = transport.protocolMessagesReceived.filter { $0.action == .message }[0]
                     if messageMessage.channelSerial != nil {
-                        expect(messageMessage.channelSerial).to(equal(channel.internal.channelSerial))
+                        expect(messageMessage.channelSerial).to(equal(channel.properties.channelSerial)) // RTL15b
                     }
                     channel.presence.enterClient("client1", data: "Hey")
                     partialDone()
@@ -4271,7 +4272,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 channel.presence.subscribe { presenceMessage in
                     let presenceMessage = transport.protocolMessagesReceived.filter { $0.action == .presence }[0]
                     if presenceMessage.channelSerial != nil {
-                        expect(presenceMessage.channelSerial).to(equal(channel.internal.channelSerial))
+                        expect(presenceMessage.channelSerial).to(equal(channel.properties.channelSerial)) // RTL15b
                     }
                     partialDone()
                 }

@@ -69,6 +69,10 @@
     return _internal.state;
 }
 
+- (ARTChannelProperties *)properties {
+    return _internal.properties;
+}
+
 - (ARTErrorInfo *)errorReason {
     return _internal.errorReason;
 }
@@ -636,7 +640,7 @@ dispatch_sync(_queue, ^{
     if (message.resumed) {
         ARTLogDebug(self.logger, @"R:%p C:%p (%@) channel has resumed", _realtime, self, self.name);
     }
-
+    // RTL15a
     self.attachSerial = message.channelSerial;
     // RTL15b
     if (message.channelSerial) {
@@ -1078,6 +1082,18 @@ dispatch_sync(_queue, ^{
     return (ARTRealtimeChannelOptions *)[self options_nosync];
 }
 
+- (ARTChannelProperties *)properties {
+    __block ARTChannelProperties *ret;
+    dispatch_sync(_queue, ^{
+        ret = [self properties_nosync];
+    });
+    return ret;
+}
+
+- (ARTChannelProperties *)properties_nosync {
+    return [[ARTChannelProperties alloc] initWithAttachSerial:_attachSerial channelSerial:_channelSerial];
+}
+
 - (void)setOptions:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable ARTCallback)callback {
     if (callback) {
         ARTCallback userCallback = callback;
@@ -1115,6 +1131,21 @@ dispatch_sync(_queue, ^{
                 callback(nil);
             break;
     }
+}
+
+@end
+
+#pragma mark - Channel Properties (RTL15)
+
+@implementation ARTChannelProperties
+
+- (instancetype)initWithAttachSerial:(NSString *)attachSerial channelSerial:(NSString *)channelSerial {
+    self = [super init];
+    if (self) {
+        _attachSerial = attachSerial;
+        _channelSerial = channelSerial;
+    }
+    return self;
 }
 
 @end
