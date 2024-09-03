@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 /// :nodoc:
+NS_SWIFT_SENDABLE
 @interface ARTRealtimeChannels : NSObject<ARTRealtimeChannelsProtocol>
 
 - (ARTRealtimeChannel *)get:(NSString *)name;
