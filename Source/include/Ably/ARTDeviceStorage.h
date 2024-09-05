@@ -6,6 +6,7 @@ NS_ASSUME_NONNULL_BEGIN
 // Instances of ARTDeviceStorage should expect to have their methods called
 // from any thread.
 /// :nodoc:
+NS_SWIFT_NAME(DeviceStorage)
 @protocol ARTDeviceStorage <NSObject>
 - (nullable id)objectForKey:(NSString *)key;
 - (void)setObject:(nullable id)value forKey:(NSString *)key;

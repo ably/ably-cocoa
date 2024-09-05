@@ -3,7 +3,7 @@ import Nimble
 import XCTest
 
 // Swift isn't yet smart enough to do this automatically when bridging Objective-C APIs
-extension ARTRestChannels: Sequence {
+extension RestChannels: Sequence {
     public func makeIterator() -> NSFastEnumerationIterator {
         return NSFastEnumerationIterator(iterate())
     }
@@ -17,10 +17,10 @@ private func beAChannel(named expectedValue: String) -> Nimble.Predicate<ARTChan
     }
 }
 
-private var client: ARTRest!
+private var client: Rest!
 private var channelName: String!
 
-private let cipherParams: ARTCipherParams? = nil
+private let cipherParams: CipherParams? = nil
 
 class RestClientChannelsTests: XCTestCase {
     // XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
@@ -35,13 +35,13 @@ class RestClientChannelsTests: XCTestCase {
     override func setUp() {
         super.setUp()
 
-        client = ARTRest(key: "fake:key")
+        client = Rest(key: "fake:key")
         channelName = ProcessInfo.processInfo.globallyUniqueString
     }
 
     // RSN1
     func test__001__RestClient__channels__should_return_collection_of_channels() {
-        let _: ARTRestChannels = client.channels
+        let _: RestChannels = client.channels
     }
 
     // RSN3
@@ -57,7 +57,7 @@ class RestClientChannelsTests: XCTestCase {
 
     // RSN3b
     func test__004__RestClient__channels__get__should_return_a_channel_with_the_provided_options() {
-        let options = ARTChannelOptions(cipher: cipherParams)
+        let options = ChannelOptions(cipher: cipherParams)
         let channel = client.channels.get(channelName, options: options)
 
         expect(channel.internal).to(beAChannel(named: channelName))
@@ -66,7 +66,7 @@ class RestClientChannelsTests: XCTestCase {
 
     // RSN3b
     func test__005__RestClient__channels__get__should_not_replace_the_options_on_an_existing_channel_when_none_are_provided() {
-        let options = ARTChannelOptions(cipher: cipherParams)
+        let options = ChannelOptions(cipher: cipherParams)
         let channel = client.channels.get(channelName, options: options).internal
 
         let newButSameChannel = client.channels.get(channelName).internal
@@ -80,7 +80,7 @@ class RestClientChannelsTests: XCTestCase {
         let channel = client.channels.get(channelName).internal
         let oldOptions = channel.options
 
-        let newOptions = ARTChannelOptions(cipher: cipherParams)
+        let newOptions = ChannelOptions(cipher: cipherParams)
         let newButSameChannel = client.channels.get(channelName, options: newOptions).internal
 
         XCTAssertTrue(newButSameChannel === channel)
@@ -121,7 +121,7 @@ class RestClientChannelsTests: XCTestCase {
         ]
 
         for channel in client.channels {
-            expect(channels).to(contain((channel as! ARTRestChannel).internal))
+            expect(channels).to(contain((channel as! RestChannel).internal))
         }
     }
 }

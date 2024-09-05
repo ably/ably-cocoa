@@ -6,6 +6,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /// :nodoc:
+NS_SWIFT_NAME(LocalDeviceStorage)
 @interface ARTLocalDeviceStorage : NSObject<ARTDeviceStorage>
 
 - (instancetype)initWithLogger:(ARTInternalLog *)logger;

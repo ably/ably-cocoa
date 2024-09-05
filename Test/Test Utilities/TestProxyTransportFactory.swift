@@ -9,7 +9,7 @@ class TestProxyTransportFactory: RealtimeTransportFactory {
 
     var transportCreatedEvent: ((ARTRealtimeTransport) -> Void)?
 
-    func transport(withRest rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, logger: InternalLog) -> ARTRealtimeTransport {
+    func transport(withRest rest: ARTRestInternal, options: ClientOptions, resumeKey: String?, logger: InternalLog) -> ARTRealtimeTransport {
         let webSocketFactory = WebSocketFactory()
 
         let testProxyTransport = TestProxyTransport(

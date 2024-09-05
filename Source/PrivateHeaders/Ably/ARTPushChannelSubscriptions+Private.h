@@ -4,6 +4,7 @@
 @class ARTRestInternal;
 @class ARTInternalLog;
 
+NS_SWIFT_NAME(PushChannelSubscriptionsInternal)
 @interface ARTPushChannelSubscriptionsInternal : NSObject <ARTPushChannelSubscriptionsProtocol>
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest logger:(ARTInternalLog *)logger;

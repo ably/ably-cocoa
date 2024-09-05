@@ -9,26 +9,27 @@ typedef NS_OPTIONS(NSUInteger, ARTChannelMode) {
     /**
          * The client can enter the presence set.
          */
-    ARTChannelModePresence = 1 << 16,
+    ARTChannelModePresence NS_SWIFT_NAME(presence) = 1 << 16,
     /**
          * The client can publish messages.
          */
-    ARTChannelModePublish = 1 << 17,
+    ARTChannelModePublish NS_SWIFT_NAME(publish) = 1 << 17,
     /**
          * The client can subscribe to messages.
          */
-    ARTChannelModeSubscribe = 1 << 18,
+    ARTChannelModeSubscribe NS_SWIFT_NAME(subscribe) = 1 << 18,
     /**
          * The client can receive presence messages.
          */
-    ARTChannelModePresenceSubscribe = 1 << 19
-};
+    ARTChannelModePresenceSubscribe NS_SWIFT_NAME(presenceSubscribe) = 1 << 19
+} NS_SWIFT_NAME(ChannelMode);
 
 NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Passes additional properties to an `ARTRealtimeChannel` object, such as encryption, an `ARTChannelMode` and channel parameters.
  */
+NS_SWIFT_NAME(RealtimeChannelOptions)
 @interface ARTRealtimeChannelOptions : ARTChannelOptions
 
 /**

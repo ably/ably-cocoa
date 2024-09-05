@@ -27,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  The protocol upon which the top level object `ARTRealtime` is implemented.
  */
+NS_SWIFT_NAME(RealtimeProtocol)
 @protocol ARTRealtimeProtocol <NSObject>
 
 #if TARGET_OS_IOS
@@ -125,6 +126,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * A client that extends the functionality of the `ARTRest` and provides additional realtime-specific features.
  */
+NS_SWIFT_NAME(Realtime)
 @interface ARTRealtime : NSObject <ARTRealtimeProtocol>
 
 /**
