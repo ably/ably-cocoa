@@ -5,6 +5,7 @@
 /**
  * Describes the possible flags used to configure client capabilities, using `ARTChannelOptions`.
  */
+NS_SWIFT_SENDABLE
 typedef NS_OPTIONS(NSUInteger, ARTChannelMode) {
     /**
          * The client can enter the presence set.

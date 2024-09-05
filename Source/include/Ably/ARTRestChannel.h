@@ -46,6 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Enables messages to be published and historic messages to be retrieved for a channel.
  */
+NS_SWIFT_SENDABLE
 @interface ARTRestChannel : NSObject <ARTRestChannelProtocol>
 
 /**

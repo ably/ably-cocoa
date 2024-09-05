@@ -5,6 +5,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /// :nodoc:
+NS_SWIFT_SENDABLE
 typedef NS_ENUM(NSUInteger, ARTQueryDirection) {
     ARTQueryDirectionForwards,
     ARTQueryDirectionBackwards

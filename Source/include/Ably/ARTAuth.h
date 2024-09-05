@@ -88,6 +88,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @see See `ARTAuthProtocol` for details.
  */
+NS_SWIFT_SENDABLE
 @interface ARTAuth : NSObject <ARTAuthProtocol>
 
 @end

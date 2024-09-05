@@ -80,6 +80,7 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTRealtimeConnectionEvent, ARTConnectionState
  *
  * @see See `ARTConnectionProtocol` for details.
  */
+NS_SWIFT_SENDABLE
 @interface ARTConnection: NSObject <ARTConnectionProtocol>
 
 @end

@@ -23,6 +23,7 @@
 #import "ARTInternalLog.h"
 #import "ARTLocalDeviceStorage.h"
 #import "ARTLocalDevice+Private.h"
+#import "ARTDeviceDetails+Private.h"
 
 @implementation ARTAuth {
     ARTQueuedDealloc *_dealloc;

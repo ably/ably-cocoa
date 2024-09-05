@@ -19,6 +19,7 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString * _Nullable tokenType);
 @interface ARTLocalDevice ()
 
 @property (nonatomic) id<ARTDeviceStorage> storage;
+@property (nullable, nonatomic, readwrite) ARTDeviceSecret *secret;
 
 + (instancetype)deviceWithStorage:(id<ARTDeviceStorage>)storage logger:(nullable ARTInternalLog *)logger;
 - (nullable NSString *)apnsDeviceToken;

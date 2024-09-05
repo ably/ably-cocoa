@@ -1,6 +1,6 @@
 #import "ARTChannel+Private.h"
 #import "ARTChannel+Subclass.h"
-
+#import "ARTChannelOptions+Private.h"
 #import "ARTDataEncoder.h"
 #import "ARTMessage.h"
 #import "ARTChannelOptions.h"
@@ -23,6 +23,7 @@
         _logger = logger;
         _queue = rest.queue;
         _options = options;
+        _options.frozen = YES;
         NSError *error = nil;
         _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:_options.cipher logger:_logger error:&error];
         if (error != nil) {

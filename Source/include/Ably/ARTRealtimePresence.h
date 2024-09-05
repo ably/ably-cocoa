@@ -217,6 +217,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @see See `ARTRealtimePresenceProtocol` for details.
  */
+NS_SWIFT_SENDABLE
 @interface ARTRealtimePresence : ARTPresence <ARTRealtimePresenceProtocol>
 @end
 

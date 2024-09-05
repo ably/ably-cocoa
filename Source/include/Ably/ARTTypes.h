@@ -34,6 +34,7 @@ typedef NSData ARTDeviceToken;
 typedef ARTJsonObject ARTPushRecipient;
 
 /// :nodoc:
+NS_SWIFT_SENDABLE
 typedef NS_ENUM(NSUInteger, ARTAuthentication) {
     ARTAuthenticationOff,
     ARTAuthenticationOn,
@@ -43,6 +44,7 @@ typedef NS_ENUM(NSUInteger, ARTAuthentication) {
 };
 
 /// :nodoc:
+NS_SWIFT_SENDABLE
 typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
     ARTAuthMethodBasic,
     ARTAuthMethodToken
@@ -51,6 +53,7 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
 /**
  * Describes the realtime `ARTConnection` object states.
  */
+NS_SWIFT_SENDABLE
 typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
     /**
          * A connection with this state has been initialized but no connection has yet been attempted.
@@ -92,6 +95,7 @@ NSString *_Nonnull ARTRealtimeConnectionStateToStr(ARTRealtimeConnectionState st
 /**
  * Describes the events emitted by a `ARTConnection` object. An event is either an `ARTRealtimeConnectionEventUpdate` or an `ARTRealtimeConnectionState`.
  */
+NS_SWIFT_SENDABLE
 typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionEvent) {
     ARTRealtimeConnectionEventInitialized,
     ARTRealtimeConnectionEventConnecting,
@@ -113,6 +117,7 @@ NSString *_Nonnull ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent ev
 /**
  * Describes the possible states of an `ARTRealtimeChannel` object.
  */
+NS_SWIFT_SENDABLE
 typedef NS_ENUM(NSUInteger, ARTRealtimeChannelState) {
     /**
          * The channel has been initialized but no attach has yet been attempted.
@@ -150,6 +155,7 @@ NSString *_Nonnull ARTRealtimeChannelStateToStr(ARTRealtimeChannelState state);
 /**
  * Describes the events emitted by an `ARTRealtimeChannel` object. An event is either an `ARTChannelEventUpdate` or a `ARTRealtimeChannelState`.
  */
+NS_SWIFT_SENDABLE
 typedef NS_ENUM(NSUInteger, ARTChannelEvent) {
     ARTChannelEventInitialized,
     ARTChannelEventAttaching,
@@ -169,6 +175,7 @@ NSString *_Nonnull ARTChannelEventToStr(ARTChannelEvent event);
 
 
 /// :nodoc:
+NS_SWIFT_SENDABLE
 typedef NS_ENUM(NSInteger, ARTDataQueryError) {
     ARTDataQueryErrorLimit = 1,
     ARTDataQueryErrorTimestampRange = 2,
@@ -178,11 +185,13 @@ typedef NS_ENUM(NSInteger, ARTDataQueryError) {
 };
 
 /// :nodoc:
+NS_SWIFT_SENDABLE
 typedef NS_ENUM(NSInteger, ARTRealtimeHistoryError) {
     ARTRealtimeHistoryErrorNotAttached = ARTDataQueryErrorTimestampRange + 1
 };
 
 /// :nodoc:
+NS_SWIFT_SENDABLE
 typedef NS_ENUM(NSInteger, ARTCustomRequestError) {
     ARTCustomRequestErrorInvalidMethod = 1,
     ARTCustomRequestErrorInvalidBody = 2,

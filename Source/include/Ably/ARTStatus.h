@@ -27,6 +27,7 @@ typedef NS_ENUM(NSUInteger, ARTState) {
 /**
  The list of all public error codes returned under the error domain ARTAblyErrorDomain
  */
+NS_SWIFT_SENDABLE
 typedef CF_ENUM(NSUInteger, ARTErrorCode) {
     ARTErrorNoError = 10000,
     ARTErrorBadRequest = 40000,

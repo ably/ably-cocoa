@@ -170,6 +170,7 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
  * Enables messages to be published and subscribed to. Also enables historic messages to be retrieved and provides access to the `ARTRealtimePresence` object of a channel.
  * Also implements `ARTEventEmitter` interface and emits `ARTChannelEvent` events, where a `ARTChannelEvent` is either a `ARTRealtimeChannelState` or an `ARTChannelEvent.ARTChannelEventUpdate`.
  */
+NS_SWIFT_SENDABLE
 @interface ARTRealtimeChannel : NSObject <ARTRealtimeChannelProtocol>
 
 /**

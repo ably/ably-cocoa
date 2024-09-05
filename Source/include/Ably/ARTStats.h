@@ -7,6 +7,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Describes the interval unit over which statistics are gathered.
  */
+NS_SWIFT_SENDABLE
 typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
     /**
      * Interval unit over which statistics are gathered as minutes.
