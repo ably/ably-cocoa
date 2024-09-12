@@ -58,11 +58,7 @@
 }
 
 - (void)setLimit:(NSUInteger)value {
-    if (self.isFrozen) {
-        @throw [NSException exceptionWithName:NSObjectInaccessibleException
-                                       reason:[NSString stringWithFormat:@"%@: You can't change query after you've passed it to the receiver.", self.class]
-                                     userInfo:nil];
-    }
+    [self throwIfFrozen];
     _limit = value;
 }
 
@@ -71,11 +67,7 @@
 }
 
 - (void)setClientId:(NSString *)value {
-    if (self.isFrozen) {
-        @throw [NSException exceptionWithName:NSObjectInaccessibleException
-                                       reason:[NSString stringWithFormat:@"%@: You can't change query after you've passed it to the receiver.", self.class]
-                                     userInfo:nil];
-    }
+    [self throwIfFrozen];
     _clientId = value;
 }
 
@@ -84,11 +76,7 @@
 }
 
 - (void)setConnectionId:(NSString *)value {
-    if (self.isFrozen) {
-        @throw [NSException exceptionWithName:NSObjectInaccessibleException
-                                       reason:[NSString stringWithFormat:@"%@: You can't change query after you've passed it to the receiver.", self.class]
-                                     userInfo:nil];
-    }
+    [self throwIfFrozen];
     _connectionId = value;
 }
 

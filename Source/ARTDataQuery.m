@@ -48,11 +48,7 @@ static NSString *queryDirectionToString(ARTQueryDirection direction) {
 }
 
 - (void)setStart:(NSDate *)value {
-    if (self.isFrozen) {
-        @throw [NSException exceptionWithName:NSObjectInaccessibleException
-                                       reason:[NSString stringWithFormat:@"%@: You can't change query after you've passed it to the receiver.", self.class]
-                                     userInfo:nil];
-    }
+    [self throwIfFrozen];
     _start = value;
 }
 
@@ -61,11 +57,7 @@ static NSString *queryDirectionToString(ARTQueryDirection direction) {
 }
 
 - (void)setEnd:(NSDate *)value {
-    if (self.isFrozen) {
-        @throw [NSException exceptionWithName:NSObjectInaccessibleException
-                                       reason:[NSString stringWithFormat:@"%@: You can't change query after you've passed it to the receiver.", self.class]
-                                     userInfo:nil];
-    }
+    [self throwIfFrozen];
     _end = value;
 }
 
@@ -74,11 +66,7 @@ static NSString *queryDirectionToString(ARTQueryDirection direction) {
 }
 
 - (void)setLimit:(uint16_t)value {
-    if (self.isFrozen) {
-        @throw [NSException exceptionWithName:NSObjectInaccessibleException
-                                       reason:[NSString stringWithFormat:@"%@: You can't change query after you've passed it to the receiver.", self.class]
-                                     userInfo:nil];
-    }
+    [self throwIfFrozen];
     _limit = value;
 }
 
@@ -87,11 +75,7 @@ static NSString *queryDirectionToString(ARTQueryDirection direction) {
 }
 
 - (void)setDirection:(ARTQueryDirection)value {
-    if (self.isFrozen) {
-        @throw [NSException exceptionWithName:NSObjectInaccessibleException
-                                       reason:[NSString stringWithFormat:@"%@: You can't change query after you've passed it to the receiver.", self.class]
-                                     userInfo:nil];
-    }
+    [self throwIfFrozen];
     _direction = value;
 }
 
@@ -122,11 +106,7 @@ static NSString *queryDirectionToString(ARTQueryDirection direction) {
 }
 
 - (void)setUntilAttach:(BOOL)value {
-    if (self.isFrozen) {
-        @throw [NSException exceptionWithName:NSObjectInaccessibleException
-                                       reason:[NSString stringWithFormat:@"%@: You can't change query after you've passed it to the receiver.", self.class]
-                                     userInfo:nil];
-    }
+    [self throwIfFrozen];
     _untilAttach = value;
 }
 

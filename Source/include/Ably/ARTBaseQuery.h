@@ -5,4 +5,6 @@
 
 @property (nonatomic, getter=isFrozen) BOOL frozen;
 
+- (void)throwIfFrozen;
+
 @end
