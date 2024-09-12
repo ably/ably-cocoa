@@ -3245,6 +3245,11 @@ class RealtimeClientPresenceTests: XCTestCase {
             let params = ARTRealtimePresenceQuery()
             params.waitForSync = true
             channel.presence.get(params, callback: callback)
+            let exception = tryInObjC {
+                params.waitForSync = false // frozen
+            }
+            XCTAssertNotNil(exception)
+            XCTAssertEqual(exception!.name, NSExceptionName.objectInaccessibleException)
         }
     }
 
@@ -3547,7 +3552,13 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
         XCTAssertTrue(restPresenceHistoryMethodWasCalled)
         restPresenceHistoryMethodWasCalled = false
-
+        
+        let exception1 = tryInObjC {
+            queryRealtime.untilAttach = false // frozen
+        }
+        XCTAssertNotNil(exception1)
+        XCTAssertEqual(exception1!.name, NSExceptionName.objectInaccessibleException)
+        
         waitUntil(timeout: testTimeout) { done in
             expect {
                 try channelRealtime.presence.history(queryRealtime) { _, _ in

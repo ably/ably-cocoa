@@ -592,6 +592,30 @@ class RestClientChannelTests: XCTestCase {
                     XCTAssertTrue(message.extras == extras)
                     done()
                 }
+                
+                let exception1 = tryInObjC {
+                    query.limit = 1000 // frozen
+                }
+                XCTAssertNotNil(exception1)
+                XCTAssertEqual(exception1!.name, NSExceptionName.objectInaccessibleException)
+                
+                let exception2 = tryInObjC {
+                    query.start = Date() // frozen
+                }
+                XCTAssertNotNil(exception2)
+                XCTAssertEqual(exception2!.name, NSExceptionName.objectInaccessibleException)
+                
+                let exception3 = tryInObjC {
+                    query.end = Date() // frozen
+                }
+                XCTAssertNotNil(exception3)
+                XCTAssertEqual(exception3!.name, NSExceptionName.objectInaccessibleException)
+                
+                let exception4 = tryInObjC {
+                    query.direction = .forwards // frozen
+                }
+                XCTAssertNotNil(exception4)
+                XCTAssertEqual(exception4!.name, NSExceptionName.objectInaccessibleException)
             }
         }
     }
@@ -1103,9 +1127,12 @@ class RestClientChannelTests: XCTestCase {
             XCTAssertEqual(error._code, ARTDataQueryError.timestampRange.rawValue)
         })
 
-        query.direction = .forwards
+        let query2 = ARTDataQuery()
+        query2.direction = .forwards
+        query2.end = query.end
+        query2.start = query.start
 
-        expect { try channel.history(query) { _, _ in } }.to(throwError { (error: Error) in
+        expect { try channel.history(query2) { _, _ in } }.to(throwError { (error: Error) in
             XCTAssertEqual(error._code, ARTDataQueryError.timestampRange.rawValue)
         })
     }
@@ -1203,8 +1230,9 @@ class RestClientChannelTests: XCTestCase {
         query.limit = 1001
         expect { try channel.history(query, callback: { _, _ in }) }.to(throwError())
 
-        query.limit = 1000
-        expect { try channel.history(query, callback: { _, _ in }) }.toNot(throwError())
+        let query2 = ARTDataQuery()
+        query2.limit = 1000
+        expect { try channel.history(query2, callback: { _, _ in }) }.toNot(throwError())
     }
 
     // RSL3, RSP1

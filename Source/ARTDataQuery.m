@@ -1,7 +1,12 @@
 #import "ARTDataQuery+Private.h"
 #import "ARTRealtimeChannel+Private.h"
 
-@implementation ARTDataQuery
+@implementation ARTDataQuery {
+    NSDate *_start;
+    NSDate *_end;
+    uint16_t _limit;
+    ARTQueryDirection _direction;
+}
 
 - (instancetype)init {
     if (self = [super init]) {
@@ -38,9 +43,63 @@ static NSString *queryDirectionToString(ARTQueryDirection direction) {
     return items;
 }
 
+- (NSDate *)start {
+    return _start;
+}
+
+- (void)setStart:(NSDate *)value {
+    if (self.isFrozen) {
+        @throw [NSException exceptionWithName:NSObjectInaccessibleException
+                                       reason:[NSString stringWithFormat:@"%@: You can't change query after you've passed it to the receiver.", self.class]
+                                     userInfo:nil];
+    }
+    _start = value;
+}
+
+- (NSDate *)end {
+    return _end;
+}
+
+- (void)setEnd:(NSDate *)value {
+    if (self.isFrozen) {
+        @throw [NSException exceptionWithName:NSObjectInaccessibleException
+                                       reason:[NSString stringWithFormat:@"%@: You can't change query after you've passed it to the receiver.", self.class]
+                                     userInfo:nil];
+    }
+    _end = value;
+}
+
+- (uint16_t)limit {
+    return _limit;
+}
+
+- (void)setLimit:(uint16_t)value {
+    if (self.isFrozen) {
+        @throw [NSException exceptionWithName:NSObjectInaccessibleException
+                                       reason:[NSString stringWithFormat:@"%@: You can't change query after you've passed it to the receiver.", self.class]
+                                     userInfo:nil];
+    }
+    _limit = value;
+}
+
+- (ARTQueryDirection)direction {
+    return _direction;
+}
+
+- (void)setDirection:(ARTQueryDirection)value {
+    if (self.isFrozen) {
+        @throw [NSException exceptionWithName:NSObjectInaccessibleException
+                                       reason:[NSString stringWithFormat:@"%@: You can't change query after you've passed it to the receiver.", self.class]
+                                     userInfo:nil];
+    }
+    _direction = value;
+}
+
 @end
 
-@implementation ARTRealtimeHistoryQuery
+@implementation ARTRealtimeHistoryQuery {
+    BOOL _untilAttach;
+}
 
 - (NSMutableArray *)asQueryItems:(NSError **)errorPtr {
     NSMutableArray *items = [super asQueryItems:errorPtr];
@@ -56,6 +115,19 @@ static NSString *queryDirectionToString(ARTQueryDirection direction) {
         [items addObject:[NSURLQueryItem queryItemWithName:@"fromSerial" value:self.realtimeChannel.attachSerial]];
     }
     return items;
+}
+
+- (BOOL)untilAttach {
+    return _untilAttach;
+}
+
+- (void)setUntilAttach:(BOOL)value {
+    if (self.isFrozen) {
+        @throw [NSException exceptionWithName:NSObjectInaccessibleException
+                                       reason:[NSString stringWithFormat:@"%@: You can't change query after you've passed it to the receiver.", self.class]
+                                     userInfo:nil];
+    }
+    _untilAttach = value;
 }
 
 @end

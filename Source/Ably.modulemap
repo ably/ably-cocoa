@@ -14,6 +14,7 @@ framework module Ably {
         header "ARTChannels+Private.h"
         header "ARTConnection+Private.h"
         header "ARTConnectionDetails+Private.h"
+        header "ARTBaseQuery.h"
         header "ARTDataQuery+Private.h"
         header "ARTDefault+Private.h"
         header "ARTEventEmitter+Private.h"

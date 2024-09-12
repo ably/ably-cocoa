@@ -3661,6 +3661,12 @@ class RealtimeClientChannelTests: XCTestCase {
                 }
             }.toNot(throwError { err in fail("\(err)"); done() })
         }
+        
+        let exception1 = tryInObjC {
+            query.untilAttach = false // frozen
+        }
+        XCTAssertNotNil(exception1)
+        XCTAssertEqual(exception1!.name, NSExceptionName.objectInaccessibleException)
     }
 
     // RTL10c

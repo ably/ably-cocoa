@@ -75,9 +75,28 @@ class RestClientPresenceTests: XCTestCase {
 
         query.limit = 1001
         expect { try channel.presence.get(query, callback: { _, _ in }) }.to(throwError())
+        
+        let exception1 = tryInObjC {
+            query.limit = 1000 // frozen
+        }
+        XCTAssertNotNil(exception1)
+        XCTAssertEqual(exception1!.name, NSExceptionName.objectInaccessibleException)
+        
+        let exception2 = tryInObjC {
+            query.connectionId = "other" // frozen
+        }
+        XCTAssertNotNil(exception2)
+        XCTAssertEqual(exception2!.name, NSExceptionName.objectInaccessibleException)
+        
+        let exception3 = tryInObjC {
+            query.clientId = "other" // frozen
+        }
+        XCTAssertNotNil(exception3)
+        XCTAssertEqual(exception3!.name, NSExceptionName.objectInaccessibleException)
 
-        query.limit = 1000
-        expect { try channel.presence.get(query, callback: { _, _ in }) }.toNot(throwError())
+        let query2 = ARTPresenceQuery()
+        query2.limit = 1000
+        expect { try channel.presence.get(query2, callback: { _, _ in }) }.toNot(throwError())
     }
 
     // RSP3a2
@@ -256,11 +275,12 @@ class RestClientPresenceTests: XCTestCase {
             }.toNot(throwError())
         }
 
-        query.direction = .forwards
+        let query2 = ARTDataQuery()
+        query2.direction = .forwards
 
         waitUntil(timeout: testTimeout) { done in
             expect {
-                try channel.presence.history(query) { membersPage, error in
+                try channel.presence.history(query2) { membersPage, error in
                     XCTAssertNil(error)
                     let firstMember = membersPage!.items.first!
                     XCTAssertEqual(firstMember.clientId, "user1")
@@ -305,9 +325,10 @@ class RestClientPresenceTests: XCTestCase {
             }.toNot(throwError())
         }
 
-        query.limit = 1001
+        let query2 = ARTDataQuery()
+        query2.limit = 1001
 
-        expect { try channel.presence.history(query) { _, _ in } }.to(throwError { (error: Error) in
+        expect { try channel.presence.history(query2) { _, _ in } }.to(throwError { (error: Error) in
             XCTAssertEqual(error._code, ARTDataQueryError.limit.rawValue)
         })
     }
@@ -430,9 +451,12 @@ class RestClientPresenceTests: XCTestCase {
             XCTAssertEqual(error._code, ARTDataQueryError.timestampRange.rawValue)
         })
 
-        query.direction = .forwards
+        let query2 = ARTDataQuery()
+        query2.end = query.end
+        query2.start = query.start
+        query2.direction = .forwards
 
-        expect { try channel.presence.history(query) { _, _ in } }.to(throwError { (error: Error) in
+        expect { try channel.presence.history(query2) { _, _ in } }.to(throwError { (error: Error) in
             XCTAssertEqual(error._code, ARTDataQueryError.timestampRange.rawValue)
         })
     }

@@ -161,6 +161,8 @@ static const NSUInteger kIdempotentLibraryGeneratedIdLength = 9; //bytes
             });
         };
     }
+    
+    query.frozen = true;
 
     __block BOOL ret;
 dispatch_sync(_queue, ^{

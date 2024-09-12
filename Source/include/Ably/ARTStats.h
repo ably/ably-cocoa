@@ -30,6 +30,7 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 /**
  This object is used for providing parameters into `ARTStats`'s methods with paginated results.
  */
+NS_SWIFT_SENDABLE
 @interface ARTStatsQuery : ARTDataQuery
 
 /**

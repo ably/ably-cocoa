@@ -667,6 +667,8 @@ NS_ASSUME_NONNULL_END
             });
         };
     }
+    
+    query.frozen = true;
 
     if (query.limit > 1000) {
         if (errorPtr) {

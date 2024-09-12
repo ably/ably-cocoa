@@ -1,7 +1,9 @@
 #import "ARTStats.h"
 #import "ARTDataQuery+Private.h"
 
-@implementation ARTStatsQuery
+@implementation ARTStatsQuery {
+    ARTStatsGranularity _unit;
+}
 
 - (instancetype)init {
     if (self = [super init]) {
@@ -32,6 +34,19 @@ static NSString *statsUnitToString(ARTStatsGranularity unit) {
     }
     [items addObject:[NSURLQueryItem queryItemWithName:@"unit" value:statsUnitToString(self.unit)]];
     return items;
+}
+
+- (ARTStatsGranularity)unit {
+    return _unit;
+}
+
+- (void)setUnit:(ARTStatsGranularity)value {
+    if (self.isFrozen) {
+        @throw [NSException exceptionWithName:NSObjectInaccessibleException
+                                       reason:[NSString stringWithFormat:@"%@: You can't change query after you've passed it to the receiver.", self.class]
+                                     userInfo:nil];
+    }
+    _unit = value;
 }
 
 @end

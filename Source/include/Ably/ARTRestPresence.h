@@ -2,6 +2,7 @@
 
 #import <Ably/ARTPresence.h>
 #import <Ably/ARTDataQuery.h>
+#import <Ably/ARTBaseQuery.h>
 
 @class ARTRestChannel;
 
@@ -10,7 +11,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  This object is used for providing parameters into `ARTRestPresence`'s methods with paginated results.
  */
-@interface ARTPresenceQuery : NSObject
+NS_SWIFT_SENDABLE
+@interface ARTPresenceQuery : ARTBaseQuery
 
 /**
  * An upper limit on the number of messages returned. The default is 100, and the maximum is 1000.

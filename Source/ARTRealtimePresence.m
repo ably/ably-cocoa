@@ -19,7 +19,9 @@
 
 #pragma mark - ARTRealtimePresenceQuery
 
-@implementation ARTRealtimePresenceQuery
+@implementation ARTRealtimePresenceQuery {
+    BOOL _waitForSync;
+}
 
 - (instancetype)initWithLimit:(NSUInteger)limit clientId:(NSString *)clientId connectionId:(NSString *)connectionId {
     self = [super initWithLimit:limit clientId:clientId connectionId:connectionId];
@@ -27,6 +29,19 @@
         _waitForSync = true;
     }
     return self;
+}
+
+- (BOOL)waitForSync {
+    return _waitForSync;
+}
+
+- (void)setWaitForSync:(BOOL)value {
+    if (self.isFrozen) {
+        @throw [NSException exceptionWithName:NSObjectInaccessibleException
+                                       reason:[NSString stringWithFormat:@"%@: You can't change query after you've passed it to the receiver.", self.class]
+                                     userInfo:nil];
+    }
+    _waitForSync = value;
 }
 
 @end
@@ -220,6 +235,8 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
             });
         };
     }
+
+    query.frozen = true;
 
 dispatch_async(_queue, ^{
     switch (self->_channel.state_nosync) {

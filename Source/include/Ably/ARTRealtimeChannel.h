@@ -154,6 +154,7 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
 /**
  * Describes the properties of the channel state.
  */
+NS_SWIFT_SENDABLE
 @interface ARTChannelProperties : NSObject
 /**
  * Starts unset when a channel is instantiated, then updated with the `channelSerial` from each `ARTChannelEventAttached` event that matches the channel. Used as the value for `ARTRealtimeHistoryQuery.untilAttach`.

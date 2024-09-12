@@ -111,6 +111,12 @@ class RestClientStatsTests: XCTestCase {
         let result = try queryStats(client, query)
         XCTAssertEqual(result.items.count, 3)
 
+        let exception1 = tryInObjC {
+            query.unit = .month // frozen
+        }
+        XCTAssertNotNil(exception1)
+        XCTAssertEqual(exception1!.name, NSExceptionName.objectInaccessibleException)
+        
         let totalInbound = result.items.reduce(0 as UInt) {
             $0 + $1.inbound.all.messages.count
         }

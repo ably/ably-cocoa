@@ -1,5 +1,5 @@
 #import <Foundation/Foundation.h>
-
+#import <Ably/ARTBaseQuery.h>
 #import <Ably/ARTTypes.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -14,7 +14,8 @@ typedef NS_ENUM(NSUInteger, ARTQueryDirection) {
 /**
  This object is used for providing parameters into methods with paginated results.
  */
-@interface ARTDataQuery : NSObject
+NS_SWIFT_SENDABLE
+@interface ARTDataQuery : ARTBaseQuery
 
 /**
  * The time from which the data items are retrieved.
@@ -41,6 +42,7 @@ typedef NS_ENUM(NSUInteger, ARTQueryDirection) {
 /**
  This object is used for providing parameters into `ARTRealtimePresence`'s methods with paginated results.
  */
+NS_SWIFT_SENDABLE
 @interface ARTRealtimeHistoryQuery : ARTDataQuery
 
 /**

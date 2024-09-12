@@ -14,7 +14,11 @@
 #import "ARTChannel.h"
 #import "ARTDataQuery.h"
 
-@implementation ARTPresenceQuery
+@implementation ARTPresenceQuery {
+    NSUInteger _limit;
+    NSString *_clientId;
+    NSString *_connectionId;
+}
 
 - (instancetype)init {
     return [self initWithClientId:nil connectionId:nil];
@@ -47,6 +51,45 @@
     [items addObject:[NSURLQueryItem queryItemWithName:@"limit" value:[NSString stringWithFormat:@"%lu", (unsigned long)self.limit]]];
 
     return items;
+}
+
+- (NSUInteger)limit {
+    return _limit;
+}
+
+- (void)setLimit:(NSUInteger)value {
+    if (self.isFrozen) {
+        @throw [NSException exceptionWithName:NSObjectInaccessibleException
+                                       reason:[NSString stringWithFormat:@"%@: You can't change query after you've passed it to the receiver.", self.class]
+                                     userInfo:nil];
+    }
+    _limit = value;
+}
+
+- (NSString *)clientId {
+    return _clientId;
+}
+
+- (void)setClientId:(NSString *)value {
+    if (self.isFrozen) {
+        @throw [NSException exceptionWithName:NSObjectInaccessibleException
+                                       reason:[NSString stringWithFormat:@"%@: You can't change query after you've passed it to the receiver.", self.class]
+                                     userInfo:nil];
+    }
+    _clientId = value;
+}
+
+- (NSString *)connectionId {
+    return _connectionId;
+}
+
+- (void)setConnectionId:(NSString *)value {
+    if (self.isFrozen) {
+        @throw [NSException exceptionWithName:NSObjectInaccessibleException
+                                       reason:[NSString stringWithFormat:@"%@: You can't change query after you've passed it to the receiver.", self.class]
+                                     userInfo:nil];
+    }
+    _connectionId = value;
 }
 
 @end
@@ -130,6 +173,8 @@ NS_ASSUME_NONNULL_END
         };
     }
 
+    query.frozen = true;
+    
     if (query.limit > 1000) {
         if (errorPtr) {
             *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
@@ -175,6 +220,8 @@ dispatch_async(_queue, ^{
         };
     }
 
+    query.frozen = true;
+    
     if (query.limit > 1000) {
         if (errorPtr) {
             *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
