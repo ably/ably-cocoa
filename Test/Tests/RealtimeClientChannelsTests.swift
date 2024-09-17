@@ -2,12 +2,21 @@ import Ably
 import Nimble
 import XCTest
 
+#if swift(>=6)
+// Swift isn't yet smart enough to do this automatically when bridging Objective-C APIs
+extension ARTRealtimeChannels: @retroactive Sequence {
+    public func makeIterator() -> NSFastEnumerationIterator {
+        return NSFastEnumerationIterator(iterate())
+    }
+}
+#else
 // Swift isn't yet smart enough to do this automatically when bridging Objective-C APIs
 extension ARTRealtimeChannels: Sequence {
     public func makeIterator() -> NSFastEnumerationIterator {
         return NSFastEnumerationIterator(iterate())
     }
 }
+#endif
 
 class RealtimeClientChannelsTests: XCTestCase {
     // RTS2

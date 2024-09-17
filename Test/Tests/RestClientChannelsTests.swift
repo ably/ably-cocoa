@@ -2,12 +2,20 @@ import Ably
 import Nimble
 import XCTest
 
+#if swift(>=6)
 // Swift isn't yet smart enough to do this automatically when bridging Objective-C APIs
+extension ARTRestChannels: @retroactive Sequence {
+    public func makeIterator() -> NSFastEnumerationIterator {
+        return NSFastEnumerationIterator(iterate())
+    }
+}
+#else
 extension ARTRestChannels: Sequence {
     public func makeIterator() -> NSFastEnumerationIterator {
         return NSFastEnumerationIterator(iterate())
     }
 }
+#endif
 
 private func beAChannel(named expectedValue: String) -> Nimble.Predicate<ARTChannel> {
     return Predicate.define("be a channel with name \"\(expectedValue)\"") { actualExpression, msg -> PredicateResult in

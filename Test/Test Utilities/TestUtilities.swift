@@ -1777,6 +1777,44 @@ extension ARTMessage {
     }
 
 }
+#if swift(>=6)
+extension ARTRealtimeConnectionState : @retroactive CustomStringConvertible {
+    public var description : String {
+        return ARTRealtimeConnectionStateToStr(self)
+    }
+}
+
+extension ARTRealtimeConnectionEvent : @retroactive CustomStringConvertible {
+    public var description : String {
+        return ARTRealtimeConnectionEventToStr(self)
+    }
+}
+
+extension ARTProtocolMessageAction : @retroactive CustomStringConvertible {
+    public var description : String {
+        return ARTProtocolMessageActionToStr(self)
+    }
+}
+
+extension ARTRealtimeChannelState : @retroactive CustomStringConvertible {
+    public var description : String {
+        return ARTRealtimeChannelStateToStr(self)
+    }
+}
+
+extension ARTChannelEvent : @retroactive CustomStringConvertible {
+    public var description : String {
+        return ARTChannelEventToStr(self)
+    }
+}
+
+extension ARTPresenceAction : @retroactive CustomStringConvertible {
+    public var description : String {
+        return ARTPresenceActionToStr(self)
+    }
+}
+
+#else
 
 extension ARTRealtimeConnectionState : CustomStringConvertible {
     public var description : String {
@@ -1813,6 +1851,8 @@ extension ARTPresenceAction : CustomStringConvertible {
         return ARTPresenceActionToStr(self)
     }
 }
+
+#endif
 
 // MARK: - Custom Nimble Matchers
 
