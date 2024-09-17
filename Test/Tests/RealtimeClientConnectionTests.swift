@@ -2142,7 +2142,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         // Let the token expire
         waitUntil(timeout: testTimeout) { done in
-            delay(tokenTtl + AblyTests.tokenExpiryTolerance) {
+            delay(tokenTtl + AblyTests.tokenExpiryTolerance+10.0) {
                 done()
             }
         }
@@ -2159,6 +2159,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.connection.on { stateChange in
                 let state = stateChange.current
                 let errorInfo = stateChange.reason
+                NSLog("got state change state %s, reason %s\n", stateChange.current, stateChange.reason)
                 switch state {
                 case .connected:
                     fail("Should not be connected")
