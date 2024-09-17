@@ -2161,7 +2161,6 @@ class RealtimeClientConnectionTests: XCTestCase {
                 let errorInfo = stateChange.reason
                 print("got state change state:")
                 print(stateChange.current)
-                print(stateChange.reason)
                 switch state {
                 case .connected:
                     fail("Should not be connected")
