@@ -627,7 +627,7 @@ public func delay(_ seconds: TimeInterval, closure: @escaping () -> Void) {
 public func getEnvironment() -> String {
     let b = Bundle(for: AblyTests.self)    
     guard let env = b.infoDictionary!["ABLY_ENV"] as? String, env.count > 0 else {
-        return "sandbox"
+        return "amnon-dev"
     }
     return env
 }
