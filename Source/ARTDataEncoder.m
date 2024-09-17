@@ -97,6 +97,9 @@
             encoded = [data dataUsingEncoding:NSUTF8StringEncoding];
             encoding = [NSString artAddEncoding:@"utf-8" toString:encoding];
         }
+        if (encoded == nil) {
+            return [[ARTDataEncoderOutput alloc] initWithData:data encoding:nil errorInfo:[ARTErrorInfo createWithCode:0 message:@"must be NSString, NSData, NSArray or NSDictionary."]];
+        }
         ARTStatus *status = [_cipher encrypt:encoded output:&toBase64];
         if (status.state != ARTStateOk) {
             ARTErrorInfo *errorInfo = status.errorInfo ? status.errorInfo : [ARTErrorInfo createWithCode:0 message:@"encrypt failed"];
@@ -181,7 +184,7 @@
             if (status.state != ARTStateOk) {
                 errorInfo = status.errorInfo ? status.errorInfo : [ARTErrorInfo createWithCode:ARTErrorInvalidMessageDataOrEncoding message:@"decrypt failed"];
             }
-        } else if ([encoding isEqualToString:@"vcdiff"] && _deltaCodec) {
+        } else if ([encoding isEqualToString:@"vcdiff"] && _deltaCodec && [data isKindOfClass:[NSData class]]) {
             NSError *decodeError;
             data = [_deltaCodec applyDelta:data deltaId:identifier baseId:_baseId error:&decodeError];
 
