@@ -18,7 +18,7 @@ class TestsTests: XCTestCase {
         var responseData: Data?
 
         let postAppExpectation = self.expectation(description: "POST app to sandbox")
-        let request = NSMutableURLRequest(url: URL(string: "https://sandbox-rest.ably.io:443/apps")!)
+        let request = NSMutableURLRequest(url: URL(string: "https://amnon-dev-rest-admin.ably.io:443/apps")!)
         request.httpMethod = "POST"
         request.httpBody = "{\"keys\":[{}]}".data(using: String.Encoding.utf8)
         request.allHTTPHeaderFields = [

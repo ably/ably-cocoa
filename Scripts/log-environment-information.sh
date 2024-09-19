@@ -7,5 +7,5 @@ set -e
 ip=$(curl -s https://api.ipify.org)
 echo "Public IP address is: $ip"
 
-echo "Output of \`dig sandbox-realtime.ably.io\`:"
-dig sandbox-realtime.ably.io
+echo "Output of \`dig amnon-dev-realtime.ably.io\`:"
+dig amnon-dev-realtime.ably.io

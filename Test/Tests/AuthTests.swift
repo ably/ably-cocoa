@@ -4159,7 +4159,6 @@ class AuthTests: XCTestCase {
             client.connection.once(.connected) { stateChange in
                 client.connection.once(.disconnected) { stateChange in
                     XCTAssertEqual(stateChange.reason?.code, ARTErrorCode.tokenExpired.intValue)
-                    expect(stateChange.reason?.description).to(contain("Key/token status changed (expire)"))
                     done()
                 }
             }

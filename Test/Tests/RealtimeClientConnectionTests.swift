@@ -2098,6 +2098,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
+        options.logLevel = .debug;
         options.testOptions.transportFactory = TestProxyTransportFactory()
         let tokenTtl = 3.0
         let tokenDetails = try getTestTokenDetails(for: test, key: options.key, capability: nil, ttl: tokenTtl)
@@ -2136,6 +2137,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.clientOptions(for: test)
         options.autoConnect = false
+        options.logLevel = .debug;
         let tokenTtl = 1.0
         options.token = try getTestToken(for: test, ttl: tokenTtl)
         options.testOptions.transportFactory = TestProxyTransportFactory()
@@ -2146,7 +2148,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 done()
             }
         }
-
+        
         let client = ARTRealtime(options: options)
         defer {
             client.dispose()
@@ -2159,6 +2161,8 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.connection.on { stateChange in
                 let state = stateChange.current
                 let errorInfo = stateChange.reason
+                print("got state change state: \(stateChange.current)")
+                print(stateChange.current)
                 switch state {
                 case .connected:
                     fail("Should not be connected")
@@ -2167,6 +2171,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                     guard let errorInfo = errorInfo else {
                         fail("ErrorInfo is nil"); done(); return
                     }
+                    print("got errorInfo.code=\(errorInfo.code)")
                     XCTAssertEqual(errorInfo.code, ARTErrorCode.tokenExpired.intValue)
                     done()
                 default:
@@ -2179,8 +2184,9 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         let failures = transport.protocolMessagesReceived.filter { $0.action == .error }
 
+        print("failures.count=\(failures.count)")
         if failures.count != 1 {
-            fail("Should have only one connection request fail")
+            fail("Should have only one connection request fail, got \(failures.count)")
             return
         }
 

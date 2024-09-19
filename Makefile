@@ -67,15 +67,15 @@ submodules:
 
 ## [Tests] Run tests on iOS 14.4 using sandbox environment
 test_iOS:
-	ABLY_ENV="sandbox" NAME="ably-iOS" bundle exec fastlane test_iOS16_2
+	ABLY_ENV="amnon-dev" NAME="ably-iOS" bundle exec fastlane test_iOS16_2
 
 ## [Tests] Run tests on tvOS 14.3 using sandbox environment
 test_tvOS:
-	ABLY_ENV="sandbox" NAME="ably-tvOS" bundle exec fastlane test_tvOS16_1
+	ABLY_ENV="amnon-dev" NAME="ably-tvOS" bundle exec fastlane test_tvOS16_1
 
 ## [Tests] Run tests on macOS using sandbox environment
 test_macOS:
-	ABLY_ENV="sandbox" NAME="ably-macOS" bundle exec fastlane test_macOS
+	ABLY_ENV="amnon-dev" NAME="ably-macOS" bundle exec fastlane test_macOS
 
 ## -- CocoaPods --
 
