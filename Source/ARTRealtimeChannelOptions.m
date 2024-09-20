@@ -4,6 +4,21 @@
 @implementation ARTRealtimeChannelOptions {
     NSStringDictionary *_params;
     ARTChannelMode _modes;
+    BOOL _attachOnSubscribe;
+}
+
+- (instancetype)init {
+    if (self = [super init]) {
+        _attachOnSubscribe = true;
+    }
+    return self;
+}
+
+- (instancetype)initWithCipher:(id<ARTCipherParamsCompatible>)cipherParams {
+    if (self = [super initWithCipher:cipherParams]) {
+        _attachOnSubscribe = true;
+    }
+    return self;
 }
 
 - (NSStringDictionary *)params {
@@ -30,6 +45,19 @@
                                      userInfo:nil];
     }
     _modes = modes;
+}
+
+- (BOOL)attachOnSubscribe {
+    return _attachOnSubscribe;
+}
+
+- (void)setAttachOnSubscribe:(BOOL)value {
+    if (self.isFrozen) {
+        @throw [NSException exceptionWithName:NSObjectInaccessibleException
+                                       reason:[NSString stringWithFormat:@"%@: You can't change options after you've passed it to receiver.", self.class]
+                                     userInfo:nil];
+    }
+    _attachOnSubscribe = value;
 }
 
 @end

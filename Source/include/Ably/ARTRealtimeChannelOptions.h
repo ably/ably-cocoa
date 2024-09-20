@@ -42,6 +42,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic) ARTChannelMode modes;
 
+/**
+ * A boolean which determines whether calling `subscribe` on a `ARTRealtimeChannel` or `ARTRealtimePresense` object should trigger an implicit attach (for realtime client libraries only). Defaults to true.
+ */
+@property (nonatomic) BOOL attachOnSubscribe;
+
 @end
 
 NS_ASSUME_NONNULL_END

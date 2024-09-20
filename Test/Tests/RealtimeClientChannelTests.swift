@@ -3314,8 +3314,8 @@ class RealtimeClientChannelTests: XCTestCase {
         }
     }
 
-    // RTL7c
-    func test__109__Channel__subscribe__should_implicitly_attach_the_channel() throws {
+    // RTL7g
+    func test__109__Channel__subscribe__should_implicitly_attach_the_channel_if_options_attachOnSubscribe_is_true() throws {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
@@ -3340,8 +3340,32 @@ class RealtimeClientChannelTests: XCTestCase {
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
     }
 
-    // RTL7c
-    func test__110__Channel__subscribe__should_result_in_an_error_if_channel_is_in_the_FAILED_state() throws {
+    // RTL7h
+    func test__109b__Channel__subscribe__should_not_implicitly_attach_the_channel_if_options_attachOnSubscribe_is_false() throws {
+        let test = Test()
+        let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
+        defer { client.dispose(); client.close() }
+        
+        let channelOptions = ARTRealtimeChannelOptions()
+        channelOptions.attachOnSubscribe = false
+        let channel = client.channels.get(test.uniqueChannelName(), options: channelOptions)
+
+        // Initialized
+        XCTAssertEqual(channel.state, ARTRealtimeChannelState.initialized)
+        channel.subscribe(attachCallback: { _ in
+            fail("Attach callback should not be called.")
+        }) { _ in }
+        // Make sure that channel stays initialized
+        waitUntil(timeout: testTimeout) { done in
+            delay(1) {
+                XCTAssertEqual(channel.state, ARTRealtimeChannelState.initialized)
+                done()
+            }
+        }
+    }
+
+    // RTL7g
+    func test__110__Channel__subscribe__should_result_in_an_error_if_channel_is_in_the_FAILED_state_and_options_attachOnSubscribe_is_true() throws {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
@@ -3359,6 +3383,31 @@ class RealtimeClientChannelTests: XCTestCase {
                     done()
                 }) { _ in }
             }) { _ in }
+        }
+    }
+
+    // RTL7g
+    func test__110b__Channel__subscribe__should_not_result_in_an_error_if_channel_is_in_the_FAILED_state_and_options_attachOnSubscribe_is_false() throws {
+        let test = Test()
+        let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
+        defer { client.dispose(); client.close() }
+
+        let channelOptions = ARTRealtimeChannelOptions()
+        channelOptions.attachOnSubscribe = false
+        let channel = client.channels.get(test.uniqueChannelName(), options: channelOptions)
+        
+        channel.internal.onError(AblyTests.newErrorProtocolMessage())
+        XCTAssertEqual(channel.state, ARTRealtimeChannelState.failed)
+        
+        channel.subscribe(attachCallback: { _ in
+            fail("Attach callback should not be called.")
+        }) { _ in }
+        // Make sure that channel stays failed
+        waitUntil(timeout: testTimeout) { done in
+            delay(1) {
+                XCTAssertEqual(channel.state, ARTRealtimeChannelState.failed)
+                done()
+            }
         }
     }
 
@@ -4826,5 +4875,11 @@ class RealtimeClientChannelTests: XCTestCase {
         }
         XCTAssertNotNil(exception3)
         XCTAssertEqual(exception3!.name, NSExceptionName.objectInaccessibleException)
+        
+        let exception4 = tryInObjC {
+            channelOptions.attachOnSubscribe = false // frozen
+        }
+        XCTAssertNotNil(exception4)
+        XCTAssertEqual(exception4!.name, NSExceptionName.objectInaccessibleException)
     }
 }

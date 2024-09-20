@@ -16,6 +16,7 @@
 #import "ARTProtocolMessage+Private.h"
 #import "ARTEventEmitter+Private.h"
 #import "ARTClientOptions.h"
+#import "ARTRealtimeChannelOptions.h"
 
 #pragma mark - ARTRealtimePresenceQuery
 
@@ -497,12 +498,16 @@ dispatch_sync(_queue, ^{
 
     __block ARTEventListener *listener = nil;
 dispatch_sync(_queue, ^{
+    ARTRealtimeChannelOptions *options = self->_channel.getOptions_nosync;
+    BOOL attachOnSubscribe = options != nil ? options.attachOnSubscribe : true;
     if (self->_channel.state_nosync == ARTRealtimeChannelFailed) {
-        if (onAttach) onAttach([ARTErrorInfo createWithCode:ARTErrorChannelOperationFailedInvalidState message:@"attempted to subscribe while channel is in Failed state."]);
+        if (onAttach && attachOnSubscribe) { // RTL7h
+            onAttach([ARTErrorInfo createWithCode:ARTErrorChannelOperationFailedInvalidState message:@"attempted to subscribe while channel is in Failed state."]);
+        }
         ARTLogWarn(self.logger, @"R:%p C:%p (%@) presence subscribe to '%@' action(s) has been ignored (attempted to subscribe while channel is in FAILED state)", self->_realtime, self->_channel, self->_channel.name, ARTPresenceActionToStr(action));
         return;
     }
-    if (self->_channel.shouldAttach) { // RTP6c
+    if (self->_channel.shouldAttach && attachOnSubscribe) { // RTP6c
         [self->_channel _attach:onAttach];
     }
     listener = action == ARTPresenceActionAll ? [_eventEmitter on:cb] : [_eventEmitter on:[ARTEvent newWithPresenceAction:action] callback:cb];
