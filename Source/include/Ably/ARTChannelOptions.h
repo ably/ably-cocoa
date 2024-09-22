@@ -8,6 +8,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Passes additional properties to an `ARTRestChannel` object, such as encryption.
  */
+NS_SWIFT_SENDABLE
 @interface ARTChannelOptions : NSObject
 
 /**
