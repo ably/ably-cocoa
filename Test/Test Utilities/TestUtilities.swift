@@ -1777,7 +1777,8 @@ extension ARTMessage {
     }
 
 }
-#if swift(>=6)
+
+#if hasFeature(RetroactiveAttribute)
 extension ARTRealtimeConnectionState : @retroactive CustomStringConvertible {
     public var description : String {
         return ARTRealtimeConnectionStateToStr(self)
@@ -1813,9 +1814,7 @@ extension ARTPresenceAction : @retroactive CustomStringConvertible {
         return ARTPresenceActionToStr(self)
     }
 }
-
 #else
-
 extension ARTRealtimeConnectionState : CustomStringConvertible {
     public var description : String {
         return ARTRealtimeConnectionStateToStr(self)
@@ -1851,7 +1850,6 @@ extension ARTPresenceAction : CustomStringConvertible {
         return ARTPresenceActionToStr(self)
     }
 }
-
 #endif
 
 // MARK: - Custom Nimble Matchers

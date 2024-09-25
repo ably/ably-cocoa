@@ -2,7 +2,7 @@ import Ably
 import Nimble
 import XCTest
 
-#if swift(>=6)
+#if hasFeature(RetroactiveAttribute)
 // Swift isn't yet smart enough to do this automatically when bridging Objective-C APIs
 extension ARTRestChannels: @retroactive Sequence {
     public func makeIterator() -> NSFastEnumerationIterator {
