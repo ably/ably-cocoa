@@ -886,8 +886,8 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     // RTP6
 
-    // RTP6c
-    func test__026__Presence__subscribe__should_implicitly_attach_the_channel() throws {
+    // RTP6d
+    func test__026__Presence__subscribe__should_implicitly_attach_the_channel_if_options_attachOnSubscribe_is_true() throws {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
@@ -912,8 +912,32 @@ class RealtimeClientPresenceTests: XCTestCase {
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
     }
 
-    // RTP6c
-    func test__027__Presence__subscribe__should_result_in_an_error_if_the_channel_is_in_the_FAILED_state() throws {
+    // RTP6d
+    func test__026b__Presence__subscribe__should_not_implicitly_attach_the_channel_if_options_attachOnSubscribe_is_false() throws {
+        let test = Test()
+        let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
+        defer { client.dispose(); client.close() }
+        
+        let channelOptions = ARTRealtimeChannelOptions()
+        channelOptions.attachOnSubscribe = false
+        let channel = client.channels.get(test.uniqueChannelName(), options: channelOptions)
+
+        // Initialized
+        XCTAssertEqual(channel.state, ARTRealtimeChannelState.initialized)
+        channel.presence.subscribe(attachCallback: { _ in
+            fail("Attach callback should not be called.")
+        }) { _ in }
+        // Make sure that channel stays initialized
+        waitUntil(timeout: testTimeout) { done in
+            delay(1) {
+                XCTAssertEqual(channel.state, ARTRealtimeChannelState.initialized)
+                done()
+            }
+        }
+    }
+    
+    // RTP6d
+    func test__027__Presence__subscribe__should_result_in_an_error_if_the_channel_is_in_the_FAILED_state_and_options_attachOnSubscribe_is_true() throws {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
@@ -929,6 +953,31 @@ class RealtimeClientPresenceTests: XCTestCase {
             }, callback: { _ in
                 fail("Should not be called")
             })
+        }
+    }
+    
+    // RTP6e
+    func test__027b__Presence__subscribe__should_not_result_in_an_error_if_the_channel_is_in_the_FAILED_state_and_options_attachOnSubscribe_is_false() throws {
+        let test = Test()
+        let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
+        defer { client.dispose(); client.close() }
+
+        let channelOptions = ARTRealtimeChannelOptions()
+        channelOptions.attachOnSubscribe = false
+        let channel = client.channels.get(test.uniqueChannelName(), options: channelOptions)
+        
+        channel.internal.onError(AblyTests.newErrorProtocolMessage())
+        XCTAssertEqual(channel.state, ARTRealtimeChannelState.failed)
+        
+        channel.presence.subscribe(attachCallback: { _ in
+            fail("Attach callback should not be called.")
+        }) { _ in }
+        // Make sure that channel stays failed
+        waitUntil(timeout: testTimeout) { done in
+            delay(1) {
+                XCTAssertEqual(channel.state, ARTRealtimeChannelState.failed)
+                done()
+            }
         }
     }
 

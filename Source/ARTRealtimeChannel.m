@@ -435,12 +435,16 @@ dispatch_sync(_queue, ^{
 
     __block ARTEventListener *listener = nil;
 dispatch_sync(_queue, ^{
+    ARTRealtimeChannelOptions *options = self.getOptions_nosync;
+    BOOL attachOnSubscribe = options != nil ? options.attachOnSubscribe : true;
     if (self.state_nosync == ARTRealtimeChannelFailed) {
-        if (onAttach) onAttach([ARTErrorInfo createWithCode:ARTErrorChannelOperationFailedInvalidState message:@"attempted to subscribe while channel is in FAILED state."]);
+        if (onAttach && attachOnSubscribe) { // RTL7h
+            onAttach([ARTErrorInfo createWithCode:ARTErrorChannelOperationFailedInvalidState message:@"attempted to subscribe while channel is in FAILED state."]);
+        }
         ARTLogWarn(self.logger, @"R:%p C:%p (%@) subscribe of '%@' has been ignored (attempted to subscribe while channel is in FAILED state)", self->_realtime, self, self.name, name == nil ? @"all" : name);
         return;
     }
-    if (self.shouldAttach) { // RTL7c
+    if (self.shouldAttach && attachOnSubscribe) { // RTL7g
         [self _attach:onAttach];
     }
     listener = name == nil ? [self.messagesEventEmitter on:cb] : [self.messagesEventEmitter on:name callback:cb];

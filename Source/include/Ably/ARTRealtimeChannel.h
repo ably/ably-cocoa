@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)attach;
 
 /**
- * Attach to this channel ensuring the channel is created in the Ably system and all messages published on the channel are received by any channel listeners registered using `-[ARTRealtimeChannelProtocol subscribe:]`. Any resulting channel state change will be emitted to any listeners registered using the `-[ARTEventEmitter on:]` or `-[ARTEventEmitter once:]` methods. A callback may optionally be passed in to this call to be notified of success or failure of the operation. As a convenience, `attach:` is called implicitly if `-[ARTRealtimeChannelProtocol subscribe:]` for the channel is called, or `-[ARTRealtimePresenceProtocol enter:]` or `-[ARTRealtimePresenceProtocol subscribe:]` are called on the `ARTRealtimePresence` object for this channel.
+ * Attach to this channel ensuring the channel is created in the Ably system and all messages published on the channel are received by any channel listeners registered using `-[ARTRealtimeChannelProtocol subscribe:]`. Any resulting channel state change will be emitted to any listeners registered using the `-[ARTEventEmitter on:]` or `-[ARTEventEmitter once:]` methods. A callback may optionally be passed in to this call to be notified of success or failure of the operation. As a convenience, `attach:` is called implicitly if `-[ARTRealtimeChannelProtocol subscribe:]` is called on the channel or `-[ARTRealtimePresenceProtocol subscribe:]` is called on the `ARTRealtimePresence` object for this channel, unless you’ve set the `ARTRealtimeChannelOptions.attachOnSubscribe` channel option to `false`. It is also called implicitly if `-[ARTRealtimePresenceProtocol enter:]` is called on the `ARTRealtimePresence` object for this channel.
  *
  * @param callback A success or failure callback function.
  */
@@ -69,12 +69,14 @@ NS_ASSUME_NONNULL_BEGIN
  * @param callback An event listener function.
  *
  * @return An `ARTEventListener` object.
+ *
+ * @see See `subscribeWithAttachCallback:` for more details.
  */
 - (ARTEventListener *_Nullable)subscribe:(ARTMessageCallback)callback;
 
 /**
  * Registers a listener for messages on this channel. The caller supplies a listener function, which is called each time one or more messages arrives on the channel.
- * An attach callback may optionally be passed in to this call to be notified of success or failure of the channel `-[ARTRealtimeChannelProtocol attach]` operation.
+ * An attach callback may optionally be passed in to this call to be notified of success or failure of the channel `-[ARTRealtimeChannelProtocol attach]` operation. It will not be called if the `ARTRealtimeChannelOptions.attachOnSubscribe` channel option is set to `false`.
  *
  * @param onAttach An attach callback function.
  * @param callback An event listener function.
@@ -90,11 +92,13 @@ NS_ASSUME_NONNULL_BEGIN
  * @param callback An event listener function.
  *
  * @return An `ARTEventListener` object.
- */
+ *
+ * @see See `subscribeWithAttachCallback:` for more details.
+*/
 - (ARTEventListener *_Nullable)subscribe:(NSString *)name callback:(ARTMessageCallback)callback;
 
 /**
- * Registers a listener for messages with a given event `name` on this channel. The caller supplies a listener function, which is called each time one or more matching messages arrives on the channel. A callback may optionally be passed in to this call to be notified of success or failure of the channel `-[ARTRealtimeChannelProtocol attach]` operation.
+ * Registers a listener for messages with a given event `name` on this channel. The caller supplies a listener function, which is called each time one or more matching messages arrives on the channel. A callback may optionally be passed in to this call to be notified of success or failure of the channel `-[ARTRealtimeChannelProtocol attach]` operation. It will not be called if the `ARTRealtimeChannelOptions.attachOnSubscribe` channel option is set to `false`.
  *
  * @param name The event name.
  * @param callback An event listener function.
