@@ -1051,6 +1051,8 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "john"
+        options.logLevel = .debug
+        options.useBinaryProtocol = false
 
         let client1 = ARTRealtime(options: options)
         defer { client1.dispose(); client1.close() }
