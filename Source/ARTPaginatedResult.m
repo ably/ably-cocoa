@@ -137,4 +137,9 @@
     }];
 }
 
+- (nonnull instancetype)init {
+    [NSException raise:NSInternalInconsistencyException format:@"ARTPaginatedResult can't be initialized with init."];
+    __builtin_unreachable();
+}
+
 @end

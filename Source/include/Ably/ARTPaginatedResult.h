@@ -27,7 +27,7 @@ NS_SWIFT_SENDABLE
 @property (nonatomic, readonly) BOOL isLast;
 
 /// :nodoc:
-- (instancetype)init UNAVAILABLE_ATTRIBUTE;
+- (instancetype)init;
 
 /**
  * Returns a new `ARTPaginatedResult` for the first page of results.
