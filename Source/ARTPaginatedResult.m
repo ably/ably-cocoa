@@ -9,14 +9,17 @@
 #import "ARTInternalLog.h"
 
 @implementation ARTPaginatedResult {
-    ARTRestInternal *_rest;
-    dispatch_queue_t _userQueue;
-    dispatch_queue_t _queue;
-    NSMutableURLRequest *_relFirst;
-    NSMutableURLRequest *_relCurrent;
-    NSMutableURLRequest *_relNext;
-    ARTPaginatedResultResponseProcessor _responseProcessor;
-    ARTQueuedDealloc *_dealloc;
+    BOOL _initializedViaInit;
+
+    // All of the below instance variables are non-nil if and only if _initializedViaInit is NO
+    ARTRestInternal *_Nullable _rest;
+    _Nullable dispatch_queue_t _userQueue;
+    _Nullable dispatch_queue_t _queue;
+    NSMutableURLRequest *_Nullable _relFirst;
+    NSMutableURLRequest *_Nullable _relCurrent;
+    NSMutableURLRequest *_Nullable _relNext;
+    _Nullable ARTPaginatedResultResponseProcessor _responseProcessor;
+    ARTQueuedDealloc *_Nullable _dealloc;
 }
 
 @synthesize rest = _rest;
@@ -25,6 +28,25 @@
 @synthesize relFirst = _relFirst;
 @synthesize relCurrent = _relCurrent;
 @synthesize relNext = _relNext;
+@synthesize hasNext = _hasNext;
+
+- (instancetype)init {
+    if (self = [super init]) {
+        _initializedViaInit = YES;
+    }
+
+    return self;
+}
+
+- (BOOL)hasNext {
+    if (_initializedViaInit) {
+        [NSException raise:NSInvalidArgumentException format:@"When initializing this class using -init, you need to override this method in a subclass"];
+    }
+
+    return _hasNext;
+}
+
+// TODO same for the other getters
 
 - (instancetype)initWithItems:(NSArray *)items
                      rest:(ARTRestInternal *)rest
@@ -34,6 +56,8 @@
             responseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
                        logger:(ARTInternalLog *)logger {
     if (self = [super init]) {
+        _initializedViaInit = NO;
+
         _items = items;
         
         _relFirst = relFirst;
@@ -68,6 +92,10 @@
 }
 
 - (void)first:(void (^)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
+    if (_initializedViaInit) {
+        [NSException raise:NSInvalidArgumentException format:@"When initializing this class using -init, you need to override this method in a subclass"];
+    }
+
     if (callback) {
         void (^userCallback)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) = callback;
         callback = ^(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) {
@@ -81,6 +109,10 @@
 }
 
 - (void)next:(void (^)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
+    if (_initializedViaInit) {
+        [NSException raise:NSInvalidArgumentException format:@"When initializing this class using -init, you need to override this method in a subclass"];
+    }
+
     if (callback) {
         void (^userCallback)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) = callback;
         callback = ^(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) {

@@ -27,7 +27,8 @@ NS_SWIFT_SENDABLE
 @property (nonatomic, readonly) BOOL isLast;
 
 /// :nodoc:
-- (instancetype)init UNAVAILABLE_ATTRIBUTE;
+/// If you use this initializer, trying to call any of the methods or properties in ARTPaginatedResult will throw an exception; you must provide your own implementation in a subclass. This initializer exists purely to allow you to provide a mock implementation of this class in your tests.
+- (instancetype)init;
 
 /**
  * Returns a new `ARTPaginatedResult` for the first page of results.
