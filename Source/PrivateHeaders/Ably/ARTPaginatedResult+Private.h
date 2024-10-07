@@ -24,7 +24,7 @@ typedef NSArray<ItemType> *_Nullable(^ARTPaginatedResultResponseProcessor)(NSHTT
                    relCurrent:(NSMutableURLRequest *)relCurrent
                       relNext:(NSMutableURLRequest *)relNext
             responseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
-                       logger:(ARTInternalLog *)logger;
+                       logger:(ARTInternalLog *)logger NS_DESIGNATED_INITIALIZER;
 
 + (void)executePaginated:(ARTRestInternal *)rest
              withRequest:(NSMutableURLRequest *)request
