@@ -56,8 +56,7 @@ NSString *const ARTAblyMessageInvalidPresenceId = @"Received presence message id
 }
 
 - (BOOL)isSynthesized {
-    NSString *connectionId = [[self parseId] objectAtIndex:0];
-    return ![connectionId isEqualToString:self.connectionId];
+    return ![self.id hasPrefix:self.connectionId];
 }
 
 - (NSInteger)msgSerialFromId {
