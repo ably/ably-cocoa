@@ -9,14 +9,17 @@
 #import "ARTInternalLog.h"
 
 @implementation ARTPaginatedResult {
-    ARTRestInternal *_rest;
-    dispatch_queue_t _userQueue;
-    dispatch_queue_t _queue;
-    NSMutableURLRequest *_relFirst;
-    NSMutableURLRequest *_relCurrent;
-    NSMutableURLRequest *_relNext;
-    ARTPaginatedResultResponseProcessor _responseProcessor;
-    ARTQueuedDealloc *_dealloc;
+    BOOL _initializedViaInit;
+
+    // All of the below instance variables are non-nil if and only if _initializedViaInit is NO
+    ARTRestInternal *_Nullable _rest;
+    dispatch_queue_t _Nullable _userQueue;
+    dispatch_queue_t _Nullable _queue;
+    NSMutableURLRequest *_Nullable _relFirst;
+    NSMutableURLRequest *_Nullable _relCurrent;
+    NSMutableURLRequest *_Nullable _relNext;
+    ARTPaginatedResultResponseProcessor _Nullable _responseProcessor;
+    ARTQueuedDealloc *_Nullable _dealloc;
 }
 
 @synthesize rest = _rest;
@@ -25,6 +28,17 @@
 @synthesize relFirst = _relFirst;
 @synthesize relCurrent = _relCurrent;
 @synthesize relNext = _relNext;
+@synthesize hasNext = _hasNext;
+@synthesize isLast = _isLast;
+@synthesize items = _items;
+
+- (instancetype)init {
+    if (self = [super init]) {
+        _initializedViaInit = YES;
+    }
+
+    return self;
+}
 
 - (instancetype)initWithItems:(NSArray *)items
                      rest:(ARTRestInternal *)rest
@@ -34,6 +48,8 @@
             responseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
                        logger:(ARTInternalLog *)logger {
     if (self = [super init]) {
+        _initializedViaInit = NO;
+
         _items = items;
         
         _relFirst = relFirst;
@@ -67,7 +83,30 @@
     return self;
 }
 
+- (void)initializedViaInitCheck {
+    if (_initializedViaInit) {
+        [NSException raise:NSInternalInconsistencyException format:@"When initializing this class using -init, you need to override this method in a subclass"];
+    }
+}
+
+- (BOOL)hasNext {
+    [self initializedViaInitCheck];
+    return _hasNext;
+}
+
+- (BOOL)isLast {
+    [self initializedViaInitCheck];
+    return _isLast;
+}
+
+- (NSArray<id> *)items {
+    [self initializedViaInitCheck];
+    return _items;
+}
+
 - (void)first:(void (^)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
+    [self initializedViaInitCheck];
+    
     if (callback) {
         void (^userCallback)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) = callback;
         callback = ^(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) {
@@ -81,6 +120,8 @@
 }
 
 - (void)next:(void (^)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
+    [self initializedViaInitCheck];
+    
     if (callback) {
         void (^userCallback)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) = callback;
         callback = ^(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) {
