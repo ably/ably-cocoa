@@ -903,7 +903,12 @@ class RealtimeClientChannelTests: XCTestCase {
             }
         }
 
-        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+        waitUntil(timeout: testTimeout) { done in
+            client.connection.once(.connected) { stateChange in
+                XCTAssertNil(stateChange.reason)
+                done()
+            }
+        }
         
         XCTAssertEqual(channel.state, ARTRealtimeChannelState.attaching)
         
