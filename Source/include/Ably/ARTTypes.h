@@ -230,6 +230,7 @@ NSString *generateNonce(void);
 /**
  * Contains `ARTRealtimeConnectionState` change information emitted by the `ARTConnection` object.
  */
+NS_SWIFT_SENDABLE
 @interface ARTConnectionStateChange : NSObject
 
 /// :nodoc:
@@ -273,6 +274,7 @@ NSString *generateNonce(void);
 /**
  * Contains state change information emitted by an `ARTRealtimeChannel` object.
  */
+NS_SWIFT_SENDABLE
 @interface ARTChannelStateChange : NSObject
 
 /// :nodoc:
@@ -318,6 +320,7 @@ NSString *generateNonce(void);
 /**
  * Contains the metrics associated with a `ARTRestChannel` or `ARTRealtimeChannel`, such as the number of publishers, subscribers and connections it has.
  */
+NS_SWIFT_SENDABLE
 @interface ARTChannelMetrics : NSObject
 
 /**
@@ -363,6 +366,7 @@ NSString *generateNonce(void);
 /**
  * Contains the metrics of a `ARTRestChannel` or `ARTRealtimeChannel` object.
  */
+NS_SWIFT_SENDABLE
 @interface ARTChannelOccupancy : NSObject
 
 /**
@@ -378,6 +382,7 @@ NSString *generateNonce(void);
 /**
  * Contains the status of a `ARTRestChannel` or `ARTRealtimeChannel` object such as whether it is active and its `ARTChannelOccupancy`.
  */
+NS_SWIFT_SENDABLE
 @interface ARTChannelStatus : NSObject
 
 /**
@@ -398,6 +403,7 @@ NSString *generateNonce(void);
 /**
  * Contains the details of a `ARTRestChannel` or `ARTRealtimeChannel` object such as its ID and `ARTChannelStatus`.
  */
+NS_SWIFT_SENDABLE
 @interface ARTChannelDetails : NSObject
 
 /**
