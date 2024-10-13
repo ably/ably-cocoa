@@ -96,10 +96,4 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface ARTChannelProperties ()
-
-- (instancetype)initWithAttachSerial:(nullable NSString *)attachSerial channelSerial:(nullable NSString *)channelSerial;
-
-@end
-
 NS_ASSUME_NONNULL_END
