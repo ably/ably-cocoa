@@ -168,6 +168,9 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
  */
 @property (nonatomic, readonly, nullable) NSString *channelSerial; // CP2b
 
+// Exposed for mocking/testing purposes in conjuction with `ARTRealtimeChannelProtocol`.
+- (instancetype)initWithAttachSerial:(nullable NSString *)attachSerial channelSerial:(nullable NSString *)channelSerial;
+
 @end
 
 /**
