@@ -97,7 +97,7 @@ class RestClientPresenceTests: XCTestCase {
         realtimeChannel.presence.enterClient("john", data: "web")
         realtimeChannel.presence.enterClient("casey", data: "mobile")
 
-        expect(realtimeChannel.internal.presence.members).toEventually(haveCount(3), timeout: testTimeout)
+        expect(realtimeChannel.internal.internalPresence.members).toEventually(haveCount(3), timeout: testTimeout)
 
         let query = ARTPresenceQuery()
         query.clientId = "john"
