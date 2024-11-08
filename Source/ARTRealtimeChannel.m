@@ -77,8 +77,8 @@
     return _internal.errorReason;
 }
 
-- (ARTRealtimePresence *)presence {
-    return [[ARTRealtimePresence alloc] initWithInternal:_internal.presence queuedDealloc:_dealloc];
+- (id<ARTRealtimePresenceProtocol>)presence {
+    return [[ARTRealtimePresence alloc] initWithInternal:_internal.internalPresence queuedDealloc:_dealloc];
 }
 
 #if TARGET_OS_IPHONE
@@ -224,7 +224,7 @@
 @end
 
 @interface ARTRealtimeChannelInternal () {
-    ARTRealtimePresenceInternal *_realtimePresence;
+    ARTRealtimePresenceInternal *_internalPresence;
     #if TARGET_OS_IPHONE
     ARTPushChannelInternal *_pushChannel;
     #endif
@@ -263,7 +263,7 @@ NS_ASSUME_NONNULL_END
         _restChannel = [_realtime.rest.channels _getChannel:self.name options:options addPrefix:true];
         _state = ARTRealtimeChannelInitialized;
         _attachSerial = nil;
-        _realtimePresence = [[ARTRealtimePresenceInternal alloc] initWithChannel:self logger:self.logger];
+        _internalPresence = [[ARTRealtimePresenceInternal alloc] initWithChannel:self logger:self.logger];
         _statesEventEmitter = [[ARTPublicEventEmitter alloc] initWithRest:_realtime.rest logger:logger];
         _messagesEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueues:_queue userQueue:_userQueue];
         _attachedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
@@ -324,8 +324,8 @@ dispatch_sync(_queue, ^{
     return _errorReason;
 }
 
-- (ARTRealtimePresenceInternal *)presence {
-    return _realtimePresence;
+- (id<ARTRealtimePresenceProtocol>)presence {
+    return _internalPresence;
 }
 
 #if TARGET_OS_IPHONE
@@ -567,14 +567,14 @@ dispatch_sync(_queue, ^{
             break;
         case ARTRealtimeChannelDetached:
             self.channelSerial = nil; // RTP5a1
-            [self.presence failsSync:params.errorInfo]; // RTP5a
+            [self.internalPresence failsSync:params.errorInfo]; // RTP5a
             break;
         case ARTRealtimeChannelFailed:
             self.channelSerial = nil; // RTP5a1
             self.attachResume = false;
             [_attachedEventEmitter emit:nil with:params.errorInfo];
             [_detachedEventEmitter emit:nil with:params.errorInfo];
-            [self.presence failsSync:params.errorInfo]; // RTP5a
+            [self.internalPresence failsSync:params.errorInfo]; // RTP5a
             break;
         default:
             break;
@@ -658,7 +658,7 @@ dispatch_sync(_queue, ^{
             }
             ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:state previous:state event:ARTChannelEventUpdate reason:message.error resumed:message.resumed];
             [self emit:stateChange.event with:stateChange];
-            [self.presence onAttached:message];
+            [self.internalPresence onAttached:message];
         }
         return;
     }
@@ -671,7 +671,7 @@ dispatch_sync(_queue, ^{
     }
     params.resumed = message.resumed;
     [self performTransitionToState:ARTRealtimeChannelAttached withParams:params];
-    [self.presence onAttached:message];
+    [self.internalPresence onAttached:message];
     [_attachedEventEmitter emit:nil with:nil];
 }
 
@@ -709,7 +709,7 @@ dispatch_sync(_queue, ^{
 
 - (void)failPendingPresenceWithState:(ARTState)state info:(nullable ARTErrorInfo *)info {
     ARTStatus *const status = [ARTStatus state:state info:info];
-    [self.presence failPendingPresence:status];
+    [self.internalPresence failPendingPresence:status];
 }
 
 - (void)detachChannel:(ARTChannelStateChangeParams *)params {
@@ -804,11 +804,11 @@ dispatch_sync(_queue, ^{
     if (message.channelSerial) {
         self.channelSerial = message.channelSerial;
     }
-    [self.presence onMessage:message];
+    [self.internalPresence onMessage:message];
 }
 
 - (void)onSync:(ARTProtocolMessage *)message {
-    [self.presence onSync:message];
+    [self.internalPresence onSync:message];
 }
 
 - (void)onError:(ARTProtocolMessage *)msg {
@@ -1026,8 +1026,8 @@ dispatch_sync(_queue, ^{
         [self->_detachedEventEmitter emit:nil with:errorInfo];
     }] startTimer];
     
-    if (self.presence.syncInProgress_nosync) {
-        [self.presence failsSync:[ARTErrorInfo createWithCode:ARTErrorChannelOperationFailed message:@"channel is being DETACHED"]];
+    if (self.internalPresence.syncInProgress_nosync) {
+        [self.internalPresence failsSync:[ARTErrorInfo createWithCode:ARTErrorChannelOperationFailed message:@"channel is being DETACHED"]];
     }
 }
 
