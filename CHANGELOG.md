@@ -1,5 +1,15 @@
 # Change Log
 
+## [1.2.34](https://github.com/ably/ably-cocoa/tree/1.2.34)
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.33...1.2.34
+
+**What's Changed:**
+
+* Prepare library for swift 6 concurrency by @maratal in https://github.com/ably/ably-cocoa/pull/1963, https://github.com/ably/ably-cocoa/pull/1988
+* Preparing for use with Xcode 16 by @maratal in https://github.com/ably/ably-cocoa/pull/1978
+* Added `attachOnSubscribe` to `ARTRealtimeChannelOptions` by @maratal in https://github.com/ably/ably-cocoa/pull/1976
+
 ## [1.2.33](https://github.com/ably/ably-cocoa/tree/1.2.33)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.32...1.2.33)
