@@ -1281,8 +1281,8 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
         ARTPendingMessage *pendingMessage = [[ARTPendingMessage alloc] initWithProtocolMessage:pm ackCallback:ackCallback];
         [self.pendingMessages addObject:pendingMessage];
     }
-    
-    ARTLogDebug(self.logger, @"RT:%p sending action %tu - %@", self, pm.action, ARTProtocolMessageActionToStr(pm.action));
+
+    ARTLogDebug(self.logger, @"RT:%p sending action %tu - %@ - %@", self, pm.action, ARTProtocolMessageActionToStr(pm.action), pm);
     if ([self.transport send:data withSource:pm]) {
         if (sentCallback) sentCallback(nil);
         // `ackCallback()` is called with ACK/NACK action
