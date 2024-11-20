@@ -549,6 +549,8 @@ dispatch_sync(_queue, ^{
             self.attachResume = true;
             break;
         case ARTRealtimeChannelSuspended: {
+            ARTLogDebug(self.logger, @"RT:%p C:%p (%@) setting self.channelSerial to nil due to SUSPENDED", _realtime, self, self.name);
+
             self.channelSerial = nil; // RTP5a1
             ARTRetryAttempt *const retryAttempt = [self.attachRetryState addRetryAttempt];
 
@@ -566,10 +568,14 @@ dispatch_sync(_queue, ^{
             self.attachResume = false;
             break;
         case ARTRealtimeChannelDetached:
+            ARTLogDebug(self.logger, @"RT:%p C:%p (%@) setting self.channelSerial to nil due to DETACHED", _realtime, self, self.name);
+
             self.channelSerial = nil; // RTP5a1
             [self.internalPresence failsSync:params.errorInfo]; // RTP5a
             break;
         case ARTRealtimeChannelFailed:
+            ARTLogDebug(self.logger, @"RT:%p C:%p (%@) setting self.channelSerial to nil due to FAILED", _realtime, self, self.name);
+
             self.channelSerial = nil; // RTP5a1
             self.attachResume = false;
             [_attachedEventEmitter emit:nil with:params.errorInfo];
@@ -648,6 +654,7 @@ dispatch_sync(_queue, ^{
     self.attachSerial = message.channelSerial;
     // RTL15b
     if (message.channelSerial) {
+        ARTLogDebug(self.logger, @"RT:%p C:%p (%@) setting self.channelSerial to %@ in setAttached:", _realtime, self, self.name, message.channelSerial);
         self.channelSerial = message.channelSerial;
     }
 
@@ -794,6 +801,7 @@ dispatch_sync(_queue, ^{
     
     // RTL15b
     if (pm.channelSerial) {
+        ARTLogDebug(self.logger, @"RT:%p C:%p (%@) setting self.channelSerial to %@ in onProtocolMessage:", _realtime, self, self.name, pm.channelSerial);
         self.channelSerial = pm.channelSerial;
     }
 }
@@ -802,6 +810,8 @@ dispatch_sync(_queue, ^{
     ARTLogDebug(self.logger, @"RT:%p C:%p (%@) handle PRESENCE message", _realtime, self, self.name);
     // RTL15b
     if (message.channelSerial) {
+        ARTLogDebug(self.logger, @"RT:%p C:%p (%@) setting self.channelSerial to %@ in onPresence:", _realtime, self, self.name, message.channelSerial);
+
         self.channelSerial = message.channelSerial;
     }
     [self.internalPresence onMessage:message];
