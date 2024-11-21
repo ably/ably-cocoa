@@ -484,4 +484,108 @@ class UtilitiesTests: XCTestCase {
         let expectedSize = "{\"test\":\"test\"}".count + "{\"push\":{\"key\":\"value\"}}".count + clientId.count + message.name!.count
         XCTAssertEqual(message.messageSize(), expectedSize)
     }
+    
+    // TM2k
+    func test__025_Utilities__message_received_with_action_create_does_not_contain_a_serial_takes_it_from_version() throws {
+        beforeEach__Utilities__JSON_Encoder()
+        var json = """
+        {
+            "messages": [
+                {
+                    "action": 1,
+                    "version": "123"
+                }
+            ]
+        }
+        """
+        var data = json.data(using: .utf8)!
+        var pm = try jsonEncoder.decodeProtocolMessage(data)
+        var messages = try XCTUnwrap(pm.messages)
+        XCTAssert(messages[0].action == .create)
+        XCTAssert(messages[0].version == "123")
+        XCTAssert(messages[0].serial == "123")
+        
+        // should only apply to creates
+        json = """
+        {
+            "messages": [
+                {
+                    "action": 0,
+                    "version": "123"
+                }
+            ]
+        }
+        """
+        data = json.data(using: .utf8)!
+        pm = try jsonEncoder.decodeProtocolMessage(data)
+        messages = try XCTUnwrap(pm.messages)
+        XCTAssert(messages[0].action == .unset)
+        XCTAssert(messages[0].version == "123")
+        XCTAssertNil(messages[0].serial)
+    }
+    
+    // TM2p
+    func test__026_Utilities__message_received_over_a_realtime_transport_does_not_contain_a_version() throws {
+        beforeEach__Utilities__JSON_Encoder()
+        let json = """
+        {
+            "channelSerial": "foo",
+            "messages": [
+                {
+                    "serial": "12345"
+                },
+                {
+                    "serial": "123456"
+                }
+            ]
+        }
+        """
+        let data = json.data(using: .utf8)!
+        let pm = try jsonEncoder.decodeProtocolMessage(data)
+        let messages = try XCTUnwrap(pm.messages)
+        XCTAssert(messages[0].action == .create)
+        XCTAssert(messages[0].version == "foo:000")
+        XCTAssert(messages[0].serial == "12345")
+        XCTAssert(messages[1].action == .create)
+        XCTAssert(messages[1].version == "foo:001")
+        XCTAssert(messages[1].serial == "123456")
+    }
+    
+    // TM2o
+    func test__027_Utilities__message_received_with_action_create_does_not_contain_createdAt() throws {
+        beforeEach__Utilities__JSON_Encoder()
+        var json = """
+        {
+            "messages": [
+                {
+                    "action": 1,
+                    "timestamp": "1234512345",
+                }
+            ]
+        }
+        """
+        var data = json.data(using: .utf8)!
+        var pm = try jsonEncoder.decodeProtocolMessage(data)
+        var messages = try XCTUnwrap(pm.messages)
+        XCTAssert(messages[0].action == .create)
+        XCTAssertNotNil(messages[0].createdAt)
+        XCTAssertEqual(messages[0].createdAt, messages[0].timestamp)
+        
+        // should only apply to creates
+        json = """
+        {
+            "messages": [
+                {
+                    "action": 0,
+                    "timestamp": "1234512345",
+                }
+            ]
+        }
+        """
+        data = json.data(using: .utf8)!
+        pm = try jsonEncoder.decodeProtocolMessage(data)
+        messages = try XCTUnwrap(pm.messages)
+        XCTAssert(messages[0].action == .unset)
+        XCTAssertNil(messages[0].createdAt)
+    }
 }
