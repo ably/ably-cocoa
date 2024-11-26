@@ -21,6 +21,7 @@
     message->_data = [self.data copy];
     message->_connectionId = self.connectionId;
     message->_encoding = self.encoding;
+    message->_extras = self.extras;
     return message;
 }
 

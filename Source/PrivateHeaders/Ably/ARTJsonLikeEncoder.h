@@ -30,8 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTJsonLikeEncoder ()
 
-- (nullable ARTMessage *)messageFromDictionary:(NSDictionary *)input;
-- (nullable NSArray *)messagesFromArray:(NSArray *)input;
+- (nullable ARTMessage *)messageFromDictionary:(NSDictionary *)input protocolMessage:(nullable ARTProtocolMessage *)protocolMessage;
+- (nullable NSArray *)messagesFromArray:(NSArray *)input protocolMessage:(nullable ARTProtocolMessage *)protocolMessage;
 
 - (nullable ARTPresenceMessage *)presenceMessageFromDictionary:(NSDictionary *)input;
 - (nullable NSArray *)presenceMessagesFromArray:(NSArray *)input;

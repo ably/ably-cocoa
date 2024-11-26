@@ -40,7 +40,10 @@
 - (id)copyWithZone:(NSZone *)zone {
     ARTMessage *message = [super copyWithZone:zone];
     message.name = self.name;
-    message.extras = self.extras;
+    message.action = self.action;
+    message.serial = self.serial;
+    message.version = self.version;
+    message.createdAt = self.createdAt;
     return message;
 }
 
@@ -67,7 +70,7 @@
         return nil;
     }
     
-    ARTMessage *message = [jsonEncoder messageFromDictionary:jsonObject];
+    ARTMessage *message = [jsonEncoder messageFromDictionary:jsonObject protocolMessage:nil];
     
     NSError *decodeError = nil;
     message = [message decodeWithEncoder:decoder error:&decodeError];
@@ -97,7 +100,7 @@
         return nil;
     }
     
-    NSArray<ARTMessage *> *messages = [jsonEncoder messagesFromArray:jsonArray];
+    NSArray<ARTMessage *> *messages = [jsonEncoder messagesFromArray:jsonArray protocolMessage:nil];
     
     NSMutableArray<ARTMessage *> *decodedMessages = [NSMutableArray array];
     for (ARTMessage *message in messages) {

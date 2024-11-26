@@ -4,6 +4,41 @@
 #import <Ably/ARTTypes.h>
 #import <Ably/ARTChannelOptions.h>
 
+/**
+ * The namespace containing the different types of message actions.
+ */
+NS_SWIFT_SENDABLE
+typedef NS_ENUM(NSUInteger, ARTMessageAction) {
+    /**
+     * Message action has not been set.
+     */
+    ARTMessageActionUnset,
+    /**
+     * Message action for a newly created message.
+     */
+    ARTMessageActionCreate,
+    /**
+     * Message action for an updated message.
+     */
+    ARTMessageActionUpdate,
+    /**
+     * Message action for a deleted message.
+     */
+    ARTMessageActionDelete,
+    /**
+     * Message action for a newly created annotation.
+     */
+    ARTMessageActionAnnotationCreate,
+    /**
+     * Message action for a deleted annotation.
+     */
+    ARTMessageActionAnnotationDelete,
+    /**
+     * Message action for a meta-message that contains channel occupancy information.
+     */
+    ARTMessageActionMetaOccupancy,
+};
+
 NS_ASSUME_NONNULL_BEGIN
 
 /**
@@ -13,6 +48,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// The event name, if available
 @property (nullable, readwrite, nonatomic) NSString *name;
+
+/// The action type of the message, one of the `ARTMessageAction` enum values.
+@property (readwrite, nonatomic) ARTMessageAction action;
+
+/// The version of the message, lexicographically-comparable with other versions (that share the same serial).
+/// Will differ from the serial only if the message has been updated or deleted.
+@property (nullable, readwrite, nonatomic) NSString *version;
+
+/// This message's unique serial (an identifier that will be the same in all future updates of this message).
+@property (nullable, readwrite, nonatomic) NSString *serial;
+
+/// The timestamp of the very first version of a given message.
+@property (nonatomic, nullable) NSDate *createdAt;
 
 /**
  * Construct an `ARTMessage` object with an event name and payload.

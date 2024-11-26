@@ -75,11 +75,11 @@
 }
 
 - (ARTMessage *)decodeMessage:(NSData *)data error:(NSError **)error {
-    return [self messageFromDictionary:[self decodeDictionary:data error:error]];
+    return [self messageFromDictionary:[self decodeDictionary:data error:error] protocolMessage:nil];
 }
 
 - (NSArray *)decodeMessages:(NSData *)data error:(NSError **)error {
-    return [self messagesFromArray:[self decodeArray:data error:error]];
+    return [self messagesFromArray:[self decodeArray:data error:error] protocolMessage:nil];
 }
 
 - (NSData *)encodeMessage:(ARTMessage *)message error:(NSError **)error {
@@ -266,7 +266,15 @@
     return [self statsFromArray:[self decodeArray:data error:error]];
 }
 
-- (ARTMessage *)messageFromDictionary:(NSDictionary *)input {
+- (nullable NSString *)versionFromInput:(NSDictionary *)input withProtocolMessage:(nullable ARTProtocolMessage *)protocolMessage {
+    if (protocolMessage.channelSerial == nil) {
+        return nil;
+    }
+    int index = [[input artNumber:@"_index"] intValue];
+    return [NSString stringWithFormat:@"%@:%03d", protocolMessage.channelSerial, index]; // TM2p <channelSerial>:<padded_index>
+}
+
+- (ARTMessage *)messageFromDictionary:(NSDictionary *)input protocolMessage:(ARTProtocolMessage *)protocolMessage {
     ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: messageFromDictionary %@", _rest, [_delegate formatAsString], input);
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
@@ -275,24 +283,34 @@
     ARTMessage *message = [[ARTMessage alloc] init];
     message.id = [input artString:@"id"];
     message.name = [input artString:@"name"];
+    message.action = ([input artNumber:@"action"] ?: [[NSNumber alloc] initWithInt:ARTMessageActionCreate]).integerValue;
+    message.version = [input artString:@"version"] ?: [self versionFromInput:input withProtocolMessage:protocolMessage]; // TM2p
+    message.serial = [input artString:@"serial"];
+    if (!message.serial && message.action == ARTMessageActionCreate) { // TM2k
+        message.serial = message.version;
+    }
     message.clientId = [input artString:@"clientId"];
     message.data = [input objectForKey:@"data"];
-    message.encoding = [input artString:@"encoding"];;
+    message.encoding = [input artString:@"encoding"];
     message.timestamp = [input artTimestamp:@"timestamp"];
+    message.createdAt = [input artTimestamp:@"createdAt"];
+    if (!message.createdAt && message.action == ARTMessageActionCreate) { // TM2o
+        message.createdAt = message.timestamp;
+    }
     message.connectionId = [input artString:@"connectionId"];
     message.extras = [input objectForKey:@"extras"];
     
     return message;
 }
 
-- (NSArray *)messagesFromArray:(NSArray *)input {
+- (NSArray *)messagesFromArray:(NSArray *)input protocolMessage:(ARTProtocolMessage *)protocolMessage {
     if (![input isKindOfClass:[NSArray class]]) {
         return nil;
     }
     
     NSMutableArray *output = [NSMutableArray array];
     for (NSDictionary *item in input) {
-        ARTMessage *message = [self messageFromDictionary:item];
+        ARTMessage *message = [self messageFromDictionary:item protocolMessage:protocolMessage];
         if (!message) {
             return nil;
         }
@@ -734,8 +752,6 @@
     message.id = [input artString:@"id"];
     message.msgSerial = [input artNumber:@"msgSerial"];
     message.timestamp = [input artTimestamp:@"timestamp"];
-    message.messages = [self messagesFromArray:[input objectForKey:@"messages"]];
-    message.presence = [self presenceMessagesFromArray:[input objectForKey:@"presence"]];
     message.connectionKey = [input artString:@"connectionKey"];
     message.flags = [[input artNumber:@"flags"] longLongValue];
     message.connectionDetails = [self connectionDetailsFromDictionary:[input valueForKey:@"connectionDetails"]];
@@ -746,6 +762,17 @@
     if (error) {
         message.error = [ARTErrorInfo createWithCode:[[error artNumber:@"code"] intValue] status:[[error artNumber:@"statusCode"] intValue] message:[error artString:@"message"]];
     }
+
+    NSMutableArray *messages = [[input objectForKey:@"messages"] mutableCopy];
+
+    // There is probably a better way to do this, but I have limited time to implement TM2p
+    for (int i = 0; i < messages.count; i++) {
+        NSMutableDictionary *msgDict = [messages[i] mutableCopy];
+        msgDict[@"_index"] = @(i);
+        messages[i] = msgDict;
+    }
+    message.messages = [self messagesFromArray:messages protocolMessage:message];
+    message.presence = [self presenceMessagesFromArray:[input objectForKey:@"presence"]];
 
     return message;
 }

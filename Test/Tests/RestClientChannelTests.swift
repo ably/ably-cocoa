@@ -568,7 +568,7 @@ class RestClientChannelTests: XCTestCase {
         XCTAssertTrue((client.internal.encoders["application/json"] as! ARTJsonLikeEncoder).message(from: [
             "data": "foo",
             "extras": ["push": ["notification": ["title": "Hello from Ably!"]]],
-        ])?.extras == extras)
+        ], protocolMessage: nil)?.extras == extras)
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish("name", data: "some data", extras: extras) { error in
