@@ -61,7 +61,7 @@ You can install Ably for iOS and macOS through Package Manager, CocoaPods, Carth
     - [This apple guide](https://developer.apple.com/documentation/swift_packages/adding_package_dependencies_to_your_app) explains the steps in more detail.
 - To install the `ably-cocoa` package in another **Swift Package**, then add the following to your `Package.Swift`:
 ```swift
- .package(url: "https://github.com/ably/ably-cocoa", from: "1.2.34"),
+ .package(url: "https://github.com/ably/ably-cocoa", from: "1.2.35"),
 ```
 ### Installing through [CocoaPods](https://cocoapods.org/)
 
@@ -101,7 +101,7 @@ If you see, for example, a `dyld: Library not loaded: @rpath/AblyDeltaCodec.fram
 
 ### Manual installation 
 
-1. Get the code from GitHub [from the release page](https://github.com/ably/ably-cocoa/releases/tag/1.2.34), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-cocoa.git`
+1. Get the code from GitHub [from the release page](https://github.com/ably/ably-cocoa/releases/tag/1.2.35), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-cocoa.git`
 2. Drag the directory `ably-cocoa/ably-cocoa` into your project as a group.
 3. Ably depends on our [MessagePack Fork](https://github.com/ably-forks/msgpack-objective-C) 0.2.0; get it [from the releases page](https://github.com/ably-forks/msgpack-objective-C/releases/tag/0.2.0-ably-1) and link it into your project.
 
@@ -158,7 +158,7 @@ Be aware that Push Notifications are currently unsupported for macOS and tvOS. Y
 
 ```swift
 let recipient: [String: Any] = [
-    "clientId": "C04BC116-8004-4D78-A71F-8CA3122734DB"
+    "clientId": "C04BC116-8004-4D78-A71F-8CA31.2.35DB"
 ]
 let data: [String: Any] = [
     "notification": [
