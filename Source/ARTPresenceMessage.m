@@ -49,6 +49,7 @@ NSString *const ARTAblyMessageInvalidPresenceId = @"Received presence message id
         return nil;
     }
     NSArray<NSString *> *idParts = [self.id componentsSeparatedByCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@":"]];
+    NSLog(@"AMNON idParts is %@", idParts);
     if (idParts.count != 3) {
         [ARTException raise:ARTPresenceMessageException format:ARTAblyMessageInvalidPresenceId, self.id];
     }
