@@ -153,19 +153,19 @@
     [_internal detach:callback];
 }
 
-- (ARTEventListener *_Nullable)subscribe:(ARTMessageCallback)callback {
+- (ARTEventListener *)subscribe:(ARTMessageCallback)callback {
     return [_internal subscribe:callback];
 }
 
-- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable ARTCallback)onAttach callback:(ARTMessageCallback)cb {
+- (ARTEventListener *)subscribeWithAttachCallback:(nullable ARTCallback)onAttach callback:(ARTMessageCallback)cb {
     return [_internal subscribeWithAttachCallback:onAttach callback:cb];
 }
 
-- (ARTEventListener *_Nullable)subscribe:(NSString *)name callback:(ARTMessageCallback)cb {
+- (ARTEventListener *)subscribe:(NSString *)name callback:(ARTMessageCallback)cb {
     return [_internal subscribe:name callback:cb];
 }
 
-- (ARTEventListener *_Nullable)subscribe:(NSString *)name onAttach:(nullable ARTCallback)onAttach callback:(ARTMessageCallback)cb {
+- (ARTEventListener *)subscribe:(NSString *)name onAttach:(nullable ARTCallback)onAttach callback:(ARTMessageCallback)cb {
     return [_internal subscribe:name onAttach:onAttach callback:cb];
 }
 
