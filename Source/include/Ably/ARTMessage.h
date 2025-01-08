@@ -10,10 +10,6 @@
 NS_SWIFT_SENDABLE
 typedef NS_ENUM(NSUInteger, ARTMessageAction) {
     /**
-     * Message action has not been set.
-     */
-    ARTMessageActionUnset,
-    /**
      * Message action for a newly created message.
      */
     ARTMessageActionCreate,
@@ -26,17 +22,14 @@ typedef NS_ENUM(NSUInteger, ARTMessageAction) {
      */
     ARTMessageActionDelete,
     /**
-     * Message action for a newly created annotation.
-     */
-    ARTMessageActionAnnotationCreate,
-    /**
-     * Message action for a deleted annotation.
-     */
-    ARTMessageActionAnnotationDelete,
-    /**
      * Message action for a meta-message that contains channel occupancy information.
      */
     ARTMessageActionMetaOccupancy,
+    /**
+     * Message action for a message containing the latest rolled-up summary of
+     * annotations that have been made to this message.
+     */
+    ARTMessageActionMessageSummary,
 };
 
 NS_ASSUME_NONNULL_BEGIN
