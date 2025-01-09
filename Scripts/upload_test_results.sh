@@ -310,9 +310,13 @@ jq -n \
   '{ junit_report_xml: $junit_report_xml | @base64, crash_reports: $crash_reports[0], github_repository: $github_repository, github_sha: $github_sha, github_ref_name: $github_ref_name, github_retention_days: $github_retention_days, github_action: $github_action, github_run_number: $github_run_number, github_run_attempt: $github_run_attempt, github_run_id: $github_run_id, github_base_ref: $github_base_ref, github_head_ref: $github_head_ref, github_job: $github_job, github_job_api_url: $github_job_api_url, github_job_html_url: $github_job_html_url, iteration: $iteration }' \
   > "${temp_request_body_file}"
 
-echo "::group::Request body"
-printf "Created request body:\n$(cat "${temp_request_body_file}")\n\n" 2>&1
-echo "::endgroup::"
+# I've turned off logging of the response body because it adds about 2 minutes to the GitHub job execution time. I suspect it might be related to https://github.com/actions/runner/issues/1031 ("Long log lines slow down the runner"). Set the below `false` to `true` if you want to temporarily turn this logging back on.
+if false
+then
+  echo "::group::Request body"
+  printf "Created request body:\n$(cat "${temp_request_body_file}")\n\n" 2>&1
+  echo "::endgroup::"
+fi
 
 # 10. Send the request.
 
@@ -326,7 +330,7 @@ fi
 request_id=$(uuidgen)
 
 temp_response_body_file=$(mktemp)
-curl -vvv --fail-with-body --data-binary "@${temp_request_body_file}" --header "Content-Type: application/json" --header "Test-Observability-Auth-Key: ${TEST_OBSERVABILITY_SERVER_AUTH_KEY}" --header "X-Request-ID: ${request_id}" "${upload_server_base_url}/uploads" | tee "${temp_response_body_file}"
+curl -vv --fail-with-body --data-binary "@${temp_request_body_file}" --header "Content-Type: application/json" --header "Test-Observability-Auth-Key: ${TEST_OBSERVABILITY_SERVER_AUTH_KEY}" --header "X-Request-ID: ${request_id}" "${upload_server_base_url}/uploads" | tee "${temp_response_body_file}"
 echo 2>&1 # Print a newline to separate the `curl` output from the next log line.
 
 # 11. Extract the ID of the created upload and log the web UI URL.
