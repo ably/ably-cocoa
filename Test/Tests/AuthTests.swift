@@ -412,7 +412,7 @@ class AuthTests: XCTestCase {
                 guard let errorInfo = stateChange.reason else {
                     fail("ErrorInfo is nil"); done(); return
                 }
-                expect(errorInfo.message).to(contain("No application found with id"))
+                expect(errorInfo.code).to(equal(ARTErrorCode.invalidCredentials.intValue))
                 done()
             }
             realtime.connection.once(.disconnected) { _ in

@@ -193,7 +193,7 @@ class RestClientTests: XCTestCase {
 
         let publishTask = publishTestMessage(client, channelName: test.uniqueChannelName(), failOnError: false)
 
-        expect(publishTask.error?.code).toEventually(equal(ARTErrorCode.invalidCredential.intValue), timeout: testTimeout)
+        expect(publishTask.error?.code).toEventually(equal(ARTErrorCode.invalidCredentials.intValue), timeout: testTimeout)
     }
 
     func test__018__RestClient__initializer__should_accept_a_token() throws {
@@ -234,7 +234,7 @@ class RestClientTests: XCTestCase {
 
         let publishTask = publishTestMessage(client, channelName: test.uniqueChannelName(), failOnError: false)
 
-        expect(publishTask.error?.code).toEventually(equal(ARTErrorCode.invalidCredential.intValue), timeout: testTimeout)
+        expect(publishTask.error?.code).toEventually(equal(ARTErrorCode.invalidCredentials.intValue), timeout: testTimeout)
     }
 
     // RSC2
