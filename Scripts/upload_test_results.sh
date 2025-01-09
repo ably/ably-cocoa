@@ -171,7 +171,8 @@ echo "Extracting result bundle attachments to ${xcparse_output_directory}." 2>&1
 cd xcparse
 if [[ ! -f .build/debug/xcparse ]]
 then
-  swift build
+  echo "Showing time taken to build xcparse." 2>&1
+  time swift build
 fi
 
 .build/debug/xcparse attachments "${result_bundles}" "${xcparse_output_directory}"
@@ -198,7 +199,8 @@ do
   attachment_file="${xcparse_output_directory}/$(jq --raw-output ".[${i}].attachmentName" < "${filtered_xcparse_attachment_descriptors_file}")"
 
   temp_crash_reports_json_file=$(mktemp)
-  jq \
+  echo "Showing time taken to create crash reports JSON file." 2>&1
+  time jq \
     --slurpfile attachmentDescriptors "${filtered_xcparse_attachment_descriptors_file}" \
     --rawfile attachment "${attachment_file}" \
     ". += [{filename: \$attachmentDescriptors[0][$i].attachmentName, test_class_name: \$attachmentDescriptors[0][$i].testClassName, test_case_name: \$attachmentDescriptors[0][$i].testCaseName, data: \$attachment | @base64 }]" \
@@ -215,7 +217,8 @@ done
 if [[ ! -z $GITHUB_TOKEN ]]
 then
   temp_github_jobs_response_file=$(mktemp)
-  gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/attempts/${GITHUB_RUN_ATTEMPT}/jobs" > $temp_github_jobs_response_file
+  echo "Showing time taken to fetch jobs from GitHub API." 2>&1
+  time gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/attempts/${GITHUB_RUN_ATTEMPT}/jobs" > $temp_github_jobs_response_file
 
   matching_jobs_file=$(mktemp)
 
@@ -293,7 +296,8 @@ else
   optional_params+=(--argjson github_job_html_url null)
 fi
 
-jq -n \
+echo "Showing time taken to create request body." 2>&1
+time jq -n \
   --rawfile junit_report_xml "${test_reports}" \
   --slurpfile crash_reports "${crash_reports_json_file}" \
   --arg github_repository "${GITHUB_REPOSITORY}" \
@@ -311,7 +315,9 @@ jq -n \
   > "${temp_request_body_file}"
 
 echo "::group::Request body"
+date
 printf "Created request body:\n$(cat "${temp_request_body_file}")\n\n" 2>&1
+date
 echo "::endgroup::"
 
 # 10. Send the request.
@@ -326,7 +332,7 @@ fi
 request_id=$(uuidgen)
 
 temp_response_body_file=$(mktemp)
-curl -vvv --fail-with-body --data-binary "@${temp_request_body_file}" --header "Content-Type: application/json" --header "Test-Observability-Auth-Key: ${TEST_OBSERVABILITY_SERVER_AUTH_KEY}" --header "X-Request-ID: ${request_id}" "${upload_server_base_url}/uploads" | tee "${temp_response_body_file}"
+time curl -vvv --fail-with-body --data-binary "@${temp_request_body_file}" --header "Content-Type: application/json" --header "Test-Observability-Auth-Key: ${TEST_OBSERVABILITY_SERVER_AUTH_KEY}" --header "X-Request-ID: ${request_id}" "${upload_server_base_url}/uploads" | tee "${temp_response_body_file}"
 echo 2>&1 # Print a newline to separate the `curl` output from the next log line.
 
 # 11. Extract the ID of the created upload and log the web UI URL.
