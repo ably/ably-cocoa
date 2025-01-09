@@ -4132,7 +4132,8 @@ class RealtimeClientConnectionTests: XCTestCase {
                 guard let error = stateChange.reason else {
                     fail("Error is nil"); done(); return
                 }
-                XCTAssertTrue(error.code == ARTErrorCode.invalidCredential.rawValue)
+                // This is because, at time of writing, the production environment is handling connections using both frontend (which returns invalidCredential) and frontdoor (which returns invalidCredentials). So we need to handle both cases at least for now (unlike other tests, which use sandbox which is 100% using frontdoor).
+                XCTAssertTrue(error.code == ARTErrorCode.invalidCredential.rawValue || error.code == ARTErrorCode.invalidCredentials.rawValue)
                 done()
             }
         }
