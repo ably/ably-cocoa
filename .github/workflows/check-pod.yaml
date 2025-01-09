@@ -52,7 +52,7 @@ jobs:
           mkdir -p carthage-built-framework-artifact-contents/carthage-built-framework
           mv Ably.framework.zip carthage-built-framework-artifact-contents/carthage-built-framework
       - name: Archive built framework
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: carthage-built-framework
           path: carthage-built-framework-artifact-contents
