@@ -492,7 +492,7 @@ class UtilitiesTests: XCTestCase {
         {
             "messages": [
                 {
-                    "action": 1,
+                    "action": 0,
                     "version": "123"
                 }
             ]
@@ -510,7 +510,7 @@ class UtilitiesTests: XCTestCase {
         {
             "messages": [
                 {
-                    "action": 0,
+                    "action": 1,
                     "version": "123"
                 }
             ]
@@ -519,7 +519,7 @@ class UtilitiesTests: XCTestCase {
         data = json.data(using: .utf8)!
         pm = try jsonEncoder.decodeProtocolMessage(data)
         messages = try XCTUnwrap(pm.messages)
-        XCTAssert(messages[0].action == .unset)
+        XCTAssert(messages[0].action == .update)
         XCTAssert(messages[0].version == "123")
         XCTAssertNil(messages[0].serial)
     }
@@ -558,7 +558,7 @@ class UtilitiesTests: XCTestCase {
         {
             "messages": [
                 {
-                    "action": 1,
+                    "action": 0,
                     "timestamp": "1234512345",
                 }
             ]
@@ -576,7 +576,7 @@ class UtilitiesTests: XCTestCase {
         {
             "messages": [
                 {
-                    "action": 0,
+                    "action": 1,
                     "timestamp": "1234512345",
                 }
             ]
@@ -585,7 +585,7 @@ class UtilitiesTests: XCTestCase {
         data = json.data(using: .utf8)!
         pm = try jsonEncoder.decodeProtocolMessage(data)
         messages = try XCTUnwrap(pm.messages)
-        XCTAssert(messages[0].action == .unset)
+        XCTAssert(messages[0].action == .update)
         XCTAssertNil(messages[0].createdAt)
     }
 }
