@@ -4,6 +4,7 @@
 //
 
 #import "ARTRealtime+Private.h"
+#import "ARTRealtime+WrapperSDKProxy.h"
 
 #import "ARTRealtimeChannel+Private.h"
 #import "ARTStatus.h"
@@ -52,6 +53,7 @@
 #import "ARTInternalLog.h"
 #import "ARTRealtimeTransportFactory.h"
 #import "ARTConnectRetryState.h"
+#import "ARTWrapperSDKProxyRealtime+Private.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -178,6 +180,16 @@
 
 - (void)close {
     [_internal close];
+}
+
+@end
+
+@implementation ARTRealtime (WrapperSDKProxy)
+
+- (ARTWrapperSDKProxyRealtime *)createWrapperSDKProxyWithOptions:(ARTWrapperSDKProxyOptions *)options {
+    return [[ARTWrapperSDKProxyRealtime alloc] initWithRealtime:self
+                                                   proxyOptions:options];
+
 }
 
 @end
