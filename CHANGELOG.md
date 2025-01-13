@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.2.36](https://github.com/ably/ably-cocoa/tree/1.2.36)
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.35...1.2.36
+
+## What's Changed
+
+* Updated fields within `ARTMessage` to support upcoming chat SDK features https://github.com/ably/ably-cocoa/pull/2005
+
 ## [1.2.35](https://github.com/ably/ably-cocoa/tree/1.2.35)
 
 **Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.34...1.2.35
