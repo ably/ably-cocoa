@@ -497,7 +497,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(test.uniqueChannelName())
 
-        let listener = channel.presence.subscribe { _ in }!
+        let listener = channel.presence.subscribe { _ in }
         XCTAssertEqual(channel.internal.internalPresence.eventEmitter.anyListeners.count, 1)
         channel.presence.unsubscribe(listener)
         XCTAssertEqual(channel.internal.internalPresence.eventEmitter.anyListeners.count, 0)
@@ -878,7 +878,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(test.uniqueChannelName())
 
-        let listener = channel.presence.subscribe(.present) { _ in }!
+        let listener = channel.presence.subscribe(.present) { _ in }
         XCTAssertEqual(channel.internal.internalPresence.eventEmitter.listeners.count, 1)
         channel.presence.unsubscribe(.present, listener: listener)
         XCTAssertEqual(channel.internal.internalPresence.eventEmitter.listeners.count, 0)
