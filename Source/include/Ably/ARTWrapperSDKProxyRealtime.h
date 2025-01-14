@@ -2,7 +2,7 @@
 #import <Ably/ARTRealtime.h>
 
 @class ARTConnection;
-@class ARTRealtimeChannels;
+@class ARTWrapperSDKProxyRealtimeChannels;
 @class ARTPush;
 @class ARTAuth;
 
@@ -17,7 +17,7 @@ NS_SWIFT_SENDABLE
 @interface ARTWrapperSDKProxyRealtime : NSObject <ARTRealtimeInstanceMethodsProtocol>
 
 @property (readonly) ARTConnection *connection;
-@property (readonly) ARTRealtimeChannels *channels;
+@property (readonly) ARTWrapperSDKProxyRealtimeChannels *channels;
 @property (readonly) ARTPush *push;
 @property (readonly) ARTAuth *auth;
 
