@@ -27,7 +27,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface ARTRealtimeInternal : NSObject<ARTRealtimeProtocol>
+@interface ARTRealtimeInternal : NSObject
+
+- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithOptions:(ARTClientOptions *)options;
+- (instancetype)initWithKey:(NSString *)key;
+- (instancetype)initWithToken:(NSString *)token;
 
 @property (nonatomic, readonly) ARTConnectionInternal *connection;
 @property (nonatomic, readonly) ARTRealtimeChannelsInternal *channels;
@@ -39,6 +44,26 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nullable, getter=clientId) NSString *clientId;
 
 @property (readonly, nonatomic) dispatch_queue_t queue;
+
+- (void)time:(ARTDateTimeCallback)callback;
+
+- (BOOL)request:(NSString *)method
+           path:(NSString *)path
+         params:(nullable NSStringDictionary *)params
+           body:(nullable id)body
+        headers:(nullable NSStringDictionary *)headers
+       callback:(ARTHTTPPaginatedCallback)callback
+          error:(NSError *_Nullable *_Nullable)errorPtr;
+
+- (void)ping:(ARTCallback)cb;
+
+- (BOOL)stats:(ARTPaginatedStatsCallback)callback;
+
+- (BOOL)stats:(nullable ARTStatsQuery *)query callback:(ARTPaginatedStatsCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
+
+- (void)connect;
+
+- (void)close;
 
 @end
 

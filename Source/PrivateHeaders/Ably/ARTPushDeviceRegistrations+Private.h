@@ -6,9 +6,19 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTPushDeviceRegistrationsInternal : NSObject <ARTPushDeviceRegistrationsProtocol>
+@interface ARTPushDeviceRegistrationsInternal : NSObject
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest logger:(ARTInternalLog *)logger;
+
+- (void)save:(ARTDeviceDetails *)deviceDetails callback:(ARTCallback)callback;
+
+- (void)get:(ARTDeviceId *)deviceId callback:(void (^)(ARTDeviceDetails *_Nullable,  ARTErrorInfo *_Nullable))callback;
+
+- (void)list:(NSStringDictionary *)params callback:(ARTPaginatedDeviceDetailsCallback)callback;
+
+- (void)remove:(NSString *)deviceId callback:(ARTCallback)callback;
+
+- (void)removeWhere:(NSStringDictionary *)params callback:(ARTCallback)callback;
 
 @end
 

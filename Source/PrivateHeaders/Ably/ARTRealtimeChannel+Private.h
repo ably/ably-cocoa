@@ -17,7 +17,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTRealtimeChannelInternal : ARTChannel <ARTRealtimeChannelProtocol>
+@interface ARTRealtimeChannelInternal : ARTChannel
 
 @property (readonly) ARTRealtimePresenceInternal *presence;
 #if TARGET_OS_IPHONE
@@ -58,6 +58,40 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)off_nosync;
 
 @property (nonatomic) dispatch_queue_t queue;
+
+@property (readonly) ARTChannelProperties *properties;
+
+@property (readonly, nullable, getter=getOptions) ARTRealtimeChannelOptions *options;
+
+- (void)attach;
+
+- (void)attach:(nullable ARTCallback)callback;
+
+- (void)detach;
+
+- (void)detach:(nullable ARTCallback)callback;
+
+- (ARTEventListener *_Nullable)subscribe:(ARTMessageCallback)callback;
+
+- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable ARTCallback)onAttach callback:(ARTMessageCallback)callback;
+
+- (ARTEventListener *_Nullable)subscribe:(NSString *)name callback:(ARTMessageCallback)callback;
+
+- (ARTEventListener *_Nullable)subscribe:(NSString *)name onAttach:(nullable ARTCallback)onAttach callback:(ARTMessageCallback)callback;
+
+- (void)unsubscribe;
+
+- (void)unsubscribe:(ARTEventListener *_Nullable)listener;
+
+- (void)unsubscribe:(NSString *)name listener:(ARTEventListener *_Nullable)listener;
+
+- (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query callback:(ARTPaginatedMessagesCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
+
+- (void)setOptions:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable ARTCallback)callback;
+
+#pragma mark ARTEventEmitter
+
+ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
 
 @end
 

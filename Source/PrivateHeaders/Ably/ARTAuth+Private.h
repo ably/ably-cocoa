@@ -13,10 +13,28 @@ typedef NS_ENUM(NSUInteger, ARTAuthorizationState) {
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTAuthInternal : NSObject <ARTAuthProtocol>
+@interface ARTAuthInternal : NSObject
 
 @property (nullable, readonly) NSString *clientId;
 @property (nullable, nonatomic, readonly) ARTTokenDetails *tokenDetails;
+
+- (void)requestToken:(nullable ARTTokenParams *)tokenParams
+         withOptions:(nullable ARTAuthOptions *)authOptions
+            callback:(ARTTokenDetailsCallback)callback;
+
+- (void)requestToken:(ARTTokenDetailsCallback)callback;
+
+- (void)authorize:(nullable ARTTokenParams *)tokenParams
+          options:(nullable ARTAuthOptions *)authOptions
+         callback:(ARTTokenDetailsCallback)callback;
+
+- (void)authorize:(ARTTokenDetailsCallback)callback;
+
+- (void)createTokenRequest:(nullable ARTTokenParams *)tokenParams
+                   options:(nullable ARTAuthOptions *)options
+                  callback:(void (^)(ARTTokenRequest *_Nullable tokenRequest, NSError *_Nullable error))callback;
+
+- (void)createTokenRequest:(void (^)(ARTTokenRequest *_Nullable tokenRequest, NSError *_Nullable error))callback;
 
 @end
 

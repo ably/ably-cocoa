@@ -7,7 +7,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTRestChannelsInternal : NSObject<ARTRestChannelsProtocol>
+@interface ARTRestChannelsInternal : NSObject
 
 - (ARTRestChannelInternal *)get:(NSString *)name;
 - (ARTRestChannelInternal *)get:(NSString *)name options:(ARTChannelOptions *)options;
@@ -15,6 +15,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest logger:(ARTInternalLog *)logger;
 - (ARTRestChannelInternal *)_getChannel:(NSString *)name options:(ARTChannelOptions * _Nullable)options addPrefix:(BOOL)addPrefix;
+
+- (BOOL)exists:(NSString *)name;
+- (void)release:(NSString *)name;
 
 @end
 
