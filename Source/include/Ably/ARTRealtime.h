@@ -25,9 +25,9 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- The protocol upon which the top level object `ARTRealtime` is implemented.
+ This protocol contains the non-initializer instance methods provided by the `ARTRealtime` client class.
  */
-@protocol ARTRealtimeProtocol <NSObject>
+@protocol ARTRealtimeInstanceMethodsProtocol <NSObject>
 
 #if TARGET_OS_IOS
 /**
@@ -40,30 +40,6 @@ NS_ASSUME_NONNULL_BEGIN
  * A client ID, used for identifying this client when publishing messages or for presence purposes. The `clientId` can be any non-empty string, except it cannot contain a `*`. This option is primarily intended to be used in situations where the library is instantiated with a key. A `clientId` may also be implicit in a token used to instantiate the library; an error will be raised if a `clientId` specified here conflicts with the `clientId` implicit in the token.
  */
 @property (readonly, nullable) NSString *clientId;
-
-/// :nodoc:
-- (instancetype)init NS_UNAVAILABLE;
-
-/**
- * Constructs an `ARTRealtime` object using an Ably `ARTClientOptions` object.
- *
- * @param options An `ARTClientOptions` object.
- */
-- (instancetype)initWithOptions:(ARTClientOptions *)options;
-
-/**
- * Constructs an `ARTRealtime` object using an Ably API key.
- *
- * @param key The Ably API key used to validate the client.
- */
-- (instancetype)initWithKey:(NSString *)key;
-
-/**
- * Constructs an `ARTRealtime` object using an Ably token string.
- *
- * @param token The Ably token string used to validate the client.
- */
-- (instancetype)initWithToken:(NSString *)token;
 
 /**
  * Retrieves the time from the Ably service. Clients that do not have access to a sufficiently well maintained time source and wish to issue Ably `ARTTokenRequest`s with a more accurate timestamp should use the `ARTAuthOptions.queryTime` property instead of this method.
@@ -119,6 +95,37 @@ NS_ASSUME_NONNULL_BEGIN
  * Calls `-[ARTConnectionProtocol close]` and causes the connection to close, entering the closing state. Once closed, the library will not attempt to re-establish the connection without an explicit call to `connect`.
  */
 - (void)close;
+
+@end
+
+/**
+ The protocol upon which the top level object `ARTRealtime` is implemented.
+ */
+@protocol ARTRealtimeProtocol <ARTRealtimeInstanceMethodsProtocol>
+
+/// :nodoc:
+- (instancetype)init NS_UNAVAILABLE;
+
+/**
+ * Constructs an `ARTRealtime` object using an Ably `ARTClientOptions` object.
+ *
+ * @param options An `ARTClientOptions` object.
+ */
+- (instancetype)initWithOptions:(ARTClientOptions *)options;
+
+/**
+ * Constructs an `ARTRealtime` object using an Ably API key.
+ *
+ * @param key The Ably API key used to validate the client.
+ */
+- (instancetype)initWithKey:(NSString *)key;
+
+/**
+ * Constructs an `ARTRealtime` object using an Ably token string.
+ *
+ * @param token The Ably token string used to validate the client.
+ */
+- (instancetype)initWithToken:(NSString *)token;
 
 @end
 
