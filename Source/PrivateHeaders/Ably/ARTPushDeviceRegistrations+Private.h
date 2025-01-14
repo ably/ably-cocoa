@@ -4,6 +4,8 @@
 @class ARTRestInternal;
 @class ARTInternalLog;
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface ARTPushDeviceRegistrationsInternal : NSObject <ARTPushDeviceRegistrationsProtocol>
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest logger:(ARTInternalLog *)logger;
@@ -17,3 +19,5 @@
 - (instancetype)initWithInternal:(ARTPushDeviceRegistrationsInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
 
 @end
+
+NS_ASSUME_NONNULL_END

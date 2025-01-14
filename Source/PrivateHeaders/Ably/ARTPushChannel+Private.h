@@ -4,6 +4,8 @@
 @class ARTRestInternal;
 @class ARTInternalLog;
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface ARTPushChannelInternal : NSObject <ARTPushChannelProtocol>
 
 - (instancetype)init:(ARTRestInternal *)rest withChannel:(ARTChannel *)channel logger:(ARTInternalLog *)logger;
@@ -17,3 +19,5 @@
 - (instancetype)initWithInternal:(ARTPushChannelInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
 
 @end
+
+NS_ASSUME_NONNULL_END
