@@ -113,5 +113,7 @@ framework module Ably {
         header "ARTVCDiffDecoder.h"
         header "ARTDeltaCodec.h"
         header "ARTWrapperSDKProxyRealtime+Private.h"
+        header "ARTWrapperSDKProxyRealtimeChannels+Private.h"
+        header "ARTWrapperSDKProxyRealtimeChannel+Private.h"
     }
 }

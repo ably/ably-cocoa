@@ -72,6 +72,114 @@ class WrapperSDKProxyTests: XCTestCase {
         XCTAssertFalse(underlyingConnectionReceivedEvent)
     }
 
+    // MARK: - Testing that channel state is shared with underlying Realtime client
+
+    func test_sharesChannelStateWithUnderlyingChannel() throws {
+        // Given: A channel fetched from a proxy client
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        let client = AblyTests.newRealtime(options).client
+        defer { client.dispose(); client.close() }
+
+        let proxyClient = client.createWrapperSDKProxy(with: .init(agents: ["some-agent": test.id.uuidString]))
+
+        let channelName = test.uniqueChannelName()
+        let channel = client.channels.get(channelName)
+        let proxyChannel = proxyClient.channels.get(channelName)
+
+        // (An example of changes to the underlying channel being reflected in the proxy channel)
+        //
+        // When: The underlying connection becomes CONNECTED
+        // Then: So does the proxy channel
+        waitUntil(timeout: testTimeout) { done in
+            proxyChannel.on(.attached) { _ in
+                done()
+            }
+
+            channel.attach()
+        }
+        XCTAssertEqual(proxyChannel.state, .attached)
+
+        // (An example of the proxy channel provoking changes in the underlying channel)
+        //
+        // When: We call `detach()` on the proxy channel
+        // Then: It detaches the underlying channel
+        waitUntil(timeout: testTimeout) { done in
+            channel.on(.detached) { _ in
+                done()
+            }
+
+            proxyChannel.detach()
+        }
+        XCTAssertEqual(channel.state, .detached)
+    }
+
+    func test_sharesChannelStateSubscriptionsWithUnderlyingChannel() throws {
+        // Given: A channel fetched from a proxy client
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        let client = AblyTests.newRealtime(options).client
+        defer { client.dispose(); client.close() }
+
+        let proxyClient = client.createWrapperSDKProxy(with: .init(agents: ["some-agent": test.id.uuidString]))
+
+        let channelName = test.uniqueChannelName()
+        let channel = client.channels.get(channelName)
+        let proxyChannel = proxyClient.channels.get(channelName)
+
+        // When: We add a channel state event listener to the underlying channel, then call `off()` on the proxy channel and provoke a channel state event
+        var underlyingChannelReceivedEvent = false
+        channel.on(.attached) { _ in
+            underlyingChannelReceivedEvent = true
+        }
+
+        proxyChannel.off()
+
+        // this is the "provoke a channel state event" above
+        waitUntil(timeout: testTimeout) { done in
+            channel.on(.attached) { _ in
+                done()
+            }
+            channel.attach()
+        }
+
+        // Then: We do not receive the channel state event on the aforementioned listener, because calling `off()` on the proxy channel removed the listener
+        XCTAssertFalse(underlyingChannelReceivedEvent)
+    }
+
+    func test_sharesChannelMessageSubscriptionsWithUnderlyingChannel() throws {
+        // Given: A channel fetched from a proxy client
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        let client = AblyTests.newRealtime(options).client
+        defer { client.dispose(); client.close() }
+
+        let proxyClient = client.createWrapperSDKProxy(with: .init(agents: ["some-agent": test.id.uuidString]))
+
+        let channelName = test.uniqueChannelName()
+        let channel = client.channels.get(channelName)
+        let proxyChannel = proxyClient.channels.get(channelName)
+
+        // When: We add a message listener to the underlying channel, then call `unsubscribe()` on the proxy channel and send a message on the channel
+        var underlyingChannelReceivedMessage = false
+        channel.subscribe { _ in
+            underlyingChannelReceivedMessage = true
+        }
+
+        proxyChannel.unsubscribe()
+
+        // this is the "send a message on the channel" above
+        waitUntil(timeout: testTimeout) { done in
+            channel.subscribe { _ in
+                done()
+            }
+            channel.publish(nil, data: nil)
+        }
+
+        // Then: We do not receive the message on the aforementioned listener, because calling `unsubscribe()` on the proxy channel removed the listener
+        XCTAssertFalse(underlyingChannelReceivedMessage)
+    }
+
     // MARK: - `request()`
 
     func test_request_addsWrapperSDKAgentToHeader() throws {

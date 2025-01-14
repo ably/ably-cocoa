@@ -1,5 +1,5 @@
-#import "ARTWrapperSDKProxyRealtime.h"
 #import "ARTWrapperSDKProxyRealtime+Private.h"
+#import "ARTWrapperSDKProxyRealtimeChannels+Private.h"
 #import "ARTWrapperSDKProxyOptions.h"
 #import "ARTRealtime+Private.h"
 
@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_END
     if (self = [super init]) {
         _underlyingRealtime = realtime;
         _proxyOptions = proxyOptions;
+        _channels = [[ARTWrapperSDKProxyRealtimeChannels alloc] initWithChannels:realtime.channels
+                                                                    proxyOptions:proxyOptions];
     }
 
     return self;
@@ -28,10 +30,6 @@ NS_ASSUME_NONNULL_END
 
 - (ARTConnection *)connection {
     return self.underlyingRealtime.connection;
-}
-
-- (ARTRealtimeChannels *)channels {
-    return self.underlyingRealtime.channels;
 }
 
 - (ARTPush *)push {

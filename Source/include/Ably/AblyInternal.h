@@ -3,3 +3,5 @@
 #import <Ably/ARTRealtime+WrapperSDKProxy.h>
 #import <Ably/ARTWrapperSDKProxyOptions.h>
 #import <Ably/ARTWrapperSDKProxyRealtime.h>
+#import <Ably/ARTWrapperSDKProxyRealtimeChannels.h>
+#import <Ably/ARTWrapperSDKProxyRealtimeChannel.h>
