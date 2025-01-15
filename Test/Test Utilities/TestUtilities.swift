@@ -910,35 +910,12 @@ struct ErrorSimulator {
     }()
 }
 
-class MockHTTPExecutor: NSObject, ARTHTTPAuthenticatedExecutor {
+class MockHTTPExecutor: NSObject, ARTHTTPExecutor {
 
     fileprivate var errorSimulator: NSError?
 
     private(set) var logger = InternalLog(logger: MockVersion2Log())
-    var clientOptions = ARTClientOptions()
-    var encoder = ARTJsonLikeEncoder()
     var requests: [URLRequest] = []
-
-    func options() -> ARTClientOptions {
-        return self.clientOptions
-    }
-
-    func defaultEncoder() -> ARTEncoder {
-        return self.encoder
-    }
-
-    func execute(_ request: NSMutableURLRequest, withAuthOption authOption: ARTAuthentication, completion callback: @escaping (HTTPURLResponse?, Data?, Error?) -> Void) -> (ARTCancellable & NSObjectProtocol)? {
-        self.requests.append(request as URLRequest)
-
-        if let simulatedError = errorSimulator, var _ = request.url {
-            defer { errorSimulator = nil }
-            callback(nil, nil, simulatedError)
-            return nil
-        }
-
-        callback(HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: ["X-Ably-HTTPExecutor": "MockHTTPExecutor"]), nil, nil)
-        return nil
-    }
 
     func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) -> (ARTCancellable & NSObjectProtocol)? {
         self.requests.append(request)

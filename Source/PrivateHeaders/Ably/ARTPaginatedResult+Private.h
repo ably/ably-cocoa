@@ -3,8 +3,6 @@
 @class ARTRestInternal;
 @class ARTInternalLog;
 
-@protocol ARTHTTPAuthenticatedExecutor;
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTPaginatedResult<ItemType> ()

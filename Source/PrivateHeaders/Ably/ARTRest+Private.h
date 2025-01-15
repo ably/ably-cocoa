@@ -14,7 +14,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /// ARTRest private methods that are used internally and for internal testing
-@interface ARTRestInternal : NSObject <ARTHTTPAuthenticatedExecutor>
+@interface ARTRestInternal : NSObject <ARTHTTPExecutor>
 
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithOptions:(ARTClientOptions *)options;

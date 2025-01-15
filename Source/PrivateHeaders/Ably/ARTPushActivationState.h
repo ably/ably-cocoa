@@ -4,8 +4,6 @@
 @class ARTPushActivationEvent;
 @class ARTInternalLog;
 
-@protocol ARTHTTPAuthenticatedExecutor;
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTPushActivationState : NSObject <NSSecureCoding>
