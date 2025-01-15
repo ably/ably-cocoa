@@ -90,7 +90,7 @@
         [request setDeviceAuthentication:channelSubscription.deviceId localDevice:local];
         
         ARTLogDebug(self->_logger, @"save channel subscription with request %@", request);
-        [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+        [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (response.statusCode == 200 /*Ok*/ || response.statusCode == 201 /*Created*/) {
                 ARTLogDebug(self->_logger, @"channel subscription saved successfully");
                 callback(nil);
@@ -207,7 +207,7 @@
 #endif
     
     ARTLogDebug(_logger, @"remove channel subscription with request %@", request);
-    [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode == 200 /*Ok*/ || response.statusCode == 204 /*not returning any content*/) {
             ARTLogDebug(self->_logger, @"%@: channel subscription removed successfully", NSStringFromClass(self.class));
             callback(nil);

@@ -159,7 +159,7 @@
         headers:(nullable NSStringDictionary *)headers
        callback:(ARTHTTPPaginatedCallback)callback
           error:(NSError *_Nullable *_Nullable)errorPtr {
-    return [_internal request:method path:path params:params body:body headers:headers callback:callback error:errorPtr];
+    return [_internal request:method path:path params:params body:body headers:headers wrapperSDKAgents:nil callback:callback error:errorPtr];
 }
 
 - (void)ping:(ARTCallback)cb {
@@ -509,9 +509,10 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
          params:(nullable NSStringDictionary *)params
            body:(nullable id)body
         headers:(nullable NSStringDictionary *)headers
+wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
        callback:(ARTHTTPPaginatedCallback)callback
           error:(NSError *_Nullable *_Nullable)errorPtr {
-    return [self.rest request:method path:path params:params body:body headers:headers callback:callback error:errorPtr];
+    return [self.rest request:method path:path params:params body:body headers:headers wrapperSDKAgents:wrapperSDKAgents callback:callback error:errorPtr];
 }
 
 - (void)ping:(ARTCallback) cb {

@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)executePaginated:(ARTRestInternal *)rest
              withRequest:(NSMutableURLRequest *)request
+        wrapperSDKAgents:(nullable NSDictionary<NSString *, NSString *> *)wrapperSDKAgents
                   logger:(ARTInternalLog *)logger
                 callback:(ARTHTTPPaginatedCallback)callback;
 

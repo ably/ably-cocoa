@@ -1782,7 +1782,7 @@ class RestClientTests: XCTestCase {
         let request = URLRequest(url: URL(string: "https://www.example.com")!)
         waitUntil(timeout: testTimeout) { done in
             let rest = ARTRest(key: "xxxx:xxxx")
-            rest.internal.execute(request, completion: { response, _, error in
+            rest.internal.execute(request, wrapperSDKAgents:nil, completion: { response, _, error in
                 guard let contentType = response?.allHeaderFields["Content-Type"] as? String else {
                     fail("Response should have a Content-Type"); done(); return
                 }

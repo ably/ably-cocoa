@@ -70,12 +70,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 // MARK: ARTHTTPExecutor
 
-- (nullable NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(nullable ARTURLRequestCallback)callback;
+- (nullable NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request
+                                     wrapperSDKAgents:(nullable NSDictionary<NSString *, NSString *> *)wrapperSDKAgents
+                                           completion:(nullable ARTURLRequestCallback)callback;
 
 // MARK: Internal
 
 - (nullable NSObject<ARTCancellable> *)executeRequest:(NSMutableURLRequest *)request
                                        withAuthOption:(ARTAuthentication)authOption
+                                     wrapperSDKAgents:(nullable NSDictionary<NSString *, NSString *> *)wrapperSDKAgents
                                            completion:(ARTURLRequestCallback)callback;
 
 - (nullable NSObject<ARTCancellable> *)internetIsUp:(void (^)(BOOL isUp))cb;
@@ -97,6 +100,7 @@ NS_ASSUME_NONNULL_BEGIN
          params:(nullable NSStringDictionary *)params
            body:(nullable id)body
         headers:(nullable NSStringDictionary *)headers
+wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
        callback:(ARTHTTPPaginatedCallback)callback
           error:(NSError *_Nullable *_Nullable)errorPtr;
 
