@@ -20,10 +20,12 @@
                       relCurrent:(NSMutableURLRequest *)relCurrent
                          relNext:(NSMutableURLRequest *)relNext
                responseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
+                wrapperSDKAgents:(nullable NSDictionary<NSString *,NSString *> *)wrapperSDKAgents
                           logger:(ARTInternalLog *)logger {
     self = [super initWithItems:items rest:rest relFirst:relFirst relCurrent:relCurrent relNext:relNext responseProcessor:responseProcessor logger:logger];
     if (self) {
         _response = response;
+        _wrapperSDKAgents = [wrapperSDKAgents copy];
     }
     return self;
 }
@@ -60,7 +62,7 @@
         };
     }
 
-    [self.class executePaginated:self.rest withRequest:self.relFirst wrapperSDKAgents:nil logger:self.logger callback:callback];
+    [self.class executePaginated:self.rest withRequest:self.relFirst wrapperSDKAgents:self.wrapperSDKAgents logger:self.logger callback:callback];
 }
 
 - (void)next:(ARTHTTPPaginatedCallback)callback {
@@ -81,7 +83,7 @@
         return;
     }
 
-    [self.class executePaginated:self.rest withRequest:self.relNext wrapperSDKAgents:nil logger:self.logger callback:callback];
+    [self.class executePaginated:self.rest withRequest:self.relNext wrapperSDKAgents:self.wrapperSDKAgents logger:self.logger callback:callback];
 }
 
 + (void)executePaginated:(ARTRestInternal *)rest
@@ -119,7 +121,7 @@
         NSMutableURLRequest *currentRel = [NSMutableURLRequest requestWithPath:links[@"current"] relativeTo:request];
         NSMutableURLRequest *nextRel = [NSMutableURLRequest requestWithPath:links[@"next"] relativeTo:request];
 
-        ARTHTTPPaginatedResponse *result = [[ARTHTTPPaginatedResponse alloc] initWithResponse:response items:items rest:rest relFirst:firstRel relCurrent:currentRel relNext:nextRel responseProcessor:responseProcessor logger:logger];
+        ARTHTTPPaginatedResponse *result = [[ARTHTTPPaginatedResponse alloc] initWithResponse:response items:items rest:rest relFirst:firstRel relCurrent:currentRel relNext:nextRel responseProcessor:responseProcessor wrapperSDKAgents:wrapperSDKAgents logger:logger];
 
         callback(result, nil);
     }];
