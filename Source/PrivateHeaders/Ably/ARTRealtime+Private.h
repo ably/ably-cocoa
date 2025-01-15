@@ -52,6 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
          params:(nullable NSStringDictionary *)params
            body:(nullable id)body
         headers:(nullable NSStringDictionary *)headers
+wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
        callback:(ARTHTTPPaginatedCallback)callback
           error:(NSError *_Nullable *_Nullable)errorPtr;
 

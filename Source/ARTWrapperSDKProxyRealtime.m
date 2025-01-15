@@ -1,5 +1,7 @@
 #import "ARTWrapperSDKProxyRealtime.h"
 #import "ARTWrapperSDKProxyRealtime+Private.h"
+#import "ARTWrapperSDKProxyOptions.h"
+#import "ARTRealtime+Private.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -69,13 +71,14 @@ NS_ASSUME_NONNULL_END
         headers:(nullable NSStringDictionary *)headers
        callback:(nonnull ARTHTTPPaginatedCallback)callback
           error:(NSError * _Nullable __autoreleasing * _Nullable)errorPtr {
-    return [self.underlyingRealtime request:method
-                                       path:path
-                                     params:params
-                                       body:body
-                                    headers:headers
-                                   callback:callback
-                                      error:errorPtr];
+    return [self.underlyingRealtime.internal request:method
+                                                path:path
+                                              params:params
+                                                body:body
+                                             headers:headers
+                                    wrapperSDKAgents:self.proxyOptions.agents
+                                            callback:callback
+                                               error:errorPtr];
 }
 
 - (BOOL)stats:(nonnull ARTPaginatedStatsCallback)callback {

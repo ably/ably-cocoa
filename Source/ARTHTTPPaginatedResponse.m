@@ -60,7 +60,7 @@
         };
     }
 
-    [self.class executePaginated:self.rest withRequest:self.relFirst logger:self.logger callback:callback];
+    [self.class executePaginated:self.rest withRequest:self.relFirst wrapperSDKAgents:nil logger:self.logger callback:callback];
 }
 
 - (void)next:(ARTHTTPPaginatedCallback)callback {
@@ -81,16 +81,17 @@
         return;
     }
 
-    [self.class executePaginated:self.rest withRequest:self.relNext logger:self.logger callback:callback];
+    [self.class executePaginated:self.rest withRequest:self.relNext wrapperSDKAgents:nil logger:self.logger callback:callback];
 }
 
 + (void)executePaginated:(ARTRestInternal *)rest
              withRequest:(NSMutableURLRequest *)request
+        wrapperSDKAgents:(nullable NSDictionary<NSString *, NSString *> *)wrapperSDKAgents
                   logger:(ARTInternalLog *)logger
                 callback:(ARTHTTPPaginatedCallback)callback {
     ARTLogDebug(logger, @"HTTP Paginated request: %@", request);
 
-    [rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error && ![error.domain isEqualToString:ARTAblyErrorDomain]) {
             callback(nil, [ARTErrorInfo createFromNSError:error]);
             return;

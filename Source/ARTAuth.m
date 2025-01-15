@@ -370,7 +370,7 @@ dispatch_async(_queue, ^{
 
         ARTLogDebug(self.logger, @"RS:%p using authUrl (%@ %@)", _rest, request.HTTPMethod, request.URL);
 
-        task = [_rest executeRequest:request withAuthOption:ARTAuthenticationOff completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+        task = [_rest executeRequest:request withAuthOption:ARTAuthenticationOff wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (error) {
                 checkerCallback(nil, error);
             } else {
@@ -508,7 +508,7 @@ dispatch_async(_queue, ^{
     [request setValue:[encoder mimeType] forHTTPHeaderField:@"Accept"];
     [request setValue:[encoder mimeType] forHTTPHeaderField:@"Content-Type"];
 
-    return [_rest executeRequest:request withAuthOption:ARTAuthenticationOff completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    return [_rest executeRequest:request withAuthOption:ARTAuthenticationOff wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             callback(nil, error);
         } else {

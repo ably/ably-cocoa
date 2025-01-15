@@ -112,7 +112,7 @@
         headers:(nullable NSStringDictionary *)headers
        callback:(ARTHTTPPaginatedCallback)callback
           error:(NSError *_Nullable *_Nullable)errorPtr {
-    return [_internal request:(NSString *)method path:path params:params body:body headers:headers callback:callback error:errorPtr];
+    return [_internal request:(NSString *)method path:path params:params body:body headers:headers wrapperSDKAgents:nil callback:callback error:errorPtr];
 }
 
 - (BOOL)stats:(ARTPaginatedStatsCallback)callback {
@@ -244,35 +244,38 @@ NS_ASSUME_NONNULL_END
 
 - (NSObject<ARTCancellable> *)executeRequest:(NSMutableURLRequest *)request
                               withAuthOption:(ARTAuthentication)authOption
+                            wrapperSDKAgents:(nullable NSDictionary<NSString *, NSString *> *)wrapperSDKAgents
                                   completion:(ARTURLRequestCallback)callback {
     request.URL = [NSURL URLWithString:request.URL.relativeString relativeToURL:self.baseUrl];
     
     switch (authOption) {
         case ARTAuthenticationOff:
-            return [self executeRequest:request completion:callback];
+            return [self executeRequest:request wrapperSDKAgents:wrapperSDKAgents completion:callback];
         case ARTAuthenticationOn:
             _tokenErrorRetries = 0;
-            return [self executeRequestWithAuthentication:request withMethod:self.auth.method force:NO completion:callback];
+            return [self executeRequestWithAuthentication:request withMethod:self.auth.method force:NO wrapperSDKAgents:wrapperSDKAgents completion:callback];
         case ARTAuthenticationNewToken:
             _tokenErrorRetries = 0;
-            return [self executeRequestWithAuthentication:request withMethod:self.auth.method force:YES completion:callback];
+            return [self executeRequestWithAuthentication:request withMethod:self.auth.method force:YES wrapperSDKAgents:wrapperSDKAgents completion:callback];
         case ARTAuthenticationTokenRetry:
             _tokenErrorRetries = _tokenErrorRetries + 1;
-            return [self executeRequestWithAuthentication:request withMethod:self.auth.method force:YES completion:callback];
+            return [self executeRequestWithAuthentication:request withMethod:self.auth.method force:YES wrapperSDKAgents:wrapperSDKAgents completion:callback];
         case ARTAuthenticationUseBasic:
-            return [self executeRequestWithAuthentication:request withMethod:ARTAuthMethodBasic completion:callback];
+            return [self executeRequestWithAuthentication:request withMethod:ARTAuthMethodBasic wrapperSDKAgents:wrapperSDKAgents completion:callback];
     }
 }
 
 - (NSObject<ARTCancellable> *)executeRequestWithAuthentication:(NSMutableURLRequest *)request
                                                     withMethod:(ARTAuthMethod)method
+                                              wrapperSDKAgents:(nullable NSDictionary<NSString *, NSString *> *)wrapperSDKAgents
                                                     completion:(ARTURLRequestCallback)callback {
-    return [self executeRequestWithAuthentication:request withMethod:method force:NO completion:callback];
+    return [self executeRequestWithAuthentication:request withMethod:method force:NO wrapperSDKAgents:wrapperSDKAgents completion:callback];
 }
 
 - (NSObject<ARTCancellable> *)executeRequestWithAuthentication:(NSMutableURLRequest *)request
                                                     withMethod:(ARTAuthMethod)method
                                                          force:(BOOL)force
+                                              wrapperSDKAgents:(nullable NSDictionary<NSString *, NSString *> *)wrapperSDKAgents
                                                     completion:(ARTURLRequestCallback)callback {
     ARTLogDebug(self.logger, @"RS:%p calculating authorization %lu", self, (unsigned long)method);
     __block NSObject<ARTCancellable> *task;
@@ -282,7 +285,7 @@ NS_ASSUME_NONNULL_END
         NSString *authorization = [self prepareBasicAuthorisationHeader:self.options.key];
         [request setValue:authorization forHTTPHeaderField:@"Authorization"];
         ARTLogVerbose(self.logger, @"RS:%p ARTRest: %@", self, authorization);
-        task = [self executeRequest:request completion:callback];
+        task = [self executeRequest:request wrapperSDKAgents:wrapperSDKAgents completion:callback];
     }
     else {
         if (!force && [self.auth tokenRemainsValid]) {
@@ -290,7 +293,7 @@ NS_ASSUME_NONNULL_END
             NSString *authorization = [self prepareTokenAuthorisationHeader:self.auth.tokenDetails.token];
             ARTLogVerbose(self.logger, @"RS:%p ARTRestInternal reusing token: authorization bearer in Base64 %@", self, authorization);
             [request setValue:authorization forHTTPHeaderField:@"Authorization"];
-            task = [self executeRequest:request completion:callback];
+            task = [self executeRequest:request wrapperSDKAgents:wrapperSDKAgents completion:callback];
         }
         else {
             // New Token
@@ -303,15 +306,31 @@ NS_ASSUME_NONNULL_END
                 NSString *authorization = [self prepareTokenAuthorisationHeader:tokenDetails.token];
                 ARTLogVerbose(self.logger, @"RS:%p ARTRestInternal reissuing token: authorization bearer %@", self, authorization);
                 [request setValue:authorization forHTTPHeaderField:@"Authorization"];
-                task = [self executeRequest:request completion:callback];
+                task = [self executeRequest:request wrapperSDKAgents:wrapperSDKAgents completion:callback];
             }];
         }
     }
     return task;
 }
 
-- (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(ARTURLRequestCallback)callback {
-    return [self executeRequest:request fallbacks:nil retries:0 originalRequestId:nil completion:callback];
+- (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request
+                            wrapperSDKAgents:(nullable NSDictionary<NSString *, NSString *> *)wrapperSDKAgents
+                                  completion:(ARTURLRequestCallback)callback {
+    return [self executeRequest:request fallbacks:nil retries:0 originalRequestId:nil wrapperSDKAgents:wrapperSDKAgents completion:callback];
+}
+
+- (NSString *)agentIdentifierWithWrapperSDKAgents:(nullable NSDictionary<NSString *, NSString *> *)wrapperSDKAgents {
+    NSMutableDictionary<NSString *, NSString *> *additionalAgents = [NSMutableDictionary dictionary];
+
+    for (NSString *additionalAgentName in _options.agents) {
+        additionalAgents[additionalAgentName] = _options.agents[additionalAgentName];
+    }
+
+    for (NSString *additionalAgentName in wrapperSDKAgents) {
+        additionalAgents[additionalAgentName] = wrapperSDKAgents[additionalAgentName];
+    }
+
+    return [ARTClientInformation agentIdentifierWithAdditionalAgents:additionalAgents];
 }
 
 /**
@@ -321,6 +340,7 @@ NS_ASSUME_NONNULL_END
                                    fallbacks:(ARTFallback *)fallbacks
                                      retries:(NSUInteger)retries
                            originalRequestId:(nullable NSString *)originalRequestId
+                            wrapperSDKAgents:(nullable NSDictionary<NSString *, NSString *> *)wrapperSDKAgents
                                   completion:(ARTURLRequestCallback)callback {
     NSString *requestId = nil;
     __block ARTFallback *blockFallbacks = fallbacks;
@@ -330,7 +350,7 @@ NS_ASSUME_NONNULL_END
         [mutableRequest setAcceptHeader:self.defaultEncoder encoders:self.encoders];
         [mutableRequest setTimeoutInterval:_options.httpRequestTimeout];
         [mutableRequest setValue:[ARTDefault apiVersion] forHTTPHeaderField:@"X-Ably-Version"];
-        [mutableRequest setValue:[ARTClientInformation agentIdentifierWithAdditionalAgents:_options.agents] forHTTPHeaderField:@"Ably-Agent"];
+        [mutableRequest setValue:[self agentIdentifierWithWrapperSDKAgents:wrapperSDKAgents] forHTTPHeaderField:@"Ably-Agent"];
         if (_options.clientId && !self.auth.isTokenAuth) {
             [mutableRequest setValue:encodeBase64(_options.clientId) forHTTPHeaderField:@"X-Ably-ClientId"];
         }
@@ -391,7 +411,7 @@ NS_ASSUME_NONNULL_END
                     ARTLogDebug(self.logger, @"RS:%p retry request %@", self, request);
                     // Make a single attempt to reissue the token and resend the request
                     if (self->_tokenErrorRetries < 1) {
-                        task = [self executeRequest:(NSMutableURLRequest *)request withAuthOption:ARTAuthenticationTokenRetry completion:callback];
+                        task = [self executeRequest:(NSMutableURLRequest *)request withAuthOption:ARTAuthenticationTokenRetry wrapperSDKAgents:wrapperSDKAgents completion:callback];
                         return;
                     }
                 }
@@ -437,6 +457,7 @@ NS_ASSUME_NONNULL_END
                                       fallbacks:blockFallbacks
                                         retries:retries + 1
                               originalRequestId:originalRequestId
+                               wrapperSDKAgents:wrapperSDKAgents
                                      completion:callback];
                     return;
                 }
@@ -525,7 +546,7 @@ NS_ASSUME_NONNULL_END
     NSString *accept = [[_encoders.allValues valueForKeyPath:@"mimeType"] componentsJoinedByString:@","];
     [request setValue:accept forHTTPHeaderField:@"Accept"];
     
-    return [self executeRequest:request withAuthOption:ARTAuthenticationOff completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    return [self executeRequest:request withAuthOption:ARTAuthenticationOff wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             callback(nil, error);
             return;
@@ -546,6 +567,7 @@ NS_ASSUME_NONNULL_END
          params:(nullable NSStringDictionary *)params
            body:(nullable id)body
         headers:(nullable NSStringDictionary *)headers
+wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
        callback:(ARTHTTPPaginatedCallback)callback
           error:(NSError **)errorPtr {
     
@@ -634,7 +656,7 @@ NS_ASSUME_NONNULL_END
 
     ARTLogDebug(self.logger, @"request %@ %@", method, path);
     dispatch_async(_queue, ^{
-        [ARTHTTPPaginatedResponse executePaginated:self withRequest:request logger:self.logger callback:callback];
+        [ARTHTTPPaginatedResponse executePaginated:self withRequest:request wrapperSDKAgents:wrapperSDKAgents logger:self.logger callback:callback];
     });
     return YES;
 }
