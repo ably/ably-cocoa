@@ -21,6 +21,16 @@
     return self;
 }
 
+- (id)copyWithZone:(NSZone *)zone {
+    ARTRealtimeChannelOptions *copied = [super copyWithZone:zone];
+
+    copied->_params = _params;
+    copied->_modes = _modes;
+    copied->_attachOnSubscribe = _attachOnSubscribe;
+
+    return copied;
+}
+
 - (NSStringDictionary *)params {
     return _params;
 }

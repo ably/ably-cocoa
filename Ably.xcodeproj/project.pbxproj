@@ -97,6 +97,9 @@
 		211A610729DA05D700D169C5 /* ARTAttachRequestParams.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A610629DA05D700D169C5 /* ARTAttachRequestParams.m */; };
 		211A610829DA05D700D169C5 /* ARTAttachRequestParams.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A610629DA05D700D169C5 /* ARTAttachRequestParams.m */; };
 		211A610929DA05D700D169C5 /* ARTAttachRequestParams.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A610629DA05D700D169C5 /* ARTAttachRequestParams.m */; };
+		212374672D41598A005427E0 /* ChannelOptionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 212374662D415983005427E0 /* ChannelOptionsTests.swift */; };
+		212374682D41598A005427E0 /* ChannelOptionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 212374662D415983005427E0 /* ChannelOptionsTests.swift */; };
+		212374692D41598A005427E0 /* ChannelOptionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 212374662D415983005427E0 /* ChannelOptionsTests.swift */; };
 		2124B78729DB127900AD8361 /* MockVersion2Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2124B78629DB127900AD8361 /* MockVersion2Log.swift */; };
 		2124B78829DB127900AD8361 /* MockVersion2Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2124B78629DB127900AD8361 /* MockVersion2Log.swift */; };
 		2124B78929DB127900AD8361 /* MockVersion2Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2124B78629DB127900AD8361 /* MockVersion2Log.swift */; };
@@ -1153,6 +1156,7 @@
 		211A60FE29D8ABF100D169C5 /* ARTChannelStateChangeParams.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTChannelStateChangeParams.m; sourceTree = "<group>"; };
 		211A610229DA05C700D169C5 /* ARTAttachRequestParams.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTAttachRequestParams.h; path = PrivateHeaders/Ably/ARTAttachRequestParams.h; sourceTree = "<group>"; };
 		211A610629DA05D700D169C5 /* ARTAttachRequestParams.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTAttachRequestParams.m; sourceTree = "<group>"; };
+		212374662D415983005427E0 /* ChannelOptionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelOptionsTests.swift; sourceTree = "<group>"; };
 		2124B78629DB127900AD8361 /* MockVersion2Log.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockVersion2Log.swift; sourceTree = "<group>"; };
 		2124B78A29DB12A900AD8361 /* ARTVersion2Log.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTVersion2Log.h; path = PrivateHeaders/Ably/ARTVersion2Log.h; sourceTree = "<group>"; };
 		2124B78E29DB13BD00AD8361 /* ARTInternalLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTInternalLog.m; sourceTree = "<group>"; };
@@ -1731,6 +1735,7 @@
 				EB1AE0CD1C5C3A4900D62250 /* UtilitiesTests.swift */,
 				2110CC392A530D42007310D4 /* AttachRetryStateTests.swift */,
 				21088DCA2A53560C0033C722 /* ConnectRetryStateTests.swift */,
+				212374662D415983005427E0 /* ChannelOptionsTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -3046,6 +3051,7 @@
 				D714A63E1C74D4B2002F2CA0 /* NSObject+TestSuite.swift in Sources */,
 				21276CC229F00BAA00107B5F /* ContinuousClockTests.swift in Sources */,
 				21881E7C283BD0E100CFD9E2 /* StringifiableTests.swift in Sources */,
+				212374692D41598A005427E0 /* ChannelOptionsTests.swift in Sources */,
 				856AAC971B6E30C800B07119 /* TestUtilities.swift in Sources */,
 				D72768211C9C19040022F8B2 /* RestClientPresenceTests.swift in Sources */,
 				D5FFA6A829E97EF30082DB4B /* CryptoData.swift in Sources */,
@@ -3244,6 +3250,7 @@
 				D7093C1A219E465C00723F17 /* NSObject+TestSuite.m in Sources */,
 				211A60D829D6D2C400D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */,
 				215F76002922B30F009E0E76 /* ClientInformationTests.swift in Sources */,
+				212374682D41598A005427E0 /* ChannelOptionsTests.swift in Sources */,
 				D7093C1E219E466900723F17 /* RestClientTests.swift in Sources */,
 				21088DCC2A53560C0033C722 /* ConnectRetryStateTests.swift in Sources */,
 				2124B79829DB144600AD8361 /* DefaultInternalLogCoreTests.swift in Sources */,
@@ -3302,6 +3309,7 @@
 				215F76012922B30F009E0E76 /* ClientInformationTests.swift in Sources */,
 				211A60D929D6D2C500D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */,
 				D7093C78219EE26400723F17 /* RestClientChannelsTests.swift in Sources */,
+				212374672D41598A005427E0 /* ChannelOptionsTests.swift in Sources */,
 				D7093C76219EE26400723F17 /* RestClientStatsTests.swift in Sources */,
 				21088DCD2A53560C0033C722 /* ConnectRetryStateTests.swift in Sources */,
 				2124B79929DB144600AD8361 /* DefaultInternalLogCoreTests.swift in Sources */,
