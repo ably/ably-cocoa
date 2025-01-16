@@ -318,4 +318,87 @@ class WrapperSDKProxyTests: XCTestCase {
             XCTAssertEqual(request.allHTTPHeaderFields?["Ably-Agent"], expectedIdentifier)
         }
     }
+
+    // MARK: - `agent` channel param
+
+    private func parameterizedTest_checkAttachProtocolMessage(
+        wrapperProxyAgents: [String: String]?,
+        fetchProxyChannel: (ARTWrapperSDKProxyRealtime) -> ARTWrapperSDKProxyRealtimeChannel,
+        verifyAttachProtocolMessage: (ARTProtocolMessage) -> Void
+    ) throws {
+        // Given
+        let test = Test()
+
+        let options = try AblyTests.commonAppSetup(for: test)
+        let realtime = AblyTests.newRealtime(options).client
+        defer { realtime.dispose(); realtime.close() }
+
+        let proxyClient = realtime.createWrapperSDKProxy(with: .init(agents: wrapperProxyAgents))
+
+        // When
+        let proxyChannel = fetchProxyChannel(proxyClient)
+
+        waitUntil(timeout: testTimeout) { done in
+            proxyChannel.attach { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+
+        // Then
+        let transport = try XCTUnwrap(realtime.internal.transport as? TestProxyTransport)
+        let attachProtocolMessage = try XCTUnwrap(transport.protocolMessagesSent.first { $0.action == .attach })
+
+        verifyAttachProtocolMessage(attachProtocolMessage)
+    }
+
+    func test_doesNotAddAgentParam_whenProxyClientCreatedWithoutAgents() throws {
+        let test = Test()
+
+        try parameterizedTest_checkAttachProtocolMessage(
+            wrapperProxyAgents: nil,
+            fetchProxyChannel: { proxyClient in
+                proxyClient.channels.get(test.uniqueChannelName())
+            },
+            verifyAttachProtocolMessage: { attachProtocolMessage in
+                XCTAssertNil(attachProtocolMessage.params)
+            }
+        )
+    }
+
+    func test_addsAgentChannelParam_whenFetchedWithNoChannelOptions() throws {
+        let test = Test()
+
+        try parameterizedTest_checkAttachProtocolMessage(
+            wrapperProxyAgents: ["my-wrapper-sdk": "1.0.0"],
+            fetchProxyChannel: { proxyClient in
+                proxyClient.channels.get(test.uniqueChannelName())
+            },
+            verifyAttachProtocolMessage: { attachProtocolMessage in
+                XCTAssertEqual(attachProtocolMessage.params, ["agent": "my-wrapper-sdk/1.0.0"])
+            }
+        )
+    }
+
+    func test_addsAgentChannelParam_whenFetchedWithChannelOptions() throws {
+        let test = Test()
+
+        try parameterizedTest_checkAttachProtocolMessage(
+            wrapperProxyAgents: ["my-wrapper-sdk": "1.0.0"],
+            fetchProxyChannel: { proxyClient in
+                let options = ARTRealtimeChannelOptions()
+                options.params = ["someKey": "someValue"] // arbitrary
+                options.modes = [.subscribe] // arbitrary
+
+                return proxyClient.channels.get(test.uniqueChannelName(), options: options)
+            },
+            verifyAttachProtocolMessage: { attachProtocolMessage in
+                // Check the modes get preserved
+                XCTAssertEqual(attachProtocolMessage.flags & Int64(ARTChannelMode.subscribe.rawValue), Int64(ARTChannelMode.subscribe.rawValue))
+
+                // Check the params get merged
+                XCTAssertEqual(attachProtocolMessage.params, ["agent": "my-wrapper-sdk/1.0.0", "someKey": "someValue"])
+            }
+        )
+    }
 }
