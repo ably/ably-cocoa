@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtimeChannelInternal : ARTChannel <ARTRealtimeChannelProtocol>
 
-@property (readonly) ARTRealtimePresenceInternal *internalPresence;
+@property (readonly) ARTRealtimePresenceInternal *presence;
 #if TARGET_OS_IPHONE
 @property (readonly) ARTPushChannelInternal *push;
 #endif

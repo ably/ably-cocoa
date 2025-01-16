@@ -3,6 +3,7 @@
 #import <Ably/ARTRestPresence.h>
 #import <Ably/ARTDataQuery.h>
 #import <Ably/ARTEventEmitter.h>
+#import <Ably/ARTRealtimeChannel.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

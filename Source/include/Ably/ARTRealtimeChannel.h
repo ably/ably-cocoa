@@ -9,6 +9,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class ARTRealtimePresence;
 @class ARTRealtimeChannelOptions;
 @class ARTChannelProperties;
 #if TARGET_OS_IPHONE
@@ -37,11 +38,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// :nodoc: TODO: docstring
 @property (readonly, nullable, getter=getOptions) ARTRealtimeChannelOptions *options;
-
-/**
- * An `ARTRealtimePresence` object.
- */
-@property (readonly) id<ARTRealtimePresenceProtocol> presence;
 
 /**
  * A shortcut for the `-[ARTRealtimeChannelProtocol attach:]` method.
@@ -184,6 +180,10 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
 NS_SWIFT_SENDABLE
 @interface ARTRealtimeChannel : NSObject <ARTRealtimeChannelProtocol>
 
+/**
+ * An `ARTRealtimePresence` object.
+ */
+@property (readonly) ARTRealtimePresence *presence;
 #if TARGET_OS_IPHONE
 /**
  * An `ARTPushChannel` object.
