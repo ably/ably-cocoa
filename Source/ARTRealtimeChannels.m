@@ -116,7 +116,7 @@ dispatch_sync(_queue, ^{
     [channel _detach:^(ARTErrorInfo *errorInfo) {
         [channel off_nosync];
         [channel _unsubscribe];
-        [channel.internalPresence _unsubscribe];
+        [channel.presence _unsubscribe];
 
         // Only release if the stored channel now is the same as whne.
         // Otherwise, subsequent calls to this release method race, and
