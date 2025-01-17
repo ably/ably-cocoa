@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.2.37](https://github.com/ably/ably-cocoa/tree/1.2.37)
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.36...1.2.37
+
+## What's Changed
+
+* Reverts a breaking change by moving `presence` back to `ARTRealtime` https://github.com/ably/ably-cocoa/pull/2015
+
 ## [1.2.36](https://github.com/ably/ably-cocoa/tree/1.2.36)
 
 **Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.35...1.2.36
