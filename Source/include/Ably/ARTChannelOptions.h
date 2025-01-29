@@ -8,7 +8,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Passes additional properties to an `ARTRestChannel` object, such as encryption.
  */
-@interface ARTChannelOptions : NSObject
+@interface ARTChannelOptions : NSObject <NSCopying>
 
 /**
  * Requests encryption for this channel when not `nil`, and specifies encryption-related parameters (such as algorithm, chaining mode, key length and key). See [an example](https://ably.com/docs/realtime/encryption#getting-started).

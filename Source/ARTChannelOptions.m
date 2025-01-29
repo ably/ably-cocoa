@@ -17,6 +17,17 @@
     return [self initWithCipher:@{@"key": key}];
 }
 
+- (id)copyWithZone:(NSZone *)zone {
+    ARTChannelOptions *copied = [[[self class] alloc] init];
+
+    // The _frozen flag prevents the instance we were copying from being mutated, but we don't yet want to prevent the new instance from being mutated
+    copied->_frozen = NO;
+
+    copied->_cipher = _cipher;
+
+    return copied;
+}
+
 - (ARTCipherParams *)cipher {
     return _cipher;
 }
