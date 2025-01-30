@@ -3,7 +3,7 @@
 # Generates Jazzy documentation: https://github.com/realm/jazzy
 # This script performs without issues on CI. To generate docs locally see https://github.com/ably/ably-cocoa/issues/1438
 
-jazzy \
+bundle exec jazzy \
   --objc \
   --clean \
   --author Ably \
