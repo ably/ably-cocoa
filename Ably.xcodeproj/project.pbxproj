@@ -848,9 +848,9 @@
 		D737F829263AF4CE0064FA05 /* ARTFallbackHosts.m in Sources */ = {isa = PBXBuildFile; fileRef = D737F825263AF4CE0064FA05 /* ARTFallbackHosts.m */; };
 		D737F82A263AF4CE0064FA05 /* ARTFallbackHosts.m in Sources */ = {isa = PBXBuildFile; fileRef = D737F825263AF4CE0064FA05 /* ARTFallbackHosts.m */; };
 		D737F82B263AF4CE0064FA05 /* ARTFallbackHosts.m in Sources */ = {isa = PBXBuildFile; fileRef = D737F825263AF4CE0064FA05 /* ARTFallbackHosts.m */; };
-		D73B655523EF2B2900D459A6 /* ARTDeltaCodec.h in Headers */ = {isa = PBXBuildFile; fileRef = D73B655323EF2B2900D459A6 /* ARTDeltaCodec.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		D73B655623EF2B2900D459A6 /* ARTDeltaCodec.h in Headers */ = {isa = PBXBuildFile; fileRef = D73B655323EF2B2900D459A6 /* ARTDeltaCodec.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		D73B655723EF2B2900D459A6 /* ARTDeltaCodec.h in Headers */ = {isa = PBXBuildFile; fileRef = D73B655323EF2B2900D459A6 /* ARTDeltaCodec.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D73B655523EF2B2900D459A6 /* ARTDeltaCodec.h in Headers */ = {isa = PBXBuildFile; fileRef = D73B655323EF2B2900D459A6 /* ARTDeltaCodec.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		D73B655623EF2B2900D459A6 /* ARTDeltaCodec.h in Headers */ = {isa = PBXBuildFile; fileRef = D73B655323EF2B2900D459A6 /* ARTDeltaCodec.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		D73B655723EF2B2900D459A6 /* ARTDeltaCodec.h in Headers */ = {isa = PBXBuildFile; fileRef = D73B655323EF2B2900D459A6 /* ARTDeltaCodec.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D73B655823EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */ = {isa = PBXBuildFile; fileRef = D73B655423EF2B2900D459A6 /* ARTDeltaCodec.m */; };
 		D73B655923EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */ = {isa = PBXBuildFile; fileRef = D73B655423EF2B2900D459A6 /* ARTDeltaCodec.m */; };
 		D73B655A23EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */ = {isa = PBXBuildFile; fileRef = D73B655423EF2B2900D459A6 /* ARTDeltaCodec.m */; };
@@ -917,9 +917,9 @@
 		D798554823EB96C000946BE2 /* DeltaCodecTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D798554723EB96C000946BE2 /* DeltaCodecTests.swift */; };
 		D798554923EB96C000946BE2 /* DeltaCodecTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D798554723EB96C000946BE2 /* DeltaCodecTests.swift */; };
 		D798554A23EB96C000946BE2 /* DeltaCodecTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D798554723EB96C000946BE2 /* DeltaCodecTests.swift */; };
-		D798556023ECCDAF00946BE2 /* ARTVCDiffDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = D798555E23ECCDAF00946BE2 /* ARTVCDiffDecoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		D798556123ECCDAF00946BE2 /* ARTVCDiffDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = D798555E23ECCDAF00946BE2 /* ARTVCDiffDecoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		D798556223ECCDAF00946BE2 /* ARTVCDiffDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = D798555E23ECCDAF00946BE2 /* ARTVCDiffDecoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D798556023ECCDAF00946BE2 /* ARTVCDiffDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = D798555E23ECCDAF00946BE2 /* ARTVCDiffDecoder.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		D798556123ECCDAF00946BE2 /* ARTVCDiffDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = D798555E23ECCDAF00946BE2 /* ARTVCDiffDecoder.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		D798556223ECCDAF00946BE2 /* ARTVCDiffDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = D798555E23ECCDAF00946BE2 /* ARTVCDiffDecoder.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D7AE18C91E5B40C900478D82 /* ARTPushAdmin.h in Headers */ = {isa = PBXBuildFile; fileRef = D7AE18C71E5B40C900478D82 /* ARTPushAdmin.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7AE18CA1E5B40C900478D82 /* ARTPushAdmin.m in Sources */ = {isa = PBXBuildFile; fileRef = D7AE18C81E5B40C900478D82 /* ARTPushAdmin.m */; };
 		D7AE18CE1E5B40FE00478D82 /* ARTPushDeviceRegistrations.h in Headers */ = {isa = PBXBuildFile; fileRef = D7AE18CC1E5B40FE00478D82 /* ARTPushDeviceRegistrations.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1352,7 +1352,7 @@
 		D73691FE1DB788C40062C150 /* ARTAuthDetails.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTAuthDetails.m; sourceTree = "<group>"; };
 		D737F824263AF4CE0064FA05 /* ARTFallbackHosts.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTFallbackHosts.h; path = PrivateHeaders/Ably/ARTFallbackHosts.h; sourceTree = "<group>"; };
 		D737F825263AF4CE0064FA05 /* ARTFallbackHosts.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTFallbackHosts.m; sourceTree = "<group>"; };
-		D73B655323EF2B2900D459A6 /* ARTDeltaCodec.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTDeltaCodec.h; path = include/Ably/ARTDeltaCodec.h; sourceTree = "<group>"; };
+		D73B655323EF2B2900D459A6 /* ARTDeltaCodec.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTDeltaCodec.h; path = PrivateHeaders/Ably/ARTDeltaCodec.h; sourceTree = "<group>"; };
 		D73B655423EF2B2900D459A6 /* ARTDeltaCodec.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTDeltaCodec.m; sourceTree = "<group>"; };
 		D746AE1A1BBB5207003ECEF8 /* ARTDataQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTDataQuery.h; path = include/Ably/ARTDataQuery.h; sourceTree = "<group>"; };
 		D746AE1B1BBB5207003ECEF8 /* ARTDataQuery+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ARTDataQuery+Private.h"; path = "PrivateHeaders/Ably/ARTDataQuery+Private.h"; sourceTree = "<group>"; };
@@ -1414,7 +1414,7 @@
 		D785C4281E549E33008FEC05 /* ARTPushChannelSubscription.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPushChannelSubscription.m; sourceTree = "<group>"; };
 		D78D780821271FB10016808B /* ARTHTTPPaginatedResponse+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ARTHTTPPaginatedResponse+Private.h"; path = "PrivateHeaders/Ably/ARTHTTPPaginatedResponse+Private.h"; sourceTree = "<group>"; };
 		D798554723EB96C000946BE2 /* DeltaCodecTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeltaCodecTests.swift; sourceTree = "<group>"; };
-		D798555E23ECCDAF00946BE2 /* ARTVCDiffDecoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTVCDiffDecoder.h; path = include/Ably/ARTVCDiffDecoder.h; sourceTree = "<group>"; };
+		D798555E23ECCDAF00946BE2 /* ARTVCDiffDecoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTVCDiffDecoder.h; path = PrivateHeaders/Ably/ARTVCDiffDecoder.h; sourceTree = "<group>"; };
 		D7AE18C71E5B40C900478D82 /* ARTPushAdmin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTPushAdmin.h; path = include/Ably/ARTPushAdmin.h; sourceTree = "<group>"; };
 		D7AE18C81E5B40C900478D82 /* ARTPushAdmin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPushAdmin.m; sourceTree = "<group>"; };
 		D7AE18CC1E5B40FE00478D82 /* ARTPushDeviceRegistrations.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTPushDeviceRegistrations.h; path = include/Ably/ARTPushDeviceRegistrations.h; sourceTree = "<group>"; };

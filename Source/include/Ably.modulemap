@@ -108,5 +108,7 @@ framework module Ably {
         header "Ably/ARTWebSocketFactory.h"
         header "Ably/ARTAttachRetryState.h"
         header "Ably/ARTConnectRetryState.h"
+        header "Ably/ARTVCDiffDecoder.h"
+        header "Ably/ARTDeltaCodec.h"
     }
 }
