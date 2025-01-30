@@ -4,6 +4,7 @@
 //
 
 #import "ARTRealtime+Private.h"
+#import "ARTRealtime+WrapperSDKProxy.h"
 
 #import "ARTRealtimeChannel+Private.h"
 #import "ARTStatus.h"
@@ -52,6 +53,7 @@
 #import "ARTInternalLog.h"
 #import "ARTRealtimeTransportFactory.h"
 #import "ARTConnectRetryState.h"
+#import "ARTWrapperSDKProxyRealtime+Private.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -157,7 +159,7 @@
         headers:(nullable NSStringDictionary *)headers
        callback:(ARTHTTPPaginatedCallback)callback
           error:(NSError *_Nullable *_Nullable)errorPtr {
-    return [_internal request:method path:path params:params body:body headers:headers callback:callback error:errorPtr];
+    return [_internal request:method path:path params:params body:body headers:headers wrapperSDKAgents:nil callback:callback error:errorPtr];
 }
 
 - (void)ping:(ARTCallback)cb {
@@ -178,6 +180,16 @@
 
 - (void)close {
     [_internal close];
+}
+
+@end
+
+@implementation ARTRealtime (WrapperSDKProxy)
+
+- (ARTWrapperSDKProxyRealtime *)createWrapperSDKProxyWithOptions:(ARTWrapperSDKProxyOptions *)options {
+    return [[ARTWrapperSDKProxyRealtime alloc] initWithRealtime:self
+                                                   proxyOptions:options];
+
 }
 
 @end
@@ -497,9 +509,10 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
          params:(nullable NSStringDictionary *)params
            body:(nullable id)body
         headers:(nullable NSStringDictionary *)headers
+wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
        callback:(ARTHTTPPaginatedCallback)callback
           error:(NSError *_Nullable *_Nullable)errorPtr {
-    return [self.rest request:method path:path params:params body:body headers:headers callback:callback error:errorPtr];
+    return [self.rest request:method path:path params:params body:body headers:headers wrapperSDKAgents:wrapperSDKAgents callback:callback error:errorPtr];
 }
 
 - (void)ping:(ARTCallback) cb {
