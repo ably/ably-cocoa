@@ -76,6 +76,12 @@
 		21113B6329DDF7E800652C86 /* ARTInternalLogTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 21113B6229DDF7E800652C86 /* ARTInternalLogTests.m */; };
 		21113B6429DDF7ED00652C86 /* ARTInternalLogTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 21113B6229DDF7E800652C86 /* ARTInternalLogTests.m */; };
 		21113B6529DDF7EF00652C86 /* ARTInternalLogTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 21113B6229DDF7E800652C86 /* ARTInternalLogTests.m */; };
+		2114D4282D4BC5470032839A /* AblyInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = 2114D4262D4BC5470032839A /* AblyInternal.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2114D4292D4BC5470032839A /* AblyPublic.h in Headers */ = {isa = PBXBuildFile; fileRef = 2114D4272D4BC5470032839A /* AblyPublic.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2114D42A2D4BC5470032839A /* AblyInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = 2114D4262D4BC5470032839A /* AblyInternal.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2114D42B2D4BC5470032839A /* AblyPublic.h in Headers */ = {isa = PBXBuildFile; fileRef = 2114D4272D4BC5470032839A /* AblyPublic.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2114D42C2D4BC5470032839A /* AblyInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = 2114D4262D4BC5470032839A /* AblyInternal.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2114D42D2D4BC5470032839A /* AblyPublic.h in Headers */ = {isa = PBXBuildFile; fileRef = 2114D4272D4BC5470032839A /* AblyPublic.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		211A60D729D6D2C300D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */; };
 		211A60D829D6D2C400D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */; };
 		211A60D929D6D2C500D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */; };
@@ -1150,6 +1156,8 @@
 		21113B5829DCA4C700652C86 /* DataGatherer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataGatherer.swift; sourceTree = "<group>"; };
 		21113B5E29DDDDD000652C86 /* LogAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogAdapterTests.swift; sourceTree = "<group>"; };
 		21113B6229DDF7E800652C86 /* ARTInternalLogTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTInternalLogTests.m; sourceTree = "<group>"; };
+		2114D4262D4BC5470032839A /* AblyInternal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AblyInternal.h; path = include/Ably/AblyInternal.h; sourceTree = "<group>"; };
+		2114D4272D4BC5470032839A /* AblyPublic.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AblyPublic.h; path = include/Ably/AblyPublic.h; sourceTree = "<group>"; };
 		211A60DA29D726F800D169C5 /* ARTConnectionStateChangeParams.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTConnectionStateChangeParams.h; path = PrivateHeaders/Ably/ARTConnectionStateChangeParams.h; sourceTree = "<group>"; };
 		211A60DE29D7272000D169C5 /* ARTConnectionStateChangeParams.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTConnectionStateChangeParams.m; sourceTree = "<group>"; };
 		211A60FA29D8ABCF00D169C5 /* ARTChannelStateChangeParams.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTChannelStateChangeParams.h; path = PrivateHeaders/Ably/ARTChannelStateChangeParams.h; sourceTree = "<group>"; };
@@ -1819,6 +1827,8 @@
 			isa = PBXGroup;
 			children = (
 				D7534C311D79E5C20054C182 /* Ably.h */,
+				2114D4272D4BC5470032839A /* AblyPublic.h */,
+				2114D4262D4BC5470032839A /* AblyInternal.h */,
 				1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */,
 				D7DC8AF01C6A9FFC005AF165 /* ARTDefault+Private.h */,
 				1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */,
@@ -2351,6 +2361,8 @@
 				D520C4D626809BB5000012B2 /* ARTStringifiable.h in Headers */,
 				21276CBA29EF323100107B5F /* ARTContinuousClock.h in Headers */,
 				2132C31129D5E4C6000C4355 /* ARTBackoffRetryDelayCalculator.h in Headers */,
+				2114D42A2D4BC5470032839A /* AblyInternal.h in Headers */,
+				2114D42B2D4BC5470032839A /* AblyPublic.h in Headers */,
 				D5BB213926AAA60500AA5F3E /* ARTNSError+ARTUtils.h in Headers */,
 				D746AE431BBC5CD0003ECEF8 /* ARTRealtimeChannel+Private.h in Headers */,
 				D746AE251BBB611C003ECEF8 /* ARTChannel+Private.h in Headers */,
@@ -2515,6 +2527,8 @@
 				D710D47D21949A27008F54AD /* Ably.h in Headers */,
 				2124B78C29DB12A900AD8361 /* ARTVersion2Log.h in Headers */,
 				EB1B53FE22F8D91C006A59AC /* ARTQueuedDealloc.h in Headers */,
+				2114D4282D4BC5470032839A /* AblyInternal.h in Headers */,
+				2114D4292D4BC5470032839A /* AblyPublic.h in Headers */,
 				D710D56A21949CB9008F54AD /* ARTPushAdmin.h in Headers */,
 				D710D48321949A4E008F54AD /* ARTDefault+Private.h in Headers */,
 				D70C36C4233E6831002FD6E3 /* ARTFormEncode.h in Headers */,
@@ -2685,6 +2699,8 @@
 				D710D5AE21949D2A008F54AD /* ARTProtocolMessage.h in Headers */,
 				2124B78D29DB12A900AD8361 /* ARTVersion2Log.h in Headers */,
 				D710D47F21949A28008F54AD /* Ably.h in Headers */,
+				2114D42C2D4BC5470032839A /* AblyInternal.h in Headers */,
+				2114D42D2D4BC5470032839A /* AblyPublic.h in Headers */,
 				EB1B53FF22F8D91C006A59AC /* ARTQueuedDealloc.h in Headers */,
 				D710D57021949CBA008F54AD /* ARTPushAdmin.h in Headers */,
 				D710D48521949A4F008F54AD /* ARTDefault+Private.h in Headers */,
