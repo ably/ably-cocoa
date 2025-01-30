@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface ARTConnectionInternal : NSObject<ARTConnectionProtocol>
+@interface ARTConnectionInternal : NSObject
 
 @property (nullable, readonly, nonatomic) NSString *id;
 @property (nullable, readonly, nonatomic) NSString *key;
@@ -53,6 +53,23 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)emit:(ARTRealtimeConnectionEvent)event with:(ARTConnectionStateChange *)data;
 
 @property (readonly, nonatomic) dispatch_queue_t queue;
+
+@property (nullable, readonly) NSString *recoveryKey DEPRECATED_MSG_ATTRIBUTE("Use `createRecoveryKey` method instead.");
+
+- (nullable NSString *)createRecoveryKey;
+
+- (void)connect;
+
+- (void)close;
+
+- (void)ping:(ARTCallback)callback;
+
+#pragma mark ARTEventEmitter
+
+/**
+ * Embeds an `ARTEventEmitter` object.
+ */
+ART_EMBED_INTERFACE_EVENT_EMITTER(ARTRealtimeConnectionEvent, ARTConnectionStateChange *)
 
 @end
 

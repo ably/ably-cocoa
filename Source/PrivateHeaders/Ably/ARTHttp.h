@@ -18,17 +18,6 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 /// :nodoc:
-@protocol ARTHTTPAuthenticatedExecutor <ARTHTTPExecutor>
-
-- (ARTClientOptions *)options;
-
-- (id<ARTEncoder>)defaultEncoder;
-
-- (nullable NSObject<ARTCancellable> *)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(ARTURLRequestCallback)callback;
-
-@end
-
-/// :nodoc:
 @interface ARTHttp : NSObject<ARTHTTPExecutor>
 
 + (void)setURLSessionClass:(Class)urlSessionClass;

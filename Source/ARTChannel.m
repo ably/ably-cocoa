@@ -17,6 +17,8 @@
     ARTChannelOptions *_options;
 }
 
+@synthesize name = _name;
+
 - (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options rest:(ARTRestInternal *)rest logger:(ARTInternalLog *)logger {
     if (self = [super init]) {
         _name = name;

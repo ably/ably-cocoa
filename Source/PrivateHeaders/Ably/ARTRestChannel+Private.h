@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class ARTRestInternal;
 @class ARTInternalLog;
 
-@interface ARTRestChannelInternal : ARTChannel <ARTRestChannelProtocol>
+@interface ARTRestChannelInternal : ARTChannel
 
 @property (readonly) ARTRestPresenceInternal *presence;
 @property (readonly) ARTPushChannelInternal *push;
@@ -22,6 +22,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, weak) ARTRestInternal *rest; // weak because rest owns self
 @property (nonatomic) dispatch_queue_t queue;
+
+@property (readonly, nullable) ARTChannelOptions *options;
+
+- (BOOL)history:(nullable ARTDataQuery *)query callback:(ARTPaginatedMessagesCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
+
+- (void)status:(ARTChannelDetailsCallback)callback;
+
+- (void)setOptions:(ARTChannelOptions *_Nullable)options;
 
 @end
 

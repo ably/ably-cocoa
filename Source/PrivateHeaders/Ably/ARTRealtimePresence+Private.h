@@ -3,7 +3,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTRealtimePresenceInternal : NSObject <ARTRealtimePresenceProtocol>
+@interface ARTRealtimePresenceInternal : NSObject
 
 @property (nonatomic, readonly) NSString *connectionId;
 @property (readonly, nonatomic) ARTEventEmitter<ARTEvent *, ARTPresenceMessage *> *eventEmitter;
@@ -22,6 +22,54 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic) dispatch_queue_t queue;
 @property (readonly, nonatomic) NSMutableArray<ARTQueuedMessage *> *pendingPresence;
+
+@property (readonly) BOOL syncComplete;
+
+- (void)get:(ARTPresenceMessagesCallback)callback;
+
+- (void)get:(ARTRealtimePresenceQuery *)query callback:(ARTPresenceMessagesCallback)callback;
+
+- (void)enter:(id _Nullable)data;
+
+- (void)enter:(id _Nullable)data callback:(nullable ARTCallback)callback;
+
+- (void)update:(id _Nullable)data;
+
+- (void)update:(id _Nullable)data callback:(nullable ARTCallback)callback;
+
+- (void)leave:(id _Nullable)data;
+
+- (void)leave:(id _Nullable)data callback:(nullable ARTCallback)callback;
+
+- (void)enterClient:(NSString *)clientId data:(id _Nullable)data;
+
+- (void)enterClient:(NSString *)clientId data:(id _Nullable)data callback:(nullable ARTCallback)callback;
+
+- (void)updateClient:(NSString *)clientId data:(id _Nullable)data;
+
+- (void)updateClient:(NSString *)clientId data:(id _Nullable)data callback:(nullable ARTCallback)callback;
+
+- (void)leaveClient:(NSString *)clientId data:(id _Nullable)data;
+
+- (void)leaveClient:(NSString *)clientId data:(id _Nullable)data callback:(nullable ARTCallback)callback;
+
+- (ARTEventListener *_Nullable)subscribe:(ARTPresenceMessageCallback)callback;
+
+- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable ARTCallback)onAttach callback:(ARTPresenceMessageCallback)callback;
+
+- (ARTEventListener *_Nullable)subscribe:(ARTPresenceAction)action callback:(ARTPresenceMessageCallback)callback;
+
+- (ARTEventListener *_Nullable)subscribe:(ARTPresenceAction)action onAttach:(nullable ARTCallback)onAttach callback:(ARTPresenceMessageCallback)callback;
+
+- (void)unsubscribe;
+
+- (void)unsubscribe:(ARTEventListener *)listener;
+
+- (void)unsubscribe:(ARTPresenceAction)action listener:(ARTEventListener *)listener;
+
+- (void)history:(ARTPaginatedPresenceCallback)callback;
+
+- (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query callback:(ARTPaginatedPresenceCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
 @end
 

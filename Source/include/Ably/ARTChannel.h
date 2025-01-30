@@ -81,10 +81,6 @@ NS_ASSUME_NONNULL_BEGIN
  */
 NS_SWIFT_SENDABLE
 @interface ARTChannel : NSObject<ARTChannelProtocol>
-
-/// :nodoc:
-@property (nonatomic, readonly) NSString *name;
-
 @end
 
 NS_ASSUME_NONNULL_END
