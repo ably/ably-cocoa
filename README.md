@@ -42,8 +42,8 @@ This client library is currently *not compatible* with some of the Ably features
 
 | Feature |
 | :--- |
-| [Custom transportParams](https://ably.com/docs/realtime/usage#client-options) |
-| [Remember fallback host during failures](https://ably.com/docs/realtime/usage#client-options) | 
+| [Custom transportParams](https://ably.com/docs/realtime/usage#options) |
+| [Remember fallback host during failures](https://ably.com/docs/realtime/usage#options) | 
 | [ErrorInfo URLs to help debug issues](https://ably.com/docs/realtime/types#error-info) |
 
 ## Documentation
