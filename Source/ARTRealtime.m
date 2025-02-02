@@ -1637,7 +1637,7 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
     
     if ([self shouldRetryWithFallback:transportError]) {
         ARTLogDebug(self.logger, @"R:%p host is down; can retry with fallback host", self);
-        if (!_fallbacks && [transportError.url.host isEqualToString:[ARTDefault realtimeHost]]) {
+        if (!_fallbacks && [transportError.url.host hasSuffix:[ARTDefault realtimeHost]]) { // the prefix can be a custom environment
             ARTClientOptions *const clientOptions = [self getClientOptions];
             NSArray *hosts = [ARTFallbackHosts hostsFromOptions:clientOptions];
             self->_fallbacks = [[ARTFallback alloc] initWithFallbackHosts:hosts shuffleArray:clientOptions.testOptions.shuffleArray];
