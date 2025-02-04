@@ -14,7 +14,12 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /// ARTRest private methods that are used internally and for internal testing
-@interface ARTRestInternal : NSObject <ARTRestProtocol, ARTHTTPAuthenticatedExecutor>
+@interface ARTRestInternal : NSObject
+
+- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithOptions:(ARTClientOptions *)options;
+- (instancetype)initWithKey:(NSString *)key;
+- (instancetype)initWithToken:(NSString *)token;
 
 @property (nonatomic, readonly) ARTRestChannelsInternal *channels;
 @property (nonatomic, readonly) ARTAuthInternal *auth;
@@ -84,6 +89,22 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setAndPersistAPNSDeviceTokenData:(NSData *)deviceTokenData tokenType:(NSString *)tokenType;
 #endif
+
+- (void)time:(ARTDateTimeCallback)callback;
+
+- (BOOL)request:(NSString *)method
+           path:(NSString *)path
+         params:(nullable NSStringDictionary *)params
+           body:(nullable id)body
+        headers:(nullable NSStringDictionary *)headers
+       callback:(ARTHTTPPaginatedCallback)callback
+          error:(NSError *_Nullable *_Nullable)errorPtr;
+
+- (BOOL)stats:(ARTPaginatedStatsCallback)callback;
+
+- (BOOL)stats:(nullable ARTStatsQuery *)query
+     callback:(ARTPaginatedStatsCallback)callback
+        error:(NSError *_Nullable *_Nullable)errorPtr;
 
 @end
 

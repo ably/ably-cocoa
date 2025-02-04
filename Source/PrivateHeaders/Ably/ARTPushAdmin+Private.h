@@ -7,12 +7,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTPushAdminInternal : NSObject <ARTPushAdminProtocol>
+@interface ARTPushAdminInternal : NSObject
 
 @property (nonatomic, readonly) ARTPushDeviceRegistrationsInternal *deviceRegistrations;
 @property (nonatomic, readonly) ARTPushChannelSubscriptionsInternal *channelSubscriptions;
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest logger:(ARTInternalLog *)logger;
+
+- (void)publish:(ARTPushRecipient *)recipient data:(ARTJsonObject *)data callback:(nullable ARTCallback)callback;
 
 @end
 

@@ -8,7 +8,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTPushInternal : NSObject <ARTPushProtocol>
+@interface ARTPushInternal : NSObject
 
 @property (nonatomic, readonly) ARTPushAdminInternal *admin;
 @property (readonly) dispatch_queue_t queue;
@@ -24,6 +24,30 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Create the _activationMachine manually with a custom delegate for internal testing.
 - (ARTPushActivationStateMachine *)createActivationStateMachineWithDelegate:(id<ARTPushRegistererDelegate, NSObject>)delegate;
+#endif
+
+#if TARGET_OS_IOS
+
++ (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken rest:(ARTRest *)rest;
+
++ (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken realtime:(ARTRealtime *)realtime;
+
++ (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error rest:(ARTRest *)rest;
+
++ (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime;
+
++ (void)didRegisterForLocationNotificationsWithDeviceToken:(NSData *)deviceToken rest:(ARTRest *)rest;
+
++ (void)didRegisterForLocationNotificationsWithDeviceToken:(NSData *)deviceToken realtime:(ARTRealtime *)realtime;
+
++ (void)didFailToRegisterForLocationNotificationsWithError:(NSError *)error rest:(ARTRest *)rest;
+
++ (void)didFailToRegisterForLocationNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime;
+
+- (void)activate;
+
+- (void)deactivate;
+
 #endif
 
 @end

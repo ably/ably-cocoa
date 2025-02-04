@@ -17,31 +17,9 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- The protocol upon which the top level object `ARTRest` is implemented.
+ This protocol contains the non-initializer instance methods provided by the `ARTRest` client class.
  */
-@protocol ARTRestProtocol
-
-/// :nodoc:
-- (instancetype)init NS_UNAVAILABLE;
-
-/**
- * Construct an `ARTRest` object using an Ably `ARTClientOptions` object.
- *
- * @param options A `ARTClientOptions` object to configure the client connection to Ably.
- */
-- (instancetype)initWithOptions:(ARTClientOptions *)options;
-
-/**
- * Constructs a `ARTRest` object using an Ably API key.
- * @param key The Ably API key used to validate the client.
- */
-- (instancetype)initWithKey:(NSString *)key;
-
-/**
- * Constructs a `ARTRest` object using an Ably token string.
- * @param token The Ably token string used to validate the client.
- */
-- (instancetype)initWithToken:(NSString *)token;
+@protocol ARTRestInstanceMethodsProtocol <NSObject>
 
 /**
  * Retrieves the time from the Ably service. Clients that do not have access to a sufficiently well maintained time source and wish to issue Ably `ARTTokenRequest`s with a more accurate timestamp should use the `ARTAuthOptions.queryTime` property instead of this method.
@@ -93,6 +71,35 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (readonly) ARTLocalDevice *device;
 #endif
+
+@end
+
+/**
+ The protocol upon which the top level object `ARTRest` is implemented.
+ */
+@protocol ARTRestProtocol <ARTRestInstanceMethodsProtocol>
+
+/// :nodoc:
+- (instancetype)init NS_UNAVAILABLE;
+
+/**
+ * Construct an `ARTRest` object using an Ably `ARTClientOptions` object.
+ *
+ * @param options A `ARTClientOptions` object to configure the client connection to Ably.
+ */
+- (instancetype)initWithOptions:(ARTClientOptions *)options;
+
+/**
+ * Constructs a `ARTRest` object using an Ably API key.
+ * @param key The Ably API key used to validate the client.
+ */
+- (instancetype)initWithKey:(NSString *)key;
+
+/**
+ * Constructs a `ARTRest` object using an Ably token string.
+ * @param token The Ably token string used to validate the client.
+ */
+- (instancetype)initWithToken:(NSString *)token;
 
 @end
 
