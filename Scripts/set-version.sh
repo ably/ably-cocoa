@@ -34,6 +34,7 @@ other_files=(
   "Test/Tests/ClientInformationTests.swift"
   "Test/Tests/RealtimeClientConnectionTests.swift"
   "Test/Tests/RestClientTests.swift"
+  "Test/Tests/WrapperSDKProxyTests.swift"
 )
 
 for file in ${other_files[@]};
