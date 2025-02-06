@@ -110,5 +110,8 @@ framework module Ably {
         header "Ably/ARTConnectRetryState.h"
         header "Ably/ARTVCDiffDecoder.h"
         header "Ably/ARTDeltaCodec.h"
+        header "Ably/ARTWrapperSDKProxyRealtime+Private.h"
+        header "Ably/ARTWrapperSDKProxyRealtimeChannels+Private.h"
+        header "Ably/ARTWrapperSDKProxyRealtimeChannel+Private.h"
     }
 }

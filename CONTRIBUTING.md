@@ -35,7 +35,9 @@ Changes made to dependencies in the [Cartfile](Cartfile) need to be reflected in
 These are the header files that form the public interface of the SDK.
 
 1. Put `.h` file in directory `Source/include/Ably`.
-1. Add `#import` to umbrella header `Source/include/Ably/Ably.h`.
+1. Add `#import` to one of the following umbrella header files:
+   - `Source/include/Ably/AblyPublic.h` if the API contained in this header is intended for general use.
+   - `Source/include/Ably/AblyInternal.h` if the API contained in this header is intended for use only by Ably-authored SDKs and should not be included in the Jazzy-generated documentation.
 1. Add to the Xcode project `Ably.xcodeproj` — you need to add it as a Public header to all three SDK targets (Ably-iOS, Ably-macOS, Ably-tvOS).
 
 ### Private header (`.h`) files

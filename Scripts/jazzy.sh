@@ -7,7 +7,7 @@ bundle exec jazzy \
   --clean \
   --author Ably \
   --module-version 1.2.37 \
-  --umbrella-header Source/include/Ably/Ably.h \
+  --umbrella-header Source/include/Ably/AblyPublic.h \
   --framework-root Source \
   --module Ably \
   --sdk iphonesimulator \

@@ -9,6 +9,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTHTTPPaginatedResponse ()
 
 @property (nonatomic) NSHTTPURLResponse *response;
+@property (nullable, nonatomic, readonly) NSDictionary<NSString *, NSString *> *wrapperSDKAgents;
 
 - (instancetype)initWithResponse:(NSHTTPURLResponse *)response
                            items:(NSArray *)items
@@ -17,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
                       relCurrent:(NSMutableURLRequest *)relCurrent
                          relNext:(NSMutableURLRequest *)relNext
                responseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
+                wrapperSDKAgents:(nullable NSDictionary<NSString *, NSString *> *)wrapperSDKAgents
                           logger:(ARTInternalLog *)logger;
 
 + (void)executePaginated:(ARTRestInternal *)rest
@@ -26,6 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)executePaginated:(ARTRestInternal *)rest
              withRequest:(NSMutableURLRequest *)request
+        wrapperSDKAgents:(nullable NSDictionary<NSString *, NSString *> *)wrapperSDKAgents
                   logger:(ARTInternalLog *)logger
                 callback:(ARTHTTPPaginatedCallback)callback;
 
