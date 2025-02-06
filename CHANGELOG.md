@@ -1,5 +1,14 @@
 # Change Log
 
+## [1.2.38](https://github.com/ably/ably-cocoa/tree/1.2.38)
+
+## What's Changed
+
+* Add `NSCopying` support to `ART*ChannelOptions` by @lawrence-forooghian in https://github.com/ably/ably-cocoa/pull/2018
+* Introduction of a new API intended for use by Ably-authored SDKs by @lawrence-forooghian in https://github.com/ably/ably-cocoa/pull/2014
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.37...1.2.38
+
 ## [1.2.37](https://github.com/ably/ably-cocoa/tree/1.2.37)
 
 **Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.36...1.2.37
