@@ -3833,13 +3833,109 @@ class RealtimeClientConnectionTests: XCTestCase {
     
     // RTN17
 
-    // RTN17b
-    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
-    func test__086__Connection__Host_Fallback__failing_connections_with_custom_endpoint_should_result_in_an_error_immediately() {
+    // RTN17b1 (host)
+    func test__086a__Connection__Host_Fallback__failing_connections_with_custom_endpoint_should_result_in_an_error_immediately() {
         let test = Test()
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.realtimeHost = "\(UUID()).com" // do not use the default endpoint
-        XCTAssertFalse(options.fallbackHostsUseDefault)
+        XCTAssertNil(options.fallbackHosts)
+        options.autoConnect = false
+        options.queueMessages = false
+
+        let testEnvironment = AblyTests.newRealtime(options)
+        let client = testEnvironment.client
+        defer { client.dispose(); client.close() }
+        let channel = client.channels.get(test.uniqueChannelName())
+
+        testEnvironment.transportFactory.fakeNetworkResponse = .hostUnreachable
+
+        var urlConnections = [URL]()
+        testEnvironment.transportFactory.networkConnectEvent = { transport, url in
+            if client.internal.transport !== transport {
+                return
+            }
+            urlConnections.append(url)
+        }
+
+        waitUntil(timeout: testTimeout) { done in
+            client.connection.once(.disconnected) { stateChange in
+                XCTAssertEqual(stateChange.previous, ARTRealtimeConnectionState.connecting)
+                XCTAssertEqual(stateChange.current, ARTRealtimeConnectionState.disconnected)
+                guard let reason = stateChange.reason else {
+                    fail("Reason is empty"); done(); return
+                }
+                expect(reason.message).to(contain("host unreachable"))
+                done()
+            }
+            client.connect()
+        }
+
+        waitUntil(timeout: testTimeout) { done in
+            channel.publish(nil, data: "message") { error in
+                XCTAssertEqual(error?.code, 2)
+                expect(error?.message).to(contain("host unreachable"))
+                expect(error?.reason).to(contain(".FakeNetworkResponse"))
+                done()
+            }
+        }
+
+        XCTAssertEqual(urlConnections.count, 1)
+    }
+    
+    // RTN17b1 (port)
+    func test__086b__Connection__Host_Fallback__failing_connections_with_custom_port_should_result_in_an_error_immediately() {
+        let test = Test()
+        let options = ARTClientOptions(key: "xxxx:xxxx")
+        options.port = 12345
+        XCTAssertNil(options.fallbackHosts)
+        options.autoConnect = false
+        options.queueMessages = false
+
+        let testEnvironment = AblyTests.newRealtime(options)
+        let client = testEnvironment.client
+        defer { client.dispose(); client.close() }
+        let channel = client.channels.get(test.uniqueChannelName())
+
+        testEnvironment.transportFactory.fakeNetworkResponse = .hostUnreachable
+
+        var urlConnections = [URL]()
+        testEnvironment.transportFactory.networkConnectEvent = { transport, url in
+            if client.internal.transport !== transport {
+                return
+            }
+            urlConnections.append(url)
+        }
+
+        waitUntil(timeout: testTimeout) { done in
+            client.connection.once(.disconnected) { stateChange in
+                XCTAssertEqual(stateChange.previous, ARTRealtimeConnectionState.connecting)
+                XCTAssertEqual(stateChange.current, ARTRealtimeConnectionState.disconnected)
+                guard let reason = stateChange.reason else {
+                    fail("Reason is empty"); done(); return
+                }
+                expect(reason.message).to(contain("host unreachable"))
+                done()
+            }
+            client.connect()
+        }
+
+        waitUntil(timeout: testTimeout) { done in
+            channel.publish(nil, data: "message") { error in
+                XCTAssertEqual(error?.code, 2)
+                expect(error?.message).to(contain("host unreachable"))
+                expect(error?.reason).to(contain(".FakeNetworkResponse"))
+                done()
+            }
+        }
+
+        XCTAssertEqual(urlConnections.count, 1)
+    }
+    
+    // RTN17b1 (tlsPort)
+    func test__086c__Connection__Host_Fallback__failing_connections_with_custom_tlsPort_should_result_in_an_error_immediately() {
+        let test = Test()
+        let options = ARTClientOptions(key: "xxxx:xxxx")
+        options.tlsPort = 12345
         XCTAssertNil(options.fallbackHosts)
         options.autoConnect = false
         options.queueMessages = false
@@ -3885,13 +3981,11 @@ class RealtimeClientConnectionTests: XCTestCase {
     }
 
     // RTN17b
-    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
     func test__087__Connection__Host_Fallback__failing_connections_with_custom_endpoint_should_result_in_time_outs() {
         let test = Test()
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.realtimeHost = "\(UUID()).com" // do not use the default endpoint
         options.testOptions.realtimeRequestTimeout = 1.0
-        XCTAssertFalse(options.fallbackHostsUseDefault)
         XCTAssertNil(options.fallbackHosts)
         options.autoConnect = false
 
@@ -3926,7 +4020,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         XCTAssertEqual(urlConnections.count, 1)
     }
 
-    // RTN17b
+    // RTN17b1
     func test__088__Connection__Host_Fallback__applies_when_the_default_realtime_ably_io_endpoint_is_being_used() {
         let test = Test()
         let options = ARTClientOptions(key: "xxxx:xxxx")
@@ -3971,6 +4065,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         XCTAssertTrue(NSRegularExpression.match(urlConnections[1].absoluteString, pattern: "//[a-e].ably-realtime.com"))
     }
 
+    // RTN17b2
     func test__089__Connection__Host_Fallback__applies_when_an_array_of_ClientOptions_fallbackHosts_is_provided() {
         let test = Test()
         let options = ARTClientOptions(key: "xxxx:xxxx")
@@ -4013,6 +4108,54 @@ class RealtimeClientConnectionTests: XCTestCase {
         for connection in urlConnections.dropFirst() {
             XCTAssertTrue(NSRegularExpression.match(connection.absoluteString, pattern: "//[f-j].ably-realtime.com"))
         }
+    }
+    
+    // RTN17b3
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
+    func test__089b__Connection__Host_Fallback__applies_when_deprecated_fallbackHostsUseDefault_option_is_set_to_true() {
+        let test = Test()
+        let options = ARTClientOptions(key: "xxxx:xxxx")
+        options.autoConnect = false
+        options.port = 123 // otherwise regardless `fallbackHostsUseDefault` test passes because of RTN17b1
+        options.fallbackHostsUseDefault = true
+        options.testOptions.realtimeRequestTimeout = 2.0 // this timeout should be longer than `internetIsUp` + `performFakeConnectionError` timeouts
+        let transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = transportFactory
+        let client = ARTRealtime(options: options)
+        defer { client.dispose(); client.close() }
+        client.channels.get(test.uniqueChannelName())
+
+        transportFactory.fakeNetworkResponse = .hostUnreachable
+
+        var urlConnections = [URL]()
+        transportFactory.networkConnectEvent = { transport, url in
+            if client.internal.transport !== transport {
+                return
+            }
+            urlConnections.append(url)
+            if urlConnections.count == 1 {
+                transportFactory.fakeNetworkResponse = nil
+            }
+        }
+
+        waitUntil(timeout: testTimeout) { done in
+            // wss://[a-e].ably-realtime.com: when a timeout occurs
+            client.connection.once(.disconnected) { _ in
+                done()
+            }
+            // wss://[a-e].ably-realtime.com: when a 401 occurs because of the `xxxx:xxxx` key
+            client.connection.once(.failed) { _ in
+                done()
+            }
+            client.connect()
+        }
+
+        XCTAssertEqual(urlConnections.count, 2)
+        if urlConnections.count != 2 {
+            return
+        }
+        XCTAssertTrue(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io"))
+        XCTAssertTrue(NSRegularExpression.match(urlConnections[1].absoluteString, pattern: "//[a-e].ably-realtime.com"))
     }
 
     // RTN17d
