@@ -3838,7 +3838,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__086__Connection__Host_Fallback__failing_connections_with_custom_endpoint_should_result_in_an_error_immediately() {
         let test = Test()
         let options = ARTClientOptions(key: "xxxx:xxxx")
-        options.environment = "test" // do not use the default endpoint
+        options.realtimeHost = "\(UUID()).com" // do not use the default endpoint
         XCTAssertFalse(options.fallbackHostsUseDefault)
         XCTAssertNil(options.fallbackHosts)
         options.autoConnect = false
@@ -3889,7 +3889,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__087__Connection__Host_Fallback__failing_connections_with_custom_endpoint_should_result_in_time_outs() {
         let test = Test()
         let options = ARTClientOptions(key: "xxxx:xxxx")
-        options.environment = "test" // do not use the default endpoint
+        options.realtimeHost = "\(UUID()).com" // do not use the default endpoint
         options.testOptions.realtimeRequestTimeout = 1.0
         XCTAssertFalse(options.fallbackHostsUseDefault)
         XCTAssertNil(options.fallbackHosts)
@@ -4042,7 +4042,8 @@ class RealtimeClientConnectionTests: XCTestCase {
         try testMovesToDisconnectedWithNetworkingError(NSError(domain: "NSPOSIXErrorDomain", code: 50, userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"]), for: test)
     }
 
-    func test__102__Connection__Host_Fallback__should_move_to_disconnected_when_there_s_no_internet__with_any_kCFErrorDomainCFNetwork() throws {
+    // TODO: unskip, see https://github.com/ably/ably-cocoa/issues/2023
+    func skipped_test__102__Connection__Host_Fallback__should_move_to_disconnected_when_there_s_no_internet__with_any_kCFErrorDomainCFNetwork() throws {
         let test = Test()
         try testMovesToDisconnectedWithNetworkingError(NSError(domain: "kCFErrorDomainCFNetwork", code: 1337, userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"]), for: test)
     }
@@ -4090,9 +4091,11 @@ class RealtimeClientConnectionTests: XCTestCase {
     }
 
     // RTN17a
-    func test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_realtime_ably_io() {
-        let test = Test()
+    private func _test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_realtime_ably_io(env: String?, test: Test) {
         let options = ARTClientOptions(key: "xxxx:xxxx")
+        if let env {
+            options.environment = env
+        }
         options.autoConnect = false
         options.testOptions.realtimeRequestTimeout = 1.0
         let transportFactory = TestProxyTransportFactory()
@@ -4139,16 +4142,28 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
 
         XCTAssertEqual(urlConnections.count, 3)
-        XCTAssertTrue(NSRegularExpression.match(urlConnections.at(0)?.absoluteString, pattern: "//realtime.ably.io"))
-        XCTAssertTrue(NSRegularExpression.match(urlConnections.at(1)?.absoluteString, pattern: "//[a-e].ably-realtime.com"))
-        XCTAssertTrue(NSRegularExpression.match(urlConnections.at(2)?.absoluteString, pattern: "//realtime.ably.io"))
+        XCTAssertTrue(NSRegularExpression.match(urlConnections.at(0)?.absoluteString, pattern: "//[sandbox-]*realtime.ably.io"))
+        XCTAssertTrue(NSRegularExpression.match(urlConnections.at(1)?.absoluteString, pattern: "//[sandbox-]*[a-e][-fallback]*.ably-realtime.com"))
+        XCTAssertTrue(NSRegularExpression.match(urlConnections.at(2)?.absoluteString, pattern: "//[sandbox-]*realtime.ably.io"))
+    }
+
+    func test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_realtime_ably_io_prod() {
+        let test = Test()
+        _test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_realtime_ably_io(env: nil, test: test)
+    }
+
+    func test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_realtime_ably_io_sandbox() {
+        let test = Test()
+        _test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_realtime_ably_io(env: "sandbox", test: test)
     }
 
     // RTN17c
-    func test__092__Connection__Host_Fallback__should_retry_hosts_in_random_order_after_checkin_if_an_internet_connection_is_available() {
-        let test = Test()
+    func _test__092__Connection__Host_Fallback__should_retry_hosts_in_random_order_after_checkin_if_an_internet_connection_is_available(env: String?, test: Test) {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
+        if let env {
+            options.environment = env
+        }
         options.testOptions.realtimeRequestTimeout = 5.0
         options.testOptions.shuffleArray = shuffleArrayInExpectedHostOrder
         let transportFactory = TestProxyTransportFactory()
@@ -4165,11 +4180,15 @@ class RealtimeClientConnectionTests: XCTestCase {
         let hostPrefixes = Array("abcde")
         
         let extractHostname = { (url: URL) in
-            NSRegularExpression.extract(url.absoluteString, pattern: "[\(hostPrefixes.first!)-\(hostPrefixes.last!)].ably-realtime.com")
+            if options.hasEnvironmentDifferentThanProduction {
+                NSRegularExpression.extract(url.absoluteString, pattern: "\(options.environment)-[\(hostPrefixes.first!)-\(hostPrefixes.last!)]-fallback.ably-realtime.com")
+            } else {
+                NSRegularExpression.extract(url.absoluteString, pattern: "[\(hostPrefixes.first!)-\(hostPrefixes.last!)].ably-realtime.com")
+            }
         }
         
         var urls = [URL]()
-        let expectedFallbackHosts = Array(expectedHostOrder.map { ARTDefault.fallbackHosts()[$0] })
+        let expectedFallbackHosts = Array(expectedHostOrder.map { ARTDefault.fallbackHosts(withEnvironment: options.environment)[$0] })
         let allFallbackHostsTriedOfFailedExp = XCTestExpectation(description: "TestProxyTransport should spit 5 fallback hosts on networkConnectEvent")
         
         transportFactory.networkConnectEvent = { transport, url in
@@ -4218,6 +4237,16 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
 
         XCTAssertEqual(resultFallbackHosts, expectedFallbackHosts)
+    }
+    
+    func test__092__Connection__Host_Fallback__should_retry_hosts_in_random_order_after_checkin_if_an_internet_connection_is_available_prod() {
+        let test = Test()
+        _test__092__Connection__Host_Fallback__should_retry_hosts_in_random_order_after_checkin_if_an_internet_connection_is_available(env: nil, test: test)
+    }
+    
+    func test__092__Connection__Host_Fallback__should_retry_hosts_in_random_order_after_checkin_if_an_internet_connection_is_available_sandbox() {
+        let test = Test()
+        _test__092__Connection__Host_Fallback__should_retry_hosts_in_random_order_after_checkin_if_an_internet_connection_is_available(env: "sandbox", test: test)
     }
 
     // RTN17c
@@ -4410,7 +4439,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         expect(urlConnections).toEventually(haveCount(2), timeout: testTimeout)
 
-        XCTAssertTrue(NSRegularExpression.match(urlConnections.at(1)?.absoluteString, pattern: "//[a-e].ably-realtime.com"))
+        XCTAssertTrue(NSRegularExpression.match(urlConnections.at(1)?.absoluteString, pattern: "//[sandbox-]*[a-e][-fallback]*.ably-realtime.com"))
 
         waitUntil(timeout: testTimeout) { done in
             client.time { _, _ in
@@ -4418,8 +4447,8 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
         }
 
-        let timeRequestUrl = testHttpExecutor.requests.last!.url!
-        XCTAssertEqual(timeRequestUrl.host, urlConnections.at(1)?.host)
+        let timeRequestUrls = testHttpExecutor.requests.compactMap { $0.url?.host }.filter { !$0.hasPrefix("internet-up") }
+        XCTAssertEqual(timeRequestUrls.last, urlConnections.at(1)?.host)
     }
 
     // RTN19

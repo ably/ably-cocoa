@@ -14,6 +14,7 @@
 #import "ARTMessage.h"
 #import "ARTClientOptions.h"
 #import "ARTClientOptions+TestConfiguration.h"
+#import "ARTClientOptions+Private.h"
 #import "ARTTestClientOptions.h"
 #import "ARTChannelOptions.h"
 #import "ARTPresenceMessage.h"
@@ -1486,13 +1487,31 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
     }
 }
 
-- (BOOL)shouldRetryWithFallback:(ARTRealtimeTransportError *)error {
-    if (
-        (error.type == ARTRealtimeTransportErrorTypeBadResponse && error.badResponseCode >= 500 && error.badResponseCode <= 504) ||
-        error.type == ARTRealtimeTransportErrorTypeHostUnreachable ||
-        error.type == ARTRealtimeTransportErrorTypeTimeout
-        ) {
-        return YES;
+- (BOOL)shouldRetryWithFallbackForError:(ARTRealtimeTransportError *)error options:(ARTClientOptions *)options {
+    if ((error.type == ARTRealtimeTransportErrorTypeBadResponse && error.badResponseCode >= 500 && error.badResponseCode <= 504) ||
+         error.type == ARTRealtimeTransportErrorTypeHostUnreachable || error.type == ARTRealtimeTransportErrorTypeTimeout) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        // RTN17b3
+        if (options.fallbackHostsUseDefault) {
+            return YES;
+        }
+#pragma clang diagnostic pop
+
+        // RTN17b1
+        if (!(options.hasCustomRealtimeHost || options.hasCustomPort || options.hasCustomTlsPort)) {
+            return YES;
+        }
+        
+        // RTN17b2
+        if (options.fallbackHosts) {
+            return YES;
+        }
+                
+        // RSC15g2
+        if (options.hasEnvironmentDifferentThanProduction) {
+            return YES;
+        }
     }
     return NO;
 }
@@ -1635,28 +1654,25 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
     
     ARTLogDebug(self.logger, @"R:%p realtime transport failed: %@", self, transportError);
     
-    if ([self shouldRetryWithFallback:transportError]) {
-        ARTLogDebug(self.logger, @"R:%p host is down; can retry with fallback host", self);
-        if (!_fallbacks && [transportError.url.host isEqualToString:[ARTDefault realtimeHost]]) {
-            ARTClientOptions *const clientOptions = [self getClientOptions];
-            NSArray *hosts = [ARTFallbackHosts hostsFromOptions:clientOptions];
-            self->_fallbacks = [[ARTFallback alloc] initWithFallbackHosts:hosts shuffleArray:clientOptions.testOptions.shuffleArray];
-            if (self->_fallbacks != nil) {
-                [self reconnectWithFallback];
-            } else {
-                ARTErrorInfo *const errorInfo = [ARTErrorInfo createFromNSError:transportError.error];
-                ARTConnectionStateChangeParams *const params = [[ARTConnectionStateChangeParams alloc] initWithErrorInfo:errorInfo];
-                [self performTransitionToState:ARTRealtimeFailed withParams:params];
-            }
-            return;
-        } else if (_fallbacks && [self reconnectWithFallback]) {
-            return;
-        }
-    }
-
     ARTErrorInfo *const errorInfo = [ARTErrorInfo createFromNSError:transportError.error];
     ARTConnectionStateChangeParams *const params = [[ARTConnectionStateChangeParams alloc] initWithErrorInfo:errorInfo];
-    [self performTransitionToDisconnectedOrSuspendedWithParams:params];
+
+    ARTClientOptions *const clientOptions = [self getClientOptions];
+    
+    if ([self shouldRetryWithFallbackForError:transportError options:clientOptions]) {
+        ARTLogDebug(self.logger, @"R:%p host is down; can retry with fallback host", self);
+        if (!_fallbacks) {
+            NSArray *hosts = [ARTFallbackHosts hostsFromOptions:clientOptions];
+            _fallbacks = [[ARTFallback alloc] initWithFallbackHosts:hosts shuffleArray:clientOptions.testOptions.shuffleArray];
+        }
+        if (_fallbacks) {
+            [self reconnectWithFallback];
+        } else {
+            [self performTransitionToState:ARTRealtimeFailed withParams:params];
+        }
+    } else {
+        [self performTransitionToDisconnectedOrSuspendedWithParams:params];
+    }
 }
 
 - (void)realtimeTransportNeverConnected:(id<ARTRealtimeTransport>)transport {
