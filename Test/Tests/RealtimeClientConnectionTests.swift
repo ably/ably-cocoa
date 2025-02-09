@@ -4324,7 +4324,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         
         let extractHostname = { (url: URL) in
             if options.hasEnvironmentDifferentThanProduction {
-                NSRegularExpression.extract(url.absoluteString, pattern: "\(options.environment)-[\(hostPrefixes.first!)-\(hostPrefixes.last!)]-fallback.ably-realtime.com")
+                NSRegularExpression.extract(url.absoluteString, pattern: "\(options.environment!)-[\(hostPrefixes.first!)-\(hostPrefixes.last!)]-fallback.ably-realtime.com")
             } else {
                 NSRegularExpression.extract(url.absoluteString, pattern: "[\(hostPrefixes.first!)-\(hostPrefixes.last!)].ably-realtime.com")
             }
