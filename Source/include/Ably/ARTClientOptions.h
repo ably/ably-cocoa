@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Enables a [custom environment](https://ably.com/docs/platform-customization) to be used with the Ably service.
  */
-@property (readwrite, nonatomic) NSString *environment;
+@property (readwrite, nonatomic, nullable) NSString *environment;
 
 /**
  * When `false`, the client will use an insecure connection. The default is `true`, meaning a TLS connection will be used to connect to Ably.

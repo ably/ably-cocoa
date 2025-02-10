@@ -28,7 +28,7 @@ static NSInteger _maxSandboxMessageSize = 16384;
     NSArray<NSString *> * fallbacks = @[@"a", @"b", @"c", @"d", @"e"];
     NSString *prefix = @"";
     NSString *suffix = @"";
-    if (environment && ![[environment stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] isEqualToString:@""] && ![environment isEqualToString:ARTDefaultProduction]) {
+    if (environment && ![environment isEqualToString:@""] && ![environment isEqualToString:ARTDefaultProduction]) {
         prefix = [NSString stringWithFormat:@"%@-", environment];
         suffix = @"-fallback";
     }
