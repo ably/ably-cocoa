@@ -266,14 +266,6 @@
     return [self statsFromArray:[self decodeArray:data error:error]];
 }
 
-- (nullable NSString *)versionFromInput:(NSDictionary *)input withProtocolMessage:(nullable ARTProtocolMessage *)protocolMessage {
-    if (protocolMessage.channelSerial == nil) {
-        return nil;
-    }
-    int index = [[input artNumber:@"_index"] intValue];
-    return [NSString stringWithFormat:@"%@:%03d", protocolMessage.channelSerial, index]; // TM2p <channelSerial>:<padded_index>
-}
-
 - (ARTMessage *)messageFromDictionary:(NSDictionary *)input protocolMessage:(ARTProtocolMessage *)protocolMessage {
     ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: messageFromDictionary %@", _rest, [_delegate formatAsString], input);
     if (![input isKindOfClass:[NSDictionary class]]) {
@@ -284,9 +276,9 @@
     message.id = [input artString:@"id"];
     message.name = [input artString:@"name"];
     message.action = ([input artNumber:@"action"] ?: [[NSNumber alloc] initWithInt:ARTMessageActionCreate]).integerValue;
-    message.version = [input artString:@"version"] ?: [self versionFromInput:input withProtocolMessage:protocolMessage]; // TM2p
+    message.version = [input artString:@"version"]; // TM2p
     message.serial = [input artString:@"serial"];
-    if (!message.serial && message.action == ARTMessageActionCreate) { // TM2k
+    if (!message.serial && message.version && message.action == ARTMessageActionCreate) { // TM2k
         message.serial = message.version;
     }
     message.clientId = [input artString:@"clientId"];
@@ -764,13 +756,6 @@
     }
 
     NSMutableArray *messages = [[input objectForKey:@"messages"] mutableCopy];
-
-    // There is probably a better way to do this, but I have limited time to implement TM2p
-    for (int i = 0; i < messages.count; i++) {
-        NSMutableDictionary *msgDict = [messages[i] mutableCopy];
-        msgDict[@"_index"] = @(i);
-        messages[i] = msgDict;
-    }
     message.messages = [self messagesFromArray:messages protocolMessage:message];
     message.presence = [self presenceMessagesFromArray:[input objectForKey:@"presence"]];
 
