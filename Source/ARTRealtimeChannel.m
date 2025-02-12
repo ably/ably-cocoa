@@ -130,7 +130,7 @@
 }
 
 - (void)history:(ARTPaginatedMessagesCallback)callback {
-    [_internal history:callback];
+    [_internal historyWithWrapperSDKAgents:nil completion:callback];
 }
 
 - (BOOL)exceedMaxSize:(NSArray<ARTBaseMessage *> *)messages {
@@ -182,7 +182,7 @@
 }
 
 - (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query callback:(ARTPaginatedMessagesCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr {
-    return [_internal history:query callback:callback error:errorPtr];
+    return [_internal history:query wrapperSDKAgents:nil callback:callback error:errorPtr];
 }
 
 - (ARTEventListener *)on:(ARTChannelStateCallback)cb {
@@ -1043,13 +1043,14 @@ dispatch_sync(_queue, ^{
     return self.realtime.auth.clientId_nosync;
 }
 
-- (void)history:(ARTPaginatedMessagesCallback)callback {
-    [self history:[[ARTRealtimeHistoryQuery alloc] init] callback:callback error:nil];
+- (void)historyWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                         completion:(ARTPaginatedMessagesCallback)callback {
+    [self history:[[ARTRealtimeHistoryQuery alloc] init] wrapperSDKAgents:wrapperSDKAgents callback:callback error:nil];
 }
 
-- (BOOL)history:(ARTRealtimeHistoryQuery *)query callback:(ARTPaginatedMessagesCallback)callback error:(NSError **)errorPtr {
+- (BOOL)history:(ARTRealtimeHistoryQuery *)query wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTPaginatedMessagesCallback)callback error:(NSError **)errorPtr {
     query.realtimeChannel = self;
-    return [_restChannel history:query callback:callback error:errorPtr];
+    return [_restChannel history:query wrapperSDKAgents:wrapperSDKAgents callback:callback error:errorPtr];
 }
 
 - (void)startDecodeFailureRecoveryWithErrorInfo:(ARTErrorInfo *)error {

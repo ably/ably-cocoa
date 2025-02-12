@@ -1,4 +1,6 @@
 #import "ARTWrapperSDKProxyRealtimeChannel+Private.h"
+#import "ARTRealtimeChannel+Private.h"
+#import "ARTWrapperSDKProxyOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -54,7 +56,8 @@ NS_ASSUME_NONNULL_END
 #endif
 
 - (void)history:(nonnull ARTPaginatedMessagesCallback)callback {
-    [self.underlyingChannel history:callback];
+    [self.underlyingChannel.internal historyWithWrapperSDKAgents:self.proxyOptions.agents
+                                                      completion:callback];
 }
 
 - (void)publish:(nonnull NSArray<ARTMessage *> *)messages {
@@ -114,7 +117,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (BOOL)history:(ARTRealtimeHistoryQuery * _Nullable)query callback:(nonnull ARTPaginatedMessagesCallback)callback error:(NSError * _Nullable __autoreleasing * _Nullable)errorPtr {
-    return [self.underlyingChannel history:query callback:callback error:errorPtr];
+    return [self.underlyingChannel.internal history:query wrapperSDKAgents:self.proxyOptions.agents callback:callback error:errorPtr];
 }
 
 - (void)off {

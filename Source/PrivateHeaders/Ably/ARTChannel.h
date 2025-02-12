@@ -44,7 +44,8 @@ NS_SWIFT_SENDABLE
 
 - (void)publish:(NSArray<ARTMessage *> *)messages callback:(nullable ARTCallback)callback;
 
-- (void)history:(ARTPaginatedMessagesCallback)callback;
+- (void)historyWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                         completion:(ARTPaginatedMessagesCallback)callback;
 
 @end
 

@@ -321,6 +321,7 @@ class WrapperSDKProxyTests: XCTestCase {
 
     func parameterizedTest_addsWrapperSDKAgentToRequests(
         test: Test,
+        expectedRequestCount: Int = 1,
         performRequest: @escaping (ARTWrapperSDKProxyRealtime) -> Void
     ) throws {
         // Given: a wrapper SDK proxy client
@@ -338,7 +339,7 @@ class WrapperSDKProxyTests: XCTestCase {
         performRequest(proxyClient)
 
         // Then: The HTTP request all contains the wrapper SDK's agents in the Ably-Agent header
-        XCTAssertEqual(testHTTPExecutor.requests.count, 1)
+        XCTAssertEqual(testHTTPExecutor.requests.count, expectedRequestCount)
 
         let expectedIdentifier = [
             "ably-cocoa/1.2.38",
@@ -346,9 +347,9 @@ class WrapperSDKProxyTests: XCTestCase {
             "my-wrapper-sdk/1.0.0"
         ].sorted().joined(separator: " ")
 
-        let request = try XCTUnwrap(testHTTPExecutor.requests.first)
-
-        XCTAssertEqual(request.allHTTPHeaderFields?["Ably-Agent"], expectedIdentifier)
+        for request in testHTTPExecutor.requests {
+            XCTAssertEqual(request.allHTTPHeaderFields?["Ably-Agent"], expectedIdentifier)
+        }
     }
 
     func test_time_addsWrapperSDKAgentToRequest() throws {
@@ -358,6 +359,58 @@ class WrapperSDKProxyTests: XCTestCase {
             waitUntil(timeout: testTimeout) { done in
                 proxyClient.time() { _, error in
                     XCTAssertNil(error)
+                    done()
+                }
+            }
+        }
+    }
+
+    func test_history_addsWrapperSDKAgentToRequest() throws {
+        let test = Test()
+
+        try parameterizedTest_addsWrapperSDKAgentToRequests(test: test, expectedRequestCount: 3) { proxyClient in
+            // Publish some messages so that we can use the history API to fetch them
+            let channel = proxyClient.channels.get(test.uniqueChannelName())
+            for i in 1...2 {
+                waitUntil(timeout: testTimeout) { done in
+                    channel.publish(nil, data: "\(i)") { error in
+                        XCTAssertNil(error)
+                        done()
+                    }
+                }
+            }
+
+            waitUntil(timeout: testTimeout) { done in
+                let query = ARTRealtimeHistoryQuery()
+                query.limit = 1
+
+                do {
+                    try channel.history(query) { firstPage, error in
+                        XCTAssertNil(error)
+
+                        guard let firstPage else {
+                            done()
+                            return
+                        }
+
+                        // This test also doubles up as a smoke test that `-first` and `-next` on a normal ARTPaginatedResult (as opposed to an ARTHTTPPaginatedResponse) add the SDK agent
+
+                        firstPage.first { firstPageAgain, error in
+                            XCTAssertNil(error)
+
+                            guard let firstPageAgain else {
+                                done()
+                                return
+                            }
+
+                            firstPageAgain.next { _, error in
+                                XCTAssertNil(error)
+                                done()
+                            }
+                        }
+                    }
+                } catch {
+                    XCTFail("history threw error \(error)")
                     done()
                 }
             }

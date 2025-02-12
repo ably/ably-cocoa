@@ -176,7 +176,7 @@
     return message;
 }
 
-- (void)history:(ARTPaginatedMessagesCallback)callback {
+- (void)historyWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents completion:(ARTPaginatedMessagesCallback)callback {
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
 }
 
