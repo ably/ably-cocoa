@@ -1,6 +1,8 @@
 #import "ARTWrapperSDKProxyPushAdmin+Private.h"
 #import "ARTPushAdmin+Private.h"
 #import "ARTWrapperSDKProxyOptions.h"
+#import "ARTWrapperSDKProxyPushDeviceRegistrations+Private.h"
+#import "ARTWrapperSDKProxyPushChannelSubscriptions+Private.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -19,17 +21,13 @@ NS_ASSUME_NONNULL_END
     if (self = [super init]) {
         _underlyingPushAdmin = pushAdmin;
         _proxyOptions = proxyOptions;
+        _deviceRegistrations = [[ARTWrapperSDKProxyPushDeviceRegistrations alloc] initWithPushDeviceRegistrations:pushAdmin.deviceRegistrations
+                                                                                                     proxyOptions:proxyOptions];
+        _channelSubscriptions = [[ARTWrapperSDKProxyPushChannelSubscriptions alloc] initWithPushChannelSubscriptions:pushAdmin.channelSubscriptions
+                                                                                                        proxyOptions:proxyOptions];
     }
 
     return self;
-}
-
-- (ARTPushDeviceRegistrations *)deviceRegistrations {
-    return self.underlyingPushAdmin.deviceRegistrations;
-}
-
-- (ARTPushChannelSubscriptions *)channelSubscriptions {
-    return self.underlyingPushAdmin.channelSubscriptions;
 }
 
 - (void)publish:(nonnull ARTPushRecipient *)recipient data:(nonnull ARTJsonObject *)data callback:(nullable ARTCallback)callback {

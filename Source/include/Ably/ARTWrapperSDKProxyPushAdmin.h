@@ -1,8 +1,8 @@
 #import <Foundation/Foundation.h>
 #import <Ably/ARTPushAdmin.h>
 
-@class ARTPushDeviceRegistrations;
-@class ARTPushChannelSubscriptions;
+@class ARTWrapperSDKProxyPushDeviceRegistrations;
+@class ARTWrapperSDKProxyPushChannelSubscriptions;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -16,8 +16,8 @@ NS_SWIFT_SENDABLE
 
 - (instancetype)init NS_UNAVAILABLE;
 
-@property (nonatomic, readonly) ARTPushDeviceRegistrations *deviceRegistrations;
-@property (nonatomic, readonly) ARTPushChannelSubscriptions *channelSubscriptions;
+@property (nonatomic, readonly) ARTWrapperSDKProxyPushDeviceRegistrations *deviceRegistrations;
+@property (nonatomic, readonly) ARTWrapperSDKProxyPushChannelSubscriptions *channelSubscriptions;
 
 @end
 
