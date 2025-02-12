@@ -3,7 +3,7 @@
 
 @class ARTConnection;
 @class ARTWrapperSDKProxyRealtimeChannels;
-@class ARTPush;
+@class ARTWrapperSDKProxyPush;
 @class ARTAuth;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -20,7 +20,7 @@ NS_SWIFT_SENDABLE
 
 @property (readonly) ARTConnection *connection;
 @property (readonly) ARTWrapperSDKProxyRealtimeChannels *channels;
-@property (readonly) ARTPush *push;
+@property (readonly) ARTWrapperSDKProxyPush *push;
 @property (readonly) ARTAuth *auth;
 
 @end
