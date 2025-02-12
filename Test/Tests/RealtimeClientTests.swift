@@ -348,7 +348,7 @@ class RealtimeClientTests: XCTestCase {
         // Rest
         waitUntil(timeout: testTimeout) { done in
             expect {
-                try client.internal.rest.stats(query, callback: { paginated, error in
+                try client.internal.rest.stats(query, wrapperSDKAgents:nil, callback: { paginated, error in
                     defer { done() }
                     if let e = error {
                         XCTFail(e.localizedDescription)

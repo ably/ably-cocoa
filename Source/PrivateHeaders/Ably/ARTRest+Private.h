@@ -106,9 +106,11 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
        callback:(ARTHTTPPaginatedCallback)callback
           error:(NSError *_Nullable *_Nullable)errorPtr;
 
-- (BOOL)stats:(ARTPaginatedStatsCallback)callback;
+- (BOOL)statsWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                       completion:(ARTPaginatedStatsCallback)callback;
 
 - (BOOL)stats:(nullable ARTStatsQuery *)query
+wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
      callback:(ARTPaginatedStatsCallback)callback
         error:(NSError *_Nullable *_Nullable)errorPtr;
 

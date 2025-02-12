@@ -117,11 +117,12 @@
 }
 
 - (BOOL)stats:(ARTPaginatedStatsCallback)callback {
-    return [_internal stats:callback];
+    return [_internal statsWithWrapperSDKAgents:nil
+                                     completion:callback];
 }
 
 - (BOOL)stats:(nullable ARTStatsQuery *)query callback:(ARTPaginatedStatsCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr {
-    return [_internal stats:query callback:callback error:errorPtr];
+    return [_internal stats:query wrapperSDKAgents:nil callback:callback error:errorPtr];
 }
 
 - (ARTRestChannels *)channels {
@@ -680,11 +681,12 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     }];
 }
 
-- (BOOL)stats:(ARTPaginatedStatsCallback)callback {
-    return [self stats:[[ARTStatsQuery alloc] init] callback:callback error:nil];
+- (BOOL)statsWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                       completion:(ARTPaginatedStatsCallback)callback {
+    return [self stats:[[ARTStatsQuery alloc] init] wrapperSDKAgents:wrapperSDKAgents callback:callback error:nil];
 }
 
-- (BOOL)stats:(ARTStatsQuery *)query callback:(ARTPaginatedStatsCallback)callback error:(NSError **)errorPtr {
+- (BOOL)stats:(ARTStatsQuery *)query wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTPaginatedStatsCallback)callback error:(NSError **)errorPtr {
     if (callback) {
         ARTPaginatedStatsCallback userCallback = callback;
         callback = ^(ARTPaginatedResult<ARTStats *> *r, ARTErrorInfo *e) {
@@ -727,7 +729,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     };
     
 dispatch_async(_queue, ^{
-    [ARTPaginatedResult executePaginated:self withRequest:request andResponseProcessor:responseProcessor wrapperSDKAgents:nil logger:self.logger callback:callback];
+    [ARTPaginatedResult executePaginated:self withRequest:request andResponseProcessor:responseProcessor wrapperSDKAgents:wrapperSDKAgents logger:self.logger callback:callback];
 });
     return YES;
 }

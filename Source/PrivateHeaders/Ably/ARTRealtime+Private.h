@@ -59,9 +59,10 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 
 - (void)ping:(ARTCallback)cb;
 
-- (BOOL)stats:(ARTPaginatedStatsCallback)callback;
+- (BOOL)statsWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                         callback:(ARTPaginatedStatsCallback)callback;
 
-- (BOOL)stats:(nullable ARTStatsQuery *)query callback:(ARTPaginatedStatsCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
+- (BOOL)stats:(nullable ARTStatsQuery *)query wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTPaginatedStatsCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
 - (void)connect;
 
