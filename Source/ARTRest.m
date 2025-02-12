@@ -102,7 +102,8 @@
 }
 
 - (void)time:(ARTDateTimeCallback)callback {
-    [_internal time:callback];
+    [_internal timeWithWrapperSDKAgents:nil
+                             completion:callback];
 }
 
 - (BOOL)request:(NSString *)method
@@ -525,7 +526,8 @@ NS_ASSUME_NONNULL_END
     return [NSString stringWithFormat:@"Bearer %@", token];
 }
 
-- (void)time:(ARTDateTimeCallback)callback {
+- (void)timeWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                      completion:(ARTDateTimeCallback)callback {
     if (callback) {
         ARTDateTimeCallback userCallback = callback;
         callback = ^(NSDate *time, NSError *error) {
@@ -535,18 +537,20 @@ NS_ASSUME_NONNULL_END
         };
     }
     dispatch_async(_queue, ^{
-        [self _time:callback];
+        [self _timeWithWrapperSDKAgents:wrapperSDKAgents
+                             completion:callback];
     });
 }
 
-- (NSObject<ARTCancellable> *)_time:(ARTDateTimeCallback)callback {
+- (NSObject<ARTCancellable> *)_timeWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                                             completion:(ARTDateTimeCallback)callback {
     NSURL *requestUrl = [NSURL URLWithString:@"/time" relativeToURL:self.baseUrl];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];
     request.HTTPMethod = @"GET";
     NSString *accept = [[_encoders.allValues valueForKeyPath:@"mimeType"] componentsJoinedByString:@","];
     [request setValue:accept forHTTPHeaderField:@"Accept"];
     
-    return [self executeRequest:request withAuthOption:ARTAuthenticationOff wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    return [self executeRequest:request withAuthOption:ARTAuthenticationOff wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             callback(nil, error);
             return;

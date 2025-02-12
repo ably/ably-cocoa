@@ -66,7 +66,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithOptions:(ARTClientOptions *)options realtime:(ARTRealtimeInternal *_Nullable)realtime logger:(ARTInternalLog *)logger;
 
-- (nullable NSObject<ARTCancellable> *)_time:(ARTDateTimeCallback)callback;
+- (nullable NSObject<ARTCancellable> *)_timeWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                                                      completion:(ARTDateTimeCallback)callback;
 
 // MARK: ARTHTTPExecutor
 
@@ -93,7 +94,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setAndPersistAPNSDeviceTokenData:(NSData *)deviceTokenData tokenType:(NSString *)tokenType;
 #endif
 
-- (void)time:(ARTDateTimeCallback)callback;
+- (void)timeWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                      completion:(ARTDateTimeCallback)callback;
 
 - (BOOL)request:(NSString *)method
            path:(NSString *)path

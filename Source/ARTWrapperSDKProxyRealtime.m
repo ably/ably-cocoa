@@ -90,7 +90,8 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)time:(nonnull ARTDateTimeCallback)callback {
-    [self.underlyingRealtime time:callback];
+    [self.underlyingRealtime.internal timeWithWrapperSDKAgents:self.proxyOptions.agents
+                                                    completion:callback];
 }
 
 @end

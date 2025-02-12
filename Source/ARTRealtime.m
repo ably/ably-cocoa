@@ -150,7 +150,8 @@
 }
 
 - (void)time:(ARTDateTimeCallback)cb {
-    [_internal time:cb];
+    [_internal timeWithWrapperSDKAgents:nil
+                             completion:cb];
 }
 
 - (BOOL)request:(NSString *)method
@@ -501,8 +502,10 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
     }
 }
 
-- (void)time:(ARTDateTimeCallback)cb {
-    [self.rest time:cb];
+- (void)timeWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                      completion:(ARTDateTimeCallback)cb {
+    [self.rest timeWithWrapperSDKAgents:wrapperSDKAgents
+                             completion:cb];
 }
 
 - (BOOL)request:(NSString *)method

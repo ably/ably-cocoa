@@ -708,7 +708,8 @@ dispatch_async(_queue, ^{
     }
     else {
         if (replacedOptions.queryTime) {
-            return [_rest _time:^(NSDate *time, NSError *error) {
+            return [_rest _timeWithWrapperSDKAgents:nil
+                                         completion:^(NSDate *time, NSError *error) {
                 if (error) {
                     callback(nil, error);
                 } else {

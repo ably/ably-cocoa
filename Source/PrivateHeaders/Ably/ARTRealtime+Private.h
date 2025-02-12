@@ -45,7 +45,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic) dispatch_queue_t queue;
 
-- (void)time:(ARTDateTimeCallback)callback;
+- (void)timeWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                      completion:(ARTDateTimeCallback)callback;
 
 - (BOOL)request:(NSString *)method
            path:(NSString *)path

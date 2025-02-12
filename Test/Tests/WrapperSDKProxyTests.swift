@@ -319,6 +319,51 @@ class WrapperSDKProxyTests: XCTestCase {
         }
     }
 
+    func parameterizedTest_addsWrapperSDKAgentToRequests(
+        test: Test,
+        performRequest: @escaping (ARTWrapperSDKProxyRealtime) -> Void
+    ) throws {
+        // Given: a wrapper SDK proxy client
+
+        let options = try AblyTests.commonAppSetup(for: test)
+        let realtime = ARTRealtime(options: options)
+        defer { realtime.dispose(); realtime.close() }
+
+        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        realtime.internal.rest.httpExecutor = testHTTPExecutor
+
+        let proxyClient = realtime.createWrapperSDKProxy(with: .init(agents: ["my-wrapper-sdk": "1.0.0"]))
+
+        // When: We perform an HTTP request via the wrapper proxy SDK client
+        performRequest(proxyClient)
+
+        // Then: The HTTP request all contains the wrapper SDK's agents in the Ably-Agent header
+        XCTAssertEqual(testHTTPExecutor.requests.count, 1)
+
+        let expectedIdentifier = [
+            "ably-cocoa/1.2.38",
+            ARTDefault.platformAgent(),
+            "my-wrapper-sdk/1.0.0"
+        ].sorted().joined(separator: " ")
+
+        let request = try XCTUnwrap(testHTTPExecutor.requests.first)
+
+        XCTAssertEqual(request.allHTTPHeaderFields?["Ably-Agent"], expectedIdentifier)
+    }
+
+    func test_time_addsWrapperSDKAgentToRequest() throws {
+        let test = Test()
+
+        try parameterizedTest_addsWrapperSDKAgentToRequests(test: test) { proxyClient in
+            waitUntil(timeout: testTimeout) { done in
+                proxyClient.time() { _, error in
+                    XCTAssertNil(error)
+                    done()
+                }
+            }
+        }
+    }
+
     // MARK: - `agent` channel param
 
     private func parameterizedTest_checkAttachProtocolMessage(
