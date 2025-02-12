@@ -727,7 +727,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     };
     
 dispatch_async(_queue, ^{
-    [ARTPaginatedResult executePaginated:self withRequest:request andResponseProcessor:responseProcessor logger:self.logger callback:callback];
+    [ARTPaginatedResult executePaginated:self withRequest:request andResponseProcessor:responseProcessor wrapperSDKAgents:nil logger:self.logger callback:callback];
 });
     return YES;
 }

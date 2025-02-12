@@ -22,10 +22,9 @@
                responseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
                 wrapperSDKAgents:(nullable NSDictionary<NSString *,NSString *> *)wrapperSDKAgents
                           logger:(ARTInternalLog *)logger {
-    self = [super initWithItems:items rest:rest relFirst:relFirst relCurrent:relCurrent relNext:relNext responseProcessor:responseProcessor logger:logger];
+    self = [super initWithItems:items rest:rest relFirst:relFirst relCurrent:relCurrent relNext:relNext responseProcessor:responseProcessor wrapperSDKAgents:wrapperSDKAgents logger:logger];
     if (self) {
         _response = response;
-        _wrapperSDKAgents = [wrapperSDKAgents copy];
     }
     return self;
 }

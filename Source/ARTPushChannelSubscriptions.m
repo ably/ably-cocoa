@@ -126,7 +126,7 @@
         ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **error) {
             return [self->_rest.encoders[response.MIMEType] decode:data error:error];
         };
-        [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor logger:self->_logger callback:callback];
+        [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor wrapperSDKAgents:nil logger:self->_logger callback:callback];
     });
 }
 
@@ -149,7 +149,7 @@
         ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **error) {
             return [self->_rest.encoders[response.MIMEType] decodePushChannelSubscriptions:data error:error];
         };
-        [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor logger:self->_logger callback:callback];
+        [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor wrapperSDKAgents:nil logger:self->_logger callback:callback];
     });
 }
 

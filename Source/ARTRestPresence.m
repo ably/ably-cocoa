@@ -156,7 +156,7 @@ NS_ASSUME_NONNULL_END
     };
 
 dispatch_async(_queue, ^{
-    [ARTPaginatedResult executePaginated:self->_channel.rest withRequest:request andResponseProcessor:responseProcessor logger:self->_logger callback:callback];
+    [ARTPaginatedResult executePaginated:self->_channel.rest withRequest:request andResponseProcessor:responseProcessor wrapperSDKAgents:nil logger:self->_logger callback:callback];
 });
     return YES;
 }
@@ -217,7 +217,7 @@ dispatch_async(_queue, ^{
     };
 
 dispatch_async(_queue, ^{
-    [ARTPaginatedResult executePaginated:self->_channel.rest withRequest:request andResponseProcessor:responseProcessor logger:self->_logger callback:callback];
+    [ARTPaginatedResult executePaginated:self->_channel.rest withRequest:request andResponseProcessor:responseProcessor wrapperSDKAgents:nil logger:self->_logger callback:callback];
 });
     return YES;
 }

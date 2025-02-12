@@ -290,7 +290,7 @@ dispatch_sync(_queue, ^{
         return [self->_rest.encoders[response.MIMEType] decodePushChannelSubscriptions:data error:error];
     };
 
-    [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor logger:self->_logger callback:callback];
+    [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor wrapperSDKAgents:nil logger:self->_logger callback:callback];
     ret = YES;
 });
     return ret;

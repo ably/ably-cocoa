@@ -210,7 +210,7 @@ dispatch_sync(_queue, ^{
     };
 
     ARTLogDebug(self.logger, @"RS:%p C:%p (%@) stats request %@", self->_rest, self, self.name, request);
-    [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor logger:self.logger callback:callback];
+    [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor wrapperSDKAgents:nil logger:self.logger callback:callback];
     ret = YES;
 });
     return ret;
