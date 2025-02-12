@@ -217,6 +217,15 @@
 		215924932D636A6E004A235C /* ARTWrapperSDKProxyPush.m in Sources */ = {isa = PBXBuildFile; fileRef = 215924922D636A6E004A235C /* ARTWrapperSDKProxyPush.m */; };
 		215924942D636A6E004A235C /* ARTWrapperSDKProxyPush.m in Sources */ = {isa = PBXBuildFile; fileRef = 215924922D636A6E004A235C /* ARTWrapperSDKProxyPush.m */; };
 		215924952D636A6E004A235C /* ARTWrapperSDKProxyPush.m in Sources */ = {isa = PBXBuildFile; fileRef = 215924922D636A6E004A235C /* ARTWrapperSDKProxyPush.m */; };
+		215924972D636AC5004A235C /* ARTWrapperSDKProxyPushAdmin.h in Headers */ = {isa = PBXBuildFile; fileRef = 215924962D636AC5004A235C /* ARTWrapperSDKProxyPushAdmin.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		215924982D636AC5004A235C /* ARTWrapperSDKProxyPushAdmin.h in Headers */ = {isa = PBXBuildFile; fileRef = 215924962D636AC5004A235C /* ARTWrapperSDKProxyPushAdmin.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		215924992D636AC5004A235C /* ARTWrapperSDKProxyPushAdmin.h in Headers */ = {isa = PBXBuildFile; fileRef = 215924962D636AC5004A235C /* ARTWrapperSDKProxyPushAdmin.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2159249B2D636AD5004A235C /* ARTWrapperSDKProxyPushAdmin+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 2159249A2D636AD5004A235C /* ARTWrapperSDKProxyPushAdmin+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2159249C2D636AD5004A235C /* ARTWrapperSDKProxyPushAdmin+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 2159249A2D636AD5004A235C /* ARTWrapperSDKProxyPushAdmin+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2159249D2D636AD5004A235C /* ARTWrapperSDKProxyPushAdmin+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 2159249A2D636AD5004A235C /* ARTWrapperSDKProxyPushAdmin+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2159249F2D636ADF004A235C /* ARTWrapperSDKProxyPushAdmin.m in Sources */ = {isa = PBXBuildFile; fileRef = 2159249E2D636ADF004A235C /* ARTWrapperSDKProxyPushAdmin.m */; };
+		215924A02D636ADF004A235C /* ARTWrapperSDKProxyPushAdmin.m in Sources */ = {isa = PBXBuildFile; fileRef = 2159249E2D636ADF004A235C /* ARTWrapperSDKProxyPushAdmin.m */; };
+		215924A12D636ADF004A235C /* ARTWrapperSDKProxyPushAdmin.m in Sources */ = {isa = PBXBuildFile; fileRef = 2159249E2D636ADF004A235C /* ARTWrapperSDKProxyPushAdmin.m */; };
 		215F75F82922B1DB009E0E76 /* ARTClientInformation.h in Headers */ = {isa = PBXBuildFile; fileRef = 215F75F62922B1DB009E0E76 /* ARTClientInformation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		215F75F92922B1DB009E0E76 /* ARTClientInformation.h in Headers */ = {isa = PBXBuildFile; fileRef = 215F75F62922B1DB009E0E76 /* ARTClientInformation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		215F75FA2922B1DB009E0E76 /* ARTClientInformation.h in Headers */ = {isa = PBXBuildFile; fileRef = 215F75F62922B1DB009E0E76 /* ARTClientInformation.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1253,6 +1262,9 @@
 		2159248A2D636826004A235C /* ARTWrapperSDKProxyPush.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTWrapperSDKProxyPush.h; path = include/Ably/ARTWrapperSDKProxyPush.h; sourceTree = "<group>"; };
 		2159248E2D636839004A235C /* ARTWrapperSDKProxyPush+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTWrapperSDKProxyPush+Private.h"; path = "PrivateHeaders/Ably/ARTWrapperSDKProxyPush+Private.h"; sourceTree = "<group>"; };
 		215924922D636A6E004A235C /* ARTWrapperSDKProxyPush.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTWrapperSDKProxyPush.m; sourceTree = "<group>"; };
+		215924962D636AC5004A235C /* ARTWrapperSDKProxyPushAdmin.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTWrapperSDKProxyPushAdmin.h; path = include/Ably/ARTWrapperSDKProxyPushAdmin.h; sourceTree = "<group>"; };
+		2159249A2D636AD5004A235C /* ARTWrapperSDKProxyPushAdmin+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTWrapperSDKProxyPushAdmin+Private.h"; path = "PrivateHeaders/Ably/ARTWrapperSDKProxyPushAdmin+Private.h"; sourceTree = "<group>"; };
+		2159249E2D636ADF004A235C /* ARTWrapperSDKProxyPushAdmin.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTWrapperSDKProxyPushAdmin.m; sourceTree = "<group>"; };
 		215F75F62922B1DB009E0E76 /* ARTClientInformation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTClientInformation.h; path = include/Ably/ARTClientInformation.h; sourceTree = "<group>"; };
 		215F75F72922B1DB009E0E76 /* ARTClientInformation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTClientInformation.m; sourceTree = "<group>"; };
 		215F75FE2922B30F009E0E76 /* ClientInformationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientInformationTests.swift; sourceTree = "<group>"; };
@@ -1682,6 +1694,9 @@
 				2159248A2D636826004A235C /* ARTWrapperSDKProxyPush.h */,
 				2159248E2D636839004A235C /* ARTWrapperSDKProxyPush+Private.h */,
 				215924922D636A6E004A235C /* ARTWrapperSDKProxyPush.m */,
+				215924962D636AC5004A235C /* ARTWrapperSDKProxyPushAdmin.h */,
+				2159249A2D636AD5004A235C /* ARTWrapperSDKProxyPushAdmin+Private.h */,
+				2159249E2D636ADF004A235C /* ARTWrapperSDKProxyPushAdmin.m */,
 			);
 			name = "Wrapper SDK Proxy";
 			sourceTree = "<group>";
@@ -2465,12 +2480,14 @@
 				2132C31129D5E4C6000C4355 /* ARTBackoffRetryDelayCalculator.h in Headers */,
 				2114D42A2D4BC5470032839A /* AblyInternal.h in Headers */,
 				2114D42B2D4BC5470032839A /* AblyPublic.h in Headers */,
+				2159249B2D636AD5004A235C /* ARTWrapperSDKProxyPushAdmin+Private.h in Headers */,
 				D5BB213926AAA60500AA5F3E /* ARTNSError+ARTUtils.h in Headers */,
 				D746AE431BBC5CD0003ECEF8 /* ARTRealtimeChannel+Private.h in Headers */,
 				D746AE251BBB611C003ECEF8 /* ARTChannel+Private.h in Headers */,
 				D5BB210B26AA98A200AA5F3E /* ARTStringifiable+Private.h in Headers */,
 				EB4B1A0C1F2190BB00467F07 /* ARTRestChannels+Private.h in Headers */,
 				D785C4291E549E33008FEC05 /* ARTPushChannelSubscription.h in Headers */,
+				215924992D636AC5004A235C /* ARTWrapperSDKProxyPushAdmin.h in Headers */,
 				D7F1D3731BF4DE07001A4B5E /* ARTRestPresence.h in Headers */,
 				D7B17EE31C07208B00A6958E /* ARTConnectionDetails.h in Headers */,
 				D7F2B8B21E42410D00B65151 /* ARTPresenceMessage+Private.h in Headers */,
@@ -2569,6 +2586,7 @@
 				21AC0CC42D4AA0630030BD23 /* ARTWrapperSDKProxyRealtimeChannel.h in Headers */,
 				21AC0CC52D4AA0630030BD23 /* ARTWrapperSDKProxyRealtimeChannels.h in Headers */,
 				213AEA1B2D35A6120067FD5F /* ARTWrapperSDKProxyOptions.h in Headers */,
+				2159249D2D636AD5004A235C /* ARTWrapperSDKProxyPushAdmin+Private.h in Headers */,
 				D798556123ECCDAF00946BE2 /* ARTVCDiffDecoder.h in Headers */,
 				21E1C0E62A0DC47400A5DB65 /* ARTWebSocketFactory.h in Headers */,
 				2132C32129D5FE74000C4355 /* ARTTypes+Private.h in Headers */,
@@ -2682,6 +2700,7 @@
 				D710D61E21949DEC008F54AD /* ARTFallback+Private.h in Headers */,
 				D5BB211026AA993C00AA5F3E /* ARTNSURL+ARTUtils.h in Headers */,
 				D710D60E21949DDB008F54AD /* ARTPaginatedResult.h in Headers */,
+				215924972D636AC5004A235C /* ARTWrapperSDKProxyPushAdmin.h in Headers */,
 				2114D4302D4BCAE20032839A /* ARTRealtime+WrapperSDKProxy.h in Headers */,
 				D710D4BF21949B6C008F54AD /* ARTNSMutableRequest+ARTRest.h in Headers */,
 				2147F02E29E583AD0071CB94 /* ARTInternalLogCore.h in Headers */,
@@ -2752,6 +2771,7 @@
 				21AC0CC22D4AA0630030BD23 /* ARTWrapperSDKProxyRealtimeChannel.h in Headers */,
 				21AC0CC32D4AA0630030BD23 /* ARTWrapperSDKProxyRealtimeChannels.h in Headers */,
 				213AEA1A2D35A6120067FD5F /* ARTWrapperSDKProxyOptions.h in Headers */,
+				2159249C2D636AD5004A235C /* ARTWrapperSDKProxyPushAdmin+Private.h in Headers */,
 				D710D57221949CBA008F54AD /* ARTPushChannelSubscriptions.h in Headers */,
 				21E1C0E72A0DC47400A5DB65 /* ARTWebSocketFactory.h in Headers */,
 				2132C32229D5FE74000C4355 /* ARTTypes+Private.h in Headers */,
@@ -2865,6 +2885,7 @@
 				D710D62A21949DED008F54AD /* ARTFallback+Private.h in Headers */,
 				D710D61821949DDC008F54AD /* ARTPaginatedResult.h in Headers */,
 				D5BB213B26AAA60500AA5F3E /* ARTNSError+ARTUtils.h in Headers */,
+				215924982D636AC5004A235C /* ARTWrapperSDKProxyPushAdmin.h in Headers */,
 				2114D42F2D4BCAE20032839A /* ARTRealtime+WrapperSDKProxy.h in Headers */,
 				D710D4C121949B6D008F54AD /* ARTNSMutableRequest+ARTRest.h in Headers */,
 				2147F02F29E583AD0071CB94 /* ARTInternalLogCore.h in Headers */,
@@ -3257,6 +3278,7 @@
 				D7B621991E4A762A00684474 /* ARTPushChannel.m in Sources */,
 				EB89D40B1C61C6EA007FA5B7 /* ARTRealtimeChannels.m in Sources */,
 				217D183B254222F600DFF07E /* ARTSRDelegateController.m in Sources */,
+				2159249F2D636ADF004A235C /* ARTWrapperSDKProxyPushAdmin.m in Sources */,
 				D746AE231BBB60EE003ECEF8 /* ARTChannel.m in Sources */,
 				215924932D636A6E004A235C /* ARTWrapperSDKProxyPush.m in Sources */,
 				D76F153C23DB010C00B5133C /* ARTRealtimeChannelOptions.m in Sources */,
@@ -3506,6 +3528,7 @@
 				D710D62F21949E03008F54AD /* ARTDataQuery.m in Sources */,
 				D710D53121949C54008F54AD /* ARTPush.m in Sources */,
 				217D1852254222F700DFF07E /* ARTSRDelegateController.m in Sources */,
+				215924A02D636ADF004A235C /* ARTWrapperSDKProxyPushAdmin.m in Sources */,
 				D710D5E021949D78008F54AD /* ARTStats.m in Sources */,
 				215924942D636A6E004A235C /* ARTWrapperSDKProxyPush.m in Sources */,
 				D76F153F23DB013000B5133C /* ARTRealtimeChannelOptions.m in Sources */,
@@ -3635,6 +3658,7 @@
 				D710D54321949C55008F54AD /* ARTPush.m in Sources */,
 				217D1869254222FA00DFF07E /* ARTSRDelegateController.m in Sources */,
 				D710D60621949D79008F54AD /* ARTStats.m in Sources */,
+				215924A12D636ADF004A235C /* ARTWrapperSDKProxyPushAdmin.m in Sources */,
 				D76F154023DB013000B5133C /* ARTRealtimeChannelOptions.m in Sources */,
 				215924952D636A6E004A235C /* ARTWrapperSDKProxyPush.m in Sources */,
 				D710D50121949C0E008F54AD /* ARTQueuedMessage.m in Sources */,

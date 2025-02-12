@@ -6,3 +6,4 @@
 #import <Ably/ARTWrapperSDKProxyRealtimeChannels.h>
 #import <Ably/ARTWrapperSDKProxyRealtimeChannel.h>
 #import <Ably/ARTWrapperSDKProxyPush.h>
+#import <Ably/ARTWrapperSDKProxyPushAdmin.h>

@@ -117,5 +117,6 @@ framework module Ably {
         header "ARTWrapperSDKProxyRealtimeChannel+Private.h"
         header "ARTChannel.h"
         header "ARTWrapperSDKProxyPush+Private.h"
+        header "ARTWrapperSDKProxyPushAdmin+Private.h"
     }
 }

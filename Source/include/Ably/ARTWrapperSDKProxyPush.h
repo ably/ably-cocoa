@@ -1,7 +1,7 @@
 #import <Foundation/Foundation.h>
 #import <Ably/ARTPush.h>
 
-@class ARTPushAdmin;
+@class ARTWrapperSDKProxyPushAdmin;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -15,7 +15,7 @@ NS_SWIFT_SENDABLE
 
 - (instancetype)init NS_UNAVAILABLE;
 
-@property (readonly) ARTPushAdmin *admin;
+@property (readonly) ARTWrapperSDKProxyPushAdmin *admin;
 
 @end
 

@@ -1,4 +1,5 @@
 #import "ARTWrapperSDKProxyPush+Private.h"
+#import "ARTWrapperSDKProxyPushAdmin+Private.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -17,13 +18,11 @@ NS_ASSUME_NONNULL_END
     if (self = [super init]) {
         _underlyingPush = push;
         _proxyOptions = proxyOptions;
+        _admin = [[ARTWrapperSDKProxyPushAdmin alloc] initWithPushAdmin:push.admin
+                                                           proxyOptions:proxyOptions];
     }
 
     return self;
-}
-
-- (ARTPushAdmin *)admin {
-    return self.underlyingPush.admin;
 }
 
 #if TARGET_OS_IOS
