@@ -6,7 +6,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class ARTRestChannelInternal;
 @class ARTInternalLog;
 
-@interface ARTRestPresenceInternal : ARTPresence
+@interface ARTRestPresenceInternal : NSObject
 
 - (instancetype)initWithChannel:(ARTRestChannelInternal *)channel logger:(ARTInternalLog *)logger;
 
@@ -17,6 +17,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)get:(ARTPresenceQuery *)query callback:(ARTPaginatedPresenceCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
 - (BOOL)history:(nullable ARTDataQuery *)query callback:(ARTPaginatedPresenceCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
+
+- (void)history:(ARTPaginatedPresenceCallback)callback;
 
 @end
 
