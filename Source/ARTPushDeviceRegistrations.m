@@ -25,23 +25,23 @@
 }
 
 - (void)save:(ARTDeviceDetails *)deviceDetails callback:(ARTCallback)callback {
-    [_internal save:deviceDetails callback:callback];
+    [_internal save:deviceDetails wrapperSDKAgents:nil callback:callback];
 }
 
 - (void)get:(ARTDeviceId *)deviceId callback:(void (^)(ARTDeviceDetails *_Nullable,  ARTErrorInfo *_Nullable))callback {
-    [_internal get:deviceId callback:callback];
+    [_internal get:deviceId wrapperSDKAgents:nil callback:callback];
 }
 
 - (void)list:(NSStringDictionary *)params callback:(ARTPaginatedDeviceDetailsCallback)callback {
-    [_internal list:params callback:callback];
+    [_internal list:params wrapperSDKAgents:nil callback:callback];
 }
 
 - (void)remove:(NSString *)deviceId callback:(ARTCallback)callback {
-    [_internal remove:deviceId callback:callback];
+    [_internal remove:deviceId wrapperSDKAgents:nil callback:callback];
 }
 
 - (void)removeWhere:(NSStringDictionary *)params callback:(ARTCallback)callback {
-    [_internal removeWhere:params callback:callback];
+    [_internal removeWhere:params wrapperSDKAgents:nil callback:callback];
 }
 
 @end
@@ -63,7 +63,7 @@
     return self;
 }
 
-- (void)save:(ARTDeviceDetails *)deviceDetails callback:(ARTCallback)callback {
+- (void)save:(ARTDeviceDetails *)deviceDetails wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTCallback)callback {
     if (callback) {
         ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *error) {
@@ -91,7 +91,7 @@ dispatch_async(_queue, ^{
     [request setDeviceAuthentication:deviceDetails.id localDevice:local logger:self->_logger];
 
     ARTLogDebug(self->_logger, @"save device with request %@", request);
-    [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode == 200 /*OK*/) {
             NSError *decodeError = nil;
             ARTDeviceDetails *deviceDetails = [[self->_rest defaultEncoder] decodeDeviceDetails:data error:&decodeError];
@@ -117,7 +117,7 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (void)get:(ARTDeviceId *)deviceId callback:(void (^)(ARTDeviceDetails *, ARTErrorInfo *))callback {
+- (void)get:(ARTDeviceId *)deviceId wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(void (^)(ARTDeviceDetails *, ARTErrorInfo *))callback {
     if (callback) {
         void (^userCallback)(ARTDeviceDetails *, ARTErrorInfo *error) = callback;
         callback = ^(ARTDeviceDetails *device, ARTErrorInfo *error) {
@@ -139,7 +139,7 @@ dispatch_async(_queue, ^{
     [request setDeviceAuthentication:deviceId localDevice:local logger:self->_logger];
 
     ARTLogDebug(self->_logger, @"get device with request %@", request);
-    [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode == 200 /*OK*/) {
             NSError *decodeError = nil;
             ARTDeviceDetails *device = [self->_rest.encoders[response.MIMEType] decodeDeviceDetails:data error:&decodeError];
@@ -169,7 +169,7 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (void)list:(NSStringDictionary *)params callback:(ARTPaginatedDeviceDetailsCallback)callback {
+- (void)list:(NSStringDictionary *)params wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTPaginatedDeviceDetailsCallback)callback {
     if (callback) {
         void (^userCallback)(ARTPaginatedResult *, ARTErrorInfo *error) = callback;
         callback = ^(ARTPaginatedResult *result, ARTErrorInfo *error) {
@@ -188,11 +188,11 @@ dispatch_async(_queue, ^{
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **error) {
         return [self->_rest.encoders[response.MIMEType] decodeDevicesDetails:data error:error];
     };
-    [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor wrapperSDKAgents:nil logger:self->_logger callback:callback];
+    [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor wrapperSDKAgents:wrapperSDKAgents logger:self->_logger callback:callback];
 });
 }
 
-- (void)remove:(NSString *)deviceId callback:(ARTCallback)callback {
+- (void)remove:(NSString *)deviceId wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTCallback)callback {
     if (callback) {
         ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *error) {
@@ -212,7 +212,7 @@ dispatch_async(_queue, ^{
     [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
     ARTLogDebug(self->_logger, @"remove device with request %@", request);
-    [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode == 200 /*Ok*/ || response.statusCode == 204 /*not returning any content*/) {
             ARTLogDebug(self->_logger, @"%@: save device successfully", NSStringFromClass(self.class));
             callback(nil);
@@ -230,7 +230,7 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (void)removeWhere:(NSStringDictionary *)params callback:(ARTCallback)callback {
+- (void)removeWhere:(NSStringDictionary *)params wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTCallback)callback {
     if (callback) {
         ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *error) {
@@ -257,7 +257,7 @@ dispatch_async(_queue, ^{
     [request setDeviceAuthentication:[params objectForKey:@"deviceId"] localDevice:local];
 
     ARTLogDebug(self->_logger, @"remove devices with request %@", request);
-    [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode == 200 /*Ok*/ || response.statusCode == 204 /*not returning any content*/) {
             ARTLogDebug(self->_logger, @"%@: remove devices successfully", NSStringFromClass(self.class));
             callback(nil);

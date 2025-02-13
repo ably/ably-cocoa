@@ -24,23 +24,23 @@
 }
 
 - (void)save:(ARTPushChannelSubscription *)channelSubscription callback:(ARTCallback)callback {
-    [_internal save:channelSubscription callback:callback];
+    [_internal save:channelSubscription wrapperSDKAgents:nil callback:callback];
 }
 
 - (void)listChannels:(ARTPaginatedTextCallback)callback {
-    [_internal listChannels:callback];
+    [_internal listChannelsWithWrapperSDKAgents:nil completion:callback];
 }
 
 - (void)list:(NSStringDictionary *)params callback:(ARTPaginatedPushChannelCallback)callback {
-    [_internal list:params callback:callback];
+    [_internal list:params wrapperSDKAgents:nil callback:callback];
 }
 
 - (void)remove:(ARTPushChannelSubscription *)subscription callback:(ARTCallback)callback {
-    [_internal remove:subscription callback:callback];
+    [_internal remove:subscription wrapperSDKAgents:nil callback:callback];
 }
 
 - (void)removeWhere:(NSStringDictionary *)params callback:(ARTCallback)callback {
-    [_internal removeWhere:params callback:callback];
+    [_internal removeWhere:params wrapperSDKAgents:nil callback:callback];
 }
 
 @end
@@ -62,7 +62,7 @@
     return self;
 }
 
-- (void)save:(ARTPushChannelSubscription *)channelSubscription callback:(ARTCallback)callback {
+- (void)save:(ARTPushChannelSubscription *)channelSubscription wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTCallback)callback {
     if (callback) {
         ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *error) {
@@ -90,7 +90,7 @@
         [request setDeviceAuthentication:channelSubscription.deviceId localDevice:local];
         
         ARTLogDebug(self->_logger, @"save channel subscription with request %@", request);
-        [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+        [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (response.statusCode == 200 /*Ok*/ || response.statusCode == 201 /*Created*/) {
                 ARTLogDebug(self->_logger, @"channel subscription saved successfully");
                 callback(nil);
@@ -108,7 +108,8 @@
     });
 }
 
-- (void)listChannels:(ARTPaginatedTextCallback)callback {
+- (void)listChannelsWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                              completion:(ARTPaginatedTextCallback)callback {
     if (callback) {
         void (^userCallback)(ARTPaginatedResult *, ARTErrorInfo *error) = callback;
         callback = ^(ARTPaginatedResult *result, ARTErrorInfo *error) {
@@ -126,11 +127,11 @@
         ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **error) {
             return [self->_rest.encoders[response.MIMEType] decode:data error:error];
         };
-        [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor wrapperSDKAgents:nil logger:self->_logger callback:callback];
+        [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor wrapperSDKAgents:wrapperSDKAgents logger:self->_logger callback:callback];
     });
 }
 
-- (void)list:(NSStringDictionary *)params callback:(ARTPaginatedPushChannelCallback)callback {
+- (void)list:(NSStringDictionary *)params wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTPaginatedPushChannelCallback)callback {
     if (callback) {
         void (^userCallback)(ARTPaginatedResult *, ARTErrorInfo *error) = callback;
         callback = ^(ARTPaginatedResult *result, ARTErrorInfo *error) {
@@ -149,11 +150,11 @@
         ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **error) {
             return [self->_rest.encoders[response.MIMEType] decodePushChannelSubscriptions:data error:error];
         };
-        [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor wrapperSDKAgents:nil logger:self->_logger callback:callback];
+        [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor wrapperSDKAgents:wrapperSDKAgents logger:self->_logger callback:callback];
     });
 }
 
-- (void)remove:(ARTPushChannelSubscription *)subscription callback:(ARTCallback)callback {
+- (void)remove:(ARTPushChannelSubscription *)subscription wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTCallback)callback {
     if (callback) {
         ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *error) {
@@ -175,11 +176,11 @@
         } else {
             where[@"clientId"] = subscription.clientId;
         }
-        [self _removeWhere:where callback:callback];
+        [self _removeWhere:where wrapperSDKAgents:wrapperSDKAgents callback:callback];
     });
 }
 
-- (void)removeWhere:(NSStringDictionary *)params callback:(ARTCallback)callback {
+- (void)removeWhere:(NSStringDictionary *)params wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTCallback)callback {
     if (callback) {
         ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *error) {
@@ -190,11 +191,11 @@
     }
     
     dispatch_async(_queue, ^{
-        [self _removeWhere:params callback:callback];
+        [self _removeWhere:params wrapperSDKAgents:wrapperSDKAgents callback:callback];
     });
 }
 
-- (void)_removeWhere:(NSStringDictionary *)params callback:(ARTCallback)callback {
+- (void)_removeWhere:(NSStringDictionary *)params wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTCallback)callback {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"] resolvingAgainstBaseURL:NO];
     components.queryItems = [params art_asURLQueryItems];
     if (_rest.options.pushFullWait) {
@@ -207,7 +208,7 @@
 #endif
     
     ARTLogDebug(_logger, @"remove channel subscription with request %@", request);
-    [_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode == 200 /*Ok*/ || response.statusCode == 204 /*not returning any content*/) {
             ARTLogDebug(self->_logger, @"%@: channel subscription removed successfully", NSStringFromClass(self.class));
             callback(nil);

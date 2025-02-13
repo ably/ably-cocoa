@@ -1,4 +1,6 @@
 #import "ARTWrapperSDKProxyPushDeviceRegistrations+Private.h"
+#import "ARTWrapperSDKProxyOptions.h"
+#import "ARTPushDeviceRegistrations+Private.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -23,28 +25,33 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)get:(nonnull ARTDeviceId *)deviceId callback:(nonnull void (^)(ARTDeviceDetails * _Nullable, ARTErrorInfo * _Nullable))callback {
-    [self.underlyingPushDeviceRegistrations get:deviceId
-                                       callback:callback];
+    [self.underlyingPushDeviceRegistrations.internal get:deviceId
+                                        wrapperSDKAgents:self.proxyOptions.agents
+                                                callback:callback];
 }
 
 - (void)list:(nonnull NSStringDictionary *)params callback:(nonnull ARTPaginatedDeviceDetailsCallback)callback {
-    [self.underlyingPushDeviceRegistrations list:params
-                                        callback:callback];
+    [self.underlyingPushDeviceRegistrations.internal list:params
+                                         wrapperSDKAgents:self.proxyOptions.agents
+                                                 callback:callback];
 }
 
 - (void)remove:(nonnull NSString *)deviceId callback:(nonnull ARTCallback)callback {
-    [self.underlyingPushDeviceRegistrations remove:deviceId
-                                          callback:callback];
+    [self.underlyingPushDeviceRegistrations.internal remove:deviceId
+                                           wrapperSDKAgents:self.proxyOptions.agents
+                                                   callback:callback];
 }
 
 - (void)removeWhere:(nonnull NSStringDictionary *)params callback:(nonnull ARTCallback)callback {
-    [self.underlyingPushDeviceRegistrations removeWhere:params
-                                               callback:callback];
+    [self.underlyingPushDeviceRegistrations.internal removeWhere:params
+                                                wrapperSDKAgents:self.proxyOptions.agents
+                                                        callback:callback];
 }
 
 - (void)save:(nonnull ARTDeviceDetails *)deviceDetails callback:(nonnull ARTCallback)callback {
-    [self.underlyingPushDeviceRegistrations save:deviceDetails
-                                        callback:callback];
+    [self.underlyingPushDeviceRegistrations.internal save:deviceDetails
+                                         wrapperSDKAgents:self.proxyOptions.agents
+                                                 callback:callback];
 }
 
 @end

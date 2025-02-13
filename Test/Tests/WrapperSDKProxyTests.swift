@@ -443,6 +443,36 @@ class WrapperSDKProxyTests: XCTestCase {
         }
     }
 
+    func test_pushAdmin_channelSubscriptions_addsWrapperSDKAgentToRequests() throws {
+        let test = Test()
+
+        // We just do a smoke test of one of the methods offered by this class
+
+        try parameterizedTest_addsWrapperSDKAgentToRequests(test: test) { proxyClient in
+            waitUntil(timeout: testTimeout) { done in
+                proxyClient.push.admin.channelSubscriptions.listChannels { _, error in
+                    XCTAssertNil(error)
+                    done()
+                }
+            }
+        }
+    }
+
+    func test_pushAdmin_deviceRegistrations_addsWrapperSDKAgentToRequests() throws {
+        let test = Test()
+
+        // We just do a smoke test of one of the methods offered by this class
+
+        try parameterizedTest_addsWrapperSDKAgentToRequests(test: test) { proxyClient in
+            waitUntil(timeout: testTimeout) { done in
+                proxyClient.push.admin.deviceRegistrations.list([:]) { _, error in
+                    XCTAssertNil(error)
+                    done()
+                }
+            }
+        }
+    }
+
     // MARK: - `agent` channel param
 
     private func parameterizedTest_checkAttachProtocolMessage(

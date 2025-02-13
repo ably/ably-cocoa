@@ -1,4 +1,6 @@
 #import "ARTWrapperSDKProxyPushChannelSubscriptions+Private.h"
+#import "ARTWrapperSDKProxyOptions.h"
+#import "ARTPushChannelSubscriptions+Private.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -23,27 +25,32 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)list:(nonnull NSStringDictionary *)params callback:(nonnull ARTPaginatedPushChannelCallback)callback {
-    [self.underlyingPushChannelSubscriptions list:params
-                                         callback:callback];
+    [self.underlyingPushChannelSubscriptions.internal list:params
+                                          wrapperSDKAgents:self.proxyOptions.agents
+                                                  callback:callback];
 }
 
 - (void)listChannels:(nonnull ARTPaginatedTextCallback)callback {
-    [self.underlyingPushChannelSubscriptions listChannels:callback];
+    [self.underlyingPushChannelSubscriptions.internal listChannelsWithWrapperSDKAgents:self.proxyOptions.agents
+                                                                            completion:callback];
 }
 
 - (void)remove:(nonnull ARTPushChannelSubscription *)subscription callback:(nonnull ARTCallback)callback {
-    [self.underlyingPushChannelSubscriptions remove:subscription
-                                           callback:callback];
+    [self.underlyingPushChannelSubscriptions.internal remove:subscription
+                                            wrapperSDKAgents:self.proxyOptions.agents
+                                                    callback:callback];
 }
 
 - (void)removeWhere:(nonnull NSStringDictionary *)params callback:(nonnull ARTCallback)callback {
-    [self.underlyingPushChannelSubscriptions removeWhere:params
-                                                callback:callback];
+    [self.underlyingPushChannelSubscriptions.internal removeWhere:params
+                                                 wrapperSDKAgents:self.proxyOptions.agents
+                                                         callback:callback];
 }
 
 - (void)save:(nonnull ARTPushChannelSubscription *)channelSubscription callback:(nonnull ARTCallback)callback {
-    [self.underlyingPushChannelSubscriptions save:channelSubscription
-                                         callback:callback];
+    [self.underlyingPushChannelSubscriptions.internal save:channelSubscription
+                                          wrapperSDKAgents:self.proxyOptions.agents
+                                                  callback:callback];
 }
 
 @end
