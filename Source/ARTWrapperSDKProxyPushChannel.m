@@ -1,4 +1,6 @@
 #import "ARTWrapperSDKProxyPushChannel+Private.h"
+#import "ARTPushChannel+Private.h"
+#import "ARTWrapperSDKProxyOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -27,35 +29,39 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)subscribeClient {
-    [self.underlyingPushChannel subscribeClient];
+    [self.underlyingPushChannel.internal subscribeClientWithWrapperSDKAgents:self.proxyOptions.agents];
 }
 
 - (void)subscribeClient:(nullable ARTCallback)callback {
-    [self.underlyingPushChannel subscribeClient:callback];
+    [self.underlyingPushChannel.internal subscribeClientWithWrapperSDKAgents:self.proxyOptions.agents
+                                                                  completion:callback];
 }
 
 - (void)subscribeDevice {
-    [self.underlyingPushChannel subscribeDevice];
+    [self.underlyingPushChannel.internal subscribeDeviceWithWrapperSDKAgents:self.proxyOptions.agents];
 }
 
 - (void)subscribeDevice:(nullable ARTCallback)callback {
-    [self.underlyingPushChannel subscribeDevice:callback];
+    [self.underlyingPushChannel.internal subscribeDeviceWithWrapperSDKAgents:self.proxyOptions.agents
+                                                                  completion:callback];
 }
 
 - (void)unsubscribeClient {
-    [self.underlyingPushChannel unsubscribeClient];
+    [self.underlyingPushChannel.internal unsubscribeClientWithWrapperSDKAgents:self.proxyOptions.agents];
 }
 
 - (void)unsubscribeClient:(nullable ARTCallback)callback {
-    [self.underlyingPushChannel unsubscribeClient:callback];
+    [self.underlyingPushChannel.internal unsubscribeClientWithWrapperSDKAgents:self.proxyOptions.agents
+                                                                    completion:callback];
 }
 
 - (void)unsubscribeDevice {
-    [self.underlyingPushChannel unsubscribeDevice];
+    [self.underlyingPushChannel.internal unsubscribeDeviceWithWrapperSDKAgents:self.proxyOptions.agents];
 }
 
 - (void)unsubscribeDevice:(nullable ARTCallback)callback {
-    [self.underlyingPushChannel unsubscribeDevice:callback];
+    [self.underlyingPushChannel.internal unsubscribeDeviceWithWrapperSDKAgents:self.proxyOptions.agents
+                                                                    completion:callback];
 }
 
 @end

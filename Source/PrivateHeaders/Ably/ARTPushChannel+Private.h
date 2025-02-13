@@ -11,23 +11,28 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init:(ARTRestInternal *)rest withChannel:(ARTChannel *)channel logger:(ARTInternalLog *)logger;
 
-- (void)subscribeDevice;
+- (void)subscribeDeviceWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents;
 
-- (void)subscribeDevice:(nullable ARTCallback)callback;
+- (void)subscribeDeviceWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                                 completion:(nullable ARTCallback)callback;
 
-- (void)subscribeClient;
+- (void)subscribeClientWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents;
 
-- (void)subscribeClient:(nullable ARTCallback)callback;
+- (void)subscribeClientWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                                 completion:(nullable ARTCallback)callback;
 
-- (void)unsubscribeDevice;
+- (void)unsubscribeDeviceWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents;
 
-- (void)unsubscribeDevice:(nullable ARTCallback)callback;
+- (void)unsubscribeDeviceWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                                   completion:(nullable ARTCallback)callback;
 
-- (void)unsubscribeClient;
+- (void)unsubscribeClientWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents;
 
-- (void)unsubscribeClient:(nullable ARTCallback)callback;
+- (void)unsubscribeClientWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                                   completion:(nullable ARTCallback)callback;
 
 - (BOOL)listSubscriptions:(NSStringDictionary *)params
+         wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
                  callback:(ARTPaginatedPushChannelCallback)callback
                     error:(NSError *_Nullable *_Nullable)errorPtr;
 

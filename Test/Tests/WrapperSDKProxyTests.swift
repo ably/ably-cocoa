@@ -473,6 +473,35 @@ class WrapperSDKProxyTests: XCTestCase {
         }
     }
 
+#if os(iOS)
+    func test_pushChannel_addsWrapperSDKAgentToRequests() throws {
+        let test = Test()
+
+        // We just do a smoke test of one of the methods offered by this class
+
+        try parameterizedTest_addsWrapperSDKAgentToRequests(test: test) { proxyClient in
+            // These three lines are copied from PushChannelTests
+            let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
+            proxyClient.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
+            defer { proxyClient.device.setAndPersistIdentityTokenDetails(nil) }
+
+            let channel = proxyClient.channels.get(test.uniqueChannelName())
+
+            waitUntil(timeout: testTimeout) { done in
+                channel.push.subscribeDevice { error in
+                    // (We expect this request to fail, because we're using a fake device token. Doesn't matter in this test, because all we care about is checking that the request contained the wrapper SDK agent)
+                    if (error?.domain == ARTAblyErrorDomain && error?.code == 40005) {
+                        done()
+                        return
+                    }
+                    XCTAssertNil(error)
+                    done()
+                }
+            }
+        }
+    }
+#endif
+
     // MARK: - `agent` channel param
 
     private func parameterizedTest_checkAttachProtocolMessage(
