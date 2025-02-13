@@ -2,6 +2,7 @@
 #import "ARTRealtimeChannel+Private.h"
 #import "ARTWrapperSDKProxyOptions.h"
 #import "ARTWrapperSDKProxyPushChannel+Private.h"
+#import "ARTWrapperSDKProxyRealtimePresence+Private.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -24,6 +25,8 @@ NS_ASSUME_NONNULL_END
         _push = [[ARTWrapperSDKProxyPushChannel alloc] initWithPushChannel:channel.push
                                                               proxyOptions:proxyOptions];
 #endif
+        _presence = [[ARTWrapperSDKProxyRealtimePresence alloc] initWithRealtimePresence:channel.presence
+                                                                            proxyOptions:proxyOptions];
     }
 
     return self;
@@ -39,10 +42,6 @@ NS_ASSUME_NONNULL_END
 
 - (ARTRealtimeChannelOptions *)getOptions {
     return self.underlyingChannel.options;
-}
-
-- (id<ARTRealtimePresenceProtocol>)presence {
-    return self.underlyingChannel.presence;
 }
 
 - (ARTChannelProperties *)properties {
