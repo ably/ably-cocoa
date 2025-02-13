@@ -244,6 +244,15 @@
 		215924B72D636B89004A235C /* ARTWrapperSDKProxyPushDeviceRegistrations.m in Sources */ = {isa = PBXBuildFile; fileRef = 215924B32D636B89004A235C /* ARTWrapperSDKProxyPushDeviceRegistrations.m */; };
 		215924B82D636B89004A235C /* ARTWrapperSDKProxyPushChannelSubscriptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 215924B22D636B89004A235C /* ARTWrapperSDKProxyPushChannelSubscriptions.m */; };
 		215924B92D636B89004A235C /* ARTWrapperSDKProxyPushDeviceRegistrations.m in Sources */ = {isa = PBXBuildFile; fileRef = 215924B32D636B89004A235C /* ARTWrapperSDKProxyPushDeviceRegistrations.m */; };
+		215924C32D636D2F004A235C /* ARTWrapperSDKProxyPushChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 215924C22D636D2F004A235C /* ARTWrapperSDKProxyPushChannel.m */; };
+		215924C42D636D2F004A235C /* ARTWrapperSDKProxyPushChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 215924C22D636D2F004A235C /* ARTWrapperSDKProxyPushChannel.m */; };
+		215924C52D636D2F004A235C /* ARTWrapperSDKProxyPushChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 215924C22D636D2F004A235C /* ARTWrapperSDKProxyPushChannel.m */; };
+		215924C72D636D43004A235C /* ARTWrapperSDKProxyPushChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 215924C62D636D43004A235C /* ARTWrapperSDKProxyPushChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		215924C82D636D43004A235C /* ARTWrapperSDKProxyPushChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 215924C62D636D43004A235C /* ARTWrapperSDKProxyPushChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		215924C92D636D43004A235C /* ARTWrapperSDKProxyPushChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 215924C62D636D43004A235C /* ARTWrapperSDKProxyPushChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		215924CB2D636D50004A235C /* ARTWrapperSDKProxyPushChannel+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 215924CA2D636D50004A235C /* ARTWrapperSDKProxyPushChannel+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		215924CC2D636D50004A235C /* ARTWrapperSDKProxyPushChannel+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 215924CA2D636D50004A235C /* ARTWrapperSDKProxyPushChannel+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		215924CD2D636D50004A235C /* ARTWrapperSDKProxyPushChannel+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 215924CA2D636D50004A235C /* ARTWrapperSDKProxyPushChannel+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		215F75F82922B1DB009E0E76 /* ARTClientInformation.h in Headers */ = {isa = PBXBuildFile; fileRef = 215F75F62922B1DB009E0E76 /* ARTClientInformation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		215F75F92922B1DB009E0E76 /* ARTClientInformation.h in Headers */ = {isa = PBXBuildFile; fileRef = 215F75F62922B1DB009E0E76 /* ARTClientInformation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		215F75FA2922B1DB009E0E76 /* ARTClientInformation.h in Headers */ = {isa = PBXBuildFile; fileRef = 215F75F62922B1DB009E0E76 /* ARTClientInformation.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1289,6 +1298,9 @@
 		215924AB2D636B6B004A235C /* ARTWrapperSDKProxyPushDeviceRegistrations+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTWrapperSDKProxyPushDeviceRegistrations+Private.h"; path = "PrivateHeaders/Ably/ARTWrapperSDKProxyPushDeviceRegistrations+Private.h"; sourceTree = "<group>"; };
 		215924B22D636B89004A235C /* ARTWrapperSDKProxyPushChannelSubscriptions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTWrapperSDKProxyPushChannelSubscriptions.m; sourceTree = "<group>"; };
 		215924B32D636B89004A235C /* ARTWrapperSDKProxyPushDeviceRegistrations.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTWrapperSDKProxyPushDeviceRegistrations.m; sourceTree = "<group>"; };
+		215924C22D636D2F004A235C /* ARTWrapperSDKProxyPushChannel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTWrapperSDKProxyPushChannel.m; sourceTree = "<group>"; };
+		215924C62D636D43004A235C /* ARTWrapperSDKProxyPushChannel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTWrapperSDKProxyPushChannel.h; path = include/Ably/ARTWrapperSDKProxyPushChannel.h; sourceTree = "<group>"; };
+		215924CA2D636D50004A235C /* ARTWrapperSDKProxyPushChannel+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTWrapperSDKProxyPushChannel+Private.h"; path = "PrivateHeaders/Ably/ARTWrapperSDKProxyPushChannel+Private.h"; sourceTree = "<group>"; };
 		215F75F62922B1DB009E0E76 /* ARTClientInformation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTClientInformation.h; path = include/Ably/ARTClientInformation.h; sourceTree = "<group>"; };
 		215F75F72922B1DB009E0E76 /* ARTClientInformation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTClientInformation.m; sourceTree = "<group>"; };
 		215F75FE2922B30F009E0E76 /* ClientInformationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientInformationTests.swift; sourceTree = "<group>"; };
@@ -1727,6 +1739,9 @@
 				215924A22D636B5C004A235C /* ARTWrapperSDKProxyPushChannelSubscriptions.h */,
 				215924AA2D636B6B004A235C /* ARTWrapperSDKProxyPushChannelSubscriptions+Private.h */,
 				215924B22D636B89004A235C /* ARTWrapperSDKProxyPushChannelSubscriptions.m */,
+				215924C62D636D43004A235C /* ARTWrapperSDKProxyPushChannel.h */,
+				215924CA2D636D50004A235C /* ARTWrapperSDKProxyPushChannel+Private.h */,
+				215924C22D636D2F004A235C /* ARTWrapperSDKProxyPushChannel.m */,
 			);
 			name = "Wrapper SDK Proxy";
 			sourceTree = "<group>";
@@ -2392,6 +2407,7 @@
 				961343D81A42E0B7006DC822 /* ARTClientOptions.h in Headers */,
 				2105ED1A29E722DD00DE6D67 /* ARTInternalLogCore+Testing.h in Headers */,
 				D7534C321D79E5C20054C182 /* Ably.h in Headers */,
+				215924C92D636D43004A235C /* ARTWrapperSDKProxyPushChannel.h in Headers */,
 				D777EEE0206285CF002EBA03 /* ARTDeviceIdentityTokenDetails.h in Headers */,
 				2124B79F29DB14D000AD8361 /* ARTLogAdapter.h in Headers */,
 				215F76032922C76C009E0E76 /* ARTClientInformation+Private.h in Headers */,
@@ -2544,6 +2560,7 @@
 				D3AD0EBD215E2FB000312105 /* ARTNSString+ARTUtil.h in Headers */,
 				215924B02D636B6B004A235C /* ARTWrapperSDKProxyPushDeviceRegistrations+Private.h in Headers */,
 				215924B12D636B6B004A235C /* ARTWrapperSDKProxyPushChannelSubscriptions+Private.h in Headers */,
+				215924CB2D636D50004A235C /* ARTWrapperSDKProxyPushChannel+Private.h in Headers */,
 				EB2D85011CD769C800F23CDA /* ARTOSReachability.h in Headers */,
 				21E1C0E52A0DC47400A5DB65 /* ARTWebSocketFactory.h in Headers */,
 				EB1B541522FB1CE1006A59AC /* ARTPushDeviceRegistrations+Private.h in Headers */,
@@ -2680,6 +2697,7 @@
 				2132C21B29D230CF000C4355 /* ARTErrorChecker.h in Headers */,
 				D710D51B21949C42008F54AD /* ARTDeviceIdentityTokenDetails.h in Headers */,
 				D76F153D23DB012100B5133C /* ARTRealtimeChannelOptions.h in Headers */,
+				215924CD2D636D50004A235C /* ARTWrapperSDKProxyPushChannel+Private.h in Headers */,
 				D5D83C0826AAED1A00AADC8E /* ARTStringifiable+Private.h in Headers */,
 				D710D48021949A42008F54AD /* ARTDefault.h in Headers */,
 				2124B7A429DB153500AD8361 /* ARTDeviceIdentityTokenDetails+Private.h in Headers */,
@@ -2741,6 +2759,7 @@
 				215924AF2D636B6B004A235C /* ARTWrapperSDKProxyPushChannelSubscriptions+Private.h in Headers */,
 				2114D4302D4BCAE20032839A /* ARTRealtime+WrapperSDKProxy.h in Headers */,
 				D710D4BF21949B6C008F54AD /* ARTNSMutableRequest+ARTRest.h in Headers */,
+				215924C82D636D43004A235C /* ARTWrapperSDKProxyPushChannel.h in Headers */,
 				2147F02E29E583AD0071CB94 /* ARTInternalLogCore.h in Headers */,
 				D710D5BE21949D4F008F54AD /* ARTBaseMessage+Private.h in Headers */,
 				D5BB20FE26A7F50000AA5F3E /* ARTSRPinningSecurityPolicy.h in Headers */,
@@ -2869,6 +2888,7 @@
 				2132C21C29D230D0000C4355 /* ARTErrorChecker.h in Headers */,
 				D5BB210F26AA98A900AA5F3E /* ARTStringifiable.h in Headers */,
 				D5C0CB3F268317B500C06521 /* NSURLQueryItem+Stringifiable.h in Headers */,
+				215924CC2D636D50004A235C /* ARTWrapperSDKProxyPushChannel+Private.h in Headers */,
 				D710D52D21949C44008F54AD /* ARTDeviceIdentityTokenDetails.h in Headers */,
 				D76F153E23DB012100B5133C /* ARTRealtimeChannelOptions.h in Headers */,
 				D710D48221949A43008F54AD /* ARTDefault.h in Headers */,
@@ -2930,6 +2950,7 @@
 				215924AD2D636B6B004A235C /* ARTWrapperSDKProxyPushChannelSubscriptions+Private.h in Headers */,
 				2114D42F2D4BCAE20032839A /* ARTRealtime+WrapperSDKProxy.h in Headers */,
 				D710D4C121949B6D008F54AD /* ARTNSMutableRequest+ARTRest.h in Headers */,
+				215924C72D636D43004A235C /* ARTWrapperSDKProxyPushChannel.h in Headers */,
 				2147F02F29E583AD0071CB94 /* ARTInternalLogCore.h in Headers */,
 				D710D5CE21949D50008F54AD /* ARTBaseMessage+Private.h in Headers */,
 				D5BB20FF26A7F50800AA5F3E /* ARTSRPinningSecurityPolicy.h in Headers */,
@@ -3433,6 +3454,7 @@
 				96A507A61A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.m in Sources */,
 				217D182D254222F500DFF07E /* ARTSRSIMDHelpers.m in Sources */,
 				D5BB210D26AA98A500AA5F3E /* ARTStringifiable.m in Sources */,
+				215924C52D636D2F004A235C /* ARTWrapperSDKProxyPushChannel.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3685,6 +3707,7 @@
 				D710D53821949C54008F54AD /* ARTLocalDeviceStorage.m in Sources */,
 				D5BB210C26AA98A500AA5F3E /* ARTStringifiable.m in Sources */,
 				217D1844254222F700DFF07E /* ARTSRSIMDHelpers.m in Sources */,
+				215924C32D636D2F004A235C /* ARTWrapperSDKProxyPushChannel.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3817,6 +3840,7 @@
 				D710D60221949D79008F54AD /* ARTPresence.m in Sources */,
 				D710D54A21949C55008F54AD /* ARTLocalDeviceStorage.m in Sources */,
 				217D185B254222F900DFF07E /* ARTSRSIMDHelpers.m in Sources */,
+				215924C42D636D2F004A235C /* ARTWrapperSDKProxyPushChannel.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

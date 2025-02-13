@@ -1,6 +1,7 @@
 #import "ARTWrapperSDKProxyRealtimeChannel+Private.h"
 #import "ARTRealtimeChannel+Private.h"
 #import "ARTWrapperSDKProxyOptions.h"
+#import "ARTWrapperSDKProxyPushChannel+Private.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -19,6 +20,10 @@ NS_ASSUME_NONNULL_END
     if (self = [super init]) {
         _underlyingChannel = channel;
         _proxyOptions = proxyOptions;
+#if TARGET_OS_IOS
+        _push = [[ARTWrapperSDKProxyPushChannel alloc] initWithPushChannel:channel.push
+                                                              proxyOptions:proxyOptions];
+#endif
     }
 
     return self;
@@ -48,12 +53,6 @@ NS_ASSUME_NONNULL_END
     return self.underlyingChannel.state;
 
 }
-
-#if TARGET_OS_IOS
-- (ARTPushChannel *)push {
-    return self.underlyingChannel.push;
-}
-#endif
 
 - (void)history:(nonnull ARTPaginatedMessagesCallback)callback {
     [self.underlyingChannel.internal historyWithWrapperSDKAgents:self.proxyOptions.agents
