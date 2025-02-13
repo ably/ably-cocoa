@@ -3,6 +3,7 @@
 //
 //
 
+#import <Ably/ARTChannel.h>
 #import <Ably/ARTRestChannel+Private.h>
 #import <Ably/ARTRealtimeChannel.h>
 #import <Ably/ARTEventEmitter.h>

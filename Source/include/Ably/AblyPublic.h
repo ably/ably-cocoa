@@ -47,3 +47,4 @@
 #import <Ably/ARTPendingMessage.h>
 #import <Ably/ARTStringifiable.h>
 #import <Ably/ARTClientInformation.h>
+#import <Ably/ARTChannelProtocol.h>

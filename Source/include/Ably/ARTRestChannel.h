@@ -1,6 +1,6 @@
 #import <Foundation/Foundation.h>
 
-#import <Ably/ARTChannel.h>
+#import <Ably/ARTChannelProtocol.h>
 
 @class ARTRest;
 @class ARTRestPresence;

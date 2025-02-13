@@ -1,6 +1,7 @@
 #import <Ably/ARTPushChannel.h>
 #import <Ably/ARTQueuedDealloc.h>
 
+@class ARTChannel;
 @class ARTRestInternal;
 @class ARTInternalLog;
 
