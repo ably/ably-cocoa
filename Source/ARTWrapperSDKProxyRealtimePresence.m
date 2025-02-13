@@ -1,4 +1,6 @@
 #import "ARTWrapperSDKProxyRealtimePresence+Private.h"
+#import "ARTRealtimePresence+Private.h"
+#import "ARTWrapperSDKProxyOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -51,11 +53,15 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)history:(nonnull ARTPaginatedPresenceCallback)callback {
-    [self.underlyingRealtimePresence history:callback];
+    [self.underlyingRealtimePresence.internal historyWithWrapperSDKAgents:self.proxyOptions.agents
+                                                               completion:callback];
 }
 
 - (BOOL)history:(ARTRealtimeHistoryQuery * _Nullable)query callback:(nonnull ARTPaginatedPresenceCallback)callback error:(NSError * _Nullable __autoreleasing * _Nullable)errorPtr {
-    return [self.underlyingRealtimePresence history:query callback:callback error:errorPtr];
+    return [self.underlyingRealtimePresence.internal history:query
+                                            wrapperSDKAgents:self.proxyOptions.agents
+                                                    callback:callback
+                                                       error:errorPtr];
 }
 
 - (void)leave:(id _Nullable)data {

@@ -77,11 +77,11 @@
 }
 
 - (BOOL)history:(nullable ARTDataQuery *)query callback:(ARTPaginatedPresenceCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr {
-    return [_internal history:query callback:callback error:errorPtr];
+    return [_internal history:query wrapperSDKAgents:nil callback:callback error:errorPtr];
 }
 
 - (void)history:(ARTPaginatedPresenceCallback)callback {
-    [_internal history:callback];
+    [_internal historyWithWrapperSDKAgents:nil completion:callback];
 }
 
 @end
@@ -161,11 +161,12 @@ dispatch_async(_queue, ^{
     return YES;
 }
 
-- (void)history:(ARTPaginatedPresenceCallback)callback {
-    [self history:[[ARTDataQuery alloc] init] callback:callback error:nil];
+- (void)historyWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                         completion:(ARTPaginatedPresenceCallback)callback {
+    [self history:[[ARTDataQuery alloc] init] wrapperSDKAgents:wrapperSDKAgents callback:callback error:nil];
 }
 
-- (BOOL)history:(ARTDataQuery *)query callback:(ARTPaginatedPresenceCallback)callback error:(NSError **)errorPtr {
+- (BOOL)history:(ARTDataQuery *)query wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTPaginatedPresenceCallback)callback error:(NSError **)errorPtr {
     if (callback) {
         void (^userCallback)(ARTPaginatedResult<ARTPresenceMessage *> *result, ARTErrorInfo *error) = callback;
         callback = ^(ARTPaginatedResult<ARTPresenceMessage *> *result, ARTErrorInfo *error) {
@@ -217,7 +218,7 @@ dispatch_async(_queue, ^{
     };
 
 dispatch_async(_queue, ^{
-    [ARTPaginatedResult executePaginated:self->_channel.rest withRequest:request andResponseProcessor:responseProcessor wrapperSDKAgents:nil logger:self->_logger callback:callback];
+    [ARTPaginatedResult executePaginated:self->_channel.rest withRequest:request andResponseProcessor:responseProcessor wrapperSDKAgents:wrapperSDKAgents logger:self->_logger callback:callback];
 });
     return YES;
 }

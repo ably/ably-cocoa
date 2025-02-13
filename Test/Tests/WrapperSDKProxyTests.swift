@@ -502,6 +502,21 @@ class WrapperSDKProxyTests: XCTestCase {
     }
 #endif
 
+    func test_presenceHistory_addsWrapperSDKAgentToRequest() throws {
+        let test = Test()
+
+        try parameterizedTest_addsWrapperSDKAgentToRequests(test: test) { proxyClient in
+            let channel = proxyClient.channels.get(test.uniqueChannelName())
+
+            waitUntil(timeout: testTimeout) { done in
+                channel.presence.history() { _, error in
+                    XCTAssertNil(error)
+                    done()
+                }
+            }
+        }
+    }
+
     // MARK: - `agent` channel param
 
     private func parameterizedTest_checkAttachProtocolMessage(

@@ -3569,12 +3569,12 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         var restPresenceHistoryMethodWasCalled = false
 
-        let hookRest = channelRest.presence.internal.testSuite_injectIntoMethod(after: #selector(ARTRestPresenceInternal.history(_:callback:))) {
+        let hookRest = channelRest.presence.internal.testSuite_injectIntoMethod(after: #selector(ARTRestPresenceInternal.history(_:wrapperSDKAgents:callback:))) {
             restPresenceHistoryMethodWasCalled = true
         }
         defer { hookRest.remove() }
 
-        let hookRealtime = channelRealtime.presence.internal.testSuite_injectIntoMethod(after: #selector(ARTRestPresenceInternal.history(_:callback:))) {
+        let hookRealtime = channelRealtime.presence.internal.testSuite_injectIntoMethod(after: #selector(ARTRestPresenceInternal.history(_:wrapperSDKAgents:callback:))) {
             restPresenceHistoryMethodWasCalled = true
         }
         defer { hookRealtime.remove() }
