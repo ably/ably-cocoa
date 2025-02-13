@@ -1,4 +1,6 @@
 #import "ARTWrapperSDKProxyPushAdmin+Private.h"
+#import "ARTPushAdmin+Private.h"
+#import "ARTWrapperSDKProxyOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -31,9 +33,10 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)publish:(nonnull ARTPushRecipient *)recipient data:(nonnull ARTJsonObject *)data callback:(nullable ARTCallback)callback {
-    [self.underlyingPushAdmin publish:recipient
-                                 data:data
-                             callback:callback];
+    [self.underlyingPushAdmin.internal publish:recipient
+                                          data:data
+                              wrapperSDKAgents:self.proxyOptions.agents
+                                      callback:callback];
 }
 
 @end

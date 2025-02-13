@@ -430,6 +430,19 @@ class WrapperSDKProxyTests: XCTestCase {
         }
     }
 
+    func test_pushAdmin_addsWrapperSDKAgentToRequests() throws {
+        let test = Test()
+
+        try parameterizedTest_addsWrapperSDKAgentToRequests(test: test) { proxyClient in
+            waitUntil(timeout: testTimeout) { done in
+                proxyClient.push.admin.publish(["clientId" : "foo"], data: ["notification" : ["title" : "Welcome"]]) { error in
+                    XCTAssertNil(error)
+                    done()
+                }
+            }
+        }
+    }
+
     // MARK: - `agent` channel param
 
     private func parameterizedTest_checkAttachProtocolMessage(
