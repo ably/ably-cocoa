@@ -17,8 +17,6 @@
     ARTChannelOptions *_options;
 }
 
-@synthesize name = _name;
-
 - (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options rest:(ARTRestInternal *)rest logger:(ARTInternalLog *)logger {
     if (self = [super init]) {
         _name = name;
@@ -178,7 +176,7 @@
     return message;
 }
 
-- (void)history:(ARTPaginatedMessagesCallback)callback {
+- (void)historyWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents completion:(ARTPaginatedMessagesCallback)callback {
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
 }
 

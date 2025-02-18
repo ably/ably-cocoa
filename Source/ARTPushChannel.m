@@ -24,41 +24,41 @@
 }
 
 - (void)subscribeDevice {
-    [_internal subscribeDevice];
+    [_internal subscribeDeviceWithWrapperSDKAgents:nil];
 }
 
 - (void)subscribeDevice:(ARTCallback)callback {
-    [_internal subscribeDevice:callback];
+    [_internal subscribeDeviceWithWrapperSDKAgents:nil completion:callback];
 }
 
 - (void)subscribeClient {
-    [_internal subscribeClient];
+    [_internal subscribeClientWithWrapperSDKAgents:nil];
 }
 
 - (void)subscribeClient:(ARTCallback)callback {
-    [_internal subscribeClient:callback];
+    [_internal subscribeClientWithWrapperSDKAgents:nil completion:callback];
 }
 
 - (void)unsubscribeDevice {
-    [_internal unsubscribeDevice];
+    [_internal unsubscribeDeviceWithWrapperSDKAgents:nil];
 }
 
 - (void)unsubscribeDevice:(ARTCallback)callback {
-    [_internal unsubscribeDevice:callback];
+    [_internal unsubscribeDeviceWithWrapperSDKAgents:nil completion:callback];
 }
 
 - (void)unsubscribeClient {
-    [_internal unsubscribeClient];
+    [_internal unsubscribeClientWithWrapperSDKAgents:nil];
 }
 
 - (void)unsubscribeClient:(ARTCallback)callback {
-    [_internal unsubscribeClient:callback];
+    [_internal unsubscribeClientWithWrapperSDKAgents:nil completion:callback];
 }
 
 - (BOOL)listSubscriptions:(NSStringDictionary *)params
                  callback:(ARTPaginatedPushChannelCallback)callback
                     error:(NSError *_Nullable *_Nullable)errorPtr {
-    return [_internal listSubscriptions:params callback:callback error:errorPtr];
+    return [_internal listSubscriptions:params wrapperSDKAgents:nil callback:callback error:errorPtr];
 }
 
 @end
@@ -86,23 +86,23 @@ const NSUInteger ARTDefaultLimit = 100;
     return self;
 }
 
-- (void)subscribeDevice {
-    [self subscribeDevice:nil];
+- (void)subscribeDeviceWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents {
+    [self subscribeDeviceWithWrapperSDKAgents:wrapperSDKAgents completion:nil];
 }
 
-- (void)unsubscribeDevice {
-    [self unsubscribeDevice:nil];
+- (void)unsubscribeDeviceWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents {
+    [self unsubscribeDeviceWithWrapperSDKAgents:wrapperSDKAgents completion:nil];
 }
 
-- (void)subscribeClient {
-    [self subscribeClient:nil];
+- (void)subscribeClientWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents {
+    [self subscribeClientWithWrapperSDKAgents:wrapperSDKAgents completion:nil];
 }
 
-- (void)unsubscribeClient {
-    [self unsubscribeClient:nil];
+- (void)unsubscribeClientWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents {
+    [self unsubscribeClientWithWrapperSDKAgents:wrapperSDKAgents completion:nil];
 }
 
-- (void)subscribeDevice:(ARTCallback)callback {
+- (void)subscribeDeviceWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents completion:(ARTCallback)callback {
     if (callback) {
         ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *_Nullable error) {
@@ -129,7 +129,7 @@ dispatch_async(_queue, ^{
     [request setDeviceAuthentication:deviceId localDevice:device];
 
     ARTLogDebug(self->_logger, @"subscribe notifications for device %@ in channel %@", deviceId, self->_channel.name);
-    [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             ARTLogError(self->_logger, @"%@: subscribe notifications for device %@ in channel %@ failed (%@)", NSStringFromClass(self.class), deviceId, self->_channel.name, error.localizedDescription);
         }
@@ -138,7 +138,7 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (void)subscribeClient:(ARTCallback)callback {
+- (void)subscribeClientWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents completion:(ARTCallback)callback {
     if (callback) {
         ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *_Nullable error) {
@@ -163,7 +163,7 @@ dispatch_async(_queue, ^{
     [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
     ARTLogDebug(self->_logger, @"subscribe notifications for clientId %@ in channel %@", clientId, self->_channel.name);
-    [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             ARTLogError(self->_logger, @"%@: subscribe notifications for clientId %@ in channel %@ failed (%@)", NSStringFromClass(self.class), clientId, self->_channel.name, error.localizedDescription);
         }
@@ -172,7 +172,7 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (void)unsubscribeDevice:(ARTCallback)callback {
+- (void)unsubscribeDeviceWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents completion:(ARTCallback)callback {
     if (callback) {
         ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *_Nullable error) {
@@ -200,7 +200,7 @@ dispatch_async(_queue, ^{
     [request setDeviceAuthentication:deviceId localDevice:device];
 
     ARTLogDebug(self->_logger, @"unsubscribe notifications for device %@ in channel %@", deviceId, self->_channel.name);
-    [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             ARTLogError(self->_logger, @"%@: unsubscribe notifications for device %@ in channel %@ failed (%@)", NSStringFromClass(self.class), deviceId, self->_channel.name, error.localizedDescription);
         }
@@ -209,7 +209,7 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (void)unsubscribeClient:(ARTCallback)callback {
+- (void)unsubscribeClientWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents completion:(ARTCallback)callback {
     if (callback) {
         ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *_Nullable error) {
@@ -235,7 +235,7 @@ dispatch_async(_queue, ^{
     request.HTTPMethod = @"DELETE";
 
     ARTLogDebug(self->_logger, @"unsubscribe notifications for clientId %@ in channel %@", clientId, self->_channel.name);
-    [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             ARTLogError(self->_logger, @"%@: unsubscribe notifications for clientId %@ in channel %@ failed (%@)", NSStringFromClass(self.class), clientId, self->_channel.name, error.localizedDescription);
         }
@@ -245,6 +245,7 @@ dispatch_async(_queue, ^{
 }
 
 - (BOOL)listSubscriptions:(NSStringDictionary *)params
+         wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
                  callback:(ARTPaginatedPushChannelCallback)callback
                     error:(NSError * __autoreleasing *)errorPtr {
     if (callback) {
@@ -290,7 +291,7 @@ dispatch_sync(_queue, ^{
         return [self->_rest.encoders[response.MIMEType] decodePushChannelSubscriptions:data error:error];
     };
 
-    [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor logger:self->_logger callback:callback];
+    [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor wrapperSDKAgents:wrapperSDKAgents logger:self->_logger callback:callback];
     ret = YES;
 });
     return ret;

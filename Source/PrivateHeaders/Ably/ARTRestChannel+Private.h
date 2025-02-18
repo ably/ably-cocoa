@@ -3,6 +3,7 @@
 //
 //
 
+#import <Ably/ARTChannel.h>
 #import <Ably/ARTRestChannel.h>
 #import <Ably/ARTRestPresence+Private.h>
 #import <Ably/ARTPushChannel+Private.h>
@@ -25,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nullable) ARTChannelOptions *options;
 
-- (BOOL)history:(nullable ARTDataQuery *)query callback:(ARTPaginatedMessagesCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
+- (BOOL)history:(nullable ARTDataQuery *)query wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTPaginatedMessagesCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
 - (void)status:(ARTChannelDetailsCallback)callback;
 

@@ -1,6 +1,5 @@
 #import <Foundation/Foundation.h>
 #import <Ably/ARTPush.h>
-#import <Ably/ARTChannel.h>
 
 @class ARTPushChannelSubscription;
 @class ARTPaginatedResult;

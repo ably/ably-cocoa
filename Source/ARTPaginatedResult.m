@@ -46,6 +46,7 @@
                    relCurrent:(NSMutableURLRequest *)relCurrent
                       relNext:(NSMutableURLRequest *)relNext
             responseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
+             wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
                        logger:(ARTInternalLog *)logger {
     if (self = [super init]) {
         _initializedViaInit = NO;
@@ -64,6 +65,7 @@
         _userQueue = rest.userQueue;
         _queue = rest.queue;
         _responseProcessor = responseProcessor;
+        _wrapperSDKAgents = wrapperSDKAgents;
         _logger = logger;
 
         // ARTPaginatedResult doesn't need a internal counterpart, as other
@@ -116,7 +118,7 @@
         };
     }
 
-    [self.class executePaginated:_rest withRequest:_relFirst andResponseProcessor:_responseProcessor logger:_logger callback:callback];
+    [self.class executePaginated:_rest withRequest:_relFirst andResponseProcessor:_responseProcessor wrapperSDKAgents:_wrapperSDKAgents logger:_logger callback:callback];
 }
 
 - (void)next:(void (^)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
@@ -138,13 +140,13 @@
         callback(nil, nil);
         return;
     }
-    [self.class executePaginated:_rest withRequest:_relNext andResponseProcessor:_responseProcessor logger:_logger callback:callback];
+    [self.class executePaginated:_rest withRequest:_relNext andResponseProcessor:_responseProcessor wrapperSDKAgents:_wrapperSDKAgents logger:_logger callback:callback];
 }
 
-+ (void)executePaginated:(ARTRestInternal *)rest withRequest:(NSMutableURLRequest *)request andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor logger:(ARTInternalLog *)logger callback:(void (^)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
++ (void)executePaginated:(ARTRestInternal *)rest withRequest:(NSMutableURLRequest *)request andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents logger:(ARTInternalLog *)logger callback:(void (^)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
     ARTLogDebug(logger, @"Paginated request: %@", request);
 
-    [rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             callback(nil, [ARTErrorInfo createFromNSError:error]);
         } else {
@@ -171,6 +173,7 @@
                                                                         relCurrent:currentRel
                                                                            relNext:nextRel
                                                                  responseProcessor:responseProcessor
+                                                                  wrapperSDKAgents:wrapperSDKAgents
                                                                             logger:logger];
 
             callback(result, nil);

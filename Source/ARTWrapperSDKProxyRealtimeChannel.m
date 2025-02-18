@@ -1,4 +1,8 @@
 #import "ARTWrapperSDKProxyRealtimeChannel+Private.h"
+#import "ARTRealtimeChannel+Private.h"
+#import "ARTWrapperSDKProxyOptions.h"
+#import "ARTWrapperSDKProxyPushChannel+Private.h"
+#import "ARTWrapperSDKProxyRealtimePresence+Private.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -17,6 +21,12 @@ NS_ASSUME_NONNULL_END
     if (self = [super init]) {
         _underlyingChannel = channel;
         _proxyOptions = proxyOptions;
+#if TARGET_OS_IOS
+        _push = [[ARTWrapperSDKProxyPushChannel alloc] initWithPushChannel:channel.push
+                                                              proxyOptions:proxyOptions];
+#endif
+        _presence = [[ARTWrapperSDKProxyRealtimePresence alloc] initWithRealtimePresence:channel.presence
+                                                                            proxyOptions:proxyOptions];
     }
 
     return self;
@@ -34,10 +44,6 @@ NS_ASSUME_NONNULL_END
     return self.underlyingChannel.options;
 }
 
-- (id<ARTRealtimePresenceProtocol>)presence {
-    return self.underlyingChannel.presence;
-}
-
 - (ARTChannelProperties *)properties {
     return self.underlyingChannel.properties;
 }
@@ -47,14 +53,9 @@ NS_ASSUME_NONNULL_END
 
 }
 
-#if TARGET_OS_IOS
-- (ARTPushChannel *)push {
-    return self.underlyingChannel.push;
-}
-#endif
-
 - (void)history:(nonnull ARTPaginatedMessagesCallback)callback {
-    [self.underlyingChannel history:callback];
+    [self.underlyingChannel.internal historyWithWrapperSDKAgents:self.proxyOptions.agents
+                                                      completion:callback];
 }
 
 - (void)publish:(nonnull NSArray<ARTMessage *> *)messages {
@@ -114,7 +115,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (BOOL)history:(ARTRealtimeHistoryQuery * _Nullable)query callback:(nonnull ARTPaginatedMessagesCallback)callback error:(NSError * _Nullable __autoreleasing * _Nullable)errorPtr {
-    return [self.underlyingChannel history:query callback:callback error:errorPtr];
+    return [self.underlyingChannel.internal history:query wrapperSDKAgents:self.proxyOptions.agents callback:callback error:errorPtr];
 }
 
 - (void)off {

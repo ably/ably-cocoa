@@ -2027,7 +2027,7 @@ class AuthTests: XCTestCase {
         rest.auth.internal.testSuite_returnValue(for: NSSelectorFromString("handleServerTime:"), with: mockServerDate)
 
         var serverTimeRequestCount = 0
-        let hook = rest.internal.testSuite_injectIntoMethod(after: #selector(rest.internal._time(_:))) {
+        let hook = rest.internal.testSuite_injectIntoMethod(after: #selector(rest.internal._time(withWrapperSDKAgents:completion:))) {
             serverTimeRequestCount += 1
         }
         defer { hook.remove() }
@@ -2171,7 +2171,7 @@ class AuthTests: XCTestCase {
         authOptions.key = options.key
 
         var serverTimeRequestCount = 0
-        let hook = rest.internal.testSuite_injectIntoMethod(after: #selector(rest.internal._time(_:))) {
+        let hook = rest.internal.testSuite_injectIntoMethod(after: #selector(rest.internal._time(withWrapperSDKAgents:completion:))) {
             serverTimeRequestCount += 1
         }
         defer { hook.remove() }
@@ -2306,7 +2306,7 @@ class AuthTests: XCTestCase {
 
         let hook = ARTRestInternal.aspect_hook(rest.internal)
         // Adds a block of code after `time` is triggered
-        _ = try hook(#selector(ARTRestInternal._time(_:)), .positionBefore, unsafeBitCast(block, to: ARTRestInternal.self))
+        _ = try hook(#selector(ARTRestInternal._time(withWrapperSDKAgents:completion:)), .positionBefore, unsafeBitCast(block, to: ARTRestInternal.self))
 
         let authOptions = ARTAuthOptions()
         authOptions.queryTime = true
@@ -2776,7 +2776,7 @@ class AuthTests: XCTestCase {
         authOptions.queryTime = true
 
         var serverTimeRequestWasMade = false
-        let hook = rest.internal.testSuite_injectIntoMethod(after: #selector(rest.internal._time(_:))) {
+        let hook = rest.internal.testSuite_injectIntoMethod(after: #selector(rest.internal._time(withWrapperSDKAgents:completion:))) {
             serverTimeRequestWasMade = true
         }
         defer { hook.remove() }
@@ -3334,7 +3334,7 @@ class AuthTests: XCTestCase {
         authOptions.queryTime = true
 
         var serverTimeRequestCount = 0
-        let hook = rest.internal.testSuite_injectIntoMethod(after: #selector(rest.internal._time(_:))) {
+        let hook = rest.internal.testSuite_injectIntoMethod(after: #selector(rest.internal._time(withWrapperSDKAgents:completion:))) {
             serverTimeRequestCount += 1
         }
         defer { hook.remove() }
@@ -3437,7 +3437,7 @@ class AuthTests: XCTestCase {
         let currentDate = Date()
 
         var serverTimeRequestCount = 0
-        let hook = rest.internal.testSuite_injectIntoMethod(after: #selector(rest.internal._time(_:))) {
+        let hook = rest.internal.testSuite_injectIntoMethod(after: #selector(rest.internal._time(withWrapperSDKAgents:completion:))) {
             serverTimeRequestCount += 1
         }
         defer { hook.remove() }
@@ -3493,7 +3493,7 @@ class AuthTests: XCTestCase {
         rest.auth.internal.testSuite_returnValue(for: NSSelectorFromString("handleServerTime:"), with: mockServerDate)
 
         var serverTimeRequestCount = 0
-        let hook = rest.internal.testSuite_injectIntoMethod(after: #selector(rest.internal._time(_:))) {
+        let hook = rest.internal.testSuite_injectIntoMethod(after: #selector(rest.internal._time(withWrapperSDKAgents:completion:))) {
             serverTimeRequestCount += 1
         }
         defer { hook.remove() }
@@ -3527,7 +3527,7 @@ class AuthTests: XCTestCase {
         let rest = ARTRest(options: options)
 
         var serverTimeRequestCount = 0
-        let hook = rest.internal.testSuite_injectIntoMethod(after: #selector(rest.internal._time(_:))) {
+        let hook = rest.internal.testSuite_injectIntoMethod(after: #selector(rest.internal._time(withWrapperSDKAgents:completion:))) {
             serverTimeRequestCount += 1
         }
         defer { hook.remove() }

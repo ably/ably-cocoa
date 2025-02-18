@@ -1,5 +1,6 @@
 #import "ARTWrapperSDKProxyRealtime+Private.h"
 #import "ARTWrapperSDKProxyRealtimeChannels+Private.h"
+#import "ARTWrapperSDKProxyPush+Private.h"
 #import "ARTWrapperSDKProxyOptions.h"
 #import "ARTRealtime+Private.h"
 
@@ -23,6 +24,8 @@ NS_ASSUME_NONNULL_END
         _proxyOptions = proxyOptions;
         _channels = [[ARTWrapperSDKProxyRealtimeChannels alloc] initWithChannels:realtime.channels
                                                                     proxyOptions:proxyOptions];
+        _push = [[ARTWrapperSDKProxyPush alloc] initWithPush:realtime.push
+                                                proxyOptions:proxyOptions];
     }
 
     return self;
@@ -30,10 +33,6 @@ NS_ASSUME_NONNULL_END
 
 - (ARTConnection *)connection {
     return self.underlyingRealtime.connection;
-}
-
-- (ARTPush *)push {
-    return self.underlyingRealtime.push;
 }
 
 - (ARTAuth *)auth {
@@ -80,17 +79,20 @@ NS_ASSUME_NONNULL_END
 }
 
 - (BOOL)stats:(nonnull ARTPaginatedStatsCallback)callback {
-    return [self.underlyingRealtime stats:callback];
+    return [self.underlyingRealtime.internal statsWithWrapperSDKAgents:self.proxyOptions.agents
+                                                              callback:callback];
 }
 
 - (BOOL)stats:(nullable ARTStatsQuery *)query callback:(nonnull ARTPaginatedStatsCallback)callback error:(NSError * _Nullable __autoreleasing * _Nullable)errorPtr {
-    return [self.underlyingRealtime stats:query
-                                 callback:callback
-                                    error:errorPtr];
+    return [self.underlyingRealtime.internal stats:query
+                                  wrapperSDKAgents:self.proxyOptions.agents
+                                          callback:callback
+                                             error:errorPtr];
 }
 
 - (void)time:(nonnull ARTDateTimeCallback)callback {
-    [self.underlyingRealtime time:callback];
+    [self.underlyingRealtime.internal timeWithWrapperSDKAgents:self.proxyOptions.agents
+                                                    completion:callback];
 }
 
 @end

@@ -319,6 +319,204 @@ class WrapperSDKProxyTests: XCTestCase {
         }
     }
 
+    func parameterizedTest_addsWrapperSDKAgentToRequests(
+        test: Test,
+        expectedRequestCount: Int = 1,
+        performRequest: @escaping (ARTWrapperSDKProxyRealtime) -> Void
+    ) throws {
+        // Given: a wrapper SDK proxy client
+
+        let options = try AblyTests.commonAppSetup(for: test)
+        let realtime = ARTRealtime(options: options)
+        defer { realtime.dispose(); realtime.close() }
+
+        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        realtime.internal.rest.httpExecutor = testHTTPExecutor
+
+        let proxyClient = realtime.createWrapperSDKProxy(with: .init(agents: ["my-wrapper-sdk": "1.0.0"]))
+
+        // When: We perform an HTTP request via the wrapper proxy SDK client
+        performRequest(proxyClient)
+
+        // Then: The HTTP request all contains the wrapper SDK's agents in the Ably-Agent header
+        XCTAssertEqual(testHTTPExecutor.requests.count, expectedRequestCount)
+
+        let expectedIdentifier = [
+            "ably-cocoa/1.2.38",
+            ARTDefault.platformAgent(),
+            "my-wrapper-sdk/1.0.0"
+        ].sorted().joined(separator: " ")
+
+        for request in testHTTPExecutor.requests {
+            XCTAssertEqual(request.allHTTPHeaderFields?["Ably-Agent"], expectedIdentifier)
+        }
+    }
+
+    func test_time_addsWrapperSDKAgentToRequest() throws {
+        let test = Test()
+
+        try parameterizedTest_addsWrapperSDKAgentToRequests(test: test) { proxyClient in
+            waitUntil(timeout: testTimeout) { done in
+                proxyClient.time() { _, error in
+                    XCTAssertNil(error)
+                    done()
+                }
+            }
+        }
+    }
+
+    func test_history_addsWrapperSDKAgentToRequest() throws {
+        let test = Test()
+
+        try parameterizedTest_addsWrapperSDKAgentToRequests(test: test, expectedRequestCount: 3) { proxyClient in
+            // Publish some messages so that we can use the history API to fetch them
+            let channel = proxyClient.channels.get(test.uniqueChannelName())
+            for i in 1...2 {
+                waitUntil(timeout: testTimeout) { done in
+                    channel.publish(nil, data: "\(i)") { error in
+                        XCTAssertNil(error)
+                        done()
+                    }
+                }
+            }
+
+            waitUntil(timeout: testTimeout) { done in
+                let query = ARTRealtimeHistoryQuery()
+                query.limit = 1
+
+                do {
+                    try channel.history(query) { firstPage, error in
+                        XCTAssertNil(error)
+
+                        guard let firstPage else {
+                            done()
+                            return
+                        }
+
+                        // This test also doubles up as a smoke test that `-first` and `-next` on a normal ARTPaginatedResult (as opposed to an ARTHTTPPaginatedResponse) add the SDK agent
+
+                        firstPage.first { firstPageAgain, error in
+                            XCTAssertNil(error)
+
+                            guard let firstPageAgain else {
+                                done()
+                                return
+                            }
+
+                            firstPageAgain.next { _, error in
+                                XCTAssertNil(error)
+                                done()
+                            }
+                        }
+                    }
+                } catch {
+                    XCTFail("history threw error \(error)")
+                    done()
+                }
+            }
+        }
+    }
+
+    func test_stats_addsWrapperSDKAgentToRequest() throws {
+        let test = Test()
+
+        try parameterizedTest_addsWrapperSDKAgentToRequests(test: test) { proxyClient in
+            waitUntil(timeout: testTimeout) { done in
+                proxyClient.stats() { _, error in
+                    XCTAssertNil(error)
+                    done()
+                }
+            }
+        }
+    }
+
+    func test_pushAdmin_addsWrapperSDKAgentToRequests() throws {
+        let test = Test()
+
+        try parameterizedTest_addsWrapperSDKAgentToRequests(test: test) { proxyClient in
+            waitUntil(timeout: testTimeout) { done in
+                proxyClient.push.admin.publish(["clientId" : "foo"], data: ["notification" : ["title" : "Welcome"]]) { error in
+                    XCTAssertNil(error)
+                    done()
+                }
+            }
+        }
+    }
+
+    func test_pushAdmin_channelSubscriptions_addsWrapperSDKAgentToRequests() throws {
+        let test = Test()
+
+        // We just do a smoke test of one of the methods offered by this class
+
+        try parameterizedTest_addsWrapperSDKAgentToRequests(test: test) { proxyClient in
+            waitUntil(timeout: testTimeout) { done in
+                proxyClient.push.admin.channelSubscriptions.listChannels { _, error in
+                    XCTAssertNil(error)
+                    done()
+                }
+            }
+        }
+    }
+
+    func test_pushAdmin_deviceRegistrations_addsWrapperSDKAgentToRequests() throws {
+        let test = Test()
+
+        // We just do a smoke test of one of the methods offered by this class
+
+        try parameterizedTest_addsWrapperSDKAgentToRequests(test: test) { proxyClient in
+            waitUntil(timeout: testTimeout) { done in
+                proxyClient.push.admin.deviceRegistrations.list([:]) { _, error in
+                    XCTAssertNil(error)
+                    done()
+                }
+            }
+        }
+    }
+
+#if os(iOS)
+    func test_pushChannel_addsWrapperSDKAgentToRequests() throws {
+        let test = Test()
+
+        // We just do a smoke test of one of the methods offered by this class
+
+        try parameterizedTest_addsWrapperSDKAgentToRequests(test: test) { proxyClient in
+            // These three lines are copied from PushChannelTests
+            let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
+            proxyClient.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
+            defer { proxyClient.device.setAndPersistIdentityTokenDetails(nil) }
+
+            let channel = proxyClient.channels.get(test.uniqueChannelName())
+
+            waitUntil(timeout: testTimeout) { done in
+                channel.push.subscribeDevice { error in
+                    // (We expect this request to fail, because we're using a fake device token. Doesn't matter in this test, because all we care about is checking that the request contained the wrapper SDK agent)
+                    if (error?.domain == ARTAblyErrorDomain && error?.code == 40005) {
+                        done()
+                        return
+                    }
+                    XCTAssertNil(error)
+                    done()
+                }
+            }
+        }
+    }
+#endif
+
+    func test_presenceHistory_addsWrapperSDKAgentToRequest() throws {
+        let test = Test()
+
+        try parameterizedTest_addsWrapperSDKAgentToRequests(test: test) { proxyClient in
+            let channel = proxyClient.channels.get(test.uniqueChannelName())
+
+            waitUntil(timeout: testTimeout) { done in
+                channel.presence.history() { _, error in
+                    XCTAssertNil(error)
+                    done()
+                }
+            }
+        }
+    }
+
     // MARK: - `agent` channel param
 
     private func parameterizedTest_checkAttachProtocolMessage(

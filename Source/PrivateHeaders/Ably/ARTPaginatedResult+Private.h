@@ -22,11 +22,13 @@ typedef NSArray<ItemType> *_Nullable(^ARTPaginatedResultResponseProcessor)(NSHTT
                    relCurrent:(NSMutableURLRequest *)relCurrent
                       relNext:(NSMutableURLRequest *)relNext
             responseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
+             wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
                        logger:(ARTInternalLog *)logger NS_DESIGNATED_INITIALIZER;
 
 + (void)executePaginated:(ARTRestInternal *)rest
              withRequest:(NSMutableURLRequest *)request
     andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
+        wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
                   logger:(ARTInternalLog *)logger
                 callback:(void (^)(ARTPaginatedResult<ItemType> *_Nullable result, ARTErrorInfo *_Nullable error))callback;
 

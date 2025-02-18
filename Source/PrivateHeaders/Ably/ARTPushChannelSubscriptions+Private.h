@@ -10,15 +10,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest logger:(ARTInternalLog *)logger;
 
-- (void)save:(ARTPushChannelSubscription *)channelSubscription callback:(ARTCallback)callback;
+- (void)save:(ARTPushChannelSubscription *)channelSubscription wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTCallback)callback;
 
-- (void)listChannels:(ARTPaginatedTextCallback)callback;
+- (void)listChannelsWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents completion:(ARTPaginatedTextCallback)callback;
 
-- (void)list:(NSStringDictionary *)params callback:(ARTPaginatedPushChannelCallback)callback;
+- (void)list:(NSStringDictionary *)params wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTPaginatedPushChannelCallback)callback;
 
-- (void)remove:(ARTPushChannelSubscription *)subscription callback:(ARTCallback)callback;
+- (void)remove:(ARTPushChannelSubscription *)subscription wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTCallback)callback;
 
-- (void)removeWhere:(NSStringDictionary *)params callback:(ARTCallback)callback;
+- (void)removeWhere:(NSStringDictionary *)params wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTCallback)callback;
 
 @end
 

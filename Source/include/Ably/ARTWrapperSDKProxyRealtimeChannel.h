@@ -2,6 +2,8 @@
 #import <Ably/ARTRealtimeChannel.h>
 
 @class ARTWrapperSDKProxyRealtimeChannel;
+@class ARTWrapperSDKProxyPushChannel;
+@class ARTWrapperSDKProxyRealtimePresence;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -15,10 +17,10 @@ NS_SWIFT_SENDABLE
 
 - (instancetype)init NS_UNAVAILABLE;
 
-@property (readonly) ARTRealtimePresence *presence;
+@property (readonly) ARTWrapperSDKProxyRealtimePresence *presence;
 
 #if TARGET_OS_IPHONE
-@property (readonly) ARTPushChannel *push;
+@property (readonly) ARTWrapperSDKProxyPushChannel *push;
 #endif
 
 @end

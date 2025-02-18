@@ -9,7 +9,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTHTTPPaginatedResponse ()
 
 @property (nonatomic) NSHTTPURLResponse *response;
-@property (nullable, nonatomic, readonly) NSDictionary<NSString *, NSString *> *wrapperSDKAgents;
 
 - (instancetype)initWithResponse:(NSHTTPURLResponse *)response
                            items:(NSArray *)items

@@ -3,6 +3,7 @@
 //
 //
 
+#import <Ably/ARTChannel.h>
 #import <Ably/ARTRestChannel+Private.h>
 #import <Ably/ARTRealtimeChannel.h>
 #import <Ably/ARTEventEmitter.h>
@@ -85,7 +86,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)unsubscribe:(NSString *)name listener:(ARTEventListener *_Nullable)listener;
 
-- (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query callback:(ARTPaginatedMessagesCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
+- (void)historyWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                         completion:(ARTPaginatedMessagesCallback)callback;
+- (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTPaginatedMessagesCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
 - (void)setOptions:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable ARTCallback)callback;
 

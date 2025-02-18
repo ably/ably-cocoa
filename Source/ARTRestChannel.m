@@ -45,7 +45,7 @@
 }
 
 - (BOOL)history:(nullable ARTDataQuery *)query callback:(ARTPaginatedMessagesCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr {
-    return [_internal history:query callback:callback error:errorPtr];
+    return [_internal history:query wrapperSDKAgents:nil callback:callback error:errorPtr];
 }
 
 - (void)status:(ARTChannelDetailsCallback)callback {
@@ -93,7 +93,7 @@
 }
 
 - (void)history:(ARTPaginatedMessagesCallback)callback {
-    [_internal history:callback];
+    [_internal historyWithWrapperSDKAgents:nil completion:callback];
 }
 
 - (ARTChannelOptions *)options {
@@ -148,11 +148,11 @@ static const NSUInteger kIdempotentLibraryGeneratedIdLength = 9; //bytes
     return _pushChannel;
 }
 
-- (void)history:(ARTPaginatedMessagesCallback)callback {
-    [self history:[[ARTDataQuery alloc] init] callback:callback error:nil];
+- (void)historyWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents completion:(ARTPaginatedMessagesCallback)callback {
+    [self history:[[ARTDataQuery alloc] init] wrapperSDKAgents:wrapperSDKAgents callback:callback error:nil];
 }
 
-- (BOOL)history:(ARTDataQuery *)query callback:(ARTPaginatedMessagesCallback)callback error:(NSError * __autoreleasing *)errorPtr {
+- (BOOL)history:(ARTDataQuery *)query wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTPaginatedMessagesCallback)callback error:(NSError * __autoreleasing *)errorPtr {
     if (callback) {
         void (^userCallback)(ARTPaginatedResult<ARTMessage *> *result, ARTErrorInfo *error) = callback;
         callback = ^(ARTPaginatedResult<ARTMessage *> *result, ARTErrorInfo *error) {
@@ -210,7 +210,7 @@ dispatch_sync(_queue, ^{
     };
 
     ARTLogDebug(self.logger, @"RS:%p C:%p (%@) stats request %@", self->_rest, self, self.name, request);
-    [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor logger:self.logger callback:callback];
+    [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor wrapperSDKAgents:wrapperSDKAgents logger:self.logger callback:callback];
     ret = YES;
 });
     return ret;

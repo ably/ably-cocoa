@@ -102,7 +102,8 @@
 }
 
 - (void)time:(ARTDateTimeCallback)callback {
-    [_internal time:callback];
+    [_internal timeWithWrapperSDKAgents:nil
+                             completion:callback];
 }
 
 - (BOOL)request:(NSString *)method
@@ -116,11 +117,12 @@
 }
 
 - (BOOL)stats:(ARTPaginatedStatsCallback)callback {
-    return [_internal stats:callback];
+    return [_internal statsWithWrapperSDKAgents:nil
+                                     completion:callback];
 }
 
 - (BOOL)stats:(nullable ARTStatsQuery *)query callback:(ARTPaginatedStatsCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr {
-    return [_internal stats:query callback:callback error:errorPtr];
+    return [_internal stats:query wrapperSDKAgents:nil callback:callback error:errorPtr];
 }
 
 - (ARTRestChannels *)channels {
@@ -525,7 +527,8 @@ NS_ASSUME_NONNULL_END
     return [NSString stringWithFormat:@"Bearer %@", token];
 }
 
-- (void)time:(ARTDateTimeCallback)callback {
+- (void)timeWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                      completion:(ARTDateTimeCallback)callback {
     if (callback) {
         ARTDateTimeCallback userCallback = callback;
         callback = ^(NSDate *time, NSError *error) {
@@ -535,18 +538,20 @@ NS_ASSUME_NONNULL_END
         };
     }
     dispatch_async(_queue, ^{
-        [self _time:callback];
+        [self _timeWithWrapperSDKAgents:wrapperSDKAgents
+                             completion:callback];
     });
 }
 
-- (NSObject<ARTCancellable> *)_time:(ARTDateTimeCallback)callback {
+- (NSObject<ARTCancellable> *)_timeWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                                             completion:(ARTDateTimeCallback)callback {
     NSURL *requestUrl = [NSURL URLWithString:@"/time" relativeToURL:self.baseUrl];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];
     request.HTTPMethod = @"GET";
     NSString *accept = [[_encoders.allValues valueForKeyPath:@"mimeType"] componentsJoinedByString:@","];
     [request setValue:accept forHTTPHeaderField:@"Accept"];
     
-    return [self executeRequest:request withAuthOption:ARTAuthenticationOff wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    return [self executeRequest:request withAuthOption:ARTAuthenticationOff wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             callback(nil, error);
             return;
@@ -676,11 +681,12 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     }];
 }
 
-- (BOOL)stats:(ARTPaginatedStatsCallback)callback {
-    return [self stats:[[ARTStatsQuery alloc] init] callback:callback error:nil];
+- (BOOL)statsWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                       completion:(ARTPaginatedStatsCallback)callback {
+    return [self stats:[[ARTStatsQuery alloc] init] wrapperSDKAgents:wrapperSDKAgents callback:callback error:nil];
 }
 
-- (BOOL)stats:(ARTStatsQuery *)query callback:(ARTPaginatedStatsCallback)callback error:(NSError **)errorPtr {
+- (BOOL)stats:(ARTStatsQuery *)query wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTPaginatedStatsCallback)callback error:(NSError **)errorPtr {
     if (callback) {
         ARTPaginatedStatsCallback userCallback = callback;
         callback = ^(ARTPaginatedResult<ARTStats *> *r, ARTErrorInfo *e) {
@@ -723,7 +729,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     };
     
 dispatch_async(_queue, ^{
-    [ARTPaginatedResult executePaginated:self withRequest:request andResponseProcessor:responseProcessor logger:self.logger callback:callback];
+    [ARTPaginatedResult executePaginated:self withRequest:request andResponseProcessor:responseProcessor wrapperSDKAgents:wrapperSDKAgents logger:self.logger callback:callback];
 });
     return YES;
 }

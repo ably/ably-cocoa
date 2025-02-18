@@ -21,7 +21,7 @@
 }
 
 - (void)publish:(ARTPushRecipient *)recipient data:(ARTJsonObject *)data callback:(nullable ARTCallback)callback {
-    [_internal publish:recipient data:data callback:callback];
+    [_internal publish:recipient data:data wrapperSDKAgents:nil callback:callback];
 }
 
 - (ARTPushDeviceRegistrations *)deviceRegistrations {
@@ -53,7 +53,7 @@
     return self;
 }
 
-- (void)publish:(ARTPushRecipient *)recipient data:(ARTJsonObject *)data callback:(nullable ARTCallback)callback {
+- (void)publish:(ARTPushRecipient *)recipient data:(ARTJsonObject *)data wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(nullable ARTCallback)callback {
     if (callback) {
         ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *error) {
@@ -83,7 +83,7 @@
             [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
             ARTLogDebug(self->_logger, @"push notification to a single device %@", request);
-        [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+        [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
                 if (error) {
                     ARTLogError(self->_logger, @"%@: push notification to a single device failed (%@)", NSStringFromClass(self.class), error.localizedDescription);
                     if (callback) callback([ARTErrorInfo createFromNSError:error]);

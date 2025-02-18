@@ -10,15 +10,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest logger:(ARTInternalLog *)logger;
 
-- (void)save:(ARTDeviceDetails *)deviceDetails callback:(ARTCallback)callback;
+- (void)save:(ARTDeviceDetails *)deviceDetails wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTCallback)callback;
 
-- (void)get:(ARTDeviceId *)deviceId callback:(void (^)(ARTDeviceDetails *_Nullable,  ARTErrorInfo *_Nullable))callback;
+- (void)get:(ARTDeviceId *)deviceId wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(void (^)(ARTDeviceDetails *_Nullable,  ARTErrorInfo *_Nullable))callback;
 
-- (void)list:(NSStringDictionary *)params callback:(ARTPaginatedDeviceDetailsCallback)callback;
+- (void)list:(NSStringDictionary *)params wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTPaginatedDeviceDetailsCallback)callback;
 
-- (void)remove:(NSString *)deviceId callback:(ARTCallback)callback;
+- (void)remove:(NSString *)deviceId wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTCallback)callback;
 
-- (void)removeWhere:(NSStringDictionary *)params callback:(ARTCallback)callback;
+- (void)removeWhere:(NSStringDictionary *)params wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTCallback)callback;
 
 @end
 

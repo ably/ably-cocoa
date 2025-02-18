@@ -150,7 +150,8 @@
 }
 
 - (void)time:(ARTDateTimeCallback)cb {
-    [_internal time:cb];
+    [_internal timeWithWrapperSDKAgents:nil
+                             completion:cb];
 }
 
 - (BOOL)request:(NSString *)method
@@ -168,11 +169,12 @@
 }
 
 - (BOOL)stats:(ARTPaginatedStatsCallback)callback {
-    return [_internal stats:callback];
+    return [_internal statsWithWrapperSDKAgents:nil
+                                       callback:callback];
 }
 
 - (BOOL)stats:(nullable ARTStatsQuery *)query callback:(ARTPaginatedStatsCallback)callback error:(NSError **)errorPtr {
-    return [_internal stats:query callback:callback error:errorPtr];
+    return [_internal stats:query wrapperSDKAgents:nil callback:callback error:errorPtr];
 }
 
 - (void)connect {
@@ -501,8 +503,10 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
     }
 }
 
-- (void)time:(ARTDateTimeCallback)cb {
-    [self.rest time:cb];
+- (void)timeWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                      completion:(ARTDateTimeCallback)cb {
+    [self.rest timeWithWrapperSDKAgents:wrapperSDKAgents
+                             completion:cb];
 }
 
 - (BOOL)request:(NSString *)method
@@ -553,12 +557,13 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     });
 }
 
-- (BOOL)stats:(ARTPaginatedStatsCallback)callback {
-    return [self stats:[[ARTStatsQuery alloc] init] callback:callback error:nil];
+- (BOOL)statsWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                         callback:(ARTPaginatedStatsCallback)callback {
+               return [self stats:[[ARTStatsQuery alloc] init] wrapperSDKAgents:wrapperSDKAgents callback:callback error:nil];
 }
 
-- (BOOL)stats:(ARTStatsQuery *)query callback:(ARTPaginatedStatsCallback)callback error:(NSError **)errorPtr {
-    return [self.rest stats:query callback:callback error:errorPtr];
+- (BOOL)stats:(ARTStatsQuery *)query wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTPaginatedStatsCallback)callback error:(NSError **)errorPtr {
+    return [self.rest stats:query wrapperSDKAgents:wrapperSDKAgents callback:callback error:errorPtr];
 }
 
 - (void)performTransitionToDisconnectedOrSuspendedWithParams:(ARTConnectionStateChangeParams *)params {
