@@ -5,6 +5,7 @@ import Nimble
 class WrapperSDKProxyTests: XCTestCase {
     // MARK: - Testing that connection state is shared with underlying Realtime client
 
+    // WP5
     func test_sharesConnectionStateWithUnderlyingClient() throws {
         // Given: A proxy client
         let test = Test()
@@ -42,6 +43,7 @@ class WrapperSDKProxyTests: XCTestCase {
         XCTAssertEqual(client.connection.state, .closed)
     }
 
+    // WP5
     func test_sharesConnectionSubscriptionsWithUnderlyingRealtimeClient() throws {
         // Given: A proxy client
         let test = Test()
@@ -74,6 +76,7 @@ class WrapperSDKProxyTests: XCTestCase {
 
     // MARK: - Testing that channel state is shared with underlying Realtime client
 
+    // WP5
     func test_sharesChannelStateWithUnderlyingChannel() throws {
         // Given: A channel fetched from a proxy client
         let test = Test()
@@ -114,6 +117,7 @@ class WrapperSDKProxyTests: XCTestCase {
         XCTAssertEqual(channel.state, .detached)
     }
 
+    // WP5
     func test_sharesChannelStateSubscriptionsWithUnderlyingChannel() throws {
         // Given: A channel fetched from a proxy client
         let test = Test()
@@ -147,6 +151,7 @@ class WrapperSDKProxyTests: XCTestCase {
         XCTAssertFalse(underlyingChannelReceivedEvent)
     }
 
+    // WP5
     func test_sharesChannelMessageSubscriptionsWithUnderlyingChannel() throws {
         // Given: A channel fetched from a proxy client
         let test = Test()
@@ -182,6 +187,7 @@ class WrapperSDKProxyTests: XCTestCase {
 
     // MARK: - `request()`
 
+    // WP6
     func test_request_addsWrapperSDKAgentToHeader() throws {
         // Given: a wrapper SDK proxy client
         let test = Test()
@@ -227,6 +233,7 @@ class WrapperSDKProxyTests: XCTestCase {
         XCTAssertEqual(request.allHTTPHeaderFields?["Ably-Agent"], expectedIdentifier)
     }
 
+    // WP6
     func test_request_firstAndNext_addWrapperSDKAgentToHeader() throws {
         // Given: a wrapper SDK proxy client
         let test = Test()
@@ -319,6 +326,7 @@ class WrapperSDKProxyTests: XCTestCase {
         }
     }
 
+    // WP6
     func parameterizedTest_addsWrapperSDKAgentToRequests(
         test: Test,
         expectedRequestCount: Int = 1,
@@ -352,6 +360,7 @@ class WrapperSDKProxyTests: XCTestCase {
         }
     }
 
+    // WP6
     func test_time_addsWrapperSDKAgentToRequest() throws {
         let test = Test()
 
@@ -365,6 +374,7 @@ class WrapperSDKProxyTests: XCTestCase {
         }
     }
 
+    // WP6
     func test_history_addsWrapperSDKAgentToRequest() throws {
         let test = Test()
 
@@ -417,6 +427,7 @@ class WrapperSDKProxyTests: XCTestCase {
         }
     }
 
+    // WP6
     func test_stats_addsWrapperSDKAgentToRequest() throws {
         let test = Test()
 
@@ -430,6 +441,7 @@ class WrapperSDKProxyTests: XCTestCase {
         }
     }
 
+    // WP6
     func test_pushAdmin_addsWrapperSDKAgentToRequests() throws {
         let test = Test()
 
@@ -443,6 +455,7 @@ class WrapperSDKProxyTests: XCTestCase {
         }
     }
 
+    // WP6
     func test_pushAdmin_channelSubscriptions_addsWrapperSDKAgentToRequests() throws {
         let test = Test()
 
@@ -458,6 +471,7 @@ class WrapperSDKProxyTests: XCTestCase {
         }
     }
 
+    // WP6
     func test_pushAdmin_deviceRegistrations_addsWrapperSDKAgentToRequests() throws {
         let test = Test()
 
@@ -474,6 +488,7 @@ class WrapperSDKProxyTests: XCTestCase {
     }
 
 #if os(iOS)
+    // WP6
     func test_pushChannel_addsWrapperSDKAgentToRequests() throws {
         let test = Test()
 
@@ -502,6 +517,7 @@ class WrapperSDKProxyTests: XCTestCase {
     }
 #endif
 
+    // WP6
     func test_presenceHistory_addsWrapperSDKAgentToRequest() throws {
         let test = Test()
 
@@ -519,6 +535,7 @@ class WrapperSDKProxyTests: XCTestCase {
 
     // MARK: - `agent` channel param
 
+    // WP7
     private func parameterizedTest_checkAttachProtocolMessage(
         wrapperProxyAgents: [String: String]?,
         fetchProxyChannel: (ARTWrapperSDKProxyRealtime) -> ARTWrapperSDKProxyRealtimeChannel,
@@ -550,6 +567,7 @@ class WrapperSDKProxyTests: XCTestCase {
         verifyAttachProtocolMessage(attachProtocolMessage)
     }
 
+    // WP7
     func test_doesNotAddAgentParam_whenProxyClientCreatedWithoutAgents() throws {
         let test = Test()
 
@@ -564,6 +582,7 @@ class WrapperSDKProxyTests: XCTestCase {
         )
     }
 
+    // WP7
     func test_addsAgentChannelParam_whenFetchedWithNoChannelOptions() throws {
         let test = Test()
 
@@ -578,6 +597,7 @@ class WrapperSDKProxyTests: XCTestCase {
         )
     }
 
+    // WP7
     func test_addsAgentChannelParam_whenFetchedWithChannelOptions() throws {
         let test = Test()
 
