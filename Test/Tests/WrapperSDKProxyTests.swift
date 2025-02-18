@@ -220,7 +220,7 @@ class WrapperSDKProxyTests: XCTestCase {
         let request = try XCTUnwrap(testHTTPExecutor.requests.first)
 
         let expectedIdentifier = [
-            "ably-cocoa/1.2.38",
+            "ably-cocoa/1.2.39",
             ARTDefault.platformAgent(),
             "my-wrapper-sdk/1.0.0"
         ].sorted().joined(separator: " ")
@@ -309,7 +309,7 @@ class WrapperSDKProxyTests: XCTestCase {
         XCTAssertEqual(testHTTPExecutor.requests.count, 3) // initial `request()`, `first()`, `next()`
 
         let expectedIdentifier = [
-            "ably-cocoa/1.2.38",
+            "ably-cocoa/1.2.39",
             ARTDefault.platformAgent(),
             "my-wrapper-sdk/1.0.0"
         ].sorted().joined(separator: " ")
@@ -342,7 +342,7 @@ class WrapperSDKProxyTests: XCTestCase {
         XCTAssertEqual(testHTTPExecutor.requests.count, expectedRequestCount)
 
         let expectedIdentifier = [
-            "ably-cocoa/1.2.38",
+            "ably-cocoa/1.2.39",
             ARTDefault.platformAgent(),
             "my-wrapper-sdk/1.0.0"
         ].sorted().joined(separator: " ")
