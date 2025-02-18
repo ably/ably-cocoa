@@ -1,5 +1,19 @@
 # Change Log
 
+## [1.2.39](https://github.com/ably/ably-cocoa/tree/1.2.39)
+
+### What's Changed
+
+#### Bug fixes
+
+* Fix bug where fallback hosts were not working correctly in custom environments (https://github.com/ably/ably-cocoa/pull/2017)
+
+#### Other changes
+
+* Improvements to the Ably-internal API introduced in v1.2.38 (https://github.com/ably/ably-cocoa/pull/2031)
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.38...1.2.39
+
 ## [1.2.38](https://github.com/ably/ably-cocoa/tree/1.2.38)
 
 ## What's Changed
