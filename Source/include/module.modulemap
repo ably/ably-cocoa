@@ -1,4 +1,4 @@
-framework module Ably {
+module Ably {
     umbrella header "Ably/Ably.h"
 
     export *
