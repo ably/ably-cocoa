@@ -52,6 +52,7 @@ let package = Package(
             name: "AblyTests",
             dependencies: [
                 .byName(name: "Ably"),
+                .byName(name: "AblyTestingObjC"),
             ],
             path: "Test"
             /*exclude: [String],*/
