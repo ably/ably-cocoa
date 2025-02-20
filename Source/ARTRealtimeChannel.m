@@ -35,6 +35,7 @@
 #if TARGET_OS_IPHONE
 #import "ARTPushChannel+Private.h"
 #endif
+#import "ARTLiveObjectsPlugin.h"
 
 @implementation ARTRealtimeChannel {
     ARTQueuedDealloc *_dealloc;
@@ -57,6 +58,11 @@
     if (self) {
         _internal = internal;
         _dealloc = dealloc;
+
+        if (internal.realtime.options.liveObjectsPlugin) {
+            Class<ARTLiveObjectsPlugin> liveObjectsPlugin = internal.realtime.options.liveObjectsPlugin;
+            [liveObjectsPlugin prepareChannel:self];
+        }
     }
     return self;
 }

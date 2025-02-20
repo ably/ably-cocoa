@@ -377,6 +377,9 @@
 		21E5D87F2D5E3EC300526C4C /* ARTChannelProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 21E5D87E2D5E3EC300526C4C /* ARTChannelProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		21E5D8802D5E3EC300526C4C /* ARTChannelProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 21E5D87E2D5E3EC300526C4C /* ARTChannelProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		21E5D8812D5E3EC300526C4C /* ARTChannelProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 21E5D87E2D5E3EC300526C4C /* ARTChannelProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		21FD822A2D67AB880038F851 /* ARTLiveObjectsPlugin.h in Headers */ = {isa = PBXBuildFile; fileRef = 21FD82292D67AB880038F851 /* ARTLiveObjectsPlugin.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		21FD822B2D67AB880038F851 /* ARTLiveObjectsPlugin.h in Headers */ = {isa = PBXBuildFile; fileRef = 21FD82292D67AB880038F851 /* ARTLiveObjectsPlugin.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		21FD822C2D67AB880038F851 /* ARTLiveObjectsPlugin.h in Headers */ = {isa = PBXBuildFile; fileRef = 21FD82292D67AB880038F851 /* ARTLiveObjectsPlugin.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		21FD9F272A015BE400216482 /* Test.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21FD9F262A015BE400216482 /* Test.swift */; };
 		21FD9F282A015BE400216482 /* Test.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21FD9F262A015BE400216482 /* Test.swift */; };
 		21FD9F292A015BE400216482 /* Test.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21FD9F262A015BE400216482 /* Test.swift */; };
@@ -1374,6 +1377,7 @@
 		21E1C0E42A0DC47400A5DB65 /* ARTWebSocketFactory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTWebSocketFactory.h; path = PrivateHeaders/Ably/ARTWebSocketFactory.h; sourceTree = "<group>"; };
 		21E1C0E82A0DC5E600A5DB65 /* ARTWebSocketFactory.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTWebSocketFactory.m; sourceTree = "<group>"; };
 		21E5D87E2D5E3EC300526C4C /* ARTChannelProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTChannelProtocol.h; path = include/Ably/ARTChannelProtocol.h; sourceTree = "<group>"; };
+		21FD82292D67AB880038F851 /* ARTLiveObjectsPlugin.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTLiveObjectsPlugin.h; path = PrivateHeaders/Ably/ARTLiveObjectsPlugin.h; sourceTree = "<group>"; };
 		21FD9F262A015BE400216482 /* Test.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test.swift; sourceTree = "<group>"; };
 		560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARTDefaultTests.swift; sourceTree = "<group>"; };
 		56190953238C3D3200A862A6 /* CryptoTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CryptoTest.m; sourceTree = "<group>"; };
@@ -1935,6 +1939,14 @@
 			path = "Test Utilities";
 			sourceTree = "<group>";
 		};
+		21FD82282D67AB650038F851 /* Plugins */ = {
+			isa = PBXGroup;
+			children = (
+				21FD82292D67AB880038F851 /* ARTLiveObjectsPlugin.h */,
+			);
+			name = Plugins;
+			sourceTree = "<group>";
+		};
 		856AAC8B1B6E304B00B07119 /* Test */ = {
 			isa = PBXGroup;
 			children = (
@@ -2006,6 +2018,7 @@
 				D746AE341BBC2B60003ECEF8 /* Utilities */,
 				96BF61341A35B2AB004CF2B3 /* Supporting Files */,
 				213AEA1D2D35A79B0067FD5F /* Wrapper SDK Proxy */,
+				21FD82282D67AB650038F851 /* Plugins */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -2480,6 +2493,7 @@
 				1CD8DC9F1B1C7315007EAF36 /* ARTDefault.h in Headers */,
 				D70EECAC1FEAF331008A50CD /* ARTPendingMessage.h in Headers */,
 				217FCF3629D6269D006E5F2D /* ARTJitterCoefficientGenerator.h in Headers */,
+				21FD822B2D67AB880038F851 /* ARTLiveObjectsPlugin.h in Headers */,
 				2132C32029D5FE74000C4355 /* ARTTypes+Private.h in Headers */,
 				D7D8F8211BC2BE16009718F2 /* ARTAuthOptions.h in Headers */,
 				21AC0CCE2D4AA0F50030BD23 /* ARTWrapperSDKProxyRealtimeChannel+Private.h in Headers */,
@@ -2726,6 +2740,7 @@
 				D710D58821949D29008F54AD /* ARTProtocolMessage.h in Headers */,
 				D710D47D21949A27008F54AD /* Ably.h in Headers */,
 				2124B78C29DB12A900AD8361 /* ARTVersion2Log.h in Headers */,
+				21FD822A2D67AB880038F851 /* ARTLiveObjectsPlugin.h in Headers */,
 				EB1B53FE22F8D91C006A59AC /* ARTQueuedDealloc.h in Headers */,
 				2114D4282D4BC5470032839A /* AblyInternal.h in Headers */,
 				21E5D87F2D5E3EC300526C4C /* ARTChannelProtocol.h in Headers */,
@@ -2919,6 +2934,7 @@
 				D710D4E421949BFB008F54AD /* ARTRealtime.h in Headers */,
 				D710D5AE21949D2A008F54AD /* ARTProtocolMessage.h in Headers */,
 				2124B78D29DB12A900AD8361 /* ARTVersion2Log.h in Headers */,
+				21FD822C2D67AB880038F851 /* ARTLiveObjectsPlugin.h in Headers */,
 				D710D47F21949A28008F54AD /* Ably.h in Headers */,
 				2114D42C2D4BC5470032839A /* AblyInternal.h in Headers */,
 				21E5D8802D5E3EC300526C4C /* ARTChannelProtocol.h in Headers */,

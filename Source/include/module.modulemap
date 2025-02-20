@@ -119,4 +119,9 @@ module Ably {
         header "../PrivateHeaders/Ably/ARTWrapperSDKProxyPushChannel+Private.h"
         header "../PrivateHeaders/Ably/ARTWrapperSDKProxyRealtimePresence+Private.h"
     }
+
+    // This is the API that should only be exposed to Ably-authored plugins.
+    explicit module PluginAPI {
+        header "../PrivateHeaders/Ably/ARTLiveObjectsPlugin.h"
+    }
 }

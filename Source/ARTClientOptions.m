@@ -140,6 +140,7 @@ NSString *ARTDefaultEnvironment = nil;
     options.transportParams = self.transportParams;
     options.agents = self.agents;
     options.testOptions = self.testOptions;
+    options.liveObjectsPlugin = self.liveObjectsPlugin;
 
     return options;
 }
