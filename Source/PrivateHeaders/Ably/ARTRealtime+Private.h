@@ -4,11 +4,11 @@
 #import <Ably/ARTQueuedMessage.h>
 #import <Ably/ARTPendingMessage.h>
 #import <Ably/ARTProtocolMessage.h>
-#import <Ably/ARTReachability.h>
+#import "ARTReachability.h"
 
-#import <Ably/ARTRealtimeTransport.h>
-#import <Ably/ARTAuth+Private.h>
-#import <Ably/ARTRest+Private.h>
+#import "ARTRealtimeTransport.h"
+#import "ARTAuth+Private.h"
+#import "ARTRest+Private.h"
 
 @class ARTRestInternal;
 @class ARTErrorInfo;

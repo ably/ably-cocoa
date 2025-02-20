@@ -3,11 +3,11 @@
 //
 //
 
-#import <Ably/ARTChannel.h>
+#import "ARTChannel.h"
 #import <Ably/ARTRestChannel.h>
-#import <Ably/ARTRestPresence+Private.h>
-#import <Ably/ARTPushChannel+Private.h>
-#import <Ably/ARTQueuedDealloc.h>
+#import "ARTRestPresence+Private.h"
+#import "ARTPushChannel+Private.h"
+#import "ARTQueuedDealloc.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

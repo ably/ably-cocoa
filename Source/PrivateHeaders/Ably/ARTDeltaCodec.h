@@ -1,4 +1,4 @@
-#import <Ably/ARTVCDiffDecoder.h>
+#import "ARTVCDiffDecoder.h"
 #import <AblyDeltaCodec/AblyDeltaCodec.h>
 
 NS_ASSUME_NONNULL_BEGIN

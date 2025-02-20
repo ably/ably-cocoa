@@ -3,13 +3,13 @@
 //
 //
 
-#import <Ably/ARTChannel.h>
-#import <Ably/ARTRestChannel+Private.h>
+#import "ARTChannel.h"
+#import "ARTRestChannel+Private.h"
 #import <Ably/ARTRealtimeChannel.h>
 #import <Ably/ARTEventEmitter.h>
-#import <Ably/ARTRealtime+Private.h>
-#import <Ably/ARTQueuedDealloc.h>
-#import <Ably/ARTPushChannel+Private.h>
+#import "ARTRealtime+Private.h"
+#import "ARTQueuedDealloc.h"
+#import "ARTPushChannel+Private.h"
 
 @class ARTProtocolMessage;
 @class ARTRealtimePresenceInternal;

@@ -1,4 +1,4 @@
-#import <Ably/ARTRest+Private.h>
+#import "ARTRest+Private.h"
 #import <Ably/ARTEncoder.h>
 #import <Ably/ARTTokenDetails.h>
 #import <Ably/ARTTokenRequest.h>

@@ -1,6 +1,6 @@
 #import <Ably/ARTPush.h>
-#import <Ably/ARTPushAdmin+Private.h>
-#import <Ably/ARTQueuedDealloc.h>
+#import "ARTPushAdmin+Private.h"
+#import "ARTQueuedDealloc.h"
 
 @class ARTPushActivationStateMachine;
 @class ARTRestInternal;

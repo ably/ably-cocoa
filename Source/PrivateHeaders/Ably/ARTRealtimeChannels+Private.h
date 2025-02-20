@@ -4,8 +4,8 @@
 //
 
 #import <Ably/ARTRealtimeChannels.h>
-#import <Ably/ARTRealtime+Private.h>
-#import <Ably/ARTQueuedDealloc.h>
+#import "ARTRealtime+Private.h"
+#import "ARTQueuedDealloc.h"
 
 @class ARTRealtimeChannelInternal;
 
