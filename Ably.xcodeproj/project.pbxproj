@@ -1380,7 +1380,7 @@
 		21DCDA8229F818630073A211 /* Ably-iOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Ably-iOS.xctestplan"; path = "Test/Ably-iOS.xctestplan"; sourceTree = SOURCE_ROOT; };
 		21DCDA8329F81B350073A211 /* Ably-macOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Ably-macOS.xctestplan"; sourceTree = "<group>"; };
 		21DCDA8429F81B550073A211 /* Ably-tvOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Ably-tvOS.xctestplan"; sourceTree = "<group>"; };
-		21E1C0E42A0DC47400A5DB65 /* ARTWebSocketFactory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTWebSocketFactory.h; path = PrivateHeaders/ARTWebSocketFactory.h; sourceTree = "<group>"; };
+		21E1C0E42A0DC47400A5DB65 /* ARTWebSocketFactory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTWebSocketFactory.h; path = PrivateHeaders/Ably/ARTWebSocketFactory.h; sourceTree = "<group>"; };
 		21E1C0E82A0DC5E600A5DB65 /* ARTWebSocketFactory.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTWebSocketFactory.m; sourceTree = "<group>"; };
 		21E5D87E2D5E3EC300526C4C /* ARTChannelProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTChannelProtocol.h; path = include/Ably/ARTChannelProtocol.h; sourceTree = "<group>"; };
 		21FD9F262A015BE400216482 /* Test.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test.swift; sourceTree = "<group>"; };
