@@ -62,6 +62,10 @@ let package = Package(
             /*swiftSettings: [SwiftSetting]?,*/
             /*linkerSettings: [LinkerSetting]?*/
         ),
+        .target(
+            name: "AblyTestingObjC",
+            path: "AblyTestingObjC"
+        )
     ]
 )
 
