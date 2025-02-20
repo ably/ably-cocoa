@@ -1,5 +1,5 @@
 #import <Ably/ARTPresence.h>
-#import <Ably/ARTChannel.h>
+#import "ARTChannel.h"
 
 @interface ARTPresenceQuery ()
 

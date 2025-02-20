@@ -1,6 +1,6 @@
 @import Foundation;
 #import <Ably/ARTBaseMessage.h>
-#import <Ably/ARTDataEncoder.h>
+#import "ARTDataEncoder.h"
 #import <Ably/ARTStatus.h>
 
 NS_ASSUME_NONNULL_BEGIN

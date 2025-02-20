@@ -1,7 +1,7 @@
 #import <Foundation/Foundation.h>
 
 #import <Ably/ARTTypes.h>
-#import <Ably/ARTURLSession.h>
+#import "ARTURLSession.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

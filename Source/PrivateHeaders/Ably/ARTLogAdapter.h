@@ -1,6 +1,6 @@
 @import Foundation;
 
-#import <Ably/ARTVersion2Log.h>
+#import "ARTVersion2Log.h"
 
 @class ARTLog;
 

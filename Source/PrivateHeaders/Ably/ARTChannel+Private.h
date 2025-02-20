@@ -1,5 +1,5 @@
-#import <Ably/ARTChannel.h>
-#import <Ably/ARTDataEncoder.h>
+#import "ARTChannel.h"
+#import "ARTDataEncoder.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
