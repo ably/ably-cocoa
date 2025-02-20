@@ -1,4 +1,5 @@
 #import "ARTRealtimeChannel+Private.h"
+#import "ARTRealtimeChannel+Plugins.h"
 #import "ARTChannel+Private.h"
 #import "ARTChannel+Subclass.h"
 #import "ARTDataQuery+Private.h"
@@ -37,6 +38,12 @@
 #endif
 #import "ARTLiveObjectsPlugin.h"
 
+@interface ARTRealtimeChannel ()
+
+@property (nonatomic, readonly) NSMutableDictionary<NSString *, id> *pluginData;
+
+@end
+
 @implementation ARTRealtimeChannel {
     ARTQueuedDealloc *_dealloc;
 }
@@ -58,6 +65,7 @@
     if (self) {
         _internal = internal;
         _dealloc = dealloc;
+        _pluginData = [[NSMutableDictionary alloc] init];
 
         if (internal.realtime.options.liveObjectsPlugin) {
             Class<ARTLiveObjectsPlugin> liveObjectsPlugin = internal.realtime.options.liveObjectsPlugin;
@@ -65,6 +73,14 @@
         }
     }
     return self;
+}
+
+- (void)setPluginDataValue:(id)value forKey:(NSString *)key {
+    [self.pluginData setValue:value forKey:key];
+}
+
+- (id)pluginDataValueForKey:(NSString *)key {
+    return self.pluginData[key];
 }
 
 - (NSString *)name {

@@ -123,5 +123,6 @@ module Ably {
     // This is the API that should only be exposed to Ably-authored plugins.
     explicit module PluginAPI {
         header "../PrivateHeaders/Ably/ARTLiveObjectsPlugin.h"
+        header "../PrivateHeaders/Ably/ARTRealtimeChannel+Plugins.h"
     }
 }

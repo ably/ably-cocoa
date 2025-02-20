@@ -368,6 +368,9 @@
 		21AC0CD52D4AA3200030BD23 /* ARTWrapperSDKProxyRealtimeChannels.m in Sources */ = {isa = PBXBuildFile; fileRef = 21AC0CD12D4AA3200030BD23 /* ARTWrapperSDKProxyRealtimeChannels.m */; };
 		21AC0CD62D4AA3200030BD23 /* ARTWrapperSDKProxyRealtimeChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 21AC0CD02D4AA3200030BD23 /* ARTWrapperSDKProxyRealtimeChannel.m */; };
 		21AC0CD72D4AA3200030BD23 /* ARTWrapperSDKProxyRealtimeChannels.m in Sources */ = {isa = PBXBuildFile; fileRef = 21AC0CD12D4AA3200030BD23 /* ARTWrapperSDKProxyRealtimeChannels.m */; };
+		21BFC2D62D67C58800C05E8B /* ARTRealtimeChannel+Plugins.h in Headers */ = {isa = PBXBuildFile; fileRef = 21BFC2D52D67C58800C05E8B /* ARTRealtimeChannel+Plugins.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		21BFC2D72D67C58800C05E8B /* ARTRealtimeChannel+Plugins.h in Headers */ = {isa = PBXBuildFile; fileRef = 21BFC2D52D67C58800C05E8B /* ARTRealtimeChannel+Plugins.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		21BFC2D82D67C58800C05E8B /* ARTRealtimeChannel+Plugins.h in Headers */ = {isa = PBXBuildFile; fileRef = 21BFC2D52D67C58800C05E8B /* ARTRealtimeChannel+Plugins.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		21E1C0E52A0DC47400A5DB65 /* ARTWebSocketFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 21E1C0E42A0DC47400A5DB65 /* ARTWebSocketFactory.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		21E1C0E62A0DC47400A5DB65 /* ARTWebSocketFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 21E1C0E42A0DC47400A5DB65 /* ARTWebSocketFactory.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		21E1C0E72A0DC47400A5DB65 /* ARTWebSocketFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 21E1C0E42A0DC47400A5DB65 /* ARTWebSocketFactory.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -1371,6 +1374,7 @@
 		21AC0CC92D4AA0F50030BD23 /* ARTWrapperSDKProxyRealtimeChannels+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTWrapperSDKProxyRealtimeChannels+Private.h"; path = "PrivateHeaders/Ably/ARTWrapperSDKProxyRealtimeChannels+Private.h"; sourceTree = "<group>"; };
 		21AC0CD02D4AA3200030BD23 /* ARTWrapperSDKProxyRealtimeChannel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTWrapperSDKProxyRealtimeChannel.m; sourceTree = "<group>"; };
 		21AC0CD12D4AA3200030BD23 /* ARTWrapperSDKProxyRealtimeChannels.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTWrapperSDKProxyRealtimeChannels.m; sourceTree = "<group>"; };
+		21BFC2D52D67C58800C05E8B /* ARTRealtimeChannel+Plugins.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTRealtimeChannel+Plugins.h"; path = "PrivateHeaders/Ably/ARTRealtimeChannel+Plugins.h"; sourceTree = "<group>"; };
 		21DCDA8229F818630073A211 /* Ably-iOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Ably-iOS.xctestplan"; path = "Test/Ably-iOS.xctestplan"; sourceTree = SOURCE_ROOT; };
 		21DCDA8329F81B350073A211 /* Ably-macOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Ably-macOS.xctestplan"; sourceTree = "<group>"; };
 		21DCDA8429F81B550073A211 /* Ably-tvOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Ably-tvOS.xctestplan"; sourceTree = "<group>"; };
@@ -2125,6 +2129,7 @@
 				211A60DE29D7272000D169C5 /* ARTConnectionStateChangeParams.m */,
 				D746AE3A1BBC5AE1003ECEF8 /* ARTRealtimeChannel.h */,
 				D746AE421BBC5CD0003ECEF8 /* ARTRealtimeChannel+Private.h */,
+				21BFC2D52D67C58800C05E8B /* ARTRealtimeChannel+Plugins.h */,
 				D746AE3B1BBC5AE1003ECEF8 /* ARTRealtimeChannel.m */,
 				211A60FA29D8ABCF00D169C5 /* ARTChannelStateChangeParams.h */,
 				211A60FE29D8ABF100D169C5 /* ARTChannelStateChangeParams.m */,
@@ -2546,6 +2551,7 @@
 				D746AE1E1BBB5207003ECEF8 /* ARTDataQuery+Private.h in Headers */,
 				2132C2BD29D482E8000C4355 /* ARTClientOptions+TestConfiguration.h in Headers */,
 				D7AE18C91E5B40C900478D82 /* ARTPushAdmin.h in Headers */,
+				21BFC2D72D67C58800C05E8B /* ARTRealtimeChannel+Plugins.h in Headers */,
 				EB1B53FD22F8D91C006A59AC /* ARTQueuedDealloc.h in Headers */,
 				D77394031C6F6FFE00F5478F /* ARTProtocolMessage+Private.h in Headers */,
 				D746AE2F1BBBE7D7003ECEF8 /* ARTPaginatedResult+Private.h in Headers */,
@@ -2678,6 +2684,7 @@
 				D710D69221949EFF008F54AD /* ARTJsonEncoder.h in Headers */,
 				21113B4629DB484200652C86 /* ARTChannel+Subclass.h in Headers */,
 				D710D5B921949D4F008F54AD /* ARTTokenParams+Private.h in Headers */,
+				21BFC2D82D67C58800C05E8B /* ARTRealtimeChannel+Plugins.h in Headers */,
 				D710D51821949C42008F54AD /* ARTPushChannelSubscription.h in Headers */,
 				D710D4B421949B47008F54AD /* ARTAuth+Private.h in Headers */,
 				D710D4C221949B9C008F54AD /* ARTRealtimeTransport.h in Headers */,
@@ -2872,6 +2879,7 @@
 				D710D61621949DDC008F54AD /* ARTHttp.h in Headers */,
 				21113B4729DB484200652C86 /* ARTChannel+Subclass.h in Headers */,
 				D710D69D21949F00008F54AD /* ARTMsgPackEncoder.h in Headers */,
+				21BFC2D62D67C58800C05E8B /* ARTRealtimeChannel+Plugins.h in Headers */,
 				D710D69C21949F00008F54AD /* ARTJsonEncoder.h in Headers */,
 				D710D5C921949D50008F54AD /* ARTTokenParams+Private.h in Headers */,
 				D710D52A21949C44008F54AD /* ARTPushChannelSubscription.h in Headers */,
