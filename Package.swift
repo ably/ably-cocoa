@@ -47,7 +47,21 @@ let package = Package(
                 .headerSearchPath("SocketRocket/Internal/Delegate"),
                 .headerSearchPath("SocketRocket/Internal/IOConsumer"),
             ]
-        )
+        ),
+        .testTarget(
+            name: "AblyTests",
+            dependencies: [
+                .byName(name: "Ably"),
+            ],
+            path: "Test"
+            /*exclude: [String],*/
+            /*sources: [String]?,*/
+            /*resources: [Resource]?,*/
+            /*cSettings: [CSetting]?,*/
+            /*cxxSettings: [CXXSetting]?,*/
+            /*swiftSettings: [SwiftSetting]?,*/
+            /*linkerSettings: [LinkerSetting]?*/
+        ),
     ]
 )
 
