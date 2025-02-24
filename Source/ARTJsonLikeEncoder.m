@@ -25,6 +25,7 @@
 #import "ARTRest+Private.h"
 #import "ARTJsonEncoder.h"
 #import "ARTPushChannelSubscription.h"
+#import "ARTMessageOperation+Private.h"
 
 @implementation ARTJsonLikeEncoder {
     __weak ARTRestInternal *_rest; // weak because rest owns self
@@ -294,11 +295,17 @@
     message.encoding = [input artString:@"encoding"];
     message.timestamp = [input artTimestamp:@"timestamp"];
     message.createdAt = [input artTimestamp:@"createdAt"];
+    message.updatedAt = [input artTimestamp:@"updatedAt"];
     if (!message.createdAt && message.action == ARTMessageActionCreate) { // TM2o
         message.createdAt = message.timestamp;
     }
     message.connectionId = [input artString:@"connectionId"];
     message.extras = [input objectForKey:@"extras"];
+    
+    id operation = input[@"operation"];
+    if (operation && [operation isKindOfClass:[NSDictionary class]]) {
+        message.operation = [ARTMessageOperation createFromDictionary:operation];
+    }
     
     return message;
 }
