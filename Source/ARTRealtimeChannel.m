@@ -84,6 +84,10 @@
     return self.pluginData[key];
 }
 
+- (void)addPluginProtocolMessageListener:(ARTProtocolMessageListener)listener {
+    [self.internal addPluginProtocolMessageListener:listener];
+}
+
 - (NSString *)name {
     return _internal.name;
 }
@@ -266,6 +270,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTRealtimeChannelInternal ()
 
 @property (nonatomic, readonly) ARTAttachRetryState *attachRetryState;
+@property (nonatomic, readonly) NSMutableArray<ARTProtocolMessageListener> *pluginProtocolMessageListeners;
 
 @end
 
@@ -297,8 +302,13 @@ NS_ASSUME_NONNULL_END
         _attachRetryState = [[ARTAttachRetryState alloc] initWithRetryDelayCalculator:attachRetryDelayCalculator
                                                                                logger:logger
                                                                      logMessagePrefix:[NSString stringWithFormat:@"RT: %p C:%p ", _realtime, self]];
+        _pluginProtocolMessageListeners = [[NSMutableArray alloc] init];
     }
     return self;
+}
+
+- (void)addPluginProtocolMessageListener:(ARTProtocolMessageListener)listener {
+    [self.pluginProtocolMessageListeners addObject:listener];
 }
 
 - (ARTRealtimeChannelState)state {
@@ -650,6 +660,10 @@ dispatch_sync(_queue, ^{
         default:
             ARTLogWarn(self.logger, @"R:%p C:%p (%@) unknown ARTProtocolMessage action: %tu", _realtime, self, self.name, message.action);
             break;
+    }
+
+    for (ARTProtocolMessageListener listener in self.pluginProtocolMessageListeners) {
+        listener(message);
     }
 }
 

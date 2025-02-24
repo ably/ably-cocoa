@@ -14,4 +14,9 @@
     return [channel pluginDataValueForKey:key];
 }
 
++ (void)addPluginProtocolMessageListener:(APProtocolMessageListener)listener
+                                 channel:(nonnull ARTRealtimeChannel *)channel {
+    [channel addPluginProtocolMessageListener:listener];
+}
+
 @end
