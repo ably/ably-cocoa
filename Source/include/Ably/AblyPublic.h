@@ -20,7 +20,6 @@
 #import <Ably/ARTMessage.h>
 #import <Ably/ARTPresence.h>
 #import <Ably/ARTPresenceMessage.h>
-#import <Ably/ARTProtocolMessage.h>
 #import <Ably/ARTQueuedMessage.h>
 #import <Ably/ARTRest.h>
 #import <Ably/ARTRestChannel.h>

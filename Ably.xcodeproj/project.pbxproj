@@ -448,7 +448,7 @@
 		96BF61701A35FB7C004CF2B3 /* ARTAuth.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF616E1A35FB7C004CF2B3 /* ARTAuth.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		96BF61711A35FB7C004CF2B3 /* ARTAuth.m in Sources */ = {isa = PBXBuildFile; fileRef = 96BF616F1A35FB7C004CF2B3 /* ARTAuth.m */; };
 		96E4083F1A3892C700087F77 /* ARTRealtimeTransport.h in Headers */ = {isa = PBXBuildFile; fileRef = 96E4083D1A3892C700087F77 /* ARTRealtimeTransport.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		96E408431A38939E00087F77 /* ARTProtocolMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = 96E408411A38939E00087F77 /* ARTProtocolMessage.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		96E408431A38939E00087F77 /* ARTProtocolMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = 96E408411A38939E00087F77 /* ARTProtocolMessage.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		96E408441A38939E00087F77 /* ARTProtocolMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 96E408421A38939E00087F77 /* ARTProtocolMessage.m */; };
 		96E408471A3895E800087F77 /* ARTWebSocketTransport.h in Headers */ = {isa = PBXBuildFile; fileRef = 96E408451A3895E800087F77 /* ARTWebSocketTransport.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		96E408481A3895E800087F77 /* ARTWebSocketTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = 96E408461A3895E800087F77 /* ARTWebSocketTransport.m */; };
@@ -757,7 +757,7 @@
 		D710D58521949D28008F54AD /* ARTChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE201BBB60EE003ECEF8 /* ARTChannel.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D710D58621949D29008F54AD /* ARTChannels.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE511BBD85C5003ECEF8 /* ARTChannels.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D710D58721949D29008F54AD /* ARTChannelOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE4D1BBD84E7003ECEF8 /* ARTChannelOptions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		D710D58821949D29008F54AD /* ARTProtocolMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = 96E408411A38939E00087F77 /* ARTProtocolMessage.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D710D58821949D29008F54AD /* ARTProtocolMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = 96E408411A38939E00087F77 /* ARTProtocolMessage.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D710D58921949D29008F54AD /* ARTBaseMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF61621A35CDE1004CF2B3 /* ARTBaseMessage.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D710D58A21949D29008F54AD /* ARTMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE361BBC3201003ECEF8 /* ARTMessage.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D710D58B21949D29008F54AD /* ARTPresence.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE261BBB61C9003ECEF8 /* ARTPresence.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -775,7 +775,7 @@
 		D710D5AB21949D2A008F54AD /* ARTChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE201BBB60EE003ECEF8 /* ARTChannel.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D710D5AC21949D2A008F54AD /* ARTChannels.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE511BBD85C5003ECEF8 /* ARTChannels.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D710D5AD21949D2A008F54AD /* ARTChannelOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE4D1BBD84E7003ECEF8 /* ARTChannelOptions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		D710D5AE21949D2A008F54AD /* ARTProtocolMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = 96E408411A38939E00087F77 /* ARTProtocolMessage.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D710D5AE21949D2A008F54AD /* ARTProtocolMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = 96E408411A38939E00087F77 /* ARTProtocolMessage.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D710D5AF21949D2A008F54AD /* ARTBaseMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF61621A35CDE1004CF2B3 /* ARTBaseMessage.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D710D5B021949D2A008F54AD /* ARTMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE361BBC3201003ECEF8 /* ARTMessage.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D710D5B121949D2A008F54AD /* ARTPresence.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE261BBB61C9003ECEF8 /* ARTPresence.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1434,7 +1434,7 @@
 		96BF616E1A35FB7C004CF2B3 /* ARTAuth.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTAuth.h; path = include/Ably/ARTAuth.h; sourceTree = "<group>"; };
 		96BF616F1A35FB7C004CF2B3 /* ARTAuth.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTAuth.m; sourceTree = "<group>"; };
 		96E4083D1A3892C700087F77 /* ARTRealtimeTransport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTRealtimeTransport.h; path = PrivateHeaders/Ably/ARTRealtimeTransport.h; sourceTree = "<group>"; };
-		96E408411A38939E00087F77 /* ARTProtocolMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTProtocolMessage.h; path = include/Ably/ARTProtocolMessage.h; sourceTree = "<group>"; };
+		96E408411A38939E00087F77 /* ARTProtocolMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTProtocolMessage.h; path = PrivateHeaders/Ably/ARTProtocolMessage.h; sourceTree = "<group>"; };
 		96E408421A38939E00087F77 /* ARTProtocolMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTProtocolMessage.m; sourceTree = "<group>"; };
 		96E408451A3895E800087F77 /* ARTWebSocketTransport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTWebSocketTransport.h; path = PrivateHeaders/Ably/ARTWebSocketTransport.h; sourceTree = "<group>"; };
 		96E408461A3895E800087F77 /* ARTWebSocketTransport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTWebSocketTransport.m; sourceTree = "<group>"; };
