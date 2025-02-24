@@ -4,7 +4,6 @@
 #import <Ably/ARTAuth.h>
 #import <Ably/ARTAuthDetails.h>
 #import <Ably/ARTConnection.h>
-#import <Ably/ARTConnectionDetails.h>
 #import <Ably/ARTBaseMessage.h>
 #import <Ably/ARTRestChannels.h>
 #import <Ably/ARTChannelOptions.h>
@@ -16,12 +15,9 @@
 #import <Ably/ARTCrypto.h>
 #import <Ably/ARTDefault.h>
 #import <Ably/ARTEventEmitter.h>
-#import <Ably/ARTFallback.h>
 #import <Ably/ARTMessage.h>
 #import <Ably/ARTPresence.h>
 #import <Ably/ARTPresenceMessage.h>
-#import <Ably/ARTProtocolMessage.h>
-#import <Ably/ARTQueuedMessage.h>
 #import <Ably/ARTRest.h>
 #import <Ably/ARTRestChannel.h>
 #import <Ably/ARTRestPresence.h>
@@ -30,7 +26,6 @@
 #import <Ably/ARTRealtimeChannelOptions.h>
 #import <Ably/ARTRealtimePresence.h>
 #import <Ably/ARTStats.h>
-#import <Ably/ARTEncoder.h>
 #import <Ably/ARTPaginatedResult.h>
 #import <Ably/ARTHTTPPaginatedResponse.h>
 #import <Ably/ARTPush.h>
@@ -42,9 +37,7 @@
 #import <Ably/ARTDeviceDetails.h>
 #import <Ably/ARTDevicePushDetails.h>
 #import <Ably/ARTDeviceIdentityTokenDetails.h>
-#import <Ably/ARTDeviceStorage.h>
 #import <Ably/ARTLocalDevice.h>
-#import <Ably/ARTPendingMessage.h>
 #import <Ably/ARTStringifiable.h>
 #import <Ably/ARTClientInformation.h>
 #import <Ably/ARTChannelProtocol.h>
