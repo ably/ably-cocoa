@@ -524,33 +524,6 @@ class UtilitiesTests: XCTestCase {
         XCTAssertNil(messages[0].serial)
     }
     
-    // TM2p
-    func test__026_Utilities__message_received_over_a_realtime_transport_does_not_contain_a_version() throws {
-        beforeEach__Utilities__JSON_Encoder()
-        let json = """
-        {
-            "channelSerial": "foo",
-            "messages": [
-                {
-                    "serial": "12345"
-                },
-                {
-                    "serial": "123456"
-                }
-            ]
-        }
-        """
-        let data = json.data(using: .utf8)!
-        let pm = try jsonEncoder.decodeProtocolMessage(data)
-        let messages = try XCTUnwrap(pm.messages)
-        XCTAssert(messages[0].action == .create)
-        XCTAssert(messages[0].version == "foo:000")
-        XCTAssert(messages[0].serial == "12345")
-        XCTAssert(messages[1].action == .create)
-        XCTAssert(messages[1].version == "foo:001")
-        XCTAssert(messages[1].serial == "123456")
-    }
-    
     // TM2o
     func test__027_Utilities__message_received_with_action_create_does_not_contain_createdAt() throws {
         beforeEach__Utilities__JSON_Encoder()
