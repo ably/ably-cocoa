@@ -57,7 +57,10 @@ let package = Package(
             dependencies: [
                 .byName(name: "Ably")
             ],
-            path: "AblyPlugin"
+            path: "AblyPlugin",
+            cSettings: [
+                .headerSearchPath("../Source/PrivateHeaders/Ably")
+            ]
         )
     ]
 )
