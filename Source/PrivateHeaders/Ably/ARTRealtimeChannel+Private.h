@@ -10,6 +10,7 @@
 #import <Ably/ARTRealtime+Private.h>
 #import <Ably/ARTQueuedDealloc.h>
 #import <Ably/ARTPushChannel+Private.h>
+#import <Ably/ARTRealtimeChannel+Plugins.h>
 
 @class ARTProtocolMessage;
 @class ARTRealtimePresenceInternal;
@@ -91,6 +92,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTPaginatedMessagesCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
 - (void)setOptions:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable ARTCallback)callback;
+
+- (void)addPluginProtocolMessageListener:(ARTProtocolMessageListener)listener;
+
+- (void)sendProtocolMessage:(ARTProtocolMessage *)protocolMessage;
 
 #pragma mark ARTEventEmitter
 

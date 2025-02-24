@@ -9,6 +9,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NSString *ARTPluginName NS_TYPED_EXTENSIBLE_ENUM;
+extern const ARTPluginName ARTPluginNameLiveObjects;
+
 /**
  * Passes additional client-specific properties to the REST `-[ARTRestProtocol initWithOptions:]` or the Realtime `-[ARTRealtimeProtocol initWithOptions:]`.
  */
@@ -196,6 +199,13 @@ NS_ASSUME_NONNULL_BEGIN
  * A set of additional entries for the Ably agent header. Each entry can be a key string or set of key-value pairs. This should only be used by Ably-authored SDKs. If an agent does not have a version, represent this by using the `ARTClientInformationAgentNotVersioned` pointer as the version.
  */
 @property (nonatomic, copy, nullable) NSDictionary<NSString *, NSString *> *agents;
+
+/// A set of plugins that provide additional functionality to the client.
+///
+/// Currently supported keys:
+///
+/// - `ARTPluginNameLiveObjects`: Import the `AblyLiveObjects` module from the ably/ably-cocoa-liveobjects-plugin repository and set the value to `AblyLiveObjects.Plugin.self`.
+@property (nonatomic, copy, nullable) NSDictionary<ARTPluginName, id> *plugins;
 
 @end
 
