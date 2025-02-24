@@ -50,6 +50,7 @@ let package = Package(
                 .headerSearchPath("SocketRocket/Internal/RunLoop"),
                 .headerSearchPath("SocketRocket/Internal/Delegate"),
                 .headerSearchPath("SocketRocket/Internal/IOConsumer"),
+                .headerSearchPath("../AblyPlugin/include"),
             ]
         ),
         .target(

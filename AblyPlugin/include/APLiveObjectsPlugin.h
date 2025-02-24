@@ -1,6 +1,7 @@
 #import <Foundation/Foundation.h>
 
 @class ARTRealtimeChannel;
+@protocol APLiveObjectsPluginProtocol;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -8,7 +9,7 @@ NS_ASSUME_NONNULL_BEGIN
 NS_SWIFT_NAME(LiveObjectsPluginFactoryProtocol)
 @protocol APLiveObjectsPluginFactoryProtocol <NSObject>
 
-- (id<APLiveObjectsPluginProtocol>)createPlugin;
++ (id<APLiveObjectsPluginProtocol>)createPlugin;
 
 @end
 

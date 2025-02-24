@@ -36,7 +36,7 @@
 #if TARGET_OS_IPHONE
 #import "ARTPushChannel+Private.h"
 #endif
-#import "ARTLiveObjectsPlugin.h"
+#import "APLiveObjectsPlugin.h"
 
 @interface ARTRealtimeChannel ()
 
@@ -68,7 +68,8 @@
         _pluginData = [[NSMutableDictionary alloc] init];
 
         if (internal.realtime.options.liveObjectsPlugin) {
-            Class<ARTLiveObjectsPlugin> liveObjectsPlugin = internal.realtime.options.liveObjectsPlugin;
+            Class<APLiveObjectsPluginFactoryProtocol> liveObjectsFactoryClass = internal.realtime.options.liveObjectsPlugin;
+            id<APLiveObjectsPluginProtocol> liveObjectsPlugin = [liveObjectsFactoryClass createPlugin];
             [liveObjectsPlugin prepareChannel:self];
         }
     }
