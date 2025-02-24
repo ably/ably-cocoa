@@ -14,6 +14,10 @@ let package = Package(
             name: "Ably",
             targets: ["Ably"]
         ),
+        .library(
+            name: "AblyPlugin",
+            targets: ["AblyPlugin"]
+        ),
     ],
     dependencies: [
         .package(name: "msgpack", url: "https://github.com/rvi/msgpack-objective-C", from: "0.4.0"),
@@ -47,6 +51,13 @@ let package = Package(
                 .headerSearchPath("SocketRocket/Internal/Delegate"),
                 .headerSearchPath("SocketRocket/Internal/IOConsumer"),
             ]
+        ),
+        .target(
+            name: "AblyPlugin",
+            dependencies: [
+                .byName(name: "Ably")
+            ],
+            path: "AblyPlugin"
         )
     ]
 )
