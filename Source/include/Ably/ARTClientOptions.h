@@ -197,6 +197,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, copy, nullable) NSDictionary<NSString *, NSString *> *agents;
 
+/// Import the `AblyLiveObjects` module and set this to `AblyLiveObjects.Plugin.self`.
 @property (nonatomic, nullable) id liveObjectsPlugin;
 
 @end
