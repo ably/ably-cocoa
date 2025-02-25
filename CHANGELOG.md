@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.2.40](https://github.com/ably/ably-cocoa/tree/1.2.40)
+
+### What's Changed
+
+* Introduce new `ARTMessageOperation` type. Used when editing and deleting messages in the Chat SDK. (https://github.com/ably/ably-cocoa/pull/2036)
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.39...1.2.40
+
 ## [1.2.39](https://github.com/ably/ably-cocoa/tree/1.2.39)
 
 ### What's Changed
