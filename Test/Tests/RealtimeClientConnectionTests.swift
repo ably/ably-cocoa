@@ -384,7 +384,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                     done()
                 case .connected:
                     if let transport = client.internal.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
-                        expect(query).to(haveParam("agent", hasPrefix: "ably-cocoa/1.2.39"))
+                        expect(query).to(haveParam("agent", hasPrefix: "ably-cocoa/1.2.40"))
                     } else {
                         XCTFail("MockTransport isn't working")
                     }
