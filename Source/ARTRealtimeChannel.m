@@ -67,8 +67,8 @@
         _dealloc = dealloc;
         _pluginData = [[NSMutableDictionary alloc] init];
 
-        if (internal.realtime.options.liveObjectsPlugin) {
-            Class<APLiveObjectsPluginFactoryProtocol> liveObjectsFactoryClass = internal.realtime.options.liveObjectsPlugin;
+        if (internal.realtime.options.plugins[ARTPluginNameLiveObjects]) {
+            Class<APLiveObjectsPluginFactoryProtocol> liveObjectsFactoryClass = internal.realtime.options.plugins[ARTPluginNameLiveObjects];
             id<APLiveObjectsPluginProtocol> liveObjectsPlugin = [liveObjectsFactoryClass createPlugin];
             [liveObjectsPlugin prepareChannel:self];
         }
