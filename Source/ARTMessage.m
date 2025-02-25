@@ -42,8 +42,13 @@
     message.name = self.name;
     message.action = self.action;
     message.serial = self.serial;
+    message.updateSerial = self.updateSerial;
     message.version = self.version;
     message.createdAt = self.createdAt;
+    message.updatedAt = self.updatedAt;
+    message.operation = self.operation;
+    message.refType = self.refType;
+    message.refSerial = self.refSerial;
     return message;
 }
 

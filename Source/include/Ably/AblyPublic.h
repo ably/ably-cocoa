@@ -48,3 +48,4 @@
 #import <Ably/ARTStringifiable.h>
 #import <Ably/ARTClientInformation.h>
 #import <Ably/ARTChannelProtocol.h>
+#import <Ably/ARTMessageOperation.h>
