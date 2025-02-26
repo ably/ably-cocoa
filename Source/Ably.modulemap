@@ -123,5 +123,12 @@ framework module Ably {
         header "ARTWrapperSDKProxyPushChannel+Private.h"
         header "ARTWrapperSDKProxyRealtimePresence+Private.h"
         header "ARTMessageOperation+Private.h"
+        header "ARTProtocolMessage.h"
+        header "ARTConnectionDetails.h"
+        header "ARTFallback.h"
+        header "ARTQueuedMessage.h"
+        header "ARTPendingMessage.h"
+        header "ARTEncoder.h"
+        header "ARTDeviceStorage.h"
     }
 }
