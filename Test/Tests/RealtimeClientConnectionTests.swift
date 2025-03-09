@@ -26,6 +26,7 @@ private let shuffleArrayInExpectedHostOrder = { (array: NSMutableArray) in
 private func testUsesAlternativeHostOnResponse(_ caseTest: FakeNetworkResponse, channelName: String) {
     let options = ARTClientOptions(key: "xxxx:xxxx")
     options.autoConnect = false
+    options.disconnectedRetryTimeout = 1.0
     options.testOptions.realtimeRequestTimeout = 1.0
     let transportFactory = TestProxyTransportFactory()
     options.testOptions.transportFactory = transportFactory
@@ -41,26 +42,20 @@ private func testUsesAlternativeHostOnResponse(_ caseTest: FakeNetworkResponse, 
             return
         }
         urlConnections.append(url)
-        if urlConnections.count == 1 {
-            transportFactory.fakeNetworkResponse = nil
-        }
     }
 
     waitUntil(timeout: testTimeout) { done in
-        // wss://[a-e].ably-realtime.com: when a timeout occurs
-        client.connection.once(.disconnected) { _ in
-            done()
-        }
-        // wss://[a-e].ably-realtime.com: when a 401 occurs because of the `xxxx:xxxx` key
-        client.connection.once(.failed) { _ in
-            done()
+        let partialDone = AblyTests.splitDone(2, done: done)
+        // default host with the fake response or wss://[a-e].ably-realtime.com: when a timeout occurs
+        client.connection.on(.disconnected) { _ in
+            partialDone()
         }
         client.connect()
     }
 
     XCTAssertEqual(urlConnections.count, 2)
-    XCTAssertTrue(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io"))
-    XCTAssertTrue(NSRegularExpression.match(urlConnections[1].absoluteString, pattern: "//[a-e].ably-realtime.com"))
+    XCTAssertTrue(NSRegularExpression.match(urlConnections.at(0)?.absoluteString, pattern: "//realtime.ably.io"))
+    XCTAssertTrue(NSRegularExpression.match(urlConnections.at(1)?.absoluteString, pattern: "//[a-e].ably-realtime.com"))
 }
 
 private func testMovesToDisconnectedWithNetworkingError(_ error: Error, for test: Test) throws {
@@ -2218,6 +2213,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
     func testRTN14dAndRTB1(
         test: Test,
+        useFallbacks: Bool = false,
         extraTimeNeededToObserveEachRetry: TimeInterval = 0,
         modifyOptions: (ARTClientOptions) -> Void,
         checkError: (ARTErrorInfo) -> Void
@@ -2234,18 +2230,42 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         let numberOfRetriesToWaitFor = 5 // arbitrarily chosen, large enough for us to have confidence that a sequence of retries is occurring, with the correct retry delays
 
-        let expectedRetryDelays = Array(
+        let backoffJitterRetryDelays = Array(
             AblyTests.expectedRetryDelays(
                 forTimeout: options.disconnectedRetryTimeout,
                 jitterCoefficients: jitterCoefficients
             ).prefix(numberOfRetriesToWaitFor + 1 /* The +1 can be removed after #1782 is fixed; see note below */)
         )
+        
+        var expectedRetryDelays = [TimeInterval]()
+        
+        if useFallbacks {
+            // https://ably-real-time.slack.com/archives/CURL4U2FP/p1742211172312389?thread_ts=1741387920.007779&cid=CURL4U2FP
+            /* Owen Pearson:
+             * > backoff + jitter is used to determine the time until the client attempts a connection sequence
+             * > where a connection sequence is: try primary host -> if primary host doesn't work, try fallbacks a-e
+             * > so when a client is disconnected unexpectedly, the client should immediately try the connection sequence,
+             * > then if that fails it uses backoff + jitter to calculate when it will attempt another connection
+             */
+            expectedRetryDelays = Array(repeating: 0.1,
+                                        count: backoffJitterRetryDelays.count * 6) // 6 = 1 + 5: primary host + a-e fallbacks
+            var j = 0
+            for i in 1..<expectedRetryDelays.count {
+                if i % 6 == 0 {
+                    expectedRetryDelays[i] = backoffJitterRetryDelays[j]
+                    j += 1
+                }
+            }
+        } else {
+            expectedRetryDelays = backoffJitterRetryDelays
+        }
+        
         let timesNeededToObserveRetries = expectedRetryDelays.map { retryDelay in
             extraTimeNeededToObserveEachRetry
             + retryDelay // waiting for retry to occur
             + 0.2 // some extra tolerance, arbitrarily chosen
         }
-        let timeNeededToObserveRetries = timesNeededToObserveRetries.prefix(numberOfRetriesToWaitFor).reduce(0, +)
+        let timeNeededToObserveRetries = timesNeededToObserveRetries.prefix(expectedRetryDelays.count).reduce(0, +)
 
         let connectionStateTtl = timeNeededToObserveRetries + 1.0 // i.e. make sure that we don't become suspended before we've observed as many retries as we wish to
 
@@ -2254,7 +2274,6 @@ class RealtimeClientConnectionTests: XCTestCase {
         ARTDefault.setConnectionStateTtl(connectionStateTtl)
 
         let client = ARTRealtime(options: options)
-        client.internal.shouldImmediatelyReconnect = false
         defer {
             client.connection.off()
             client.close()
@@ -2278,7 +2297,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         client.connect()
 
-        let observedStateChanges = try retrySequenceDataGatherer.waitForData(timeout: testTimeout)
+        let observedStateChanges = try retrySequenceDataGatherer.waitForData(timeout: testTimeout.multiplied(by: 3))
 
         // We expect to get INITIALIZED -> CONNECTING, and then, repeated: CONNECTING -> DISCONNECTED, DISCONNECTED -> CONNECTING, and then finally CONNECTING -> SUSPENDED.
 
@@ -2320,9 +2339,9 @@ class RealtimeClientConnectionTests: XCTestCase {
 
            but we have to account for the fact that, due to bug #1782, the connection will sometimes (in a manner that we can't predict) perform an extra retry before transitioning to SUSPENDED. Once #1782 is fixed, the expectation should be changed to the above.
          */
-        let timeTakenByPotentialExcessRetry = timesNeededToObserveRetries[numberOfRetriesToWaitFor]
+        let timeTakenByPotentialExcessRetry = timesNeededToObserveRetries[expectedRetryDelays.count - 1]
 
-        let tolerance = 0.1 // arbitrarily chosen
+        let tolerance = 1.0 // arbitrarily chosen, but rather high due to multiple internet checks during the lengthy sequence
         expect(finalStateChange.observedAt.timeIntervalSince(firstObservedStateChangeToDisconnected!.observedAt))
             .to(beGreaterThan(connectionStateTtl - tolerance))
             .to(beLessThan(connectionStateTtl + timeTakenByPotentialExcessRetry + tolerance))
@@ -2347,17 +2366,17 @@ class RealtimeClientConnectionTests: XCTestCase {
     }
 
     // RTN14d, RTB1
-    func test__059b__Connection__connection_request_fails__connection_attempt_fails_for_any_recoverable_reason__for_example_an_arbitrary_transport_error() throws {
+    func test__059b__Connection__connection_request_fails__connection_attempt_fails_for_any_recoverable_reason__for_example_an_hostUnreachable_transport_error() throws {
         let test = Test()
 
         try testRTN14dAndRTB1(test: test,
+                              useFallbacks: true,
                               modifyOptions: { options in
             let transportFactory = TestProxyTransportFactory()
-            transportFactory.fakeNetworkResponse = .arbitraryError
+            transportFactory.fakeNetworkResponse = .hostUnreachable
             options.testOptions.transportFactory = transportFactory
-        },
-                              checkError: { error in
-            XCTAssertTrue(error.message.contains("error from FakeNetworkResponse.arbitraryError"))
+        }, checkError: { error in
+            XCTAssertTrue(error.message.contains("host unreachable"))
         })
     }
 
@@ -2375,7 +2394,6 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
 
         let client = ARTRealtime(options: options)
-        client.internal.shouldImmediatelyReconnect = false
         defer { client.dispose(); client.close() }
 
         let ttlHookToken = client.overrideConnectionStateTTL(0.3)
@@ -2503,7 +2521,6 @@ class RealtimeClientConnectionTests: XCTestCase {
         ARTDefault.setConnectionStateTtl(expectedTime)
 
         let client = ARTRealtime(options: options)
-        client.internal.shouldImmediatelyReconnect = false
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -4020,56 +4037,12 @@ class RealtimeClientConnectionTests: XCTestCase {
         XCTAssertEqual(urlConnections.count, 1)
     }
 
-    // RTN17b1
-    func test__088__Connection__Host_Fallback__applies_when_the_default_realtime_ably_io_endpoint_is_being_used() {
-        let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
-        options.autoConnect = false
-        options.testOptions.realtimeRequestTimeout = 2.0 // this timeout should be longer than `internetIsUp` + `performFakeConnectionError` timeouts
-        let transportFactory = TestProxyTransportFactory()
-        options.testOptions.transportFactory = transportFactory
-        let client = ARTRealtime(options: options)
-        defer { client.dispose(); client.close() }
-        client.channels.get(test.uniqueChannelName())
-
-        transportFactory.fakeNetworkResponse = .hostUnreachable
-
-        var urlConnections = [URL]()
-        transportFactory.networkConnectEvent = { transport, url in
-            if client.internal.transport !== transport {
-                return
-            }
-            urlConnections.append(url)
-            if urlConnections.count == 1 {
-                transportFactory.fakeNetworkResponse = nil
-            }
-        }
-
-        waitUntil(timeout: testTimeout) { done in
-            // wss://[a-e].ably-realtime.com: when a timeout occurs
-            client.connection.once(.disconnected) { _ in
-                done()
-            }
-            // wss://[a-e].ably-realtime.com: when a 401 occurs because of the `xxxx:xxxx` key
-            client.connection.once(.failed) { _ in
-                done()
-            }
-            client.connect()
-        }
-
-        XCTAssertEqual(urlConnections.count, 2)
-        if urlConnections.count != 2 {
-            return
-        }
-        XCTAssertTrue(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io"))
-        XCTAssertTrue(NSRegularExpression.match(urlConnections[1].absoluteString, pattern: "//[a-e].ably-realtime.com"))
-    }
-
     // RTN17b2
     func test__089__Connection__Host_Fallback__applies_when_an_array_of_ClientOptions_fallbackHosts_is_provided() {
         let test = Test()
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
+        options.disconnectedRetryTimeout = 1.0
         options.fallbackHosts = ["f.ably-realtime.com", "g.ably-realtime.com", "h.ably-realtime.com", "i.ably-realtime.com", "j.ably-realtime.com"]
         options.testOptions.realtimeRequestTimeout = 1.0
         let transportFactory = TestProxyTransportFactory()
@@ -4086,26 +4059,22 @@ class RealtimeClientConnectionTests: XCTestCase {
                 return
             }
             urlConnections.append(url)
-            if urlConnections.count == 1 {
-                transportFactory.fakeNetworkResponse = nil
-            }
         }
+        
+        let allHostsCount = options.fallbackHosts!.count + 1 // + default host
 
         waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(allHostsCount, done: done)
             // wss://[a-e].ably-realtime.com: when a timeout occurs
-            client.connection.once(.disconnected) { _ in
-                done()
-            }
-            // wss://[a-e].ably-realtime.com: when a 401 occurs because of the `xxxx:xxxx` key
-            client.connection.once(.failed) { _ in
-                done()
+            client.connection.on(.disconnected) { _ in
+                partialDone()
             }
             client.connect()
         }
 
-        XCTAssertTrue(urlConnections.count > 1 && urlConnections.count <= options.fallbackHosts!.count + 1)
-        XCTAssertTrue(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io"))
-        for connection in urlConnections.dropFirst() {
+        XCTAssertTrue(urlConnections.count == allHostsCount)
+        XCTAssertTrue(NSRegularExpression.match(urlConnections.at(0)?.absoluteString, pattern: "//realtime.ably.io"))
+        for connection in urlConnections[1..<allHostsCount] {
             XCTAssertTrue(NSRegularExpression.match(connection.absoluteString, pattern: "//[f-j].ably-realtime.com"))
         }
     }
@@ -4116,6 +4085,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let test = Test()
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
+        options.disconnectedRetryTimeout = 1.0
         options.port = 123 // otherwise regardless `fallbackHostsUseDefault` test passes because of RTN17b1
         options.fallbackHostsUseDefault = true
         options.testOptions.realtimeRequestTimeout = 2.0 // this timeout should be longer than `internetIsUp` + `performFakeConnectionError` timeouts
@@ -4133,44 +4103,35 @@ class RealtimeClientConnectionTests: XCTestCase {
                 return
             }
             urlConnections.append(url)
-            if urlConnections.count == 1 {
-                transportFactory.fakeNetworkResponse = nil
-            }
         }
 
         waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(2, done: done)
             // wss://[a-e].ably-realtime.com: when a timeout occurs
-            client.connection.once(.disconnected) { _ in
-                done()
-            }
-            // wss://[a-e].ably-realtime.com: when a 401 occurs because of the `xxxx:xxxx` key
-            client.connection.once(.failed) { _ in
-                done()
+            client.connection.on(.disconnected) { _ in
+                partialDone()
             }
             client.connect()
         }
 
         XCTAssertEqual(urlConnections.count, 2)
-        if urlConnections.count != 2 {
-            return
-        }
-        XCTAssertTrue(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io"))
-        XCTAssertTrue(NSRegularExpression.match(urlConnections[1].absoluteString, pattern: "//[a-e].ably-realtime.com"))
+        XCTAssertTrue(NSRegularExpression.match(urlConnections.at(0)?.absoluteString, pattern: "//realtime.ably.io"))
+        XCTAssertTrue(NSRegularExpression.match(urlConnections.at(1)?.absoluteString, pattern: "//[a-e].ably-realtime.com"))
     }
 
-    // RTN17d
+    // RTN17f
 
     func test__097__Connection__Host_Fallback__should_use_an_alternative_host_when___hostUnreachable() {
         let test = Test()
         testUsesAlternativeHostOnResponse(.hostUnreachable, channelName: test.uniqueChannelName())
     }
 
-    func test__098__Connection__Host_Fallback__should_use_an_alternative_host_when___requestTimeout_timeout__0_1_() {
+    func test__098__Connection__Host_Fallback__should_use_an_alternative_host_when___requestTimeout() {
         let test = Test()
         testUsesAlternativeHostOnResponse(.requestTimeout(timeout: 0.1), channelName: test.uniqueChannelName())
     }
 
-    func test__099__Connection__Host_Fallback__should_use_an_alternative_host_when___hostInternalError_code__501_() {
+    func test__099__Connection__Host_Fallback__should_use_an_alternative_host_when___hostInternalError_code__501() {
         let test = Test()
         testUsesAlternativeHostOnResponse(.hostInternalError(code: 501), channelName: test.uniqueChannelName())
     }
@@ -4185,8 +4146,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         try testMovesToDisconnectedWithNetworkingError(NSError(domain: "NSPOSIXErrorDomain", code: 50, userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"]), for: test)
     }
 
-    // TODO: unskip, see https://github.com/ably/ably-cocoa/issues/2023
-    func skipped_test__102__Connection__Host_Fallback__should_move_to_disconnected_when_there_s_no_internet__with_any_kCFErrorDomainCFNetwork() throws {
+    func test__102__Connection__Host_Fallback__should_move_to_disconnected_when_there_s_no_internet__with_any_kCFErrorDomainCFNetwork() throws {
         let test = Test()
         try testMovesToDisconnectedWithNetworkingError(NSError(domain: "kCFErrorDomainCFNetwork", code: 1337, userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"]), for: test)
     }
@@ -4234,12 +4194,14 @@ class RealtimeClientConnectionTests: XCTestCase {
     }
 
     // RTN17a
+    // RTN17b1
     private func _test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_realtime_ably_io(env: String?, test: Test) {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         if let env {
             options.environment = env
         }
         options.autoConnect = false
+        options.disconnectedRetryTimeout = 1.0
         options.testOptions.realtimeRequestTimeout = 1.0
         let transportFactory = TestProxyTransportFactory()
         options.testOptions.transportFactory = transportFactory
@@ -4259,35 +4221,26 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
 
         waitUntil(timeout: testTimeout) { done in
-            // Unreachable and try a fallback
-            client.connection.on { stateChange in
-                // Timeout or 401 occurs because of the `xxxx:xxxx` key
-                if stateChange.current == .disconnected || stateChange.current == .failed {
-                    client.connection.off()
-                    done()
-                }
+            let partialDone = AblyTests.splitDone(2, done: done)
+            // default host with the fake response or wss://[a-e].ably-realtime.com: when a timeout occurs
+            client.connection.on(.disconnected) { _ in
+                partialDone()
             }
-            client.connect()
-        }
-
-        client.connect()
-
-        waitUntil(timeout: testTimeout) { done in
-            // 401 occurs because of the `xxxx:xxxx` key
-            client.connection.once(.failed) { stateChange in
+            // wss://[a-e].ably-realtime.com: when a 401 occurs because of the `xxxx:xxxx` key
+            client.connection.on(.failed) { stateChange in
                 guard let error = stateChange.reason else {
                     fail("Error is nil"); done(); return
                 }
                 // This is because, at time of writing, the production environment is handling connections using both frontend (which returns invalidCredential) and frontdoor (which returns invalidCredentials). So we need to handle both cases at least for now (unlike other tests, which use sandbox which is 100% using frontdoor).
                 XCTAssertTrue(error.code == ARTErrorCode.invalidCredential.rawValue || error.code == ARTErrorCode.invalidCredentials.rawValue)
-                done()
+                partialDone()
             }
+            client.connect()
         }
 
-        XCTAssertEqual(urlConnections.count, 3)
+        XCTAssertTrue(urlConnections.count >= 2) // amount depends on how soon fallback receives `.failed` above, it's often `.disconnected` instead
         XCTAssertTrue(NSRegularExpression.match(urlConnections.at(0)?.absoluteString, pattern: "//[sandbox-]*realtime.ably.io"))
         XCTAssertTrue(NSRegularExpression.match(urlConnections.at(1)?.absoluteString, pattern: "//[sandbox-]*[a-e][-fallback]*.ably-realtime.com"))
-        XCTAssertTrue(NSRegularExpression.match(urlConnections.at(2)?.absoluteString, pattern: "//[sandbox-]*realtime.ably.io"))
     }
 
     func test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_realtime_ably_io_prod() {
@@ -4304,6 +4257,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     func _test__092__Connection__Host_Fallback__should_retry_hosts_in_random_order_after_checkin_if_an_internet_connection_is_available(env: String?, test: Test) {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
+        options.disconnectedRetryTimeout = 1.0
         if let env {
             options.environment = env
         }
@@ -4332,7 +4286,6 @@ class RealtimeClientConnectionTests: XCTestCase {
         
         var urls = [URL]()
         let expectedFallbackHosts = Array(expectedHostOrder.map { ARTDefault.fallbackHosts(withEnvironment: options.environment)[$0] })
-        let allFallbackHostsTriedOfFailedExp = XCTestExpectation(description: "TestProxyTransport should spit 5 fallback hosts on networkConnectEvent")
         
         transportFactory.networkConnectEvent = { transport, url in
             if client.internal.transport !== transport {
@@ -4348,21 +4301,14 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
 
         waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(expectedFallbackHosts.count + 1, done: done)
             // wss://[a-e].ably-realtime.com: when a timeout occurs
-            client.connection.once(.disconnected) { _ in
-                done()
-                allFallbackHostsTriedOfFailedExp.fulfill()
-            }
-            // wss://[a-e].ably-realtime.com: when a 401 occurs because of the `xxxx:xxxx` key
-            client.connection.once(.failed) { _ in
-                done()
-                allFallbackHostsTriedOfFailedExp.fulfill()
+            client.connection.on(.disconnected) { _ in
+                partialDone()
             }
             client.connect()
         }
         
-        wait(for: [allFallbackHostsTriedOfFailedExp], timeout: testTimeout.toTimeInterval())
-
         var resultFallbackHosts = [String]()
         var gotInternetIsUpCheck = false
         for url in urls {
@@ -4446,6 +4392,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
+        options.disconnectedRetryTimeout = 1.0
         options.fallbackHosts = expectedFallbackHosts.sorted() // will be picked "randomly" as of expectedHostOrder
         options.testOptions.realtimeRequestTimeout = 5.0
         options.testOptions.shuffleArray = shuffleArrayInExpectedHostOrder
@@ -4465,7 +4412,6 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
         
         var urls = [URL]()
-        let allFallbackHostsTriedOfFailedExp = XCTestExpectation(description: "TestProxyTransport should spit 5 fallback hosts on networkConnectEvent")
         
         transportFactory.networkConnectEvent = { transport, url in
             if client.internal.transport !== transport {
@@ -4481,21 +4427,14 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
 
         waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(expectedFallbackHosts.count + 1, done: done)
             // wss://[a-e].ably-realtime.com: when a timeout occurs
-            client.connection.once(.disconnected) { _ in
-                done()
-                allFallbackHostsTriedOfFailedExp.fulfill()
-            }
-            // wss://[a-e].ably-realtime.com: when a 401 occurs because of the `xxxx:xxxx` key
-            client.connection.once(.failed) { _ in
-                done()
-                allFallbackHostsTriedOfFailedExp.fulfill()
+            client.connection.on(.disconnected) { _ in
+                partialDone()
             }
             client.connect()
         }
         
-        wait(for: [allFallbackHostsTriedOfFailedExp], timeout: testTimeout.toTimeInterval())
-
         var resultFallbackHosts = [String]()
         var gotInternetIsUpCheck = false
         for url in urls {

@@ -37,4 +37,8 @@ void (^const ARTFallback_shuffleArray)(NSMutableArray *) = ^void(NSMutableArray 
     return host;
 }
 
+- (BOOL)isEmpty {
+    return self.hosts.count == 0;
+}
+
 @end
