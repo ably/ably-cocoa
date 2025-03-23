@@ -10,12 +10,8 @@ func countChannels(_ channels: ARTRealtimeChannels) -> Int {
     return i
 }
 
-private var ttlAndIdleIntervalPassedTestsClient: ARTRealtime!
-private var ttlAndIdleIntervalPassedTestsConnectionId = ""
 private let customTtlInterval: TimeInterval = 0.1
 private let customIdleInterval: TimeInterval = 0.1
-private var ttlAndIdleIntervalNotPassedTestsClient: ARTRealtime!
-private var ttlAndIdleIntervalNotPassedTestsConnectionId = ""
 private let expectedHostOrder = [3, 4, 0, 2, 1]
 private let shuffleArrayInExpectedHostOrder = { (array: NSMutableArray) in
     let arranged = expectedHostOrder.reversed().map { array[$0] }
@@ -139,12 +135,8 @@ private func setupDependencies(for test: Test) throws {
 class RealtimeClientConnectionTests: XCTestCase {
     // XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
     override class var defaultTestSuite: XCTestSuite {
-        _ = ttlAndIdleIntervalPassedTestsClient
-        _ = ttlAndIdleIntervalPassedTestsConnectionId
         _ = customTtlInterval
         _ = customIdleInterval
-        _ = ttlAndIdleIntervalNotPassedTestsClient
-        _ = ttlAndIdleIntervalNotPassedTestsConnectionId
         _ = expectedHostOrder
         _ = internetConnectionNotAvailableTestsClient
         _ = fixtures
@@ -3042,33 +3034,32 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__074__Connection__connection_failures_once_CONNECTED__when_connection__ttl_plus_idle_interval__period_has_passed_since_last_activity__uses_a_new_connection() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
+        let client = AblyTests.newRealtime(options).client
         // We want this to be > than the sum of customTtlInterval and customIdleInterval
-        options.disconnectedRetryTimeout = 5.0 + customTtlInterval + customIdleInterval
-        ttlAndIdleIntervalPassedTestsClient = AblyTests.newRealtime(options).client
-        ttlAndIdleIntervalPassedTestsClient.internal.shouldImmediatelyReconnect = false
-        ttlAndIdleIntervalPassedTestsClient.connect()
-        defer { ttlAndIdleIntervalPassedTestsClient.close() }
+        client.internal.immediateReconnectionDelay = 5.0 + customTtlInterval + customIdleInterval
+        client.connect()
+        defer { client.close() }
 
         waitUntil(timeout: testTimeout) { done in
-            ttlAndIdleIntervalPassedTestsClient.connection.once(.connected) { _ in
-                XCTAssertNotNil(ttlAndIdleIntervalPassedTestsClient.connection.id)
-                ttlAndIdleIntervalPassedTestsConnectionId = ttlAndIdleIntervalPassedTestsClient.connection.id!
-                ttlAndIdleIntervalPassedTestsClient.internal.connectionStateTtl = customTtlInterval
-                ttlAndIdleIntervalPassedTestsClient.internal.maxIdleInterval = customIdleInterval
-                ttlAndIdleIntervalPassedTestsClient.connection.once(.disconnected) { _ in
+            client.connection.once(.connected) { _ in
+                XCTAssertNotNil(client.connection.id)
+                let connectionId = client.connection.id!
+                client.internal.connectionStateTtl = customTtlInterval
+                client.internal.maxIdleInterval = customIdleInterval
+                client.connection.once(.disconnected) { _ in
                     let disconnectedAt = Date()
-                    XCTAssertEqual(ttlAndIdleIntervalPassedTestsClient.internal.connectionStateTtl, customTtlInterval)
-                    XCTAssertEqual(ttlAndIdleIntervalPassedTestsClient.internal.maxIdleInterval, customIdleInterval)
-                    ttlAndIdleIntervalPassedTestsClient.connection.once(.connecting) { _ in
+                    XCTAssertEqual(client.internal.connectionStateTtl, customTtlInterval)
+                    XCTAssertEqual(client.internal.maxIdleInterval, customIdleInterval)
+                    client.connection.once(.connecting) { _ in
                         let reconnectionInterval = Date().timeIntervalSince(disconnectedAt)
-                        expect(reconnectionInterval).to(beGreaterThan(ttlAndIdleIntervalPassedTestsClient.internal.connectionStateTtl + ttlAndIdleIntervalPassedTestsClient.internal.maxIdleInterval))
-                        ttlAndIdleIntervalPassedTestsClient.connection.once(.connected) { _ in
-                            XCTAssertNotEqual(ttlAndIdleIntervalPassedTestsClient.connection.id, ttlAndIdleIntervalPassedTestsConnectionId)
+                        expect(reconnectionInterval).to(beGreaterThan(client.internal.connectionStateTtl + client.internal.maxIdleInterval))
+                        client.connection.once(.connected) { _ in
+                            XCTAssertNotEqual(client.connection.id, connectionId)
                             done()
                         }
                     }
                 }
-                ttlAndIdleIntervalPassedTestsClient.internal.onDisconnected()
+                client.internal.onDisconnected()
             }
         }
     }
@@ -3077,30 +3068,29 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__075__Connection__connection_failures_once_CONNECTED__when_connection__ttl_plus_idle_interval__period_has_passed_since_last_activity__reattaches_to_the_same_channels_after_a_new_connection_has_been_established() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
+        let client = AblyTests.newRealtime(options).client
         // We want this to be > than the sum of customTtlInterval and customIdleInterval
-        options.disconnectedRetryTimeout = 5.0
-        ttlAndIdleIntervalPassedTestsClient = AblyTests.newRealtime(options).client
-        ttlAndIdleIntervalPassedTestsClient.internal.shouldImmediatelyReconnect = false
-        defer { ttlAndIdleIntervalPassedTestsClient.close() }
+        client.internal.immediateReconnectionDelay = 5.0 + customTtlInterval + customIdleInterval
+        defer { client.close() }
         let channelName = test.uniqueChannelName()
-        let channel = ttlAndIdleIntervalPassedTestsClient.channels.get(channelName)
+        let channel = client.channels.get(channelName)
 
         waitUntil(timeout: testTimeout) { done in
-            ttlAndIdleIntervalPassedTestsClient.connection.once(.connected) { _ in
-                ttlAndIdleIntervalPassedTestsConnectionId = ttlAndIdleIntervalPassedTestsClient.connection.id!
-                ttlAndIdleIntervalPassedTestsClient.internal.connectionStateTtl = customTtlInterval
-                ttlAndIdleIntervalPassedTestsClient.internal.maxIdleInterval = customIdleInterval
+            client.connection.once(.connected) { _ in
+                let connectionId = client.connection.id!
+                client.internal.connectionStateTtl = customTtlInterval
+                client.internal.maxIdleInterval = customIdleInterval
                 channel.attach { error in
                     if let error = error {
                         fail(error.message)
                     }
                     XCTAssertEqual(channel.state, ARTRealtimeChannelState.attached)
-                    ttlAndIdleIntervalPassedTestsClient.internal.onDisconnected()
+                    client.internal.onDisconnected()
                 }
-                ttlAndIdleIntervalPassedTestsClient.connection.once(.disconnected) { _ in
-                    ttlAndIdleIntervalPassedTestsClient.connection.once(.connecting) { _ in
-                        ttlAndIdleIntervalPassedTestsClient.connection.once(.connected) { _ in
-                            XCTAssertNotEqual(ttlAndIdleIntervalPassedTestsClient.connection.id, ttlAndIdleIntervalPassedTestsConnectionId)
+                client.connection.once(.disconnected) { _ in
+                    client.connection.once(.connecting) { _ in
+                        client.connection.once(.connected) { _ in
+                            XCTAssertNotEqual(client.connection.id, connectionId)
                             channel.once(.attached) { stateChange in
                                 done()
                             }
@@ -3108,7 +3098,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                     }
                 }
             }
-            ttlAndIdleIntervalPassedTestsClient.connect()
+            client.connect()
         }
     }
 
@@ -3116,26 +3106,26 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__076__Connection__connection_failures_once_CONNECTED__when_connection__ttl_plus_idle_interval__period_has_NOT_passed_since_last_activity__uses_the_same_connection() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        ttlAndIdleIntervalNotPassedTestsClient = AblyTests.newRealtime(options).client
-        ttlAndIdleIntervalNotPassedTestsClient.connect()
-        defer { ttlAndIdleIntervalNotPassedTestsClient.close() }
+        let client = AblyTests.newRealtime(options).client
+        client.connect()
+        defer { client.close() }
 
         waitUntil(timeout: testTimeout) { done in
-            ttlAndIdleIntervalNotPassedTestsClient.connection.once(.connected) { _ in
-                XCTAssertNotNil(ttlAndIdleIntervalNotPassedTestsClient.connection.id)
-                ttlAndIdleIntervalNotPassedTestsConnectionId = ttlAndIdleIntervalNotPassedTestsClient.connection.id!
-                ttlAndIdleIntervalNotPassedTestsClient.connection.once(.disconnected) { _ in
+            client.connection.once(.connected) { _ in
+                XCTAssertNotNil(client.connection.id)
+                let connectionId = client.connection.id!
+                client.connection.once(.disconnected) { _ in
                     let disconnectedAt = Date()
-                    ttlAndIdleIntervalNotPassedTestsClient.connection.once(.connecting) { _ in
+                    client.connection.once(.connecting) { _ in
                         let reconnectionInterval = Date().timeIntervalSince(disconnectedAt)
-                        expect(reconnectionInterval).to(beLessThan(ttlAndIdleIntervalNotPassedTestsClient.internal.connectionStateTtl + ttlAndIdleIntervalNotPassedTestsClient.internal.maxIdleInterval))
-                        ttlAndIdleIntervalNotPassedTestsClient.connection.once(.connected) { _ in
-                            XCTAssertEqual(ttlAndIdleIntervalNotPassedTestsClient.connection.id, ttlAndIdleIntervalNotPassedTestsConnectionId)
+                        expect(reconnectionInterval).to(beLessThan(client.internal.connectionStateTtl + client.internal.maxIdleInterval))
+                        client.connection.once(.connected) { _ in
+                            XCTAssertEqual(client.connection.id, connectionId)
                             done()
                         }
                     }
                 }
-                ttlAndIdleIntervalNotPassedTestsClient.internal.onDisconnected()
+                client.internal.onDisconnected()
             }
         }
     }
