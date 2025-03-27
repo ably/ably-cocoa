@@ -2950,7 +2950,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             channel.presence.enter("browser") { error in
                 XCTAssertNil(error)
                 channel.presence.updateClient("tester", data: "mobile") { error in
-                    expect(error!.message).to(contain("mismatched clientId"))
+                    expect(error!.message).to(contain("invalid clientId"))
                     done()
                 }
             }
