@@ -214,12 +214,10 @@ typedef NS_ENUM(NSUInteger, ARTNetworkState) {
     ARTNetworkStateIsUnreachable
 };
 
-const NSTimeInterval _immediateReconnectionDelay = 0.1;
-
 @implementation ARTRealtimeInternal {
     BOOL _resuming;
     BOOL _renewingToken;
-    BOOL _shouldImmediatelyReconnect;
+    NSTimeInterval _immediateReconnectionDelay;
     ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_pingEventEmitter;
     NSDate *_connectionLostAt;
     NSDate *_lastActivity;
@@ -260,7 +258,7 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
         _pendingAuthorizations = [NSMutableArray array];
         _connection = [[ARTConnectionInternal alloc] initWithRealtime:self logger:self.logger];
         _connectionStateTtl = [ARTDefault connectionStateTtl];
-        _shouldImmediatelyReconnect = true;
+        _immediateReconnectionDelay = 0.1;
         const id<ARTRetryDelayCalculator> connectRetryDelayCalculator = [[ARTBackoffRetryDelayCalculator alloc] initWithInitialRetryTimeout:options.disconnectedRetryTimeout
                                                                                                                  jitterCoefficientGenerator:options.testOptions.jitterCoefficientGenerator];
         _connectRetryState = [[ARTConnectRetryState alloc] initWithRetryDelayCalculator:connectRetryDelayCalculator
@@ -682,14 +680,20 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
             }];
             _connectingTimeoutListener = stateChangeEventListener;
             
-            if (!_transport) {
-                BOOL resume = stateChange.previous == ARTRealtimeFailed ||
-                              stateChange.previous == ARTRealtimeDisconnected ||
-                              stateChange.previous == ARTRealtimeSuspended;
-                [self createAndConnectTransportWithConnectionResume:resume];
-            }
+            BOOL usingFallback = NO;
             
-            [self setReachabilityActive:YES];
+            if (_fallbacks != nil) {
+                usingFallback = [self reconnectWithFallback]; // RTN17j
+            }
+            if (!usingFallback) {
+                if (!_transport) {
+                    BOOL resume = stateChange.previous == ARTRealtimeFailed ||
+                                  stateChange.previous == ARTRealtimeDisconnected ||
+                                  stateChange.previous == ARTRealtimeSuspended;
+                    [self createAndConnectTransportWithConnectionResume:resume];
+                }
+                [self setReachabilityActive:YES];
+            }
             
             break;
         }
@@ -709,6 +713,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
             _connection.key = nil;
             _connection.id = nil;
             _transport = nil;
+            _fallbacks = nil;
             self.rest.prioritizedHost = nil;
             [self.auth cancelAuthorization:nil];
             [self failPendingMessages:[ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:ARTErrorConnectionClosed message:@"connection broken before receiving publishing acknowledgment"]]];
@@ -717,6 +722,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
             ARTStatus *const status = [ARTStatus state:ARTStateConnectionFailed info:stateChange.reason];
             channelStateChangeParams = [[ARTChannelStateChangeParams alloc] initWithState:status.state errorInfo:status.errorInfo];
             [self abortAndReleaseTransport:status];
+            _fallbacks = nil;
             self.rest.prioritizedHost = nil;
             [self.auth cancelAuthorization:stateChange.reason];
             [self failPendingMessages:[ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:ARTErrorConnectionFailed message:@"connection broken before receiving publishing acknowledgment"]]];
@@ -732,14 +738,18 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
             NSTimeInterval retryDelay;
             ARTRetryAttempt *retryAttempt;
 
-            if (stateChange.previous == ARTRealtimeConnected && _shouldImmediatelyReconnect) { // RTN15a
-                retryDelay = _immediateReconnectionDelay;
+            // Immediate reconnection as per internal discussion:
+            // https://ably-real-time.slack.com/archives/CURL4U2FP/p1742211172312389?thread_ts=1741387920.007779&cid=CURL4U2FP
+            // See comment to `testRTN14dAndRTB1` test function for details
+            if (stateChange.previous == ARTRealtimeConnected || _fallbacks != nil) {
+                retryDelay = _immediateReconnectionDelay; // RTN15a, RTN15h3
             }
             else {
                 retryAttempt = [self.connectRetryState addRetryAttempt];
                 retryDelay = retryAttempt.delay;
             }
             [stateChange setRetryIn:retryDelay];
+            ARTLogVerbose(self.logger, @"RT:%p expecting retry in %f seconds...", self, retryDelay);
             stateChangeEventListener = [self unlessStateChangesBefore:stateChange.retryIn do:^{
                 self->_connectionRetryFromDisconnectedListener = nil;
                 ARTConnectionStateChangeParams *const params = [[ARTConnectionStateChangeParams alloc] initWithErrorInfo:nil retryAttempt:retryAttempt];
@@ -749,6 +759,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
             break;
         }
         case ARTRealtimeSuspended: {
+            _fallbacks = nil; // RTN17a - "must always prefer the default endpoint", thus resetting fallbacks to start connection sequence again with the default endpoint
             [_connectionRetryFromDisconnectedListener stopTimer];
             _connectionRetryFromDisconnectedListener = nil;
             [self.auth cancelAuthorization:nil];
@@ -762,7 +773,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
             break;
         }
         case ARTRealtimeConnected: {
-            _fallbacks = nil;
+            _fallbacks = nil; // RTN17a
             _connectionLostAt = nil;
             self.options.recover = nil; // RTN16k
             [self resendPendingMessagesWithResumed:params.resumed]; // RTN19a1
@@ -1486,7 +1497,8 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 - (BOOL)reconnectWithFallback {
     NSString *host = [_fallbacks popFallbackHost];
     if (host != nil) {
-        [self.rest internetIsUp:^void(BOOL isUp) {
+        ARTLogDebug(self.logger, @"R:%p checking internet connection and then retrying realtime at %@", self, host);
+        [self.rest internetIsUp:^void(BOOL isUp) { // RTN17c
             if (!isUp) {
                 ARTErrorInfo *const errorInfo = [ARTErrorInfo createWithCode:0 message:@"no Internet connection"];
                 ARTConnectionStateChangeParams *const params = [[ARTConnectionStateChangeParams alloc] initWithErrorInfo:errorInfo];
@@ -1494,12 +1506,13 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
                 return;
             }
             
-            ARTLogDebug(self.logger, @"R:%p host is down; retrying realtime connection at %@", self, host);
+            ARTLogDebug(self.logger, @"R:%p internet OK; retrying realtime connection at %@", self, host);
             self.rest.prioritizedHost = host;
             [self transportReconnectWithHost:host];
         }];
         return true;
     } else {
+        ARTLogDebug(self.logger, @"R:%p No fallback hosts left, trying primary one again...", self);
         _fallbacks = nil;
         return false;
     }
@@ -1677,14 +1690,18 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 
     ARTClientOptions *const clientOptions = [self getClientOptions];
     
-    if ([self shouldRetryWithFallbackForError:transportError options:clientOptions]) {
+    if (![self isSuspendMode] && [self shouldRetryWithFallbackForError:transportError options:clientOptions]) {
         ARTLogDebug(self.logger, @"R:%p host is down; can retry with fallback host", self);
         if (!_fallbacks) {
             NSArray *hosts = [ARTFallbackHosts hostsFromOptions:clientOptions];
             _fallbacks = [[ARTFallback alloc] initWithFallbackHosts:hosts shuffleArray:clientOptions.testOptions.shuffleArray];
         }
         if (_fallbacks) {
-            [self reconnectWithFallback];
+            if (_fallbacks.isEmpty) {
+                _fallbacks = nil;
+                ARTLogVerbose(self.logger, @"R:%p No fallback hosts left, will try primary one again...", self);
+            }
+            [self performTransitionToDisconnectedOrSuspendedWithParams:params]; // RTN14d, RTN17j
         } else {
             [self performTransitionToState:ARTRealtimeFailed withParams:params];
         }

@@ -112,8 +112,8 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 
 @property (readonly, getter=getClientOptions) ARTClientOptions *options;
 
-/// Suspend the behavior defined in RTN15a, that is trying to immediately reconnect after a disconnection
-@property (readwrite, nonatomic) BOOL shouldImmediatelyReconnect;
+/// Alter the behavior defined in RTN15a, that is trying to immediately reconnect after a disconnection
+@property (readwrite, nonatomic) NSTimeInterval immediateReconnectionDelay;
 
 @end
 
