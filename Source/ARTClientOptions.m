@@ -10,6 +10,8 @@
 #import "ARTNSString+ARTUtil.h"
 #import "ARTTestClientOptions.h"
 
+const ARTPluginName ARTPluginNameLiveObjects = @"LiveObjects";
+
 NSString *ARTDefaultEnvironment = nil;
 
 @interface ARTClientOptions ()
@@ -140,6 +142,7 @@ NSString *ARTDefaultEnvironment = nil;
     options.transportParams = self.transportParams;
     options.agents = self.agents;
     options.testOptions = self.testOptions;
+    options.plugins = self.plugins;
 
     return options;
 }

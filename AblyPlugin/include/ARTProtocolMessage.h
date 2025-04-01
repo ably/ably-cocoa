@@ -1,0 +1,1 @@
+../../Source/PrivateHeaders/Ably/ARTProtocolMessage.h

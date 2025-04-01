@@ -1,4 +1,5 @@
 #import "ARTRealtimeChannel+Private.h"
+#import "ARTRealtimeChannel+Plugins.h"
 #import "ARTChannel+Private.h"
 #import "ARTChannel+Subclass.h"
 #import "ARTDataQuery+Private.h"
@@ -35,6 +36,13 @@
 #if TARGET_OS_IPHONE
 #import "ARTPushChannel+Private.h"
 #endif
+#import "APLiveObjectsPlugin.h"
+
+@interface ARTRealtimeChannel ()
+
+@property (nonatomic, readonly) NSMutableDictionary<NSString *, id> *pluginData;
+
+@end
 
 @implementation ARTRealtimeChannel {
     ARTQueuedDealloc *_dealloc;
@@ -57,8 +65,27 @@
     if (self) {
         _internal = internal;
         _dealloc = dealloc;
+        _pluginData = [[NSMutableDictionary alloc] init];
+
+        if (internal.realtime.options.plugins[ARTPluginNameLiveObjects]) {
+            Class<APLiveObjectsPluginFactoryProtocol> liveObjectsFactoryClass = internal.realtime.options.plugins[ARTPluginNameLiveObjects];
+            id<APLiveObjectsPluginProtocol> liveObjectsPlugin = [liveObjectsFactoryClass createPlugin];
+            [liveObjectsPlugin prepareChannel:self];
+        }
     }
     return self;
+}
+
+- (void)setPluginDataValue:(id)value forKey:(NSString *)key {
+    [self.pluginData setValue:value forKey:key];
+}
+
+- (id)pluginDataValueForKey:(NSString *)key {
+    return self.pluginData[key];
+}
+
+- (void)addPluginProtocolMessageListener:(ARTProtocolMessageListener)listener {
+    [self.internal addPluginProtocolMessageListener:listener];
 }
 
 - (NSString *)name {
@@ -243,6 +270,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTRealtimeChannelInternal ()
 
 @property (nonatomic, readonly) ARTAttachRetryState *attachRetryState;
+@property (nonatomic, readonly) NSMutableArray<ARTProtocolMessageListener> *pluginProtocolMessageListeners;
 
 @end
 
@@ -274,8 +302,17 @@ NS_ASSUME_NONNULL_END
         _attachRetryState = [[ARTAttachRetryState alloc] initWithRetryDelayCalculator:attachRetryDelayCalculator
                                                                                logger:logger
                                                                      logMessagePrefix:[NSString stringWithFormat:@"RT: %p C:%p ", _realtime, self]];
+        _pluginProtocolMessageListeners = [[NSMutableArray alloc] init];
     }
     return self;
+}
+
+- (void)addPluginProtocolMessageListener:(ARTProtocolMessageListener)listener {
+    [self.pluginProtocolMessageListeners addObject:listener];
+}
+
+- (void)sendProtocolMessage:(ARTProtocolMessage *)protocolMessage {
+    NSLog(@"sendProtocolMessage called on ARTRealtimeChannelInternal");
 }
 
 - (ARTRealtimeChannelState)state {
@@ -627,6 +664,10 @@ dispatch_sync(_queue, ^{
         default:
             ARTLogWarn(self.logger, @"R:%p C:%p (%@) unknown ARTProtocolMessage action: %tu", _realtime, self, self.name, message.action);
             break;
+    }
+
+    for (ARTProtocolMessageListener listener in self.pluginProtocolMessageListeners) {
+        listener(message);
     }
 }
 
