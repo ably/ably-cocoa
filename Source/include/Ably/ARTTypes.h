@@ -3,6 +3,12 @@
 #import <Ably/ARTStatus.h>
 #import <Ably/ARTEventEmitter.h>
 
+#if TARGET_OS_IPHONE || TARGET_OS_IOS // TARGET_OS_IPHONE is true for visionOS (__is_target_os(xros))
+    #define TARGET_SUPPORTS_APNS 1
+#else
+    #define TARGET_SUPPORTS_APNS 0
+#endif
+
 @class ARTStatus;
 @class ARTHttpResponse;
 @class ARTErrorInfo;

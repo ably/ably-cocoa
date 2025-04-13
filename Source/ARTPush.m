@@ -5,8 +5,10 @@
 #import "ARTJsonEncoder.h"
 #import "ARTJsonLikeEncoder.h"
 #import "ARTEventEmitter.h"
-#if TARGET_OS_IOS
+#if TARGET_OS_IOS || TARGET_OS_IPHONE || TARGET_OS_UIKITFORMAC
 #import <UIKit/UIKit.h>
+#endif
+#if TARGET_SUPPORTS_APNS
 #import "ARTPushActivationStateMachine+Private.h"
 #endif
 #import "ARTPushAdmin.h"
@@ -35,7 +37,7 @@
     return [[ARTPushAdmin alloc] initWithInternal:_internal.admin queuedDealloc:_dealloc];
 }
 
-#if TARGET_OS_IOS
+#if TARGET_SUPPORTS_APNS
 
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken rest:(ARTRest *)rest; {
     return [ARTPushInternal didRegisterForRemoteNotificationsWithDeviceToken:deviceToken rest:rest];
@@ -104,7 +106,7 @@
     return _rest.queue;
 }
 
-#if TARGET_OS_IOS
+#if TARGET_SUPPORTS_APNS
 
 - (void)getActivationMachine:(void (^)(ARTPushActivationStateMachine *const))block {
     if (!block) {
@@ -128,6 +130,7 @@
             callbackWithUnlock([self createActivationStateMachineWithDelegate:delegate]);
         }
         else {
+#if TARGET_OS_IOS || TARGET_OS_IPHONE || TARGET_OS_UIKITFORMAC
             dispatch_async(dispatch_get_main_queue(), ^{
                 // -[UIApplication delegate] is an UI API call, so needs to be called from main thread.
                 const id legacyDelegate = UIApplication.sharedApplication.delegate;
@@ -136,6 +139,9 @@
                     callbackWithUnlock(machine);
                 }];
             });
+#else
+            ARTLogDebug(rest.logger_onlyForUseInClassMethodsAndTests, @"ARTPush: legacy delegate is only supported for UIKit.");
+#endif
         }
     }
     else {

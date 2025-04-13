@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_END
     return self;
 }
 
-#if TARGET_OS_IOS
+#if TARGET_SUPPORTS_APNS
 
 - (void)activate {
     [self.underlyingPush activate];

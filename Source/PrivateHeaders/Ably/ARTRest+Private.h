@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) ARTRestChannelsInternal *channels;
 @property (nonatomic, readonly) ARTAuthInternal *auth;
 @property (nonatomic, readonly) ARTPushInternal *push;
-#if TARGET_OS_IOS
+#if TARGET_SUPPORTS_APNS
 @property (nonnull, nonatomic, readonly, getter=device) ARTLocalDevice *device;
 @property (nonnull, nonatomic, readonly, getter=device_nosync) ARTLocalDevice *device_nosync;
 @property (nonatomic) id<ARTDeviceStorage> storage;
@@ -84,7 +84,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable NSObject<ARTCancellable> *)internetIsUp:(void (^)(BOOL isUp))cb;
 
-#if TARGET_OS_IOS
+#if TARGET_SUPPORTS_APNS
 - (void)setupLocalDevice_nosync;
 - (void)resetLocalDevice_nosync;
 

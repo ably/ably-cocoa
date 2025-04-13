@@ -4472,7 +4472,7 @@ class AuthTests: XCTestCase {
 
         let rest = ARTRest(options: options)
         XCTAssertNil(rest.auth.clientId)
-        #if TARGET_OS_IOS
+        #if TARGET_SUPPORTS_APNS
             XCTAssertNil(rest.device.clientId)
         #endif
         let testHttpExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))

@@ -298,7 +298,7 @@ dispatch_sync(_queue, ^{
 }
 
 - (ARTLocalDevice *)getDevice:(ARTCallback)callback {
-    #if TARGET_OS_IOS
+    #if TARGET_SUPPORTS_APNS
     ARTLocalDevice *device = [_rest device_nosync];
     #else
     ARTLocalDevice *device = nil;

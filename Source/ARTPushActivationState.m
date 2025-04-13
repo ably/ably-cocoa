@@ -1,3 +1,7 @@
+#import "ARTTypes+Private.h"
+
+#if TARGET_SUPPORTS_APNS
+
 #import "ARTPushActivationState.h"
 #import "ARTPushActivationStateMachine+Private.h"
 #import "ARTPushActivationEvent.h"
@@ -8,7 +12,6 @@
 #import "ARTRest+Private.h"
 #import "ARTAuth+Private.h"
 #import "ARTHttp.h"
-#import "ARTTypes+Private.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -85,7 +88,6 @@ NS_ASSUME_NONNULL_END
 #pragma mark - Activation States
 
 ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, ARTPushActivationEvent *event, ARTInternalLog *logger) {
-    #if TARGET_OS_IOS
     ARTLocalDevice *const local = machine.rest.device_nosync;
 
     if (local.identityTokenDetails) {
@@ -104,7 +106,6 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
     }
     [machine.rest setupLocalDevice_nosync];
     [machine registerForAPNS];
-    #endif
 
     return [ARTPushActivationStateWaitingForPushDeviceDetails newWithMachine:machine logger:logger];
 }
@@ -114,20 +115,14 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
     [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledDeactivate class]]) {
-        #if TARGET_OS_IOS
         ARTLocalDevice *device = self.machine.rest.device_nosync;
-        #else
-        ARTLocalDevice *device = nil;
-        #endif
         // RSH3a1c
         if (device.isRegistered) {
             [self.machine deviceUnregistration:nil];
             return [ARTPushActivationStateWaitingForDeregistration newWithMachine:self.machine logger:self.logger];
         // RSH3a1d
         } else {
-            #if TARGET_OS_IOS
             [self.machine.rest resetLocalDevice_nosync];
-            #endif
             [self.machine callDeactivatedCallback:nil];
             return self;
         }
@@ -151,11 +146,9 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
         return self;
     }
     else if ([event isKindOfClass:[ARTPushActivationEventGotDeviceRegistration class]]) {
-        #if TARGET_OS_IOS
         ARTPushActivationEventGotDeviceRegistration *gotDeviceRegistrationEvent = (ARTPushActivationEventGotDeviceRegistration *)event;
         ARTLocalDevice *local = self.machine.rest.device_nosync;
         [local setAndPersistIdentityTokenDetails:gotDeviceRegistrationEvent.identityTokenDetails];
-        #endif
         [self.machine callActivatedCallback:nil];
         return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine logger:self.logger];
     }
@@ -235,13 +228,11 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
         return self;
     }
     else if ([event isKindOfClass:[ARTPushActivationEventRegistrationSynced class]]) {
-        #if TARGET_OS_IOS
         ARTPushActivationEventRegistrationSynced *registrationUpdatedEvent = (ARTPushActivationEventRegistrationSynced *)event;
         if (registrationUpdatedEvent.identityTokenDetails) {
             ARTLocalDevice *local = self.machine.rest.device_nosync;
             [local setAndPersistIdentityTokenDetails:registrationUpdatedEvent.identityTokenDetails];
         }
-        #endif
 
         if ([_fromEvent isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
             [self.machine callActivatedCallback:nil];
@@ -292,9 +283,7 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
         return [ARTPushActivationStateWaitingForDeregistration newWithMachine:self.machine logger:self.logger];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventDeregistered class]]) {
-        #if TARGET_OS_IOS
         [self.machine.rest resetLocalDevice_nosync];
-        #endif
         [self.machine callDeactivatedCallback:nil];
         return [ARTPushActivationStateNotActivated newWithMachine:self.machine logger:self.logger];
     }
@@ -323,3 +312,5 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
 }
 
 @end
+
+#endif

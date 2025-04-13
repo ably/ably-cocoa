@@ -65,7 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
      callback:(ARTPaginatedStatsCallback)callback
         error:(NSError *_Nullable *_Nullable)errorPtr;
 
-#if TARGET_OS_IOS
+#if TARGET_SUPPORTS_APNS
 /**
  * Retrieves an `ARTLocalDevice` object that represents the current state of the device as a target for push notifications.
  */

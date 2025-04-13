@@ -43,7 +43,7 @@
 #import "ARTClientOptions+TestConfiguration.h"
 #import "ARTTestClientOptions.h"
 #import "ARTContinuousClock.h"
-#if TARGET_OS_IOS
+#if TARGET_SUPPORTS_APNS
 #import "ARTPushActivationStateMachine+Private.h"
 #import "ARTPushActivationEvent.h"
 #endif
@@ -137,7 +137,7 @@
     return [[ARTPush alloc] initWithInternal:_internal.push queuedDealloc:_dealloc];
 }
 
-#if TARGET_OS_IOS
+#if TARGET_SUPPORTS_APNS
 
 - (ARTLocalDevice *)device {
     return _internal.device;
@@ -185,7 +185,7 @@ NS_ASSUME_NONNULL_END
         _continuousClock = [[ARTContinuousClock alloc] init];
         _queue = options.internalDispatchQueue;
         _userQueue = options.dispatchQueue;
-#if TARGET_OS_IOS
+#if TARGET_SUPPORTS_APNS
         _storage = [ARTLocalDeviceStorage newWithLogger:_logger];
 #endif
         _http = [[ARTHttp alloc] initWithQueue:_queue logger:_logger];
@@ -762,7 +762,7 @@ dispatch_async(_queue, ^{
     _fallbackRetryExpiration = [self.continuousClock addingDuration:_options.fallbackRetryTimeout toInstant:now];
 }
 
-#if TARGET_OS_IOS
+#if TARGET_SUPPORTS_APNS
 - (ARTLocalDevice *)device {
     __block ARTLocalDevice *ret;
     dispatch_sync(_queue, ^{

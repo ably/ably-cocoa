@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @protocol ARTRealtimeInstanceMethodsProtocol <NSObject>
 
-#if TARGET_OS_IOS
+#if TARGET_SUPPORTS_APNS
 /**
  * Retrieves a `ARTLocalDevice` object that represents the current state of the device as a target for push notifications.
  */

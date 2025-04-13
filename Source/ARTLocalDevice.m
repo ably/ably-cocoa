@@ -17,6 +17,8 @@ NSString *const ARTDeviceFormFactor = @"phone";
 NSString *const ARTDeviceFormFactor = @"tv";
 #elif TARGET_OS_WATCH
 NSString *const ARTDeviceFormFactor = @"watch";
+#elif TARGET_OS_VISION
+NSString *const ARTDeviceFormFactor = @"vision";
 #elif TARGET_OS_SIMULATOR
 NSString *const ARTDeviceFormFactor = @"simulator";
 #elif TARGET_OS_MAC

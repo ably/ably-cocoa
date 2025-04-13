@@ -84,6 +84,8 @@ static inline UInt32 conformVersionComponent(const NSInteger component) {
             @"watchOS"
         #elif TARGET_OS_OSX
             @"macOS"
+        #elif TARGET_OS_VISION
+            @"visionOS"
         #else
             nil
         #endif
