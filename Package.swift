@@ -1,13 +1,14 @@
-// swift-tools-version:5.3.0
+// swift-tools-version:5.9
 
 import PackageDescription
 
 let package = Package(
     name: "ably-cocoa",
     platforms: [
-        .macOS(.v10_11),
-        .iOS(.v9),
-        .tvOS(.v10)
+        .macOS(.v10_13),
+        .iOS(.v12),
+        .tvOS(.v12),
+        .visionOS(.v1)
     ],
     products: [
         .library(
