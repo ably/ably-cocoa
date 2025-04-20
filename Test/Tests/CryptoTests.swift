@@ -20,8 +20,9 @@ class CryptoTests: XCTestCase {
 
     // RSE1a, RSE1b
     func test__001__Crypto__getDefaultParams__returns_a_complete_CipherParams_instance__using_the_default_values_for_any_field_not_supplied() {
-        expect { ARTCrypto.getDefaultParams(["nokey": "nokey"]) }.to(raiseException())
-
+        XCTAssertNotNil(tryInObjC {
+            _ = ARTCrypto.getDefaultParams(["nokey": "nokey"])
+        })
         var params: ARTCipherParams = ARTCrypto.getDefaultParams([
             "key": key,
         ])
@@ -69,9 +70,11 @@ class CryptoTests: XCTestCase {
 
     // RSE1e
     func test__003__Crypto__getDefaultParams__should_check_that_keyLength_is_valid_for_algorithm() {
-        expect { ARTCrypto.getDefaultParams([
-            "key": binaryKey.subdata(in: 0 ..< 10),
-        ]) }.to(raiseException())
+        XCTAssertNotNil(tryInObjC {
+            _ = ARTCrypto.getDefaultParams([
+                "key": binaryKey.subdata(in: 0 ..< 10),
+            ])
+        })
     }
 
     // RSE2

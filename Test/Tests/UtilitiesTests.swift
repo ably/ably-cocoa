@@ -161,7 +161,9 @@ class UtilitiesTests: XCTestCase {
                     fail("Should not receive any message")
                 }
                 var result: AnyObject?
-                expect { result = realtime.internal.transport?.receive(with: data as Data) }.toNot(raiseException())
+                XCTAssertNil(tryInObjC {
+                    result = realtime.internal.transport?.receive(with: data as Data)
+                })
                 XCTAssertNil(result)
                 done()
             }

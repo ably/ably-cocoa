@@ -212,7 +212,9 @@ class PushTests: XCTestCase {
 
     // https://github.com/ably/ably-cocoa/issues/888
     func test__007__activation__should_not_sync_the_local_device_dispatched_in_internal_queue() {
-        expect { ARTPush.didRegisterForRemoteNotifications(withDeviceToken: TestDeviceToken.tokenData, rest: rest) }.toNot(raiseException())
+        XCTAssertNil(tryInObjC {
+            ARTPush.didRegisterForRemoteNotifications(withDeviceToken: TestDeviceToken.tokenData, rest: rest)
+        })
     }
 
     // RSH8

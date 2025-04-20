@@ -184,7 +184,9 @@ class RestClientTests: XCTestCase {
     }
 
     func test__016__RestClient__initializer__should_throw_when_provided_an_invalid_key() {
-        expect { ARTRest(key: "invalid_key") }.to(raiseException())
+        XCTAssertNotNil(tryInObjC {
+            _ = ARTRest(key: "invalid_key")
+        })
     }
 
     func test__017__RestClient__initializer__should_result_in_error_status_when_provided_a_bad_key() {
@@ -876,16 +878,24 @@ class RestClientTests: XCTestCase {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         XCTAssertNil(options.fallbackHosts)
         XCTAssertFalse(options.fallbackHostsUseDefault)
+        
+        XCTAssertNil(tryInObjC {
+            options.fallbackHosts = []
+        })
 
-        expect { options.fallbackHosts = [] }.toNot(raiseException())
-
-        expect { options.fallbackHostsUseDefault = true }.to(raiseException(named: ARTFallbackIncompatibleOptionsException))
+        XCTAssertEqual(tryInObjC {
+            options.fallbackHosts = []
+        }?.name.rawValue, ARTFallbackIncompatibleOptionsException)
 
         options.fallbackHosts = nil
-
-        expect { options.fallbackHostsUseDefault = true }.toNot(raiseException())
-
-        expect { options.fallbackHosts = ["fake.ably.io"] }.to(raiseException(named: ARTFallbackIncompatibleOptionsException))
+        
+        XCTAssertNil(tryInObjC {
+            options.fallbackHostsUseDefault = true
+        })
+        
+        XCTAssertEqual(tryInObjC {
+            options.fallbackHosts = ["fake.ably.io"]
+        }?.name.rawValue, ARTFallbackIncompatibleOptionsException)
     }
 
     // RSC15b
