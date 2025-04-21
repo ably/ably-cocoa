@@ -385,7 +385,7 @@ class UtilitiesTests: XCTestCase {
             fail("onTimeout callback shouldn't have been called")
         }).startTimer()
         eventEmitter.off()
-        waitUntil(timeout: DispatchTimeInterval.milliseconds(300)) { done in
+        waitUntil(timeout: NimbleTimeInterval.milliseconds(300)) { done in
             AblyTests.queue.asyncAfter(deadline: .now() + 0.15) {
                 done()
             }
@@ -398,7 +398,7 @@ class UtilitiesTests: XCTestCase {
         weak var timer = listenerFoo1!.setTimer(0.2, onTimeout: {
             fail("onTimeout callback shouldn't have been called")
         })
-        waitUntil(timeout: DispatchTimeInterval.seconds(1)) { done in
+        waitUntil(timeout: NimbleTimeInterval.seconds(1)) { done in
             timer?.startTimer()
             eventEmitter.emit("foo", with: 123 as AnyObject?)
             AblyTests.queue.asyncAfter(deadline: .now() + 0.3) {
@@ -417,7 +417,7 @@ class UtilitiesTests: XCTestCase {
             calledOnTimeout = true
             expect(NSDate()).to(beCloseTo(beforeEmitting.addingTimeInterval(0.3), within: 0.2))
         }).startTimer()
-        waitUntil(timeout: DispatchTimeInterval.milliseconds(500)) { done in
+        waitUntil(timeout: NimbleTimeInterval.milliseconds(500)) { done in
             AblyTests.queue.asyncAfter(deadline: .now() + 0.35) {
                 XCTAssertTrue(calledOnTimeout)
                 eventEmitter.emit("foo", with: 123 as AnyObject?)

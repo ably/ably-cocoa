@@ -19,6 +19,8 @@ final class ClientInformationTests: XCTestCase {
         XCTAssertTrue(agents.keys.contains("watchOS"))
         #elseif os(macOS)
         XCTAssertTrue(agents.keys.contains("macOS"))
+        #elseif os(visionOS)
+        XCTAssertTrue(agents.keys.contains("visionOS"))
         #else
         #error("Building for unknown OS")
         #endif

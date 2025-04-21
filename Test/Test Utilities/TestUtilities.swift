@@ -29,7 +29,7 @@ class AblyTestsConfiguration: NSObject, XCTestObservation {
         // framework, was inside a `configuration.beforeSuite` hook,
         // which means it runs just before the execution of the first
         // test case.
-        AsyncDefaults.timeout = testTimeout
+        PollingDefaults.timeout = testTimeout
     }
 }
 
@@ -46,7 +46,7 @@ let appSetupModel: TestAppSetup = {
     }
 }()
 
-let testTimeout = DispatchTimeInterval.seconds(20)
+let testTimeout = NimbleTimeInterval.seconds(20)
 let testResourcesPath = "ably-common/test-resources/"
 let echoServerAddress = "https://echo.ably.io/createJWT"
 
@@ -257,7 +257,7 @@ class AblyTests {
         }
     }
 
-    class func waitFor<T>(timeout: DispatchTimeInterval, file: FileString = #file, line: UInt = #line, f: @escaping (@escaping (T?) -> Void) -> Void) throws -> T {
+    class func waitFor<T>(timeout: NimbleTimeInterval, file: FileString = #file, line: UInt = #line, f: @escaping (@escaping (T?) -> Void) -> Void) throws -> T {
         var value: T?
         waitUntil(timeout: timeout, file: file, line: line) { done in
             f() { v in
@@ -271,7 +271,7 @@ class AblyTests {
         return value
     }
 
-    class func wait(for expectations: [XCTestExpectation], timeout dispatchInterval: DispatchTimeInterval = testTimeout, file: Nimble.FileString = #file, line: UInt = #line) {
+    class func wait(for expectations: [XCTestExpectation], timeout dispatchInterval: NimbleTimeInterval = testTimeout, file: Nimble.FileString = #file, line: UInt = #line) {
         let result = XCTWaiter.wait(
             for: expectations,
             timeout: dispatchInterval.toTimeInterval(),
@@ -1834,9 +1834,9 @@ extension ARTPresenceAction : CustomStringConvertible {
 // MARK: - Custom Nimble Matchers
 
 /// A Nimble matcher that succeeds when two dates are quite the same.
-public func beCloseTo(_ expectedValue: Date) -> Nimble.Predicate<Date> {
+public func beCloseTo(_ expectedValue: Date) -> Nimble.Matcher<Date> {
     let errorMessage = "be close to <\(expectedValue)> (within 0.5)"
-    return Predicate.simple(errorMessage) { actualExpression in
+    return Matcher.simple(errorMessage) { actualExpression in
         guard let actualValue = try actualExpression.evaluate() else {
             return .fail
         }
@@ -1848,9 +1848,9 @@ public func beCloseTo(_ expectedValue: Date) -> Nimble.Predicate<Date> {
 }
 
 /// A Nimble matcher that succeeds when a param exists.
-public func haveParam(_ key: String, withValue expectedValue: String? = nil) -> Nimble.Predicate<String> {
+public func haveParam(_ key: String, withValue expectedValue: String? = nil) -> Nimble.Matcher<String> {
     let errorMessage = "param <\(key)=\(expectedValue ?? "nil")> exists"
-    return Predicate.simple(errorMessage) { actualExpression in
+    return Matcher.simple(errorMessage) { actualExpression in
         guard let actualValue = try actualExpression.evaluate() else {
             return .fail
         }
@@ -1866,9 +1866,9 @@ public func haveParam(_ key: String, withValue expectedValue: String? = nil) -> 
 }
 
 /// A Nimble matcher that succeeds when a param value starts with a particular string.
-public func haveParam(_ key: String, hasPrefix expectedValue: String) -> Nimble.Predicate<String> {
+public func haveParam(_ key: String, hasPrefix expectedValue: String) -> Nimble.Matcher<String> {
     let errorMessage = "param <\(key)> has prefix \(expectedValue)"
-    return Predicate.simple(errorMessage) { actualExpression in
+    return Matcher.simple(errorMessage) { actualExpression in
         guard let actualValue = try actualExpression.evaluate() else {
             return .fail
         }
@@ -2037,6 +2037,56 @@ extension DispatchTimeInterval {
             return .never
         @unknown default:
             fatalError("Unhandled DispatchTimeInterval unit.")
+        }
+    }
+}
+
+extension NimbleTimeInterval {
+    /// Convert dispatch time interval to older style time interval for use with XCTest APIs.
+    func toTimeInterval() -> TimeInterval {
+        // Based on: https://stackoverflow.com/a/47716381/392847
+        switch self {
+        case .seconds(let value):
+            return Double(value)
+        case .milliseconds(let value):
+            return Double(value) * 0.001
+        case .microseconds(let value):
+            return Double(value) * 0.000001
+        case .nanoseconds(let value):
+            return Double(value) * 0.000000001
+        }
+    }
+
+    /// Return a new dispatch time interval computed from this one, multipled by the supplied amount.
+    func multiplied(by multiplier: Double) -> NimbleTimeInterval {
+        switch self {
+        case .seconds(let value):
+            return .seconds(Int(Double(value) * multiplier))
+        case .milliseconds(let value):
+            return .milliseconds(Int(Double(value) * multiplier))
+        case .microseconds(let value):
+            return .microseconds(Int(Double(value) * multiplier))
+        case .nanoseconds(let value):
+            return .nanoseconds(Int(Double(value) * multiplier))
+        }
+    }
+    
+    /// Return a new dispatch time interval computed from this one, incremented by the supplied amount, to no less than millisecond precision.
+    func incremented(by interval: TimeInterval) -> NimbleTimeInterval {
+        // interval is a TimeInterval which is a Double which is in SECONDS
+        switch self {
+        case .seconds(let value):
+            // rounding to millisecond precision, which is fine for the purposes of our test needs
+            return .milliseconds(Int(1000.0 * (Double(value) + interval)))
+        case .milliseconds(let value):
+            let millisecondIncrement = interval * 1000.0
+            return .milliseconds(Int(Double(value) + millisecondIncrement))
+        case .microseconds(let value):
+            let microsecondIncrement = interval * 1000000.0
+            return .microseconds(Int(Double(value) + microsecondIncrement))
+        case .nanoseconds(let value):
+            let nanosecondIncrement = interval * 1000000000.0
+            return .nanoseconds(Int(Double(value) + nanosecondIncrement))
         }
     }
 }
