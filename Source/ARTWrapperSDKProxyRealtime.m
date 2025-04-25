@@ -43,7 +43,7 @@ NS_ASSUME_NONNULL_END
     return self.underlyingRealtime.clientId;
 }
 
-#if TARGET_OS_IOS
+#if TARGET_SUPPORTS_APNS
 - (ARTLocalDevice *)device {
     return self.underlyingRealtime.device;
 }

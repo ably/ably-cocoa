@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_END
     if (self = [super init]) {
         _underlyingChannel = channel;
         _proxyOptions = proxyOptions;
-#if TARGET_OS_IOS
+#if TARGET_SUPPORTS_APNS
         _push = [[ARTWrapperSDKProxyPushChannel alloc] initWithPushChannel:channel.push
                                                               proxyOptions:proxyOptions];
 #endif

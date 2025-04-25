@@ -443,7 +443,7 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
 @implementation NSObject (ARTArchive)
 
 - (nullable NSData *)art_archiveWithLogger:(nullable ARTInternalLog *)logger {
-#if TARGET_OS_MACCATALYST // if (@available(iOS 13.0, macCatalyst 13.0, ... doesn't help
+#if TARGET_OS_MACCATALYST || TARGET_OS_VISION // if (@available(iOS 13.0, macCatalyst 13.0, ... doesn't help
     NSError *error;
     NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:false error:&error];
     if (error) {
@@ -451,7 +451,7 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
     }
     return data;
 #else
-    if (@available(macOS 10.13, iOS 11, tvOS 11, *)) {
+    if (@available(macOS 10.13, iOS 11, tvOS 11, visionOS 1, *)) {
         NSError *error;
         NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:false error:&error];
         if (error) {
@@ -467,7 +467,7 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
 
 + (nullable id)art_unarchiveFromData:(NSData *)data withLogger:(nullable ARTInternalLog *)logger {
     NSSet* allowedTypes = [NSSet setWithArray:@[ [NSArray class], [NSDictionary class], self]];
-#if TARGET_OS_MACCATALYST
+#if TARGET_OS_MACCATALYST || TARGET_OS_VISION
     NSError *error;
     id result = [NSKeyedUnarchiver unarchivedObjectOfClasses:allowedTypes fromData:data error:&error];
     if (error) {

@@ -9,7 +9,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-#if TARGET_OS_IOS
+#if TARGET_SUPPORTS_APNS
 
 /**
  The interface for handling Push activation/deactivation-related actions.
@@ -62,7 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// :nodoc:
 - (instancetype)init NS_UNAVAILABLE;
 
-#if TARGET_OS_IOS
+#if TARGET_SUPPORTS_APNS
 
 // Push Registration token
 

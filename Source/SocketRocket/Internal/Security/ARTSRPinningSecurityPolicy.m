@@ -49,25 +49,26 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)evaluateServerTrust:(SecTrustRef)serverTrust forDomain:(NSString *)domain
 {
-    ARTSRDebugLog(self.logger, @"Pinned cert count: %lu", (unsigned long)self.pinnedCertificates.count);
-    NSUInteger requiredCertCount = self.pinnedCertificates.count;
-
-    NSUInteger validatedCertCount = 0;
-    CFIndex serverCertCount = SecTrustGetCertificateCount(serverTrust);
-    for (CFIndex i = 0; i < serverCertCount; i++) {
-        SecCertificateRef cert = SecTrustGetCertificateAtIndex(serverTrust, i);
-        NSData *data = CFBridgingRelease(SecCertificateCopyData(cert));
-        for (id ref in self.pinnedCertificates) {
-            SecCertificateRef trustedCert = (__bridge SecCertificateRef)ref;
-            // TODO: (nlutsenko) Add caching, so we don't copy the data for every pinned cert all the time.
-            NSData *trustedCertData = CFBridgingRelease(SecCertificateCopyData(trustedCert));
-            if ([trustedCertData isEqualToData:data]) {
-                validatedCertCount++;
-                break;
-            }
-        }
-    }
-    return (requiredCertCount == validatedCertCount);
+//    ARTSRDebugLog(self.logger, @"Pinned cert count: %lu", (unsigned long)self.pinnedCertificates.count);
+//    NSUInteger requiredCertCount = self.pinnedCertificates.count;
+//
+//    NSUInteger validatedCertCount = 0;
+//    CFIndex serverCertCount = SecTrustGetCertificateCount(serverTrust);
+//    for (CFIndex i = 0; i < serverCertCount; i++) {
+//        SecCertificateRef cert = SecTrustGetCertificateAtIndex(serverTrust, i);
+//        NSData *data = CFBridgingRelease(SecCertificateCopyData(cert));
+//        for (id ref in self.pinnedCertificates) {
+//            SecCertificateRef trustedCert = (__bridge SecCertificateRef)ref;
+//            // TODO: (nlutsenko) Add caching, so we don't copy the data for every pinned cert all the time.
+//            NSData *trustedCertData = CFBridgingRelease(SecCertificateCopyData(trustedCert));
+//            if ([trustedCertData isEqualToData:data]) {
+//                validatedCertCount++;
+//                break;
+//            }
+//        }
+//    }
+//    return (requiredCertCount == validatedCertCount);
+    return false;
 }
 
 @end

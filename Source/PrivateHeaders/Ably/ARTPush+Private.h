@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest logger:(ARTInternalLog *)logger;
 
-#if TARGET_OS_IOS
+#if TARGET_SUPPORTS_APNS
 - (void)getActivationMachine:(void (^)(ARTPushActivationStateMachine *))block;
 
 /// Direct access to _activationMachine var for internal testing.
@@ -24,9 +24,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Create the _activationMachine manually with a custom delegate for internal testing.
 - (ARTPushActivationStateMachine *)createActivationStateMachineWithDelegate:(id<ARTPushRegistererDelegate, NSObject>)delegate;
-#endif
-
-#if TARGET_OS_IOS
 
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken rest:(ARTRest *)rest;
 

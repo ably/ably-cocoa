@@ -72,7 +72,7 @@
         };
     }
     
-#if TARGET_OS_IOS
+#if TARGET_SUPPORTS_APNS
     ARTLocalDevice *local = _rest.device;
 #else
     ARTLocalDevice *local = nil;
@@ -203,7 +203,7 @@
     }
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"DELETE";
-#if TARGET_OS_IOS
+#if TARGET_SUPPORTS_APNS
     [request setDeviceAuthentication:[params objectForKey:@"deviceId"] localDevice:_rest.device_nosync];
 #endif
     

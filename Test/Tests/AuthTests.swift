@@ -19,7 +19,9 @@ private func testStopsClientWithOptions(caseSetter: (ARTClientOptions) -> Void) 
     let options = ARTClientOptions()
     caseSetter(options)
 
-    expect { ARTRest(options: options) }.to(raiseException())
+    XCTAssertNotNil(tryInObjC {
+        _ = ARTRest(options: options)
+    })
 }
 
 private let currentClientId = "client_string"
@@ -77,8 +79,9 @@ class AuthTests: XCTestCase {
         let test = Test()
         let clientOptions = try AblyTests.commonAppSetup(for: test)
         clientOptions.tls = false
-
-        expect { ARTRest(options: clientOptions) }.to(raiseException())
+        XCTAssertNotNil(tryInObjC {
+            _ = ARTRest(options: clientOptions)
+        })
     }
 
     // RSA11
@@ -946,8 +949,12 @@ class AuthTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "*"
-        expect { ARTRest(options: options) }.to(raiseException())
-        expect { ARTRealtime(options: options) }.to(raiseException())
+        XCTAssertNotNil(tryInObjC {
+            _ = ARTRest(options: options)
+        })
+        XCTAssertNotNil(tryInObjC {
+            _ = ARTRealtime(options: options)
+        })
     }
 
     // RSA15b
@@ -1356,7 +1363,9 @@ class AuthTests: XCTestCase {
         let clientOptions = try AblyTests.commonAppSetup(for: test)
         clientOptions.clientId = "*"
 
-        expect { ARTRest(options: clientOptions) }.to(raiseException())
+        XCTAssertNotNil(tryInObjC {
+            _ = ARTRest(options: clientOptions)
+        })
     }
 
     // RSA8
@@ -4472,7 +4481,7 @@ class AuthTests: XCTestCase {
 
         let rest = ARTRest(options: options)
         XCTAssertNil(rest.auth.clientId)
-        #if TARGET_OS_IOS
+        #if TARGET_SUPPORTS_APNS
             XCTAssertNil(rest.device.clientId)
         #endif
         let testHttpExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))

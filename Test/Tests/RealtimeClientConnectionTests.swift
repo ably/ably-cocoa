@@ -290,7 +290,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 break
             }
         }
-        expect(connected).toEventually(beTrue(), timeout: DispatchTimeInterval.seconds(10), description: "Can't connect automatically")
+        expect(connected).toEventually(beTrue(), timeout: NimbleTimeInterval.seconds(10), description: "Can't connect automatically")
     }
 
     func test__002__Connection__should_connect_manually() throws {
@@ -727,7 +727,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let numClients = 50
         let numMessages = 5
         let channelName = "chat"
-        let testTimeout = DispatchTimeInterval.seconds(60)
+        let testTimeout = NimbleTimeInterval.seconds(60)
 
         defer {
             for client in disposable {
@@ -1728,7 +1728,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
 
         expect(start).toEventuallyNot(beNil(), timeout: testTimeout)
-        expect(end).toEventuallyNot(beNil(), timeout: DispatchTimeInterval.milliseconds(Int(1000.0 * ARTDefault.realtimeRequestTimeout())))
+        expect(end).toEventuallyNot(beNil(), timeout: NimbleTimeInterval.milliseconds(Int(1000.0 * ARTDefault.realtimeRequestTimeout())))
 
         if states.count != 2 {
             fail("Invalid number of connection states. Expected CLOSING and CLOSE states")
@@ -2289,7 +2289,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         client.connect()
 
-        let observedStateChanges = try retrySequenceDataGatherer.waitForData(timeout: testTimeout.multiplied(by: 3))
+        let observedStateChanges = try retrySequenceDataGatherer.waitForData(timeout: testTimeout.dispatchTimeInterval.multiplied(by: 3))
 
         // We expect to get INITIALIZED -> CONNECTING, and then, repeated: CONNECTING -> DISCONNECTED, DISCONNECTED -> CONNECTING, and then finally CONNECTING -> SUSPENDED.
 
@@ -4174,7 +4174,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         client.connect()
         defer { client.dispose(); client.close() }
 
-        let data = try dataGatherer.waitForData(timeout: testTimeout)
+        let data = try dataGatherer.waitForData(timeout: testTimeout.dispatchTimeInterval)
 
         // We expect the first connection attempt to fail due to the .fakeNetworkResponse configured above. This error does not meet the criteria for trying a fallback host, and so should not provoke the use of a fallback host. Hence the connection should transition to DISCONNECTED, and then subsequently retry, transitioning back to CONNECTING. We should see that there were two connection attempts, both to the primary host.
 

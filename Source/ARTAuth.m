@@ -733,7 +733,7 @@ dispatch_async(_queue, ^{
 
 - (void)setProtocolClientId:(NSString *)clientId {
     _protocolClientId = clientId;
-    #if TARGET_OS_IOS
+    #if TARGET_SUPPORTS_APNS
     [self setLocalDeviceClientId_nosync:_protocolClientId];
     #endif
 }
@@ -790,7 +790,7 @@ dispatch_sync(_queue, ^{
 
 - (void)setTokenDetails:(ARTTokenDetails *)tokenDetails {
     _tokenDetails = tokenDetails;
-    #if TARGET_OS_IOS
+    #if TARGET_SUPPORTS_APNS
     [self setLocalDeviceClientId_nosync:tokenDetails.clientId];
     #endif
 }
@@ -822,7 +822,7 @@ dispatch_sync(_queue, ^{
     return parts[0];
 }
 
-#if TARGET_OS_IOS
+#if TARGET_SUPPORTS_APNS
 - (void)setLocalDeviceClientId_nosync:(NSString *)clientId {
     if (clientId == nil || [clientId isEqualToString:@"*"] || [clientId isEqualToString:_rest.device_nosync.clientId]) {
         return;

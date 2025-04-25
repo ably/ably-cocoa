@@ -15,7 +15,7 @@
 #import "ARTNSMutableRequest+ARTPush.h"
 #import "ARTAuth+Private.h"
 
-#if TARGET_OS_IOS
+#if TARGET_SUPPORTS_APNS
 
 #import <UIKit/UIKit.h>
 
@@ -162,7 +162,6 @@ dispatch_async(_queue, ^{
 }
 
 - (void)deviceRegistration:(ARTErrorInfo *)error {
-    #if TARGET_OS_IOS
     ARTLocalDevice *local = _rest.device_nosync;
 
     const id<ARTPushRegistererDelegate, NSObject> delegate = self.delegate;
@@ -221,11 +220,9 @@ dispatch_async(_queue, ^{
     else {
         doDeviceRegistration();
     }
-    #endif
 }
 
 - (void)deviceUpdateRegistration:(ARTErrorInfo *)error {
-    #if TARGET_OS_IOS
     ARTLocalDevice *local = _rest.device_nosync;
 
     const id<ARTPushRegistererDelegate, NSObject> delegate = self.delegate;
@@ -270,11 +267,9 @@ dispatch_async(_queue, ^{
         }
         [self sendEvent:[ARTPushActivationEventRegistrationSynced new]];
     }];
-    #endif
 }
 
 - (void)syncDevice {
-    #if TARGET_OS_IOS
     ARTLocalDevice *const local = _rest.device_nosync;
 
     const id<ARTPushRegistererDelegate, NSObject> delegate = self.delegate;
@@ -328,11 +323,9 @@ dispatch_async(_queue, ^{
     else {
         doDeviceSync();
     }
-    #endif
 }
 
 - (void)deviceUnregistration:(ARTErrorInfo *)error {
-    #if TARGET_OS_IOS
     ARTLocalDevice *local = _rest.device_nosync;
 
     __block id delegate = self.delegate;
@@ -380,33 +373,27 @@ dispatch_async(_queue, ^{
         ARTLogDebug(self->_logger, @"successfully deactivate device");
         [self sendEvent:[ARTPushActivationEventDeregistered new]];
     }];
-    #endif
 }
 
 - (void)callActivatedCallback:(ARTErrorInfo *)error {
-    #if TARGET_OS_IOS
     dispatch_async(_userQueue, ^{
         const id<ARTPushRegistererDelegate, NSObject> delegate = self.delegate;
         if ([delegate respondsToSelector:@selector(didActivateAblyPush:)]) {
             [delegate didActivateAblyPush:error];
         }
     });
-    #endif
 }
 
 - (void)callDeactivatedCallback:(ARTErrorInfo *)error {
-    #if TARGET_OS_IOS
     dispatch_async(_userQueue, ^{
         const id<ARTPushRegistererDelegate, NSObject> delegate = self.delegate;
         if ([delegate respondsToSelector:@selector(didDeactivateAblyPush:)]) {
             [delegate didDeactivateAblyPush:error];
         }
     });
-    #endif
 }
 
 - (void)callUpdatedCallback:(nullable ARTErrorInfo *)error {
-    #if TARGET_OS_IOS
     dispatch_async(_userQueue, ^{
         const id<ARTPushRegistererDelegate, NSObject> delegate = self.delegate;
         if ([delegate respondsToSelector:@selector(didUpdateAblyPush:)]) {
@@ -416,7 +403,6 @@ dispatch_async(_queue, ^{
             [delegate didAblyPushRegistrationFail:error];
         }
     });
-    #endif
 }
 
 - (void)registerForAPNS {

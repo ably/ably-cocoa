@@ -1306,7 +1306,9 @@ class RestClientChannelTests: XCTestCase {
 
         invalidCases.forEach { caseItem in
             waitUntil(timeout: testTimeout) { done in
-                expect { channel.publish(nil, data: caseItem, callback: nil) }.toNot(raiseException())
+                XCTAssertNil(tryInObjC {
+                    channel.publish(nil, data: caseItem, callback: nil)
+                })
                 done()
             }
         }

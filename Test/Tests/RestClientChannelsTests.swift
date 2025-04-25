@@ -17,11 +17,11 @@ extension ARTRestChannels: Sequence {
 }
 #endif
 
-private func beAChannel(named expectedValue: String) -> Nimble.Predicate<ARTChannel> {
-    return Predicate.define("be a channel with name \"\(expectedValue)\"") { actualExpression, msg -> PredicateResult in
+private func beAChannel(named expectedValue: String) -> Nimble.Matcher<ARTChannel> {
+    return Matcher.define("be a channel with name \"\(expectedValue)\"") { actualExpression, msg -> MatcherResult in
         let actualValue = try actualExpression.evaluate()
         let m = msg.appended(details: "\"\(actualValue?.name ?? "nil")\" instead")
-        return PredicateResult(status: PredicateStatus(bool: actualValue?.name == expectedValue), message: m)
+        return MatcherResult(status: MatcherStatus(bool: actualValue?.name == expectedValue), message: m)
     }
 }
 

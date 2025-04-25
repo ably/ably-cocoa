@@ -73,7 +73,7 @@
         };
     }
 
-    #if TARGET_OS_IOS
+    #if TARGET_SUPPORTS_APNS
     ARTLocalDevice *local = _rest.device;
     #else
     ARTLocalDevice *local = nil;
@@ -127,7 +127,7 @@ dispatch_async(_queue, ^{
         };
     }
 
-    #if TARGET_OS_IOS
+    #if TARGET_SUPPORTS_APNS
     ARTLocalDevice *local = _rest.device;
     #else
     ARTLocalDevice *local = nil;
@@ -240,7 +240,7 @@ dispatch_async(_queue, ^{
         };
     }
 
-    #if TARGET_OS_IOS
+    #if TARGET_SUPPORTS_APNS
     ARTLocalDevice *local = _rest.device;
     #else
     ARTLocalDevice *local = nil;

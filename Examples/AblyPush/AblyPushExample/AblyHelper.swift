@@ -34,7 +34,9 @@ class AblyHelper: NSObject, ObservableObject {
         UNUserNotificationCenter.current().delegate = self
         locationManager = CLLocationManager()
         locationManager.delegate = self
+        #if os(iOS)
         locationManager.requestAlwaysAuthorization() // for simplicity we put it here, but in the real app you should care about particular moment, when you ask for any permissions
+        #endif
     }
 }
 
@@ -47,6 +49,7 @@ extension AblyHelper {
     }
     
     func activateLocationPush() {
+        #if os(iOS)
         locationManager.startMonitoringLocationPushes { deviceToken, error in
             guard error == nil else {
                 return ARTPush.didFailToRegisterForLocationNotificationsWithError(error!, realtime: self.realtime)
@@ -54,6 +57,7 @@ extension AblyHelper {
             self.locationDeviceToken = deviceToken!.deviceTokenString
             ARTPush.didRegisterForLocationNotifications(withDeviceToken: deviceToken!, realtime: self.realtime)
         }
+        #endif
     }
     
     func deactivatePush() {

@@ -96,7 +96,7 @@
     return [[ARTPush alloc] initWithInternal:_internal.push queuedDealloc:_dealloc];
 }
 
-#if TARGET_OS_IOS
+#if TARGET_SUPPORTS_APNS
 - (ARTLocalDevice *)device {
     return _internal.device;
 }
@@ -1763,7 +1763,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     self.msgSerial = msgSerial;
 }
 
-#if TARGET_OS_IOS
+#if TARGET_SUPPORTS_APNS
 - (ARTLocalDevice *)device {
     return _rest.device;
 }

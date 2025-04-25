@@ -93,7 +93,7 @@ private func attachAndWaitForInitialPresenceSyncToComplete(client: ARTRealtime, 
 class RealtimeClientPresenceTests: XCTestCase {
     override func setUp() {
         super.setUp()
-        AsyncDefaults.timeout = testTimeout
+        PollingDefaults.timeout = testTimeout
     }
 
     // XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
