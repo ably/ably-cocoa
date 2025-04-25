@@ -22,9 +22,12 @@ typedef NS_ENUM(NSUInteger, ARTMessageAction) {
      */
     ARTMessageActionDelete,
     /**
-     * Message action for a meta-message that contains channel occupancy information.
+     * A meta-message (a message originating from ably rather than being
+     * explicitly published on a channel), containing information such as
+     * inband channel occupancy events that has been requested by channel
+     * param.
      */
-    ARTMessageActionMetaOccupancy,
+    ARTMessageActionMeta,
     /**
      * Message action for a message containing the latest rolled-up summary of
      * annotations that have been made to this message.
