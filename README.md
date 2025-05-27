@@ -167,9 +167,19 @@ The [CHANGELOG.md](/ably/ably-js/blob/main/CHANGELOG.md) contains details of the
 
 ---
 
-## Support, feedback and troubleshooting
+## Support and known issues
 
-Please visit https://support.ably.com/ for access to our knowledgebase and to ask for any assistance.
+For help or technical support, visit Ably's [support page](https://ably.com/support).
 
-You can also view the [community reported Github issues](https://github.com/ably/ably-cocoa/issues).
+
+## Unsupported features
+
+This SDK currently not compatible with the following Ably features:
+
+| Unsupported feature | Description |
+| --------------------| ------------|
+| Custom `transportParams` | Enables sending custom  parameters with connection requests. |
+| [Remember fallback host during failures](https://ably.com/docs/getting-started/setup#options) | Persists the fallback host used during a failed connection attempt. |
+| [`ErrorInfo` URLs](https://ably.com/docs/realtime/types#error-info) | Provides direct URLs in error messages to help debug issues. |
+
 
