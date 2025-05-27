@@ -21,17 +21,20 @@ Everything you need to get started with Ably:
 
 ## Supported platforms
 
-This SDK is compatible with projects that target:
+Ably aims to support a wide range of platforms. If you experience any compatibility issues, open an issue in the repository or contact [Ably support](https://ably.com/support).
 
-- iOS 10.0+
-- tvOS 10.0+
-- macOS 10.12+
+The following platforms are supported:
 
-We maintain compatibility and explicitly support these platform versions.
+| Platform | Support |
+|----------|---------|
+| Swift | >= 5.3 |
+| Objective-C | Xcode 7.3+ |
+| iOS| >= 10.0 |
+| tvOS | >= 10.0 |
+| macOS| >= 10.12 |
 
-We do not explicitly maintain compatibility with older platform versions. Any known incompatibilities with older versions can be found [here](https://github.com/ably/ably-cocoa/issues?q=is%3Aissue+is%3Aopen+label%3A%22compatibility%22).
-
-If you find any issues with unsupported platform versions, please [raise an issue](https://github.com/ably/ably-cocoa/issues) in this repository or [contact Ably customer support](https://support.ably.com) for advice.
+> [!IMPORTANT]
+> SDK Swift / Objective-C versions < 1.2.24 will be [deprecated](https://ably.com/docs/platform/deprecate/protocol-v1) from November 1, 2025.
 
 ### Continuous Integration Testing
 
