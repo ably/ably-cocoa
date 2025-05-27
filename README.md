@@ -9,6 +9,16 @@ Find out more:
 * [Ably Pub/Sub docs](https://ably.com/docs/basics)
 * [Ably Pub/Sub examples](https://ably.com/examples?product=pubsub)
 
+---
+
+## Getting started
+
+Everything you need to get started with Ably:
+
+* [Quickstart in Pub/Sub using Swift](https://ably.com/docs/getting-started/quickstart?lang=swift)
+
+---
+
 ## Supported platforms
 
 This SDK is compatible with projects that target:
