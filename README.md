@@ -155,12 +155,15 @@ Ably depends on our [MessagePack Fork](https://github.com/ably-forks/msgpack-obj
 
 ---
 
+## Contribute
+
+Read the [CONTRIBUTING.md](./CONTRIBUTING.md) guidelines to contribute to Ably.
+
+---
+
 ## Support, feedback and troubleshooting
 
 Please visit https://support.ably.com/ for access to our knowledgebase and to ask for any assistance.
 
 You can also view the [community reported Github issues](https://github.com/ably/ably-cocoa/issues).
 
-## Contributing
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
