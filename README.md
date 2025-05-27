@@ -36,13 +36,7 @@ The following platforms are supported:
 > [!IMPORTANT]
 > SDK Swift / Objective-C versions < 1.2.24 will be [deprecated](https://ably.com/docs/platform/deprecate/protocol-v1) from November 1, 2025.
 
-### Continuous Integration Testing
-
-We perform CI testing on the following operating systems:
-
-- iOS 17.2
-- tvOS 17.2
-- The version of macOS specified by [GitHub Actions’ `macos-13` runner image](https://github.com/actions/runner-images#available-images).
+---
 
 ## Known Limitations
 
