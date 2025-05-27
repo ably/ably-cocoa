@@ -559,7 +559,6 @@
 		D7093C19219E465300723F17 /* TestUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856AAC961B6E30C800B07119 /* TestUtilities.swift */; };
 		D7093C1A219E465C00723F17 /* NSObject+TestSuite.m in Sources */ = {isa = PBXBuildFile; fileRef = D780846D1C68B3E50083009D /* NSObject+TestSuite.m */; };
 		D7093C1B219E465F00723F17 /* NSObject+TestSuite.swift in Sources */ = {isa = PBXBuildFile; fileRef = D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */; };
-		D7093C1C219E466400723F17 /* ReadmeExamplesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBAB9A6E1C69702800AF036B /* ReadmeExamplesTests.swift */; };
 		D7093C1D219E466600723F17 /* AuthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C1B8761BBEA81A0087B55F /* AuthTests.swift */; };
 		D7093C1E219E466900723F17 /* RestClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856AAC981B6E312F00B07119 /* RestClientTests.swift */; };
 		D7093C1F219E466E00723F17 /* RestClientStatsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 853ED7C31B7A1A3C006F1C6F /* RestClientStatsTests.swift */; };
@@ -580,7 +579,6 @@
 		D7093C70219EE25400723F17 /* TestUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856AAC961B6E30C800B07119 /* TestUtilities.swift */; };
 		D7093C71219EE25800723F17 /* NSObject+TestSuite.m in Sources */ = {isa = PBXBuildFile; fileRef = D780846D1C68B3E50083009D /* NSObject+TestSuite.m */; };
 		D7093C72219EE25B00723F17 /* NSObject+TestSuite.swift in Sources */ = {isa = PBXBuildFile; fileRef = D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */; };
-		D7093C73219EE26000723F17 /* ReadmeExamplesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBAB9A6E1C69702800AF036B /* ReadmeExamplesTests.swift */; };
 		D7093C74219EE26400723F17 /* AuthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C1B8761BBEA81A0087B55F /* AuthTests.swift */; };
 		D7093C75219EE26400723F17 /* RestClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856AAC981B6E312F00B07119 /* RestClientTests.swift */; };
 		D7093C76219EE26400723F17 /* RestClientStatsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 853ED7C31B7A1A3C006F1C6F /* RestClientStatsTests.swift */; };
@@ -1162,7 +1160,6 @@
 		EB9121401CA0AD8200BA0A40 /* ARTMsgPackEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB91213F1CA0AD8200BA0A40 /* ARTMsgPackEncoder.m */; };
 		EB9C530B1CD7BEB100.8.557 /* ARTJsonLikeEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = EB9C530A1CD7BEB100.8.557 /* ARTJsonLikeEncoder.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EB9C530D1CD7BFF300.8.557 /* ARTJsonLikeEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB9C530C1CD7BFF300.8.557 /* ARTJsonLikeEncoder.m */; };
-		EBAB9A6F1C69702800AF036B /* ReadmeExamplesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBAB9A6E1C69702800AF036B /* ReadmeExamplesTests.swift */; };
 		EBB721C52376A948001C3550 /* ARTWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = EBB721C42376A948001C3550 /* ARTWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EBB721C62376A948001C3550 /* ARTWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = EBB721C42376A948001C3550 /* ARTWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EBB721C72376A948001C3550 /* ARTWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = EBB721C42376A948001C3550 /* ARTWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -1689,7 +1686,6 @@
 		EB91213F1CA0AD8200BA0A40 /* ARTMsgPackEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTMsgPackEncoder.m; sourceTree = "<group>"; };
 		EB9C530A1CD7BEB100.8.557 /* ARTJsonLikeEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTJsonLikeEncoder.h; path = PrivateHeaders/Ably/ARTJsonLikeEncoder.h; sourceTree = "<group>"; };
 		EB9C530C1CD7BFF300.8.557 /* ARTJsonLikeEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTJsonLikeEncoder.m; sourceTree = "<group>"; };
-		EBAB9A6E1C69702800AF036B /* ReadmeExamplesTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReadmeExamplesTests.swift; sourceTree = "<group>"; };
 		EBB721C12376A4E6001C3550 /* SoakTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoakTest.swift; sourceTree = "<group>"; };
 		EBB721C42376A948001C3550 /* ARTWebSocket.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTWebSocket.h; path = PrivateHeaders/Ably/ARTWebSocket.h; sourceTree = "<group>"; };
 		EBB721C82376B16B001C3550 /* SoakTestWebSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoakTestWebSocket.swift; sourceTree = "<group>"; };
@@ -1939,7 +1935,6 @@
 				D7DF73831EA5FE620013CD36 /* PushActivationStateMachineTests.swift */,
 				D74A17B61FA0D81A006D27B5 /* PushAdminTests.swift */,
 				D777EEE620650A85002EBA03 /* PushChannelTests.swift */,
-				EBAB9A6E1C69702800AF036B /* ReadmeExamplesTests.swift */,
 				D723046F1BB72CED00F1ABDA /* RealtimeClientTests.swift */,
 				D74EFAEA1C4D09B500CFF98E /* RealtimeClientChannelTests.swift */,
 				D71D30031C5F7B2F002115B0 /* RealtimeClientChannelsTests.swift */,
@@ -3419,7 +3414,6 @@
 				D777EEE820650ADF002EBA03 /* PushChannelTests.swift in Sources */,
 				217FCF3F29D626E4006E5F2D /* StaticJitterCoefficients.swift in Sources */,
 				D746AE2D1BBB625E003ECEF8 /* RestClientChannelsTests.swift in Sources */,
-				EBAB9A6F1C69702800AF036B /* ReadmeExamplesTests.swift in Sources */,
 				56190954238C3D3200A862A6 /* CryptoTest.m in Sources */,
 				21088DCB2A53560C0033C722 /* ConnectRetryStateTests.swift in Sources */,
 				21113B6329DDF7E800652C86 /* ARTInternalLogTests.m in Sources */,
@@ -3585,7 +3579,6 @@
 				2132C2EA29D4B91B000C4355 /* BackoffCoefficients.swift in Sources */,
 				2132C22329D233EB000C4355 /* DefaultErrorCheckerTests.swift in Sources */,
 				D5FFA6A929E97EF30082DB4B /* CryptoData.swift in Sources */,
-				D7093C1C219E466400723F17 /* ReadmeExamplesTests.swift in Sources */,
 				21881E7B283BD0DF00CFD9E2 /* StringifiableTests.swift in Sources */,
 				D7093C27219E466E00723F17 /* RealtimeClientChannelsTests.swift in Sources */,
 				848ED97426E50D0F0087E800 /* ObjcppTest.mm in Sources */,
@@ -3638,7 +3631,6 @@
 				848ED97526E50D0F0087E800 /* ObjcppTest.mm in Sources */,
 				D7093C7F219EE26400723F17 /* RealtimeClientPresenceTests.swift in Sources */,
 				21113B6129DDDDD000652C86 /* LogAdapterTests.swift in Sources */,
-				D7093C73219EE26000723F17 /* ReadmeExamplesTests.swift in Sources */,
 				217FCF4829D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift in Sources */,
 				560579DB24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */,
 				21113B5B29DCA4C700652C86 /* DataGatherer.swift in Sources */,
