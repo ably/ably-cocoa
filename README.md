@@ -1,18 +1,13 @@
-# [Ably](https://www.ably.com) iOS, tvOS and macOS Objective-C and Swift client library SDK
+# Ably Pub/Sub Java SDK
 
-[![Check Pod](https://github.com/ably/ably-cocoa/actions/workflows/check-pod.yaml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/check-pod.yaml)
-[![Integration Test: iOS 14.4](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-iOS14_4.yaml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-iOS14_4.yaml)
-[![Integration Test: macOS 10.15](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-macOS10_15.yaml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-macOS10_15.yaml)
-[![Integration Test: tvOS 14.3](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-tvOS14_3.yaml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-tvOS14_3.yaml)
-[![Features](https://github.com/ably/ably-cocoa/actions/workflows/features.yml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/features.yml)
+Build any realtime experience using Ably’s Pub/Sub Java SDK. Supported on all popular platforms and frameworks, including Swift and Objective-C.
 
-[![CocoaPods](https://img.shields.io/cocoapods/v/Ably.svg)](https://cocoapods.org/pods/Ably)
-[![SPM Swift Compatibility](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fably%2Fably-cocoa%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/ably/ably-cocoa)
-[![SPM Platform Compatibility](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fably%2Fably-cocoa%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/ably/ably-cocoa)
+Ably Pub/Sub provides flexible APIs that deliver features such as pub-sub messaging, message history, presence, and push notifications. Utilizing Ably’s realtime messaging platform, applications benefit from its highly performant, reliable, and scalable infrastructure.
 
-_[Ably](https://ably.com) is the platform that powers synchronized digital experiences in realtime. Whether attending an event in a virtual venue, receiving realtime financial information, or monitoring live car performance data – consumers simply expect realtime digital experiences as standard. Ably provides a suite of APIs to build, extend, and deliver powerful digital experiences in realtime for more than 250 million devices across 80 countries each month. Organizations like Bloomberg, HubSpot, Verizon, and Hopin depend on Ably’s platform to offload the growing complexity of business-critical realtime data synchronization at global scale. For more information, see the [Ably documentation](https://ably.com/docs)._
+Find out more:
 
-This is an iOS, tvOS and macOS Objective-C and Swift client library SDK for Ably, written in Objective-C. The library currently targets the [Ably client library features spec](https://www.ably.com/docs/client-lib-development-guide/features/) Version 1.2. You can jump to the '[Known Limitations](#known-limitations)' section to see the features this client library does not yet support or [view our client library SDKs feature support matrix](https://www.ably.com/download/sdk-feature-support-matrix) to see the list of all the available features.
+* [Ably Pub/Sub docs](https://ably.com/docs/basics)
+* [Ably Pub/Sub examples](https://ably.com/examples?product=pubsub)
 
 ## Supported platforms
 
