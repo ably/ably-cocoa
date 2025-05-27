@@ -48,61 +48,110 @@ This client library is currently *not compatible* with some of the Ably features
 | [Remember fallback host during failures](https://ably.com/docs/realtime/usage#client-options) | 
 | [ErrorInfo URLs to help debug issues](https://ably.com/docs/realtime/types#error-info) |
 
+---
 
-## Installation Guide
+## Installation
 
-You can install Ably for iOS and macOS through Package Manager, CocoaPods, Carthage or manually.
+You can install Ably for iOS and macOS through [Swift package manager](#swift-package-manager), [CocoaPods](#carthage), [Carthage](#carthage) or [install manually](#manual).
 
-### Installing through [Swift Package Manager](https://swift.org/package-manager/)
-- To install the `ably-cocoa` package in your **Xcode Project**: 
-    - Paste `https://github.com/ably/ably-cocoa` in the *Swift Packages* search box. ( *Xcode project*  &rarr;  *Swift Packages..* . &rarr; `+` button)
-    - Select the `Ably` SDK for your target.
-    - [This apple guide](https://developer.apple.com/documentation/swift_packages/adding_package_dependencies_to_your_app) explains the steps in more detail.
-- To install the `ably-cocoa` package in another **Swift Package**, then add the following to your `Package.Swift`:
+### Swift package manager
+
+The Ably Pub/Sub SDK includes installation support for [Swift Package Manager](https://swift.org/package-manager/).
+
+<details>
+<summary>Swift package manager installation details.</summary>
+
+To install the `ably-cocoa` package in your Xcode project: 
+
+* Paste `https://github.com/ably/ably-cocoa` in the *Swift Packages* search box. ( *Xcode project*  &rarr;  *Swift Packages..* . &rarr; `+` button)
+* Select the `Ably` SDK for your target.
+
+To install the `ably-cocoa` package in another Swift package, add the following to your `Package.Swift`:
+
 ```swift
  .package(url: "https://github.com/ably/ably-cocoa", from: "1.2.25"),
 ```
-### Installing through [CocoaPods](https://cocoapods.org/)
+
+See Apple's [adding package dependencies to your app](https://developer.apple.com/documentation/swift_packages/adding_package_dependencies_to_your_app) guide for more detail.
+</details>
+
+### CocoaPods
+
+The Ably Pub/Sub SDK includes installation support for [CocoaPods](https://cocoapods.org/).
+
+<details>
+<summary>CocoaPods installation details.</summary>
 
 If you intend to use Swift, using `use_frameworks!` in your Podfile is recommended (this will create a Framework that can be used in Swift natively).
 
 Add this line to your application's Podfile:
 
-    # For Xcode 7.3 and newer
-    pod 'Ably', '>= 1.2'
+```ruby
+# For Xcode 7.3 and newer
+pod 'Ably', '>= 1.2'
+```
 
 And then install the dependency:
 
-    $ pod install
+```bash
+$ pod install
+```
 
-### Installing through [Carthage](https://github.com/Carthage/Carthage/)
+</details>
 
-Add this line to your application's Cartfile:
+### Carthage
 
-    # For Xcode 7.3 and newer
-    github "ably/ably-cocoa" >= 1.2
+The Ably Pub/Sub SDK includes installation support for [Carthage](https://github.com/Carthage/Carthage/).
 
-And then run  
+<details>
+<summary>Carthage installation details.</summary>
 
-- for **iOS**: `carthage update --use-xcframeworks --platform iOS --no-use-binaries`
-- for **macOS**: `carthage update --use-xcframeworks --platform macOS --no-use-binaries`
-- for **tvOS**: `carthage update --use-xcframeworks --platform tvOS --no-use-binaries`
+Add the following line to your application's Cartfile:
 
-to build the framework and drag the built (in `[PROJECT_ROOT]/Carthage/Build`)
+```ruby
+# For Xcode 7.3 and newer
+github "ably/ably-cocoa" >= 1.2
+```
 
-- `Ably.xcframework` 
-- `AblyDeltaCodec.xcframework`
-- `msgpack.xcframework`
+And then run one of the following commands required for your platform:
 
-into the "Frameworks, Libraries, and Embedded Content" section of the General tab of your Xcode target's settings. If your target is an application, select "Embed & Sign", otherwise "Do Not Embed".
+| Platform | Command |
+|----------|---------|
+| iOS | `carthage update --use-xcframeworks --platform iOS --no-use-binaries` |
+| macOS | `carthage update --use-xcframeworks --platform macOS --no-use-binaries`|
+| tvOS | `carthage update --use-xcframeworks --platform tvOS --no-use-binaries` |
 
-If you see, for example, a `dyld: Library not loaded: @rpath/AblyDeltaCodec.framework/AblyDeltaCodec` error, then most likely you forgot to add all the dependencies to your project. You have more detailed information [here](https://github.com/Carthage/Carthage#adding-frameworks-to-an-application).
+After building the framework (located in `[PROJECT_ROOT]/Carthage/Build`), drag the following files into the **Frameworks**, **Libraries**, and **Embedded content** section of your Xcode target’s **General** tab:
 
-### Manual installation 
+* `Ably.xcframework`
+* `AblyDeltaCodec.xcframework`
+* `msgpack.xcframework`
+* For applications, select **Embed & Sign**
+* For other targets, select **Do Not Embed**
 
-1. Get the code from GitHub [from the release page](https://github.com/ably/ably-cocoa/releases/tag/1.2.25), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-cocoa.git`
-2. Drag the directory `ably-cocoa/ably-cocoa` into your project as a group.
-3. Ably depends on our [MessagePack Fork](https://github.com/ably-forks/msgpack-objective-C) 0.2.0; get it [from the releases page](https://github.com/ably-forks/msgpack-objective-C/releases/tag/0.2.0-ably-1) and link it into your project.
+If you encounter an error like:
+
+```
+dyld: Library not loaded: @rpath/AblyDeltaCodec.framework/AblyDeltaCodec
+```
+
+you’ve likely missed adding one or more required dependencies. See [this Carthage guide](https://github.com/Carthage/Carthage#adding-frameworks-to-an-application) for more help.
+
+</details>
+
+### Manual install
+
+The Ably Pub/Sub SDK includes manual installation support.
+
+<details>
+<summary>Manual installation details.</summary>
+
+* Download the [Ably Pub/Sub Cocoa SDK](https://github.com/ably/ably-cocoa).
+* Drag the ably-cocoa/ably-cocoa directory into your Xcode project as a group.
+
+Ably depends on our [MessagePack Fork](https://github.com/ably-forks/msgpack-objective-C) 0.2.0; get it [from the releases page](https://github.com/ably-forks/msgpack-objective-C/releases/tag/0.2.0-ably-1) and link it into your project.
+
+</details>
 
 ## Thread-safety
 
