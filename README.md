@@ -155,24 +155,6 @@ Ably depends on our [MessagePack Fork](https://github.com/ably-forks/msgpack-obj
 
 ---
 
-## Using the Realtime API
-
-<!--
-NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE N
-**********************************************
-==============================================
-
-(Sorry for the noise.)
-
-Those examples need to be kept in sync with:
-
-Test/Tests/ReadmeExamplesTests.swift
-
-==============================================
-**********************************************
-OTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NO
--->
-
 ### Introduction
 
 All examples assume a client has been created as follows:
