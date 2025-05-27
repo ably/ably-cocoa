@@ -48,9 +48,6 @@ This client library is currently *not compatible* with some of the Ably features
 | [Remember fallback host during failures](https://ably.com/docs/realtime/usage#client-options) | 
 | [ErrorInfo URLs to help debug issues](https://ably.com/docs/realtime/types#error-info) |
 
-## Documentation
-
-Visit [ably.com/docs](https://www.ably.com/docs) for a complete API reference and more examples.
 
 ## Installation Guide
 
