@@ -153,18 +153,7 @@ Ably depends on our [MessagePack Fork](https://github.com/ably-forks/msgpack-obj
 
 </details>
 
-## Thread-safety
-
-The library makes the following thread-safety guarantees:
-
-* The whole public interface can be safely accessed, both for read and writing, from any thread.
-* "Value" objects (e. g. `ARTTokenDetails`, data from messages) returned by the library can be safely read from and written to.
-* Objects passed to the library must not be mutated afterwards. They can be safely passed again, or read from; they won't be written to by the library.
-
-All internal operations are dispatched to a single serial GCD queue. You can specify a custom queue for this, which must be serial, with `ARTClientOptions.internalDispatchQueue`.
-
-All calls to callbacks provided by the user are dispatched to the main queue by default.
-This allows you to react to Ably's output by doing UI operations directly. You can specify a different queue with `ARTClientOptions.dispatchQueue`. It shouldn't be the same queue as the `ARTClientOptions.internalDispatchQueue`, since that can lead to deadlocks.
+---
 
 ## Push Notifications
 
