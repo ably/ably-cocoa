@@ -97,6 +97,12 @@ Example:
 // @specNotApplicable CHA-EX3a - Our API does not have a concept of "partial options" unlike the JS API which this spec item considers.
 ```
 
+## Developing ably-cocoa alongside this plugin
+
+For the initial stage of development of this plugin, where we need to also iterate heavily on ably-cocoa, I've added ably-cocoa as a Git submodule, which can be found in [`ably-cocoa`](./ably-cocoa). This allows you to edit ably-cocoa from within this repo's Xcode workspace.
+
+Nearer launch, we'll remove this submodule in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/7.
+
 ## Release process
 
 For each release, the following needs to be done:

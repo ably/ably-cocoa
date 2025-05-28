@@ -1,5 +1,7 @@
 excluded:
   - .build
+  # Submodules
+  - ably-cocoa
 
 strict: true
 
