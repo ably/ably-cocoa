@@ -516,7 +516,7 @@ typedef void (^ARTURLRequestCallback)(NSHTTPURLResponse *_Nullable result, NSDat
 typedef void (^ARTTokenDetailsCallback)(ARTTokenDetails *_Nullable result, NSError *_Nullable error);
 
 /// :nodoc:
-typedef void (^ARTTokenDetailsCompatibleCallback)(id<ARTTokenDetailsCompatible> _Nullable result, NSError *_Nullable error);
+typedef void NS_SWIFT_SENDABLE (^ARTTokenDetailsCompatibleCallback)(id<ARTTokenDetailsCompatible> _Nullable result, NSError *_Nullable error);
 
 /// :nodoc:
 typedef void (^ARTAuthCallback)(ARTTokenParams *params, ARTTokenDetailsCompatibleCallback callback);
