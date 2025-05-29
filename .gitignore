@@ -12,3 +12,6 @@ docs-coverage-report
 
 /node_modules
 /.mint
+
+# User-created file that contains their Ably API key
+/Example/AblyLiveObjectsExample/Secrets.swift

@@ -46,6 +46,10 @@ let package = Package(
                     name: "Ably",
                     package: "ably-cocoa",
                 ),
+                .product(
+                    name: "AblyPlugin",
+                    package: "ably-cocoa",
+                ),
             ],
         ),
         .testTarget(

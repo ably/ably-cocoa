@@ -106,6 +106,20 @@ struct BuildExampleApp: AsyncParsableCommand {
     mutating func run() async throws {
         let destinationSpecifier = try await platform.resolve()
 
+        let secretsFilePath = "Example/AblyLiveObjectsExample/Secrets.swift"
+        if !FileManager.default.fileExists(atPath: secretsFilePath) {
+            // If it doesn't already exist (e.g. if running in CI), create the Secrets.swift file needed to build the example app
+            let secretsFileContents = """
+            enum Secrets {
+                // Insert your Ably API key inside the double quotes below.
+                static let ablyAPIKey = ""
+            }
+            """
+
+            let data = secretsFileContents.data(using: .utf8)!
+            try data.write(to: .init(filePath: secretsFilePath))
+        }
+
         try await XcodeRunner.runXcodebuild(action: nil, scheme: "AblyLiveObjectsExample", destination: destinationSpecifier)
     }
 }
