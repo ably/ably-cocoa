@@ -21,6 +21,7 @@
         _timestamp = nil;
         _messages = nil;
         _presence = nil;
+        _annotations = nil;
         _flags = 0;
         _error = nil;
         _connectionDetails = nil;
@@ -52,6 +53,7 @@
     [description appendFormat:@" flags.resumed: %@,\n", NSStringFromBOOL(self.resumed)];
     [description appendFormat:@" messages: %@\n", self.messages];
     [description appendFormat:@" presence: %@\n", self.presence];
+    [description appendFormat:@" annotations: %@\n", self.annotations];
     [description appendFormat:@" params: %@\n", self.params];
     [description appendFormat:@"}"];
     return description;
@@ -70,6 +72,7 @@
     pm.timestamp = self.timestamp;
     pm.messages = self.messages;
     pm.presence = self.presence;
+    pm.annotations = self.annotations;
     pm.flags = self.flags;
     pm.error = self.error;
     pm.connectionDetails = self.connectionDetails;
@@ -100,6 +103,9 @@
          case ARTProtocolMessagePresence:
              proposed = [self.presence arrayByAddingObjectsFromArray:src.presence];
              break;
+         case ARTProtocolMessageAnnotation:
+             proposed = [self.annotations arrayByAddingObjectsFromArray:src.annotations];
+             break;
          default:
              proposed = nil;
              return NO;
@@ -119,6 +125,9 @@
              return YES;
          case ARTProtocolMessagePresence:
              self.presence = proposed;
+             return YES;
+         case ARTProtocolMessageAnnotation:
+             self.annotations = proposed;
              return YES;
          default:
              return NO;
@@ -215,5 +224,7 @@ NSString* ARTProtocolMessageActionToStr(ARTProtocolMessageAction action) {
             return @"Sync"; //16
         case ARTProtocolMessageAuth:
             return @"Auth"; //17
+        case ARTProtocolMessageAnnotation:
+            return @"Annotation"; //21
     }
 }

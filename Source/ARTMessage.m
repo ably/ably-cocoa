@@ -39,6 +39,7 @@
     [description appendFormat:@" refType: %@\n", self.refType];
     [description appendFormat:@" refSerial: %@\n", self.refSerial];
     [description appendFormat:@" operation: %@\n", self.operation];
+    [description appendFormat:@" summary: %@\n", self.summary];
     [description appendFormat:@"}"];
     return description;
 }
@@ -55,6 +56,7 @@
     message.operation = self.operation;
     message.refType = self.refType;
     message.refSerial = self.refSerial;
+    message.summary = [self.summary copy];
     return message;
 }
 
