@@ -44,6 +44,8 @@ To check formatting and code quality, run `swift run BuildTool lint`. Run with `
 
 - The public API of the SDK should use typed throws, and the thrown errors should be of type `ARTErrorInfo`.
 
+### Testing guidelines
+
 #### Attributing tests to a spec point
 
 When writing a test that relates to a spec point from the LiveObjects features spec, add a comment that contains one of the following tags:
