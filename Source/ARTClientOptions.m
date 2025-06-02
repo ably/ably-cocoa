@@ -9,6 +9,9 @@
 #import "ARTStringifiable.h"
 #import "ARTNSString+ARTUtil.h"
 #import "ARTTestClientOptions.h"
+#import "APLiveObjectsPlugin.h"
+
+const ARTPluginName ARTPluginNameLiveObjects = @"LiveObjects";
 
 NSString *ARTDefaultEnvironment = nil;
 
@@ -140,6 +143,7 @@ NSString *ARTDefaultEnvironment = nil;
     options.transportParams = self.transportParams;
     options.agents = self.agents;
     options.testOptions = self.testOptions;
+    options.plugins = self.plugins;
 
     return options;
 }
@@ -222,6 +226,18 @@ NSString *ARTDefaultEnvironment = nil;
 
 - (NSString *)host:(NSString *)host forEnvironment:(NSString *)environment {
     return [NSString stringWithFormat:@"%@-%@", environment, host];
+}
+
+// MARK: - Plugins
+
+- (nullable id<APLiveObjectsInternalPluginProtocol>)liveObjectsPlugin {
+    Class<APLiveObjectsPluginProtocol> publicPlugin = self.plugins[ARTPluginNameLiveObjects];
+
+    if (!publicPlugin) {
+        return nil;
+    }
+
+    return [publicPlugin internalPlugin];
 }
 
 @end

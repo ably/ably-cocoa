@@ -2,6 +2,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@protocol APLiveObjectsInternalPluginProtocol;
+
 @interface ARTClientOptions ()
 
 @property (readonly) BOOL isProductionEnvironment;
@@ -17,6 +19,11 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)setDefaultEnvironment:(nullable NSString *)environment;
 + (BOOL)getDefaultIdempotentRestPublishingForVersion:(NSString *)version;
 - (NSURLComponents *)restUrlComponents;
+
+// MARK: - Plugins
+
+/// The plugin that channels should use to access LiveObjects functionality.
+@property (nullable, readonly) id<APLiveObjectsInternalPluginProtocol> liveObjectsPlugin;
 
 @end
 

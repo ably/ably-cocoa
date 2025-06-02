@@ -14,6 +14,11 @@ let package = Package(
             name: "Ably",
             targets: ["Ably"]
         ),
+        // This library should only be used by Ably-authored plugins.
+        .library(
+            name: "AblyPlugin",
+            targets: ["AblyPlugin"]
+        ),
     ],
     dependencies: [
         .package(name: "msgpack", url: "https://github.com/rvi/msgpack-objective-C", from: "0.4.0"),
@@ -46,6 +51,19 @@ let package = Package(
                 .headerSearchPath("SocketRocket/Internal/RunLoop"),
                 .headerSearchPath("SocketRocket/Internal/Delegate"),
                 .headerSearchPath("SocketRocket/Internal/IOConsumer"),
+                .headerSearchPath("../AblyPlugin/include"),
+            ]
+        ),
+        .target(
+            name: "AblyPlugin",
+            dependencies: [
+                .byName(name: "Ably")
+            ],
+            path: "AblyPlugin",
+            cSettings: [
+                .headerSearchPath("PrivateHeaders"),
+                .headerSearchPath("../Source/PrivateHeaders"),
+                .headerSearchPath("../Source/PrivateHeaders/Ably")
             ]
         )
     ]
