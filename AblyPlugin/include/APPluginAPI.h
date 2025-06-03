@@ -4,6 +4,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol APLogger;
+@protocol APObjectMessageProtocol;
 
 /// `APPluginAPIProtocol` provides a stable API (that is, one which will not introduce backwards-incompatible changes within a given major version of ably-cocoa) for Ably-authored plugins to access certain private functionality of ably-cocoa.
 ///
@@ -27,6 +28,20 @@ NS_SWIFT_SENDABLE
 ///
 /// - Parameter channel: The channel whose logger the returned logger should wrap.
 - (id<APLogger>)loggerForChannel:(ARTRealtimeChannel *)channel;
+
+/// Throws an error if the channel is in a state in which a message should not be published. Copied from ably-js, not yet implemented. Will document this method properly once exact meaning decided, or may replace it with something that makes more sense for ably-cocoa.
+- (BOOL)throwIfUnpublishableStateForChannel:(ARTRealtimeChannel *)channel
+                                      error:(ARTErrorInfo *_Nullable *_Nullable)error;
+
+/// Sends an `OBJECT` `ProtocolMessage` on a channel and indicates the result of waiting for an `ACK`. Copied from ably-js, not yet implemented. Will document this method properly once exact meaning decided, or may replace it with something that makes more sense for ably-cocoa.
+- (void)sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
+                             channel:(ARTRealtimeChannel *)channel
+                          completion:(void (^ _Nullable)(ARTErrorInfo *_Nullable error))completion;
+
+/// Returns the server time, as calculated from the `ARTRealtimeInstance`'s stored offset between the local clock and the server time. Copied from ably-js, not yet implemented. Will document this method once exact meaning decided, or may replace it with something that makes more sense for ably-cocoa.
+- (void)fetchTimestampWithQueryTime:(BOOL)queryTime
+                           realtime:(ARTRealtime *)realtime
+                         completion:(void (^ _Nullable)(ARTErrorInfo *_Nullable error, NSDate *_Nullable timestamp))completion;
 
 @end
 

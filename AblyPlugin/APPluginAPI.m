@@ -30,4 +30,18 @@
     return channel.internal.logger;
 }
 
+- (BOOL)throwIfUnpublishableStateForChannel:(ARTRealtimeChannel *)channel error:(ARTErrorInfo * _Nullable __autoreleasing *)error {
+    [NSException raise:NSInternalInconsistencyException format:@"Not yet implemented"];
+}
+
+- (void)sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages channel:(ARTRealtimeChannel *)channel completion:(void (^)(ARTErrorInfo * _Nonnull))completion {
+    [NSException raise:NSInternalInconsistencyException format:@"Not yet implemented"];
+}
+
+- (void)fetchTimestampWithQueryTime:(BOOL)queryTime
+                           realtime:(ARTRealtime *)realtime
+                         completion:(void (^ _Nullable)(ARTErrorInfo *_Nullable error, NSDate *_Nullable timestamp))completion {
+    [NSException raise:NSInternalInconsistencyException format:@"Not yet implemented"];
+}
+
 @end
