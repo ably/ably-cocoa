@@ -46,4 +46,18 @@ internal class DefaultLiveObjects: Objects {
     internal func offAll() {
         notYetImplemented()
     }
+
+    // MARK: Handling channel events
+
+    internal func onChannelAttached(hasObjects _: Bool) {
+        notYetImplemented()
+    }
+
+    internal func handleObjectProtocolMessage(objectMessages _: [ObjectMessage]) {
+        notYetImplemented()
+    }
+
+    internal func handleObjectSyncProtocolMessage(objectMessages _: [ObjectMessage], protocolMessageChannelSerial _: String) {
+        notYetImplemented()
+    }
 }
