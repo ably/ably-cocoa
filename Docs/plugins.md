@@ -19,3 +19,7 @@ Currently, our only plugin is for adding LiveObjects functionality. This plugin 
 ## Development guidelines
 
 - Make good use of `NS_SWIFT_NAME` to make `AblyPlugin` nicer to use from Swift (e.g. to remove the `AP` prefix from class names).
+
+## The `AblyPluginTesting` library
+
+ably-cocoa also exposes a library called `AblyPluginTesting`. This library is intended to be used by the test suite of Ably-authored plugins, and exposes any parts of ably-cocoa's private API that are needed for testing a plugin.
