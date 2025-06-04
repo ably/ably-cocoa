@@ -50,6 +50,7 @@ NS_SWIFT_NAME(InternalLog)
  Creates a logger which forwards its generated messages to the given core object.
  */
 - (instancetype)initWithCore:(id<ARTInternalLogCore>)core NS_DESIGNATED_INITIALIZER;
+
 /**
  A convenience initializer which creates a logger whose core is an instance of `ARTDefaultInternalLogCore` wrapping the given logger.
  */
@@ -60,7 +61,14 @@ NS_SWIFT_NAME(InternalLog)
 - (instancetype)initWithClientOptions:(ARTClientOptions *)clientOptions;
 - (instancetype)init NS_UNAVAILABLE;
 
-// This method passes the arguments through to the logger’s core object. It is not directly used by the internals of the SDK, but we need it because some of our Swift tests (which can’t access the variadic method below) want to be able to call a logging method on an instance of `ARTInternalLog`.
+/**
+ Passes the arguments through to the logger’s core object.
+
+ It is not directly used by the internals of the `Ably` library, but it is used by:
+
+ - some of our Swift tests (which can’t access the variadic method below), which want to be able to call a logging method on an instance of `ARTInternalLog`
+ - the `AblyPlugin` library, to implement `ARTInternalLog`'s conformance to its `APLogger` protocol
+*/
 - (void)log:(NSString *)message withLevel:(ARTLogLevel)level file:(const char *)fileName line:(NSInteger)line;
 
 // This method should not be called directly — it is for use by the ARTLog* macros. It is tested via the tests of the macros.

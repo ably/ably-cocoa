@@ -1,6 +1,5 @@
 #import "ARTRealtimeChannel+Private.h"
 #import "ARTChannel+Private.h"
-#import "ARTChannel+Subclass.h"
 #import "ARTDataQuery+Private.h"
 
 #import "ARTRealtime+Private.h"
@@ -19,6 +18,7 @@
 #import "ARTRest.h"
 #import "ARTClientOptions.h"
 #import "ARTClientOptions+TestConfiguration.h"
+#import "ARTClientOptions+Private.h"
 #import "ARTTestClientOptions.h"
 #import "ARTTypes.h"
 #import "ARTTypes+Private.h"
@@ -35,6 +35,7 @@
 #if TARGET_OS_IPHONE
 #import "ARTPushChannel+Private.h"
 #endif
+#import "APLiveObjectsPlugin.h"
 
 @implementation ARTRealtimeChannel {
     ARTQueuedDealloc *_dealloc;
@@ -57,6 +58,12 @@
     if (self) {
         _internal = internal;
         _dealloc = dealloc;
+
+        // If the LiveObjects plugin has been provided, set up LiveObjects functionality for this channel.
+        id<APLiveObjectsInternalPluginProtocol> liveObjectsPlugin = internal.realtime.options.liveObjectsPlugin;
+        if (liveObjectsPlugin) {
+            [liveObjectsPlugin prepareChannel:self];
+        }
     }
     return self;
 }
@@ -243,6 +250,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTRealtimeChannelInternal ()
 
 @property (nonatomic, readonly) ARTAttachRetryState *attachRetryState;
+@property (nonatomic, readonly) NSMutableDictionary<NSString *, id> *pluginData;
 
 @end
 
@@ -274,6 +282,7 @@ NS_ASSUME_NONNULL_END
         _attachRetryState = [[ARTAttachRetryState alloc] initWithRetryDelayCalculator:attachRetryDelayCalculator
                                                                                logger:logger
                                                                      logMessagePrefix:[NSString stringWithFormat:@"RT: %p C:%p ", _realtime, self]];
+        _pluginData = [[NSMutableDictionary alloc] init];
     }
     return self;
 }
@@ -1136,6 +1145,14 @@ dispatch_sync(_queue, ^{
                 callback(nil);
             break;
     }
+}
+
+- (void)setPluginDataValue:(id)value forKey:(NSString *)key {
+    [self.pluginData setValue:value forKey:key];
+}
+
+- (id)pluginDataValueForKey:(NSString *)key {
+    return self.pluginData[key];
 }
 
 @end

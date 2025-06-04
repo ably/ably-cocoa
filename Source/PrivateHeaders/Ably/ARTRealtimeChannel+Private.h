@@ -120,6 +120,13 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
 
 - (void)emit:(ARTChannelEvent)event with:(ARTChannelStateChange *)data;
 
+// MARK: - Plugins
+
+/// Provides the implementation for `-[APPluginAPI setPluginDataValue:forKey:channel]`. See documentation for that method.
+- (void)setPluginDataValue:(id)value forKey:(NSString *)key;
+/// Provides the implementation for `-[APPluginAPI pluginDataValueForKey:channel]`. See documentation for that method.
+- (nullable id)pluginDataValueForKey:(NSString *)key;
+
 @end
 
 @interface ARTRealtimeChannel ()
