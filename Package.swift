@@ -19,8 +19,7 @@ let package = Package(
     ],
     dependencies: [
         .package(
-            url: "https://github.com/ably/ably-cocoa",
-            from: "1.2.40",
+            path: "ably-cocoa",
         ),
         .package(
             url: "https://github.com/apple/swift-argument-parser",
@@ -45,6 +44,10 @@ let package = Package(
             dependencies: [
                 .product(
                     name: "Ably",
+                    package: "ably-cocoa",
+                ),
+                .product(
+                    name: "AblyPlugin",
                     package: "ably-cocoa",
                 ),
             ],

@@ -1,9 +1,9 @@
+import Ably
 import AblyLiveObjects
 import SwiftUI
 
 struct ContentView: View {
-    /// Just used to check that we can successfully import and use the AblyLiveObjects library. TODO remove this once we start building the library
-    @State private var ablyLiveObjectsClient = AblyLiveObjectsClient()
+    var realtime: ARTRealtime
 
     var body: some View {
         VStack {
@@ -11,11 +11,10 @@ struct ContentView: View {
                 .imageScale(.large)
                 .foregroundStyle(.tint)
             Text("Hello, world!")
+
+            let channel = realtime.channels.get("myChannel")
+            Text("`channel.objects`: `\(String(describing: channel.objects))`")
         }
         .padding()
     }
-}
-
-#Preview {
-    ContentView()
 }

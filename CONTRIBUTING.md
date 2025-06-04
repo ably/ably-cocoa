@@ -44,6 +44,8 @@ To check formatting and code quality, run `swift run BuildTool lint`. Run with `
 
 - The public API of the SDK should use typed throws, and the thrown errors should be of type `ARTErrorInfo`.
 
+### Testing guidelines
+
 #### Attributing tests to a spec point
 
 When writing a test that relates to a spec point from the LiveObjects features spec, add a comment that contains one of the following tags:
@@ -94,6 +96,12 @@ Example:
 ```swift
 // @specNotApplicable CHA-EX3a - Our API does not have a concept of "partial options" unlike the JS API which this spec item considers.
 ```
+
+## Developing ably-cocoa alongside this plugin
+
+For the initial stage of development of this plugin, where we need to also iterate heavily on ably-cocoa, I've added ably-cocoa as a Git submodule, which can be found in [`ably-cocoa`](./ably-cocoa). This allows you to edit ably-cocoa from within this repo's Xcode workspace.
+
+Nearer launch, we'll remove this submodule in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/7.
 
 ## Release process
 
