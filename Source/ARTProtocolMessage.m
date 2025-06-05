@@ -220,5 +220,9 @@ NSString* ARTProtocolMessageActionToStr(ARTProtocolMessageAction action) {
             return @"Sync"; //16
         case ARTProtocolMessageAuth:
             return @"Auth"; //17
+        case ARTProtocolMessageObject:
+            return @"Object"; //19
+        case ARTProtocolMessageObjectSync:
+            return @"ObjectSync"; //20
     }
 }
