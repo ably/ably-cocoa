@@ -220,6 +220,10 @@ NSString* ARTProtocolMessageActionToStr(ARTProtocolMessageAction action) {
             return @"Sync"; //16
         case ARTProtocolMessageAuth:
             return @"Auth"; //17
+        case ARTProtocolMessageObject:
+            return @"Object"; //19
+        case ARTProtocolMessageObjectSync:
+            return @"ObjectSync"; //20
     }
 
     // Because we blindly assign the action field of a ProtocolMessage received over the wire to a variable of type ARTProtocolMessageAction, we can't rely on the compiler's exhaustive checking of switch statements for ARTProtocolMessageAction.

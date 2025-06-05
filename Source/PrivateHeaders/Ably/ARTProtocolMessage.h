@@ -29,6 +29,8 @@ typedef NS_ENUM(NSUInteger, ARTProtocolMessageAction) {
     ARTProtocolMessageMessage = 15,
     ARTProtocolMessageSync = 16,
     ARTProtocolMessageAuth = 17,
+    ARTProtocolMessageObject = 19,
+    ARTProtocolMessageObjectSync = 20,
 };
 
 /// :nodoc:

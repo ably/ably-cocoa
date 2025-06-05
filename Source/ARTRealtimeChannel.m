@@ -633,6 +633,12 @@ dispatch_sync(_queue, ^{
         case ARTProtocolMessageSync:
             [self onSync:message];
             break;
+        case ARTProtocolMessageObject:
+            // TODO: Add code for this to get handled by the LiveObjects plugin
+            break;
+        case ARTProtocolMessageObjectSync:
+            // TODO: Add code for this to get handled by the LiveObjects plugin
+            break;
         default:
             ARTLogWarn(self.logger, @"R:%p C:%p (%@) unknown ARTProtocolMessage action: %tu", _realtime, self, self.name, message.action);
             break;

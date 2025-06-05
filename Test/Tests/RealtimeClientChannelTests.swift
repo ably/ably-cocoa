@@ -4887,4 +4887,58 @@ class RealtimeClientChannelTests: XCTestCase {
         XCTAssertNotNil(exception4)
         XCTAssertEqual(exception4!.name, NSExceptionName.objectInaccessibleException)
     }
+
+    func test_Channel_should_ignore_protocol_messages_with_Object_and_ObjectSync_actions_when_LiveObjects_plugin_not_provided() throws {
+        // Given: A realtime client that has been created without the LiveObjects plugin
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        options.autoConnect = false
+        options.testOptions.transportFactory = TestProxyTransportFactory()
+        let client = ARTRealtime(options: options)
+        defer { client.dispose(); client.close() }
+
+        // Connect and attach a channel
+        client.connect()
+        let transport = client.internal.transport as! TestProxyTransport
+
+        let channel = client.channels.get(test.uniqueChannelName())
+
+        waitUntil(timeout: testTimeout) { done in
+            channel.attach { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+
+        // When: A channel receives a ProtocolMessage with action of OBJECT or OBJECT_SYNC
+
+        let objectMessage = ARTProtocolMessage()
+        objectMessage.action = .object
+        objectMessage.channel = channel.name
+        transport.receive(objectMessage)
+
+        let objectSyncMessage = ARTProtocolMessage()
+        objectSyncMessage.action = .objectSync
+        objectSyncMessage.channel = channel.name
+        transport.receive(objectSyncMessage)
+
+        // Then: It does not crash, and is not prevented from receiving subsequent messages on the channel
+
+        // Publish a message and wait for it to be received
+        let receivedMessageDataGatherer = DataGatherer<ARTMessage>(description: "Subscribe for message") { submit in
+            channel.subscribe { message in
+                submit(message)
+            }
+        }
+
+        waitUntil(timeout: testTimeout) { done in
+            channel.publish("foo", data: nil) { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+
+        let receivedMessage = try receivedMessageDataGatherer.waitForData(timeout: testTimeout)
+        XCTAssertEqual(receivedMessage.name, "foo")
+    }
 }
