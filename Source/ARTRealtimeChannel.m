@@ -335,6 +335,10 @@ dispatch_sync(_queue, ^{
     return _realtimePresence;
 }
 
+- (ARTRealtimeAnnotationsInternal *)annotations {
+    return _realtimeAnnotations;
+}
+
 #if TARGET_OS_IPHONE
 - (ARTPushChannelInternal *)push {
     if (!_pushChannel) {
