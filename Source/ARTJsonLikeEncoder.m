@@ -789,7 +789,9 @@
                                               subscribers:[input artInteger:@"subscribers"]
                                       presenceConnections:[input artInteger:@"presenceConnections"]
                                           presenceMembers:[input artInteger:@"presenceMembers"]
-                                      presenceSubscribers:[input artInteger:@"presenceSubscribers"]];;
+                                      presenceSubscribers:[input artInteger:@"presenceSubscribers"]
+                                         objectPublishers:[input artInteger:@"objectPublishers"]
+                                        objectSubscribers:[input artInteger:@"objectSubscribers"]];
 }
 
 - (ARTChannelOccupancy *)channelOccupancyFromDictionary:(NSDictionary *)input {
