@@ -30,13 +30,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, nonatomic) ARTAnnotationAction action;
 
 /// This message's unique serial (an identifier that will be the same in all future updates of this message).
-@property (readwrite, nonatomic) NSString *serial;
+@property (nullable, readwrite, nonatomic) NSString *serial;
 
 /// The serial of the operation that updated this message.
-@property (readwrite, nonatomic) NSString *messageSerial;
+@property (nullable, readwrite, nonatomic) NSString *messageSerial;
 
 /// The event name, if available
-@property (readwrite, nonatomic) NSString *type;
+@property (nullable, readwrite, nonatomic) NSString *type;
 
 /// The serial of the operation that updated this message.
 @property (nullable, readwrite, nonatomic) NSString *name;

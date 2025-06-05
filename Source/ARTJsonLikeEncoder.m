@@ -419,9 +419,11 @@
     int action = [[input artNumber:@"action"] intValue];
     annotation.action = [self annotationActionFromInt:action];
     
+    annotation.name = [input artString:@"name"];
     annotation.type = [input artString:@"type"];
     annotation.serial = [input artString:@"serial"];
     annotation.messageSerial = [input artString:@"messageSerial"];
+    annotation.count = [input artNumber:@"count"];
 
     return annotation;
 }
