@@ -9,7 +9,9 @@ typedef NS_OPTIONS(NSUInteger, ARTProtocolMessageFlag) {
     ARTProtocolMessageFlagPresence = (1UL << 16),
     ARTProtocolMessageFlagPublish = (1UL << 17),
     ARTProtocolMessageFlagSubscribe = (1UL << 18),
-    ARTProtocolMessageFlagPresenceSubscribe = (1UL << 19)
+    ARTProtocolMessageFlagPresenceSubscribe = (1UL << 19),
+    ARTProtocolMessageFlagObjectSubscribe = (1UL << 24),
+    ARTProtocolMessageFlagObjectPublish = (1UL << 25)
 };
 
 NS_ASSUME_NONNULL_BEGIN
