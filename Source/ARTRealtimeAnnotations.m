@@ -124,6 +124,10 @@
     __block ARTEventListener *listener = nil;
 dispatch_sync(_queue, ^{
     ARTRealtimeChannelOptions *options = self->_channel.getOptions_nosync;
+    if (!(options.modes & ARTChannelModeAnnotationSubscribe)) {
+        ARTLogWarn(self.logger, @"R:%p C:%p (%@) you are trying to add an annotation listener, but you haven't requested the ARTChannelModeAnnotationSubscribe channel mode in channel's options, so this won't do anything (we only deliver annotations to clients who have explicitly requested them)", self->_realtime, self->_channel, self->_channel.name);
+        return;
+    }
     BOOL attachOnSubscribe = options != nil ? options.attachOnSubscribe : true;
     if (self->_channel.state_nosync == ARTRealtimeChannelFailed) {
         if (onAttach && attachOnSubscribe) { // RTL7h
