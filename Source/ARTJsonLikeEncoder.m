@@ -299,7 +299,7 @@
     if (operation && [operation isKindOfClass:[NSDictionary class]]) {
         message.operation = [ARTMessageOperation createFromDictionary:operation];
     }
-    message.summary = [input objectForKey:@"summary"];
+    message.summary = [input objectForKey:@"summary"] ?: (message.action == ARTMessageActionMessageSummary ? @{} : nil); // enforce TM2q (https://ably-real-time.slack.com/archives/C03JDBVM5MY/p1749124425224069?thread_ts=1749051904.445159&cid=C03JDBVM5MY)
     
     return message;
 }
