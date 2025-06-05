@@ -660,6 +660,9 @@ dispatch_sync(_queue, ^{
         self.channelSerial = message.channelSerial;
     }
 
+    [self.realtime.options.liveObjectsPlugin onChannelAttached:self.channel
+                                                    hasObjects:message.hasObjects];
+
     if (state == ARTRealtimeChannelAttached) {
         if (!message.resumed) { // RTL12
             if (message.error != nil) {
