@@ -43,6 +43,7 @@ To check formatting and code quality, run `swift run BuildTool lint`. Run with `
 ### Throwing errors
 
 - The public API of the SDK should use typed throws, and the thrown errors should be of type `ARTErrorInfo`.
+- `Dictionary.mapValues` does not support typed throws. We have our own extension `ablyLiveObjects_mapValuesWithTypedThrow` which does; use this.
 
 ### Testing guidelines
 

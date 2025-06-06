@@ -7,10 +7,18 @@ internal class DefaultLiveObjects: Objects {
     private let logger: AblyPlugin.Logger
     private let pluginAPI: AblyPlugin.PluginAPIProtocol
 
+    // These drive the testsOnly_* properties that expose the received ProtocolMessages to the test suite.
+    private let receivedObjectProtocolMessages: AsyncStream<[InboundWireObjectMessage]>
+    private let receivedObjectProtocolMessagesContinuation: AsyncStream<[InboundWireObjectMessage]>.Continuation
+    private let receivedObjectSyncProtocolMessages: AsyncStream<[InboundWireObjectMessage]>
+    private let receivedObjectSyncProtocolMessagesContinuation: AsyncStream<[InboundWireObjectMessage]>.Continuation
+
     internal init(channel: ARTRealtimeChannel, logger: AblyPlugin.Logger, pluginAPI: AblyPlugin.PluginAPIProtocol) {
         self.channel = channel
         self.logger = logger
         self.pluginAPI = pluginAPI
+        (receivedObjectProtocolMessages, receivedObjectProtocolMessagesContinuation) = AsyncStream.makeStream()
+        (receivedObjectSyncProtocolMessages, receivedObjectSyncProtocolMessagesContinuation) = AsyncStream.makeStream()
     }
 
     // MARK: `Objects` protocol
@@ -49,15 +57,39 @@ internal class DefaultLiveObjects: Objects {
 
     // MARK: Handling channel events
 
-    internal func onChannelAttached(hasObjects _: Bool) {
-        notYetImplemented()
+    internal private(set) var testsOnly_onChannelAttachedHasObjects: Bool?
+    internal func onChannelAttached(hasObjects: Bool) {
+        testsOnly_onChannelAttachedHasObjects = hasObjects
     }
 
-    internal func handleObjectProtocolMessage(objectMessages _: [ObjectMessage]) {
-        notYetImplemented()
+    internal var testsOnly_receivedObjectProtocolMessages: AsyncStream<[InboundWireObjectMessage]> {
+        receivedObjectProtocolMessages
     }
 
-    internal func handleObjectSyncProtocolMessage(objectMessages _: [ObjectMessage], protocolMessageChannelSerial _: String) {
-        notYetImplemented()
+    internal func handleObjectProtocolMessage(wireObjectMessages: [InboundWireObjectMessage]) {
+        receivedObjectProtocolMessagesContinuation.yield(wireObjectMessages)
+    }
+
+    internal var testsOnly_receivedObjectSyncProtocolMessages: AsyncStream<[InboundWireObjectMessage]> {
+        receivedObjectSyncProtocolMessages
+    }
+
+    internal func handleObjectSyncProtocolMessage(wireObjectMessages: [InboundWireObjectMessage], protocolMessageChannelSerial _: String) {
+        receivedObjectSyncProtocolMessagesContinuation.yield(wireObjectMessages)
+    }
+
+    // MARK: - Sending `OBJECT` ProtocolMessage
+
+    // This is currently exposed so that we can try calling it from the tests in the early days of the SDK to check that we can send an OBJECT ProtocolMessage. We'll probably make it private later on.
+    internal func testsOnly_sendObject(objectMessages: [OutboundWireObjectMessage]) async throws(InternalError) {
+        guard let channel else {
+            return
+        }
+
+        try await DefaultInternalPlugin.sendObject(
+            objectMessages: objectMessages,
+            channel: channel,
+            pluginAPI: pluginAPI,
+        )
     }
 }

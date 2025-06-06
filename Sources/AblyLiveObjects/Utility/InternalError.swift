@@ -9,6 +9,7 @@ internal enum InternalError: Error {
 
     internal enum Other {
         case jsonValueDecodingError(JSONValueDecodingError)
+        case inboundWireObjectMessageDecodingError(InboundWireObjectMessage.DecodingError)
     }
 
     /// Returns the error that this should be converted to when exposed via the SDK's public API.
@@ -32,5 +33,11 @@ internal extension ARTErrorInfo {
 internal extension JSONValueDecodingError {
     func toInternalError() -> InternalError {
         .other(.jsonValueDecodingError(self))
+    }
+}
+
+internal extension InboundWireObjectMessage.DecodingError {
+    func toInternalError() -> InternalError {
+        .other(.inboundWireObjectMessageDecodingError(self))
     }
 }

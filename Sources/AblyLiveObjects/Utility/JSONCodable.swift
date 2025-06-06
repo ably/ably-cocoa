@@ -298,3 +298,59 @@ internal extension [String: JSONValue] {
         return value
     }
 }
+
+// MARK: - Extracting WireEnum values from a dictionary
+
+internal extension [String: JSONValue] {
+    /// If this dictionary contains a value for `key`, and this value has case `number`, this creates a `WireEnum` instance using its `init(rawValue:)` initializer.
+    ///
+    /// - Throws:
+    ///   - `JSONValueDecodingError.noValueForKey` if the key is absent
+    ///   - `JSONValueDecodingError.wrongTypeForKey` if the value does not have case `number`
+    func wireEnumValueForKey<Known: RawRepresentable>(_ key: String, type _: Known.Type = Known.self) throws(InternalError) -> WireEnum<Known> where Known.RawValue == Int {
+        let rawValue = try numberValueForKey(key).intValue
+        return WireEnum(rawValue: rawValue)
+    }
+
+    /// If this dictionary contains a value for `key`, and this value has case `number`, this creates a `WireEnum` instance using its `init(rawValue:)` initializer. If this dictionary does not contain a value for `key`, or if the value for `key` has case `null`, it returns `nil`.
+    ///
+    /// - Throws: `JSONValueDecodingError.wrongTypeForKey` if the value does not have case `number` or `null`
+    func optionalWireEnumValueForKey<Known: RawRepresentable>(_ key: String, type _: Known.Type = Known.self) throws(InternalError) -> WireEnum<Known>? where Known.RawValue == Int {
+        guard let rawValue = try optionalNumberValueForKey(key)?.intValue else {
+            return nil
+        }
+        return WireEnum(rawValue: rawValue)
+    }
+}
+
+// MARK: - Extracting JSONDecodable values from a dictionary
+
+internal extension [String: JSONValue] {
+    /// If this dictionary contains a value for `key`, this attempts to decode it into an instance of `T` using its `init(jsonValue:)` initializer.
+    ///
+    /// - Throws:
+    ///   - `JSONValueDecodingError.noValueForKey` if the key is absent
+    ///   - Any error thrown by `T.init(jsonValue:)`
+    func decodableValueForKey<T: JSONDecodable>(_ key: String, type _: T.Type = T.self) throws(InternalError) -> T {
+        guard let value = self[key] else {
+            throw JSONValueDecodingError.noValueForKey(key).toInternalError()
+        }
+
+        return try T(jsonValue: value)
+    }
+
+    /// If this dictionary contains a value for `key`, this attempts to decode it into an instance of `T` using its `init(jsonValue:)` initializer. If this dictionary does not contain a value for `key`, or if the value for `key` has case `null`, it returns `nil`.
+    ///
+    /// - Throws: Any error thrown by `T.init(jsonValue:)`
+    func optionalDecodableValueForKey<T: JSONDecodable>(_ key: String, type _: T.Type = T.self) throws(InternalError) -> T? {
+        guard let value = self[key] else {
+            return nil
+        }
+
+        if case .null = value {
+            return nil
+        }
+
+        return try T(jsonValue: value)
+    }
+}

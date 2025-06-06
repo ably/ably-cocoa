@@ -47,4 +47,46 @@ enum Sandbox {
         // From JS chat repo at 7985ab7 — "The key we need to use is the one at index 5, which gives enough permissions to interact with Chat and Channels"
         return testApp.keys[5].keyStr
     }
+
+    /// An actor that manages a cached API key for the Ably sandbox environment.
+    private actor APIKeyManager {
+        /// The cached API key, if one has been successfully generated
+        private var cachedKey: String?
+
+        /// The current key generation task, if one is in progress
+        private var keyGenerationTask: Task<String, Swift.Error>?
+
+        /// Retrieves an API key, either from cache or by generating a new one.
+        ///
+        /// - Returns: An API key for the Ably sandbox environment
+        /// - Throws: Any error that occurred during key generation
+        func getKey() async throws -> String {
+            if let cachedKey {
+                return cachedKey
+            }
+
+            if let existingTask = keyGenerationTask {
+                return try await existingTask.value
+            }
+
+            let task = Task {
+                defer { keyGenerationTask = nil }
+                let key = try await createAPIKey()
+                cachedKey = key
+                return key
+            }
+            keyGenerationTask = task
+            return try await task.value
+        }
+    }
+
+    private static let keyManager = APIKeyManager()
+
+    /// Fetches an API key for the Ably sandbox environment. If a key has already been generated, returns the cached key.
+    ///
+    /// - Returns: A valid API key for the Ably sandbox environment
+    /// - Throws: Any error that occurred during key generation
+    static func fetchSharedAPIKey() async throws -> String {
+        try await keyManager.getKey()
+    }
 }
