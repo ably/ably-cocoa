@@ -4336,7 +4336,35 @@ class RealtimeClientChannelTests: XCTestCase {
             }
         }
     }
-    
+
+    // RTL15b
+    func test_channelSerial_isUpdatedByObjectProtocolMessage() throws {
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        let client = AblyTests.newRealtime(options).client
+        defer { client.dispose(); client.close() }
+        let channel = client.channels.get(test.uniqueChannelName())
+
+        waitUntil(timeout: testTimeout) { done in
+            channel.attach { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+
+        // Am injecting a fake OBJECT message so that I don't have to deal with the LiveObjects plugin
+
+        let protocolMessage = ARTProtocolMessage()
+        protocolMessage.channel = channel.name
+        protocolMessage.action = .object
+        protocolMessage.channelSerial = "foo"
+
+        let transport = try XCTUnwrap(client.internal.transport as? TestProxyTransport)
+        transport.receive(protocolMessage)
+
+        XCTAssertEqual(channel.properties.channelSerial, "foo")
+    }
+
     // RTP5a1
     func test__201__channel_serial_is_cleared_whenever_a_channel_entered_into_detached_suspended_or_failed_state() throws {
         let test = Test()

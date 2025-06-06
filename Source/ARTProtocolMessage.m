@@ -157,7 +157,10 @@
 }
 
 - (BOOL)ackRequired {
-    return self.action == ARTProtocolMessageMessage || self.action == ARTProtocolMessagePresence;
+    // RTN7a
+    return self.action == ARTProtocolMessageMessage
+    || self.action == ARTProtocolMessagePresence
+    || self.action == ARTProtocolMessageObject;
 }
 
 - (BOOL)hasPresence {

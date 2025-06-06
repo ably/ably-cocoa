@@ -12,7 +12,7 @@ Currently, our only plugin is for adding LiveObjects functionality. This plugin 
 
 - Written in Objective-C (so that it can access ably-cocoa's private headers).
 - There is a two-way dependency between ably-cocoa and `AblyPlugin`:
-    - ably-cocoa imports `AblyPlugin`'s plugin headers (e.g. `APLiveObjectsPlugin.h`) so that it can access the methods exposed by plugins.
+    - ably-cocoa imports `AblyPlugin`'s plugin headers (e.g. `APLiveObjectsPlugin.h`) so that it can access the methods exposed by plugins. However, ably-cocoa does not _link_ to `AblyPlugin`, and so it cannot depend on any classes defined in `AblyPlugin`.
     - `AblyPlugin` imports ably-cocoa's private headers so that it can expose ably-cocoa's internals to plugins via `PluginAPI`.
 - Currently, the plan is to test all the LiveObjects functionality within the LiveObjects plugin repository, so ably-cocoa does not contain any tests for the plugins mechanism.
 
