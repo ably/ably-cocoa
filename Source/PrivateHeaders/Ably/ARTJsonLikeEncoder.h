@@ -1,5 +1,5 @@
-#import <Ably/ARTRest+Private.h>
-#import <Ably/ARTEncoder.h>
+#import "ARTRest+Private.h"
+#import "ARTEncoder.h"
 #import <Ably/ARTTokenDetails.h>
 #import <Ably/ARTTokenRequest.h>
 #import <Ably/ARTAuthDetails.h>

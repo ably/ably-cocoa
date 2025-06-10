@@ -1,6 +1,6 @@
 #import <Ably/ARTHTTPPaginatedResponse.h>
 
-#import <Ably/ARTPaginatedResult+Private.h>
+#import "ARTPaginatedResult+Private.h"
 
 @class ARTRestInternal;
 
