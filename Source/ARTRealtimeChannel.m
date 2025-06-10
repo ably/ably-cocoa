@@ -863,7 +863,7 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)proceedAttachDetachWithParams:(ARTAttachRequestParams *)params {
-    if (self.state_nosync == ARTChannelEventDetaching) {
+    if (self.state_nosync == ARTRealtimeChannelDetaching) {
         ARTLogDebug(self.logger, @"RT:%p C:%p (%@) %@ proceeding with detach", _realtime, self, self.name, ARTRealtimeChannelStateToStr(self.state_nosync));
         [self internalDetach:nil];
     } else {
