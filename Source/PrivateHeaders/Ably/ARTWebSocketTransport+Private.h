@@ -1,8 +1,8 @@
-#import <Ably/ARTWebSocketTransport.h>
+#import "ARTWebSocketTransport.h"
 #import "ARTSRWebSocket.h"
-#import <Ably/ARTEncoder.h>
+#import "ARTEncoder.h"
 #import <Ably/ARTAuth.h>
-#import <Ably/ARTWebSocket.h>
+#import "ARTWebSocket.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

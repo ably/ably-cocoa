@@ -1,4 +1,4 @@
-#import <Ably/ARTConnectionDetails.h>
+#import "ARTConnectionDetails.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

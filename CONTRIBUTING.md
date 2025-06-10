@@ -45,7 +45,7 @@ These are the header files that form the public interface of the SDK.
 These are the header files that form the internal interface of the SDK.
 
 1. Put `.h` file in directory `Source/PrivateHeaders/Ably`.
-1. Add `header` declaration to the `Private` module in module map file `Source/Ably.modulemap`.
+1. Add `header` declaration to the `Private` module in module map files `Source/Ably.modulemap` and `Source/include/module.modulemap`.
 1. Add to the Xcode project `Ably.xcodeproj` — you need to add it as a Private header to all three SDK targets (Ably-iOS, Ably-macOS, Ably-tvOS).
 
 ### Implementation (`.m`) files

@@ -1,5 +1,5 @@
 #import <Ably/ARTEventEmitter.h>
-#import <Ably/ARTRest+Private.h>
+#import "ARTRest+Private.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
