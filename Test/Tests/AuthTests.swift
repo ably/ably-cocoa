@@ -3549,7 +3549,7 @@ class AuthTests: XCTestCase {
             }
         }
 
-        #if TARGET_OS_IPHONE
+        #if os(iOS)
             NotificationCenter.default.post(name: UIApplication.significantTimeChangeNotification, object: nil)
         #else
             NotificationCenter.default.post(name: .NSSystemClockDidChange, object: nil)
@@ -3641,7 +3641,7 @@ class AuthTests: XCTestCase {
         }
         defer { hook.remove() }
 
-        #if TARGET_OS_IPHONE
+        #if os(iOS)
             // Force notification
             NotificationCenter.default.post(name: UIApplication.significantTimeChangeNotification, object: nil)
 
@@ -4472,7 +4472,7 @@ class AuthTests: XCTestCase {
 
         let rest = ARTRest(options: options)
         XCTAssertNil(rest.auth.clientId)
-        #if TARGET_OS_IOS
+        #if os(iOS)
             XCTAssertNil(rest.device.clientId)
         #endif
         let testHttpExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))

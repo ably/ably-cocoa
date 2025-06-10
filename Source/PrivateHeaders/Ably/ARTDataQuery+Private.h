@@ -1,5 +1,5 @@
 #import <Ably/ARTDataQuery.h>
-#import <Ably/ARTRealtimeChannel+Private.h>
+#import "ARTRealtimeChannel+Private.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
