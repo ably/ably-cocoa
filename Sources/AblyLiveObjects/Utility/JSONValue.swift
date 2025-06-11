@@ -129,18 +129,15 @@ extension JSONValue: ExpressibleByBooleanLiteral {
 // MARK: - Bridging with ably-cocoa
 
 internal extension JSONValue {
-    /// Creates a `JSONValue` from an ably-cocoa deserialized JSON object.
+    /// Creates a `JSONValue` from an AblyPlugin deserialized JSON object.
     ///
-    /// Specifically, `ablyCocoaData` can be:
-    ///
-    /// - a non-`nil` value of `ARTBaseMessage`’s `data` property
-    /// - an element of `ARTHTTPPaginatedResult`’s `items` array
-    init(ablyCocoaData: Any) {
-        switch ablyCocoaData {
+    /// Specifically, `ablyCocoaData` can be a value that was passed to `LiveObjectsPlugin.decodeObjectMessage:…`.
+    init(ablyPluginData: Any) {
+        switch ablyPluginData {
         case let dictionary as [String: Any]:
-            self = .object(dictionary.mapValues { .init(ablyCocoaData: $0) })
+            self = .object(dictionary.mapValues { .init(ablyPluginData: $0) })
         case let array as [Any]:
-            self = .array(array.map { .init(ablyCocoaData: $0) })
+            self = .array(array.map { .init(ablyPluginData: $0) })
         case let string as String:
             self = .string(string)
         case let number as NSNumber:
@@ -156,36 +153,29 @@ internal extension JSONValue {
             self = .null
         default:
             // ably-cocoa is not conforming to our assumptions; either its behaviour is wrong or our assumptions are wrong. Either way, bring this loudly to our attention instead of trying to carry on
-            preconditionFailure("JSONValue(ablyCocoaData:) was given \(ablyCocoaData)")
+            preconditionFailure("JSONValue(ablyPluginData:) was given \(ablyPluginData)")
         }
     }
 
-    /// Creates a `JSONValue` from an ably-cocoa deserialized JSON message extras object. Specifically, `ablyCocoaExtras` can be a non-`nil` value of `ARTBaseMessage`’s `extras` property.
-    static func objectFromAblyCocoaExtras(_ ablyCocoaExtras: any ARTJsonCompatible) -> [String: JSONValue] {
-        // (This is based on the fact that, in reality, I believe that `extras` is always a JSON object; see https://github.com/ably/ably-cocoa/issues/2002 for improving ably-cocoa’s API to reflect this)
-
-        let jsonValue = JSONValue(ablyCocoaData: ablyCocoaExtras)
+    /// Creates a `JSONValue` from an AblyPlugin deserialized JSON object. Specifically, `ablyPluginData` can be a value that was passed to `LiveObjectsPlugin.decodeObjectMessage:…`.
+    static func objectFromAblyPluginData(_ ablyPluginData: [String: Any]) -> [String: JSONValue] {
+        let jsonValue = JSONValue(ablyPluginData: ablyPluginData)
         guard case let .object(jsonObject) = jsonValue else {
-            // ably-cocoa is not conforming to our assumptions; either its behaviour is wrong or our assumptions are wrong. Either way, bring this loudly to our attention instead of trying to carry on
-            preconditionFailure("JSONValue.objectFromAblyCocoaExtras(_:) was given \(ablyCocoaExtras)")
+            preconditionFailure()
         }
 
         return jsonObject
     }
 
-    /// Creates an ably-cocoa deserialized JSON object from a `JSONValue`.
+    /// Creates an AblyPlugin deserialized JSON object from a `JSONValue`.
     ///
-    /// Specifically, the value of this property can be used as:
-    ///
-    /// - `ARTBaseMessage`’s `data` property
-    /// - the `data` argument that’s passed to `ARTRealtime`’s `request(…)` method
-    /// - the `data` argument that’s passed to `ARTRealtime`’s `publish(…)` method
-    var toAblyCocoaData: Any {
+    /// Used by `[String: JSONValue].toAblyPluginDataDictionary`.
+    var toAblyPluginData: Any {
         switch self {
         case let .object(underlying):
-            underlying.toAblyCocoaDataDictionary
+            underlying.toAblyPluginDataDictionary
         case let .array(underlying):
-            underlying.map(\.toAblyCocoaData)
+            underlying.map(\.toAblyPluginData)
         case let .string(underlying):
             underlying
         case let .number(underlying):
@@ -199,19 +189,10 @@ internal extension JSONValue {
 }
 
 internal extension [String: JSONValue] {
-    /// Creates an ably-cocoa deserialized JSON object from a dictionary that has string keys and `JSONValue` values.
+    /// Creates an AblyPlugin deserialized JSON object from a dictionary that has string keys and `JSONValue` values.
     ///
-    /// Specifically, the value of this property can be used as:
-    ///
-    /// - `ARTBaseMessage`’s `data` property
-    /// - the `data` argument that’s passed to `ARTRealtime`’s `request(…)` method
-    /// - the `data` argument that’s passed to `ARTRealtime`’s `publish(…)` method
-    var toAblyCocoaDataDictionary: [String: Any] {
-        mapValues(\.toAblyCocoaData)
-    }
-
-    /// Creates an ably-cocoa `ARTJsonCompatible` object from a dictionary that has string keys and `JSONValue` values.
-    var toARTJsonCompatible: ARTJsonCompatible {
-        toAblyCocoaDataDictionary as ARTJsonCompatible
+    /// Specifically, the value of this property can be returned from `APLiveObjectsPlugin.encodeObjectMessage:`.
+    var toAblyPluginDataDictionary: [String: Any] {
+        mapValues(\.toAblyPluginData)
     }
 }
