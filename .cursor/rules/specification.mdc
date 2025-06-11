@@ -1,0 +1,12 @@
+---
+description: Defines the meaning of the "Specification Document" (a.k.a. "specification" or "spec")
+globs: 
+alwaysApply: false
+---
+- When we refer to the _Specification Document_, we mean the contents of the file `textile/features.textile` in the repository https://github.com/ably/specification.
+- If you need to consult the Specification Document, then check it out as a Git repository locally. You should check it out to the path `cursor-support/specification` in this repository. If this directory already exists, then you can assume that the repository is already checked out and is up to date; do not try checking it out again.
+- The Specification Document is sometimes referred to as simply "the specification" or "the spec".
+- The Specification Document specifies much of the behaviour of this codebase.
+- If you are given a task that requires knowledge of the Specification Document, you must consult the Specification Document before proceeding. You must never make a guess about the contents of the Specification Document.
+- If you are given a task that requires you to interpret the Specification Document, but the Specification Document is unclear, be sure to mention this.
+- The Specification Document is structured as a list of specification points, each with an identifier. An example identifier is "OD1". In the Specification Document, the start of specification point OD1 would be represented by the string @(OD1)@. These specification points are sometimes referred to as "specification items".

@@ -1,0 +1,9 @@
+---
+description: Guidelines for writing tests
+globs: 
+alwaysApply: false
+---
+When writing tests:
+
+- Use the Swift Testing framework (`import Testing`), not XCTest.
+- When writing tests, follow the guidelines given under "Attributing tests to a spec point" in the file `CONTRIBUTING.md` in order to tag the unit tests with the relevant specification points.
