@@ -3,7 +3,7 @@ import Foundation
 
 /// A JSON value (where "value" has the meaning defined by the [JSON specification](https://www.json.org)).
 ///
-/// `JSONValue` provides a type-safe API for working with JSON values. It implements Swift’s `ExpressibleBy*Literal` protocols. This allows you to write type-safe JSON values using familiar syntax. For example:
+/// `JSONValue` provides a type-safe API for working with JSON values. It implements Swift's `ExpressibleBy*Literal` protocols. This allows you to write type-safe JSON values using familiar syntax. For example:
 ///
 /// ```swift
 /// let jsonValue: JSONValue = [
@@ -29,7 +29,7 @@ internal indirect enum JSONValue: Sendable, Equatable {
     case object([String: JSONValue])
     case array([JSONValue])
     case string(String)
-    case number(Double)
+    case number(NSNumber)
     case bool(Bool)
     case null
 
@@ -63,7 +63,7 @@ internal indirect enum JSONValue: Sendable, Equatable {
     }
 
     /// If this `JSONValue` has case `number`, this returns the associated value. Else, it returns `nil`.
-    internal var numberValue: Double? {
+    internal var numberValue: NSNumber? {
         if case let .number(numberValue) = self {
             numberValue
         } else {
@@ -110,13 +110,13 @@ extension JSONValue: ExpressibleByStringLiteral {
 
 extension JSONValue: ExpressibleByIntegerLiteral {
     internal init(integerLiteral value: Int) {
-        self = .number(Double(value))
+        self = .number(value as NSNumber)
     }
 }
 
 extension JSONValue: ExpressibleByFloatLiteral {
     internal init(floatLiteral value: Double) {
-        self = .number(value)
+        self = .number(value as NSNumber)
     }
 }
 
@@ -147,7 +147,7 @@ internal extension JSONValue {
             } else if number === kCFBooleanFalse {
                 self = .bool(false)
             } else {
-                self = .number(number.doubleValue)
+                self = .number(number)
             }
         case is NSNull:
             self = .null

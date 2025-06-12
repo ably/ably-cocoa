@@ -163,7 +163,7 @@ internal extension [String: JSONValue] {
     /// - Throws:
     ///   - `JSONValueDecodingError.noValueForKey` if the key is absent
     ///   - `JSONValueDecodingError.wrongTypeForKey` if the value does not have case `number`
-    func numberValueForKey(_ key: String) throws(InternalError) -> Double {
+    func numberValueForKey(_ key: String) throws(InternalError) -> NSNumber {
         guard let value = self[key] else {
             throw JSONValueDecodingError.noValueForKey(key).toInternalError()
         }
@@ -178,7 +178,7 @@ internal extension [String: JSONValue] {
     /// If this dictionary contains a value for `key`, and this value has case `number`, this returns the associated value. If this dictionary does not contain a value for `key`, or if the value for `key` has case `null`, it returns `nil`.
     ///
     /// - Throws: `JSONValueDecodingError.wrongTypeForKey` if the value does not have case `number` or `null`
-    func optionalNumberValueForKey(_ key: String) throws(InternalError) -> Double? {
+    func optionalNumberValueForKey(_ key: String) throws(InternalError) -> NSNumber? {
         guard let value = self[key] else {
             return nil
         }
@@ -242,7 +242,7 @@ internal extension [String: JSONValue] {
     ///   - `JSONValueDecodingError.noValueForKey` if the key is absent
     ///   - `JSONValueDecodingError.wrongTypeForKey` if the value does not have case `number`
     func ablyProtocolDateValueForKey(_ key: String) throws(InternalError) -> Date {
-        let millisecondsSinceEpoch = try numberValueForKey(key)
+        let millisecondsSinceEpoch = try numberValueForKey(key).uint64Value
 
         return dateFromMillisecondsSinceEpoch(millisecondsSinceEpoch)
     }
@@ -251,15 +251,14 @@ internal extension [String: JSONValue] {
     ///
     /// - Throws: `JSONValueDecodingError.wrongTypeForKey` if the value does not have case `number` or `null`
     func optionalAblyProtocolDateValueForKey(_ key: String) throws(InternalError) -> Date? {
-        guard let millisecondsSinceEpoch = try optionalNumberValueForKey(key) else {
+        guard let millisecondsSinceEpoch = try optionalNumberValueForKey(key)?.uint64Value else {
             return nil
         }
-
         return dateFromMillisecondsSinceEpoch(millisecondsSinceEpoch)
     }
 
-    private func dateFromMillisecondsSinceEpoch(_ millisecondsSinceEpoch: Double) -> Date {
-        .init(timeIntervalSince1970: millisecondsSinceEpoch / 1000)
+    private func dateFromMillisecondsSinceEpoch(_ millisecondsSinceEpoch: UInt64) -> Date {
+        .init(timeIntervalSince1970: Double(millisecondsSinceEpoch) / 1000)
     }
 }
 
