@@ -8,6 +8,7 @@
 @class ARTErrorInfo;
 @class ARTMessage;
 @class ARTPresenceMessage;
+@protocol APObjectMessageProtocol;
 
 /// :nodoc:
 typedef NS_ENUM(NSUInteger, ARTProtocolMessageAction) {
@@ -29,6 +30,8 @@ typedef NS_ENUM(NSUInteger, ARTProtocolMessageAction) {
     ARTProtocolMessageMessage = 15,
     ARTProtocolMessageSync = 16,
     ARTProtocolMessageAuth = 17,
+    ARTProtocolMessageObject = 19,
+    ARTProtocolMessageObjectSync = 20,
 };
 
 /// :nodoc:
@@ -60,6 +63,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, readwrite, nonatomic) ARTConnectionDetails *connectionDetails;
 @property (nullable, nonatomic) ARTAuthDetails *auth;
 @property (nonatomic, nullable) NSStringDictionary *params;
+@property (nullable, readwrite, nonatomic) NSArray<id<APObjectMessageProtocol>> *state;
 
 @end
 

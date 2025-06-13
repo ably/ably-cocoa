@@ -56,6 +56,7 @@
 - (instancetype)initWithInternal:(ARTRealtimeChannelInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc {
     self = [super init];
     if (self) {
+        internal.channel_onlyForPassingToPlugins = self;
         _internal = internal;
         _dealloc = dealloc;
 
@@ -398,6 +399,20 @@ dispatch_sync(_queue, ^{
 });
 }
 
+- (void)sendStateWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
+                         completion:(ARTCallback)completion {
+    ARTProtocolMessage *pm = [[ARTProtocolMessage alloc] init];
+    pm.action = ARTProtocolMessageObject;
+    pm.channel = self.name;
+    pm.state = objectMessages;
+
+    [self publishProtocolMessage:pm callback:^(ARTStatus *status) {
+        if (completion) {
+            completion(status.errorInfo);
+        }
+    }];
+ }
+
 - (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(ARTStatusCallback)cb {
     switch (self.state_nosync) {
         case ARTRealtimeChannelSuspended:
@@ -633,6 +648,12 @@ dispatch_sync(_queue, ^{
         case ARTProtocolMessageSync:
             [self onSync:message];
             break;
+        case ARTProtocolMessageObject:
+            [self onObject:message];
+            break;
+        case ARTProtocolMessageObjectSync:
+            [self onObjectSync:message];
+            break;
         default:
             ARTLogWarn(self.logger, @"R:%p C:%p (%@) unknown ARTProtocolMessage action: %tu", _realtime, self, self.name, message.action);
             break;
@@ -659,6 +680,9 @@ dispatch_sync(_queue, ^{
     if (message.channelSerial) {
         self.channelSerial = message.channelSerial;
     }
+
+    [self.realtime.options.liveObjectsPlugin onChannelAttached:self.channel_onlyForPassingToPlugins
+                                                    hasObjects:message.hasObjects];
 
     if (state == ARTRealtimeChannelAttached) {
         if (!message.resumed) { // RTL12
@@ -825,6 +849,32 @@ dispatch_sync(_queue, ^{
                                                                                                errorInfo:msg.error];
     [self performTransitionToState:ARTRealtimeChannelFailed withParams:params];
     [self failPendingPresenceWithState:ARTStateError info:msg.error];
+}
+
+- (void)onObject:(ARTProtocolMessage *)pm {
+    // RTL15b
+    if (pm.channelSerial) {
+        self.channelSerial = pm.channelSerial;
+    }
+
+    if (!pm.state) {
+        // Because the plugin isn't set up or because decoding failed
+        return;
+    }
+
+    [self.realtime.options.liveObjectsPlugin handleObjectProtocolMessageWithObjectMessages:pm.state
+                                                                                   channel:self.channel_onlyForPassingToPlugins];
+}
+
+- (void)onObjectSync:(ARTProtocolMessage *)pm {
+    if (!pm.state) {
+        // Because the plugin isn't set up or because decoding failed
+        return;
+    }
+
+    [self.realtime.options.liveObjectsPlugin handleObjectSyncProtocolMessageWithObjectMessages:pm.state
+                                                                  protocolMessageChannelSerial:pm.channelSerial
+                                                                                       channel:self.channel_onlyForPassingToPlugins];
 }
 
 - (void)attach {

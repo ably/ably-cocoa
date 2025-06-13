@@ -1,8 +1,10 @@
 #import <Foundation/Foundation.h>
 
 @class ARTRealtimeChannel;
+@class ARTErrorInfo;
 @protocol APLiveObjectsInternalPluginProtocol;
 @protocol APObjectMessageProtocol;
+@protocol APDecodingContextProtocol;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -30,11 +32,24 @@ NS_SWIFT_SENDABLE
 /// The plugin can use this as an opportunity to perform any initial setup of LiveObjects functionality for this channel.
 - (void)prepareChannel:(ARTRealtimeChannel *)channel;
 
-/// Decodes an `ObjectMessage` received over the wire. Copied from ably-js; the exact meaning of this method and what it should return still to be decided. There will almost certainly be further parameters to add relating to format etc.
-- (id<APObjectMessageProtocol>)decodeObjectMessage:(NSDictionary *)serialized;
+/// Decodes an `ObjectMessage` received over the wire.
+///
+/// Parameters:
+/// - serialized: A dictionary that contains the representation of the `ObjectMessage` received over the wire. You should expect to find the same types of values here as you would in the output of Foundation's `JSONSerialization`.
+/// - context: Contains information that may be needed in the decoding, such as information about the containing `ProtocolMessage`.
+///
+/// Returns: A `ObjectMessageProtocol` object that ably-cocoa can later pass to this plugin's `-handleObjectProtocolMessageWithObjectMessages:channel:` method, or `nil` if decoding fails (in which case `error` must be populated).
+- (nullable id<APObjectMessageProtocol>)decodeObjectMessage:(NSDictionary<NSString *, id> *)serialized
+                                                    context:(id<APDecodingContextProtocol>)context
+                                                      error:(ARTErrorInfo *_Nullable *_Nullable)error;
 
-/// Encodes an `ObjectMessage` to be sent over the wire. Copied from ably-js; the exact meaning of this method and what it should return still to be decided
-- (NSDictionary *)encodeObjectMessage:(id<APObjectMessageProtocol>)objectMessage;
+/// Encodes an `ObjectMessage` to be sent over the wire.
+///
+/// Parameters:
+/// - objectMessage: An `ObjectMessage` that this plugin earlier passed to `APPluginAPI`'s `-sendStateWithObjectMessages:channel:completion:`.
+///
+/// Returns: An object that ably-cocoa can pass to Foundation's `JSONSerialization`.
+- (NSDictionary<NSString *, id> *)encodeObjectMessage:(id<APObjectMessageProtocol>)objectMessage;
 
 /// Called when a channel received an `ATTACHED` `ProtocolMessage`. (This is copied from ably-js, will document this method properly once exact meaning decided.)
 ///

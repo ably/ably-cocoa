@@ -15,6 +15,7 @@
 @class ARTRealtimePresenceInternal;
 @class ARTChannelStateChangeParams;
 @class ARTAttachRequestParams;
+@protocol APObjectMessageProtocol;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -36,6 +37,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)canBeReattached;
 - (BOOL)shouldAttach;
 - (ARTChannelProperties *)properties_nosync;
+
+// The channel that this internal object belongs to. We need a reference to it so that we can pass it to plugins for them to handle LiveObjects protocol messages. Avoid using this property for anything else. TODO understand whether this needs to be weak in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/9
+@property (nonatomic, weak) ARTRealtimeChannel *channel_onlyForPassingToPlugins;
 
 @property (readonly, weak, nonatomic) ARTRealtimeInternal *realtime; // weak because realtime owns self
 @property (readonly, nonatomic) ARTRestChannelInternal *restChannel;
@@ -126,6 +130,10 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
 - (void)setPluginDataValue:(id)value forKey:(NSString *)key;
 /// Provides the implementation for `-[APPluginAPI pluginDataValueForKey:channel]`. See documentation for that method.
 - (nullable id)pluginDataValueForKey:(NSString *)key;
+
+/// Provides the implementation for `-[APPluginAPI sendStateWithObjectMessages:completion:]`. See documentation for that method.
+- (void)sendStateWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
+                         completion:(ARTCallback)completion;
 
 @end
 
