@@ -1223,17 +1223,21 @@ class RestClientChannelTests: XCTestCase {
             iv: Data(base64Encoded: appSetupModel.cipher.iv, options: Data.Base64DecodingOptions(rawValue: 0))!
         )
         let channel = client.channels.get("persisted:presence_fixtures", options: ARTChannelOptions(cipher: cipherParams))
-        var presenceMessages: [ARTPresenceMessage] = []
 
-        channel.presence.get { result, _ in
-            if let items = result?.items {
-                presenceMessages.append(contentsOf: items)
-            } else {
-                fail("expected items to not be empty")
+        var presenceMessages: [ARTPresenceMessage] = []
+        waitUntil(timeout: testTimeout) { done in
+            channel.presence.get { result, _ in
+                if let items = result?.items {
+                    presenceMessages.append(contentsOf: items)
+                } else {
+                    fail("expected items to not be empty")
+                }
+                done()
             }
         }
 
-        expect(presenceMessages.count).toEventually(equal(presenceFixtures.count), timeout: testTimeout)
+        XCTAssertEqual(presenceMessages.count, presenceFixtures.count)
+
         for message in presenceMessages {
             let fixtureMessage = presenceFixtures.filter { obj -> Bool in
                 message.clientId == obj.clientId
