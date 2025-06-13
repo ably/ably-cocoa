@@ -18,19 +18,19 @@ set -e
 
 if ! which jq > /dev/null
 then
-  echo "You need to install jq." 2>&1
+  echo "You need to install jq." >&2
   exit 1
 fi
 
 if ! which gh > /dev/null
 then
-  echo "You need to install the GitHub CLI." 2>&1
+  echo "You need to install the GitHub CLI." >&2
   exit 1
 fi
 
 if [[ ! -d xcparse ]]
 then
-  echo "You need to check out the xcparse repository." 2>&1
+  echo "You need to check out the xcparse repository." >&2
   exit 1
 fi
 
@@ -38,61 +38,61 @@ fi
 
 if [[ -z $TEST_OBSERVABILITY_SERVER_AUTH_KEY ]]
 then
-  echo "The TEST_OBSERVABILITY_SERVER_AUTH_KEY environment variable must be set." 2>&1
+  echo "The TEST_OBSERVABILITY_SERVER_AUTH_KEY environment variable must be set." >&2
   exit 1
 fi
 
 if [[ -z $GITHUB_REPOSITORY ]]
 then
-  echo "The GITHUB_REPOSITORY environment variable must be set." 2>&1
+  echo "The GITHUB_REPOSITORY environment variable must be set." >&2
   exit 1
 fi
 
 if [[ -z $GITHUB_SHA ]]
 then
-  echo "The GITHUB_SHA environment variable must be set." 2>&1
+  echo "The GITHUB_SHA environment variable must be set." >&2
   exit 1
 fi
 
 if [[ -z $GITHUB_REF_NAME ]]
 then
-  echo "The GITHUB_REF_NAME environment variable must be set." 2>&1
+  echo "The GITHUB_REF_NAME environment variable must be set." >&2
   exit 1
 fi
 
 if [[ -z $GITHUB_RETENTION_DAYS ]]
 then
-  echo "The GITHUB_RETENTION_DAYS environment variable must be set." 2>&1
+  echo "The GITHUB_RETENTION_DAYS environment variable must be set." >&2
   exit 1
 fi
 
 if [[ -z $GITHUB_ACTION ]]
 then
-  echo "The GITHUB_ACTION environment variable must be set." 2>&1
+  echo "The GITHUB_ACTION environment variable must be set." >&2
   exit 1
 fi
 
 if [[ -z $GITHUB_RUN_NUMBER ]]
 then
-  echo "The GITHUB_RUN_NUMBER environment variable must be set." 2>&1
+  echo "The GITHUB_RUN_NUMBER environment variable must be set." >&2
   exit 1
 fi
 
 if [[ -z $GITHUB_RUN_ATTEMPT ]]
 then
-  echo "The GITHUB_RUN_ATTEMPT environment variable must be set." 2>&1
+  echo "The GITHUB_RUN_ATTEMPT environment variable must be set." >&2
   exit 1
 fi
 
 if [[ -z $GITHUB_RUN_ID ]]
 then
-  echo "The GITHUB_RUN_ID environment variable must be set." 2>&1
+  echo "The GITHUB_RUN_ID environment variable must be set." >&2
   exit 1
 fi
 
 if [[ -z $GITHUB_JOB ]]
 then
-  echo "The GITHUB_JOB environment variable must be set." 2>&1
+  echo "The GITHUB_JOB environment variable must be set." >&2
   exit 1
 fi
 
@@ -127,17 +127,17 @@ fi
 
 if [[ $number_of_result_bundles -eq 0 ]]
 then
-  echo "No result bundles found." 2>&1
+  echo "No result bundles found." >&2
   exit 1
 fi
 
 if [[ $number_of_result_bundles -gt 1 ]]
 then
-  echo -e "Multiple result bundles found:\n${result_bundles}" 2>&1
+  echo -e "Multiple result bundles found:\n${result_bundles}" >&2
   exit 1
 fi
 
-echo "Result bundle found: ${result_bundles}" 2>&1
+echo "Result bundle found: ${result_bundles}" >&2
 
 # 5. Generate the JUnit test report.
 junit_report_directory=$(dirname "${result_bundles}")
@@ -145,10 +145,10 @@ junit_report_directory=$(dirname "${result_bundles}")
 # Recent versions of fastlane have started generating JUnit reports with nested <testsuite> tags; the test-observability server does not know how to handle these and I'm not sure that they're allowed. Have raised https://github.com/fastlane/fastlane/issues/29615. In the meantime, to avoid this issue, we need to use trainer's :force_legacy_xcresulttool option.
 
 # Delete the JUnit report that `scan` generated; we need to re-generate it by running `trainer` again, this time with the :force_legacy_xcresulttool option (which according to https://github.com/fastlane/fastlane/issues/29614 you can't pass directly to `scan`).
-echo "Deleting existing JUnit reports." 2>&1
+echo "Deleting existing JUnit reports." >&2
 find "${junit_report_directory}" -type f -name '*.junit' -delete
 
-echo "Generating new JUnit report." 2>&1
+echo "Generating new JUnit report." >&2
 # I can't get `trainer`'s output_filename option to work; it just seems to choose its own name. Hence the next step where we have to find the generated file.
 bundle exec fastlane run trainer \
     force_legacy_xcresulttool:true \
@@ -168,22 +168,22 @@ fi
 
 if [[ $number_of_test_reports -eq 0 ]]
 then
-  echo "No test reports found." 2>&1
+  echo "No test reports found." >&2
   exit 1
 fi
 
 if [[ $number_of_test_reports -gt 1 ]]
 then
-  echo -e "Multiple test reports found:\n${test_reports}" 2>&1
+  echo -e "Multiple test reports found:\n${test_reports}" >&2
   exit 1
 fi
 
-echo "Test report found: ${test_reports}" 2>&1
+echo "Test report found: ${test_reports}" >&2
 
 # 7. Use xcparse to extract the crash reports from the .xcresult bundle.
 
 xcparse_output_directory=$(mktemp -d)
-echo "Extracting result bundle attachments to ${xcparse_output_directory}." 2>&1
+echo "Extracting result bundle attachments to ${xcparse_output_directory}." >&2
 
 cd xcparse
 if [[ ! -f .build/debug/xcparse ]]
@@ -205,7 +205,7 @@ jq 'map(select(.attachmentName | (endswith(".crash") or endswith(".ips"))))' < "
 declare -i number_of_filtered_attachments
 number_of_filtered_attachments=$(jq '. | length' < "${filtered_xcparse_attachment_descriptors_file}")
 
-echo "There is/are ${number_of_filtered_attachments} crash report(s) in total." 2>&1
+echo "There is/are ${number_of_filtered_attachments} crash report(s) in total." >&2
 
 crash_reports_json_file=$(mktemp)
 echo '[]' > $crash_reports_json_file
@@ -242,13 +242,13 @@ then
 
     if [[ $number_of_jobs -eq 0 ]]
     then
-      echo -e "Got no jobs from GitHub API." 2>&1
+      echo -e "Got no jobs from GitHub API." >&2
       exit 1
     fi
 
     if [[ $number_of_jobs -gt 1 ]]
     then
-      echo -e "Got ${number_of_jobs} jobs from GitHub API but don’t know which one to pick. You need to provide a --job-name argument." 2>&1
+      echo -e "Got ${number_of_jobs} jobs from GitHub API but don’t know which one to pick. You need to provide a --job-name argument." >&2
       exit 1
     fi
 
@@ -260,13 +260,13 @@ then
 
     if [[ $number_of_matching_jobs -eq 0 ]]
     then
-      echo -e "The GitHub API response contains no job whose \`name\` is ${job_name}. This script does not currently handle pagination." 2>&1
+      echo -e "The GitHub API response contains no job whose \`name\` is ${job_name}. This script does not currently handle pagination." >&2
       exit 1
     fi
 
     if [[ $number_of_matching_jobs -gt 1 ]]
     then
-      echo -e "The GitHub API response contains multiple jobs whose \`name\` is ${job_name}." 2>&1
+      echo -e "The GitHub API response contains multiple jobs whose \`name\` is ${job_name}." >&2
       exit 1
     fi
   fi
@@ -331,13 +331,13 @@ jq -n \
 if false
 then
   echo "::group::Request body"
-  printf "Created request body:\n$(cat "${temp_request_body_file}")\n\n" 2>&1
+  printf "Created request body:\n$(cat "${temp_request_body_file}")\n\n" >&2
   echo "::endgroup::"
 fi
 
 # 11. Send the request.
 
-echo "Uploading test report." 2>&1
+echo "Uploading test report." >&2
 
 if [[ -z $upload_server_base_url ]]
 then
@@ -348,7 +348,7 @@ request_id=$(uuidgen)
 
 temp_response_body_file=$(mktemp)
 curl -vv --fail-with-body --data-binary "@${temp_request_body_file}" --header "Content-Type: application/json" --header "Test-Observability-Auth-Key: ${TEST_OBSERVABILITY_SERVER_AUTH_KEY}" --header "X-Request-ID: ${request_id}" "${upload_server_base_url}/uploads" | tee "${temp_response_body_file}"
-echo 2>&1 # Print a newline to separate the `curl` output from the next log line.
+echo >&2 # Print a newline to separate the `curl` output from the next log line.
 
 # 12. Extract the ID of the created upload and log the web UI URL.
 
