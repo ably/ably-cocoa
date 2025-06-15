@@ -21,10 +21,12 @@
 #import <Ably/ARTRest.h>
 #import <Ably/ARTRestChannel.h>
 #import <Ably/ARTRestPresence.h>
+#import <Ably/ARTRestAnnotations.h>
 #import <Ably/ARTRealtime.h>
 #import <Ably/ARTRealtimeChannel.h>
 #import <Ably/ARTRealtimeChannelOptions.h>
 #import <Ably/ARTRealtimePresence.h>
+#import <Ably/ARTRealtimeAnnotations.h>
 #import <Ably/ARTStats.h>
 #import <Ably/ARTPaginatedResult.h>
 #import <Ably/ARTHTTPPaginatedResponse.h>
