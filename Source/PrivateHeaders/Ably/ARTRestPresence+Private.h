@@ -6,6 +6,12 @@ NS_ASSUME_NONNULL_BEGIN
 @class ARTRestChannelInternal;
 @class ARTInternalLog;
 
+@interface ARTPresenceQuery ()
+
+- (NSMutableArray<NSURLQueryItem *> *)asQueryItems;
+
+@end
+
 @interface ARTRestPresenceInternal : NSObject
 
 - (instancetype)initWithChannel:(ARTRestChannelInternal *)channel logger:(ARTInternalLog *)logger;

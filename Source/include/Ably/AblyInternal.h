@@ -11,3 +11,4 @@
 #import <Ably/ARTWrapperSDKProxyPushChannelSubscriptions.h>
 #import <Ably/ARTWrapperSDKProxyPushChannel.h>
 #import <Ably/ARTWrapperSDKProxyRealtimePresence.h>
+#import <Ably/ARTWrapperSDKProxyRealtimeAnnotations.h>

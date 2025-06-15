@@ -10,6 +10,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class ARTRealtimePresence;
+@class ARTRealtimeAnnotations;
 @class ARTRealtimeChannelOptions;
 @class ARTChannelProperties;
 #if TARGET_OS_IPHONE
@@ -184,6 +185,12 @@ NS_SWIFT_SENDABLE
  * An `ARTRealtimePresence` object.
  */
 @property (readonly) ARTRealtimePresence *presence;
+
+/**
+ * An `ARTRealtimeAnnotations` object.
+ */
+@property (readonly) ARTRealtimeAnnotations *annotations;
+
 #if TARGET_OS_IPHONE
 /**
  * An `ARTPushChannel` object.

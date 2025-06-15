@@ -7,6 +7,7 @@
 @class ARTHttpResponse;
 @class ARTErrorInfo;
 @class ARTMessage;
+@class ARTAnnotation;
 @class ARTPresenceMessage;
 @class ARTTokenParams;
 @class ARTTokenRequest;
@@ -502,6 +503,15 @@ typedef void (^ARTPresenceMessageErrorCallback)(ARTPresenceMessage *message, ART
 
 /// :nodoc:
 typedef void (^ARTPresenceMessagesCallback)(NSArray<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error);
+
+/// :nodoc:
+typedef void (^ARTAnnotationCallback)(ARTAnnotation *annotation);
+
+/// :nodoc:
+typedef void (^ARTAnnotationErrorCallback)(ARTAnnotation *annotation, ARTErrorInfo *_Nullable error);
+
+/// :nodoc:
+typedef void (^ARTPaginatedAnnotationsCallback)(ARTPaginatedResult<ARTAnnotation *> *_Nullable result, ARTErrorInfo *_Nullable error);
 
 /// :nodoc:
 typedef void (^ARTChannelDetailsCallback)(ARTChannelDetails *_Nullable details, ARTErrorInfo *_Nullable error);
