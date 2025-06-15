@@ -5,6 +5,7 @@
 #import "ARTMessage.h"
 #import "ARTPresence.h"
 #import "ARTPresenceMessage.h"
+#import "ARTAnnotation.h"
 #import "ARTProtocolMessage.h"
 #import "ARTProtocolMessage+Private.h"
 #import "ARTNSDictionary+ARTDictionaryUtil.h"
@@ -298,6 +299,7 @@
     if (operation && [operation isKindOfClass:[NSDictionary class]]) {
         message.operation = [ARTMessageOperation createFromDictionary:operation];
     }
+    message.summary = [input objectForKey:@"summary"] ?: (message.action == ARTMessageActionMessageSummary ? @{} : nil); // enforce TM2q (https://ably-real-time.slack.com/archives/C03JDBVM5MY/p1749124425224069?thread_ts=1749051904.445159&cid=C03JDBVM5MY)
     
     return message;
 }
@@ -334,7 +336,18 @@
     }
     ARTLogError(_logger, @"RS:%p ARTJsonEncoder invalid ARTPresenceAction %d", _rest, action);
     return ARTPresenceAbsent;
-    
+}
+
+- (ARTAnnotationAction)annotationActionFromInt:(int)action
+{
+    switch (action) {
+        case 0:
+            return ARTAnnotationCreate;
+        case 1:
+            return ARTAnnotationDelete;
+    }
+    ARTLogError(_logger, @"RS:%p ARTJsonEncoder invalid ARTAnnotationAction %d", _rest, action);
+    return ARTAnnotationCreate;
 }
 
 - (int)intFromPresenceMessageAction:(ARTPresenceAction) action
@@ -386,6 +399,47 @@
             return nil;
         }
         [output addObject:message];
+    }
+    return output;
+}
+
+- (ARTAnnotation *)annotationFromDictionary:(NSDictionary *)input {
+    ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: annotationFromDictionary %@", _rest, [_delegate formatAsString], input);
+    if (![input isKindOfClass:[NSDictionary class]]) {
+        return nil;
+    }
+    ARTAnnotation *annotation = [[ARTAnnotation alloc] init];
+    annotation.id = [input artString:@"id"];
+    annotation.data = [input objectForKey:@"data"];
+    annotation.encoding = [input artString:@"encoding"];
+    annotation.clientId = [input artString:@"clientId"];
+    annotation.timestamp = [input artTimestamp:@"timestamp"];
+    annotation.connectionId = [input artString:@"connectionId"];
+
+    int action = [[input artNumber:@"action"] intValue];
+    annotation.action = [self annotationActionFromInt:action];
+    
+    annotation.name = [input artString:@"name"];
+    annotation.type = [input artString:@"type"];
+    annotation.serial = [input artString:@"serial"];
+    annotation.messageSerial = [input artString:@"messageSerial"];
+    annotation.count = [input artNumber:@"count"];
+
+    return annotation;
+}
+
+- (NSArray *)annotationsFromArray:(NSArray *)input {
+    if (![input isKindOfClass:[NSArray class]]) {
+        return nil;
+    }
+    
+    NSMutableArray *output = [NSMutableArray array];
+    for (NSDictionary *item in input) {
+        ARTAnnotation *annotation = [self annotationFromDictionary:item];
+        if (!annotation) {
+            return nil;
+        }
+        [output addObject:annotation];
     }
     return output;
 }
@@ -765,6 +819,7 @@
     NSMutableArray *messages = [[input objectForKey:@"messages"] mutableCopy];
     message.messages = [self messagesFromArray:messages protocolMessage:message];
     message.presence = [self presenceMessagesFromArray:[input objectForKey:@"presence"]];
+    message.annotations = [self annotationsFromArray:[input objectForKey:@"annotations"]];
 
     return message;
 }
