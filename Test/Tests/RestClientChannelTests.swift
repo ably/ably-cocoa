@@ -1213,7 +1213,8 @@ class RestClientChannelTests: XCTestCase {
 
     func test__035__presence__get__should_return_presence_fixture_data() throws {
         let test = Test()
-        let options = try AblyTests.commonAppSetup(for: test)
+        // This test is intermittently failing because sometimes the list of returned presence messages on the persisted:presence_fixtures channel is empty. The test always seems to pass when run in isolation which makes me speculate that these fixtures have some sort of expiry (have asked in https://ably-real-time.slack.com/archives/CURL4U2FP/p1750083485931569), so let's try creating a new test app with fresh fixtures here.
+        let options = try AblyTests.commonAppSetup(for: test, forceNewApp: true)
         options.testOptions.channelNamePrefix = nil
         let client = ARTRest(options: options)
         let key = appSetupModel.cipher.key
