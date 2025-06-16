@@ -216,4 +216,9 @@ NSString* ARTProtocolMessageActionToStr(ARTProtocolMessageAction action) {
         case ARTProtocolMessageAuth:
             return @"Auth"; //17
     }
+
+    // Because we blindly assign the action field of a ProtocolMessage received over the wire to a variable of type ARTProtocolMessageAction, we can't rely on the compiler's exhaustive checking of switch statements for ARTProtocolMessageAction.
+    //
+    // TODO: we have https://github.com/ably/specification/issues/304 for making sure we properly implement the RSF1 robustness principle for enums.
+    return @"Unknown";
 }
