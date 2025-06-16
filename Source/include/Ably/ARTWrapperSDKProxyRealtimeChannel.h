@@ -4,6 +4,7 @@
 @class ARTWrapperSDKProxyRealtimeChannel;
 @class ARTWrapperSDKProxyPushChannel;
 @class ARTWrapperSDKProxyRealtimePresence;
+@class ARTWrapperSDKProxyRealtimeAnnotations;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -18,6 +19,8 @@ NS_SWIFT_SENDABLE
 - (instancetype)init NS_UNAVAILABLE;
 
 @property (readonly) ARTWrapperSDKProxyRealtimePresence *presence;
+
+@property (readonly) ARTWrapperSDKProxyRealtimeAnnotations *annotations;
 
 #if TARGET_OS_IPHONE
 @property (readonly) ARTWrapperSDKProxyPushChannel *push;

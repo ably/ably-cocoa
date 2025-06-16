@@ -8,6 +8,7 @@
 #import "ARTBaseMessage+Private.h"
 #import "ARTAuth.h"
 #import "ARTRealtimePresence+Private.h"
+#import "ARTRealtimeAnnotations+Private.h"
 #import "ARTChannel.h"
 #import "ARTChannelOptions.h"
 #import "ARTRealtimeChannelOptions.h"
@@ -79,6 +80,10 @@
 
 - (ARTRealtimePresence *)presence {
     return [[ARTRealtimePresence alloc] initWithInternal:_internal.presence queuedDealloc:_dealloc];
+}
+
+- (ARTRealtimeAnnotations *)annotations {
+    return [[ARTRealtimeAnnotations alloc] initWithInternal:_internal.annotations queuedDealloc:_dealloc];
 }
 
 #if TARGET_OS_IPHONE
@@ -225,6 +230,7 @@
 
 @interface ARTRealtimeChannelInternal () {
     ARTRealtimePresenceInternal *_realtimePresence;
+    ARTRealtimeAnnotationsInternal *_realtimeAnnotations;
     #if TARGET_OS_IPHONE
     ARTPushChannelInternal *_pushChannel;
     #endif
@@ -264,6 +270,7 @@ NS_ASSUME_NONNULL_END
         _state = ARTRealtimeChannelInitialized;
         _attachSerial = nil;
         _realtimePresence = [[ARTRealtimePresenceInternal alloc] initWithChannel:self logger:self.logger];
+        _realtimeAnnotations = [[ARTRealtimeAnnotationsInternal alloc] initWithChannel:self logger:self.logger];
         _statesEventEmitter = [[ARTPublicEventEmitter alloc] initWithRest:_realtime.rest logger:logger];
         _messagesEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueues:_queue userQueue:_userQueue];
         _attachedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
@@ -326,6 +333,10 @@ dispatch_sync(_queue, ^{
 
 - (ARTRealtimePresenceInternal *)presence {
     return _realtimePresence;
+}
+
+- (ARTRealtimeAnnotationsInternal *)annotations {
+    return _realtimeAnnotations;
 }
 
 #if TARGET_OS_IPHONE
@@ -618,6 +629,9 @@ dispatch_sync(_queue, ^{
         case ARTProtocolMessagePresence:
             [self onPresence:message];
             break;
+        case ARTProtocolMessageAnnotation:
+            [self onAnnotation:message];
+            break;
         case ARTProtocolMessageError:
             [self onError:message];
             break;
@@ -805,6 +819,15 @@ dispatch_sync(_queue, ^{
         self.channelSerial = message.channelSerial;
     }
     [self.presence onMessage:message];
+}
+
+- (void)onAnnotation:(ARTProtocolMessage *)message {
+    ARTLogDebug(self.logger, @"RT:%p C:%p (%@) handle ANNOTATION message", _realtime, self, self.name);
+    // RTL15b
+    if (message.channelSerial) {
+        self.channelSerial = message.channelSerial;
+    }
+    [self.annotations onMessage:message];
 }
 
 - (void)onSync:(ARTProtocolMessage *)message {
