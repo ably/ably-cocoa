@@ -1062,6 +1062,14 @@ class RealtimeClientPresenceTests: XCTestCase {
         defer { client2.dispose(); client2.close() }
         let channel2 = client2.channels.get(channelName)
 
+        // Attach channel upfront so as not to miss any presence events
+        waitUntil(timeout: testTimeout) { done in
+            channel1.attach { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+
         waitUntil(timeout: testTimeout) { done in
             channel1.presence.subscribe(.enter) { member in
                 XCTAssertEqual(member.clientId, options.clientId)
@@ -1291,6 +1299,14 @@ class RealtimeClientPresenceTests: XCTestCase {
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(test.uniqueChannelName())
 
+        // Attach channel upfront so as not to miss any presence events
+        waitUntil(timeout: testTimeout) { done in
+            channel.attach { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+
         waitUntil(timeout: testTimeout) { done in
             channel.presence.subscribe(.enter) { member in
                 XCTAssertEqual(member.data as? NSObject, "online" as NSObject?)
@@ -1318,6 +1334,14 @@ class RealtimeClientPresenceTests: XCTestCase {
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(test.uniqueChannelName())
+
+        // Attach channel upfront so as not to miss any presence events
+        waitUntil(timeout: testTimeout) { done in
+            channel.attach { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
 
         XCTAssertEqual(channel.internal.presence.members.count, 0)
         waitUntil(timeout: testTimeout) { done in
@@ -1414,6 +1438,14 @@ class RealtimeClientPresenceTests: XCTestCase {
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(test.uniqueChannelName())
 
+        // Attach channel upfront so as not to miss any presence events
+        waitUntil(timeout: testTimeout) { done in
+            channel.attach { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+
         waitUntil(timeout: testTimeout) { done in
             channel.presence.subscribe(.enter) { member in
                 XCTAssertEqual(member.data as? NSObject, "online" as NSObject?)
@@ -1443,6 +1475,14 @@ class RealtimeClientPresenceTests: XCTestCase {
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(test.uniqueChannelName())
+
+        // Attach channel upfront so as not to miss any presence events
+        waitUntil(timeout: testTimeout) { done in
+            channel.attach { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.subscribe(.enter) { member in
@@ -1936,6 +1976,14 @@ class RealtimeClientPresenceTests: XCTestCase {
         defer { client.dispose(); client.close() }
         let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
+
+        // Attach channel upfront so as not to miss any presence events
+        waitUntil(timeout: testTimeout) { done in
+            channel.attach { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
@@ -2663,13 +2711,18 @@ class RealtimeClientPresenceTests: XCTestCase {
         let secondClient = "client2"
         let firstClientData = "client1data"
         let secondClientData = "client2data"
-        
+
+        // Attach channel upfront so as not to miss any presence events
+        waitUntil(timeout: testTimeout) { done in
+            channel.attach { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
-            channel.once(.attached) { stateChange in
-                channel.presence.enterClient(firstClient, data: firstClientData)
-                channel.presence.enterClient(secondClient, data: secondClientData)
-            }
+
             channel.presence.subscribe(.enter) { presenceMessage in
                 if presenceMessage.clientId == firstClient {
                     firstMsgId = presenceMessage.id!
@@ -2680,7 +2733,9 @@ class RealtimeClientPresenceTests: XCTestCase {
                     partialDone()
                 }
             }
-            channel.attach()
+
+            channel.presence.enterClient(firstClient, data: firstClientData)
+            channel.presence.enterClient(secondClient, data: secondClientData)
         }
         channel.presence.unsubscribe()
         

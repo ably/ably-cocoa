@@ -3549,7 +3549,7 @@ class AuthTests: XCTestCase {
             }
         }
 
-        #if os(iOS)
+        #if os(iOS) || os(tvOS) || os(watchOS)
             NotificationCenter.default.post(name: UIApplication.significantTimeChangeNotification, object: nil)
         #else
             NotificationCenter.default.post(name: .NSSystemClockDidChange, object: nil)
@@ -3641,7 +3641,7 @@ class AuthTests: XCTestCase {
         }
         defer { hook.remove() }
 
-        #if os(iOS)
+        #if os(iOS) || os(tvOS) || os(watchOS)
             // Force notification
             NotificationCenter.default.post(name: UIApplication.significantTimeChangeNotification, object: nil)
 
