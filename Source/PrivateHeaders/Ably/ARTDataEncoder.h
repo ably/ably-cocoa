@@ -20,7 +20,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-/// :nodoc:
+/**
+ * `ARTDataEncoder` is used to:
+ *
+ * - convert the `data` property of an `ARTMessage` into a format that's suitable to be sent over the wire; that is, to ensure that this `ARTMessage` can be placed inside an `ARTProtocolMessage`
+ * - convert the `data` property of an `ARTMessage` contained inside an `ARTProtocolMessage` into something that's suitable to expose to the user of the SDK
+ */
 @interface ARTDataEncoder : NSObject
 
 - (instancetype)initWithCipherParams:(ARTCipherParams *_Nullable)params logger:(ARTInternalLog *)logger error:(NSError *_Nullable*_Nullable)error;

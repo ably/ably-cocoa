@@ -35,7 +35,8 @@
 }
 
 - (void)sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages channel:(ARTRealtimeChannel *)channel completion:(void (^)(ARTErrorInfo * _Nonnull))completion {
-    [NSException raise:NSInternalInconsistencyException format:@"Not yet implemented"];
+    [channel.internal sendStateWithObjectMessages:objectMessages
+                                       completion:completion];
 }
 
 - (void)fetchTimestampWithQueryTime:(BOOL)queryTime

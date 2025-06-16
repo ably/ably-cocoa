@@ -155,7 +155,9 @@ NSString *ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent event) {
                         subscribers:(NSInteger)subscribers
                 presenceConnections:(NSInteger)presenceConnections
                     presenceMembers:(NSInteger)presenceMembers
-                presenceSubscribers:(NSInteger)presenceSubscribers {
+                presenceSubscribers:(NSInteger)presenceSubscribers
+                   objectPublishers:(NSInteger)objectPublishers
+                  objectSubscribers:(NSInteger)objectSubscribers {
     
     if (self = [super init]) {
         _connections = connections;
@@ -164,6 +166,8 @@ NSString *ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent event) {
         _presenceConnections = presenceConnections;
         _presenceMembers = presenceMembers;
         _presenceSubscribers = presenceSubscribers;
+        _objectPublishers = objectPublishers;
+        _objectSubscribers = objectSubscribers;
     }
     return self;
 }
