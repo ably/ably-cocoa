@@ -60,7 +60,6 @@ internal final class DefaultInternalPlugin: NSObject, AblyPlugin.LiveObjectsInte
     internal func decodeObjectMessage(
         _ serialized: [String: Any],
         context: DecodingContextProtocol,
-        // TODO: use
         format: EncodingFormat,
         error errorPtr: AutoreleasingUnsafeMutablePointer<ARTErrorInfo?>?,
     ) -> (any ObjectMessageProtocol)? {
@@ -71,7 +70,10 @@ internal final class DefaultInternalPlugin: NSObject, AblyPlugin.LiveObjectsInte
                 wireObject: wireObject,
                 decodingContext: context,
             )
-            let objectMessage = InboundObjectMessage(wireObjectMessage: wireObjectMessage)
+            let objectMessage = try InboundObjectMessage(
+                wireObjectMessage: wireObjectMessage,
+                format: format,
+            )
             return ObjectMessageBox(objectMessage: objectMessage)
         } catch {
             errorPtr?.pointee = error.toARTErrorInfo()
@@ -81,14 +83,13 @@ internal final class DefaultInternalPlugin: NSObject, AblyPlugin.LiveObjectsInte
 
     internal func encodeObjectMessage(
         _ publicObjectMessage: any AblyPlugin.ObjectMessageProtocol,
-        // TODO: use
         format: EncodingFormat,
     ) -> [String: Any] {
         guard let outboundObjectMessageBox = publicObjectMessage as? ObjectMessageBox<OutboundObjectMessage> else {
             preconditionFailure("Expected to receive the same OutboundObjectMessage type as we emit")
         }
 
-        let wireObjectMessage = outboundObjectMessageBox.objectMessage.toWire()
+        let wireObjectMessage = outboundObjectMessageBox.objectMessage.toWire(format: format)
         return wireObjectMessage.toWireObject.toAblyPluginDataDictionary
     }
 

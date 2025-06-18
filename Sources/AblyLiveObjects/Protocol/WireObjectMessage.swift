@@ -158,8 +158,7 @@ internal struct WireObjectOperation {
     internal var map: WireMap? // OOP3e
     internal var counter: WireCounter? // OOP3f
     internal var nonce: String? // OOP3g
-    // TODO: Not yet clear how to encode this property; I assume it will be properly specified later. Do in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/12
-    internal var initialValue: Data? // OOP3h
+    internal var initialValue: StringOrData? // OOP3h
     internal var initialValueEncoding: String? // OOP3i
 }
 
@@ -212,6 +211,9 @@ extension WireObjectOperation: WireObjectCodable {
         }
         if let nonce {
             result[WireKey.nonce.rawValue] = .string(nonce)
+        }
+        if let initialValue {
+            result[WireKey.initialValue.rawValue] = initialValue.toWireValue
         }
         if let initialValueEncoding {
             result[WireKey.initialValueEncoding.rawValue] = .string(initialValueEncoding)
@@ -419,8 +421,7 @@ internal struct WireObjectData {
     internal var objectId: String? // OD2a
     internal var encoding: String? // OD2b
     internal var boolean: Bool? // OD2c
-    // TODO: Not yet clear how to encode / decode this property; I assume it will be properly specified later. Do in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/12
-    internal var bytes: Data? // OD2d
+    internal var bytes: StringOrData? // OD2d
     internal var number: NSNumber? // OD2e
     internal var string: String? // OD2f
 }
@@ -439,6 +440,7 @@ extension WireObjectData: WireObjectCodable {
         objectId = try wireObject.optionalStringValueForKey(WireKey.objectId.rawValue)
         encoding = try wireObject.optionalStringValueForKey(WireKey.encoding.rawValue)
         boolean = try wireObject.optionalBoolValueForKey(WireKey.boolean.rawValue)
+        bytes = try wireObject.optionalDecodableValueForKey(WireKey.bytes.rawValue)
         number = try wireObject.optionalNumberValueForKey(WireKey.number.rawValue)
         string = try wireObject.optionalStringValueForKey(WireKey.string.rawValue)
     }
@@ -455,6 +457,9 @@ extension WireObjectData: WireObjectCodable {
         if let boolean {
             result[WireKey.boolean.rawValue] = .bool(boolean)
         }
+        if let bytes {
+            result[WireKey.bytes.rawValue] = bytes.toWireValue
+        }
         if let number {
             result[WireKey.number.rawValue] = .number(number)
         }
@@ -463,5 +468,41 @@ extension WireObjectData: WireObjectCodable {
         }
 
         return result
+    }
+}
+
+/// A type that can be either a string or binary data.
+///
+/// Used to represent:
+///
+/// - the values that `WireObjectData.bytes` might hold, after being encoded per OD4 or before being decoded per OD5
+/// - the values that `WireObjectOperation.initialValue` might hold, after being encoded per OOP5
+internal enum StringOrData: WireCodable {
+    case string(String)
+    case data(Data)
+
+    /// An error that can occur when decoding a ``StringOrData``.
+    internal enum DecodingError: Error {
+        case unsupportedValue(WireValue)
+    }
+
+    internal init(wireValue: WireValue) throws(InternalError) {
+        self = switch wireValue {
+        case let .string(string):
+            .string(string)
+        case let .data(data):
+            .data(data)
+        default:
+            throw DecodingError.unsupportedValue(wireValue).toInternalError()
+        }
+    }
+
+    internal var toWireValue: WireValue {
+        switch self {
+        case let .string(string):
+            .string(string)
+        case let .data(data):
+            .data(data)
+        }
     }
 }
