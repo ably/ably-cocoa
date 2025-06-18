@@ -1,67 +1,67 @@
 import Ably
 import Foundation
 
-internal protocol JSONEncodable {
-    var toJSONValue: JSONValue { get }
+internal protocol WireEncodable {
+    var toWireValue: WireValue { get }
 }
 
-internal protocol JSONDecodable {
-    init(jsonValue: JSONValue) throws(InternalError)
+internal protocol WireDecodable {
+    init(wireValue: WireValue) throws(InternalError)
 }
 
-internal typealias JSONCodable = JSONDecodable & JSONEncodable
+internal typealias WireCodable = WireDecodable & WireEncodable
 
-internal protocol JSONObjectEncodable: JSONEncodable {
-    var toJSONObject: [String: JSONValue] { get }
+internal protocol WireObjectEncodable: WireEncodable {
+    var toWireObject: [String: WireValue] { get }
 }
 
-// Default implementation of `JSONEncodable` conformance for `JSONObjectEncodable`
-internal extension JSONObjectEncodable {
-    var toJSONValue: JSONValue {
-        .object(toJSONObject)
+// Default implementation of `WireEncodable` conformance for `WireObjectEncodable`
+internal extension WireObjectEncodable {
+    var toWireValue: WireValue {
+        .object(toWireObject)
     }
 }
 
-internal protocol JSONObjectDecodable: JSONDecodable {
-    init(jsonObject: [String: JSONValue]) throws(InternalError)
+internal protocol WireObjectDecodable: WireDecodable {
+    init(wireObject: [String: WireValue]) throws(InternalError)
 }
 
-internal enum JSONValueDecodingError: Error {
+internal enum WireValueDecodingError: Error {
     case valueIsNotObject
     case noValueForKey(String)
-    case wrongTypeForKey(String, actualValue: JSONValue)
+    case wrongTypeForKey(String, actualValue: WireValue)
     case failedToDecodeFromRawValue(String)
 }
 
-// Default implementation of `JSONDecodable` conformance for `JSONObjectDecodable`
-internal extension JSONObjectDecodable {
-    init(jsonValue: JSONValue) throws(InternalError) {
-        guard case let .object(jsonObject) = jsonValue else {
-            throw JSONValueDecodingError.valueIsNotObject.toInternalError()
+// Default implementation of `WireDecodable` conformance for `WireObjectDecodable`
+internal extension WireObjectDecodable {
+    init(wireValue: WireValue) throws(InternalError) {
+        guard case let .object(wireObject) = wireValue else {
+            throw WireValueDecodingError.valueIsNotObject.toInternalError()
         }
 
-        self = try .init(jsonObject: jsonObject)
+        self = try .init(wireObject: wireObject)
     }
 }
 
-internal typealias JSONObjectCodable = JSONObjectDecodable & JSONObjectEncodable
+internal typealias WireObjectCodable = WireObjectDecodable & WireObjectEncodable
 
 // MARK: - Extracting primitive values from a dictionary
 
-/// This extension adds some helper methods for extracting values from a dictionary of `JSONValue` values; you may find them helpful when implementing `JSONCodable`.
-internal extension [String: JSONValue] {
+/// This extension adds some helper methods for extracting values from a dictionary of `WireValue` values; you may find them helpful when implementing `WireCodable`.
+internal extension [String: WireValue] {
     /// If this dictionary contains a value for `key`, and this value has case `object`, this returns the associated value.
     ///
     /// - Throws:
-    ///   - `JSONValueDecodingError.noValueForKey` if the key is absent
-    ///   - `JSONValueDecodingError.wrongTypeForKey` if the value does not have case `object`
-    func objectValueForKey(_ key: String) throws(InternalError) -> [String: JSONValue] {
+    ///   - `WireValueDecodingError.noValueForKey` if the key is absent
+    ///   - `WireValueDecodingError.wrongTypeForKey` if the value does not have case `object`
+    func objectValueForKey(_ key: String) throws(InternalError) -> [String: WireValue] {
         guard let value = self[key] else {
-            throw JSONValueDecodingError.noValueForKey(key).toInternalError()
+            throw WireValueDecodingError.noValueForKey(key).toInternalError()
         }
 
         guard case let .object(objectValue) = value else {
-            throw JSONValueDecodingError.wrongTypeForKey(key, actualValue: value).toInternalError()
+            throw WireValueDecodingError.wrongTypeForKey(key, actualValue: value).toInternalError()
         }
 
         return objectValue
@@ -69,8 +69,8 @@ internal extension [String: JSONValue] {
 
     /// If this dictionary contains a value for `key`, and this value has case `object`, this returns the associated value. If this dictionary does not contain a value for `key`, or if the value for `key` has case `null`, it returns `nil`.
     ///
-    /// - Throws: `JSONValueDecodingError.wrongTypeForKey` if the value does not have case `object` or `null`
-    func optionalObjectValueForKey(_ key: String) throws(InternalError) -> [String: JSONValue]? {
+    /// - Throws: `WireValueDecodingError.wrongTypeForKey` if the value does not have case `object` or `null`
+    func optionalObjectValueForKey(_ key: String) throws(InternalError) -> [String: WireValue]? {
         guard let value = self[key] else {
             return nil
         }
@@ -80,7 +80,7 @@ internal extension [String: JSONValue] {
         }
 
         guard case let .object(objectValue) = value else {
-            throw JSONValueDecodingError.wrongTypeForKey(key, actualValue: value).toInternalError()
+            throw WireValueDecodingError.wrongTypeForKey(key, actualValue: value).toInternalError()
         }
 
         return objectValue
@@ -89,15 +89,15 @@ internal extension [String: JSONValue] {
     /// If this dictionary contains a value for `key`, and this value has case `array`, this returns the associated value.
     ///
     /// - Throws:
-    ///   - `JSONValueDecodingError.noValueForKey` if the key is absent
-    ///   - `JSONValueDecodingError.wrongTypeForKey` if the value does not have case `array`
-    func arrayValueForKey(_ key: String) throws(InternalError) -> [JSONValue] {
+    ///   - `WireValueDecodingError.noValueForKey` if the key is absent
+    ///   - `WireValueDecodingError.wrongTypeForKey` if the value does not have case `array`
+    func arrayValueForKey(_ key: String) throws(InternalError) -> [WireValue] {
         guard let value = self[key] else {
-            throw JSONValueDecodingError.noValueForKey(key).toInternalError()
+            throw WireValueDecodingError.noValueForKey(key).toInternalError()
         }
 
         guard case let .array(arrayValue) = value else {
-            throw JSONValueDecodingError.wrongTypeForKey(key, actualValue: value).toInternalError()
+            throw WireValueDecodingError.wrongTypeForKey(key, actualValue: value).toInternalError()
         }
 
         return arrayValue
@@ -105,8 +105,8 @@ internal extension [String: JSONValue] {
 
     /// If this dictionary contains a value for `key`, and this value has case `array`, this returns the associated value. If this dictionary does not contain a value for `key`, or if the value for `key` has case `null`, it returns `nil`.
     ///
-    /// - Throws: `JSONValueDecodingError.wrongTypeForKey` if the value does not have case `array` or `null`
-    func optionalArrayValueForKey(_ key: String) throws(InternalError) -> [JSONValue]? {
+    /// - Throws: `WireValueDecodingError.wrongTypeForKey` if the value does not have case `array` or `null`
+    func optionalArrayValueForKey(_ key: String) throws(InternalError) -> [WireValue]? {
         guard let value = self[key] else {
             return nil
         }
@@ -116,7 +116,7 @@ internal extension [String: JSONValue] {
         }
 
         guard case let .array(arrayValue) = value else {
-            throw JSONValueDecodingError.wrongTypeForKey(key, actualValue: value).toInternalError()
+            throw WireValueDecodingError.wrongTypeForKey(key, actualValue: value).toInternalError()
         }
 
         return arrayValue
@@ -125,15 +125,15 @@ internal extension [String: JSONValue] {
     /// If this dictionary contains a value for `key`, and this value has case `string`, this returns the associated value.
     ///
     /// - Throws:
-    ///   - `JSONValueDecodingError.noValueForKey` if the key is absent
-    ///   - `JSONValueDecodingError.wrongTypeForKey` if the value does not have case `string`
+    ///   - `WireValueDecodingError.noValueForKey` if the key is absent
+    ///   - `WireValueDecodingError.wrongTypeForKey` if the value does not have case `string`
     func stringValueForKey(_ key: String) throws(InternalError) -> String {
         guard let value = self[key] else {
-            throw JSONValueDecodingError.noValueForKey(key).toInternalError()
+            throw WireValueDecodingError.noValueForKey(key).toInternalError()
         }
 
         guard case let .string(stringValue) = value else {
-            throw JSONValueDecodingError.wrongTypeForKey(key, actualValue: value).toInternalError()
+            throw WireValueDecodingError.wrongTypeForKey(key, actualValue: value).toInternalError()
         }
 
         return stringValue
@@ -141,7 +141,7 @@ internal extension [String: JSONValue] {
 
     /// If this dictionary contains a value for `key`, and this value has case `string`, this returns the associated value. If this dictionary does not contain a value for `key`, or if the value for `key` has case `null`, it returns `nil`.
     ///
-    /// - Throws: `JSONValueDecodingError.wrongTypeForKey` if the value does not have case `string` or `null`
+    /// - Throws: `WireValueDecodingError.wrongTypeForKey` if the value does not have case `string` or `null`
     func optionalStringValueForKey(_ key: String) throws(InternalError) -> String? {
         guard let value = self[key] else {
             return nil
@@ -152,7 +152,7 @@ internal extension [String: JSONValue] {
         }
 
         guard case let .string(stringValue) = value else {
-            throw JSONValueDecodingError.wrongTypeForKey(key, actualValue: value).toInternalError()
+            throw WireValueDecodingError.wrongTypeForKey(key, actualValue: value).toInternalError()
         }
 
         return stringValue
@@ -161,15 +161,15 @@ internal extension [String: JSONValue] {
     /// If this dictionary contains a value for `key`, and this value has case `number`, this returns the associated value.
     ///
     /// - Throws:
-    ///   - `JSONValueDecodingError.noValueForKey` if the key is absent
-    ///   - `JSONValueDecodingError.wrongTypeForKey` if the value does not have case `number`
+    ///   - `WireValueDecodingError.noValueForKey` if the key is absent
+    ///   - `WireValueDecodingError.wrongTypeForKey` if the value does not have case `number`
     func numberValueForKey(_ key: String) throws(InternalError) -> NSNumber {
         guard let value = self[key] else {
-            throw JSONValueDecodingError.noValueForKey(key).toInternalError()
+            throw WireValueDecodingError.noValueForKey(key).toInternalError()
         }
 
         guard case let .number(numberValue) = value else {
-            throw JSONValueDecodingError.wrongTypeForKey(key, actualValue: value).toInternalError()
+            throw WireValueDecodingError.wrongTypeForKey(key, actualValue: value).toInternalError()
         }
 
         return numberValue
@@ -177,7 +177,7 @@ internal extension [String: JSONValue] {
 
     /// If this dictionary contains a value for `key`, and this value has case `number`, this returns the associated value. If this dictionary does not contain a value for `key`, or if the value for `key` has case `null`, it returns `nil`.
     ///
-    /// - Throws: `JSONValueDecodingError.wrongTypeForKey` if the value does not have case `number` or `null`
+    /// - Throws: `WireValueDecodingError.wrongTypeForKey` if the value does not have case `number` or `null`
     func optionalNumberValueForKey(_ key: String) throws(InternalError) -> NSNumber? {
         guard let value = self[key] else {
             return nil
@@ -188,7 +188,7 @@ internal extension [String: JSONValue] {
         }
 
         guard case let .number(numberValue) = value else {
-            throw JSONValueDecodingError.wrongTypeForKey(key, actualValue: value).toInternalError()
+            throw WireValueDecodingError.wrongTypeForKey(key, actualValue: value).toInternalError()
         }
 
         return numberValue
@@ -197,15 +197,15 @@ internal extension [String: JSONValue] {
     /// If this dictionary contains a value for `key`, and this value has case `bool`, this returns the associated value.
     ///
     /// - Throws:
-    ///   - `JSONValueDecodingError.noValueForKey` if the key is absent
-    ///   - `JSONValueDecodingError.wrongTypeForKey` if the value does not have case `bool`
+    ///   - `WireValueDecodingError.noValueForKey` if the key is absent
+    ///   - `WireValueDecodingError.wrongTypeForKey` if the value does not have case `bool`
     func boolValueForKey(_ key: String) throws(InternalError) -> Bool {
         guard let value = self[key] else {
-            throw JSONValueDecodingError.noValueForKey(key).toInternalError()
+            throw WireValueDecodingError.noValueForKey(key).toInternalError()
         }
 
         guard case let .bool(boolValue) = value else {
-            throw JSONValueDecodingError.wrongTypeForKey(key, actualValue: value).toInternalError()
+            throw WireValueDecodingError.wrongTypeForKey(key, actualValue: value).toInternalError()
         }
 
         return boolValue
@@ -213,7 +213,7 @@ internal extension [String: JSONValue] {
 
     /// If this dictionary contains a value for `key`, and this value has case `bool`, this returns the associated value. If this dictionary does not contain a value for `key`, or if the value for `key` has case `null`, it returns `nil`.
     ///
-    /// - Throws: `JSONValueDecodingError.wrongTypeForKey` if the value does not have case `bool` or `null`
+    /// - Throws: `WireValueDecodingError.wrongTypeForKey` if the value does not have case `bool` or `null`
     func optionalBoolValueForKey(_ key: String) throws(InternalError) -> Bool? {
         guard let value = self[key] else {
             return nil
@@ -224,21 +224,57 @@ internal extension [String: JSONValue] {
         }
 
         guard case let .bool(boolValue) = value else {
-            throw JSONValueDecodingError.wrongTypeForKey(key, actualValue: value).toInternalError()
+            throw WireValueDecodingError.wrongTypeForKey(key, actualValue: value).toInternalError()
         }
 
         return boolValue
+    }
+
+    /// If this dictionary contains a value for `key`, and this value has case `data`, this returns the associated value.
+    ///
+    /// - Throws:
+    ///   - `WireValueDecodingError.noValueForKey` if the key is absent
+    ///   - `WireValueDecodingError.wrongTypeForKey` if the value does not have case `data`
+    func dataValueForKey(_ key: String) throws(InternalError) -> Data {
+        guard let value = self[key] else {
+            throw WireValueDecodingError.noValueForKey(key).toInternalError()
+        }
+
+        guard case let .data(dataValue) = value else {
+            throw WireValueDecodingError.wrongTypeForKey(key, actualValue: value).toInternalError()
+        }
+
+        return dataValue
+    }
+
+    /// If this dictionary contains a value for `key`, and this value has case `data`, this returns the associated value. If this dictionary does not contain a value for `key`, or if the value for `key` has case `null`, it returns `nil`.
+    ///
+    /// - Throws: `WireValueDecodingError.wrongTypeForKey` if the value does not have case `data` or `null`
+    func optionalDataValueForKey(_ key: String) throws(InternalError) -> Data? {
+        guard let value = self[key] else {
+            return nil
+        }
+
+        if case .null = value {
+            return nil
+        }
+
+        guard case let .data(dataValue) = value else {
+            throw WireValueDecodingError.wrongTypeForKey(key, actualValue: value).toInternalError()
+        }
+
+        return dataValue
     }
 }
 
 // MARK: - Extracting dates from a dictionary
 
-internal extension [String: JSONValue] {
+internal extension [String: WireValue] {
     /// If this dictionary contains a value for `key`, and this value has case `number`, this returns a date created by interpreting this value as the number of milliseconds since the Unix epoch (which is the format used by Ably).
     ///
     /// - Throws:
-    ///   - `JSONValueDecodingError.noValueForKey` if the key is absent
-    ///   - `JSONValueDecodingError.wrongTypeForKey` if the value does not have case `number`
+    ///   - `WireValueDecodingError.noValueForKey` if the key is absent
+    ///   - `WireValueDecodingError.wrongTypeForKey` if the value does not have case `number`
     func ablyProtocolDateValueForKey(_ key: String) throws(InternalError) -> Date {
         let millisecondsSinceEpoch = try numberValueForKey(key).uint64Value
 
@@ -247,7 +283,7 @@ internal extension [String: JSONValue] {
 
     /// If this dictionary contains a value for `key`, and this value has case `number`, this returns a date created by interpreting this value as the number of milliseconds since the Unix epoch (which is the format used by Ably). If this dictionary does not contain a value for `key`, or if the value for `key` has case `null`, it returns `nil`.
     ///
-    /// - Throws: `JSONValueDecodingError.wrongTypeForKey` if the value does not have case `number` or `null`
+    /// - Throws: `WireValueDecodingError.wrongTypeForKey` if the value does not have case `number` or `null`
     func optionalAblyProtocolDateValueForKey(_ key: String) throws(InternalError) -> Date? {
         guard let millisecondsSinceEpoch = try optionalNumberValueForKey(key)?.uint64Value else {
             return nil
@@ -262,13 +298,13 @@ internal extension [String: JSONValue] {
 
 // MARK: - Extracting RawRepresentable values from a dictionary
 
-internal extension [String: JSONValue] {
+internal extension [String: WireValue] {
     /// If this dictionary contains a value for `key`, and this value has case `string`, this creates an instance of `T` using its `init(rawValue:)` initializer.
     ///
     /// - Throws:
-    ///   - `JSONValueDecodingError.noValueForKey` if the key is absent
-    ///   - `JSONValueDecodingError.wrongTypeForKey` if the value does not have case `string`
-    ///   - `JSONValueDecodingError.failedToDecodeFromRawValue` if `init(rawValue:)` returns `nil`
+    ///   - `WireValueDecodingError.noValueForKey` if the key is absent
+    ///   - `WireValueDecodingError.wrongTypeForKey` if the value does not have case `string`
+    ///   - `WireValueDecodingError.failedToDecodeFromRawValue` if `init(rawValue:)` returns `nil`
     func rawRepresentableValueForKey<T: RawRepresentable>(_ key: String, type _: T.Type = T.self) throws(InternalError) -> T where T.RawValue == String {
         let rawValue = try stringValueForKey(key)
 
@@ -278,8 +314,8 @@ internal extension [String: JSONValue] {
     /// If this dictionary contains a value for `key`, and this value has case `string`, this creates an instance of `T` using its `init(rawValue:)` initializer. If this dictionary does not contain a value for `key`, or if the value for `key` has case `null`, it returns `nil`.
     ///
     /// - Throws:
-    ///   - `JSONValueDecodingError.wrongTypeForKey` if the value does not have case `string` or `null`
-    ///   - `JSONValueDecodingError.failedToDecodeFromRawValue` if `init(rawValue:)` returns `nil`
+    ///   - `WireValueDecodingError.wrongTypeForKey` if the value does not have case `string` or `null`
+    ///   - `WireValueDecodingError.failedToDecodeFromRawValue` if `init(rawValue:)` returns `nil`
     func optionalRawRepresentableValueForKey<T: RawRepresentable>(_ key: String, type _: T.Type = T.self) throws(InternalError) -> T? where T.RawValue == String {
         guard let rawValue = try optionalStringValueForKey(key) else {
             return nil
@@ -290,7 +326,7 @@ internal extension [String: JSONValue] {
 
     private func rawRepresentableValueFromRawValue<T: RawRepresentable>(_ rawValue: String, type _: T.Type = T.self) throws(InternalError) -> T where T.RawValue == String {
         guard let value = T(rawValue: rawValue) else {
-            throw JSONValueDecodingError.failedToDecodeFromRawValue(rawValue).toInternalError()
+            throw WireValueDecodingError.failedToDecodeFromRawValue(rawValue).toInternalError()
         }
 
         return value
@@ -299,12 +335,12 @@ internal extension [String: JSONValue] {
 
 // MARK: - Extracting WireEnum values from a dictionary
 
-internal extension [String: JSONValue] {
+internal extension [String: WireValue] {
     /// If this dictionary contains a value for `key`, and this value has case `number`, this creates a `WireEnum` instance using its `init(rawValue:)` initializer.
     ///
     /// - Throws:
-    ///   - `JSONValueDecodingError.noValueForKey` if the key is absent
-    ///   - `JSONValueDecodingError.wrongTypeForKey` if the value does not have case `number`
+    ///   - `WireValueDecodingError.noValueForKey` if the key is absent
+    ///   - `WireValueDecodingError.wrongTypeForKey` if the value does not have case `number`
     func wireEnumValueForKey<Known: RawRepresentable>(_ key: String, type _: Known.Type = Known.self) throws(InternalError) -> WireEnum<Known> where Known.RawValue == Int {
         let rawValue = try numberValueForKey(key).intValue
         return WireEnum(rawValue: rawValue)
@@ -312,7 +348,7 @@ internal extension [String: JSONValue] {
 
     /// If this dictionary contains a value for `key`, and this value has case `number`, this creates a `WireEnum` instance using its `init(rawValue:)` initializer. If this dictionary does not contain a value for `key`, or if the value for `key` has case `null`, it returns `nil`.
     ///
-    /// - Throws: `JSONValueDecodingError.wrongTypeForKey` if the value does not have case `number` or `null`
+    /// - Throws: `WireValueDecodingError.wrongTypeForKey` if the value does not have case `number` or `null`
     func optionalWireEnumValueForKey<Known: RawRepresentable>(_ key: String, type _: Known.Type = Known.self) throws(InternalError) -> WireEnum<Known>? where Known.RawValue == Int {
         guard let rawValue = try optionalNumberValueForKey(key)?.intValue else {
             return nil
@@ -321,26 +357,26 @@ internal extension [String: JSONValue] {
     }
 }
 
-// MARK: - Extracting JSONDecodable values from a dictionary
+// MARK: - Extracting WireDecodable values from a dictionary
 
-internal extension [String: JSONValue] {
-    /// If this dictionary contains a value for `key`, this attempts to decode it into an instance of `T` using its `init(jsonValue:)` initializer.
+internal extension [String: WireValue] {
+    /// If this dictionary contains a value for `key`, this attempts to decode it into an instance of `T` using its `init(wireValue:)` initializer.
     ///
     /// - Throws:
-    ///   - `JSONValueDecodingError.noValueForKey` if the key is absent
-    ///   - Any error thrown by `T.init(jsonValue:)`
-    func decodableValueForKey<T: JSONDecodable>(_ key: String, type _: T.Type = T.self) throws(InternalError) -> T {
+    ///   - `WireValueDecodingError.noValueForKey` if the key is absent
+    ///   - Any error thrown by `T.init(wireValue:)`
+    func decodableValueForKey<T: WireDecodable>(_ key: String, type _: T.Type = T.self) throws(InternalError) -> T {
         guard let value = self[key] else {
-            throw JSONValueDecodingError.noValueForKey(key).toInternalError()
+            throw WireValueDecodingError.noValueForKey(key).toInternalError()
         }
 
-        return try T(jsonValue: value)
+        return try T(wireValue: value)
     }
 
-    /// If this dictionary contains a value for `key`, this attempts to decode it into an instance of `T` using its `init(jsonValue:)` initializer. If this dictionary does not contain a value for `key`, or if the value for `key` has case `null`, it returns `nil`.
+    /// If this dictionary contains a value for `key`, this attempts to decode it into an instance of `T` using its `init(wireValue:)` initializer. If this dictionary does not contain a value for `key`, or if the value for `key` has case `null`, it returns `nil`.
     ///
-    /// - Throws: Any error thrown by `T.init(jsonValue:)`
-    func optionalDecodableValueForKey<T: JSONDecodable>(_ key: String, type _: T.Type = T.self) throws(InternalError) -> T? {
+    /// - Throws: Any error thrown by `T.init(wireValue:)`
+    func optionalDecodableValueForKey<T: WireDecodable>(_ key: String, type _: T.Type = T.self) throws(InternalError) -> T? {
         guard let value = self[key] else {
             return nil
         }
@@ -349,6 +385,6 @@ internal extension [String: JSONValue] {
             return nil
         }
 
-        return try T(jsonValue: value)
+        return try T(wireValue: value)
     }
 }

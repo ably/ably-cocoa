@@ -64,11 +64,11 @@ internal final class DefaultInternalPlugin: NSObject, AblyPlugin.LiveObjectsInte
         format: EncodingFormat,
         error errorPtr: AutoreleasingUnsafeMutablePointer<ARTErrorInfo?>?,
     ) -> (any ObjectMessageProtocol)? {
-        let jsonObject = JSONValue.objectFromAblyPluginData(serialized)
+        let wireObject = WireValue.objectFromAblyPluginData(serialized)
 
         do {
             let wireObjectMessage = try InboundWireObjectMessage(
-                jsonObject: jsonObject,
+                wireObject: wireObject,
                 decodingContext: context,
             )
             let objectMessage = InboundObjectMessage(wireObjectMessage: wireObjectMessage)
@@ -89,7 +89,7 @@ internal final class DefaultInternalPlugin: NSObject, AblyPlugin.LiveObjectsInte
         }
 
         let wireObjectMessage = outboundObjectMessageBox.objectMessage.toWire()
-        return wireObjectMessage.toJSONObject.toAblyPluginDataDictionary
+        return wireObjectMessage.toWireObject.toAblyPluginDataDictionary
     }
 
     internal func onChannelAttached(_ channel: ARTRealtimeChannel, hasObjects: Bool) {

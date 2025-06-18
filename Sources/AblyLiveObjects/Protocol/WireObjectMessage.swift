@@ -31,7 +31,7 @@ internal struct OutboundWireObjectMessage {
 }
 
 /// The keys for decoding an `InboundWireObjectMessage` or encoding an `OutboundWireObjectMessage`.
-internal enum WireObjectMessageJSONKey: String {
+internal enum WireObjectMessageWireKey: String {
     case id
     case clientId
     case connectionId
@@ -57,71 +57,79 @@ internal extension InboundWireObjectMessage {
 
     /// Decodes the `ObjectMessage` and then uses the containing `ProtocolMessage` to populate some absent fields per the rules of the specification.
     init(
-        jsonObject: [String: JSONValue],
+        wireObject: [String: WireValue],
         decodingContext: AblyPlugin.DecodingContextProtocol
     ) throws(InternalError) {
         // OM2a
-        if let id = try jsonObject.optionalStringValueForKey(WireObjectMessageJSONKey.id.rawValue) {
+        if let id = try wireObject.optionalStringValueForKey(WireObjectMessageWireKey.id.rawValue) {
             self.id = id
         } else if let parentID = decodingContext.parentID {
             id = "\(parentID):\(decodingContext.indexInParent)"
         }
 
-        clientId = try jsonObject.optionalStringValueForKey(WireObjectMessageJSONKey.clientId.rawValue)
+        clientId = try wireObject.optionalStringValueForKey(WireObjectMessageWireKey.clientId.rawValue)
 
         // OM2c
-        if let connectionId = try jsonObject.optionalStringValueForKey(WireObjectMessageJSONKey.connectionId.rawValue) {
+        if let connectionId = try wireObject.optionalStringValueForKey(WireObjectMessageWireKey.connectionId.rawValue) {
             self.connectionId = connectionId
         } else if let parentConnectionID = decodingContext.parentConnectionID {
             connectionId = parentConnectionID
         }
 
-        extras = try jsonObject.optionalObjectValueForKey(WireObjectMessageJSONKey.extras.rawValue)
+        // Convert WireValue extras to JSONValue extras
+        if let wireExtras = try wireObject.optionalObjectValueForKey(WireObjectMessageWireKey.extras.rawValue) {
+            extras = try wireExtras.ablyLiveObjects_mapValuesWithTypedThrow { wireValue throws(InternalError) in
+                try wireValue.toJSONValue
+            }
+        } else {
+            extras = nil
+        }
 
         // OM2e
-        if let timestamp = try jsonObject.optionalAblyProtocolDateValueForKey(WireObjectMessageJSONKey.timestamp.rawValue) {
+        if let timestamp = try wireObject.optionalAblyProtocolDateValueForKey(WireObjectMessageWireKey.timestamp.rawValue) {
             self.timestamp = timestamp
         } else if let parentTimestamp = decodingContext.parentTimestamp {
             timestamp = parentTimestamp
         }
 
-        operation = try jsonObject.optionalDecodableValueForKey(WireObjectMessageJSONKey.operation.rawValue)
-        object = try jsonObject.optionalDecodableValueForKey(WireObjectMessageJSONKey.object.rawValue)
-        serial = try jsonObject.optionalStringValueForKey(WireObjectMessageJSONKey.serial.rawValue)
-        siteCode = try jsonObject.optionalStringValueForKey(WireObjectMessageJSONKey.siteCode.rawValue)
+        operation = try wireObject.optionalDecodableValueForKey(WireObjectMessageWireKey.operation.rawValue)
+        object = try wireObject.optionalDecodableValueForKey(WireObjectMessageWireKey.object.rawValue)
+        serial = try wireObject.optionalStringValueForKey(WireObjectMessageWireKey.serial.rawValue)
+        siteCode = try wireObject.optionalStringValueForKey(WireObjectMessageWireKey.siteCode.rawValue)
     }
 }
 
-extension OutboundWireObjectMessage: JSONObjectEncodable {
-    internal var toJSONObject: [String: JSONValue] {
-        var result: [String: JSONValue] = [:]
+extension OutboundWireObjectMessage: WireObjectEncodable {
+    internal var toWireObject: [String: WireValue] {
+        var result: [String: WireValue] = [:]
 
         if let id {
-            result[WireObjectMessageJSONKey.id.rawValue] = .string(id)
+            result[WireObjectMessageWireKey.id.rawValue] = .string(id)
         }
         if let connectionId {
-            result[WireObjectMessageJSONKey.connectionId.rawValue] = .string(connectionId)
+            result[WireObjectMessageWireKey.connectionId.rawValue] = .string(connectionId)
         }
         if let timestamp {
-            result[WireObjectMessageJSONKey.timestamp.rawValue] = .number(NSNumber(value: (timestamp.timeIntervalSince1970) * 1000))
+            result[WireObjectMessageWireKey.timestamp.rawValue] = .number(NSNumber(value: (timestamp.timeIntervalSince1970) * 1000))
         }
         if let siteCode {
-            result[WireObjectMessageJSONKey.siteCode.rawValue] = .string(siteCode)
+            result[WireObjectMessageWireKey.siteCode.rawValue] = .string(siteCode)
         }
         if let serial {
-            result[WireObjectMessageJSONKey.serial.rawValue] = .string(serial)
+            result[WireObjectMessageWireKey.serial.rawValue] = .string(serial)
         }
         if let clientId {
-            result[WireObjectMessageJSONKey.clientId.rawValue] = .string(clientId)
+            result[WireObjectMessageWireKey.clientId.rawValue] = .string(clientId)
         }
         if let extras {
-            result[WireObjectMessageJSONKey.extras.rawValue] = .object(extras)
+            // Convert JSONValue extras to WireValue extras
+            result[WireObjectMessageWireKey.extras.rawValue] = .object(extras.mapValues { .init(jsonValue: $0) })
         }
         if let operation {
-            result[WireObjectMessageJSONKey.operation.rawValue] = .object(operation.toJSONObject)
+            result[WireObjectMessageWireKey.operation.rawValue] = .object(operation.toWireObject)
         }
         if let object {
-            result[WireObjectMessageJSONKey.object.rawValue] = .object(object.toJSONObject)
+            result[WireObjectMessageWireKey.object.rawValue] = .object(object.toWireObject)
         }
         return result
     }
@@ -155,8 +163,8 @@ internal struct WireObjectOperation {
     internal var initialValueEncoding: String? // OOP3i
 }
 
-extension WireObjectOperation: JSONObjectCodable {
-    internal enum JSONKey: String {
+extension WireObjectOperation: WireObjectCodable {
+    internal enum WireKey: String {
         case action
         case objectId
         case mapOp
@@ -168,40 +176,40 @@ extension WireObjectOperation: JSONObjectCodable {
         case initialValueEncoding
     }
 
-    internal init(jsonObject: [String: JSONValue]) throws(InternalError) {
-        action = try jsonObject.wireEnumValueForKey(JSONKey.action.rawValue)
-        objectId = try jsonObject.stringValueForKey(JSONKey.objectId.rawValue)
-        mapOp = try jsonObject.optionalDecodableValueForKey(JSONKey.mapOp.rawValue)
-        counterOp = try jsonObject.optionalDecodableValueForKey(JSONKey.counterOp.rawValue)
-        map = try jsonObject.optionalDecodableValueForKey(JSONKey.map.rawValue)
-        counter = try jsonObject.optionalDecodableValueForKey(JSONKey.counter.rawValue)
-        nonce = try jsonObject.optionalStringValueForKey(JSONKey.nonce.rawValue)
-        initialValueEncoding = try jsonObject.optionalStringValueForKey(JSONKey.initialValueEncoding.rawValue)
+    internal init(wireObject: [String: WireValue]) throws(InternalError) {
+        action = try wireObject.wireEnumValueForKey(WireKey.action.rawValue)
+        objectId = try wireObject.stringValueForKey(WireKey.objectId.rawValue)
+        mapOp = try wireObject.optionalDecodableValueForKey(WireKey.mapOp.rawValue)
+        counterOp = try wireObject.optionalDecodableValueForKey(WireKey.counterOp.rawValue)
+        map = try wireObject.optionalDecodableValueForKey(WireKey.map.rawValue)
+        counter = try wireObject.optionalDecodableValueForKey(WireKey.counter.rawValue)
+        nonce = try wireObject.optionalStringValueForKey(WireKey.nonce.rawValue)
+        initialValueEncoding = try wireObject.optionalStringValueForKey(WireKey.initialValueEncoding.rawValue)
     }
 
-    internal var toJSONObject: [String: JSONValue] {
-        var result: [String: JSONValue] = [
-            JSONKey.action.rawValue: .number(action.rawValue as NSNumber),
-            JSONKey.objectId.rawValue: .string(objectId),
+    internal var toWireObject: [String: WireValue] {
+        var result: [String: WireValue] = [
+            WireKey.action.rawValue: .number(action.rawValue as NSNumber),
+            WireKey.objectId.rawValue: .string(objectId),
         ]
 
         if let mapOp {
-            result[JSONKey.mapOp.rawValue] = .object(mapOp.toJSONObject)
+            result[WireKey.mapOp.rawValue] = .object(mapOp.toWireObject)
         }
         if let counterOp {
-            result[JSONKey.counterOp.rawValue] = .object(counterOp.toJSONObject)
+            result[WireKey.counterOp.rawValue] = .object(counterOp.toWireObject)
         }
         if let map {
-            result[JSONKey.map.rawValue] = .object(map.toJSONObject)
+            result[WireKey.map.rawValue] = .object(map.toWireObject)
         }
         if let counter {
-            result[JSONKey.counter.rawValue] = .object(counter.toJSONObject)
+            result[WireKey.counter.rawValue] = .object(counter.toWireObject)
         }
         if let nonce {
-            result[JSONKey.nonce.rawValue] = .string(nonce)
+            result[WireKey.nonce.rawValue] = .string(nonce)
         }
         if let initialValueEncoding {
-            result[JSONKey.initialValueEncoding.rawValue] = .string(initialValueEncoding)
+            result[WireKey.initialValueEncoding.rawValue] = .string(initialValueEncoding)
         }
 
         return result
@@ -217,8 +225,8 @@ internal struct WireObjectState {
     internal var counter: WireCounter? // OST2f
 }
 
-extension WireObjectState: JSONObjectCodable {
-    internal enum JSONKey: String {
+extension WireObjectState: WireObjectCodable {
+    internal enum WireKey: String {
         case objectId
         case siteTimeserials
         case tombstone
@@ -227,35 +235,35 @@ extension WireObjectState: JSONObjectCodable {
         case counter
     }
 
-    internal init(jsonObject: [String: JSONValue]) throws(InternalError) {
-        objectId = try jsonObject.stringValueForKey(JSONKey.objectId.rawValue)
-        siteTimeserials = try jsonObject.objectValueForKey(JSONKey.siteTimeserials.rawValue).ablyLiveObjects_mapValuesWithTypedThrow { value throws(InternalError) in
+    internal init(wireObject: [String: WireValue]) throws(InternalError) {
+        objectId = try wireObject.stringValueForKey(WireKey.objectId.rawValue)
+        siteTimeserials = try wireObject.objectValueForKey(WireKey.siteTimeserials.rawValue).ablyLiveObjects_mapValuesWithTypedThrow { value throws(InternalError) in
             guard case let .string(string) = value else {
-                throw JSONValueDecodingError.wrongTypeForKey(JSONKey.siteTimeserials.rawValue, actualValue: value).toInternalError()
+                throw WireValueDecodingError.wrongTypeForKey(WireKey.siteTimeserials.rawValue, actualValue: value).toInternalError()
             }
             return string
         }
-        tombstone = try jsonObject.boolValueForKey(JSONKey.tombstone.rawValue)
-        createOp = try jsonObject.optionalDecodableValueForKey(JSONKey.createOp.rawValue)
-        map = try jsonObject.optionalDecodableValueForKey(JSONKey.map.rawValue)
-        counter = try jsonObject.optionalDecodableValueForKey(JSONKey.counter.rawValue)
+        tombstone = try wireObject.boolValueForKey(WireKey.tombstone.rawValue)
+        createOp = try wireObject.optionalDecodableValueForKey(WireKey.createOp.rawValue)
+        map = try wireObject.optionalDecodableValueForKey(WireKey.map.rawValue)
+        counter = try wireObject.optionalDecodableValueForKey(WireKey.counter.rawValue)
     }
 
-    internal var toJSONObject: [String: JSONValue] {
-        var result: [String: JSONValue] = [
-            JSONKey.objectId.rawValue: .string(objectId),
-            JSONKey.siteTimeserials.rawValue: .object(siteTimeserials.mapValues { .string($0) }),
-            JSONKey.tombstone.rawValue: .bool(tombstone),
+    internal var toWireObject: [String: WireValue] {
+        var result: [String: WireValue] = [
+            WireKey.objectId.rawValue: .string(objectId),
+            WireKey.siteTimeserials.rawValue: .object(siteTimeserials.mapValues { .string($0) }),
+            WireKey.tombstone.rawValue: .bool(tombstone),
         ]
 
         if let createOp {
-            result[JSONKey.createOp.rawValue] = .object(createOp.toJSONObject)
+            result[WireKey.createOp.rawValue] = .object(createOp.toWireObject)
         }
         if let map {
-            result[JSONKey.map.rawValue] = .object(map.toJSONObject)
+            result[WireKey.map.rawValue] = .object(map.toWireObject)
         }
         if let counter {
-            result[JSONKey.counter.rawValue] = .object(counter.toJSONObject)
+            result[WireKey.counter.rawValue] = .object(counter.toWireObject)
         }
 
         return result
@@ -267,24 +275,24 @@ internal struct WireMapOp {
     internal var data: WireObjectData? // MOP2b
 }
 
-extension WireMapOp: JSONObjectCodable {
-    internal enum JSONKey: String {
+extension WireMapOp: WireObjectCodable {
+    internal enum WireKey: String {
         case key
         case data
     }
 
-    internal init(jsonObject: [String: JSONValue]) throws(InternalError) {
-        key = try jsonObject.stringValueForKey(JSONKey.key.rawValue)
-        data = try jsonObject.optionalDecodableValueForKey(JSONKey.data.rawValue)
+    internal init(wireObject: [String: WireValue]) throws(InternalError) {
+        key = try wireObject.stringValueForKey(WireKey.key.rawValue)
+        data = try wireObject.optionalDecodableValueForKey(WireKey.data.rawValue)
     }
 
-    internal var toJSONObject: [String: JSONValue] {
-        var result: [String: JSONValue] = [
-            JSONKey.key.rawValue: .string(key),
+    internal var toWireObject: [String: WireValue] {
+        var result: [String: WireValue] = [
+            WireKey.key.rawValue: .string(key),
         ]
 
         if let data {
-            result[JSONKey.data.rawValue] = .object(data.toJSONObject)
+            result[WireKey.data.rawValue] = .object(data.toWireObject)
         }
 
         return result
@@ -295,18 +303,18 @@ internal struct WireCounterOp {
     internal var amount: NSNumber // COP2a
 }
 
-extension WireCounterOp: JSONObjectCodable {
-    internal enum JSONKey: String {
+extension WireCounterOp: WireObjectCodable {
+    internal enum WireKey: String {
         case amount
     }
 
-    internal init(jsonObject: [String: JSONValue]) throws(InternalError) {
-        amount = try jsonObject.numberValueForKey(JSONKey.amount.rawValue)
+    internal init(wireObject: [String: WireValue]) throws(InternalError) {
+        amount = try wireObject.numberValueForKey(WireKey.amount.rawValue)
     }
 
-    internal var toJSONObject: [String: JSONValue] {
+    internal var toWireObject: [String: WireValue] {
         [
-            JSONKey.amount.rawValue: .number(amount),
+            WireKey.amount.rawValue: .number(amount),
         ]
     }
 }
@@ -316,29 +324,29 @@ internal struct WireMap {
     internal var entries: [String: WireMapEntry]? // MAP3b
 }
 
-extension WireMap: JSONObjectCodable {
-    internal enum JSONKey: String {
+extension WireMap: WireObjectCodable {
+    internal enum WireKey: String {
         case semantics
         case entries
     }
 
-    internal init(jsonObject: [String: JSONValue]) throws(InternalError) {
-        semantics = try jsonObject.wireEnumValueForKey(JSONKey.semantics.rawValue)
-        entries = try jsonObject.optionalObjectValueForKey(JSONKey.entries.rawValue)?.ablyLiveObjects_mapValuesWithTypedThrow { value throws(InternalError) in
+    internal init(wireObject: [String: WireValue]) throws(InternalError) {
+        semantics = try wireObject.wireEnumValueForKey(WireKey.semantics.rawValue)
+        entries = try wireObject.optionalObjectValueForKey(WireKey.entries.rawValue)?.ablyLiveObjects_mapValuesWithTypedThrow { value throws(InternalError) in
             guard case let .object(object) = value else {
-                throw JSONValueDecodingError.wrongTypeForKey(JSONKey.entries.rawValue, actualValue: value).toInternalError()
+                throw WireValueDecodingError.wrongTypeForKey(WireKey.entries.rawValue, actualValue: value).toInternalError()
             }
-            return try WireMapEntry(jsonObject: object)
+            return try WireMapEntry(wireObject: object)
         }
     }
 
-    internal var toJSONObject: [String: JSONValue] {
-        var result: [String: JSONValue] = [
-            JSONKey.semantics.rawValue: .number(semantics.rawValue as NSNumber),
+    internal var toWireObject: [String: WireValue] {
+        var result: [String: WireValue] = [
+            WireKey.semantics.rawValue: .number(semantics.rawValue as NSNumber),
         ]
 
         if let entries {
-            result[JSONKey.entries.rawValue] = .object(entries.mapValues { .object($0.toJSONObject) })
+            result[WireKey.entries.rawValue] = .object(entries.mapValues { .object($0.toWireObject) })
         }
 
         return result
@@ -349,19 +357,19 @@ internal struct WireCounter {
     internal var count: NSNumber? // CNT2a
 }
 
-extension WireCounter: JSONObjectCodable {
-    internal enum JSONKey: String {
+extension WireCounter: WireObjectCodable {
+    internal enum WireKey: String {
         case count
     }
 
-    internal init(jsonObject: [String: JSONValue]) throws(InternalError) {
-        count = try jsonObject.optionalNumberValueForKey(JSONKey.count.rawValue)
+    internal init(wireObject: [String: WireValue]) throws(InternalError) {
+        count = try wireObject.optionalNumberValueForKey(WireKey.count.rawValue)
     }
 
-    internal var toJSONObject: [String: JSONValue] {
-        var result: [String: JSONValue] = [:]
+    internal var toWireObject: [String: WireValue] {
+        var result: [String: WireValue] = [:]
         if let count {
-            result[JSONKey.count.rawValue] = .number(count)
+            result[WireKey.count.rawValue] = .number(count)
         }
         return result
     }
@@ -373,29 +381,29 @@ internal struct WireMapEntry {
     internal var data: WireObjectData // ME2c
 }
 
-extension WireMapEntry: JSONObjectCodable {
-    internal enum JSONKey: String {
+extension WireMapEntry: WireObjectCodable {
+    internal enum WireKey: String {
         case tombstone
         case timeserial
         case data
     }
 
-    internal init(jsonObject: [String: JSONValue]) throws(InternalError) {
-        tombstone = try jsonObject.optionalBoolValueForKey(JSONKey.tombstone.rawValue)
-        timeserial = try jsonObject.optionalStringValueForKey(JSONKey.timeserial.rawValue)
-        data = try jsonObject.decodableValueForKey(JSONKey.data.rawValue)
+    internal init(wireObject: [String: WireValue]) throws(InternalError) {
+        tombstone = try wireObject.optionalBoolValueForKey(WireKey.tombstone.rawValue)
+        timeserial = try wireObject.optionalStringValueForKey(WireKey.timeserial.rawValue)
+        data = try wireObject.decodableValueForKey(WireKey.data.rawValue)
     }
 
-    internal var toJSONObject: [String: JSONValue] {
-        var result: [String: JSONValue] = [
-            JSONKey.data.rawValue: .object(data.toJSONObject),
+    internal var toWireObject: [String: WireValue] {
+        var result: [String: WireValue] = [
+            WireKey.data.rawValue: .object(data.toWireObject),
         ]
 
         if let tombstone {
-            result[JSONKey.tombstone.rawValue] = .bool(tombstone)
+            result[WireKey.tombstone.rawValue] = .bool(tombstone)
         }
         if let timeserial {
-            result[JSONKey.timeserial.rawValue] = .string(timeserial)
+            result[WireKey.timeserial.rawValue] = .string(timeserial)
         }
 
         return result
@@ -412,8 +420,8 @@ internal struct WireObjectData {
     internal var string: String? // OD2f
 }
 
-extension WireObjectData: JSONObjectCodable {
-    internal enum JSONKey: String {
+extension WireObjectData: WireObjectCodable {
+    internal enum WireKey: String {
         case objectId
         case encoding
         case boolean
@@ -422,31 +430,31 @@ extension WireObjectData: JSONObjectCodable {
         case string
     }
 
-    internal init(jsonObject: [String: JSONValue]) throws(InternalError) {
-        objectId = try jsonObject.optionalStringValueForKey(JSONKey.objectId.rawValue)
-        encoding = try jsonObject.optionalStringValueForKey(JSONKey.encoding.rawValue)
-        boolean = try jsonObject.optionalBoolValueForKey(JSONKey.boolean.rawValue)
-        number = try jsonObject.optionalNumberValueForKey(JSONKey.number.rawValue)
-        string = try jsonObject.optionalStringValueForKey(JSONKey.string.rawValue)
+    internal init(wireObject: [String: WireValue]) throws(InternalError) {
+        objectId = try wireObject.optionalStringValueForKey(WireKey.objectId.rawValue)
+        encoding = try wireObject.optionalStringValueForKey(WireKey.encoding.rawValue)
+        boolean = try wireObject.optionalBoolValueForKey(WireKey.boolean.rawValue)
+        number = try wireObject.optionalNumberValueForKey(WireKey.number.rawValue)
+        string = try wireObject.optionalStringValueForKey(WireKey.string.rawValue)
     }
 
-    internal var toJSONObject: [String: JSONValue] {
-        var result: [String: JSONValue] = [:]
+    internal var toWireObject: [String: WireValue] {
+        var result: [String: WireValue] = [:]
 
         if let objectId {
-            result[JSONKey.objectId.rawValue] = .string(objectId)
+            result[WireKey.objectId.rawValue] = .string(objectId)
         }
         if let encoding {
-            result[JSONKey.encoding.rawValue] = .string(encoding)
+            result[WireKey.encoding.rawValue] = .string(encoding)
         }
         if let boolean {
-            result[JSONKey.boolean.rawValue] = .bool(boolean)
+            result[WireKey.boolean.rawValue] = .bool(boolean)
         }
         if let number {
-            result[JSONKey.number.rawValue] = .number(number)
+            result[WireKey.number.rawValue] = .number(number)
         }
         if let string {
-            result[JSONKey.string.rawValue] = .string(string)
+            result[WireKey.string.rawValue] = .string(string)
         }
 
         return result
