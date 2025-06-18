@@ -211,11 +211,9 @@ internal extension [String: JSONValue] {
         return boolValue
     }
 
-    /// If this dictionary contains a value for `key`, and this value has case `bool`, this returns the associated value.
+    /// If this dictionary contains a value for `key`, and this value has case `bool`, this returns the associated value. If this dictionary does not contain a value for `key`, or if the value for `key` has case `null`, it returns `nil`.
     ///
-    /// - Throws:
-    ///   - `JSONValueDecodingError.noValueForKey` if the key is absent
-    ///   - `JSONValueDecodingError.wrongTypeForKey` if the value does not have case `bool`
+    /// - Throws: `JSONValueDecodingError.wrongTypeForKey` if the value does not have case `bool` or `null`
     func optionalBoolValueForKey(_ key: String) throws(InternalError) -> Bool? {
         guard let value = self[key] else {
             return nil
