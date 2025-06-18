@@ -160,6 +160,9 @@ enum WireObjectMessageTests {
     }
 
     struct WireObjectOperationTests {
+        // @spec OOP3g
+        // @spec OOP3h
+        // @spec OOP3i
         @Test
         func decodesAllFields() throws {
             let wire: [String: WireValue] = [
@@ -182,8 +185,13 @@ enum WireObjectMessageTests {
             #expect(op.map?.entries?["key1"]?.data.string == "value1")
             #expect(op.map?.entries?["key1"]?.tombstone == false)
             #expect(op.counter?.count == 42)
-            #expect(op.nonce == "nonce1")
-            #expect(op.initialValueEncoding == "utf8")
+
+            // Per OOP3g we should not try and extract this
+            #expect(op.nonce == nil)
+            // Per OOP3h we should not try and extract this
+            #expect(op.initialValueEncoding == nil)
+            // Per OOP3i we should not try and extract this
+            #expect(op.initialValue == nil)
         }
 
         @Test

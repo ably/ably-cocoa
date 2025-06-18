@@ -158,7 +158,7 @@ internal struct WireObjectOperation {
     internal var map: WireMap? // OOP3e
     internal var counter: WireCounter? // OOP3f
     internal var nonce: String? // OOP3g
-    // TODO: Not yet clear how to encode / decode this property; I assume it will be properly specified later. Do in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/12
+    // TODO: Not yet clear how to encode this property; I assume it will be properly specified later. Do in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/12
     internal var initialValue: Data? // OOP3h
     internal var initialValueEncoding: String? // OOP3i
 }
@@ -183,8 +183,13 @@ extension WireObjectOperation: WireObjectCodable {
         counterOp = try wireObject.optionalDecodableValueForKey(WireKey.counterOp.rawValue)
         map = try wireObject.optionalDecodableValueForKey(WireKey.map.rawValue)
         counter = try wireObject.optionalDecodableValueForKey(WireKey.counter.rawValue)
-        nonce = try wireObject.optionalStringValueForKey(WireKey.nonce.rawValue)
-        initialValueEncoding = try wireObject.optionalStringValueForKey(WireKey.initialValueEncoding.rawValue)
+
+        // Do not access on inbound data, per OOP3g
+        nonce = nil
+        // Do not access on inbound data, per OOP3h
+        initialValue = nil
+        // Do not access on inbound data, per OOP3i
+        initialValueEncoding = nil
     }
 
     internal var toWireObject: [String: WireValue] {

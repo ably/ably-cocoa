@@ -117,9 +117,13 @@ internal extension ObjectOperation {
         counterOp = wireObjectOperation.counterOp
         map = wireObjectOperation.map.map { .init(wireMap: $0) }
         counter = wireObjectOperation.counter
-        nonce = wireObjectOperation.nonce
-        initialValue = wireObjectOperation.initialValue
-        initialValueEncoding = wireObjectOperation.initialValueEncoding
+
+        // Do not access on inbound data, per OOP3g
+        nonce = nil
+        // Do not access on inbound data, per OOP3h
+        initialValue = nil
+        // Do not access on inbound data, per OOP3i
+        initialValueEncoding = nil
     }
 
     /// Converts this `ObjectOperation` to a `WireObjectOperation`.
