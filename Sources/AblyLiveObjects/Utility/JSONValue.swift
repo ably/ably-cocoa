@@ -156,6 +156,41 @@ internal extension JSONValue {
     }
 }
 
+// MARK: - JSON objects and arrays
+
+/// A subset of ``JSONValue`` that has only `object` or `array` cases.
+internal enum JSONObjectOrArray: Equatable {
+    case object([String: JSONValue])
+    case array([JSONValue])
+
+    internal enum ConversionError: Swift.Error {
+        case incompatibleJSONValue(JSONValue)
+    }
+
+    internal init(jsonValue: JSONValue) throws(InternalError) {
+        self = switch jsonValue {
+        case let .array(array):
+            .array(array)
+        case let .object(object):
+            .object(object)
+        case .bool, .number, .string, .null:
+            throw ConversionError.incompatibleJSONValue(jsonValue).toInternalError()
+        }
+    }
+}
+
+extension JSONObjectOrArray: ExpressibleByDictionaryLiteral {
+    internal init(dictionaryLiteral elements: (String, JSONValue)...) {
+        self = .object(.init(uniqueKeysWithValues: elements))
+    }
+}
+
+extension JSONObjectOrArray: ExpressibleByArrayLiteral {
+    internal init(arrayLiteral elements: JSONValue...) {
+        self = .array(elements)
+    }
+}
+
 internal extension [String: JSONValue] {
     /// Converts a dictionary that has string keys and `JSONValue` values into an input for Foundation's `JSONSerialization`.
     var toJSONSerializationInput: [String: Any] {
@@ -205,5 +240,53 @@ internal extension JSONValue {
         case .null:
             .null
         }
+    }
+}
+
+// MARK: Serializing to and deserializing from a JSON string
+
+internal extension JSONObjectOrArray {
+    enum DecodingError: Swift.Error {
+        case incompatibleJSONValue(JSONValue)
+    }
+
+    /// Deserializes a JSON string into a `JSONObjectOrArray`. Throws an error if not given a valid JSON string.
+    init(jsonString: String) throws(InternalError) {
+        let data = Data(jsonString.utf8)
+        let jsonSerializationOutput: Any
+        do {
+            jsonSerializationOutput = try JSONSerialization.jsonObject(with: data)
+        } catch {
+            throw error.toInternalError()
+        }
+
+        let jsonValue = JSONValue(jsonSerializationOutput: jsonSerializationOutput)
+        try self.init(jsonValue: jsonValue)
+    }
+
+    /// Converts a `JSONObjectOrArray` into an input for Foundation's `JSONSerialization`.
+    private var toJSONSerializationInput: Any {
+        switch self {
+        case let .array(array):
+            array.toJSONSerializationInput
+        case let .object(object):
+            object.toJSONSerializationInput
+        }
+    }
+
+    /// Serializes a `JSONObjectOrArray` to a JSON string.
+    var toJSONString: String {
+        let data: Data
+        do {
+            data = try JSONSerialization.data(withJSONObject: toJSONSerializationInput)
+        } catch {
+            preconditionFailure("Unexpected error encoding to JSON: \(error)")
+        }
+
+        guard let string = String(data: data, encoding: .utf8) else {
+            preconditionFailure("Unexpected failure to decode output of JSONSerialization as UTF-8")
+        }
+
+        return string
     }
 }
