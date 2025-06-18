@@ -1,6 +1,8 @@
 internal import AblyPlugin
 import Foundation
 
+// This file contains the ObjectMessage types that we send and receive over the wire. We convert them to and from the corresponding non-wire types (e.g. `InboundObjectMessage`) for use within the codebase.
+
 /// An `ObjectMessage` received in the `state` property of an `OBJECT` or `OBJECT_SYNC` `ProtocolMessage`.
 internal struct InboundWireObjectMessage {
     // TODO: Spec has `id`, `connectionId`, `timestamp`, `clientId`, `serial`, `sideCode` as non-nullable but I don't think this is right; raised https://github.com/ably/specification/issues/334
