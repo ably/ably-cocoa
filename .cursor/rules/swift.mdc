@@ -8,3 +8,6 @@ When writing Swift:
 - Be sure to satisfy SwiftLint's `explicit_acl` rule ("All declarations should specify Access Control Level keywords explicitly).
     - When writing an `extension` of a type, favour placing the access level on the declaration of the extension rather than each of its individual members.
     - This does not apply when writing test code.
+- When writing initializer expressions, when the type that is being initialized can be inferred, favour using the implicit `.init(…)` form instead of explicitly writing the type name.
+- When writing enum value expressions, when the type that is being initialized can be inferred, favour using the implicit `.caseName` form instead of explicitly writing the type name.
+- When writing JSONValue or WireValue types, favour using the literal syntax enabled by their conformance to the `ExpressibleBy*Literal` protocols where possible.
