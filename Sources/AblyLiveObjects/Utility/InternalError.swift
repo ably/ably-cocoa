@@ -8,8 +8,8 @@ internal enum InternalError: Error {
     case other(Other)
 
     internal enum Other {
-        case jsonValueDecodingError(JSONValueDecodingError)
-        case inboundWireObjectMessageDecodingError(InboundWireObjectMessage.DecodingError)
+        // In ably-chat-swift we have different cases here for different types of errors thrown within the codebase, but we didn't figure out what to actually _do_ with these different types of errors (see implementation of toARTErrorInfo which squashes everything down to the same error), so let's not bother with that for now
+        case generic(Error)
     }
 
     /// Returns the error that this should be converted to when exposed via the SDK's public API.
@@ -24,20 +24,14 @@ internal enum InternalError: Error {
     }
 }
 
+internal extension Error {
+    func toInternalError() -> InternalError {
+        .other(.generic(self))
+    }
+}
+
 internal extension ARTErrorInfo {
     func toInternalError() -> InternalError {
         .errorInfo(self)
-    }
-}
-
-internal extension JSONValueDecodingError {
-    func toInternalError() -> InternalError {
-        .other(.jsonValueDecodingError(self))
-    }
-}
-
-internal extension InboundWireObjectMessage.DecodingError {
-    func toInternalError() -> InternalError {
-        .other(.inboundWireObjectMessageDecodingError(self))
     }
 }
