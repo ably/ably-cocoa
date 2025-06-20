@@ -57,7 +57,13 @@ internal final class DefaultInternalPlugin: NSObject, AblyPlugin.LiveObjectsInte
         }
     }
 
-    internal func decodeObjectMessage(_ serialized: [String: Any], context: DecodingContextProtocol, error errorPtr: AutoreleasingUnsafeMutablePointer<ARTErrorInfo?>?) -> (any ObjectMessageProtocol)? {
+    internal func decodeObjectMessage(
+        _ serialized: [String: Any],
+        context: DecodingContextProtocol,
+        // TODO: use
+        format: EncodingFormat,
+        error errorPtr: AutoreleasingUnsafeMutablePointer<ARTErrorInfo?>?,
+    ) -> (any ObjectMessageProtocol)? {
         let jsonObject = JSONValue.objectFromAblyPluginData(serialized)
 
         do {
@@ -73,7 +79,11 @@ internal final class DefaultInternalPlugin: NSObject, AblyPlugin.LiveObjectsInte
         }
     }
 
-    internal func encodeObjectMessage(_ publicObjectMessage: any AblyPlugin.ObjectMessageProtocol) -> [String: Any] {
+    internal func encodeObjectMessage(
+        _ publicObjectMessage: any AblyPlugin.ObjectMessageProtocol,
+        // TODO: use
+        format: EncodingFormat,
+    ) -> [String: Any] {
         guard let outboundObjectMessageBox = publicObjectMessage as? ObjectMessageBox<OutboundObjectMessage> else {
             preconditionFailure("Expected to receive the same OutboundObjectMessage type as we emit")
         }
