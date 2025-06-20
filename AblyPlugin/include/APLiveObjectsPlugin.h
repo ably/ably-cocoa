@@ -1,4 +1,5 @@
 #import <Foundation/Foundation.h>
+#import "APEncodingFormat.h"
 
 @class ARTRealtimeChannel;
 @class ARTErrorInfo;
@@ -35,21 +36,25 @@ NS_SWIFT_SENDABLE
 /// Decodes an `ObjectMessage` received over the wire.
 ///
 /// Parameters:
-/// - serialized: A dictionary that contains the representation of the `ObjectMessage` received over the wire. You should expect to find the same types of values here as you would in the output of Foundation's `JSONSerialization`.
+/// - serialized: A dictionary that contains the representation of the `ObjectMessage` received over the wire. To find out what kinds of values you should expect to find here for a given `format`, see th decoding rules described in `APEncodingFormat`.
 /// - context: Contains information that may be needed in the decoding, such as information about the containing `ProtocolMessage`.
+/// - format: The format that was used to create `serialized`, and whose rules should be used when decoding the `ObjectMessage`.
 ///
 /// Returns: A `ObjectMessageProtocol` object that ably-cocoa can later pass to this plugin's `-handleObjectProtocolMessageWithObjectMessages:channel:` method, or `nil` if decoding fails (in which case `error` must be populated).
 - (nullable id<APObjectMessageProtocol>)decodeObjectMessage:(NSDictionary<NSString *, id> *)serialized
                                                     context:(id<APDecodingContextProtocol>)context
+                                                     format:(APEncodingFormat)format
                                                       error:(ARTErrorInfo *_Nullable *_Nullable)error;
 
 /// Encodes an `ObjectMessage` to be sent over the wire.
 ///
 /// Parameters:
 /// - objectMessage: An `ObjectMessage` that this plugin earlier passed to `APPluginAPI`'s `-sendStateWithObjectMessages:channel:completion:`.
+/// - format: The format whose rules should be used when encoding the `ObjectMessage`.
 ///
-/// Returns: An object that ably-cocoa can pass to Foundation's `JSONSerialization`.
-- (NSDictionary<NSString *, id> *)encodeObjectMessage:(id<APObjectMessageProtocol>)objectMessage;
+/// Returns: See the encoding rules described in `APEncodingFormat`.
+- (NSDictionary<NSString *, id> *)encodeObjectMessage:(id<APObjectMessageProtocol>)objectMessage
+                                               format:(APEncodingFormat)format;
 
 /// Called when a channel received an `ATTACHED` `ProtocolMessage`. (This is copied from ably-js, will document this method properly once exact meaning decided.)
 ///
