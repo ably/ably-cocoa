@@ -2,7 +2,7 @@ import Ably
 internal import AblyPlugin
 
 /// The class that provides the public API for interacting with LiveObjects, via the ``ARTRealtimeChannel/objects`` property.
-internal class DefaultObjects: Objects {
+internal class DefaultRealtimeObjects: RealtimeObjects {
     private weak var channel: ARTRealtimeChannel?
     private let logger: AblyPlugin.Logger
     private let pluginAPI: AblyPlugin.PluginAPIProtocol
@@ -21,7 +21,7 @@ internal class DefaultObjects: Objects {
         (receivedObjectSyncProtocolMessages, receivedObjectSyncProtocolMessagesContinuation) = AsyncStream.makeStream()
     }
 
-    // MARK: `Objects` protocol
+    // MARK: `RealtimeObjects` protocol
 
     internal func getRoot() async throws(ARTErrorInfo) -> any LiveMap {
         notYetImplemented()

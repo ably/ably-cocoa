@@ -5,18 +5,18 @@ import Ably
 /// - Parameter update: The update object describing the changes made to the object.
 public typealias LiveObjectUpdateCallback<T> = (_ update: T) -> Void
 
-/// The callback used for the events emitted by ``Objects``.
+/// The callback used for the events emitted by ``RealtimeObjects``.
 public typealias ObjectsEventCallback = () -> Void
 
 /// The callback used for the lifecycle events emitted by ``LiveObject``.
 public typealias LiveObjectLifecycleEventCallback = () -> Void
 
-/// A function passed to ``Objects/batch(callback:)`` to group multiple Objects operations into a single channel message.
+/// A function passed to ``RealtimeObjects/batch(callback:)`` to group multiple Objects operations into a single channel message.
 ///
 /// - Parameter batchContext: A ``BatchContext`` object that allows grouping Objects operations for this batch.
 public typealias BatchCallback = (_ batchContext: BatchContext) -> Void
 
-/// Describes the events emitted by an ``Objects`` object.
+/// Describes the events emitted by an ``RealtimeObjects`` object.
 public enum ObjectsEvent {
     /// The local copy of Objects on a channel is currently being synchronized with the Ably service.
     case syncing
@@ -31,7 +31,7 @@ public enum LiveObjectLifecycleEvent {
 }
 
 /// Enables the Objects to be read, modified and subscribed to for a channel.
-public protocol Objects {
+public protocol RealtimeObjects {
     /// Retrieves the root ``LiveMap`` object for Objects on a channel.
     func getRoot() async throws(ARTErrorInfo) -> any LiveMap
 
@@ -91,7 +91,7 @@ public protocol OnObjectsEventResponse {
 
 /// Enables grouping multiple Objects operations together by providing `BatchContext*` wrapper objects.
 public protocol BatchContext {
-    /// Mirrors the ``Objects/getRoot()`` method and returns a ``BatchContextLiveMap`` wrapper for the root object on a channel.
+    /// Mirrors the ``RealtimeObjects/getRoot()`` method and returns a ``BatchContextLiveMap`` wrapper for the root object on a channel.
     ///
     /// - Returns: A ``BatchContextLiveMap`` object.
     func getRoot() -> BatchContextLiveMap
