@@ -8,4 +8,13 @@ When writing tests:
 - Use the Swift Testing framework (`import Testing`), not XCTest.
 - Do not use `fatalError` in response to a test expectation failure. Favour the usage of Swift Testing's `#require` macro.
 - Only add labels to test cases or suites when the label is different to the name of the suite `struct` or test method.
-- When writing tests, follow the guidelines given under "Attributing tests to a spec point" in the file `CONTRIBUTING.md` in order to tag the unit tests with the relevant specification points. Pay particular attention to the difference between the meaning of `@spec` and `@specPartial` and be sure not to write `@spec` multiple times for the same specification point.
+- When writing tests, follow the guidelines given under "Attributing tests to a spec point" in the file `CONTRIBUTING.md` in order to tag the unit tests with the relevant specification points. Make sure to follow the exact format of the comments as described in that file. Pay particular attention to the difference between the meaning of `@spec` and `@specPartial` and be sure not to write `@spec` multiple times for the same specification point.
+- When writing tests, make sure to add comments that explain when some piece of test data is not important for the scenario being tested.
+- When writing tests, run the tests to check they pass.
+- When you need to import the following modules in the tests, do so in the following way:
+    - Ably: use `import Ably`
+    - AblyLiveObjects: use `@testable import AblyLiveObjects`
+    - AblyPlugin: use `import AblyPlugin`; _do not_ do `internal import`
+- When you need to pass a logger to internal components in the tests, pass `TestLogger()`.
+- When you need to unwrap an optional value in the tests, favour using `#require` instead of `guard let`.
+- When creating `testsOnly_` property declarations, do not write generic comments of the form "Test-only access to the private createOperationIsMerged property"; the meaning of these properties is already well understood.
