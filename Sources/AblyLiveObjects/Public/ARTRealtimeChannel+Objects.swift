@@ -7,12 +7,12 @@ public extension ARTRealtimeChannel {
         internallyTypedObjects
     }
 
-    private var internallyTypedObjects: DefaultLiveObjects {
+    private var internallyTypedObjects: DefaultObjects {
         DefaultInternalPlugin.objectsProperty(for: self, pluginAPI: AblyPlugin.PluginAPI.sharedInstance())
     }
 
-    /// For tests to access the non-public API of `DefaultLiveObjects`.
-    internal var testsOnly_internallyTypedObjects: DefaultLiveObjects {
+    /// For tests to access the non-public API of `DefaultObjects`.
+    internal var testsOnly_internallyTypedObjects: DefaultObjects {
         internallyTypedObjects
     }
 }

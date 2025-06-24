@@ -2,7 +2,7 @@ import Ably
 internal import AblyPlugin
 
 /// The class that provides the public API for interacting with LiveObjects, via the ``ARTRealtimeChannel/objects`` property.
-internal class DefaultLiveObjects: Objects {
+internal class DefaultObjects: Objects {
     private weak var channel: ARTRealtimeChannel?
     private let logger: AblyPlugin.Logger
     private let pluginAPI: AblyPlugin.PluginAPIProtocol
