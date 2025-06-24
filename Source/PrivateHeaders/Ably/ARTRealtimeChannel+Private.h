@@ -13,6 +13,7 @@
 
 @class ARTProtocolMessage;
 @class ARTRealtimePresenceInternal;
+@class ARTRealtimeAnnotationsInternal;
 @class ARTChannelStateChangeParams;
 @class ARTAttachRequestParams;
 
@@ -21,6 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTRealtimeChannelInternal : ARTChannel
 
 @property (readonly) ARTRealtimePresenceInternal *presence;
+@property (readonly) ARTRealtimeAnnotationsInternal *annotations;
+
 #if TARGET_OS_IPHONE
 @property (readonly) ARTPushChannelInternal *push;
 #endif

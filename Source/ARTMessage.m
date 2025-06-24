@@ -30,9 +30,16 @@
     [description deleteCharactersInRange:NSMakeRange(description.length - (description.length>2 ? 2:0), 2)];
     [description appendFormat:@",\n"];
     [description appendFormat:@" name: %@\n", self.name];
-    if (self.extras) {
-        [description appendFormat:@" extras: %@\n", self.extras];
-    }
+    [description appendFormat:@" action: %@\n", ARTMessageActionToStr(self.action)];
+    [description appendFormat:@" serial: %@\n", self.serial];
+    [description appendFormat:@" updateSerial: %@\n", self.updateSerial];
+    [description appendFormat:@" version: %@\n", self.version];
+    [description appendFormat:@" createdAt: %@\n", self.createdAt];
+    [description appendFormat:@" updatedAt: %@\n", self.updatedAt];
+    [description appendFormat:@" refType: %@\n", self.refType];
+    [description appendFormat:@" refSerial: %@\n", self.refSerial];
+    [description appendFormat:@" operation: %@\n", self.operation];
+    [description appendFormat:@" summary: %@\n", self.summary];
     [description appendFormat:@"}"];
     return description;
 }
@@ -49,6 +56,7 @@
     message.operation = self.operation;
     message.refType = self.refType;
     message.refSerial = self.refSerial;
+    message.summary = self.summary;
     return message;
 }
 
@@ -58,6 +66,22 @@
 }
 
 @end
+
+NSString *ARTMessageActionToStr(ARTMessageAction action) {
+    switch (action) {
+        case ARTMessageActionCreate:
+            return @"Create";
+        case ARTMessageActionUpdate:
+            return @"Update";
+        case ARTMessageActionDelete:
+            return @"Delete";
+        case ARTMessageActionMeta:
+            return @"Meta";
+        case ARTMessageActionMessageSummary:
+            return @"Summary";
+    }
+    return @"Unknown";
+}
 
 @implementation ARTMessage (Decoding)
 

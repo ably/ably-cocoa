@@ -3,6 +3,7 @@
 #import "ARTWrapperSDKProxyOptions.h"
 #import "ARTWrapperSDKProxyPushChannel+Private.h"
 #import "ARTWrapperSDKProxyRealtimePresence+Private.h"
+#import "ARTWrapperSDKProxyRealtimeAnnotations+Private.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -27,6 +28,8 @@ NS_ASSUME_NONNULL_END
 #endif
         _presence = [[ARTWrapperSDKProxyRealtimePresence alloc] initWithRealtimePresence:channel.presence
                                                                             proxyOptions:proxyOptions];
+        _annotations = [[ARTWrapperSDKProxyRealtimeAnnotations alloc] initWithRealtimeAnnotations:channel.annotations
+                                                                                     proxyOptions:proxyOptions];
     }
 
     return self;

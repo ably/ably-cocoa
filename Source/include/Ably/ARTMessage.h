@@ -35,6 +35,8 @@ typedef NS_ENUM(NSUInteger, ARTMessageAction) {
     ARTMessageActionMessageSummary,
 };
 
+NSString *_Nonnull ARTMessageActionToStr(ARTMessageAction action);
+
 NS_ASSUME_NONNULL_BEGIN
 
 @class ARTMessageOperation;
@@ -74,6 +76,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// An object containing some optional values for the operation performed.
 @property (nonatomic, strong, nullable) ARTMessageOperation *operation;
+
+/// An annotations summary for the message. The keys of the dict are annotation types, and the values are aggregated summaries for that annotation type.
+@property (nonatomic, copy, nullable) ARTJsonObject *summary;
 
 /**
  * Construct an `ARTMessage` object with an event name and payload.

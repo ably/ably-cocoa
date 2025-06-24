@@ -57,6 +57,7 @@
     [description appendFormat:@" timestamp: %@,\n", self.timestamp];
     [description appendFormat:@" encoding: %@,\n", self.encoding];
     [description appendFormat:@" data: %@\n", self.data];
+    [description appendFormat:@" extras: %@\n", self.extras];
     [description appendFormat:@"}"];
     return description;
 }
