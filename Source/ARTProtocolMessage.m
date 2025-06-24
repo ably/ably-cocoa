@@ -21,6 +21,7 @@
         _timestamp = nil;
         _messages = nil;
         _presence = nil;
+        _annotations = nil;
         _flags = 0;
         _error = nil;
         _connectionDetails = nil;
@@ -52,6 +53,7 @@
     [description appendFormat:@" flags.resumed: %@,\n", NSStringFromBOOL(self.resumed)];
     [description appendFormat:@" messages: %@\n", self.messages];
     [description appendFormat:@" presence: %@\n", self.presence];
+    [description appendFormat:@" annotations: %@\n", self.annotations];
     [description appendFormat:@" params: %@\n", self.params];
     [description appendFormat:@"}"];
     return description;
@@ -70,6 +72,7 @@
     pm.timestamp = self.timestamp;
     pm.messages = self.messages;
     pm.presence = self.presence;
+    pm.annotations = self.annotations;
     pm.flags = self.flags;
     pm.error = self.error;
     pm.connectionDetails = self.connectionDetails;
@@ -100,6 +103,9 @@
          case ARTProtocolMessagePresence:
              proposed = [self.presence arrayByAddingObjectsFromArray:src.presence];
              break;
+         case ARTProtocolMessageAnnotation:
+             proposed = [self.annotations arrayByAddingObjectsFromArray:src.annotations];
+             break;
          default:
              proposed = nil;
              return NO;
@@ -119,6 +125,9 @@
              return YES;
          case ARTProtocolMessagePresence:
              self.presence = proposed;
+             return YES;
+         case ARTProtocolMessageAnnotation:
+             self.annotations = proposed;
              return YES;
          default:
              return NO;
@@ -156,7 +165,7 @@
 }
 
 - (BOOL)ackRequired {
-    return self.action == ARTProtocolMessageMessage || self.action == ARTProtocolMessagePresence;
+    return self.action == ARTProtocolMessageMessage || self.action == ARTProtocolMessagePresence || self.action == ARTProtocolMessageAnnotation;
 }
 
 - (BOOL)hasPresence {
@@ -215,6 +224,8 @@ NSString* ARTProtocolMessageActionToStr(ARTProtocolMessageAction action) {
             return @"Sync"; //16
         case ARTProtocolMessageAuth:
             return @"Auth"; //17
+        case ARTProtocolMessageAnnotation:
+            return @"Annotation"; //21
     }
 
     // Because we blindly assign the action field of a ProtocolMessage received over the wire to a variable of type ARTProtocolMessageAction, we can't rely on the compiler's exhaustive checking of switch statements for ARTProtocolMessageAction.
