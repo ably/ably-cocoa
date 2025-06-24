@@ -1,0 +1,554 @@
+@testable import AblyLiveObjects
+import AblyPlugin
+import Foundation
+
+// Note that this file was created entirely by Cursor upon my giving it some guidelines — I have not checked its contents in any detail and it may well turn out that there are mistakes here which we need to fix in the future.
+
+/// Factory for creating test objects with sensible defaults and override capabilities.
+/// This follows a pattern similar to Ruby's factory_bot to reduce boilerplate in tests.
+///
+/// ## Key Principles
+///
+/// 1. **Sensible Defaults**: All factory methods provide reasonable default values
+/// 2. **Override Capability**: You can override any default value when needed
+/// 3. **No Assertions Against Defaults**: Tests should specify input values explicitly when making assertions about outputs
+/// 4. **Common Scenarios**: Factory methods exist for common test scenarios
+///
+/// ## Usage Examples
+///
+/// ### Creating ObjectState instances
+/// ```swift
+/// // Basic map object state with defaults
+/// let mapState = TestFactories.mapObjectState()
+///
+/// // Map object state with custom objectId and entries
+/// let (key, entry) = TestFactories.stringMapEntry(key: "customKey", value: "customValue")
+/// let customMapState = TestFactories.mapObjectState(
+///     objectId: "map:custom@123",
+///     entries: [key: entry]
+/// )
+///
+/// // Counter object state with custom count
+/// let counterState = TestFactories.counterObjectState(count: 100)
+/// ```
+///
+/// ### Creating InboundObjectMessage instances
+/// ```swift
+/// // Simple map message
+/// let mapMessage = TestFactories.simpleMapMessage(
+///     objectId: "map:test@123",
+///     key: "testKey",
+///     value: "testValue"
+/// )
+///
+/// // Counter message
+/// let counterMessage = TestFactories.simpleCounterMessage(
+///     objectId: "counter:test@123",
+///     count: 42
+/// )
+///
+/// // Root message with multiple entries
+/// let rootMessage = TestFactories.rootMessageWithEntries([
+///     "key1": "value1",
+///     "key2": "value2"
+/// ])
+/// ```
+///
+/// ### Creating Map Entries
+/// ```swift
+/// // String entry
+/// let (stringKey, stringEntry) = TestFactories.stringMapEntry(
+///     key: "stringKey",
+///     value: "stringValue"
+/// )
+///
+/// // Number entry
+/// let (numberKey, numberEntry) = TestFactories.numberMapEntry(
+///     key: "numberKey",
+///     value: NSNumber(value: 123.45)
+/// )
+///
+/// // Boolean entry
+/// let (boolKey, boolEntry) = TestFactories.booleanMapEntry(
+///     key: "boolKey",
+///     value: true
+/// )
+///
+/// // Object reference entry
+/// let (refKey, refEntry) = TestFactories.objectReferenceMapEntry(
+///     key: "refKey",
+///     objectId: "map:referenced@123"
+/// )
+/// ```
+///
+/// ## Migration Guide
+///
+/// When migrating existing tests to use factories:
+///
+/// 1. **Replace direct object creation** with factory calls
+/// 2. **Remove arbitrary values** that don't affect the test
+/// 3. **Keep only the values** that are relevant to the test assertions
+/// 4. **Use descriptive factory method names** to make test intent clear
+///
+/// ### Before (with boilerplate)
+/// ```swift
+/// let state = ObjectState(
+///     objectId: "arbitrary-id",
+///     siteTimeserials: ["site1": "ts1"],
+///     tombstone: false,
+///     createOp: nil,
+///     map: nil,
+///     counter: WireObjectsCounter(count: 42), // Only this value matters
+/// )
+/// ```
+///
+/// ### After (using factory)
+/// ```swift
+/// let state = TestFactories.counterObjectState(count: 42) // Only specify what matters
+/// ```
+///
+/// ## Best Practices
+///
+/// 1. **Use the most specific factory method** available for your use case
+/// 2. **Override only the values** that are relevant to your test
+/// 3. **Use descriptive parameter names** when overriding defaults
+/// 4. **Document complex factory usage** with comments when needed
+/// 5. **Group related factory calls** together for readability
+///
+/// ## Available Factory Methods
+///
+/// ### ObjectState Factories
+/// - `objectState()` - Basic ObjectState with defaults
+/// - `mapObjectState()` - ObjectState for map objects
+/// - `counterObjectState()` - ObjectState for counter objects
+/// - `rootObjectState()` - ObjectState for root object
+///
+/// ### InboundObjectMessage Factories
+/// - `inboundObjectMessage()` - Basic InboundObjectMessage with defaults
+/// - `mapObjectMessage()` - InboundObjectMessage with map ObjectState
+/// - `counterObjectMessage()` - InboundObjectMessage with counter ObjectState
+/// - `rootObjectMessage()` - InboundObjectMessage with root ObjectState
+/// - `objectMessageWithoutState()` - InboundObjectMessage without ObjectState
+/// - `simpleMapMessage()` - Simple map message with one string entry
+/// - `simpleCounterMessage()` - Simple counter message
+/// - `rootMessageWithEntries()` - Root message with multiple string entries
+///
+/// ### ObjectOperation Factories
+/// - `objectOperation()` - Basic ObjectOperation with defaults
+/// - `mapCreateOperation()` - Map create operation
+/// - `counterCreateOperation()` - Counter create operation
+///
+/// ### Map Entry Factories
+/// - `mapEntry()` - Basic ObjectsMapEntry with defaults
+/// - `stringMapEntry()` - Map entry with string data
+/// - `numberMapEntry()` - Map entry with number data
+/// - `booleanMapEntry()` - Map entry with boolean data
+/// - `bytesMapEntry()` - Map entry with bytes data
+/// - `objectReferenceMapEntry()` - Map entry with object reference data
+///
+/// ### Other Factories
+/// - `objectsMap()` - Basic ObjectsMap with defaults
+/// - `objectsMapWithStringEntries()` - ObjectsMap with string entries
+/// - `wireObjectsCounter()` - WireObjectsCounter with defaults
+///
+/// ## Extending the Factory System
+///
+/// When adding new factory methods, follow these patterns:
+///
+/// 1. **Use descriptive method names** that indicate the type and purpose
+/// 2. **Provide sensible defaults** for all parameters
+/// 3. **Group related methods** together with MARK comments
+/// 4. **Include comprehensive documentation** explaining the purpose and usage
+/// 5. **Follow the existing naming conventions** (e.g., `objectState()`, `mapObjectState()`)
+/// 6. **Consider common test scenarios** and create convenience methods for them
+/// 7. **Ensure all factory methods are static** for easy access
+/// 8. **Use type-safe parameters** and avoid magic strings/numbers
+/// 9. **Include examples in documentation** showing typical usage patterns
+/// 10. **Test the factory methods** to ensure they work correctly
+///
+/// ### Example of Adding a New Factory Method
+/// ```swift
+/// /// Creates a LiveMap with specific data for testing
+/// /// - Parameters:
+/// ///   - objectId: The object ID for the map (default: "map:test@123")
+/// ///   - entries: Dictionary of key-value pairs to populate the map
+/// ///   - delegate: The delegate for the map (default: MockLiveMapObjectPoolDelegate())
+/// /// - Returns: A configured DefaultLiveMap instance
+/// static func liveMap(
+///     objectId: String = "map:test@123",
+///     entries: [String: String] = [:],
+///     delegate: LiveMapObjectPoolDelegate = MockLiveMapObjectPoolDelegate()
+/// ) -> DefaultLiveMap {
+///     let map = DefaultLiveMap.createZeroValued(delegate: delegate)
+///     // Configure map with entries...
+///     return map
+/// }
+/// ```
+struct TestFactories {
+    // MARK: - ObjectState Factory
+
+    /// Creates an ObjectState with sensible defaults
+    static func objectState(
+        objectId: String = "test:object@123",
+        siteTimeserials: [String: String] = ["site1": "ts1"],
+        tombstone: Bool = false,
+        createOp: ObjectOperation? = nil,
+        map: ObjectsMap? = nil,
+        counter: WireObjectsCounter? = nil,
+    ) -> ObjectState {
+        ObjectState(
+            objectId: objectId,
+            siteTimeserials: siteTimeserials,
+            tombstone: tombstone,
+            createOp: createOp,
+            map: map,
+            counter: counter,
+        )
+    }
+
+    /// Creates an ObjectState for a map object
+    static func mapObjectState(
+        objectId: String = "map:test@123",
+        siteTimeserials: [String: String] = ["site1": "ts1"],
+        tombstone: Bool = false,
+        createOp: ObjectOperation? = nil,
+        entries: [String: ObjectsMapEntry]? = nil,
+    ) -> ObjectState {
+        objectState(
+            objectId: objectId,
+            siteTimeserials: siteTimeserials,
+            tombstone: tombstone,
+            createOp: createOp,
+            map: ObjectsMap(
+                semantics: .known(.lww),
+                entries: entries,
+            ),
+            counter: nil,
+        )
+    }
+
+    /// Creates an ObjectState for a counter object
+    static func counterObjectState(
+        objectId: String = "counter:test@123",
+        siteTimeserials: [String: String] = ["site1": "ts1"],
+        tombstone: Bool = false,
+        createOp: ObjectOperation? = nil,
+        count: Int? = 42,
+    ) -> ObjectState {
+        objectState(
+            objectId: objectId,
+            siteTimeserials: siteTimeserials,
+            tombstone: tombstone,
+            createOp: createOp,
+            map: nil,
+            counter: WireObjectsCounter(count: count.map { NSNumber(value: $0) }),
+        )
+    }
+
+    /// Creates an ObjectState for the root object
+    static func rootObjectState(
+        siteTimeserials: [String: String] = ["site1": "ts1"],
+        entries: [String: ObjectsMapEntry]? = nil,
+    ) -> ObjectState {
+        mapObjectState(
+            objectId: "root",
+            siteTimeserials: siteTimeserials,
+            entries: entries,
+        )
+    }
+
+    // MARK: - InboundObjectMessage Factory
+
+    /// Creates an InboundObjectMessage with sensible defaults
+    static func inboundObjectMessage(
+        id: String? = nil,
+        clientId: String? = nil,
+        connectionId: String? = nil,
+        extras: [String: JSONValue]? = nil,
+        timestamp: Date? = nil,
+        operation: ObjectOperation? = nil,
+        object: ObjectState? = nil,
+        serial: String? = nil,
+        siteCode: String? = nil,
+    ) -> InboundObjectMessage {
+        InboundObjectMessage(
+            id: id,
+            clientId: clientId,
+            connectionId: connectionId,
+            extras: extras,
+            timestamp: timestamp,
+            operation: operation,
+            object: object,
+            serial: serial,
+            siteCode: siteCode,
+        )
+    }
+
+    /// Creates an InboundObjectMessage with a map ObjectState
+    static func mapObjectMessage(
+        objectId: String = "map:test@123",
+        siteTimeserials: [String: String] = ["site1": "ts1"],
+        entries: [String: ObjectsMapEntry]? = nil,
+    ) -> InboundObjectMessage {
+        inboundObjectMessage(
+            object: mapObjectState(
+                objectId: objectId,
+                siteTimeserials: siteTimeserials,
+                entries: entries,
+            ),
+        )
+    }
+
+    /// Creates an InboundObjectMessage with a counter ObjectState
+    static func counterObjectMessage(
+        objectId: String = "counter:test@123",
+        siteTimeserials: [String: String] = ["site1": "ts1"],
+        count: Int? = 42,
+    ) -> InboundObjectMessage {
+        inboundObjectMessage(
+            object: counterObjectState(
+                objectId: objectId,
+                siteTimeserials: siteTimeserials,
+                count: count,
+            ),
+        )
+    }
+
+    /// Creates an InboundObjectMessage with a root ObjectState
+    static func rootObjectMessage(
+        siteTimeserials: [String: String] = ["site1": "ts1"],
+        entries: [String: ObjectsMapEntry]? = nil,
+    ) -> InboundObjectMessage {
+        inboundObjectMessage(
+            object: rootObjectState(
+                siteTimeserials: siteTimeserials,
+                entries: entries,
+            ),
+        )
+    }
+
+    /// Creates an InboundObjectMessage without an ObjectState
+    static func objectMessageWithoutState() -> InboundObjectMessage {
+        inboundObjectMessage(object: nil)
+    }
+
+    // MARK: - ObjectOperation Factory
+
+    /// Creates an ObjectOperation with sensible defaults
+    static func objectOperation(
+        action: WireEnum<ObjectOperationAction> = .known(.mapCreate),
+        objectId: String = "test:object@123",
+        mapOp: ObjectsMapOp? = nil,
+        counterOp: WireObjectsCounterOp? = nil,
+        map: ObjectsMap? = nil,
+        counter: WireObjectsCounter? = nil,
+        nonce: String? = nil,
+        initialValue: Data? = nil,
+        initialValueEncoding: String? = nil,
+    ) -> ObjectOperation {
+        ObjectOperation(
+            action: action,
+            objectId: objectId,
+            mapOp: mapOp,
+            counterOp: counterOp,
+            map: map,
+            counter: counter,
+            nonce: nonce,
+            initialValue: initialValue,
+            initialValueEncoding: initialValueEncoding,
+        )
+    }
+
+    /// Creates a map create operation
+    static func mapCreateOperation(
+        objectId: String = "map:test@123",
+        entries: [String: ObjectsMapEntry]? = nil,
+    ) -> ObjectOperation {
+        objectOperation(
+            action: .known(.mapCreate),
+            objectId: objectId,
+            map: ObjectsMap(
+                semantics: .known(.lww),
+                entries: entries,
+            ),
+        )
+    }
+
+    /// Creates a counter create operation
+    static func counterCreateOperation(
+        objectId: String = "counter:test@123",
+        count: Int? = 42,
+    ) -> ObjectOperation {
+        objectOperation(
+            action: .known(.counterCreate),
+            objectId: objectId,
+            counter: WireObjectsCounter(count: count.map { NSNumber(value: $0) }),
+        )
+    }
+
+    // MARK: - ObjectsMapEntry Factory
+
+    /// Creates an ObjectsMapEntry with sensible defaults
+    static func mapEntry(
+        tombstone: Bool? = false,
+        timeserial: String? = "ts1",
+        data: ObjectData,
+    ) -> ObjectsMapEntry {
+        ObjectsMapEntry(
+            tombstone: tombstone,
+            timeserial: timeserial,
+            data: data,
+        )
+    }
+
+    /// Creates a map entry with string data
+    static func stringMapEntry(
+        key: String = "testKey",
+        value: String = "testValue",
+        tombstone: Bool? = false,
+        timeserial: String? = "ts1",
+    ) -> (key: String, entry: ObjectsMapEntry) {
+        (
+            key: key,
+            entry: mapEntry(
+                tombstone: tombstone,
+                timeserial: timeserial,
+                data: ObjectData(string: .string(value)),
+            ),
+        )
+    }
+
+    /// Creates a map entry with number data
+    static func numberMapEntry(
+        key: String = "testKey",
+        value: NSNumber = NSNumber(value: 42),
+        tombstone: Bool? = false,
+        timeserial: String? = "ts1",
+    ) -> (key: String, entry: ObjectsMapEntry) {
+        (
+            key: key,
+            entry: mapEntry(
+                tombstone: tombstone,
+                timeserial: timeserial,
+                data: ObjectData(number: value),
+            ),
+        )
+    }
+
+    /// Creates a map entry with boolean data
+    static func booleanMapEntry(
+        key: String = "testKey",
+        value: Bool = true,
+        tombstone: Bool? = false,
+        timeserial: String? = "ts1",
+    ) -> (key: String, entry: ObjectsMapEntry) {
+        (
+            key: key,
+            entry: mapEntry(
+                tombstone: tombstone,
+                timeserial: timeserial,
+                data: ObjectData(boolean: value),
+            ),
+        )
+    }
+
+    /// Creates a map entry with bytes data
+    static func bytesMapEntry(
+        key: String = "testKey",
+        value: Data = Data([0x01, 0x02, 0x03]),
+        tombstone: Bool? = false,
+        timeserial: String? = "ts1",
+    ) -> (key: String, entry: ObjectsMapEntry) {
+        (
+            key: key,
+            entry: mapEntry(
+                tombstone: tombstone,
+                timeserial: timeserial,
+                data: ObjectData(bytes: value),
+            ),
+        )
+    }
+
+    /// Creates a map entry with object reference data
+    static func objectReferenceMapEntry(
+        key: String = "testKey",
+        objectId: String = "map:referenced@123",
+        tombstone: Bool? = false,
+        timeserial: String? = "ts1",
+    ) -> (key: String, entry: ObjectsMapEntry) {
+        (
+            key: key,
+            entry: mapEntry(
+                tombstone: tombstone,
+                timeserial: timeserial,
+                data: ObjectData(objectId: objectId),
+            ),
+        )
+    }
+
+    // MARK: - ObjectsMap Factory
+
+    /// Creates an ObjectsMap with sensible defaults
+    static func objectsMap(
+        semantics: WireEnum<ObjectsMapSemantics> = .known(.lww),
+        entries: [String: ObjectsMapEntry]? = nil,
+    ) -> ObjectsMap {
+        ObjectsMap(
+            semantics: semantics,
+            entries: entries,
+        )
+    }
+
+    /// Creates an ObjectsMap with string entries
+    static func objectsMapWithStringEntries(
+        entries: [String: String] = ["key1": "value1", "key2": "value2"],
+    ) -> ObjectsMap {
+        let mapEntries = entries.mapValues { value in
+            mapEntry(data: ObjectData(string: .string(value)))
+        }
+        return objectsMap(entries: mapEntries)
+    }
+
+    // MARK: - WireObjectsCounter Factory
+
+    /// Creates a WireObjectsCounter with sensible defaults
+    static func wireObjectsCounter(count: Int? = 42) -> WireObjectsCounter {
+        WireObjectsCounter(count: count.map { NSNumber(value: $0) })
+    }
+
+    // MARK: - Common Test Scenarios
+
+    /// Creates a simple map object message with one string entry
+    static func simpleMapMessage(
+        objectId: String = "map:simple@123",
+        key: String = "testKey",
+        value: String = "testValue",
+    ) -> InboundObjectMessage {
+        let (entryKey, entry) = stringMapEntry(key: key, value: value)
+        return mapObjectMessage(
+            objectId: objectId,
+            entries: [entryKey: entry],
+        )
+    }
+
+    /// Creates a simple counter object message
+    static func simpleCounterMessage(
+        objectId: String = "counter:simple@123",
+        count: Int = 42,
+    ) -> InboundObjectMessage {
+        counterObjectMessage(
+            objectId: objectId,
+            count: count,
+        )
+    }
+
+    /// Creates a root object message with multiple entries
+    static func rootMessageWithEntries(
+        entries: [String: String] = ["key1": "value1", "key2": "value2"],
+    ) -> InboundObjectMessage {
+        let mapEntries = entries.mapValues { value in
+            mapEntry(data: ObjectData(string: .string(value)))
+        }
+        return rootObjectMessage(entries: mapEntries)
+    }
+}

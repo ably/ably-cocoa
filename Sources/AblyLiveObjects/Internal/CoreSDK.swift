@@ -6,6 +6,9 @@ internal import AblyPlugin
 /// This provides us with a mockable interface to ably-cocoa, and it also allows internal components and their tests not to need to worry about some of the boring details of how we bridge Swift types to AblyPlugin's Objective-C API (i.e. boxing).
 internal protocol CoreSDK: AnyObject, Sendable {
     func sendObject(objectMessages: [OutboundObjectMessage]) async throws(InternalError)
+
+    /// Returns the current state of the Realtime channel that this wraps.
+    var channelState: ARTRealtimeChannelState { get }
 }
 
 internal final class DefaultCoreSDK: CoreSDK {
@@ -40,5 +43,9 @@ internal final class DefaultCoreSDK: CoreSDK {
             channel: channel,
             pluginAPI: pluginAPI,
         )
+    }
+
+    internal var channelState: ARTRealtimeChannelState {
+        channel.state
     }
 }
