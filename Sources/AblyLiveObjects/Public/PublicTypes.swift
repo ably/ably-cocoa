@@ -46,7 +46,7 @@ public protocol RealtimeObjects: Sendable {
     /// Creates a new ``LiveCounter`` object instance with the provided `count` value.
     ///
     /// - Parameter count: The initial value for the new ``LiveCounter`` object.
-    func createCounter(count: Int) async throws(ARTErrorInfo) -> any LiveCounter
+    func createCounter(count: Double) async throws(ARTErrorInfo) -> any LiveCounter
 
     /// Creates a new ``LiveCounter`` object instance with a value of zero.
     func createCounter() async throws(ARTErrorInfo) -> any LiveCounter
@@ -133,7 +133,7 @@ public protocol BatchContextLiveMap: AnyObject, Sendable {
 /// A wrapper around the ``LiveCounter`` object that enables batching operations inside a ``BatchCallback``.
 public protocol BatchContextLiveCounter: AnyObject, Sendable {
     /// Returns the current value of the counter.
-    var value: Int { get }
+    var value: Double { get }
 
     /// Similar to the ``LiveCounter/increment(amount:)`` method, but instead, it adds an operation to increment the counter value to the current batch, to be sent in a single message to the Ably service.
     ///
@@ -142,12 +142,12 @@ public protocol BatchContextLiveCounter: AnyObject, Sendable {
     /// To get notified when object gets updated, use the ``LiveObject/subscribe(listener:)`` method.
     ///
     /// - Parameter amount: The amount by which to increase the counter value.
-    func increment(amount: Int)
+    func increment(amount: Double)
 
     /// An alias for calling [`increment(-amount)`](doc:BatchContextLiveCounter/increment(amount:)).
     ///
     /// - Parameter amount: The amount by which to decrease the counter value.
-    func decrement(amount: Int)
+    func decrement(amount: Double)
 }
 
 /// The `LiveMap` class represents a key-value map data structure, similar to a Swift `Dictionary`, where all changes are synchronized across clients in realtime.
@@ -224,7 +224,7 @@ public enum PrimitiveObjectValue: Sendable {
 /// The `LiveCounter` class represents a counter that can be incremented or decremented and is synchronized across clients in realtime.
 public protocol LiveCounter: LiveObject where Update == LiveCounterUpdate {
     /// Returns the current value of the counter.
-    var value: Int { get }
+    var value: Double { get }
 
     /// Sends an operation to the Ably system to increment the value of this `LiveCounter` object.
     ///
@@ -233,18 +233,18 @@ public protocol LiveCounter: LiveObject where Update == LiveCounterUpdate {
     /// To get notified when object gets updated, use the ``LiveObject/subscribe(listener:)`` method.
     ///
     /// - Parameter amount: The amount by which to increase the counter value.
-    func increment(amount: Int) async throws(ARTErrorInfo)
+    func increment(amount: Double) async throws(ARTErrorInfo)
 
     /// An alias for calling [`increment(-amount)`](doc:LiveCounter/increment(amount:)).
     ///
     /// - Parameter amount: The amount by which to decrease the counter value.
-    func decrement(amount: Int) async throws(ARTErrorInfo)
+    func decrement(amount: Double) async throws(ARTErrorInfo)
 }
 
 /// Represents an update to a ``LiveCounter`` object.
 public protocol LiveCounterUpdate: Sendable {
     /// Holds the numerical change to the counter value.
-    var amount: Int { get }
+    var amount: Double { get }
 }
 
 /// Describes the common interface for all conflict-free data structures supported by the Objects.

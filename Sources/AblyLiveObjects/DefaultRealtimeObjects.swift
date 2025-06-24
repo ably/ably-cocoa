@@ -38,7 +38,7 @@ internal final class DefaultRealtimeObjects: RealtimeObjects {
         notYetImplemented()
     }
 
-    internal func createCounter(count _: Int) async throws(ARTErrorInfo) -> any LiveCounter {
+    internal func createCounter(count _: Double) async throws(ARTErrorInfo) -> any LiveCounter {
         notYetImplemented()
     }
 
