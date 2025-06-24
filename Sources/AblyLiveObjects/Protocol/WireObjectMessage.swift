@@ -145,18 +145,18 @@ internal enum ObjectOperationAction: Int {
     case objectDelete = 5
 }
 
-// MAP2
-internal enum MapSemantics: Int {
+// OMP2
+internal enum ObjectsMapSemantics: Int {
     case lww = 0
 }
 
 internal struct WireObjectOperation {
     internal var action: WireEnum<ObjectOperationAction> // OOP3a
     internal var objectId: String // OOP3b
-    internal var mapOp: WireMapOp? // OOP3c
-    internal var counterOp: WireCounterOp? // OOP3d
-    internal var map: WireMap? // OOP3e
-    internal var counter: WireCounter? // OOP3f
+    internal var mapOp: WireObjectsMapOp? // OOP3c
+    internal var counterOp: WireObjectsCounterOp? // OOP3d
+    internal var map: WireObjectsMap? // OOP3e
+    internal var counter: WireObjectsCounter? // OOP3f
     internal var nonce: String? // OOP3g
     internal var initialValue: StringOrData? // OOP3h
     internal var initialValueEncoding: String? // OOP3i
@@ -228,8 +228,8 @@ internal struct WireObjectState {
     internal var siteTimeserials: [String: String] // OST2b
     internal var tombstone: Bool // OST2c
     internal var createOp: WireObjectOperation? // OST2d
-    internal var map: WireMap? // OST2e
-    internal var counter: WireCounter? // OST2f
+    internal var map: WireObjectsMap? // OST2e
+    internal var counter: WireObjectsCounter? // OST2f
 }
 
 extension WireObjectState: WireObjectCodable {
@@ -277,12 +277,12 @@ extension WireObjectState: WireObjectCodable {
     }
 }
 
-internal struct WireMapOp {
-    internal var key: String // MOP2a
-    internal var data: WireObjectData? // MOP2b
+internal struct WireObjectsMapOp {
+    internal var key: String // OMO2a
+    internal var data: WireObjectData? // OMO2b
 }
 
-extension WireMapOp: WireObjectCodable {
+extension WireObjectsMapOp: WireObjectCodable {
     internal enum WireKey: String {
         case key
         case data
@@ -306,11 +306,11 @@ extension WireMapOp: WireObjectCodable {
     }
 }
 
-internal struct WireCounterOp {
-    internal var amount: NSNumber // COP2a
+internal struct WireObjectsCounterOp {
+    internal var amount: NSNumber // OCO2a
 }
 
-extension WireCounterOp: WireObjectCodable {
+extension WireObjectsCounterOp: WireObjectCodable {
     internal enum WireKey: String {
         case amount
     }
@@ -326,12 +326,12 @@ extension WireCounterOp: WireObjectCodable {
     }
 }
 
-internal struct WireMap {
-    internal var semantics: WireEnum<MapSemantics> // MAP3a
-    internal var entries: [String: WireMapEntry]? // MAP3b
+internal struct WireObjectsMap {
+    internal var semantics: WireEnum<ObjectsMapSemantics> // OMP3a
+    internal var entries: [String: WireObjectsMapEntry]? // OMP3b
 }
 
-extension WireMap: WireObjectCodable {
+extension WireObjectsMap: WireObjectCodable {
     internal enum WireKey: String {
         case semantics
         case entries
@@ -343,7 +343,7 @@ extension WireMap: WireObjectCodable {
             guard case let .object(object) = value else {
                 throw WireValueDecodingError.wrongTypeForKey(WireKey.entries.rawValue, actualValue: value).toInternalError()
             }
-            return try WireMapEntry(wireObject: object)
+            return try WireObjectsMapEntry(wireObject: object)
         }
     }
 
@@ -360,11 +360,11 @@ extension WireMap: WireObjectCodable {
     }
 }
 
-internal struct WireCounter {
-    internal var count: NSNumber? // CNT2a
+internal struct WireObjectsCounter {
+    internal var count: NSNumber? // OCN2a
 }
 
-extension WireCounter: WireObjectCodable {
+extension WireObjectsCounter: WireObjectCodable {
     internal enum WireKey: String {
         case count
     }
@@ -382,13 +382,13 @@ extension WireCounter: WireObjectCodable {
     }
 }
 
-internal struct WireMapEntry {
-    internal var tombstone: Bool? // ME2a
-    internal var timeserial: String? // ME2b
-    internal var data: WireObjectData // ME2c
+internal struct WireObjectsMapEntry {
+    internal var tombstone: Bool? // OME2a
+    internal var timeserial: String? // OME2b
+    internal var data: WireObjectData // OME2c
 }
 
-extension WireMapEntry: WireObjectCodable {
+extension WireObjectsMapEntry: WireObjectCodable {
     internal enum WireKey: String {
         case tombstone
         case timeserial

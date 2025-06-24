@@ -32,10 +32,10 @@ internal struct OutboundObjectMessage {
 internal struct ObjectOperation {
     internal var action: WireEnum<ObjectOperationAction> // OOP3a
     internal var objectId: String // OOP3b
-    internal var mapOp: MapOp? // OOP3c
-    internal var counterOp: WireCounterOp? // OOP3d
-    internal var map: Map? // OOP3e
-    internal var counter: WireCounter? // OOP3f
+    internal var mapOp: ObjectsMapOp? // OOP3c
+    internal var counterOp: WireObjectsCounterOp? // OOP3d
+    internal var map: ObjectsMap? // OOP3e
+    internal var counter: WireObjectsCounter? // OOP3f
     internal var nonce: String? // OOP3g
     internal var initialValue: Data? // OOP3h
     internal var initialValueEncoding: String? // OOP3i
@@ -56,20 +56,20 @@ internal struct ObjectData {
     internal var string: StringPropertyContent? // OD2f
 }
 
-internal struct MapOp {
-    internal var key: String // MOP2a
-    internal var data: ObjectData? // MOP2b
+internal struct ObjectsMapOp {
+    internal var key: String // OMO2a
+    internal var data: ObjectData? // OMO2b
 }
 
-internal struct MapEntry {
-    internal var tombstone: Bool? // ME2a
-    internal var timeserial: String? // ME2b
-    internal var data: ObjectData // ME2c
+internal struct ObjectsMapEntry {
+    internal var tombstone: Bool? // OME2a
+    internal var timeserial: String? // OME2b
+    internal var data: ObjectData // OME2c
 }
 
-internal struct Map {
-    internal var semantics: WireEnum<MapSemantics> // MAP3a
-    internal var entries: [String: MapEntry]? // MAP3b
+internal struct ObjectsMap {
+    internal var semantics: WireEnum<ObjectsMapSemantics> // OMP3a
+    internal var entries: [String: ObjectsMapEntry]? // OMP3b
 }
 
 internal struct ObjectState {
@@ -77,8 +77,8 @@ internal struct ObjectState {
     internal var siteTimeserials: [String: String] // OST2b
     internal var tombstone: Bool // OST2c
     internal var createOp: ObjectOperation? // OST2d
-    internal var map: Map? // OST2e
-    internal var counter: WireCounter? // OST2f
+    internal var map: ObjectsMap? // OST2e
+    internal var counter: WireObjectsCounter? // OST2f
 }
 
 internal extension InboundObjectMessage {
@@ -139,12 +139,12 @@ internal extension ObjectOperation {
     ) throws(InternalError) {
         action = wireObjectOperation.action
         objectId = wireObjectOperation.objectId
-        mapOp = try wireObjectOperation.mapOp.map { wireMapOp throws(InternalError) in
-            try .init(wireMapOp: wireMapOp, format: format)
+        mapOp = try wireObjectOperation.mapOp.map { wireObjectsMapOp throws(InternalError) in
+            try .init(wireObjectsMapOp: wireObjectsMapOp, format: format)
         }
         counterOp = wireObjectOperation.counterOp
         map = try wireObjectOperation.map.map { wireMap throws(InternalError) in
-            try .init(wireMap: wireMap, format: format)
+            try .init(wireObjectsMap: wireMap, format: format)
         }
         counter = wireObjectOperation.counter
 
@@ -319,27 +319,27 @@ internal extension ObjectData {
     }
 }
 
-internal extension MapOp {
-    /// Initializes a `MapOp` from a `WireMapOp`, applying the data decoding rules of OD5.
+internal extension ObjectsMapOp {
+    /// Initializes a `ObjectsMapOp` from a `WireObjectsMapOp`, applying the data decoding rules of OD5.
     ///
     /// - Parameters:
     ///   - format: The format to use when applying the decoding rules of OD5.
     /// - Throws: `InternalError` if JSON or Base64 decoding fails.
     init(
-        wireMapOp: WireMapOp,
+        wireObjectsMapOp: WireObjectsMapOp,
         format: AblyPlugin.EncodingFormat
     ) throws(InternalError) {
-        key = wireMapOp.key
-        data = try wireMapOp.data.map { wireObjectData throws(InternalError) in
+        key = wireObjectsMapOp.key
+        data = try wireObjectsMapOp.data.map { wireObjectData throws(InternalError) in
             try .init(wireObjectData: wireObjectData, format: format)
         }
     }
 
-    /// Converts this `MapOp` to a `WireMapOp`, applying the data encoding rules of OD4.
+    /// Converts this `ObjectsMapOp` to a `WireObjectsMapOp`, applying the data encoding rules of OD4.
     ///
     /// - Parameters:
     ///   - format: The format to use when applying the encoding rules of OD4.
-    func toWire(format: AblyPlugin.EncodingFormat) -> WireMapOp {
+    func toWire(format: AblyPlugin.EncodingFormat) -> WireObjectsMapOp {
         .init(
             key: key,
             data: data?.toWire(format: format),
@@ -347,26 +347,26 @@ internal extension MapOp {
     }
 }
 
-internal extension MapEntry {
-    /// Initializes a `MapEntry` from a `WireMapEntry`, applying the data decoding rules of OD5.
+internal extension ObjectsMapEntry {
+    /// Initializes an `ObjectsMapEntry` from a `WireObjectsMapEntry`, applying the data decoding rules of OD5.
     ///
     /// - Parameters:
     ///   - format: The format to use when applying the decoding rules of OD5.
     /// - Throws: `InternalError` if JSON or Base64 decoding fails.
     init(
-        wireMapEntry: WireMapEntry,
+        wireObjectsMapEntry: WireObjectsMapEntry,
         format: AblyPlugin.EncodingFormat
     ) throws(InternalError) {
-        tombstone = wireMapEntry.tombstone
-        timeserial = wireMapEntry.timeserial
-        data = try .init(wireObjectData: wireMapEntry.data, format: format)
+        tombstone = wireObjectsMapEntry.tombstone
+        timeserial = wireObjectsMapEntry.timeserial
+        data = try .init(wireObjectData: wireObjectsMapEntry.data, format: format)
     }
 
-    /// Converts this `MapEntry` to a `WireMapEntry`, applying the data encoding rules of OD4.
+    /// Converts this `ObjectsMapEntry` to a `WireObjectsMapEntry`, applying the data encoding rules of OD4.
     ///
     /// - Parameters:
     ///   - format: The format to use when applying the encoding rules of OD4.
-    func toWire(format: AblyPlugin.EncodingFormat) -> WireMapEntry {
+    func toWire(format: AblyPlugin.EncodingFormat) -> WireObjectsMapEntry {
         .init(
             tombstone: tombstone,
             timeserial: timeserial,
@@ -375,27 +375,27 @@ internal extension MapEntry {
     }
 }
 
-internal extension Map {
-    /// Initializes a `Map` from a `WireMap`, applying the data decoding rules of OD5.
+internal extension ObjectsMap {
+    /// Initializes an `ObjectsMap` from a `WireObjectsMap`, applying the data decoding rules of OD5.
     ///
     /// - Parameters:
     ///   - format: The format to use when applying the decoding rules of OD5.
     /// - Throws: `InternalError` if JSON or Base64 decoding fails.
     init(
-        wireMap: WireMap,
+        wireObjectsMap: WireObjectsMap,
         format: AblyPlugin.EncodingFormat
     ) throws(InternalError) {
-        semantics = wireMap.semantics
-        entries = try wireMap.entries?.ablyLiveObjects_mapValuesWithTypedThrow { wireMapEntry throws(InternalError) in
-            try .init(wireMapEntry: wireMapEntry, format: format)
+        semantics = wireObjectsMap.semantics
+        entries = try wireObjectsMap.entries?.ablyLiveObjects_mapValuesWithTypedThrow { wireMapEntry throws(InternalError) in
+            try .init(wireObjectsMapEntry: wireMapEntry, format: format)
         }
     }
 
-    /// Converts this `Map` to a `WireMap`, applying the data encoding rules of OD4.
+    /// Converts this `ObjectsMap` to a `WireObjectsMap`, applying the data encoding rules of OD4.
     ///
     /// - Parameters:
     ///   - format: The format to use when applying the encoding rules of OD4.
-    func toWire(format: AblyPlugin.EncodingFormat) -> WireMap {
+    func toWire(format: AblyPlugin.EncodingFormat) -> WireObjectsMap {
         .init(
             semantics: semantics,
             entries: entries?.mapValues { $0.toWire(format: format) },
@@ -419,8 +419,8 @@ internal extension ObjectState {
         createOp = try wireObjectState.createOp.map { wireObjectOperation throws(InternalError) in
             try .init(wireObjectOperation: wireObjectOperation, format: format)
         }
-        map = try wireObjectState.map.map { wireMap throws(InternalError) in
-            try .init(wireMap: wireMap, format: format)
+        map = try wireObjectState.map.map { wireObjectsMap throws(InternalError) in
+            try .init(wireObjectsMap: wireObjectsMap, format: format)
         }
         counter = wireObjectState.counter
     }

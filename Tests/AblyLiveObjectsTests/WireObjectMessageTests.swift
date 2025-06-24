@@ -227,13 +227,13 @@ enum WireObjectMessageTests {
             let op = WireObjectOperation(
                 action: .known(.mapCreate),
                 objectId: "obj1",
-                mapOp: WireMapOp(key: "key1", data: WireObjectData(string: "value1")),
-                counterOp: WireCounterOp(amount: 42),
-                map: WireMap(
+                mapOp: WireObjectsMapOp(key: "key1", data: WireObjectData(string: "value1")),
+                counterOp: WireObjectsCounterOp(amount: 42),
+                map: WireObjectsMap(
                     semantics: .known(.lww),
-                    entries: ["key1": WireMapEntry(tombstone: false, timeserial: nil, data: WireObjectData(string: "value1"))],
+                    entries: ["key1": WireObjectsMapEntry(tombstone: false, timeserial: nil, data: WireObjectData(string: "value1"))],
                 ),
-                counter: WireCounter(count: 42),
+                counter: WireObjectsCounter(count: 42),
                 nonce: "nonce1",
                 initialValue: nil,
                 initialValueEncoding: "utf8",
@@ -328,11 +328,11 @@ enum WireObjectMessageTests {
                     initialValue: nil,
                     initialValueEncoding: nil,
                 ),
-                map: WireMap(
+                map: WireObjectsMap(
                     semantics: .known(.lww),
-                    entries: ["key1": WireMapEntry(tombstone: false, timeserial: nil, data: WireObjectData(string: "value1"))],
+                    entries: ["key1": WireObjectsMapEntry(tombstone: false, timeserial: nil, data: WireObjectData(string: "value1"))],
                 ),
-                counter: WireCounter(count: 42),
+                counter: WireObjectsCounter(count: 42),
             )
             let wire = state.toWireObject
             #expect(wire == [
@@ -436,7 +436,7 @@ enum WireObjectMessageTests {
                 "key": "key1",
                 "data": ["string": "value1"],
             ]
-            let op = try WireMapOp(wireObject: json)
+            let op = try WireObjectsMapOp(wireObject: json)
             #expect(op.key == "key1")
             #expect(op.data?.string == "value1")
         }
@@ -444,14 +444,14 @@ enum WireObjectMessageTests {
         @Test
         func decodesWithOptionalFieldsAbsent() throws {
             let json: [String: WireValue] = ["key": "key1"]
-            let op = try WireMapOp(wireObject: json)
+            let op = try WireObjectsMapOp(wireObject: json)
             #expect(op.key == "key1")
             #expect(op.data == nil)
         }
 
         @Test
         func encodesAllFields() {
-            let op = WireMapOp(
+            let op = WireObjectsMapOp(
                 key: "key1",
                 data: WireObjectData(string: "value1"),
             )
@@ -464,7 +464,7 @@ enum WireObjectMessageTests {
 
         @Test
         func encodesWithOptionalFieldsNil() {
-            let op = WireMapOp(
+            let op = WireObjectsMapOp(
                 key: "key1",
                 data: nil,
             )
@@ -479,13 +479,13 @@ enum WireObjectMessageTests {
         @Test
         func decodesAllFields() throws {
             let json: [String: WireValue] = ["amount": 42]
-            let op = try WireCounterOp(wireObject: json)
+            let op = try WireObjectsCounterOp(wireObject: json)
             #expect(op.amount == 42)
         }
 
         @Test
         func encodesAllFields() {
-            let op = WireCounterOp(amount: 42)
+            let op = WireObjectsCounterOp(amount: 42)
             let wire = op.toWireObject
             #expect(wire == ["amount": 42])
         }
@@ -501,7 +501,7 @@ enum WireObjectMessageTests {
                     "key2": ["data": ["string": "value2"], "tombstone": true],
                 ],
             ]
-            let map = try WireMap(wireObject: json)
+            let map = try WireObjectsMap(wireObject: json)
             #expect(map.semantics == .known(.lww))
             #expect(map.entries?["key1"]?.data.string == "value1")
             #expect(map.entries?["key1"]?.tombstone == false)
@@ -514,7 +514,7 @@ enum WireObjectMessageTests {
         @Test
         func decodesWithOptionalFieldsAbsent() throws {
             let json: [String: WireValue] = ["semantics": 0]
-            let map = try WireMap(wireObject: json)
+            let map = try WireObjectsMap(wireObject: json)
             #expect(map.semantics == .known(.lww))
             #expect(map.entries == nil)
         }
@@ -524,17 +524,17 @@ enum WireObjectMessageTests {
             let json: [String: WireValue] = [
                 "semantics": 999, // Unknown MapSemantics
             ]
-            let map = try WireMap(wireObject: json)
+            let map = try WireObjectsMap(wireObject: json)
             #expect(map.semantics == .unknown(999))
         }
 
         @Test
         func encodesAllFields() {
-            let map = WireMap(
+            let map = WireObjectsMap(
                 semantics: .known(.lww),
                 entries: [
-                    "key1": WireMapEntry(tombstone: false, timeserial: "ts1", data: WireObjectData(string: "value1")),
-                    "key2": WireMapEntry(tombstone: true, timeserial: nil, data: WireObjectData(string: "value2")),
+                    "key1": WireObjectsMapEntry(tombstone: false, timeserial: "ts1", data: WireObjectData(string: "value1")),
+                    "key2": WireObjectsMapEntry(tombstone: true, timeserial: nil, data: WireObjectData(string: "value2")),
                 ],
             )
             let wire = map.toWireObject
@@ -549,7 +549,7 @@ enum WireObjectMessageTests {
 
         @Test
         func encodesWithOptionalFieldsNil() {
-            let map = WireMap(
+            let map = WireObjectsMap(
                 semantics: .known(.lww),
                 entries: nil,
             )
@@ -564,27 +564,27 @@ enum WireObjectMessageTests {
         @Test
         func decodesAllFields() throws {
             let json: [String: WireValue] = ["count": 42]
-            let counter = try WireCounter(wireObject: json)
+            let counter = try WireObjectsCounter(wireObject: json)
             #expect(counter.count == 42)
         }
 
         @Test
         func decodesWithOptionalFieldsAbsent() throws {
             let json: [String: WireValue] = [:]
-            let counter = try WireCounter(wireObject: json)
+            let counter = try WireObjectsCounter(wireObject: json)
             #expect(counter.count == nil)
         }
 
         @Test
         func encodesAllFields() {
-            let counter = WireCounter(count: 42)
+            let counter = WireObjectsCounter(count: 42)
             let wire = counter.toWireObject
             #expect(wire == ["count": 42])
         }
 
         @Test
         func encodesWithOptionalFieldsNil() {
-            let counter = WireCounter(count: nil)
+            let counter = WireObjectsCounter(count: nil)
             let wire = counter.toWireObject
             #expect(wire.isEmpty)
         }
@@ -598,7 +598,7 @@ enum WireObjectMessageTests {
                 "tombstone": true,
                 "timeserial": "ts1",
             ]
-            let entry = try WireMapEntry(wireObject: json)
+            let entry = try WireObjectsMapEntry(wireObject: json)
             #expect(entry.data.string == "value1")
             #expect(entry.tombstone == true)
             #expect(entry.timeserial == "ts1")
@@ -607,7 +607,7 @@ enum WireObjectMessageTests {
         @Test
         func decodesWithOptionalFieldsAbsent() throws {
             let json: [String: WireValue] = ["data": ["string": "value1"]]
-            let entry = try WireMapEntry(wireObject: json)
+            let entry = try WireObjectsMapEntry(wireObject: json)
             #expect(entry.data.string == "value1")
             #expect(entry.tombstone == nil)
             #expect(entry.timeserial == nil)
@@ -615,7 +615,7 @@ enum WireObjectMessageTests {
 
         @Test
         func encodesAllFields() {
-            let entry = WireMapEntry(
+            let entry = WireObjectsMapEntry(
                 tombstone: true,
                 timeserial: "ts1",
                 data: WireObjectData(string: "value1"),
@@ -630,7 +630,7 @@ enum WireObjectMessageTests {
 
         @Test
         func encodesWithOptionalFieldsNil() {
-            let entry = WireMapEntry(
+            let entry = WireObjectsMapEntry(
                 tombstone: nil,
                 timeserial: nil,
                 data: WireObjectData(string: "value1"),
