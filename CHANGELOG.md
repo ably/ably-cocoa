@@ -1,5 +1,15 @@
 # Change Log
 
+## [1.2.41](https://github.com/ably/ably-cocoa/tree/1.2.41)
+
+## What's Changed
+
+* Make some classes private by @lawrence-forooghian in https://github.com/ably/ably-cocoa/pull/2038
+* Implemented connection sequence for RTN14d by @maratal in https://github.com/ably/ably-cocoa/pull/2041
+* Add annotations by @maratal in https://github.com/ably/ably-cocoa/pull/2066
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.40...1.2.41
+
 ## [1.2.40](https://github.com/ably/ably-cocoa/tree/1.2.40)
 
 ### What's Changed
