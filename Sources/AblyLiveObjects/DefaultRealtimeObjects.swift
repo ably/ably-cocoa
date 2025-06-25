@@ -74,7 +74,7 @@ internal class DefaultRealtimeObjects: RealtimeObjects {
         receivedObjectSyncProtocolMessages
     }
 
-    internal func handleObjectSyncProtocolMessage(objectMessages: [InboundObjectMessage], protocolMessageChannelSerial _: String) {
+    internal func handleObjectSyncProtocolMessage(objectMessages: [InboundObjectMessage], protocolMessageChannelSerial _: String?) {
         receivedObjectSyncProtocolMessagesContinuation.yield(objectMessages)
     }
 
