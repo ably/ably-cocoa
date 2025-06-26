@@ -108,6 +108,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)receive:(ARTProtocolMessage *)msg {
+    ARTPrint(self.logger, @"T:%p transport received message %tu - %@:\n%@", self, msg.action, ARTProtocolMessageActionToStr(msg.action), msg.description);
     [self.delegate realtimeTransport:self didReceiveMessage:msg];
 }
 
