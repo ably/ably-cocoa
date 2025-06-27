@@ -3,7 +3,7 @@ import Ably
 /// A callback used in ``LiveObject`` to listen for updates to the object.
 ///
 /// - Parameter update: The update object describing the changes made to the object.
-public typealias LiveObjectUpdateCallback<T> = (_ update: T) -> Void
+public typealias LiveObjectUpdateCallback<T> = (_ update: sending T) -> Void
 
 /// The callback used for the events emitted by ``RealtimeObjects``.
 public typealias ObjectsEventCallback = () -> Void
@@ -14,10 +14,10 @@ public typealias LiveObjectLifecycleEventCallback = () -> Void
 /// A function passed to ``RealtimeObjects/batch(callback:)`` to group multiple Objects operations into a single channel message.
 ///
 /// - Parameter batchContext: A ``BatchContext`` object that allows grouping Objects operations for this batch.
-public typealias BatchCallback = (_ batchContext: BatchContext) -> Void
+public typealias BatchCallback = (_ batchContext: sending BatchContext) -> Void
 
 /// Describes the events emitted by an ``RealtimeObjects`` object.
-public enum ObjectsEvent {
+public enum ObjectsEvent: Sendable {
     /// The local copy of Objects on a channel is currently being synchronized with the Ably service.
     case syncing
     /// The local copy of Objects on a channel has been synchronized with the Ably service.
@@ -25,13 +25,13 @@ public enum ObjectsEvent {
 }
 
 /// Describes the events emitted by a ``LiveObject`` object.
-public enum LiveObjectLifecycleEvent {
+public enum LiveObjectLifecycleEvent: Sendable {
     /// Indicates that the object has been deleted from the Objects pool and should no longer be interacted with.
     case deleted
 }
 
 /// Enables the Objects to be read, modified and subscribed to for a channel.
-public protocol RealtimeObjects {
+public protocol RealtimeObjects: Sendable {
     /// Retrieves the root ``LiveMap`` object for Objects on a channel.
     func getRoot() async throws(ARTErrorInfo) -> any LiveMap
 
@@ -61,7 +61,7 @@ public protocol RealtimeObjects {
     /// when the batched operations are applied by the Ably service and echoed back to the client.
     ///
     /// - Parameter callback: A batch callback function used to group operations together.
-    func batch(callback: BatchCallback) async throws
+    func batch(callback: sending BatchCallback) async throws
 
     /// Registers the provided listener for the specified event. If `on()` is called more than once with the same listener and event, the listener is added multiple times to its listener registry. Therefore, as an example, assuming the same listener is registered twice using `on()`, and an event is emitted once, the listener would be invoked twice.
     ///
@@ -69,7 +69,7 @@ public protocol RealtimeObjects {
     ///   - event: The named event to listen for.
     ///   - callback: The event listener.
     /// - Returns: An ``OnObjectsEventResponse`` object that allows the provided listener to be deregistered from future updates.
-    func on(event: ObjectsEvent, callback: ObjectsEventCallback) -> OnObjectsEventResponse
+    func on(event: ObjectsEvent, callback: sending ObjectsEventCallback) -> OnObjectsEventResponse
 
     /// Deregisters all registrations, for all events and listeners.
     func offAll()
@@ -77,20 +77,20 @@ public protocol RealtimeObjects {
 
 /// Represents the type of data stored for a given key in a ``LiveMap``.
 /// It may be a primitive value (``PrimitiveObjectValue``), or another ``LiveObject``.
-public enum LiveMapValue {
+public enum LiveMapValue: Sendable {
     case primitive(PrimitiveObjectValue)
     case liveMap(any LiveMap)
     case liveCounter(any LiveCounter)
 }
 
 /// Object returned from an `on` call, allowing the listener provided in that call to be deregistered.
-public protocol OnObjectsEventResponse {
+public protocol OnObjectsEventResponse: Sendable {
     /// Deregisters the listener passed to the `on` call.
     func off()
 }
 
 /// Enables grouping multiple Objects operations together by providing `BatchContext*` wrapper objects.
-public protocol BatchContext {
+public protocol BatchContext: Sendable {
     /// Mirrors the ``RealtimeObjects/getRoot()`` method and returns a ``BatchContextLiveMap`` wrapper for the root object on a channel.
     ///
     /// - Returns: A ``BatchContextLiveMap`` object.
@@ -98,7 +98,7 @@ public protocol BatchContext {
 }
 
 /// A wrapper around the ``LiveMap`` object that enables batching operations inside a ``BatchCallback``.
-public protocol BatchContextLiveMap: AnyObject {
+public protocol BatchContextLiveMap: AnyObject, Sendable {
     /// Mirrors the ``LiveMap/get(key:)`` method and returns the value associated with a key in the map.
     ///
     /// - Parameter key: The key to retrieve the value for.
@@ -130,7 +130,7 @@ public protocol BatchContextLiveMap: AnyObject {
 }
 
 /// A wrapper around the ``LiveCounter`` object that enables batching operations inside a ``BatchCallback``.
-public protocol BatchContextLiveCounter: AnyObject {
+public protocol BatchContextLiveCounter: AnyObject, Sendable {
     /// Returns the current value of the counter.
     var value: Int { get }
 
@@ -197,7 +197,7 @@ public protocol LiveMap: LiveObject where Update == LiveMapUpdate {
 }
 
 /// Describes whether an entry in ``LiveMapUpdate/update`` represents an update or a removal.
-public enum LiveMapUpdateAction {
+public enum LiveMapUpdateAction: Sendable {
     /// The value of a key in the map was updated.
     case updated
     /// The value of a key in the map was removed.
@@ -205,7 +205,7 @@ public enum LiveMapUpdateAction {
 }
 
 /// Represents an update to a ``LiveMap`` object, describing the keys that were updated or removed.
-public protocol LiveMapUpdate {
+public protocol LiveMapUpdate: Sendable {
     /// An object containing keys from a `LiveMap` that have changed, along with their change status:
     /// - ``LiveMapUpdateAction/updated`` - the value of a key in the map was updated.
     /// - ``LiveMapUpdateAction/removed`` - the key was removed from the map.
@@ -213,7 +213,7 @@ public protocol LiveMapUpdate {
 }
 
 /// Represents a primitive value that can be stored in a ``LiveMap``.
-public enum PrimitiveObjectValue {
+public enum PrimitiveObjectValue: Sendable {
     case string(String)
     case number(Double)
     case bool(Bool)
@@ -241,13 +241,13 @@ public protocol LiveCounter: LiveObject where Update == LiveCounterUpdate {
 }
 
 /// Represents an update to a ``LiveCounter`` object.
-public protocol LiveCounterUpdate {
+public protocol LiveCounterUpdate: Sendable {
     /// Holds the numerical change to the counter value.
     var amount: Int { get }
 }
 
 /// Describes the common interface for all conflict-free data structures supported by the Objects.
-public protocol LiveObject: AnyObject {
+public protocol LiveObject: AnyObject, Sendable {
     /// The type of update event that this object emits.
     associatedtype Update
 
@@ -255,7 +255,7 @@ public protocol LiveObject: AnyObject {
     ///
     /// - Parameter listener: An event listener function that is called with an update object whenever this LiveObject is updated.
     /// - Returns: A ``SubscribeResponse`` object that allows the provided listener to be deregistered from future updates.
-    func subscribe(listener: LiveObjectUpdateCallback<Update>) -> SubscribeResponse
+    func subscribe(listener: sending LiveObjectUpdateCallback<Update>) -> SubscribeResponse
 
     /// Deregisters all listeners from updates for this LiveObject.
     func unsubscribeAll()
@@ -266,27 +266,27 @@ public protocol LiveObject: AnyObject {
     ///   - event: The named event to listen for.
     ///   - callback: The event listener.
     /// - Returns: A ``OnLiveObjectLifecycleEventResponse`` object that allows the provided listener to be deregistered from future updates.
-    func on(event: LiveObjectLifecycleEvent, callback: LiveObjectLifecycleEventCallback) -> OnLiveObjectLifecycleEventResponse
+    func on(event: LiveObjectLifecycleEvent, callback: sending LiveObjectLifecycleEventCallback) -> OnLiveObjectLifecycleEventResponse
 
     /// Removes all registrations that match both the specified listener and the specified event.
     ///
     /// - Parameters:
     ///   - event: The named event.
     ///   - callback: The event listener.
-    func off(event: LiveObjectLifecycleEvent, callback: LiveObjectLifecycleEventCallback)
+    func off(event: LiveObjectLifecycleEvent, callback: sending LiveObjectLifecycleEventCallback)
 
     /// Deregisters all registrations, for all events and listeners.
     func offAll()
 }
 
 /// Object returned from a `subscribe` call, allowing the listener provided in that call to be deregistered.
-public protocol SubscribeResponse {
+public protocol SubscribeResponse: Sendable {
     /// Deregisters the listener passed to the `subscribe` call.
     func unsubscribe()
 }
 
 /// Object returned from an `on` call, allowing the listener provided in that call to be deregistered.
-public protocol OnLiveObjectLifecycleEventResponse {
+public protocol OnLiveObjectLifecycleEventResponse: Sendable {
     /// Deregisters the listener passed to the `on` call.
     func off()
 }

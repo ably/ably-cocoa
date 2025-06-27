@@ -2,8 +2,11 @@ import Ably
 internal import AblyPlugin
 
 /// The class that provides the public API for interacting with LiveObjects, via the ``ARTRealtimeChannel/objects`` property.
-internal class DefaultRealtimeObjects: RealtimeObjects {
-    private weak var channel: ARTRealtimeChannel?
+internal final class DefaultRealtimeObjects: RealtimeObjects {
+    // Used for synchronizing access to all of this instance's mutable state. This is a temporary solution just to allow us to implement `Sendable`, and we'll revisit it in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/3.
+    private let mutex = NSLock()
+
+    private let channel: WeakRef<ARTRealtimeChannel>
     private let logger: AblyPlugin.Logger
     private let pluginAPI: AblyPlugin.PluginAPIProtocol
 
@@ -14,7 +17,7 @@ internal class DefaultRealtimeObjects: RealtimeObjects {
     private let receivedObjectSyncProtocolMessagesContinuation: AsyncStream<[InboundObjectMessage]>.Continuation
 
     internal init(channel: ARTRealtimeChannel, logger: AblyPlugin.Logger, pluginAPI: AblyPlugin.PluginAPIProtocol) {
-        self.channel = channel
+        self.channel = .init(referenced: channel)
         self.logger = logger
         self.pluginAPI = pluginAPI
         (receivedObjectProtocolMessages, receivedObjectProtocolMessagesContinuation) = AsyncStream.makeStream()
@@ -43,7 +46,7 @@ internal class DefaultRealtimeObjects: RealtimeObjects {
         notYetImplemented()
     }
 
-    internal func batch(callback _: (any BatchContext) -> Void) async throws {
+    internal func batch(callback _: sending (sending any BatchContext) -> Void) async throws {
         notYetImplemented()
     }
 
@@ -57,9 +60,17 @@ internal class DefaultRealtimeObjects: RealtimeObjects {
 
     // MARK: Handling channel events
 
-    internal private(set) var testsOnly_onChannelAttachedHasObjects: Bool?
+    private nonisolated(unsafe) var onChannelAttachedHasObjects: Bool?
+    internal var testsOnly_onChannelAttachedHasObjects: Bool? {
+        mutex.withLock {
+            onChannelAttachedHasObjects
+        }
+    }
+
     internal func onChannelAttached(hasObjects: Bool) {
-        testsOnly_onChannelAttachedHasObjects = hasObjects
+        mutex.withLock {
+            onChannelAttachedHasObjects = hasObjects
+        }
     }
 
     internal var testsOnly_receivedObjectProtocolMessages: AsyncStream<[InboundObjectMessage]> {
@@ -82,7 +93,7 @@ internal class DefaultRealtimeObjects: RealtimeObjects {
 
     // This is currently exposed so that we can try calling it from the tests in the early days of the SDK to check that we can send an OBJECT ProtocolMessage. We'll probably make it private later on.
     internal func testsOnly_sendObject(objectMessages: [OutboundObjectMessage]) async throws(InternalError) {
-        guard let channel else {
+        guard let channel = channel.referenced else {
             return
         }
 
