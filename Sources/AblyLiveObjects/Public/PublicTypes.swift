@@ -38,7 +38,7 @@ public protocol RealtimeObjects: Sendable {
     /// Creates a new ``LiveMap`` object instance with the provided entries.
     ///
     /// - Parameter entries: The initial entries for the new ``LiveMap`` object.
-    func createMap(entries: any LiveMap) async throws(ARTErrorInfo) -> any LiveMap
+    func createMap(entries: [String: LiveMapValue]) async throws(ARTErrorInfo) -> any LiveMap
 
     /// Creates a new empty ``LiveMap`` object instance.
     func createMap() async throws(ARTErrorInfo) -> any LiveMap

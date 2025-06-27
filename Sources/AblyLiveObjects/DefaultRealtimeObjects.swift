@@ -30,7 +30,7 @@ internal final class DefaultRealtimeObjects: RealtimeObjects {
         notYetImplemented()
     }
 
-    internal func createMap(entries _: any LiveMap) async throws(ARTErrorInfo) -> any LiveMap {
+    internal func createMap(entries _: [String: LiveMapValue]) async throws(ARTErrorInfo) -> any LiveMap {
         notYetImplemented()
     }
 
