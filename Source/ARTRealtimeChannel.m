@@ -885,8 +885,15 @@ dispatch_sync(_queue, ^{
         return;
     }
 
+    // It appears that it's possible for the ARTRealtimeChannel to become deallocated before its corresponding ARTRealtimeChannelInternal does (not sure how that works; investigate as part of https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/9); for now just make sure that we honour our contract and not pass nil to handleObjectProtocolMessageWithObjectMessages:channel:
+    ARTRealtimeChannel *channel = self.channel_onlyForPassingToPlugins;
+    if (!channel) {
+        ARTLogDebug(self.logger, @"R:%p C:%p (%@) %@", _realtime, self, self.name, @"self.channel_onlyForPassingToPlugins is nil upon receipt of OBJECT; dropping");
+        return;
+    }
+
     [self.realtime.options.liveObjectsPlugin handleObjectProtocolMessageWithObjectMessages:pm.state
-                                                                                   channel:self.channel_onlyForPassingToPlugins];
+                                                                                   channel:channel];
 }
 
 - (void)onObjectSync:(ARTProtocolMessage *)pm {
@@ -895,9 +902,16 @@ dispatch_sync(_queue, ^{
         return;
     }
 
+    // It appears that it's possible for the ARTRealtimeChannel to become deallocated before its corresponding ARTRealtimeChannelInternal does (not sure how that works; investigate as part of https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/9); for now just make sure that we honour our contract and not pass nil to handleObjectSyncProtocolMessageWithObjectMessages:channel:
+    ARTRealtimeChannel *channel = self.channel_onlyForPassingToPlugins;
+    if (!channel) {
+        ARTLogDebug(self.logger, @"R:%p C:%p (%@) %@", _realtime, self, self.name, @"self.channel_onlyForPassingToPlugins is nil upon receipt of OBJECT_SYNC; dropping");
+        return;
+    }
+
     [self.realtime.options.liveObjectsPlugin handleObjectSyncProtocolMessageWithObjectMessages:pm.state
                                                                   protocolMessageChannelSerial:pm.channelSerial
-                                                                                       channel:self.channel_onlyForPassingToPlugins];
+                                                                                       channel:channel];
 }
 
 - (void)attach {
