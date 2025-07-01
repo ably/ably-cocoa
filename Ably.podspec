@@ -24,7 +24,7 @@ Pod::Spec.new do |s|
   # - https://stackoverflow.com/questions/28425765/add-a-user-header-search-path-to-a-podspec
   # - https://stackoverflow.com/questions/58690010/including-a-directory-as-a-search-path-during-compilation-with-cocoapods
   s.pod_target_xcconfig     = {
-    'HEADER_SEARCH_PATHS' => '"${PODS_TARGET_SRCROOT}/AblyPlugin/include"'
+    'HEADER_SEARCH_PATHS' => ['"${PODS_TARGET_SRCROOT}/AblyPlugin/include"', '"${PODS_TARGET_SRCROOT}/AblyPlugin/PrivateHeaders"']
   }
   s.dependency 'msgpack', '0.4.0'
   s.dependency 'AblyDeltaCodec', '1.3.3'

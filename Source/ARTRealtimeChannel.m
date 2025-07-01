@@ -37,6 +37,7 @@
 #import "ARTPushChannel+Private.h"
 #endif
 #import "APLiveObjectsPlugin.h"
+#import "ARTRealtimeChannelInternal+APRealtimeChannel.h"
 
 @implementation ARTRealtimeChannel {
     ARTQueuedDealloc *_dealloc;
@@ -57,14 +58,13 @@
 - (instancetype)initWithInternal:(ARTRealtimeChannelInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc {
     self = [super init];
     if (self) {
-        internal.channel_onlyForPassingToPlugins = self;
         _internal = internal;
         _dealloc = dealloc;
 
         // If the LiveObjects plugin has been provided, set up LiveObjects functionality for this channel.
         id<APLiveObjectsInternalPluginProtocol> liveObjectsPlugin = internal.realtime.options.liveObjectsPlugin;
         if (liveObjectsPlugin) {
-            [liveObjectsPlugin prepareChannel:self];
+            [liveObjectsPlugin prepareChannel:internal];
         }
     }
     return self;
@@ -695,7 +695,7 @@ dispatch_sync(_queue, ^{
         self.channelSerial = message.channelSerial;
     }
 
-    [self.realtime.options.liveObjectsPlugin onChannelAttached:self.channel_onlyForPassingToPlugins
+    [self.realtime.options.liveObjectsPlugin onChannelAttached:self
                                                     hasObjects:message.hasObjects];
 
     if (state == ARTRealtimeChannelAttached) {
@@ -885,15 +885,8 @@ dispatch_sync(_queue, ^{
         return;
     }
 
-    // It appears that it's possible for the ARTRealtimeChannel to become deallocated before its corresponding ARTRealtimeChannelInternal does (not sure how that works; investigate as part of https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/9); for now just make sure that we honour our contract and not pass nil to handleObjectProtocolMessageWithObjectMessages:channel:
-    ARTRealtimeChannel *channel = self.channel_onlyForPassingToPlugins;
-    if (!channel) {
-        ARTLogDebug(self.logger, @"R:%p C:%p (%@) %@", _realtime, self, self.name, @"self.channel_onlyForPassingToPlugins is nil upon receipt of OBJECT; dropping");
-        return;
-    }
-
     [self.realtime.options.liveObjectsPlugin handleObjectProtocolMessageWithObjectMessages:pm.state
-                                                                                   channel:channel];
+                                                                                   channel:self];
 }
 
 - (void)onObjectSync:(ARTProtocolMessage *)pm {
@@ -902,16 +895,9 @@ dispatch_sync(_queue, ^{
         return;
     }
 
-    // It appears that it's possible for the ARTRealtimeChannel to become deallocated before its corresponding ARTRealtimeChannelInternal does (not sure how that works; investigate as part of https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/9); for now just make sure that we honour our contract and not pass nil to handleObjectSyncProtocolMessageWithObjectMessages:channel:
-    ARTRealtimeChannel *channel = self.channel_onlyForPassingToPlugins;
-    if (!channel) {
-        ARTLogDebug(self.logger, @"R:%p C:%p (%@) %@", _realtime, self, self.name, @"self.channel_onlyForPassingToPlugins is nil upon receipt of OBJECT_SYNC; dropping");
-        return;
-    }
-
     [self.realtime.options.liveObjectsPlugin handleObjectSyncProtocolMessageWithObjectMessages:pm.state
                                                                   protocolMessageChannelSerial:pm.channelSerial
-                                                                                       channel:channel];
+                                                                                       channel:self];
 }
 
 - (void)attach {
