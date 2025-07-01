@@ -69,6 +69,7 @@ public protocol RealtimeObjects: Sendable {
     ///   - event: The named event to listen for.
     ///   - callback: The event listener.
     /// - Returns: An ``OnObjectsEventResponse`` object that allows the provided listener to be deregistered from future updates.
+    @discardableResult
     func on(event: ObjectsEvent, callback: sending ObjectsEventCallback) -> OnObjectsEventResponse
 
     /// Deregisters all registrations, for all events and listeners.
@@ -255,6 +256,7 @@ public protocol LiveObject: AnyObject, Sendable {
     ///
     /// - Parameter listener: An event listener function that is called with an update object whenever this LiveObject is updated.
     /// - Returns: A ``SubscribeResponse`` object that allows the provided listener to be deregistered from future updates.
+    @discardableResult
     func subscribe(listener: sending LiveObjectUpdateCallback<Update>) -> SubscribeResponse
 
     /// Deregisters all listeners from updates for this LiveObject.
@@ -266,6 +268,7 @@ public protocol LiveObject: AnyObject, Sendable {
     ///   - event: The named event to listen for.
     ///   - callback: The event listener.
     /// - Returns: A ``OnLiveObjectLifecycleEventResponse`` object that allows the provided listener to be deregistered from future updates.
+    @discardableResult
     func on(event: LiveObjectLifecycleEvent, callback: sending LiveObjectLifecycleEventCallback) -> OnLiveObjectLifecycleEventResponse
 
     /// Deregisters all registrations, for all events and listeners.
