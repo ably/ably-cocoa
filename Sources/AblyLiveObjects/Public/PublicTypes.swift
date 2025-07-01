@@ -268,13 +268,6 @@ public protocol LiveObject: AnyObject, Sendable {
     /// - Returns: A ``OnLiveObjectLifecycleEventResponse`` object that allows the provided listener to be deregistered from future updates.
     func on(event: LiveObjectLifecycleEvent, callback: sending LiveObjectLifecycleEventCallback) -> OnLiveObjectLifecycleEventResponse
 
-    /// Removes all registrations that match both the specified listener and the specified event.
-    ///
-    /// - Parameters:
-    ///   - event: The named event.
-    ///   - callback: The event listener.
-    func off(event: LiveObjectLifecycleEvent, callback: sending LiveObjectLifecycleEventCallback)
-
     /// Deregisters all registrations, for all events and listeners.
     func offAll()
 }
