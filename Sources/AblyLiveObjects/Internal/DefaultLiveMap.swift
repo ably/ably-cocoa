@@ -176,7 +176,10 @@ internal final class DefaultLiveMap: LiveMap {
     }
 
     internal var size: Int {
-        notYetImplemented()
+        mutex.withLock {
+            // TODO: this is not yet specified, but it seems like the obvious right thing and it unlocks some integration tests; add spec point once specified
+            mutableState.data.count
+        }
     }
 
     internal var entries: [(key: String, value: LiveMapValue)] {
