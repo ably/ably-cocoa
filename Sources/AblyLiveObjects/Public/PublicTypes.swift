@@ -208,7 +208,7 @@ public protocol LiveMap: LiveObject where Update == LiveMapUpdate {
     ///
     /// - Parameter key: The key to retrieve the value for.
     /// - Returns: A ``LiveObject``, a primitive type (string, number, boolean, or binary data) or `nil` if the key doesn't exist in a map or the associated ``LiveObject`` has been deleted. Always `nil` if this map object is deleted.
-    func get(key: String) -> LiveMapValue?
+    func get(key: String) throws(ARTErrorInfo) -> LiveMapValue?
 
     /// Returns the number of key-value pairs in the map.
     var size: Int { get }
@@ -304,7 +304,7 @@ public enum PrimitiveObjectValue: Sendable {
 /// The `LiveCounter` class represents a counter that can be incremented or decremented and is synchronized across clients in realtime.
 public protocol LiveCounter: LiveObject where Update == LiveCounterUpdate {
     /// Returns the current value of the counter.
-    var value: Double { get }
+    var value: Double { get throws(ARTErrorInfo) }
 
     /// Sends an operation to the Ably system to increment the value of this `LiveCounter` object.
     ///
