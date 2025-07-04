@@ -69,7 +69,11 @@ internal final class DefaultLiveCounter: LiveCounter {
             // RTLC5b: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
             let currentChannelState = coreSDK.channelState
             if currentChannelState == .detached || currentChannelState == .failed {
-                throw ARTErrorInfo.create(withCode: Int(ARTErrorCode.channelOperationFailedInvalidState.rawValue), message: "LiveCounter.value operation failed (invalid channel state: \(currentChannelState))")
+                throw LiveObjectsError.objectsOperationFailedInvalidChannelState(
+                    operationDescription: "LiveCounter.value",
+                    channelState: currentChannelState,
+                )
+                .toARTErrorInfo()
             }
 
             return mutex.withLock {

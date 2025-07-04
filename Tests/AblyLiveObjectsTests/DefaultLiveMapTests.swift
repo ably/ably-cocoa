@@ -18,7 +18,7 @@ struct DefaultLiveMapTests {
                     return false
                 }
 
-                return errorInfo.code == 90001
+                return errorInfo.code == 90001 && errorInfo.statusCode == 400
             }
         }
 

@@ -108,7 +108,11 @@ internal final class DefaultLiveMap: LiveMap {
         // RTLM5c: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
         let currentChannelState = coreSDK.channelState
         if currentChannelState == .detached || currentChannelState == .failed {
-            throw ARTErrorInfo.create(withCode: Int(ARTErrorCode.channelOperationFailedInvalidState.rawValue), message: "LiveMap.get operation failed (invalid channel state: \(currentChannelState))")
+            throw LiveObjectsError.objectsOperationFailedInvalidChannelState(
+                operationDescription: "LiveMap.get",
+                channelState: currentChannelState,
+            )
+            .toARTErrorInfo()
         }
 
         let entry = mutex.withLock {
