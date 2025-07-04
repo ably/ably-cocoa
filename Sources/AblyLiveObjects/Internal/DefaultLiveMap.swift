@@ -124,78 +124,74 @@ internal final class DefaultLiveMap: LiveMap {
             return nil
         }
 
-        // RTLM5d2: If a ObjectsMapEntry exists at the key
-
-        // RTLM5d2a: If ObjectsMapEntry.tombstone is true, return undefined/null
-        if entry.tombstone == true {
-            return nil
-        }
-
-        // Handle primitive values in the order specified by RTLM5d2b through RTLM5d2e
-
-        // RTLM5d2b: If ObjectsMapEntry.data.boolean exists, return it
-        if let boolean = entry.data.boolean {
-            return .primitive(.bool(boolean))
-        }
-
-        // RTLM5d2c: If ObjectsMapEntry.data.bytes exists, return it
-        if let bytes = entry.data.bytes {
-            return .primitive(.data(bytes))
-        }
-
-        // RTLM5d2d: If ObjectsMapEntry.data.number exists, return it
-        if let number = entry.data.number {
-            return .primitive(.number(number.doubleValue))
-        }
-
-        // RTLM5d2e: If ObjectsMapEntry.data.string exists, return it
-        if let string = entry.data.string {
-            switch string {
-            case let .string(string):
-                return .primitive(.string(string))
-            case .json:
-                // TODO: Understand how to handle JSON values (https://github.com/ably/specification/pull/333/files#r2164561055)
-                notYetImplemented()
-            }
-        }
-
-        // RTLM5d2f: If ObjectsMapEntry.data.objectId exists, get the object stored at that objectId from the internal ObjectsPool
-        if let objectId = entry.data.objectId {
-            // RTLM5d2f1: If an object with id objectId does not exist, return undefined/null
-            guard let poolEntry = delegate.referenced?.getObjectFromPool(id: objectId) else {
-                return nil
-            }
-
-            // RTLM5d2f2: If an object with id objectId exists, return it
-            switch poolEntry {
-            case let .map(map):
-                return .liveMap(map)
-            case let .counter(counter):
-                return .liveCounter(counter)
-            }
-        }
-
-        // RTLM5d2g: Otherwise, return undefined/null
-        return nil
+        // RTLM5d2: If a ObjectsMapEntry exists at the key, convert it using the shared logic
+        return convertEntryToLiveMapValue(entry)
     }
 
     internal var size: Int {
-        mutex.withLock {
-            // TODO: this is not yet specified, but it seems like the obvious right thing and it unlocks some integration tests; add spec point once specified
-            mutableState.data.count
+        get throws(ARTErrorInfo) {
+            // RTLM10c: If the channel is in the DETACHED or FAILED state, the library should throw an ErrorInfo error with statusCode 400 and code 90001
+            let currentChannelState = coreSDK.channelState
+            if currentChannelState == .detached || currentChannelState == .failed {
+                throw LiveObjectsError.objectsOperationFailedInvalidChannelState(
+                    operationDescription: "LiveMap.size",
+                    channelState: currentChannelState,
+                )
+                .toARTErrorInfo()
+            }
+
+            return mutex.withLock {
+                // RTLM10d: Returns the number of non-tombstoned entries (per RTLM14) in the internal data map
+                mutableState.data.values.count { entry in
+                    // RTLM14a: The method returns true if ObjectsMapEntry.tombstone is true
+                    // RTLM14b: Otherwise, it returns false
+                    entry.tombstone != true
+                }
+            }
         }
     }
 
     internal var entries: [(key: String, value: LiveMapValue)] {
-        notYetImplemented()
+        get throws(ARTErrorInfo) {
+            // RTLM11c: If the channel is in the DETACHED or FAILED state, the library should throw an ErrorInfo error with statusCode 400 and code 90001
+            let currentChannelState = coreSDK.channelState
+            if currentChannelState == .detached || currentChannelState == .failed {
+                throw LiveObjectsError.objectsOperationFailedInvalidChannelState(
+                    operationDescription: "LiveMap.entries",
+                    channelState: currentChannelState,
+                )
+                .toARTErrorInfo()
+            }
+
+            return mutex.withLock {
+                // RTLM11d: Returns key-value pairs from the internal data map
+                // RTLM11d1: Pairs with tombstoned entries (per RTLM14) are not returned
+                var result: [(key: String, value: LiveMapValue)] = []
+
+                for (key, entry) in mutableState.data {
+                    // Convert entry to LiveMapValue using the same logic as get(key:)
+                    if let value = convertEntryToLiveMapValue(entry) {
+                        result.append((key: key, value: value))
+                    }
+                }
+
+                return result
+            }
+        }
     }
 
     internal var keys: [String] {
-        notYetImplemented()
+        get throws(ARTErrorInfo) {
+            // RTLM12b: Identical to LiveMap#entries, except that it returns only the keys from the internal data map
+            try entries.map(\.key)
+        }
     }
 
     internal var values: [LiveMapValue] {
-        notYetImplemented()
+        get throws(ARTErrorInfo) {
+            // RTLM13b: Identical to LiveMap#entries, except that it returns only the values from the internal data map
+            try entries.map(\.value)
+        }
     }
 
     internal func set(key _: String, value _: LiveMapValue) async throws(ARTErrorInfo) {
@@ -444,5 +440,64 @@ internal final class DefaultLiveMap: LiveMap {
                 false
             }
         }
+    }
+
+    // MARK: - Helper Methods
+
+    /// Converts an ObjectsMapEntry to LiveMapValue using the same logic as get(key:)
+    /// This is used by entries to ensure consistent value conversion
+    private func convertEntryToLiveMapValue(_ entry: ObjectsMapEntry) -> LiveMapValue? {
+        // RTLM5d2a: If ObjectsMapEntry.tombstone is true, return undefined/null
+        // This is also equivalent to the RTLM14 check
+        if entry.tombstone == true {
+            return nil
+        }
+
+        // Handle primitive values in the order specified by RTLM5d2b through RTLM5d2e
+
+        // RTLM5d2b: If ObjectsMapEntry.data.boolean exists, return it
+        if let boolean = entry.data.boolean {
+            return .primitive(.bool(boolean))
+        }
+
+        // RTLM5d2c: If ObjectsMapEntry.data.bytes exists, return it
+        if let bytes = entry.data.bytes {
+            return .primitive(.data(bytes))
+        }
+
+        // RTLM5d2d: If ObjectsMapEntry.data.number exists, return it
+        if let number = entry.data.number {
+            return .primitive(.number(number.doubleValue))
+        }
+
+        // RTLM5d2e: If ObjectsMapEntry.data.string exists, return it
+        if let string = entry.data.string {
+            switch string {
+            case let .string(string):
+                return .primitive(.string(string))
+            case .json:
+                // TODO: Understand how to handle JSON values (https://github.com/ably/specification/pull/333/files#r2164561055)
+                notYetImplemented()
+            }
+        }
+
+        // RTLM5d2f: If ObjectsMapEntry.data.objectId exists, get the object stored at that objectId from the internal ObjectsPool
+        if let objectId = entry.data.objectId {
+            // RTLM5d2f1: If an object with id objectId does not exist, return undefined/null
+            guard let poolEntry = delegate.referenced?.getObjectFromPool(id: objectId) else {
+                return nil
+            }
+
+            // RTLM5d2f2: If an object with id objectId exists, return it
+            switch poolEntry {
+            case let .map(map):
+                return .liveMap(map)
+            case let .counter(counter):
+                return .liveCounter(counter)
+            }
+        }
+
+        // RTLM5d2g: Otherwise, return undefined/null
+        return nil
     }
 }
