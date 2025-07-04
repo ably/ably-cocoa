@@ -211,16 +211,16 @@ public protocol LiveMap: LiveObject where Update == LiveMapUpdate {
     func get(key: String) throws(ARTErrorInfo) -> LiveMapValue?
 
     /// Returns the number of key-value pairs in the map.
-    var size: Int { get }
+    var size: Int { get throws(ARTErrorInfo) }
 
     /// Returns an array of key-value pairs for every entry in the map.
-    var entries: [(key: String, value: LiveMapValue)] { get }
+    var entries: [(key: String, value: LiveMapValue)] { get throws(ARTErrorInfo) }
 
     /// Returns an array of keys in the map.
-    var keys: [String] { get }
+    var keys: [String] { get throws(ARTErrorInfo) }
 
     /// Returns an iterable of values in the map.
-    var values: [LiveMapValue] { get }
+    var values: [LiveMapValue] { get throws(ARTErrorInfo) }
 
     /// Sends an operation to the Ably system to set a key on this `LiveMap` object to a specified value.
     ///

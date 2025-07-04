@@ -295,7 +295,7 @@ private struct ObjectsIntegrationTests {
                         let mapKeys = ["emptyMap", "referencedMap", "valuesMap"]
                         let rootKeysCount = counterKeys.count + mapKeys.count
 
-                        #expect(root.size == rootKeysCount, "Check root has correct number of keys")
+                        #expect(try root.size == rootKeysCount, "Check root has correct number of keys")
 
                         for key in counterKeys {
                             let counter = try #require(try root.get(key: key))
@@ -319,7 +319,7 @@ private struct ObjectsIntegrationTests {
                             "falseKey",
                             "mapKey",
                         ]
-                        #expect(valuesMap.size == valueMapKeys.count, "Check nested map has correct number of keys")
+                        #expect(try valuesMap.size == valueMapKeys.count, "Check nested map has correct number of keys")
                         for key in valueMapKeys {
                             #expect(try valuesMap.get(key: key) != nil, "Check value at key=\"\(key)\" in nested map exists")
                         }
@@ -391,7 +391,7 @@ private struct ObjectsIntegrationTests {
                             #expect(try counter2.value == 11, "Check counter has correct value")
 
                             let map2 = try #require(root2.get(key: "map")?.liveMapValue)
-                            #expect(map2.size == 2, "Check map has correct number of keys")
+                            #expect(try map2.size == 2, "Check map has correct number of keys")
                             #expect(try #require(map2.get(key: "shouldStay")?.stringValue) == "foo", "Check map has correct value for \"shouldStay\" key")
                             #expect(try #require(map2.get(key: "anotherKey")?.stringValue) == "baz", "Check map has correct value for \"anotherKey\" key")
                             #expect(try map2.get(key: "shouldDelete") == nil, "Check map does not have \"shouldDelete\" key")
@@ -492,16 +492,16 @@ private struct ObjectsIntegrationTests {
                         let root = try await objects.getRoot()
 
                         let emptyMap = try #require(root.get(key: "emptyMap")?.liveMapValue)
-                        #expect(emptyMap.size == 0, "Check empty map in root has no keys")
+                        #expect(try emptyMap.size == 0, "Check empty map in root has no keys")
 
                         let referencedMap = try #require(root.get(key: "referencedMap")?.liveMapValue)
-                        #expect(referencedMap.size == 1, "Check referenced map in root has correct number of keys")
+                        #expect(try referencedMap.size == 1, "Check referenced map in root has correct number of keys")
 
                         let counterFromReferencedMap = try #require(referencedMap.get(key: "counterKey")?.liveCounterValue)
                         #expect(try counterFromReferencedMap.value == 20, "Check nested counter has correct value")
 
                         let valuesMap = try #require(root.get(key: "valuesMap")?.liveMapValue)
-                        #expect(valuesMap.size == 9, "Check values map in root has correct number of keys")
+                        #expect(try valuesMap.size == 9, "Check values map in root has correct number of keys")
 
                         #expect(try #require(valuesMap.get(key: "stringKey")?.stringValue) == "stringValue", "Check values map has correct string value key")
                         #expect(try #require(valuesMap.get(key: "emptyStringKey")?.stringValue).isEmpty, "Check values map has correct empty string value key")
@@ -513,7 +513,7 @@ private struct ObjectsIntegrationTests {
                         #expect(try #require(valuesMap.get(key: "falseKey")?.boolValue as Bool?) == false, "Check values map has correct 'false' value key")
 
                         let mapFromValuesMap = try #require(valuesMap.get(key: "mapKey")?.liveMapValue)
-                        #expect(mapFromValuesMap.size == 1, "Check nested map has correct number of keys")
+                        #expect(try mapFromValuesMap.size == 1, "Check nested map has correct number of keys")
 
                         // TODO: remove (Swift-only) — keep channel alive until we've executed our test case. We'll address this in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/9
                         withExtendedLifetime(channel) {}
@@ -543,7 +543,7 @@ private struct ObjectsIntegrationTests {
                         #expect(try counterFromReferencedMap.value == 20, "Check nested counter has correct value")
 
                         let mapFromValuesMap = try #require(valuesMap.get(key: "mapKey")?.liveMapValue, "Check nested map is of type LiveMap")
-                        #expect(mapFromValuesMap.size == 1, "Check nested map has correct number of keys")
+                        #expect(try mapFromValuesMap.size == 1, "Check nested map has correct number of keys")
                         #expect(mapFromValuesMap === referencedMap, "Check nested map is the same object instance as map on the root")
 
                         // TODO: remove (Swift-only) — keep channel alive until we've executed our test case. We'll address this in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/9
