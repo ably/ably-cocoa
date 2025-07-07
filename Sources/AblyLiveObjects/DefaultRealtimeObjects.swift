@@ -73,7 +73,7 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
         (receivedObjectProtocolMessages, receivedObjectProtocolMessagesContinuation) = AsyncStream.makeStream()
         (receivedObjectSyncProtocolMessages, receivedObjectSyncProtocolMessagesContinuation) = AsyncStream.makeStream()
         (waitingForSyncEvents, waitingForSyncEventsContinuation) = AsyncStream.makeStream()
-        mutableState = .init(objectsPool: .init(rootDelegate: self, rootCoreSDK: coreSDK))
+        mutableState = .init(objectsPool: .init(rootDelegate: self, rootCoreSDK: coreSDK, logger: logger))
     }
 
     // MARK: - LiveMapObjectPoolDelegate
@@ -193,7 +193,7 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
     /// Intended as a way for tests to populate the object pool.
     internal func testsOnly_createZeroValueLiveObject(forObjectID objectID: String, coreSDK: CoreSDK) -> ObjectsPool.Entry? {
         mutex.withLock {
-            mutableState.objectsPool.createZeroValueObject(forObjectID: objectID, mapDelegate: self, coreSDK: coreSDK)
+            mutableState.objectsPool.createZeroValueObject(forObjectID: objectID, mapDelegate: self, coreSDK: coreSDK, logger: logger)
         }
     }
 
@@ -242,7 +242,7 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
 
             // RTO4b1, RTO4b2: Reset the ObjectsPool to have a single empty root object
             // TODO: this one is unclear (are we meant to replace the root or just clear its data?) https://github.com/ably/specification/pull/333/files#r2183493458
-            objectsPool = .init(rootDelegate: mapDelegate, rootCoreSDK: coreSDK)
+            objectsPool = .init(rootDelegate: mapDelegate, rootCoreSDK: coreSDK, logger: logger)
 
             // I have, for now, not directly implemented the "perform the actions for object sync completion" of RTO4b4 since my implementation doesn't quite match the model given there; here you only have a SyncObjectsPool if you have an OBJECT_SYNC in progress, which you might not have upon receiving an ATTACHED. Instead I've just implemented what seem like the relevant side effects. Can revisit this if "the actions for object sync completion" get more complex.
 

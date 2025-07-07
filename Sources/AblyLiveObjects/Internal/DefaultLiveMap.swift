@@ -1,4 +1,5 @@
 import Ably
+internal import AblyPlugin
 
 /// Protocol for accessing objects from the ObjectsPool. This is used by a LiveMap when it needs to return an object given an object ID.
 internal protocol LiveMapObjectPoolDelegate: AnyObject, Sendable {
@@ -50,6 +51,7 @@ internal final class DefaultLiveMap: LiveMap {
     }
 
     private let coreSDK: CoreSDK
+    private let logger: AblyPlugin.Logger
 
     // MARK: - Initialization
 
@@ -58,7 +60,8 @@ internal final class DefaultLiveMap: LiveMap {
         objectID: String,
         testsOnly_semantics semantics: WireEnum<ObjectsMapSemantics>? = nil,
         delegate: LiveMapObjectPoolDelegate?,
-        coreSDK: CoreSDK
+        coreSDK: CoreSDK,
+        logger: AblyPlugin.Logger
     ) {
         self.init(
             data: data,
@@ -66,6 +69,7 @@ internal final class DefaultLiveMap: LiveMap {
             semantics: semantics,
             delegate: delegate,
             coreSDK: coreSDK,
+            logger: logger,
         )
     }
 
@@ -74,11 +78,13 @@ internal final class DefaultLiveMap: LiveMap {
         objectID: String,
         semantics: WireEnum<ObjectsMapSemantics>?,
         delegate: LiveMapObjectPoolDelegate?,
-        coreSDK: CoreSDK
+        coreSDK: CoreSDK,
+        logger: AblyPlugin.Logger
     ) {
         mutableState = .init(liveObject: .init(objectID: objectID), data: data, semantics: semantics)
         self.delegate = .init(referenced: delegate)
         self.coreSDK = coreSDK
+        self.logger = logger
     }
 
     /// Creates a "zero-value LiveMap", per RTLM4.
@@ -91,6 +97,7 @@ internal final class DefaultLiveMap: LiveMap {
         semantics: WireEnum<ObjectsMapSemantics>? = nil,
         delegate: LiveMapObjectPoolDelegate?,
         coreSDK: CoreSDK,
+        logger: AblyPlugin.Logger,
     ) -> Self {
         .init(
             data: [:],
@@ -98,6 +105,7 @@ internal final class DefaultLiveMap: LiveMap {
             semantics: semantics,
             delegate: delegate,
             coreSDK: coreSDK,
+            logger: logger,
         )
     }
 
@@ -231,6 +239,7 @@ internal final class DefaultLiveMap: LiveMap {
                 objectsPool: &objectsPool,
                 mapDelegate: delegate.referenced,
                 coreSDK: coreSDK,
+                logger: logger,
             )
         }
     }
@@ -252,6 +261,7 @@ internal final class DefaultLiveMap: LiveMap {
                 objectsPool: &objectsPool,
                 mapDelegate: delegate.referenced,
                 coreSDK: coreSDK,
+                logger: logger,
             )
         }
     }
@@ -289,6 +299,7 @@ internal final class DefaultLiveMap: LiveMap {
             objectsPool: inout ObjectsPool,
             mapDelegate: LiveMapObjectPoolDelegate?,
             coreSDK: CoreSDK,
+            logger: AblyPlugin.Logger,
         ) {
             // RTLM6a: Replace the private siteTimeserials with the value from ObjectState.siteTimeserials
             liveObject.siteTimeserials = state.siteTimeserials
@@ -321,6 +332,7 @@ internal final class DefaultLiveMap: LiveMap {
                                 objectsPool: &objectsPool,
                                 mapDelegate: mapDelegate,
                                 coreSDK: coreSDK,
+                                logger: logger,
                             )
                         }
                     }
@@ -338,6 +350,7 @@ internal final class DefaultLiveMap: LiveMap {
             objectsPool: inout ObjectsPool,
             mapDelegate: LiveMapObjectPoolDelegate?,
             coreSDK: CoreSDK,
+            logger: AblyPlugin.Logger,
         ) {
             // RTLM7a: If an entry exists in the private data for the specified key
             if let existingEntry = data[key] {
@@ -364,7 +377,7 @@ internal final class DefaultLiveMap: LiveMap {
             // RTLM7c: If the operation has a non-empty ObjectData.objectId attribute
             if let objectId = operationData.objectId, !objectId.isEmpty {
                 // RTLM7c1: Create a zero-value LiveObject in the internal ObjectsPool per RTO6
-                _ = objectsPool.createZeroValueObject(forObjectID: objectId, mapDelegate: mapDelegate, coreSDK: coreSDK)
+                _ = objectsPool.createZeroValueObject(forObjectID: objectId, mapDelegate: mapDelegate, coreSDK: coreSDK, logger: logger)
             }
         }
 

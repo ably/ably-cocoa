@@ -1,4 +1,5 @@
 import Ably
+internal import AblyPlugin
 import Foundation
 
 /// Our default implementation of ``LiveCounter``.
@@ -27,24 +28,28 @@ internal final class DefaultLiveCounter: LiveCounter {
     }
 
     private let coreSDK: CoreSDK
+    private let logger: AblyPlugin.Logger
 
     // MARK: - Initialization
 
     internal convenience init(
         testsOnly_data data: Double,
         objectID: String,
-        coreSDK: CoreSDK
+        coreSDK: CoreSDK,
+        logger: AblyPlugin.Logger
     ) {
-        self.init(data: data, objectID: objectID, coreSDK: coreSDK)
+        self.init(data: data, objectID: objectID, coreSDK: coreSDK, logger: logger)
     }
 
     private init(
         data: Double,
         objectID: String,
-        coreSDK: CoreSDK
+        coreSDK: CoreSDK,
+        logger: AblyPlugin.Logger
     ) {
         mutableState = .init(liveObject: .init(objectID: objectID), data: data)
         self.coreSDK = coreSDK
+        self.logger = logger
     }
 
     /// Creates a "zero-value LiveCounter", per RTLC4.
@@ -54,11 +59,13 @@ internal final class DefaultLiveCounter: LiveCounter {
     internal static func createZeroValued(
         objectID: String,
         coreSDK: CoreSDK,
+        logger: AblyPlugin.Logger,
     ) -> Self {
         .init(
             data: 0,
             objectID: objectID,
             coreSDK: coreSDK,
+            logger: logger,
         )
     }
 
