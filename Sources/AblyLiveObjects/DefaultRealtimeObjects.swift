@@ -166,8 +166,17 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
         receivedObjectProtocolMessages
     }
 
+    /// Implements the `OBJECT` handling of RTO8.
     internal func handleObjectProtocolMessage(objectMessages: [InboundObjectMessage]) {
-        receivedObjectProtocolMessagesContinuation.yield(objectMessages)
+        mutex.withLock {
+            mutableState.handleObjectProtocolMessage(
+                objectMessages: objectMessages,
+                logger: logger,
+                receivedObjectProtocolMessagesContinuation: receivedObjectProtocolMessagesContinuation,
+                mapDelegate: self,
+                coreSDK: coreSDK,
+            )
+        }
     }
 
     internal var testsOnly_receivedObjectSyncProtocolMessages: AsyncStream<[InboundObjectMessage]> {
@@ -318,6 +327,81 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
                 syncSequence = nil
 
                 syncStatus.signalSyncComplete()
+            }
+        }
+
+        /// Implements the `OBJECT` handling of RTO8.
+        internal mutating func handleObjectProtocolMessage(
+            objectMessages: [InboundObjectMessage],
+            logger: Logger,
+            receivedObjectProtocolMessagesContinuation: AsyncStream<[InboundObjectMessage]>.Continuation,
+            mapDelegate: LiveMapObjectPoolDelegate,
+            coreSDK: CoreSDK,
+        ) {
+            receivedObjectProtocolMessagesContinuation.yield(objectMessages)
+
+            logger.log("handleObjectProtocolMessage(objectMessages: \(objectMessages))", level: .debug)
+
+            // TODO: RTO8a's buffering
+
+            // RTO8b
+            for objectMessage in objectMessages {
+                applyObjectProtocolMessageObjectMessage(
+                    objectMessage,
+                    logger: logger,
+                    mapDelegate: mapDelegate,
+                    coreSDK: coreSDK,
+                )
+            }
+        }
+
+        /// Implements the `OBJECT` application of RTO9.
+        private mutating func applyObjectProtocolMessageObjectMessage(
+            _ objectMessage: InboundObjectMessage,
+            logger: Logger,
+            mapDelegate: LiveMapObjectPoolDelegate,
+            coreSDK: CoreSDK,
+        ) {
+            guard let operation = objectMessage.operation else {
+                // RTO9a1
+                logger.log("Unsupported OBJECT message received (no operation); \(objectMessage)", level: .warn)
+                return
+            }
+
+            // RTO9a2a1, RTO9a2a2
+            let entry: ObjectsPool.Entry
+            if let existingEntry = objectsPool.entries[operation.objectId] {
+                entry = existingEntry
+            } else {
+                guard let newEntry = objectsPool.createZeroValueObject(
+                    forObjectID: operation.objectId,
+                    mapDelegate: mapDelegate,
+                    coreSDK: coreSDK,
+                    logger: logger,
+                ) else {
+                    logger.log("Unable to create zero-value object for \(operation.objectId) when processing OBJECT message; dropping", level: .warn)
+                    return
+                }
+
+                entry = newEntry
+            }
+
+            switch operation.action {
+            case let .known(action):
+                switch action {
+                case .mapCreate, .mapSet, .mapRemove, .counterCreate, .counterInc, .objectDelete:
+                    // RTO9a2a3
+                    entry.apply(
+                        operation,
+                        objectMessageSerial: objectMessage.serial,
+                        objectMessageSiteCode: objectMessage.siteCode,
+                        objectsPool: &objectsPool,
+                    )
+                }
+            case let .unknown(rawValue):
+                // RTO9a2b
+                logger.log("Unsupported OBJECT operation action \(rawValue) received", level: .warn)
+                return
             }
         }
     }

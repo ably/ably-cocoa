@@ -888,4 +888,198 @@ struct DefaultLiveMapTests {
             #expect(map.testsOnly_createOperationIsMerged)
         }
     }
+
+    /// Tests for `MAP_CREATE` operations, covering RTLM16 specification points
+    struct MapCreateOperationTests {
+        // @spec RTLM16b
+        @Test
+        func discardsOperationWhenCreateOperationIsMerged() throws {
+            let logger = TestLogger()
+            let delegate = MockLiveMapObjectPoolDelegate()
+            let coreSDK = MockCoreSDK(channelState: .attaching)
+            let map = DefaultLiveMap.createZeroValued(objectID: "arbitrary", delegate: delegate, coreSDK: coreSDK, logger: logger)
+            var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, logger: logger)
+
+            // Set initial data and mark create operation as merged
+            map.replaceData(using: TestFactories.mapObjectState(entries: ["key1": TestFactories.stringMapEntry().entry]), objectsPool: &pool)
+            map.testsOnly_mergeInitialValue(from: TestFactories.mapCreateOperation(entries: ["key2": TestFactories.stringMapEntry(key: "key2", value: "value2").entry]), objectsPool: &pool)
+            #expect(map.testsOnly_createOperationIsMerged)
+
+            // Try to apply another MAP_CREATE operation
+            let operation = TestFactories.mapCreateOperation(entries: ["key3": TestFactories.stringMapEntry(key: "key3", value: "value3").entry])
+            map.testsOnly_applyMapCreateOperation(operation, objectsPool: &pool)
+
+            // Verify the operation was discarded - data unchanged
+            #expect(try map.get(key: "key1")?.stringValue == "testValue") // Original data
+            #expect(try map.get(key: "key2")?.stringValue == "value2") // From first merge
+            #expect(try map.get(key: "key3") == nil) // Not added by second operation
+        }
+
+        // @spec RTLM16d
+        @Test
+        func mergesInitialValue() throws {
+            let logger = TestLogger()
+            let delegate = MockLiveMapObjectPoolDelegate()
+            let coreSDK = MockCoreSDK(channelState: .attaching)
+            let map = DefaultLiveMap.createZeroValued(objectID: "arbitrary", delegate: delegate, coreSDK: coreSDK, logger: logger)
+            var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, logger: logger)
+
+            // Set initial data but don't mark create operation as merged
+            map.replaceData(using: TestFactories.mapObjectState(entries: ["key1": TestFactories.stringMapEntry().entry]), objectsPool: &pool)
+            #expect(!map.testsOnly_createOperationIsMerged)
+
+            // Apply MAP_CREATE operation
+            let operation = TestFactories.mapCreateOperation(entries: ["key2": TestFactories.stringMapEntry(key: "key2", value: "value2").entry])
+            map.testsOnly_applyMapCreateOperation(operation, objectsPool: &pool)
+
+            // Verify the operation was applied - initial value merged. (The full logic of RTLM17 is tested elsewhere; we just check for some of its side effects here.)
+            #expect(try map.get(key: "key1")?.stringValue == "testValue") // Original data
+            #expect(try map.get(key: "key2")?.stringValue == "value2") // From merge
+            #expect(map.testsOnly_createOperationIsMerged)
+        }
+    }
+
+    /// Tests for the `apply(_ operation:, …)` method, covering RTLM15 specification points
+    struct ApplyOperationTests {
+        // @spec RTLM15b - Tests that an operation does not get applied when canApplyOperation returns nil
+        @Test
+        func discardsOperationWhenCannotBeApplied() throws {
+            let logger = TestLogger()
+            let delegate = MockLiveMapObjectPoolDelegate()
+            let coreSDK = MockCoreSDK(channelState: .attaching)
+            let map = DefaultLiveMap.createZeroValued(objectID: "arbitrary", delegate: delegate, coreSDK: coreSDK, logger: logger)
+
+            // Set up the map with an existing site timeserial that will cause the operation to be discarded
+            var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, logger: logger)
+            let (key1, entry1) = TestFactories.stringMapEntry(key: "key1", value: "existing", timeserial: nil)
+            map.replaceData(using: TestFactories.mapObjectState(
+                siteTimeserials: ["site1": "ts2"], // Existing serial "ts2"
+                entries: [key1: entry1],
+            ), objectsPool: &pool)
+
+            let operation = TestFactories.objectOperation(
+                action: .known(.mapSet),
+                mapOp: ObjectsMapOp(key: "key1", data: ObjectData(string: .string("new"))),
+            )
+
+            // Apply operation with serial "ts1" which is lexicographically less than existing "ts2" and thus will be applied per RTLO4a (this is a non-pathological case of RTOL4a, that spec point being fully tested elsewhere)
+            map.apply(
+                operation,
+                objectMessageSerial: "ts1", // Less than existing "ts2"
+                objectMessageSiteCode: "site1",
+                objectsPool: &pool,
+            )
+
+            // Check that the MAP_SET side-effects didn't happen:
+            // Verify the operation was discarded - data unchanged (should still be "existing" from creation)
+            #expect(try map.get(key: "key1")?.stringValue == "existing")
+            // Verify site timeserials unchanged
+            #expect(map.testsOnly_siteTimeserials == ["site1": "ts2"])
+        }
+
+        // @specOneOf(1/3) RTLM15c - We test this spec point for each possible operation
+        // @spec RTLM15d1 - Tests MAP_CREATE operation application
+        @Test
+        func appliesMapCreateOperation() throws {
+            let logger = TestLogger()
+            let delegate = MockLiveMapObjectPoolDelegate()
+            let coreSDK = MockCoreSDK(channelState: .attaching)
+            let map = DefaultLiveMap.createZeroValued(objectID: "arbitrary", delegate: delegate, coreSDK: coreSDK, logger: logger)
+
+            let operation = TestFactories.mapCreateOperation(
+                entries: ["key1": TestFactories.stringMapEntry(key: "key1", value: "value1").entry],
+            )
+            var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, logger: logger)
+
+            // Apply MAP_CREATE operation
+            map.apply(
+                operation,
+                objectMessageSerial: "ts1",
+                objectMessageSiteCode: "site1",
+                objectsPool: &pool,
+            )
+
+            // Verify the operation was applied - initial value merged (the full logic of RTLM16 is tested elsewhere; we just check for some of its side effects here)
+            #expect(try map.get(key: "key1")?.stringValue == "value1")
+            #expect(map.testsOnly_createOperationIsMerged)
+            // Verify RTLM15c side-effect: site timeserial was updated
+            #expect(map.testsOnly_siteTimeserials == ["site1": "ts1"])
+        }
+
+        // @specOneOf(2/3) RTLM15c - We test this spec point for each possible operation
+        // @spec RTLM15d2 - Tests MAP_SET operation application
+        @Test
+        func appliesMapSetOperation() throws {
+            let logger = TestLogger()
+            let delegate = MockLiveMapObjectPoolDelegate()
+            let coreSDK = MockCoreSDK(channelState: .attaching)
+            let map = DefaultLiveMap.createZeroValued(objectID: "arbitrary", delegate: delegate, coreSDK: coreSDK, logger: logger)
+
+            // Set initial data
+            var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, logger: logger)
+            let (key1, entry1) = TestFactories.stringMapEntry(key: "key1", value: "existing", timeserial: nil)
+            map.replaceData(using: TestFactories.mapObjectState(
+                siteTimeserials: [:],
+                entries: [key1: entry1],
+            ), objectsPool: &pool)
+            #expect(try map.get(key: "key1")?.stringValue == "existing")
+
+            let operation = TestFactories.objectOperation(
+                action: .known(.mapSet),
+                mapOp: ObjectsMapOp(key: "key1", data: ObjectData(string: .string("new"))),
+            )
+
+            // Apply MAP_SET operation
+            map.apply(
+                operation,
+                objectMessageSerial: "ts1",
+                objectMessageSiteCode: "site1",
+                objectsPool: &pool,
+            )
+
+            // Verify the operation was applied - value updated (the full logic of RTLM7 is tested elsewhere; we just check for some of its side effects here)
+            #expect(try map.get(key: "key1")?.stringValue == "new")
+            // Verify RTLM15c side-effect: site timeserial was updated
+            #expect(map.testsOnly_siteTimeserials == ["site1": "ts1"])
+        }
+
+        // @specOneOf(3/3) RTLM15c - We test this spec point for each possible operation
+        // @spec RTLM15d3 - Tests MAP_REMOVE operation application
+        @Test
+        func appliesMapRemoveOperation() throws {
+            let logger = TestLogger()
+            let delegate = MockLiveMapObjectPoolDelegate()
+            let coreSDK = MockCoreSDK(channelState: .attaching)
+            let map = DefaultLiveMap.createZeroValued(objectID: "arbitrary", delegate: delegate, coreSDK: coreSDK, logger: logger)
+
+            // Set initial data
+            var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, logger: logger)
+            let (key1, entry1) = TestFactories.stringMapEntry(key: "key1", value: "existing", timeserial: nil)
+            map.replaceData(using: TestFactories.mapObjectState(
+                siteTimeserials: [:],
+                entries: [key1: entry1],
+            ), objectsPool: &pool)
+            #expect(try map.get(key: "key1")?.stringValue == "existing")
+
+            let operation = TestFactories.objectOperation(
+                action: .known(.mapRemove),
+                mapOp: ObjectsMapOp(key: "key1", data: ObjectData()),
+            )
+
+            // Apply MAP_REMOVE operation
+            map.apply(
+                operation,
+                objectMessageSerial: "ts1",
+                objectMessageSiteCode: "site1",
+                objectsPool: &pool,
+            )
+
+            // Verify the operation was applied - key removed (the full logic of RTLM8 is tested elsewhere; we just check for some of its side effects here)
+            #expect(try map.get(key: "key1") == nil)
+            // Verify RTLM15c side-effect: site timeserial was updated
+            #expect(map.testsOnly_siteTimeserials == ["site1": "ts1"])
+        }
+
+        // @specUntested RTLM15d4 - There is no way to check that it was a no-op since there are no side effects that this spec point tells us not to apply
+    }
 }

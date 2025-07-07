@@ -28,6 +28,31 @@ internal struct ObjectsPool {
                 counter
             }
         }
+
+        /// Applies an operation to a LiveObject, per RTO9a2a3.
+        internal func apply(
+            _ operation: ObjectOperation,
+            objectMessageSerial: String?,
+            objectMessageSiteCode: String?,
+            objectsPool: inout ObjectsPool,
+        ) {
+            switch self {
+            case let .map(map):
+                map.apply(
+                    operation,
+                    objectMessageSerial: objectMessageSerial,
+                    objectMessageSiteCode: objectMessageSiteCode,
+                    objectsPool: &objectsPool,
+                )
+            case let .counter(counter):
+                counter.apply(
+                    operation,
+                    objectMessageSerial: objectMessageSerial,
+                    objectMessageSiteCode: objectMessageSiteCode,
+                    objectsPool: &objectsPool,
+                )
+            }
+        }
     }
 
     /// Keyed by `objectId`.

@@ -386,6 +386,11 @@ struct TestFactories {
         )
     }
 
+    /// Creates a WireObjectsCounterOp
+    static func counterOp(amount: Int = 10) -> WireObjectsCounterOp {
+        WireObjectsCounterOp(amount: NSNumber(value: amount))
+    }
+
     // MARK: - ObjectsMapEntry Factory
 
     /// Creates an ObjectsMapEntry with sensible defaults
@@ -514,6 +519,100 @@ struct TestFactories {
     /// Creates a WireObjectsCounter with sensible defaults
     static func wireObjectsCounter(count: Int? = 42) -> WireObjectsCounter {
         WireObjectsCounter(count: count.map { NSNumber(value: $0) })
+    }
+
+    // MARK: - Operation Message Factories
+
+    /// Creates an InboundObjectMessage with a MAP_SET operation
+    static func mapSetOperationMessage(
+        objectId: String = "map:test@123",
+        key: String = "testKey",
+        value: String = "testValue",
+        serial: String = "ts1",
+        siteCode: String = "site1",
+    ) -> InboundObjectMessage {
+        inboundObjectMessage(
+            operation: objectOperation(
+                action: .known(.mapSet),
+                objectId: objectId,
+                mapOp: ObjectsMapOp(
+                    key: key,
+                    data: ObjectData(string: .string(value)),
+                ),
+            ),
+            serial: serial,
+            siteCode: siteCode,
+        )
+    }
+
+    /// Creates an InboundObjectMessage with a MAP_REMOVE operation
+    static func mapRemoveOperationMessage(
+        objectId: String = "map:test@123",
+        key: String = "testKey",
+        serial: String = "ts1",
+        siteCode: String = "site1",
+    ) -> InboundObjectMessage {
+        inboundObjectMessage(
+            operation: objectOperation(
+                action: .known(.mapRemove),
+                objectId: objectId,
+                mapOp: ObjectsMapOp(key: key),
+            ),
+            serial: serial,
+            siteCode: siteCode,
+        )
+    }
+
+    /// Creates an InboundObjectMessage with a MAP_CREATE operation
+    static func mapCreateOperationMessage(
+        objectId: String = "map:test@123",
+        entries: [String: ObjectsMapEntry]? = nil,
+        serial: String = "ts1",
+        siteCode: String = "site1",
+    ) -> InboundObjectMessage {
+        inboundObjectMessage(
+            operation: mapCreateOperation(
+                objectId: objectId,
+                entries: entries,
+            ),
+            serial: serial,
+            siteCode: siteCode,
+        )
+    }
+
+    /// Creates an InboundObjectMessage with a COUNTER_CREATE operation
+    static func counterCreateOperationMessage(
+        objectId: String = "counter:test@123",
+        count: Int? = 42,
+        serial: String = "ts1",
+        siteCode: String = "site1",
+    ) -> InboundObjectMessage {
+        inboundObjectMessage(
+            operation: counterCreateOperation(
+                objectId: objectId,
+                count: count,
+            ),
+            serial: serial,
+            siteCode: siteCode,
+        )
+    }
+
+    /// Creates an InboundObjectMessage with a COUNTER_INC operation
+    static func counterIncOperationMessage(
+        objectId: String = "counter:test@123",
+        amount: Int = 10,
+        serial: String = "ts1",
+        siteCode: String = "site1",
+    ) -> InboundObjectMessage {
+        inboundObjectMessage(
+            operation: objectOperation(
+                action: .known(.counterInc),
+                objectId: objectId,
+                counterOp: counterOp(amount: amount),
+            ),
+            serial: serial,
+            siteCode: siteCode,
+        )
     }
 
     // MARK: - Common Test Scenarios

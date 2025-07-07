@@ -175,4 +175,162 @@ struct DefaultLiveCounterTests {
             #expect(counter.testsOnly_createOperationIsMerged)
         }
     }
+
+    /// Tests for `COUNTER_CREATE` operations, covering RTLC8 specification points
+    struct CounterCreateOperationTests {
+        // @spec RTLC8b
+        @Test
+        func discardsOperationWhenCreateOperationIsMerged() throws {
+            let logger = TestLogger()
+            let counter = DefaultLiveCounter.createZeroValued(objectID: "arbitrary", coreSDK: MockCoreSDK(channelState: .attaching), logger: logger)
+
+            // Set initial data and mark create operation as merged
+            counter.replaceData(using: TestFactories.counterObjectState(count: 5))
+            counter.testsOnly_mergeInitialValue(from: TestFactories.counterCreateOperation(count: 10))
+            #expect(counter.testsOnly_createOperationIsMerged)
+
+            // Try to apply another COUNTER_CREATE operation
+            let operation = TestFactories.counterCreateOperation(count: 20)
+            counter.testsOnly_applyCounterCreateOperation(operation)
+
+            // Verify the operation was discarded - data unchanged
+            #expect(try counter.value == 15) // 5 + 10, not 5 + 10 + 20
+        }
+
+        // @spec RTLC8c
+        @Test
+        func mergesInitialValue() throws {
+            let logger = TestLogger()
+            let counter = DefaultLiveCounter.createZeroValued(objectID: "arbitrary", coreSDK: MockCoreSDK(channelState: .attaching), logger: logger)
+
+            // Set initial data but don't mark create operation as merged
+            counter.replaceData(using: TestFactories.counterObjectState(count: 5))
+            #expect(!counter.testsOnly_createOperationIsMerged)
+
+            // Apply COUNTER_CREATE operation
+            let operation = TestFactories.counterCreateOperation(count: 10)
+            counter.testsOnly_applyCounterCreateOperation(operation)
+
+            // Verify the operation was applied - initial value merged. (The full logic of RTLC10 is tested elsewhere; we just check for some of its side effects here.)
+            #expect(try counter.value == 15) // 5 + 10
+            #expect(counter.testsOnly_createOperationIsMerged)
+        }
+    }
+
+    /// Tests for `COUNTER_INC` operations, covering RTLC9 specification points
+    struct CounterIncOperationTests {
+        // @spec RTLC9b
+        @Test(arguments: [
+            (operation: TestFactories.counterOp(amount: 10), expectedValue: 15.0), // 5 + 10
+            (operation: nil as WireObjectsCounterOp?, expectedValue: 5.0), // unchanged
+        ] as [(operation: WireObjectsCounterOp?, expectedValue: Double)])
+        func addsAmountToData(operation: WireObjectsCounterOp?, expectedValue: Double) throws {
+            let logger = TestLogger()
+            let counter = DefaultLiveCounter.createZeroValued(objectID: "arbitrary", coreSDK: MockCoreSDK(channelState: .attaching), logger: logger)
+
+            // Set initial data
+            counter.replaceData(using: TestFactories.counterObjectState(count: 5))
+            #expect(try counter.value == 5)
+
+            // Apply COUNTER_INC operation
+            counter.testsOnly_applyCounterIncOperation(operation)
+
+            // Verify the operation was applied correctly
+            #expect(try counter.value == expectedValue)
+        }
+    }
+
+    /// Tests for the `apply(_ operation:, …)` method, covering RTLC7 specification points
+    struct ApplyOperationTests {
+        // @spec RTLC7b - Tests that an operation does not get applied when canApplyOperation returns nil
+        @Test
+        func discardsOperationWhenCannotBeApplied() throws {
+            let logger = TestLogger()
+            let counter = DefaultLiveCounter.createZeroValued(objectID: "arbitrary", coreSDK: MockCoreSDK(channelState: .attaching), logger: logger)
+
+            // Set up the counter with an existing site timeserial that will cause the operation to be discarded
+            counter.replaceData(using: TestFactories.counterObjectState(
+                siteTimeserials: ["site1": "ts2"], // Existing serial "ts2"
+                count: 5,
+            ))
+
+            let operation = TestFactories.objectOperation(
+                action: .known(.counterInc),
+                counterOp: TestFactories.counterOp(amount: 10),
+            )
+            var pool = ObjectsPool(rootDelegate: MockLiveMapObjectPoolDelegate(), rootCoreSDK: MockCoreSDK(channelState: .attaching), logger: logger)
+
+            // Apply operation with serial "ts1" which is lexicographically less than existing "ts2" and thus will be applied per RTLO4a (this is a non-pathological case of RTOL4a, that spec point being fully tested elsewhere)
+            counter.apply(
+                operation,
+                objectMessageSerial: "ts1", // Less than existing "ts2"
+                objectMessageSiteCode: "site1",
+                objectsPool: &pool,
+            )
+
+            // Check that the COUNTER_INC side-effects didn't happen:
+            // Verify the operation was discarded - data unchanged (should still be 5 from creation)
+            #expect(try counter.value == 5)
+            // Verify site timeserials unchanged
+            #expect(counter.testsOnly_siteTimeserials == ["site1": "ts2"])
+        }
+
+        // @specOneOf(1/2) RTLC7c - We test this spec point for each possible operation
+        // @spec RTLC7d1 - Tests COUNTER_CREATE operation application
+        @Test
+        func appliesCounterCreateOperation() throws {
+            let logger = TestLogger()
+            let counter = DefaultLiveCounter.createZeroValued(objectID: "arbitrary", coreSDK: MockCoreSDK(channelState: .attaching), logger: logger)
+
+            let operation = TestFactories.counterCreateOperation(count: 15)
+            var pool = ObjectsPool(rootDelegate: MockLiveMapObjectPoolDelegate(), rootCoreSDK: MockCoreSDK(channelState: .attaching), logger: logger)
+
+            // Apply COUNTER_CREATE operation
+            counter.apply(
+                operation,
+                objectMessageSerial: "ts1",
+                objectMessageSiteCode: "site1",
+                objectsPool: &pool,
+            )
+
+            // Verify the operation was applied - initial value merged (the full logic of RTLC8 is tested elsewhere; we just check for some of its side effects here)
+            #expect(try counter.value == 15)
+            #expect(counter.testsOnly_createOperationIsMerged)
+            // Verify RTLC7c side-effect: site timeserial was updated
+            #expect(counter.testsOnly_siteTimeserials == ["site1": "ts1"])
+        }
+
+        // @specOneOf(2/2) RTLC7c - We test this spec point for each possible operation
+        // @spec RTLC7d2 - Tests COUNTER_INC operation application
+        @Test
+        func appliesCounterIncOperation() throws {
+            let logger = TestLogger()
+            let counter = DefaultLiveCounter.createZeroValued(objectID: "arbitrary", coreSDK: MockCoreSDK(channelState: .attaching), logger: logger)
+
+            // Set initial data
+            counter.replaceData(using: TestFactories.counterObjectState(siteTimeserials: [:], count: 5))
+            #expect(try counter.value == 5)
+
+            let operation = TestFactories.objectOperation(
+                action: .known(.counterInc),
+                counterOp: TestFactories.counterOp(amount: 10),
+            )
+            var pool = ObjectsPool(rootDelegate: MockLiveMapObjectPoolDelegate(), rootCoreSDK: MockCoreSDK(channelState: .attaching), logger: logger)
+
+            // Apply COUNTER_INC operation
+            counter.apply(
+                operation,
+                objectMessageSerial: "ts1",
+                objectMessageSiteCode: "site1",
+                objectsPool: &pool,
+            )
+
+            // Verify the operation was applied - amount added to data (the full logic of RTLC9 is tested elsewhere; we just check for some of its side effects here)
+            #expect(try counter.value == 15) // 5 + 10
+            // Verify RTLC7c side-effect: site timeserial was updated
+            #expect(counter.testsOnly_siteTimeserials == ["site1": "ts1"])
+        }
+
+        // @specUntested RTLC7e3 - There is no way to check that it was a no-op since there are no side effects that this spec point tells us not to apply
+    }
 }

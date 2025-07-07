@@ -257,6 +257,39 @@ internal final class DefaultLiveMap: LiveMap {
         }
     }
 
+    /// Test-only method to apply a MAP_CREATE operation, per RTLM16.
+    internal func testsOnly_applyMapCreateOperation(_ operation: ObjectOperation, objectsPool: inout ObjectsPool) {
+        mutex.withLock {
+            mutableState.applyMapCreateOperation(
+                operation,
+                objectsPool: &objectsPool,
+                mapDelegate: delegate.referenced,
+                coreSDK: coreSDK,
+                logger: logger,
+            )
+        }
+    }
+
+    /// Attempts to apply an operation from an inbound `ObjectMessage`, per RTLM15.
+    internal func apply(
+        _ operation: ObjectOperation,
+        objectMessageSerial: String?,
+        objectMessageSiteCode: String?,
+        objectsPool: inout ObjectsPool,
+    ) {
+        mutex.withLock {
+            mutableState.apply(
+                operation,
+                objectMessageSerial: objectMessageSerial,
+                objectMessageSiteCode: objectMessageSiteCode,
+                objectsPool: &objectsPool,
+                mapDelegate: delegate.referenced,
+                coreSDK: coreSDK,
+                logger: logger,
+            )
+        }
+    }
+
     /// Applies a `MAP_SET` operation to a key, per RTLM7.
     ///
     /// This is currently exposed just so that the tests can test RTLM7 without having to go through a convoluted replaceData(…) call, but I _think_ that it's going to be used in further contexts when we introduce the handling of incoming object operations in a future spec PR.
@@ -372,6 +405,71 @@ internal final class DefaultLiveMap: LiveMap {
             liveObject.createOperationIsMerged = true
         }
 
+        /// Attempts to apply an operation from an inbound `ObjectMessage`, per RTLM15.
+        internal mutating func apply(
+            _ operation: ObjectOperation,
+            objectMessageSerial: String?,
+            objectMessageSiteCode: String?,
+            objectsPool: inout ObjectsPool,
+            mapDelegate: LiveMapObjectPoolDelegate?,
+            coreSDK: CoreSDK,
+            logger: Logger,
+        ) {
+            guard let applicableOperation = liveObject.canApplyOperation(objectMessageSerial: objectMessageSerial, objectMessageSiteCode: objectMessageSiteCode, logger: logger) else {
+                // RTLM15b
+                logger.log("Operation \(operation) (serial: \(String(describing: objectMessageSerial)), siteCode: \(String(describing: objectMessageSiteCode))) should not be applied; discarding", level: .debug)
+                return
+            }
+
+            // RTLM15c
+            liveObject.siteTimeserials[applicableOperation.objectMessageSiteCode] = applicableOperation.objectMessageSerial
+
+            switch operation.action {
+            case .known(.mapCreate):
+                // RTLM15d1
+                applyMapCreateOperation(
+                    operation,
+                    objectsPool: &objectsPool,
+                    mapDelegate: mapDelegate,
+                    coreSDK: coreSDK,
+                    logger: logger,
+                )
+            case .known(.mapSet):
+                guard let mapOp = operation.mapOp else {
+                    logger.log("Could not apply MAP_SET since operation.mapOp is missing", level: .warn)
+                    return
+                }
+                guard let data = mapOp.data else {
+                    logger.log("Could not apply MAP_SET since operation.data is missing", level: .warn)
+                    return
+                }
+
+                // RTLM15d2
+                applyMapSetOperation(
+                    key: mapOp.key,
+                    operationTimeserial: applicableOperation.objectMessageSerial,
+                    operationData: data,
+                    objectsPool: &objectsPool,
+                    mapDelegate: mapDelegate,
+                    coreSDK: coreSDK,
+                    logger: logger,
+                )
+            case .known(.mapRemove):
+                guard let mapOp = operation.mapOp else {
+                    return
+                }
+
+                // RTLM15d3
+                applyMapRemoveOperation(
+                    key: mapOp.key,
+                    operationTimeserial: applicableOperation.objectMessageSerial,
+                )
+            default:
+                // RTLM15d4
+                logger.log("Operation \(operation) has unsupported action for LiveMap; discarding", level: .warn)
+            }
+        }
+
         /// Applies a `MAP_SET` operation to a key, per RTLM7.
         internal mutating func applyMapSetOperation(
             key: String,
@@ -476,6 +574,32 @@ internal final class DefaultLiveMap: LiveMap {
                 // so the operation must not be applied
                 false
             }
+        }
+
+        /// Applies a `MAP_CREATE` operation, per RTLM16.
+        internal mutating func applyMapCreateOperation(
+            _ operation: ObjectOperation,
+            objectsPool: inout ObjectsPool,
+            mapDelegate: LiveMapObjectPoolDelegate?,
+            coreSDK: CoreSDK,
+            logger: AblyPlugin.Logger,
+        ) {
+            if liveObject.createOperationIsMerged {
+                // RTLM16b
+                logger.log("Not applying MAP_CREATE because a MAP_CREATE has already been applied", level: .warn)
+                return
+            }
+
+            // TODO: RTLM16c `semantics` comparison; outstanding question in https://github.com/ably/specification/pull/343/files#r2192784482
+
+            // RTLM16d
+            mergeInitialValue(
+                from: operation,
+                objectsPool: &objectsPool,
+                mapDelegate: mapDelegate,
+                coreSDK: coreSDK,
+                logger: logger,
+            )
         }
     }
 

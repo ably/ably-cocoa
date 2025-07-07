@@ -130,6 +130,38 @@ internal final class DefaultLiveCounter: LiveCounter {
         }
     }
 
+    /// Test-only method to apply a COUNTER_CREATE operation, per RTLC8.
+    internal func testsOnly_applyCounterCreateOperation(_ operation: ObjectOperation) {
+        mutex.withLock {
+            mutableState.applyCounterCreateOperation(operation, logger: logger)
+        }
+    }
+
+    /// Test-only method to apply a COUNTER_INC operation, per RTLC9.
+    internal func testsOnly_applyCounterIncOperation(_ operation: WireObjectsCounterOp?) {
+        mutex.withLock {
+            mutableState.applyCounterIncOperation(operation)
+        }
+    }
+
+    /// Attempts to apply an operation from an inbound `ObjectMessage`, per RTLC7.
+    internal func apply(
+        _ operation: ObjectOperation,
+        objectMessageSerial: String?,
+        objectMessageSiteCode: String?,
+        objectsPool: inout ObjectsPool,
+    ) {
+        mutex.withLock {
+            mutableState.apply(
+                operation,
+                objectMessageSerial: objectMessageSerial,
+                objectMessageSiteCode: objectMessageSiteCode,
+                objectsPool: &objectsPool,
+                logger: logger,
+            )
+        }
+    }
+
     // MARK: - Mutable state and the operations that affect it
 
     private struct MutableState {
@@ -164,6 +196,64 @@ internal final class DefaultLiveCounter: LiveCounter {
             }
             // RTLC10b: Set the private flag createOperationIsMerged to true
             liveObject.createOperationIsMerged = true
+        }
+
+        /// Attempts to apply an operation from an inbound `ObjectMessage`, per RTLC7.
+        internal mutating func apply(
+            _ operation: ObjectOperation,
+            objectMessageSerial: String?,
+            objectMessageSiteCode: String?,
+            objectsPool: inout ObjectsPool,
+            logger: Logger,
+        ) {
+            guard let applicableOperation = liveObject.canApplyOperation(objectMessageSerial: objectMessageSerial, objectMessageSiteCode: objectMessageSiteCode, logger: logger) else {
+                // RTLC7b
+                logger.log("Operation \(operation) (serial: \(String(describing: objectMessageSerial)), siteCode: \(String(describing: objectMessageSiteCode))) should not be applied; discarding", level: .debug)
+                return
+            }
+
+            // RTLC7c
+            liveObject.siteTimeserials[applicableOperation.objectMessageSiteCode] = applicableOperation.objectMessageSerial
+
+            switch operation.action {
+            case .known(.counterCreate):
+                // RTLC7d1
+                applyCounterCreateOperation(
+                    operation,
+                    logger: logger,
+                )
+            case .known(.counterInc):
+                // RTLC7d2
+                applyCounterIncOperation(operation.counterOp)
+            default:
+                // RTLC7d3
+                logger.log("Operation \(operation) has unsupported action for LiveCounter; discarding", level: .warn)
+            }
+        }
+
+        /// Applies a `COUNTER_CREATE` operation, per RTLC8.
+        internal mutating func applyCounterCreateOperation(
+            _ operation: ObjectOperation,
+            logger: Logger,
+        ) {
+            if liveObject.createOperationIsMerged {
+                // RTLC8b
+                logger.log("Not applying COUNTER_CREATE because a COUNTER_CREATE has already been applied", level: .warn)
+                return
+            }
+
+            // RTLC8c
+            mergeInitialValue(from: operation)
+        }
+
+        /// Applies a `COUNTER_INC` operation, per RTLC9.
+        internal mutating func applyCounterIncOperation(_ operation: WireObjectsCounterOp?) {
+            guard let operation else {
+                return
+            }
+
+            // RTLC9b
+            data += operation.amount.doubleValue
         }
     }
 }

@@ -664,4 +664,263 @@ struct DefaultRealtimeObjectsTests {
             }
         }
     }
+
+    /// Tests for `DefaultRealtimeObjects.handleObjectProtocolMessage`, covering RTO8 specification points.
+    struct HandleObjectProtocolMessageTests {
+        // Tests that when an OBJECT ProtocolMessage is received and there isn't a sync in progress, its operations are handled per RTO8b.
+        struct ApplyOperationTests {
+            // @specUntested RTO9a1 - There is no way to check that it was a no-op since there are no side effects that this spec point tells us not to apply
+            // @specUntested RTO9a2b - There is no way to check that it was a no-op since there are no side effects that this spec point tells us not to apply
+
+            // MARK: - RTO9a2a1 Tests
+
+            // @spec RTO9a2a1 - Tests that if necessary it creates an object in the ObjectsPool
+            @Test
+            func createsObjectInObjectsPoolWhenNecessary() {
+                let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+                let objectId = "map:new@123"
+
+                // Verify the object doesn't exist in the pool initially
+                let initialPool = realtimeObjects.testsOnly_objectsPool
+                #expect(initialPool.entries[objectId] == nil)
+
+                // Create a MAP_SET operation message for a non-existent object
+                let operationMessage = TestFactories.mapSetOperationMessage(
+                    objectId: objectId,
+                    key: "testKey",
+                    value: "testValue",
+                )
+
+                // Handle the object protocol message
+                realtimeObjects.handleObjectProtocolMessage(objectMessages: [operationMessage])
+
+                // Verify the object was created in the ObjectsPool (RTO9a2a1)
+                let finalPool = realtimeObjects.testsOnly_objectsPool
+                #expect(finalPool.entries[objectId] != nil)
+            }
+
+            // MARK: - RTO9a2a3 Tests for MAP_CREATE
+
+            // TODO: Understand what to do with OBJECT_DELETE (https://github.com/ably/specification/pull/343#discussion_r2193126548)
+
+            // @specOneOf(1/5) RTO9a2a3 - Tests MAP_CREATE operation application
+            @Test
+            func appliesMapCreateOperation() throws {
+                let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+                let objectId = "map:test@123"
+
+                // Create a map object in the pool first
+                let (entryKey, entry) = TestFactories.stringMapEntry(key: "existingKey", value: "existingValue")
+                realtimeObjects.handleObjectSyncProtocolMessage(
+                    objectMessages: [
+                        TestFactories.mapObjectMessage(
+                            objectId: objectId,
+                            siteTimeserials: ["site1": "ts1"],
+                            entries: [entryKey: entry],
+                        ),
+                    ],
+                    protocolMessageChannelSerial: nil,
+                )
+
+                // Verify the object exists and has initial data
+                let map = try #require(realtimeObjects.testsOnly_objectsPool.entries[objectId]?.mapValue)
+                let initialValue = try #require(map.get(key: "existingKey")?.stringValue)
+                #expect(initialValue == "existingValue")
+
+                // Create a MAP_CREATE operation message
+                let (createKey, createEntry) = TestFactories.stringMapEntry(key: "createKey", value: "createValue")
+                let operationMessage = TestFactories.mapCreateOperationMessage(
+                    objectId: objectId,
+                    entries: [createKey: createEntry],
+                    serial: "ts2", // Higher than existing "ts1"
+                    siteCode: "site1",
+                )
+
+                // Handle the object protocol message
+                realtimeObjects.handleObjectProtocolMessage(objectMessages: [operationMessage])
+
+                // Verify the operation was applied by checking for side effects
+                // The full logic of applying the operation is tested in RTLM15; we just check for some of its side effects here
+                let finalValue = try #require(map.get(key: "createKey")?.stringValue)
+                #expect(finalValue == "createValue")
+                #expect(map.testsOnly_createOperationIsMerged)
+                #expect(map.testsOnly_siteTimeserials["site1"] == "ts2")
+            }
+
+            // MARK: - RTO9a2a3 Tests for MAP_SET
+
+            // @specOneOf(2/5) RTO9a2a3 - Tests MAP_SET operation application
+            @Test
+            func appliesMapSetOperation() throws {
+                let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+                let objectId = "map:test@123"
+
+                // Create a map object in the pool first
+                let (entryKey, entry) = TestFactories.stringMapEntry(key: "existingKey", value: "existingValue")
+                realtimeObjects.handleObjectSyncProtocolMessage(
+                    objectMessages: [
+                        TestFactories.mapObjectMessage(
+                            objectId: objectId,
+                            siteTimeserials: ["site1": "ts1"],
+                            entries: [entryKey: entry],
+                        ),
+                    ],
+                    protocolMessageChannelSerial: nil,
+                )
+
+                // Verify the object exists and has initial data
+                let map = try #require(realtimeObjects.testsOnly_objectsPool.entries[objectId]?.mapValue)
+                let initialValue = try #require(map.get(key: "existingKey")?.stringValue)
+                #expect(initialValue == "existingValue")
+
+                // Create a MAP_SET operation message
+                let operationMessage = TestFactories.mapSetOperationMessage(
+                    objectId: objectId,
+                    key: "existingKey",
+                    value: "newValue",
+                    serial: "ts2", // Higher than existing "ts1"
+                    siteCode: "site1",
+                )
+
+                // Handle the object protocol message
+                realtimeObjects.handleObjectProtocolMessage(objectMessages: [operationMessage])
+
+                // Verify the operation was applied by checking for side effects
+                // The full logic of applying the operation is tested in RTLM15; we just check for some of its side effects here
+                let finalValue = try #require(map.get(key: "existingKey")?.stringValue)
+                #expect(finalValue == "newValue")
+                #expect(map.testsOnly_siteTimeserials["site1"] == "ts2")
+            }
+
+            // MARK: - RTO9a2a3 Tests for MAP_REMOVE
+
+            // @specOneOf(3/5) RTO9a2a3 - Tests MAP_REMOVE operation application
+            @Test
+            func appliesMapRemoveOperation() throws {
+                let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+                let objectId = "map:test@123"
+
+                // Create a map object in the pool first
+                let (entryKey, entry) = TestFactories.stringMapEntry(key: "existingKey", value: "existingValue")
+                realtimeObjects.handleObjectSyncProtocolMessage(
+                    objectMessages: [
+                        TestFactories.mapObjectMessage(
+                            objectId: objectId,
+                            siteTimeserials: ["site1": "ts1"],
+                            entries: [entryKey: entry],
+                        ),
+                    ],
+                    protocolMessageChannelSerial: nil,
+                )
+
+                // Verify the object exists and has initial data
+                let map = try #require(realtimeObjects.testsOnly_objectsPool.entries[objectId]?.mapValue)
+                let initialValue = try #require(map.get(key: "existingKey")?.stringValue)
+                #expect(initialValue == "existingValue")
+
+                // Create a MAP_REMOVE operation message
+                let operationMessage = TestFactories.mapRemoveOperationMessage(
+                    objectId: objectId,
+                    key: "existingKey",
+                    serial: "ts2", // Higher than existing "ts1"
+                    siteCode: "site1",
+                )
+
+                // Handle the object protocol message
+                realtimeObjects.handleObjectProtocolMessage(objectMessages: [operationMessage])
+
+                // Verify the operation was applied by checking for side effects
+                // The full logic of applying the operation is tested in RTLM15; we just check for some of its side effects here
+                let finalValue = try map.get(key: "existingKey")
+                #expect(finalValue == nil) // Key should be removed/tombstoned
+                #expect(map.testsOnly_siteTimeserials["site1"] == "ts2")
+            }
+
+            // MARK: - RTO9a2a3 Tests for COUNTER_CREATE
+
+            // @specOneOf(4/5) RTO9a2a3 - Tests COUNTER_CREATE operation application
+            @Test
+            func appliesCounterCreateOperation() throws {
+                let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+                let objectId = "counter:test@123"
+
+                // Create a counter object in the pool first
+                realtimeObjects.handleObjectSyncProtocolMessage(
+                    objectMessages: [
+                        TestFactories.counterObjectMessage(
+                            objectId: objectId,
+                            siteTimeserials: ["site1": "ts1"],
+                            count: 5,
+                        ),
+                    ],
+                    protocolMessageChannelSerial: nil,
+                )
+
+                // Verify the object exists and has initial data
+                let counter = try #require(realtimeObjects.testsOnly_objectsPool.entries[objectId]?.counterValue)
+                let initialValue = try counter.value
+                #expect(initialValue == 5)
+
+                // Create a COUNTER_CREATE operation message
+                let operationMessage = TestFactories.counterCreateOperationMessage(
+                    objectId: objectId,
+                    count: 10,
+                    serial: "ts2", // Higher than existing "ts1"
+                    siteCode: "site1",
+                )
+
+                // Handle the object protocol message
+                realtimeObjects.handleObjectProtocolMessage(objectMessages: [operationMessage])
+
+                // Verify the operation was applied by checking for side effects
+                // The full logic of applying the operation is tested in RTLC7; we just check for some of its side effects here
+                let finalValue = try counter.value
+                #expect(finalValue == 15) // 5 + 10 (initial value merged)
+                #expect(counter.testsOnly_siteTimeserials["site1"] == "ts2")
+            }
+
+            // MARK: - RTO9a2a3 Tests for COUNTER_INC
+
+            // @specOneOf(5/5) RTO9a2a3 - Tests COUNTER_INC operation application
+            @Test
+            func appliesCounterIncOperation() throws {
+                let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+                let objectId = "counter:test@123"
+
+                // Create a counter object in the pool first
+                realtimeObjects.handleObjectSyncProtocolMessage(
+                    objectMessages: [
+                        TestFactories.counterObjectMessage(
+                            objectId: objectId,
+                            siteTimeserials: ["site1": "ts1"],
+                            count: 5,
+                        ),
+                    ],
+                    protocolMessageChannelSerial: nil,
+                )
+
+                // Verify the object exists and has initial data
+                let counter = try #require(realtimeObjects.testsOnly_objectsPool.entries[objectId]?.counterValue)
+                let initialValue = try counter.value
+                #expect(initialValue == 5)
+
+                // Create a COUNTER_INC operation message
+                let operationMessage = TestFactories.counterIncOperationMessage(
+                    objectId: objectId,
+                    amount: 10,
+                    serial: "ts2", // Higher than existing "ts1"
+                    siteCode: "site1",
+                )
+
+                // Handle the object protocol message
+                realtimeObjects.handleObjectProtocolMessage(objectMessages: [operationMessage])
+
+                // Verify the operation was applied by checking for side effects
+                // The full logic of applying the operation is tested in RTLC7; we just check for some of its side effects here
+                let finalValue = try counter.value
+                #expect(finalValue == 15) // 5 + 10
+                #expect(counter.testsOnly_siteTimeserials["site1"] == "ts2")
+            }
+        }
+    }
 }
