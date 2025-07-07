@@ -9,7 +9,7 @@ struct DefaultLiveCounterTests {
         // @spec RTLC5b
         @Test(arguments: [.detached, .failed] as [ARTRealtimeChannelState])
         func valueThrowsIfChannelIsDetachedOrFailed(channelState: ARTRealtimeChannelState) async throws {
-            let counter = DefaultLiveCounter.createZeroValued(coreSDK: MockCoreSDK(channelState: channelState))
+            let counter = DefaultLiveCounter.createZeroValued(objectID: "arbitrary", coreSDK: MockCoreSDK(channelState: channelState))
 
             #expect {
                 _ = try counter.value
@@ -25,7 +25,7 @@ struct DefaultLiveCounterTests {
         // @spec RTLC5c
         @Test
         func valueReturnsCurrentDataWhenChannelIsValid() throws {
-            let counter = DefaultLiveCounter.createZeroValued(coreSDK: MockCoreSDK(channelState: .attached))
+            let counter = DefaultLiveCounter.createZeroValued(objectID: "arbitrary", coreSDK: MockCoreSDK(channelState: .attached))
 
             // Set some test data
             counter.replaceData(using: TestFactories.counterObjectState(count: 42))
@@ -39,7 +39,7 @@ struct DefaultLiveCounterTests {
         // @spec RTLC6a
         @Test
         func replacesSiteTimeserials() {
-            let counter = DefaultLiveCounter.createZeroValued(coreSDK: MockCoreSDK(channelState: .attaching))
+            let counter = DefaultLiveCounter.createZeroValued(objectID: "arbitrary", coreSDK: MockCoreSDK(channelState: .attaching))
             let state = TestFactories.counterObjectState(
                 siteTimeserials: ["site1": "ts1"], // Test value
             )
@@ -52,18 +52,35 @@ struct DefaultLiveCounterTests {
             // @spec RTLC6b - Tests the case without createOp, as RTLC6d2 takes precedence when createOp exists
             @Test
             func setsCreateOperationIsMergedToFalse() {
-                let counter = DefaultLiveCounter.createZeroValued(coreSDK: MockCoreSDK(channelState: .attaching))
+                // Given: A counter whose createOperationIsMerged is true
+                let counter = {
+                    let counter = DefaultLiveCounter.createZeroValued(objectID: "arbitrary", coreSDK: MockCoreSDK(channelState: .attaching))
+                    // Test setup: Manipulate counter so that its createOperationIsMerged gets set to true (we need to do this since we want to later assert that it gets set to false, but the default is false).
+                    let state = TestFactories.counterObjectState(
+                        createOp: TestFactories.objectOperation(
+                            action: .known(.counterCreate),
+                        ),
+                    )
+                    counter.replaceData(using: state)
+                    #expect(counter.testsOnly_createOperationIsMerged)
+
+                    return counter
+                }()
+
+                // When:
                 let state = TestFactories.counterObjectState(
                     createOp: nil, // Test value - must be nil to test RTLC6b
                 )
                 counter.replaceData(using: state)
-                #expect(counter.testsOnly_createOperationIsMerged == false)
+
+                // Then:
+                #expect(!counter.testsOnly_createOperationIsMerged)
             }
 
             // @specOneOf(1/4) RTLC6c - count but no createOp
             @Test
             func setsDataToCounterCount() throws {
-                let counter = DefaultLiveCounter.createZeroValued(coreSDK: MockCoreSDK(channelState: .attaching))
+                let counter = DefaultLiveCounter.createZeroValued(objectID: "arbitrary", coreSDK: MockCoreSDK(channelState: .attaching))
                 let state = TestFactories.counterObjectState(
                     count: 42, // Test value
                 )
@@ -74,7 +91,7 @@ struct DefaultLiveCounterTests {
             // @specOneOf(2/4) RTLC6c - no count, no createOp
             @Test
             func setsDataToZeroWhenCounterCountDoesNotExist() throws {
-                let counter = DefaultLiveCounter.createZeroValued(coreSDK: MockCoreSDK(channelState: .attaching))
+                let counter = DefaultLiveCounter.createZeroValued(objectID: "arbitrary", coreSDK: MockCoreSDK(channelState: .attaching))
                 counter.replaceData(using: TestFactories.counterObjectState(
                     count: nil, // Test value - must be nil
                 ))
@@ -88,7 +105,7 @@ struct DefaultLiveCounterTests {
             // @specOneOf(3/4) RTLC6c - count and createOp
             @Test
             func setsDataToCounterCountThenAddsCreateOpCounterCount() throws {
-                let counter = DefaultLiveCounter.createZeroValued(coreSDK: MockCoreSDK(channelState: .attaching))
+                let counter = DefaultLiveCounter.createZeroValued(objectID: "arbitrary", coreSDK: MockCoreSDK(channelState: .attaching))
                 let state = TestFactories.counterObjectState(
                     createOp: TestFactories.counterCreateOperation(count: 10), // Test value - must exist
                     count: 5, // Test value - must exist
@@ -101,7 +118,7 @@ struct DefaultLiveCounterTests {
             // @specOneOf(4/4) RTLC6c - no count but createOp
             @Test
             func doesNotModifyDataWhenCreateOpCounterCountDoesNotExist() throws {
-                let counter = DefaultLiveCounter.createZeroValued(coreSDK: MockCoreSDK(channelState: .attaching))
+                let counter = DefaultLiveCounter.createZeroValued(objectID: "arbitrary", coreSDK: MockCoreSDK(channelState: .attaching))
                 let state = TestFactories.counterObjectState(
                     createOp: TestFactories.objectOperation(
                         action: .known(.counterCreate),
@@ -116,14 +133,14 @@ struct DefaultLiveCounterTests {
             // @spec RTLC6d2
             @Test
             func setsCreateOperationIsMergedToTrue() {
-                let counter = DefaultLiveCounter.createZeroValued(coreSDK: MockCoreSDK(channelState: .attaching))
+                let counter = DefaultLiveCounter.createZeroValued(objectID: "arbitrary", coreSDK: MockCoreSDK(channelState: .attaching))
                 let state = TestFactories.counterObjectState(
                     createOp: TestFactories.objectOperation( // Test value - must be non-nil
                         action: .known(.counterCreate),
                     ),
                 )
                 counter.replaceData(using: state)
-                #expect(counter.testsOnly_createOperationIsMerged == true)
+                #expect(counter.testsOnly_createOperationIsMerged)
             }
         }
     }

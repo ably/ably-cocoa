@@ -19,7 +19,7 @@ internal final class DefaultLiveMap: LiveMap {
         }
     }
 
-    internal var testsOnly_objectID: String? {
+    internal var testsOnly_objectID: String {
         mutex.withLock {
             mutableState.objectID
         }
@@ -31,13 +31,13 @@ internal final class DefaultLiveMap: LiveMap {
         }
     }
 
-    internal var testsOnly_siteTimeserials: [String: String]? {
+    internal var testsOnly_siteTimeserials: [String: String] {
         mutex.withLock {
             mutableState.siteTimeserials
         }
     }
 
-    internal var testsOnly_createOperationIsMerged: Bool? {
+    internal var testsOnly_createOperationIsMerged: Bool {
         mutex.withLock {
             mutableState.createOperationIsMerged
         }
@@ -55,7 +55,7 @@ internal final class DefaultLiveMap: LiveMap {
 
     internal convenience init(
         testsOnly_data data: [String: ObjectsMapEntry],
-        objectID: String? = nil,
+        objectID: String,
         testsOnly_semantics semantics: WireEnum<ObjectsMapSemantics>? = nil,
         delegate: LiveMapObjectPoolDelegate?,
         coreSDK: CoreSDK
@@ -71,7 +71,7 @@ internal final class DefaultLiveMap: LiveMap {
 
     private init(
         data: [String: ObjectsMapEntry],
-        objectID: String?,
+        objectID: String,
         semantics: WireEnum<ObjectsMapSemantics>?,
         delegate: LiveMapObjectPoolDelegate?,
         coreSDK: CoreSDK
@@ -87,7 +87,7 @@ internal final class DefaultLiveMap: LiveMap {
     ///   - objectID: The value to use for the "private `objectId` field" of RTO5c1b1b.
     ///   - semantics: The value to use for the "private `semantics` field" of RTO5c1b1b.
     internal static func createZeroValued(
-        objectID: String? = nil,
+        objectID: String,
         semantics: WireEnum<ObjectsMapSemantics>? = nil,
         delegate: LiveMapObjectPoolDelegate?,
         coreSDK: CoreSDK,
@@ -275,16 +275,16 @@ internal final class DefaultLiveMap: LiveMap {
         internal var data: [String: ObjectsMapEntry]
 
         /// The "private `objectId` field" of RTO5c1b1b.
-        internal var objectID: String?
+        internal var objectID: String
 
         /// The "private `semantics` field" of RTO5c1b1b.
         internal var semantics: WireEnum<ObjectsMapSemantics>?
 
         /// The site timeserials for this map, per RTLM6a.
-        internal var siteTimeserials: [String: String]?
+        internal var siteTimeserials: [String: String] = [:]
 
         /// Whether the create operation has been merged, per RTLM6b and RTLM6d2.
-        internal var createOperationIsMerged: Bool?
+        internal var createOperationIsMerged = false
 
         /// Replaces the internal data of this map with the provided ObjectState, per RTLM6.
         ///

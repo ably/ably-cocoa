@@ -10,7 +10,7 @@ struct ObjectsPoolTests {
         func returnsExistingObject() throws {
             let delegate = MockLiveMapObjectPoolDelegate()
             let coreSDK = MockCoreSDK(channelState: .attaching)
-            let existingMap = DefaultLiveMap.createZeroValued(delegate: delegate, coreSDK: coreSDK)
+            let existingMap = DefaultLiveMap.createZeroValued(objectID: "arbitrary", delegate: delegate, coreSDK: coreSDK)
             var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, testsOnly_otherEntries: ["map:123@456": .map(existingMap)])
 
             let result = pool.createZeroValueObject(forObjectID: "map:123@456", mapDelegate: delegate, coreSDK: coreSDK)
@@ -87,7 +87,7 @@ struct ObjectsPoolTests {
         func updatesExistingMapObject() throws {
             let delegate = MockLiveMapObjectPoolDelegate()
             let coreSDK = MockCoreSDK(channelState: .attaching)
-            let existingMap = DefaultLiveMap.createZeroValued(delegate: delegate, coreSDK: coreSDK)
+            let existingMap = DefaultLiveMap.createZeroValued(objectID: "arbitrary", delegate: delegate, coreSDK: coreSDK)
             var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, testsOnly_otherEntries: ["map:hash@123": .map(existingMap)])
             let logger = TestLogger()
 
@@ -114,7 +114,7 @@ struct ObjectsPoolTests {
         func updatesExistingCounterObject() throws {
             let delegate = MockLiveMapObjectPoolDelegate()
             let coreSDK = MockCoreSDK(channelState: .attaching)
-            let existingCounter = DefaultLiveCounter.createZeroValued(coreSDK: coreSDK)
+            let existingCounter = DefaultLiveCounter.createZeroValued(objectID: "arbitrary", coreSDK: coreSDK)
             var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, testsOnly_otherEntries: ["counter:hash@123": .counter(existingCounter)])
             let logger = TestLogger()
 
@@ -221,9 +221,9 @@ struct ObjectsPoolTests {
         func removesObjectsNotInSync() throws {
             let delegate = MockLiveMapObjectPoolDelegate()
             let coreSDK = MockCoreSDK(channelState: .attaching)
-            let existingMap1 = DefaultLiveMap.createZeroValued(delegate: delegate, coreSDK: coreSDK)
-            let existingMap2 = DefaultLiveMap.createZeroValued(delegate: delegate, coreSDK: coreSDK)
-            let existingCounter = DefaultLiveCounter.createZeroValued(coreSDK: coreSDK)
+            let existingMap1 = DefaultLiveMap.createZeroValued(objectID: "arbitrary", delegate: delegate, coreSDK: coreSDK)
+            let existingMap2 = DefaultLiveMap.createZeroValued(objectID: "arbitrary", delegate: delegate, coreSDK: coreSDK)
+            let existingCounter = DefaultLiveCounter.createZeroValued(objectID: "arbitrary", coreSDK: coreSDK)
 
             var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, testsOnly_otherEntries: [
                 "map:hash@1": .map(existingMap1),
@@ -250,7 +250,7 @@ struct ObjectsPoolTests {
         func doesNotRemoveRootObject() throws {
             let delegate = MockLiveMapObjectPoolDelegate()
             let coreSDK = MockCoreSDK(channelState: .attaching)
-            let existingMap = DefaultLiveMap.createZeroValued(delegate: delegate, coreSDK: coreSDK)
+            let existingMap = DefaultLiveMap.createZeroValued(objectID: "arbitrary", delegate: delegate, coreSDK: coreSDK)
             var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, testsOnly_otherEntries: ["map:hash@1": .map(existingMap)])
             let logger = TestLogger()
 
@@ -269,9 +269,9 @@ struct ObjectsPoolTests {
             let delegate = MockLiveMapObjectPoolDelegate()
             let coreSDK = MockCoreSDK(channelState: .attaching)
 
-            let existingMap = DefaultLiveMap.createZeroValued(delegate: delegate, coreSDK: coreSDK)
-            let existingCounter = DefaultLiveCounter.createZeroValued(coreSDK: coreSDK)
-            let toBeRemovedMap = DefaultLiveMap.createZeroValued(delegate: delegate, coreSDK: coreSDK)
+            let existingMap = DefaultLiveMap.createZeroValued(objectID: "arbitrary", delegate: delegate, coreSDK: coreSDK)
+            let existingCounter = DefaultLiveCounter.createZeroValued(objectID: "arbitrary", coreSDK: coreSDK)
+            let toBeRemovedMap = DefaultLiveMap.createZeroValued(objectID: "arbitrary", delegate: delegate, coreSDK: coreSDK)
 
             var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, testsOnly_otherEntries: [
                 "map:existing@1": .map(existingMap),

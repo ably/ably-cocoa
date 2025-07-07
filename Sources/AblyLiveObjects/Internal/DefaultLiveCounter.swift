@@ -8,19 +8,19 @@ internal final class DefaultLiveCounter: LiveCounter {
 
     private nonisolated(unsafe) var mutableState: MutableState
 
-    internal var testsOnly_siteTimeserials: [String: String]? {
+    internal var testsOnly_siteTimeserials: [String: String] {
         mutex.withLock {
             mutableState.siteTimeserials
         }
     }
 
-    internal var testsOnly_createOperationIsMerged: Bool? {
+    internal var testsOnly_createOperationIsMerged: Bool {
         mutex.withLock {
             mutableState.createOperationIsMerged
         }
     }
 
-    internal var testsOnly_objectID: String? {
+    internal var testsOnly_objectID: String {
         mutex.withLock {
             mutableState.objectID
         }
@@ -32,7 +32,7 @@ internal final class DefaultLiveCounter: LiveCounter {
 
     internal convenience init(
         testsOnly_data data: Double,
-        objectID: String?,
+        objectID: String,
         coreSDK: CoreSDK
     ) {
         self.init(data: data, objectID: objectID, coreSDK: coreSDK)
@@ -40,7 +40,7 @@ internal final class DefaultLiveCounter: LiveCounter {
 
     private init(
         data: Double,
-        objectID: String?,
+        objectID: String,
         coreSDK: CoreSDK
     ) {
         mutableState = .init(data: data, objectID: objectID)
@@ -52,7 +52,7 @@ internal final class DefaultLiveCounter: LiveCounter {
     /// - Parameters:
     ///   - objectID: The value for the "private objectId field" of RTO5c1b1a.
     internal static func createZeroValued(
-        objectID: String? = nil,
+        objectID: String,
         coreSDK: CoreSDK,
     ) -> Self {
         .init(
@@ -123,13 +123,13 @@ internal final class DefaultLiveCounter: LiveCounter {
         internal var data: Double
 
         /// The site timeserials for this counter, per RTLC6a.
-        internal var siteTimeserials: [String: String]?
+        internal var siteTimeserials: [String: String] = [:]
 
         /// Whether the create operation has been merged, per RTLC6b and RTLC6d2.
-        internal var createOperationIsMerged: Bool?
+        internal var createOperationIsMerged = false
 
         /// The "private `objectId` field" of RTO5c1b1a.
-        internal var objectID: String?
+        internal var objectID: String
 
         /// Replaces the internal data of this counter with the provided ObjectState, per RTLC6.
         internal mutating func replaceData(using state: ObjectState) {

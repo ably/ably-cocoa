@@ -60,7 +60,7 @@ internal struct ObjectsPool {
     ) {
         entries = otherEntries ?? [:]
         // TODO: What initial root entry to use? https://github.com/ably/specification/pull/333/files#r2152312933
-        entries[Self.rootKey] = .map(.createZeroValued(delegate: rootDelegate, coreSDK: rootCoreSDK))
+        entries[Self.rootKey] = .map(.createZeroValued(objectID: Self.rootKey, delegate: rootDelegate, coreSDK: rootCoreSDK))
     }
 
     // MARK: - Typed root
