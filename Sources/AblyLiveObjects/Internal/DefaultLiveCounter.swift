@@ -10,19 +10,19 @@ internal final class DefaultLiveCounter: LiveCounter {
 
     internal var testsOnly_siteTimeserials: [String: String] {
         mutex.withLock {
-            mutableState.siteTimeserials
+            mutableState.liveObject.siteTimeserials
         }
     }
 
     internal var testsOnly_createOperationIsMerged: Bool {
         mutex.withLock {
-            mutableState.createOperationIsMerged
+            mutableState.liveObject.createOperationIsMerged
         }
     }
 
     internal var testsOnly_objectID: String {
         mutex.withLock {
-            mutableState.objectID
+            mutableState.liveObject.objectID
         }
     }
 
@@ -43,7 +43,7 @@ internal final class DefaultLiveCounter: LiveCounter {
         objectID: String,
         coreSDK: CoreSDK
     ) {
-        mutableState = .init(data: data, objectID: objectID)
+        mutableState = .init(liveObject: .init(objectID: objectID), data: data)
         self.coreSDK = coreSDK
     }
 
@@ -119,25 +119,19 @@ internal final class DefaultLiveCounter: LiveCounter {
     // MARK: - Mutable state and the operations that affect it
 
     private struct MutableState {
+        /// The mutable state common to all LiveObjects.
+        internal var liveObject: LiveObjectMutableState
+
         /// The internal data that this map holds, per RTLC3.
         internal var data: Double
-
-        /// The site timeserials for this counter, per RTLC6a.
-        internal var siteTimeserials: [String: String] = [:]
-
-        /// Whether the create operation has been merged, per RTLC6b and RTLC6d2.
-        internal var createOperationIsMerged = false
-
-        /// The "private `objectId` field" of RTO5c1b1a.
-        internal var objectID: String
 
         /// Replaces the internal data of this counter with the provided ObjectState, per RTLC6.
         internal mutating func replaceData(using state: ObjectState) {
             // RTLC6a: Replace the private siteTimeserials with the value from ObjectState.siteTimeserials
-            siteTimeserials = state.siteTimeserials
+            liveObject.siteTimeserials = state.siteTimeserials
 
             // RTLC6b: Set the private flag createOperationIsMerged to false
-            createOperationIsMerged = false
+            liveObject.createOperationIsMerged = false
 
             // RTLC6c: Set data to the value of ObjectState.counter.count, or to 0 if it does not exist
             data = state.counter?.count?.doubleValue ?? 0
@@ -149,7 +143,7 @@ internal final class DefaultLiveCounter: LiveCounter {
                     data += createOpCount
                 }
                 // RTLC6d2: Set the private flag createOperationIsMerged to true
-                createOperationIsMerged = true
+                liveObject.createOperationIsMerged = true
             }
         }
     }

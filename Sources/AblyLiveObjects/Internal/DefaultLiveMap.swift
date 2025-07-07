@@ -21,7 +21,7 @@ internal final class DefaultLiveMap: LiveMap {
 
     internal var testsOnly_objectID: String {
         mutex.withLock {
-            mutableState.objectID
+            mutableState.liveObject.objectID
         }
     }
 
@@ -33,13 +33,13 @@ internal final class DefaultLiveMap: LiveMap {
 
     internal var testsOnly_siteTimeserials: [String: String] {
         mutex.withLock {
-            mutableState.siteTimeserials
+            mutableState.liveObject.siteTimeserials
         }
     }
 
     internal var testsOnly_createOperationIsMerged: Bool {
         mutex.withLock {
-            mutableState.createOperationIsMerged
+            mutableState.liveObject.createOperationIsMerged
         }
     }
 
@@ -76,7 +76,7 @@ internal final class DefaultLiveMap: LiveMap {
         delegate: LiveMapObjectPoolDelegate?,
         coreSDK: CoreSDK
     ) {
-        mutableState = .init(data: data, objectID: objectID, semantics: semantics)
+        mutableState = .init(liveObject: .init(objectID: objectID), data: data, semantics: semantics)
         self.delegate = .init(referenced: delegate)
         self.coreSDK = coreSDK
     }
@@ -84,7 +84,7 @@ internal final class DefaultLiveMap: LiveMap {
     /// Creates a "zero-value LiveMap", per RTLM4.
     ///
     /// - Parameters:
-    ///   - objectID: The value to use for the "private `objectId` field" of RTO5c1b1b.
+    ///   - objectID: The value to use for the RTLO3a `objectID` property.
     ///   - semantics: The value to use for the "private `semantics` field" of RTO5c1b1b.
     internal static func createZeroValued(
         objectID: String,
@@ -271,20 +271,14 @@ internal final class DefaultLiveMap: LiveMap {
     // MARK: - Mutable state and the operations that affect it
 
     private struct MutableState {
+        /// The mutable state common to all LiveObjects.
+        internal var liveObject: LiveObjectMutableState
+
         /// The internal data that this map holds, per RTLM3.
         internal var data: [String: ObjectsMapEntry]
 
-        /// The "private `objectId` field" of RTO5c1b1b.
-        internal var objectID: String
-
         /// The "private `semantics` field" of RTO5c1b1b.
         internal var semantics: WireEnum<ObjectsMapSemantics>?
-
-        /// The site timeserials for this map, per RTLM6a.
-        internal var siteTimeserials: [String: String] = [:]
-
-        /// Whether the create operation has been merged, per RTLM6b and RTLM6d2.
-        internal var createOperationIsMerged = false
 
         /// Replaces the internal data of this map with the provided ObjectState, per RTLM6.
         ///
@@ -297,10 +291,10 @@ internal final class DefaultLiveMap: LiveMap {
             coreSDK: CoreSDK,
         ) {
             // RTLM6a: Replace the private siteTimeserials with the value from ObjectState.siteTimeserials
-            siteTimeserials = state.siteTimeserials
+            liveObject.siteTimeserials = state.siteTimeserials
 
             // RTLM6b: Set the private flag createOperationIsMerged to false
-            createOperationIsMerged = false
+            liveObject.createOperationIsMerged = false
 
             // RTLM6c: Set data to ObjectState.map.entries, or to an empty map if it does not exist
             data = state.map?.entries ?? [:]
@@ -332,7 +326,7 @@ internal final class DefaultLiveMap: LiveMap {
                     }
                 }
                 // RTLM6d2: Set the private flag createOperationIsMerged to true
-                createOperationIsMerged = true
+                liveObject.createOperationIsMerged = true
             }
         }
 
