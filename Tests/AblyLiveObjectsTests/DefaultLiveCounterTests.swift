@@ -52,7 +52,7 @@ struct DefaultLiveCounterTests {
 
         /// Tests for the case where createOp is not present
         struct WithoutCreateOpTests {
-            // @spec RTLC6b - Tests the case without createOp, as RTLC6d2 takes precedence when createOp exists
+            // @spec RTLC6b - Tests the case without createOp, as RTLC10b takes precedence when createOp exists
             @Test
             func setsCreateOperationIsMergedToFalse() {
                 // Given: A counter whose createOperationIsMerged is true
@@ -105,12 +105,11 @@ struct DefaultLiveCounterTests {
             }
         }
 
-        /// Tests for RTLC6d (with createOp present)
+        /// Tests for RTLC10 (merge initial value from createOp)
         struct WithCreateOpTests {
-            // @specOneOf(1/2) RTLC6d1 - with count
-            // @specOneOf(3/4) RTLC6c - count and createOp
+            // @spec RTLC10 - Tests that replaceData merges initial value when createOp is present
             @Test
-            func setsDataToCounterCountThenAddsCreateOpCounterCount() throws {
+            func mergesInitialValueWhenCreateOpPresent() throws {
                 let logger = TestLogger()
                 let counter = DefaultLiveCounter.createZeroValued(objectID: "arbitrary", coreSDK: MockCoreSDK(channelState: .attaching), logger: logger)
                 let state = TestFactories.counterObjectState(
@@ -118,39 +117,62 @@ struct DefaultLiveCounterTests {
                     count: 5, // Test value - must exist
                 )
                 counter.replaceData(using: state)
-                #expect(try counter.value == 15) // First sets to 5 (RTLC6c) then adds 10 (RTLC6d1)
-            }
-
-            // @specOneOf(2/2) RTLC6d1 - no count
-            // @specOneOf(4/4) RTLC6c - no count but createOp
-            @Test
-            func doesNotModifyDataWhenCreateOpCounterCountDoesNotExist() throws {
-                let logger = TestLogger()
-                let counter = DefaultLiveCounter.createZeroValued(objectID: "arbitrary", coreSDK: MockCoreSDK(channelState: .attaching), logger: logger)
-                let state = TestFactories.counterObjectState(
-                    createOp: TestFactories.objectOperation(
-                        action: .known(.counterCreate),
-                        counter: nil, // Test value - must be nil
-                    ),
-                    count: 5, // Test value
-                )
-                counter.replaceData(using: state)
-                #expect(try counter.value == 5) // Only the base counter.count value
-            }
-
-            // @spec RTLC6d2
-            @Test
-            func setsCreateOperationIsMergedToTrue() {
-                let logger = TestLogger()
-                let counter = DefaultLiveCounter.createZeroValued(objectID: "arbitrary", coreSDK: MockCoreSDK(channelState: .attaching), logger: logger)
-                let state = TestFactories.counterObjectState(
-                    createOp: TestFactories.objectOperation( // Test value - must be non-nil
-                        action: .known(.counterCreate),
-                    ),
-                )
-                counter.replaceData(using: state)
+                #expect(try counter.value == 15) // First sets to 5 (RTLC6c) then adds 10 (RTLC10a)
                 #expect(counter.testsOnly_createOperationIsMerged)
             }
+        }
+    }
+
+    /// Tests for the `testsOnly_mergeInitialValue` method, covering RTLC10 specification points
+    struct MergeInitialValueTests {
+        // @specOneOf(1/2) RTLC10a - with count
+        @Test
+        func addsCounterCountToData() throws {
+            let logger = TestLogger()
+            let counter = DefaultLiveCounter.createZeroValued(objectID: "arbitrary", coreSDK: MockCoreSDK(channelState: .attaching), logger: logger)
+
+            // Set initial data
+            counter.replaceData(using: TestFactories.counterObjectState(count: 5))
+            #expect(try counter.value == 5)
+
+            // Apply merge operation
+            let operation = TestFactories.counterCreateOperation(count: 10) // Test value - must exist
+            counter.testsOnly_mergeInitialValue(from: operation)
+
+            #expect(try counter.value == 15) // 5 + 10
+        }
+
+        // @specOneOf(2/2) RTLC10a - no count
+        @Test
+        func doesNotModifyDataWhenCounterCountDoesNotExist() throws {
+            let logger = TestLogger()
+            let counter = DefaultLiveCounter.createZeroValued(objectID: "arbitrary", coreSDK: MockCoreSDK(channelState: .attaching), logger: logger)
+
+            // Set initial data
+            counter.replaceData(using: TestFactories.counterObjectState(count: 5))
+            #expect(try counter.value == 5)
+
+            // Apply merge operation with no count
+            let operation = TestFactories.objectOperation(
+                action: .known(.counterCreate),
+                counter: nil, // Test value - must be nil
+            )
+            counter.testsOnly_mergeInitialValue(from: operation)
+
+            #expect(try counter.value == 5) // Unchanged
+        }
+
+        // @spec RTLC10b
+        @Test
+        func setsCreateOperationIsMergedToTrue() {
+            let logger = TestLogger()
+            let counter = DefaultLiveCounter.createZeroValued(objectID: "arbitrary", coreSDK: MockCoreSDK(channelState: .attaching), logger: logger)
+
+            // Apply merge operation
+            let operation = TestFactories.counterCreateOperation(count: 10) // Test value - must exist
+            counter.testsOnly_mergeInitialValue(from: operation)
+
+            #expect(counter.testsOnly_createOperationIsMerged)
         }
     }
 }

@@ -123,6 +123,13 @@ internal final class DefaultLiveCounter: LiveCounter {
         }
     }
 
+    /// Test-only method to merge initial value from an ObjectOperation, per RTLC10.
+    internal func testsOnly_mergeInitialValue(from operation: ObjectOperation) {
+        mutex.withLock {
+            mutableState.mergeInitialValue(from: operation)
+        }
+    }
+
     // MARK: - Mutable state and the operations that affect it
 
     private struct MutableState {
@@ -143,15 +150,20 @@ internal final class DefaultLiveCounter: LiveCounter {
             // RTLC6c: Set data to the value of ObjectState.counter.count, or to 0 if it does not exist
             data = state.counter?.count?.doubleValue ?? 0
 
-            // RTLC6d: If ObjectState.createOp is present
+            // RTLC6d: If ObjectState.createOp is present, merge the initial value into the LiveCounter as described in RTLC10
             if let createOp = state.createOp {
-                // RTLC6d1: Add ObjectState.createOp.counter.count to data, if it exists
-                if let createOpCount = createOp.counter?.count?.doubleValue {
-                    data += createOpCount
-                }
-                // RTLC6d2: Set the private flag createOperationIsMerged to true
-                liveObject.createOperationIsMerged = true
+                mergeInitialValue(from: createOp)
             }
+        }
+
+        /// Merges the initial value from an ObjectOperation into this LiveCounter, per RTLC10.
+        internal mutating func mergeInitialValue(from operation: ObjectOperation) {
+            // RTLC10a: Add ObjectOperation.counter.count to data, if it exists
+            if let operationCount = operation.counter?.count?.doubleValue {
+                data += operationCount
+            }
+            // RTLC10b: Set the private flag createOperationIsMerged to true
+            liveObject.createOperationIsMerged = true
         }
     }
 }

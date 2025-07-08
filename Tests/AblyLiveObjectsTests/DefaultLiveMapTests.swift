@@ -217,9 +217,9 @@ struct DefaultLiveMapTests {
         }
 
         // @specOneOf(2/2) RTLM6c - Tests that the map entries get combined with the createOp
-        // @spec RTLM6d1a
+        // @spec RTLM6d
         @Test
-        func appliesMapSetOperationFromCreateOp() throws {
+        func mergesInitialValueWhenCreateOpPresent() throws {
             let logger = TestLogger()
             let delegate = MockLiveMapObjectPoolDelegate()
             let coreSDK = MockCoreSDK(channelState: .attaching)
@@ -241,59 +241,10 @@ struct DefaultLiveMapTests {
             )
             var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, logger: logger)
             map.replaceData(using: state, objectsPool: &pool)
-            // Note that we just check for some basic expected side effects of applying MAP_SET; RTLM7 is tested in more detail elsewhere
-            // Check that it contains the data from the entries (per RTLM6c) and also the createOp (per RTLM6d1a)
+            // Note that we just check for some basic expected side effects of merging the initial value; RTLM17 is tested in more detail elsewhere
+            // Check that it contains the data from the entries (per RTLM6c) and also the createOp (per RTLM6d)
             #expect(try map.get(key: "keyFromMapEntries")?.stringValue == "valueFromMapEntries")
             #expect(try map.get(key: "keyFromCreateOp")?.stringValue == "valueFromCreateOp")
-        }
-
-        // @spec RTLM6d1b
-        @Test
-        func appliesMapRemoveOperationFromCreateOp() throws {
-            let logger = TestLogger()
-            let delegate = MockLiveMapObjectPoolDelegate()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let map = DefaultLiveMap(
-                testsOnly_data: ["key1": TestFactories.stringMapEntry().entry],
-                objectID: "arbitrary",
-                delegate: delegate,
-                coreSDK: coreSDK,
-                logger: logger,
-            )
-            // Confirm that the initial data is there
-            #expect(try map.get(key: "key1") != nil)
-
-            let entry = TestFactories.mapEntry(
-                tombstone: true,
-                data: ObjectData(),
-            )
-            let state = TestFactories.objectState(
-                objectId: "arbitrary-id",
-                createOp: TestFactories.mapCreateOperation(
-                    objectId: "arbitrary-id",
-                    entries: ["key1": entry],
-                ),
-            )
-            var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, logger: logger)
-            map.replaceData(using: state, objectsPool: &pool)
-            // Note that we just check for some basic expected side effects of applying MAP_REMOVE; RTLM8 is tested in more detail elsewhere
-            // Check that MAP_REMOVE removed the initial data
-            #expect(try map.get(key: "key1") == nil)
-        }
-
-        // @spec RTLM6d2
-        @Test
-        func setsCreateOperationIsMergedToTrueWhenCreateOpPresent() {
-            let logger = TestLogger()
-            let delegate = MockLiveMapObjectPoolDelegate()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let map = DefaultLiveMap.createZeroValued(objectID: "arbitrary", delegate: delegate, coreSDK: coreSDK, logger: logger)
-            let state = TestFactories.objectState(
-                objectId: "arbitrary-id",
-                createOp: TestFactories.mapCreateOperation(objectId: "arbitrary-id"),
-            )
-            var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, logger: logger)
-            map.replaceData(using: state, objectsPool: &pool)
             #expect(map.testsOnly_createOperationIsMerged)
         }
     }
@@ -859,6 +810,82 @@ struct DefaultLiveMapTests {
                 // Verify operation was discarded
                 #expect(try map.get(key: "key1")?.stringValue == "existing")
             }
+        }
+    }
+
+    /// Tests for the `testsOnly_mergeInitialValue` method, covering RTLM17 specification points
+    struct MergeInitialValueTests {
+        // @spec RTLM17a1
+        @Test
+        func appliesMapSetOperationsFromOperation() throws {
+            let logger = TestLogger()
+            let delegate = MockLiveMapObjectPoolDelegate()
+            let coreSDK = MockCoreSDK(channelState: .attaching)
+            let map = DefaultLiveMap.createZeroValued(objectID: "arbitrary", delegate: delegate, coreSDK: coreSDK, logger: logger)
+            var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, logger: logger)
+
+            // Apply merge operation with MAP_SET entries
+            let operation = TestFactories.mapCreateOperation(
+                objectId: "arbitrary-id",
+                entries: [
+                    "keyFromCreateOp": TestFactories.stringMapEntry(key: "keyFromCreateOp", value: "valueFromCreateOp").entry,
+                ],
+            )
+            map.testsOnly_mergeInitialValue(from: operation, objectsPool: &pool)
+
+            // Note that we just check for some basic expected side effects of applying MAP_SET; RTLM7 is tested in more detail elsewhere
+            // Check that it contains the data from the operation (per RTLM17a1)
+            #expect(try map.get(key: "keyFromCreateOp")?.stringValue == "valueFromCreateOp")
+        }
+
+        // @spec RTLM17a2
+        @Test
+        func appliesMapRemoveOperationsFromOperation() throws {
+            let logger = TestLogger()
+            let delegate = MockLiveMapObjectPoolDelegate()
+            let coreSDK = MockCoreSDK(channelState: .attaching)
+            let map = DefaultLiveMap(
+                testsOnly_data: ["key1": TestFactories.stringMapEntry().entry],
+                objectID: "arbitrary",
+                delegate: delegate,
+                coreSDK: coreSDK,
+                logger: logger,
+            )
+            var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, logger: logger)
+
+            // Confirm that the initial data is there
+            #expect(try map.get(key: "key1") != nil)
+
+            // Apply merge operation with MAP_REMOVE entry
+            let entry = TestFactories.mapEntry(
+                tombstone: true,
+                timeserial: "ts2", // Must be greater than existing entry's timeserial "ts1"
+                data: ObjectData(),
+            )
+            let operation = TestFactories.mapCreateOperation(
+                objectId: "arbitrary-id",
+                entries: ["key1": entry],
+            )
+            map.testsOnly_mergeInitialValue(from: operation, objectsPool: &pool)
+
+            // Verify the MAP_REMOVE operation was applied
+            #expect(try map.get(key: "key1") == nil)
+        }
+
+        // @spec RTLM17b
+        @Test
+        func setsCreateOperationIsMergedToTrue() {
+            let logger = TestLogger()
+            let delegate = MockLiveMapObjectPoolDelegate()
+            let coreSDK = MockCoreSDK(channelState: .attaching)
+            let map = DefaultLiveMap.createZeroValued(objectID: "arbitrary", delegate: delegate, coreSDK: coreSDK, logger: logger)
+            var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, logger: logger)
+
+            // Apply merge operation
+            let operation = TestFactories.mapCreateOperation(objectId: "arbitrary-id")
+            map.testsOnly_mergeInitialValue(from: operation, objectsPool: &pool)
+
+            #expect(map.testsOnly_createOperationIsMerged)
         }
     }
 }

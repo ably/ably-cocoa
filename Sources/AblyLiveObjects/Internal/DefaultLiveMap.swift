@@ -244,6 +244,19 @@ internal final class DefaultLiveMap: LiveMap {
         }
     }
 
+    /// Test-only method to merge initial value from an ObjectOperation, per RTLM17.
+    internal func testsOnly_mergeInitialValue(from operation: ObjectOperation, objectsPool: inout ObjectsPool) {
+        mutex.withLock {
+            mutableState.mergeInitialValue(
+                from: operation,
+                objectsPool: &objectsPool,
+                mapDelegate: delegate.referenced,
+                coreSDK: coreSDK,
+                logger: logger,
+            )
+        }
+    }
+
     /// Applies a `MAP_SET` operation to a key, per RTLM7.
     ///
     /// This is currently exposed just so that the tests can test RTLM7 without having to go through a convoluted replaceData(…) call, but I _think_ that it's going to be used in further contexts when we introduce the handling of incoming object operations in a future spec PR.
@@ -310,36 +323,53 @@ internal final class DefaultLiveMap: LiveMap {
             // RTLM6c: Set data to ObjectState.map.entries, or to an empty map if it does not exist
             data = state.map?.entries ?? [:]
 
-            // RTLM6d: If ObjectState.createOp is present
+            // RTLM6d: If ObjectState.createOp is present, merge the initial value into the LiveMap as described in RTLM17
             if let createOp = state.createOp {
-                // RTLM6d1: For each key–ObjectsMapEntry pair in ObjectState.createOp.map.entries
-                if let entries = createOp.map?.entries {
-                    for (key, entry) in entries {
-                        if entry.tombstone == true {
-                            // RTLM6d1b: If ObjectsMapEntry.tombstone is true, apply the MAP_REMOVE operation
-                            // to the specified key using ObjectsMapEntry.timeserial per RTLM8
-                            applyMapRemoveOperation(
-                                key: key,
-                                operationTimeserial: entry.timeserial,
-                            )
-                        } else {
-                            // RTLM6d1a: If ObjectsMapEntry.tombstone is false, apply the MAP_SET operation
-                            // to the specified key using ObjectsMapEntry.timeserial and ObjectsMapEntry.data per RTLM7
-                            applyMapSetOperation(
-                                key: key,
-                                operationTimeserial: entry.timeserial,
-                                operationData: entry.data,
-                                objectsPool: &objectsPool,
-                                mapDelegate: mapDelegate,
-                                coreSDK: coreSDK,
-                                logger: logger,
-                            )
-                        }
+                mergeInitialValue(
+                    from: createOp,
+                    objectsPool: &objectsPool,
+                    mapDelegate: mapDelegate,
+                    coreSDK: coreSDK,
+                    logger: logger,
+                )
+            }
+        }
+
+        /// Merges the initial value from an ObjectOperation into this LiveMap, per RTLM17.
+        internal mutating func mergeInitialValue(
+            from operation: ObjectOperation,
+            objectsPool: inout ObjectsPool,
+            mapDelegate: LiveMapObjectPoolDelegate?,
+            coreSDK: CoreSDK,
+            logger: AblyPlugin.Logger,
+        ) {
+            // RTLM17a: For each key–ObjectsMapEntry pair in ObjectOperation.map.entries
+            if let entries = operation.map?.entries {
+                for (key, entry) in entries {
+                    if entry.tombstone == true {
+                        // RTLM17a2: If ObjectsMapEntry.tombstone is true, apply the MAP_REMOVE operation
+                        // as described in RTLM8, passing in the current key as ObjectsMapOp, and ObjectsMapEntry.timeserial as the operation's serial
+                        applyMapRemoveOperation(
+                            key: key,
+                            operationTimeserial: entry.timeserial,
+                        )
+                    } else {
+                        // RTLM17a1: If ObjectsMapEntry.tombstone is false, apply the MAP_SET operation
+                        // as described in RTLM7, passing in ObjectsMapEntry.data and the current key as ObjectsMapOp, and ObjectsMapEntry.timeserial as the operation's serial
+                        applyMapSetOperation(
+                            key: key,
+                            operationTimeserial: entry.timeserial,
+                            operationData: entry.data,
+                            objectsPool: &objectsPool,
+                            mapDelegate: mapDelegate,
+                            coreSDK: coreSDK,
+                            logger: logger,
+                        )
                     }
                 }
-                // RTLM6d2: Set the private flag createOperationIsMerged to true
-                liveObject.createOperationIsMerged = true
             }
+            // RTLM17b: Set the private flag createOperationIsMerged to true
+            liveObject.createOperationIsMerged = true
         }
 
         /// Applies a `MAP_SET` operation to a key, per RTLM7.
