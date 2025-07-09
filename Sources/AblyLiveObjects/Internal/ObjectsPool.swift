@@ -6,11 +6,11 @@ internal import AblyPlugin
 internal struct ObjectsPool {
     /// The possible `ObjectsPool` entries, as described by RTO3a.
     internal enum Entry {
-        case map(DefaultLiveMap)
-        case counter(DefaultLiveCounter)
+        case map(InternalDefaultLiveMap)
+        case counter(InternalDefaultLiveCounter)
 
         /// Convenience getter for accessing the map value if this entry is a map
-        internal var mapValue: DefaultLiveMap? {
+        internal var mapValue: InternalDefaultLiveMap? {
             switch self {
             case let .map(map):
                 map
@@ -20,7 +20,7 @@ internal struct ObjectsPool {
         }
 
         /// Convenience getter for accessing the counter value if this entry is a counter
-        internal var counterValue: DefaultLiveCounter? {
+        internal var counterValue: InternalDefaultLiveCounter? {
             switch self {
             case .map:
                 nil
@@ -67,34 +67,28 @@ internal struct ObjectsPool {
 
     /// Creates an `ObjectsPool` whose root is a zero-value `LiveMap`.
     internal init(
-        rootDelegate: LiveMapObjectPoolDelegate?,
-        rootCoreSDK: CoreSDK,
         logger: AblyPlugin.Logger,
         testsOnly_otherEntries otherEntries: [String: Entry]? = nil,
     ) {
         self.init(
-            rootDelegate: rootDelegate,
-            rootCoreSDK: rootCoreSDK,
             logger: logger,
             otherEntries: otherEntries,
         )
     }
 
     private init(
-        rootDelegate: LiveMapObjectPoolDelegate?,
-        rootCoreSDK: CoreSDK,
         logger: AblyPlugin.Logger,
         otherEntries: [String: Entry]?
     ) {
         entries = otherEntries ?? [:]
         // TODO: What initial root entry to use? https://github.com/ably/specification/pull/333/files#r2152312933
-        entries[Self.rootKey] = .map(.createZeroValued(objectID: Self.rootKey, delegate: rootDelegate, coreSDK: rootCoreSDK, logger: logger))
+        entries[Self.rootKey] = .map(.createZeroValued(objectID: Self.rootKey, logger: logger))
     }
 
     // MARK: - Typed root
 
     /// Fetches the root object.
-    internal var root: DefaultLiveMap {
+    internal var root: InternalDefaultLiveMap {
         guard let rootEntry = entries[Self.rootKey] else {
             preconditionFailure("ObjectsPool should always contain a root object")
         }
@@ -113,11 +107,9 @@ internal struct ObjectsPool {
     ///
     /// - Parameters:
     ///   - objectID: The ID of the object to create
-    ///   - mapDelegate: The delegate to use for any created LiveMap
-    ///   - coreSDK: The CoreSDK to use for any created LiveObject
     ///   - logger: The logger to use for any created LiveObject
     /// - Returns: The existing or newly created object
-    internal mutating func createZeroValueObject(forObjectID objectID: String, mapDelegate: LiveMapObjectPoolDelegate?, coreSDK: CoreSDK, logger: AblyPlugin.Logger) -> Entry? {
+    internal mutating func createZeroValueObject(forObjectID objectID: String, logger: AblyPlugin.Logger) -> Entry? {
         // RTO6a: If an object with objectId exists in ObjectsPool, do not create a new object
         if let existingEntry = entries[objectID] {
             return existingEntry
@@ -135,9 +127,9 @@ internal struct ObjectsPool {
         let entry: Entry
         switch typeString {
         case "map":
-            entry = .map(.createZeroValued(objectID: objectID, delegate: mapDelegate, coreSDK: coreSDK, logger: logger))
+            entry = .map(.createZeroValued(objectID: objectID, logger: logger))
         case "counter":
-            entry = .counter(.createZeroValued(objectID: objectID, coreSDK: coreSDK, logger: logger))
+            entry = .counter(.createZeroValued(objectID: objectID, logger: logger))
         default:
             return nil
         }
@@ -148,14 +140,8 @@ internal struct ObjectsPool {
     }
 
     /// Applies the objects gathered during an `OBJECT_SYNC` to this `ObjectsPool`, per RTO5c1.
-    ///
-    /// - Parameters:
-    ///   - mapDelegate: The delegate to use for any created LiveMap
-    ///   - coreSDK: The CoreSDK to use for any created LiveObject
     internal mutating func applySyncObjectsPool(
         _ syncObjectsPool: [ObjectState],
-        mapDelegate: LiveMapObjectPoolDelegate,
-        coreSDK: CoreSDK,
         logger: AblyPlugin.Logger,
     ) {
         logger.log("applySyncObjectsPool called with \(syncObjectsPool.count) objects", level: .debug)
@@ -188,14 +174,14 @@ internal struct ObjectsPool {
                 if objectState.counter != nil {
                     // RTO5c1b1a: If ObjectState.counter is present, create a zero-value LiveCounter,
                     // set its private objectId equal to ObjectState.objectId and override its internal data per RTLC6
-                    let counter = DefaultLiveCounter.createZeroValued(objectID: objectState.objectId, coreSDK: coreSDK, logger: logger)
+                    let counter = InternalDefaultLiveCounter.createZeroValued(objectID: objectState.objectId, logger: logger)
                     counter.replaceData(using: objectState)
                     newEntry = .counter(counter)
                 } else if let objectsMap = objectState.map {
                     // RTO5c1b1b: If ObjectState.map is present, create a zero-value LiveMap,
                     // set its private objectId equal to ObjectState.objectId, set its private semantics
                     // equal to ObjectState.map.semantics and override its internal data per RTLM6
-                    let map = DefaultLiveMap.createZeroValued(objectID: objectState.objectId, semantics: objectsMap.semantics, delegate: mapDelegate, coreSDK: coreSDK, logger: logger)
+                    let map = InternalDefaultLiveMap.createZeroValued(objectID: objectState.objectId, semantics: objectsMap.semantics, logger: logger)
                     map.replaceData(using: objectState, objectsPool: &self)
                     newEntry = .map(map)
                 } else {

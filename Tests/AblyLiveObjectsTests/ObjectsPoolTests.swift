@@ -9,12 +9,10 @@ struct ObjectsPoolTests {
         @Test
         func returnsExistingObject() throws {
             let logger = TestLogger()
-            let delegate = MockLiveMapObjectPoolDelegate()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let existingMap = DefaultLiveMap.createZeroValued(objectID: "arbitrary", delegate: delegate, coreSDK: coreSDK, logger: logger)
-            var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, logger: logger, testsOnly_otherEntries: ["map:123@456": .map(existingMap)])
+            let existingMap = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger)
+            var pool = ObjectsPool(logger: logger, testsOnly_otherEntries: ["map:123@456": .map(existingMap)])
 
-            let result = pool.createZeroValueObject(forObjectID: "map:123@456", mapDelegate: delegate, coreSDK: coreSDK, logger: logger)
+            let result = pool.createZeroValueObject(forObjectID: "map:123@456", logger: logger)
             let map = try #require(result?.mapValue)
             #expect(map as AnyObject === existingMap as AnyObject)
         }
@@ -23,18 +21,14 @@ struct ObjectsPoolTests {
         @Test
         func createsZeroValueMap() throws {
             let logger = TestLogger()
-            let delegate = MockLiveMapObjectPoolDelegate()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, logger: logger)
+            var pool = ObjectsPool(logger: logger)
 
-            let result = pool.createZeroValueObject(forObjectID: "map:123@456", mapDelegate: delegate, coreSDK: coreSDK, logger: logger)
+            let result = pool.createZeroValueObject(forObjectID: "map:123@456", logger: logger)
             let map = try #require(result?.mapValue)
 
             // Verify it was added to the pool
             #expect(pool.entries["map:123@456"]?.mapValue != nil)
 
-            // Verify the map has the delegate set
-            #expect(map.testsOnly_delegate as AnyObject === delegate as AnyObject)
             // Verify the objectID is correctly set
             #expect(map.testsOnly_objectID == "map:123@456")
         }
@@ -43,13 +37,12 @@ struct ObjectsPoolTests {
         @Test
         func createsZeroValueCounter() throws {
             let logger = TestLogger()
-            let delegate = MockLiveMapObjectPoolDelegate()
             let coreSDK = MockCoreSDK(channelState: .attaching)
-            var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, logger: logger)
+            var pool = ObjectsPool(logger: logger)
 
-            let result = pool.createZeroValueObject(forObjectID: "counter:123@456", mapDelegate: delegate, coreSDK: coreSDK, logger: logger)
+            let result = pool.createZeroValueObject(forObjectID: "counter:123@456", logger: logger)
             let counter = try #require(result?.counterValue)
-            #expect(try counter.value == 0)
+            #expect(try counter.value(coreSDK: coreSDK) == 0)
 
             // Verify it was added to the pool
             #expect(pool.entries["counter:123@456"]?.counterValue != nil)
@@ -61,11 +54,9 @@ struct ObjectsPoolTests {
         @Test
         func returnsNilForInvalidObjectId() throws {
             let logger = TestLogger()
-            let delegate = MockLiveMapObjectPoolDelegate()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, logger: logger)
+            var pool = ObjectsPool(logger: logger)
 
-            let result = pool.createZeroValueObject(forObjectID: "invalid", mapDelegate: delegate, coreSDK: coreSDK, logger: logger)
+            let result = pool.createZeroValueObject(forObjectID: "invalid", logger: logger)
             #expect(result == nil)
         }
 
@@ -73,11 +64,9 @@ struct ObjectsPoolTests {
         @Test
         func returnsNilForUnknownType() throws {
             let logger = TestLogger()
-            let delegate = MockLiveMapObjectPoolDelegate()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, logger: logger)
+            var pool = ObjectsPool(logger: logger)
 
-            let result = pool.createZeroValueObject(forObjectID: "unknown:123@456", mapDelegate: delegate, coreSDK: coreSDK, logger: logger)
+            let result = pool.createZeroValueObject(forObjectID: "unknown:123@456", logger: logger)
             #expect(result == nil)
             #expect(pool.entries["unknown:123@456"] == nil)
         }
@@ -93,8 +82,8 @@ struct ObjectsPoolTests {
             let logger = TestLogger()
             let delegate = MockLiveMapObjectPoolDelegate()
             let coreSDK = MockCoreSDK(channelState: .attaching)
-            let existingMap = DefaultLiveMap.createZeroValued(objectID: "arbitrary", delegate: delegate, coreSDK: coreSDK, logger: logger)
-            var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, logger: logger, testsOnly_otherEntries: ["map:hash@123": .map(existingMap)])
+            let existingMap = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger)
+            var pool = ObjectsPool(logger: logger, testsOnly_otherEntries: ["map:hash@123": .map(existingMap)])
 
             let (key, entry) = TestFactories.stringMapEntry(key: "key1", value: "updated_value")
             let objectState = TestFactories.mapObjectState(
@@ -103,13 +92,13 @@ struct ObjectsPoolTests {
                 entries: [key: entry],
             )
 
-            pool.applySyncObjectsPool([objectState], mapDelegate: delegate, coreSDK: coreSDK, logger: logger)
+            pool.applySyncObjectsPool([objectState], logger: logger)
 
-            // Verify the existing map was updated by checking side effects of DefaultLiveMap.replaceData(using:)
+            // Verify the existing map was updated by checking side effects of InternalDefaultLiveMap.replaceData(using:)
             let updatedMap = try #require(pool.entries["map:hash@123"]?.mapValue)
             #expect(updatedMap === existingMap)
             // Checking map data to verify replaceData was called successfully
-            #expect(try updatedMap.get(key: "key1")?.stringValue == "updated_value")
+            #expect(try updatedMap.get(key: "key1", coreSDK: coreSDK, delegate: delegate)?.stringValue == "updated_value")
             // Checking site timeserials to verify they were updated by replaceData
             #expect(updatedMap.testsOnly_siteTimeserials == ["site1": "ts1"])
         }
@@ -118,10 +107,9 @@ struct ObjectsPoolTests {
         @Test
         func updatesExistingCounterObject() throws {
             let logger = TestLogger()
-            let delegate = MockLiveMapObjectPoolDelegate()
             let coreSDK = MockCoreSDK(channelState: .attaching)
-            let existingCounter = DefaultLiveCounter.createZeroValued(objectID: "arbitrary", coreSDK: coreSDK, logger: logger)
-            var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, logger: logger, testsOnly_otherEntries: ["counter:hash@123": .counter(existingCounter)])
+            let existingCounter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger)
+            var pool = ObjectsPool(logger: logger, testsOnly_otherEntries: ["counter:hash@123": .counter(existingCounter)])
 
             let objectState = TestFactories.counterObjectState(
                 objectId: "counter:hash@123",
@@ -129,13 +117,13 @@ struct ObjectsPoolTests {
                 count: 42,
             )
 
-            pool.applySyncObjectsPool([objectState], mapDelegate: delegate, coreSDK: coreSDK, logger: logger)
+            pool.applySyncObjectsPool([objectState], logger: logger)
 
-            // Verify the existing counter was updated by checking side effects of DefaultLiveCounter.replaceData(using:)
+            // Verify the existing counter was updated by checking side effects of InternalDefaultLiveCounter.replaceData(using:)
             let updatedCounter = try #require(pool.entries["counter:hash@123"]?.counterValue)
             #expect(updatedCounter === existingCounter)
             // Checking counter value to verify replaceData was called successfully
-            #expect(try updatedCounter.value == 42)
+            #expect(try updatedCounter.value(coreSDK: coreSDK) == 42)
             // Checking site timeserials to verify they were updated by replaceData
             #expect(updatedCounter.testsOnly_siteTimeserials == ["site1": "ts1"])
         }
@@ -144,9 +132,8 @@ struct ObjectsPoolTests {
         @Test
         func createsNewCounterObject() throws {
             let logger = TestLogger()
-            let delegate = MockLiveMapObjectPoolDelegate()
             let coreSDK = MockCoreSDK(channelState: .attaching)
-            var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, logger: logger)
+            var pool = ObjectsPool(logger: logger)
 
             let objectState = TestFactories.counterObjectState(
                 objectId: "counter:hash@456",
@@ -154,12 +141,12 @@ struct ObjectsPoolTests {
                 count: 100,
             )
 
-            pool.applySyncObjectsPool([objectState], mapDelegate: delegate, coreSDK: coreSDK, logger: logger)
+            pool.applySyncObjectsPool([objectState], logger: logger)
 
-            // Verify a new counter was created and data was set by checking side effects of DefaultLiveCounter.replaceData(using:)
+            // Verify a new counter was created and data was set by checking side effects of InternalDefaultLiveCounter.replaceData(using:)
             let newCounter = try #require(pool.entries["counter:hash@456"]?.counterValue)
             // Checking counter value to verify the new counter was created and replaceData was called
-            #expect(try newCounter.value == 100)
+            #expect(try newCounter.value(coreSDK: coreSDK) == 100)
             // Checking site timeserials to verify they were set by replaceData
             #expect(newCounter.testsOnly_siteTimeserials == ["site2": "ts2"])
             // Verify the objectID is correctly set per RTO5c1b1a
@@ -173,7 +160,7 @@ struct ObjectsPoolTests {
             let delegate = MockLiveMapObjectPoolDelegate()
             let coreSDK = MockCoreSDK(channelState: .attaching)
 
-            var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, logger: logger)
+            var pool = ObjectsPool(logger: logger)
 
             let (key, entry) = TestFactories.stringMapEntry(key: "key2", value: "new_value")
             let objectState = TestFactories.mapObjectState(
@@ -182,16 +169,14 @@ struct ObjectsPoolTests {
                 entries: [key: entry],
             )
 
-            pool.applySyncObjectsPool([objectState], mapDelegate: delegate, coreSDK: coreSDK, logger: logger)
+            pool.applySyncObjectsPool([objectState], logger: logger)
 
-            // Verify a new map was created and data was set by checking side effects of DefaultLiveMap.replaceData(using:)
+            // Verify a new map was created and data was set by checking side effects of InternalDefaultLiveMap.replaceData(using:)
             let newMap = try #require(pool.entries["map:hash@789"]?.mapValue)
             // Checking map data to verify the new map was created and replaceData was called
-            #expect(try newMap.get(key: "key2")?.stringValue == "new_value")
+            #expect(try newMap.get(key: "key2", coreSDK: coreSDK, delegate: delegate)?.stringValue == "new_value")
             // Checking site timeserials to verify they were set by replaceData
             #expect(newMap.testsOnly_siteTimeserials == ["site3": "ts3"])
-            // Verify delegate was set on the new map
-            #expect(newMap.testsOnly_delegate as AnyObject === delegate as AnyObject)
             // Verify the objectID and semantics are correctly set per RTO5c1b1b
             #expect(newMap.testsOnly_objectID == "map:hash@789")
             #expect(newMap.testsOnly_semantics == .known(.lww))
@@ -201,9 +186,7 @@ struct ObjectsPoolTests {
         @Test
         func ignoresNonMapOrCounterObject() throws {
             let logger = TestLogger()
-            let delegate = MockLiveMapObjectPoolDelegate()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, logger: logger)
+            var pool = ObjectsPool(logger: logger)
 
             let validObjectState = TestFactories.counterObjectState(
                 objectId: "counter:hash@456",
@@ -213,7 +196,7 @@ struct ObjectsPoolTests {
 
             let invalidObjectState = TestFactories.objectState(objectId: "invalid")
 
-            pool.applySyncObjectsPool([invalidObjectState, validObjectState], mapDelegate: delegate, coreSDK: coreSDK, logger: logger)
+            pool.applySyncObjectsPool([invalidObjectState, validObjectState], logger: logger)
 
             // Check that there's no entry for the key that we don't know how to handle, and that it didn't interfere with the insertion of the we one that we do know how to handle
             #expect(Set(pool.entries.keys) == ["root", "counter:hash@456"])
@@ -225,13 +208,11 @@ struct ObjectsPoolTests {
         @Test
         func removesObjectsNotInSync() throws {
             let logger = TestLogger()
-            let delegate = MockLiveMapObjectPoolDelegate()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let existingMap1 = DefaultLiveMap.createZeroValued(objectID: "arbitrary", delegate: delegate, coreSDK: coreSDK, logger: logger)
-            let existingMap2 = DefaultLiveMap.createZeroValued(objectID: "arbitrary", delegate: delegate, coreSDK: coreSDK, logger: logger)
-            let existingCounter = DefaultLiveCounter.createZeroValued(objectID: "arbitrary", coreSDK: coreSDK, logger: logger)
+            let existingMap1 = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger)
+            let existingMap2 = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger)
+            let existingCounter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger)
 
-            var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, logger: logger, testsOnly_otherEntries: [
+            var pool = ObjectsPool(logger: logger, testsOnly_otherEntries: [
                 "map:hash@1": .map(existingMap1),
                 "map:hash@2": .map(existingMap2),
                 "counter:hash@1": .counter(existingCounter),
@@ -240,7 +221,7 @@ struct ObjectsPoolTests {
             // Only sync one of the existing objects
             let objectState = TestFactories.mapObjectState(objectId: "map:hash@1")
 
-            pool.applySyncObjectsPool([objectState], mapDelegate: delegate, coreSDK: coreSDK, logger: logger)
+            pool.applySyncObjectsPool([objectState], logger: logger)
 
             // Verify only synced object and root remain
             #expect(pool.entries.count == 2) // root + map:hash@1
@@ -254,13 +235,11 @@ struct ObjectsPoolTests {
         @Test
         func doesNotRemoveRootObject() throws {
             let logger = TestLogger()
-            let delegate = MockLiveMapObjectPoolDelegate()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let existingMap = DefaultLiveMap.createZeroValued(objectID: "arbitrary", delegate: delegate, coreSDK: coreSDK, logger: logger)
-            var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, logger: logger, testsOnly_otherEntries: ["map:hash@1": .map(existingMap)])
+            let existingMap = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger)
+            var pool = ObjectsPool(logger: logger, testsOnly_otherEntries: ["map:hash@1": .map(existingMap)])
 
             // Sync with empty list (no objects)
-            pool.applySyncObjectsPool([], mapDelegate: delegate, coreSDK: coreSDK, logger: logger)
+            pool.applySyncObjectsPool([], logger: logger)
 
             // Verify root is preserved but other objects are removed
             #expect(pool.entries.count == 1) // Only root
@@ -275,11 +254,11 @@ struct ObjectsPoolTests {
             let delegate = MockLiveMapObjectPoolDelegate()
             let coreSDK = MockCoreSDK(channelState: .attaching)
 
-            let existingMap = DefaultLiveMap.createZeroValued(objectID: "arbitrary", delegate: delegate, coreSDK: coreSDK, logger: logger)
-            let existingCounter = DefaultLiveCounter.createZeroValued(objectID: "arbitrary", coreSDK: coreSDK, logger: logger)
-            let toBeRemovedMap = DefaultLiveMap.createZeroValued(objectID: "arbitrary", delegate: delegate, coreSDK: coreSDK, logger: logger)
+            let existingMap = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger)
+            let existingCounter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger)
+            let toBeRemovedMap = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger)
 
-            var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK, logger: logger, testsOnly_otherEntries: [
+            var pool = ObjectsPool(logger: logger, testsOnly_otherEntries: [
                 "map:existing@1": .map(existingMap),
                 "counter:existing@1": .counter(existingCounter),
                 "map:toremove@1": .map(toBeRemovedMap),
@@ -313,7 +292,7 @@ struct ObjectsPoolTests {
                 // Note: "map:toremove@1" is not in sync, so it should be removed
             ]
 
-            pool.applySyncObjectsPool(syncObjects, mapDelegate: delegate, coreSDK: coreSDK, logger: logger)
+            pool.applySyncObjectsPool(syncObjects, logger: logger)
 
             // Verify final state
             #expect(pool.entries.count == 5) // root + 4 synced objects
@@ -324,23 +303,23 @@ struct ObjectsPoolTests {
             // Updated existing objects - verify by checking side effects of replaceData calls
             let updatedMap = try #require(pool.entries["map:existing@1"]?.mapValue)
             // Checking map data to verify replaceData was called successfully
-            #expect(try updatedMap.get(key: "updated")?.stringValue == "updated")
+            #expect(try updatedMap.get(key: "updated", coreSDK: coreSDK, delegate: delegate)?.stringValue == "updated")
 
             let updatedCounter = try #require(pool.entries["counter:existing@1"]?.counterValue)
             // Checking counter value to verify replaceData was called successfully
-            #expect(try updatedCounter.value == 100)
+            #expect(try updatedCounter.value(coreSDK: coreSDK) == 100)
 
             // New objects - verify by checking side effects of replaceData calls
             let newMap = try #require(pool.entries["map:new@1"]?.mapValue)
             // Checking map data to verify the new map was created and replaceData was called
-            #expect(try newMap.get(key: "new")?.stringValue == "new")
+            #expect(try newMap.get(key: "new", coreSDK: coreSDK, delegate: delegate)?.stringValue == "new")
             // Verify the objectID and semantics are correctly set per RTO5c1b1b
             #expect(newMap.testsOnly_objectID == "map:new@1")
             #expect(newMap.testsOnly_semantics == .known(.lww))
 
             let newCounter = try #require(pool.entries["counter:new@1"]?.counterValue)
             // Checking counter value to verify the new counter was created and replaceData was called
-            #expect(try newCounter.value == 50)
+            #expect(try newCounter.value(coreSDK: coreSDK) == 50)
             // Verify the objectID is correctly set per RTO5c1b1a
             #expect(newCounter.testsOnly_objectID == "counter:new@1")
 

@@ -299,9 +299,6 @@ private struct ObjectsIntegrationTests {
                         for key in valueMapKeys {
                             #expect(try valuesMap.get(key: key) != nil, "Check value at key=\"\(key)\" in nested map exists")
                         }
-
-                        // TODO: remove (Swift-only) — keep channel alive until we've executed our test case. We'll address this in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/9
-                        withExtendedLifetime(channel) {}
                     },
                 ),
                 .init(
@@ -371,9 +368,6 @@ private struct ObjectsIntegrationTests {
                             #expect(try #require(map2.get(key: "shouldStay")?.stringValue) == "foo", "Check map has correct value for \"shouldStay\" key")
                             #expect(try #require(map2.get(key: "anotherKey")?.stringValue) == "baz", "Check map has correct value for \"anotherKey\" key")
                             #expect(try map2.get(key: "shouldDelete") == nil, "Check map does not have \"shouldDelete\" key")
-
-                            // TODO: remove (Swift-only) — keep channel alive until we've executed our test case. We'll address this in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/9
-                            withExtendedLifetime(channel2) {}
                         }
                     },
                 ),
@@ -447,9 +441,6 @@ private struct ObjectsIntegrationTests {
                             let counterObj = try #require(root.get(key: counter.key)?.liveCounterValue)
                             #expect(try counterObj.value == Double(counter.value), "Check counter at key=\"\(counter.key)\" in root has correct value")
                         }
-
-                        // TODO: remove (Swift-only) — keep channel alive until we've executed our test case. We'll address this in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/9
-                        withExtendedLifetime(channel) {}
                     },
                 ),
                 .init(
@@ -490,9 +481,6 @@ private struct ObjectsIntegrationTests {
 
                         let mapFromValuesMap = try #require(valuesMap.get(key: "mapKey")?.liveMapValue)
                         #expect(try mapFromValuesMap.size == 1, "Check nested map has correct number of keys")
-
-                        // TODO: remove (Swift-only) — keep channel alive until we've executed our test case. We'll address this in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/9
-                        withExtendedLifetime(channel) {}
                     },
                 ),
                 .init(
@@ -521,9 +509,6 @@ private struct ObjectsIntegrationTests {
                         let mapFromValuesMap = try #require(valuesMap.get(key: "mapKey")?.liveMapValue, "Check nested map is of type LiveMap")
                         #expect(try mapFromValuesMap.size == 1, "Check nested map has correct number of keys")
                         #expect(mapFromValuesMap === referencedMap, "Check nested map is the same object instance as map on the root")
-
-                        // TODO: remove (Swift-only) — keep channel alive until we've executed our test case. We'll address this in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/9
-                        withExtendedLifetime(channel) {}
                     },
                 ),
                 .init(
@@ -751,9 +736,6 @@ private struct ObjectsIntegrationTests {
                     clientOptions: testCase.options,
                 ),
             )
-
-            // TODO: remove (Swift-only) — keep channel alive until we've executed our test case. We'll address this in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/9
-            withExtendedLifetime(channel) {}
         }
     }
 

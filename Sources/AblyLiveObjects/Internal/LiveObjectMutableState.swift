@@ -2,7 +2,7 @@ internal import AblyPlugin
 
 /// This is the equivalent of the `LiveObject` abstract class described in RTLO.
 ///
-/// ``DefaultLiveCounter`` and ``DefaultLiveMap`` include it by composition.
+/// ``InternalDefaultLiveCounter`` and ``InternalDefaultLiveMap`` include it by composition.
 internal struct LiveObjectMutableState {
     // RTLO3a
     internal var objectID: String

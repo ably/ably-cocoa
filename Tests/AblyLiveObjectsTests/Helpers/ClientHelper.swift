@@ -19,6 +19,9 @@ enum ClientHelper {
         if let useBinaryProtocol = options.useBinaryProtocol {
             clientOptions.useBinaryProtocol = useBinaryProtocol
         }
+        if let autoConnect = options.autoConnect {
+            clientOptions.autoConnect = autoConnect
+        }
 
         return ARTRealtime(options: clientOptions)
     }
@@ -32,5 +35,6 @@ enum ClientHelper {
 
     struct PartialClientOptions: Encodable, Hashable {
         var useBinaryProtocol: Bool?
+        var autoConnect: Bool?
     }
 }

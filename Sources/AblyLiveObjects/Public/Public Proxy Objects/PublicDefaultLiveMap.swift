@@ -1,0 +1,98 @@
+import Ably
+
+/// Our default implementation of ``LiveMap``.
+///
+/// This is largely a wrapper around ``InternalDefaultLiveMap``.
+internal final class PublicDefaultLiveMap: LiveMap {
+    private let proxied: InternalDefaultLiveMap
+    internal var testsOnly_proxied: InternalDefaultLiveMap {
+        proxied
+    }
+
+    // MARK: - Dependencies that hold a strong reference to `proxied`
+
+    private let coreSDK: CoreSDK
+    private let delegate: LiveMapObjectPoolDelegate
+
+    internal init(proxied: InternalDefaultLiveMap, coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) {
+        self.proxied = proxied
+        self.coreSDK = coreSDK
+        self.delegate = delegate
+    }
+
+    // MARK: - `LiveMap` protocol
+
+    internal func get(key: String) throws(ARTErrorInfo) -> LiveMapValue? {
+        try proxied.get(key: key, coreSDK: coreSDK, delegate: delegate)?.toPublic(
+            creationArgs: .init(
+                coreSDK: coreSDK,
+                mapDelegate: delegate,
+            ),
+        )
+    }
+
+    internal var size: Int {
+        get throws(ARTErrorInfo) {
+            try proxied.size(coreSDK: coreSDK)
+        }
+    }
+
+    internal var entries: [(key: String, value: LiveMapValue)] {
+        get throws(ARTErrorInfo) {
+            try proxied.entries(coreSDK: coreSDK, delegate: delegate).map { entry in
+                (
+                    entry.key,
+                    entry.value.toPublic(
+                        creationArgs: .init(
+                            coreSDK: coreSDK,
+                            mapDelegate: delegate,
+                        ),
+                    )
+                )
+            }
+        }
+    }
+
+    internal var keys: [String] {
+        get throws(ARTErrorInfo) {
+            try proxied.keys(coreSDK: coreSDK, delegate: delegate)
+        }
+    }
+
+    internal var values: [LiveMapValue] {
+        get throws(ARTErrorInfo) {
+            try proxied.values(coreSDK: coreSDK, delegate: delegate).map { value in
+                value.toPublic(
+                    creationArgs: .init(
+                        coreSDK: coreSDK,
+                        mapDelegate: delegate,
+                    ),
+                )
+            }
+        }
+    }
+
+    internal func set(key: String, value: LiveMapValue) async throws(ARTErrorInfo) {
+        try await proxied.set(key: key, value: value)
+    }
+
+    internal func remove(key: String) async throws(ARTErrorInfo) {
+        try await proxied.remove(key: key)
+    }
+
+    internal func subscribe(listener: sending (sending any LiveMapUpdate) -> Void) -> any SubscribeResponse {
+        proxied.subscribe(listener: listener)
+    }
+
+    internal func unsubscribeAll() {
+        proxied.unsubscribeAll()
+    }
+
+    internal func on(event: LiveObjectLifecycleEvent, callback: sending () -> Void) -> any OnLiveObjectLifecycleEventResponse {
+        proxied.on(event: event, callback: callback)
+    }
+
+    internal func offAll() {
+        proxied.offAll()
+    }
+}

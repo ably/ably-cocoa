@@ -20,7 +20,7 @@ struct AblyLiveObjectsTests {
         // Then
 
         // Check that the `channel.objects` property works and gives the internal type we expect
-        #expect(channel.objects is DefaultRealtimeObjects)
+        #expect(channel.objects is PublicDefaultRealtimeObjects)
     }
 
     /// A basic test of the core interactions between this plugin and ably-cocoa.
@@ -79,10 +79,10 @@ struct AblyLiveObjectsTests {
         try await channel.attachAsync()
 
         // 3. Check that ably-cocoa called our onChannelAttached and passed the HAS_OBJECTS flag.
-        #expect(channel.testsOnly_internallyTypedObjects.testsOnly_onChannelAttachedHasObjects == true)
+        #expect(channel.testsOnly_nonTypeErasedObjects.testsOnly_onChannelAttachedHasObjects == true)
 
         // 4. Check that ably-cocoa used us to decode the ObjectMessages in the OBJECT_SYNC, and then called our handleObjectSyncProtocolMessage with these ObjectMessages; we expect the OBJECT_SYNC to contain the root object and the map that we created in the REST call above.
-        let objectSyncObjectMessages = try #require(await channel.testsOnly_internallyTypedObjects.testsOnly_receivedObjectSyncProtocolMessages.first { _ in true })
+        let objectSyncObjectMessages = try #require(await channel.testsOnly_nonTypeErasedObjects.testsOnly_receivedObjectSyncProtocolMessages.first { _ in true })
         #expect(Set(objectSyncObjectMessages.map(\.object?.objectId)) == ["root", restCreatedMapObjectID])
 
         // 5. Now, send an OBJECT ProtocolMessage that creates a new Map. This confirms that Ably is using us to encode this ProtocolMessage's contained ObjectMessages.
@@ -90,7 +90,7 @@ struct AblyLiveObjectsTests {
         // (This objectId comes from copying that which was given in an expected value in an error message from Realtime)
         let realtimeCreatedMapObjectID = "map:iC4Nq8EbTSEmw-_tDJdVV8HfiBvJGpZmO_WbGbh0_-4@\(currentAblyTimestamp)"
 
-        try await channel.testsOnly_internallyTypedObjects.testsOnly_sendObject(objectMessages: [
+        try await channel.testsOnly_nonTypeErasedObjects.testsOnly_sendObject(objectMessages: [
             OutboundObjectMessage(
                 operation: .init(
                     action: .known(.mapCreate),
@@ -101,7 +101,7 @@ struct AblyLiveObjectsTests {
         ])
 
         // 6. Check that ably-cocoa used us to decode the ObjectMessages in the OBJECT triggered by this map creation, and then called our handleObjectProtocolMessage with these ObjectMessages; we expect the OBJECT to contain the map create operation that we just performed.
-        let objectObjectMessages = try #require(await channel.testsOnly_internallyTypedObjects.testsOnly_receivedObjectProtocolMessages.first { _ in true })
+        let objectObjectMessages = try #require(await channel.testsOnly_nonTypeErasedObjects.testsOnly_receivedObjectProtocolMessages.first { _ in true })
         try #require(objectObjectMessages.count == 1)
         let receivedMapCreateObjectMessage = objectObjectMessages[0]
         #expect(receivedMapCreateObjectMessage.operation?.objectId == realtimeCreatedMapObjectID)
@@ -110,7 +110,7 @@ struct AblyLiveObjectsTests {
         // 7. Now, send an invalid OBJECT ProtocolMessage to check that ably-cocoa correctly reports on its NACK.
         let invalidObjectThrownError = try await #require(throws: ARTErrorInfo.self) {
             do throws(InternalError) {
-                try await channel.testsOnly_internallyTypedObjects.testsOnly_sendObject(objectMessages: [
+                try await channel.testsOnly_nonTypeErasedObjects.testsOnly_sendObject(objectMessages: [
                     .init(),
                 ])
             } catch {

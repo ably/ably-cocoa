@@ -17,25 +17,17 @@ internal final class DefaultInternalPlugin: NSObject, AblyPlugin.LiveObjectsInte
     /// The `pluginDataValue(forKey:channel:)` key that we use to store the value of the `ARTRealtimeChannel.objects` property.
     private static let pluginDataKey = "LiveObjects"
 
-    /// Retrieves the value that should be returned by `ARTRealtimeChannel.objects`.
-    ///
-    /// We expect this value to have been previously set by ``prepare(_:)``.
-    internal static func objectsProperty(for channel: ARTRealtimeChannel, pluginAPI: AblyPlugin.PluginAPIProtocol) -> DefaultRealtimeObjects {
-        let underlyingObjects = pluginAPI.underlyingObjects(forPublicRealtimeChannel: channel)
-        return realtimeObjects(for: underlyingObjects.channel, pluginAPI: pluginAPI)
-    }
-
     /// Retrieves the `RealtimeObjects` for this channel.
     ///
     /// We expect this value to have been previously set by ``prepare(_:)``.
-    private static func realtimeObjects(for channel: AblyPlugin.RealtimeChannel, pluginAPI: AblyPlugin.PluginAPIProtocol) -> DefaultRealtimeObjects {
+    internal static func realtimeObjects(for channel: AblyPlugin.RealtimeChannel, pluginAPI: AblyPlugin.PluginAPIProtocol) -> InternalDefaultRealtimeObjects {
         guard let pluginData = pluginAPI.pluginDataValue(forKey: pluginDataKey, channel: channel) else {
             // InternalPlugin.prepare was not called
             fatalError("To access LiveObjects functionality, you must pass the LiveObjects plugin in the client options when creating the ARTRealtime instance: `clientOptions.plugins = [.liveObjects: AblyLiveObjects.Plugin.self]`")
         }
 
         // swiftlint:disable:next force_cast
-        return pluginData as! DefaultRealtimeObjects
+        return pluginData as! InternalDefaultRealtimeObjects
     }
 
     // MARK: - LiveObjectsInternalPluginProtocol
@@ -45,13 +37,12 @@ internal final class DefaultInternalPlugin: NSObject, AblyPlugin.LiveObjectsInte
         let logger = pluginAPI.logger(for: channel)
 
         logger.log("LiveObjects.DefaultInternalPlugin received prepare(_:)", level: .debug)
-        let coreSDK = DefaultCoreSDK(channel: channel, pluginAPI: pluginAPI)
-        let liveObjects = DefaultRealtimeObjects(coreSDK: coreSDK, logger: logger)
+        let liveObjects = InternalDefaultRealtimeObjects(logger: logger)
         pluginAPI.setPluginDataValue(liveObjects, forKey: Self.pluginDataKey, channel: channel)
     }
 
     /// Retrieves the internally-typed `objects` property for the channel.
-    private func realtimeObjects(for channel: AblyPlugin.RealtimeChannel) -> DefaultRealtimeObjects {
+    private func realtimeObjects(for channel: AblyPlugin.RealtimeChannel) -> InternalDefaultRealtimeObjects {
         Self.realtimeObjects(for: channel, pluginAPI: pluginAPI)
     }
 

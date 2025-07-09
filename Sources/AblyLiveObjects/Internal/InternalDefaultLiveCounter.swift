@@ -2,8 +2,8 @@ import Ably
 internal import AblyPlugin
 import Foundation
 
-/// Our default implementation of ``LiveCounter``.
-internal final class DefaultLiveCounter: LiveCounter {
+/// This provides the implementation behind ``PublicDefaultLiveCounter``, via internal versions of the ``LiveCounter`` API.
+internal final class InternalDefaultLiveCounter: Sendable {
     // Used for synchronizing access to all of this instance's mutable state. This is a temporary solution just to allow us to implement `Sendable`, and we'll revisit it in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/3.
     private let mutex = NSLock()
 
@@ -27,7 +27,6 @@ internal final class DefaultLiveCounter: LiveCounter {
         }
     }
 
-    private let coreSDK: CoreSDK
     private let logger: AblyPlugin.Logger
 
     // MARK: - Initialization
@@ -35,20 +34,17 @@ internal final class DefaultLiveCounter: LiveCounter {
     internal convenience init(
         testsOnly_data data: Double,
         objectID: String,
-        coreSDK: CoreSDK,
         logger: AblyPlugin.Logger
     ) {
-        self.init(data: data, objectID: objectID, coreSDK: coreSDK, logger: logger)
+        self.init(data: data, objectID: objectID, logger: logger)
     }
 
     private init(
         data: Double,
         objectID: String,
-        coreSDK: CoreSDK,
         logger: AblyPlugin.Logger
     ) {
         mutableState = .init(liveObject: .init(objectID: objectID), data: data)
-        self.coreSDK = coreSDK
         self.logger = logger
     }
 
@@ -58,35 +54,31 @@ internal final class DefaultLiveCounter: LiveCounter {
     ///   - objectID: The value for the "private objectId field" of RTO5c1b1a.
     internal static func createZeroValued(
         objectID: String,
-        coreSDK: CoreSDK,
         logger: AblyPlugin.Logger,
     ) -> Self {
         .init(
             data: 0,
             objectID: objectID,
-            coreSDK: coreSDK,
             logger: logger,
         )
     }
 
-    // MARK: - LiveCounter conformance
+    // MARK: - Internal methods that back LiveCounter conformance
 
-    internal var value: Double {
-        get throws(ARTErrorInfo) {
-            // RTLC5b: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
-            let currentChannelState = coreSDK.channelState
-            if currentChannelState == .detached || currentChannelState == .failed {
-                throw LiveObjectsError.objectsOperationFailedInvalidChannelState(
-                    operationDescription: "LiveCounter.value",
-                    channelState: currentChannelState,
-                )
-                .toARTErrorInfo()
-            }
+    internal func value(coreSDK: CoreSDK) throws(ARTErrorInfo) -> Double {
+        // RTLC5b: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
+        let currentChannelState = coreSDK.channelState
+        if currentChannelState == .detached || currentChannelState == .failed {
+            throw LiveObjectsError.objectsOperationFailedInvalidChannelState(
+                operationDescription: "LiveCounter.value",
+                channelState: currentChannelState,
+            )
+            .toARTErrorInfo()
+        }
 
-            return mutex.withLock {
-                // RTLC5c
-                mutableState.data
-            }
+        return mutex.withLock {
+            // RTLC5c
+            mutableState.data
         }
     }
 

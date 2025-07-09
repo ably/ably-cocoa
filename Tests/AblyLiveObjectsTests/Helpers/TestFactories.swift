@@ -172,14 +172,12 @@ import Foundation
 /// /// - Parameters:
 /// ///   - objectId: The object ID for the map (default: "map:test@123")
 /// ///   - entries: Dictionary of key-value pairs to populate the map
-/// ///   - delegate: The delegate for the map (default: MockLiveMapObjectPoolDelegate())
-/// /// - Returns: A configured DefaultLiveMap instance
+/// /// - Returns: A configured InternalDefaultLiveMap instance
 /// static func liveMap(
 ///     objectId: String = "map:test@123",
 ///     entries: [String: String] = [:],
-///     delegate: LiveMapObjectPoolDelegate = MockLiveMapObjectPoolDelegate()
-/// ) -> DefaultLiveMap {
-///     let map = DefaultLiveMap.createZeroValued(delegate: delegate)
+/// ) -> InternalDefaultLiveMap {
+///     let map = InternalDefaultLiveMap.createZeroValued()
 ///     // Configure map with entries...
 ///     return map
 /// }
