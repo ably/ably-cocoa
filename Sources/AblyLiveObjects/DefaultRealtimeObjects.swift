@@ -23,7 +23,7 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
         }
     }
 
-    /// If this returns false, it means that there is currently no stored sync sequence ID or SyncObjectsPool
+    /// If this returns false, it means that there is currently no stored sync sequence ID, SyncObjectsPool, or BufferedObjectOperations.
     internal var testsOnly_hasSyncSequence: Bool {
         mutex.withLock {
             mutableState.syncSequence != nil
@@ -45,6 +45,9 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
 
         /// The `ObjectMessage`s gathered during this sync sequence.
         internal var syncObjectsPool: [ObjectState]
+
+        /// `OBJECT` ProtocolMessages that were received during this sync sequence, to be applied once the sync sequence is complete, per RTO7a.
+        internal var bufferedObjectOperations: [InboundObjectMessage]
     }
 
     /// Tracks whether an object sync sequence has happened yet. This allows us to wait for a sync before returning from `getRoot()`, per RTO1c.
@@ -230,6 +233,7 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
 
     private struct MutableState {
         internal var objectsPool: ObjectsPool
+        /// Note that we only ever populate this during a multi-`ProtocolMessage` sync sequence. It is not used in the RTO4b or RTO5a5 cases where the sync data is entirely contained within a single ProtocolMessage, because an individual ProtocolMessage is processed atomically and so no other operations that might wish to query this property can occur concurrently with the handling of these cases.
         internal var syncSequence: SyncSequence?
         internal var syncStatus = SyncStatus()
         internal var onChannelAttachedHasObjects: Bool?
@@ -255,7 +259,7 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
 
             // I have, for now, not directly implemented the "perform the actions for object sync completion" of RTO4b4 since my implementation doesn't quite match the model given there; here you only have a SyncObjectsPool if you have an OBJECT_SYNC in progress, which you might not have upon receiving an ATTACHED. Instead I've just implemented what seem like the relevant side effects. Can revisit this if "the actions for object sync completion" get more complex.
 
-            // RTO4b3, RTO4b4, RTO5c3, RTO5c4
+            // RTO4b3, RTO4b4, RTO4b5, RTO5c3, RTO5c4, RTO5c5
             syncSequence = nil
             syncStatus.signalSyncComplete()
         }
@@ -275,6 +279,8 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
 
             // If populated, this contains a full set of sync data for the channel, and should be applied to the ObjectsPool.
             let completedSyncObjectsPool: [ObjectState]?
+            // If populated, this contains a set of buffered inbound OBJECT messages that should be applied.
+            let completedSyncBufferedObjectOperations: [InboundObjectMessage]?
 
             if let protocolMessageChannelSerial {
                 let syncCursor: SyncCursor
@@ -292,12 +298,12 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
                         // RTO5a3: Continue existing sync sequence
                         syncSequence
                     } else {
-                        // RTO5a2: new sequence started, discard previous
-                        .init(id: syncCursor.sequenceID, syncObjectsPool: [])
+                        // RTO5a2a, RTO5a2b: new sequence started, discard previous
+                        .init(id: syncCursor.sequenceID, syncObjectsPool: [], bufferedObjectOperations: [])
                     }
                 } else {
                     // There's no current sync sequence; start one
-                    .init(id: syncCursor.sequenceID, syncObjectsPool: [])
+                    .init(id: syncCursor.sequenceID, syncObjectsPool: [], bufferedObjectOperations: [])
                 }
 
                 // RTO5b
@@ -305,14 +311,15 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
 
                 syncSequence = updatedSyncSequence
 
-                completedSyncObjectsPool = if syncCursor.isEndOfSequence {
-                    updatedSyncSequence.syncObjectsPool
+                (completedSyncObjectsPool, completedSyncBufferedObjectOperations) = if syncCursor.isEndOfSequence {
+                    (updatedSyncSequence.syncObjectsPool, updatedSyncSequence.bufferedObjectOperations)
                 } else {
-                    nil
+                    (nil, nil)
                 }
             } else {
                 // RTO5a5: The sync data is contained entirely within this single OBJECT_SYNC
                 completedSyncObjectsPool = objectMessages.compactMap(\.object)
+                completedSyncBufferedObjectOperations = nil
             }
 
             if let completedSyncObjectsPool {
@@ -323,7 +330,21 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
                     coreSDK: coreSDK,
                     logger: logger,
                 )
-                // RTO5c3, RTO5c4
+
+                // RTO5c6
+                if let completedSyncBufferedObjectOperations, !completedSyncBufferedObjectOperations.isEmpty {
+                    logger.log("Applying \(completedSyncBufferedObjectOperations.count) buffered OBJECT ObjectMessages", level: .debug)
+                    for objectMessage in completedSyncBufferedObjectOperations {
+                        applyObjectProtocolMessageObjectMessage(
+                            objectMessage,
+                            logger: logger,
+                            mapDelegate: mapDelegate,
+                            coreSDK: coreSDK,
+                        )
+                    }
+                }
+
+                // RTO5c3, RTO5c4, RTO5c5
                 syncSequence = nil
 
                 syncStatus.signalSyncComplete()
@@ -342,16 +363,22 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
 
             logger.log("handleObjectProtocolMessage(objectMessages: \(objectMessages))", level: .debug)
 
-            // TODO: RTO8a's buffering
-
-            // RTO8b
-            for objectMessage in objectMessages {
-                applyObjectProtocolMessageObjectMessage(
-                    objectMessage,
-                    logger: logger,
-                    mapDelegate: mapDelegate,
-                    coreSDK: coreSDK,
-                )
+            if let existingSyncSequence = syncSequence {
+                // RTO8a: Buffer the OBJECT message, to be handled once the sync completes
+                logger.log("Buffering OBJECT message due to in-progress sync", level: .debug)
+                var newSyncSequence = existingSyncSequence
+                newSyncSequence.bufferedObjectOperations.append(contentsOf: objectMessages)
+                syncSequence = newSyncSequence
+            } else {
+                // RTO8b: Handle the OBJECT message immediately
+                for objectMessage in objectMessages {
+                    applyObjectProtocolMessageObjectMessage(
+                        objectMessage,
+                        logger: logger,
+                        mapDelegate: mapDelegate,
+                        coreSDK: coreSDK,
+                    )
+                }
             }
         }
 
