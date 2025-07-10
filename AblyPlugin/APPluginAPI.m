@@ -5,6 +5,7 @@
 #import "ARTRealtimeChannel.h"
 #import "ARTRealtimeChannelInternal+APRealtimeChannel.h"
 #import "ARTRealtimeInternal+APRealtimeClient.h"
+#import "APDefaultPublicRealtimeChannelUnderlyingObjects.h"
 
 static ARTRealtimeChannelInternal *_internalRealtimeChannel(id<APRealtimeChannel> pluginRealtimeChannel) {
     if (![pluginRealtimeChannel isKindOfClass:[ARTRealtimeChannelInternal class]]) {
@@ -32,8 +33,17 @@ static ARTRealtimeInternal *_internalRealtimeClient(id<APRealtimeClient> pluginR
     return sharedInstance;
 }
 
+- (APPublicRealtimeChannelUnderlyingObjects *)underlyingObjectsForPublicRealtimeChannel:(ARTRealtimeChannel *)channel {
+    return [[APDefaultPublicRealtimeChannelUnderlyingObjects alloc] initWithClient:channel.realtimeInternal
+                                                                           channel:channel.internal];
+
+}
 - (id<APRealtimeChannel>)channelForPublicRealtimeChannel:(ARTRealtimeChannel *)channel {
     return channel.internal;
+}
+
+- (id<APRealtimeClient>)clientForPublicRealtimeChannel:(ARTRealtimeChannel *)channel {
+    return channel.realtimeInternal;
 }
 
 - (void)setPluginDataValue:(nonnull id)value

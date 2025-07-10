@@ -137,11 +137,12 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
 @interface ARTRealtimeChannel ()
 
 @property (nonatomic, readonly) ARTRealtimeChannelInternal *internal;
+@property (nonatomic, readonly) ARTRealtimeInternal *realtimeInternal;
 
 - (void)internalAsync:(void (^)(ARTRealtimeChannelInternal *))use;
 - (void)internalSync:(void (^)(ARTRealtimeChannelInternal *))use;
 
-- (instancetype)initWithInternal:(ARTRealtimeChannelInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
+- (instancetype)initWithInternal:(ARTRealtimeChannelInternal *)internal realtimeInternal:(ARTRealtimeInternal *)realtimeInternal queuedDealloc:(ARTQueuedDealloc *)dealloc;
 
 @end
 
