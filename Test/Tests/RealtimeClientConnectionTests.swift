@@ -5371,7 +5371,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                         return
                     }
 
-                    let request = NSMutableURLRequest(url: URL(string: "/channels/\(channel.name)/messages?limit=1")!)
+                    let request = NSMutableURLRequest(url: URL(string: "/channels/\(channel.name)/messages")!)
                     request.httpMethod = "GET"
                     request.allHTTPHeaderFields = ["Accept": "application/json"]
                     client.internal.rest.execute(request, withAuthOption: .on, wrapperSDKAgents: nil, completion: { _, data, err in
@@ -5381,9 +5381,11 @@ class RealtimeClientConnectionTests: XCTestCase {
                             return
                         }
                         let messages: [[String: Any]] = try! JSONUtility.jsonObject(data: data)
-                        let persistedMessage = messages.first!
-                        XCTAssertEqual(persistedMessage["data"] as? String, fixtureMessage["data"] as? String)
-                        XCTAssertEqual(persistedMessage["encoding"] as? String, fixtureMessage["encoding"] as? String)
+                        let persistedMessage = messages.first { jsonObject in
+                            jsonObject["id"] as? String == message.id
+                        }
+                        XCTAssertEqual(persistedMessage?["data"] as? String, fixtureMessage["data"] as? String)
+                        XCTAssertEqual(persistedMessage?["encoding"] as? String, fixtureMessage["encoding"] as? String)
                         done()
                     })
                 }
