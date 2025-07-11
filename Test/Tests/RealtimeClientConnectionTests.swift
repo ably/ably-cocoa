@@ -5371,7 +5371,9 @@ class RealtimeClientConnectionTests: XCTestCase {
                         return
                     }
 
-                    let request = NSMutableURLRequest(url: URL(string: "/channels/\(channel.name)/messages?limit=1")!)
+                    sleep(1) // give realtime some time to store messages so they appear in the GET request below
+                    
+                    let request = NSMutableURLRequest(url: URL(string: "/channels/\(channel.name)/messages")!)
                     request.httpMethod = "GET"
                     request.allHTTPHeaderFields = ["Accept": "application/json"]
                     client.internal.rest.execute(request, withAuthOption: .on, wrapperSDKAgents: nil, completion: { _, data, err in
@@ -5381,9 +5383,11 @@ class RealtimeClientConnectionTests: XCTestCase {
                             return
                         }
                         let messages: [[String: Any]] = try! JSONUtility.jsonObject(data: data)
-                        let persistedMessage = messages.first!
-                        XCTAssertEqual(persistedMessage["data"] as? String, fixtureMessage["data"] as? String)
-                        XCTAssertEqual(persistedMessage["encoding"] as? String, fixtureMessage["encoding"] as? String)
+                        let persistedMessage = messages.first { jsonObject in
+                            jsonObject["id"] as? String == message.id
+                        }
+                        XCTAssertEqual(persistedMessage?["data"] as? String, fixtureMessage["data"] as? String)
+                        XCTAssertEqual(persistedMessage?["encoding"] as? String, fixtureMessage["encoding"] as? String)
                         done()
                     })
                 }
@@ -5452,8 +5456,19 @@ class RealtimeClientConnectionTests: XCTestCase {
         let restPublishClientJSON = ARTRest(options: jsonOptions)
         let restRetrieveClient = ARTRest(options: jsonOptions)
 
-        let restPublishChannelMsgPack = restPublishClientMsgPack.channels.get(test.uniqueChannelName())
-        let restPublishChannelJSON = restPublishClientJSON.channels.get(restPublishChannelMsgPack.name)
+        let channelName = test.uniqueChannelName()
+        let restPublishChannelMsgPack = restPublishClientMsgPack.channels.get(channelName)
+        let restPublishChannelJSON = restPublishClientJSON.channels.get(channelName)
+
+        let realtimeClient = AblyTests.newRealtime(jsonOptions).client // client for receiving message for obtaining its id to use it later in filtering
+        defer { realtimeClient.dispose(); realtimeClient.close() }
+        let realtimeChannel = realtimeClient.channels.get(channelName)
+        realtimeChannel.attach()
+
+        expect(realtimeChannel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+        if realtimeChannel.state != .attached {
+            return
+        }
 
         let messages = fixtures["messages"] as! [[String: Any]]
         
@@ -5466,19 +5481,29 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
 
             for restPublishChannel in [restPublishChannelMsgPack, restPublishChannelJSON] {
+                var receivedMessage: ARTMessage?
+                
                 waitUntil(timeout: testTimeout) { done in
+                    let partialDone = AblyTests.splitDone(2, done: done)
+                    realtimeChannel.subscribe("event") { message in
+                        realtimeChannel.unsubscribe()
+                        receivedMessage = message
+                        partialDone()
+                    }
                     restPublishChannel.publish("event", data: data) { err in
                         if let err = err {
                             fail("\(err)")
-                            done()
+                            partialDone()
                             return
                         }
-                        done()
+                        partialDone()
                     }
                 }
 
+                sleep(1) // give realtime some time to store messages so they appear in the GET request below
+                
                 waitUntil(timeout: testTimeout) { done in
-                    let request = NSMutableURLRequest(url: URL(string: "/channels/\(restPublishChannel.name)/messages?limit=1")!)
+                    let request = NSMutableURLRequest(url: URL(string: "/channels/\(restPublishChannel.name)/messages")!)
                     request.httpMethod = "GET"
                     request.allHTTPHeaderFields = ["Accept": "application/json"]
                     restRetrieveClient.internal.execute(request, withAuthOption: .on, wrapperSDKAgents: nil, completion: { _, data, err in
@@ -5488,10 +5513,15 @@ class RealtimeClientConnectionTests: XCTestCase {
                             return
                         }
                         let messages: [[String: Any]] = try! JSONUtility.jsonObject(data: data)
-                        let persistedMessage = messages.first!
-                        
-                        XCTAssertEqual(persistedMessage["data"] as? String, persistedMessage["data"] as? String)
-                        XCTAssertEqual(persistedMessage["encoding"] as? String  , fixtureMessage["encoding"] as? String)
+                        guard let persistedMessage = messages.first(where: { jsonObject in
+                            jsonObject["id"] as? String == receivedMessage?.id
+                        }) else {
+                            XCTFail("Message was not published yet.")
+                            return
+                        }
+                        // In case of string with json data, dictionary objects can be in different order from what they were sent, so I just compare them as ordered characters array which is good enough for the sample data provided in `fixtures`
+                        XCTAssertEqual(Array(persistedMessage["data"] as! String).sorted(), Array(fixtureMessage["data"] as! String).sorted())
+                        XCTAssertEqual(persistedMessage["encoding"] as? String, fixtureMessage["encoding"] as? String)
                         done()
                     })
                 }
