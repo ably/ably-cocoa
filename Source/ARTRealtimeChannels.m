@@ -43,7 +43,7 @@
 
 - (id<NSFastEnumeration>)iterate {
     return [_internal copyIntoIteratorWithMapper:^ARTRealtimeChannel *(ARTRealtimeChannelInternal *internalChannel) {
-        return [[ARTRealtimeChannel alloc] initWithInternal:internalChannel realtimeInternal:_realtimeInternal queuedDealloc:self->_dealloc];
+        return [[ARTRealtimeChannel alloc] initWithInternal:internalChannel realtimeInternal:self->_realtimeInternal queuedDealloc:self->_dealloc];
     }];
 }
 

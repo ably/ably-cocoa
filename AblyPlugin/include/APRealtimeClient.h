@@ -1,4 +1,5 @@
 @import Foundation;
+@import Ably;
 
 NS_ASSUME_NONNULL_BEGIN
 

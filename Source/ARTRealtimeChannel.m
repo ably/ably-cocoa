@@ -36,7 +36,7 @@
 #import "ARTPushChannel+Private.h"
 #endif
 #import "APLiveObjectsPlugin.h"
-#import "ARTRealtimeChannelInternal+APRealtimeChannel.h"
+#import "ARTPluginRealtimeChannel.h"
 
 @implementation ARTRealtimeChannel {
     ARTQueuedDealloc *_dealloc;
@@ -60,12 +60,6 @@
         _internal = internal;
         _realtimeInternal = realtimeInternal;
         _dealloc = dealloc;
-
-        // If the LiveObjects plugin has been provided, set up LiveObjects functionality for this channel.
-        id<APLiveObjectsInternalPluginProtocol> liveObjectsPlugin = internal.realtime.options.liveObjectsPlugin;
-        if (liveObjectsPlugin) {
-            [liveObjectsPlugin prepareChannel:internal];
-        }
     }
     return self;
 }
@@ -285,6 +279,13 @@ NS_ASSUME_NONNULL_END
                                                                                logger:logger
                                                                      logMessagePrefix:[NSString stringWithFormat:@"RT: %p C:%p ", _realtime, self]];
         _pluginData = [[NSMutableDictionary alloc] init];
+
+        // If the LiveObjects plugin has been provided, set up LiveObjects functionality for this channel.
+        id<APLiveObjectsInternalPluginProtocol> liveObjectsPlugin = realtime.options.liveObjectsPlugin;
+        if (liveObjectsPlugin) {
+            ARTPluginRealtimeChannel *pluginRealtimeChannel = [[ARTPluginRealtimeChannel alloc] initWithUnderlying:self];
+            [liveObjectsPlugin prepareChannel:pluginRealtimeChannel];
+        }
     }
     return self;
 }
@@ -863,8 +864,10 @@ dispatch_sync(_queue, ^{
         return;
     }
 
+    ARTPluginRealtimeChannel *pluginRealtimeChannel = [[ARTPluginRealtimeChannel alloc] initWithUnderlying:self];
+
     [self.realtime.options.liveObjectsPlugin handleObjectProtocolMessageWithObjectMessages:pm.state
-                                                                                   channel:self];
+                                                                                   channel:pluginRealtimeChannel];
 }
 
 - (void)onObjectSync:(ARTProtocolMessage *)pm {
@@ -873,9 +876,11 @@ dispatch_sync(_queue, ^{
         return;
     }
 
+    ARTPluginRealtimeChannel *pluginRealtimeChannel = [[ARTPluginRealtimeChannel alloc] initWithUnderlying:self];
+
     [self.realtime.options.liveObjectsPlugin handleObjectSyncProtocolMessageWithObjectMessages:pm.state
                                                                   protocolMessageChannelSerial:pm.channelSerial
-                                                                                       channel:self];
+                                                                                       channel:pluginRealtimeChannel];
 }
 
 - (void)attach {
