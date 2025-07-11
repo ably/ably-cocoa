@@ -132,5 +132,7 @@ module Ably {
         header "../PrivateHeaders/Ably/ARTPendingMessage.h"
         header "../PrivateHeaders/Ably/ARTEncoder.h"
         header "../PrivateHeaders/Ably/ARTDeviceStorage.h"
+        header "../PrivateHeaders/Ably/ARTPluginRealtimeClient.h"
+        header "../PrivateHeaders/Ably/ARTPluginRealtimeChannel.h"
     }
 }
