@@ -2,6 +2,7 @@
 #import "ARTRealtimeChannel+Private.h"
 #import "ARTChannel+Private.h"
 #import "ARTInternalLog+APLogger.h"
+#import "ARTRealtimeChannel.h"
 #import "ARTRealtimeChannelInternal+APRealtimeChannel.h"
 #import "ARTRealtimeInternal+APRealtimeClient.h"
 

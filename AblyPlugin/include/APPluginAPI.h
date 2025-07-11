@@ -1,8 +1,9 @@
 @import Foundation;
-@import Ably;
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class ARTErrorInfo;
+@class ARTRealtimeChannel;
 @protocol APLogger;
 @protocol APObjectMessageProtocol;
 @protocol APRealtimeChannel;

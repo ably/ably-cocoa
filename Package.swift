@@ -63,6 +63,7 @@ let package = Package(
             path: "AblyPlugin",
             cSettings: [
                 .headerSearchPath("PrivateHeaders"),
+                .headerSearchPath("../Source/include/Ably"),
                 .headerSearchPath("../Source/PrivateHeaders"),
                 .headerSearchPath("../Source/PrivateHeaders/Ably")
             ]
