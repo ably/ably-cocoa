@@ -3,7 +3,7 @@
 
 @class ARTRealtimeChannelInternal;
 
-NS_ASSUME_NONNULL_START
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTPluginRealtimeChannel : NSObject<APRealtimeChannel>
 
