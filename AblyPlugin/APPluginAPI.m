@@ -33,11 +33,14 @@ static ARTRealtimeInternal *_internalRealtimeClient(id<APRealtimeClient> pluginR
     return sharedInstance;
 }
 
-- (APPublicRealtimeChannelUnderlyingObjects *)underlyingObjectsForPublicRealtimeChannel:(ARTRealtimeChannel *)channel {
+- (id<APPublicRealtimeChannelUnderlyingObjects>)underlyingObjectsForPublicRealtimeChannel:(ARTRealtimeChannel *)channel {
     return [[APDefaultPublicRealtimeChannelUnderlyingObjects alloc] initWithClient:channel.realtimeInternal
                                                                            channel:channel.internal];
 
 }
+
+// TODO
+/*
 - (id<APRealtimeChannel>)channelForPublicRealtimeChannel:(ARTRealtimeChannel *)channel {
     return channel.internal;
 }
@@ -75,5 +78,6 @@ static ARTRealtimeInternal *_internalRealtimeClient(id<APRealtimeClient> pluginR
                          completion:(void (^ _Nullable)(ARTErrorInfo *_Nullable error, NSDate *_Nullable timestamp))completion {
     [NSException raise:NSInternalInconsistencyException format:@"Not yet implemented"];
 }
+ */
 
 @end
