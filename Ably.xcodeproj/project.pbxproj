@@ -1340,9 +1340,9 @@
 		215F75F72922B1DB009E0E76 /* ARTClientInformation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTClientInformation.m; sourceTree = "<group>"; };
 		215F75FE2922B30F009E0E76 /* ClientInformationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientInformationTests.swift; sourceTree = "<group>"; };
 		215F76022922C76C009E0E76 /* ARTClientInformation+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTClientInformation+Private.h"; path = "PrivateHeaders/Ably/ARTClientInformation+Private.h"; sourceTree = "<group>"; };
-		2175B91F2E21982F00DCD170 /* ARTPluginRealtimeChannel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTPluginRealtimeChannel.h; sourceTree = "<group>"; };
+		2175B91F2E21982F00DCD170 /* ARTPluginRealtimeChannel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTPluginRealtimeChannel.h; path = PrivateHeaders/ARTPluginRealtimeChannel.h; sourceTree = "<group>"; };
 		2175B9232E21987600DCD170 /* ARTPluginRealtimeChannel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTPluginRealtimeChannel.m; sourceTree = "<group>"; };
-		2175B9272E21988100DCD170 /* ARTPluginRealtimeClient.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTPluginRealtimeClient.h; sourceTree = "<group>"; };
+		2175B9272E21988100DCD170 /* ARTPluginRealtimeClient.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTPluginRealtimeClient.h; path = PrivateHeaders/ARTPluginRealtimeClient.h; sourceTree = "<group>"; };
 		2175B92B2E21988B00DCD170 /* ARTPluginRealtimeClient.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTPluginRealtimeClient.m; sourceTree = "<group>"; };
 		217D17F125421FED00DFF07E /* ARTSRProxyConnect.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRProxyConnect.h; sourceTree = "<group>"; };
 		217D17F225421FED00DFF07E /* ARTSRProxyConnect.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRProxyConnect.m; sourceTree = "<group>"; };
@@ -1801,7 +1801,7 @@
 				2175B9232E21987600DCD170 /* ARTPluginRealtimeChannel.m */,
 				2175B91F2E21982F00DCD170 /* ARTPluginRealtimeChannel.h */,
 			);
-			path = "Plugin Support";
+			name = "Plugin Support";
 			sourceTree = "<group>";
 		};
 		217D17EE25421FC100DFF07E /* SocketRocket */ = {
