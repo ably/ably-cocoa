@@ -2,6 +2,7 @@
 #import <Ably/ARTTypes.h>
 
 @protocol APLogger;
+@protocol APObjectMessageProtocol;
 
 NS_ASSUME_NONNULL_BEGIN
 
