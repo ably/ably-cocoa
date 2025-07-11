@@ -32,7 +32,7 @@ struct InternalDefaultLiveCounterTests {
             let coreSDK = MockCoreSDK(channelState: .attached)
 
             // Set some test data
-            counter.replaceData(using: TestFactories.counterObjectState(count: 42))
+            _ = counter.replaceData(using: TestFactories.counterObjectState(count: 42))
 
             #expect(try counter.value(coreSDK: coreSDK) == 42)
         }
@@ -48,7 +48,7 @@ struct InternalDefaultLiveCounterTests {
             let state = TestFactories.counterObjectState(
                 siteTimeserials: ["site1": "ts1"], // Test value
             )
-            counter.replaceData(using: state)
+            _ = counter.replaceData(using: state)
             #expect(counter.testsOnly_siteTimeserials == ["site1": "ts1"])
         }
 
@@ -67,7 +67,7 @@ struct InternalDefaultLiveCounterTests {
                             action: .known(.counterCreate),
                         ),
                     )
-                    counter.replaceData(using: state)
+                    _ = counter.replaceData(using: state)
                     #expect(counter.testsOnly_createOperationIsMerged)
 
                     return counter
@@ -77,7 +77,7 @@ struct InternalDefaultLiveCounterTests {
                 let state = TestFactories.counterObjectState(
                     createOp: nil, // Test value - must be nil to test RTLC6b
                 )
-                counter.replaceData(using: state)
+                _ = counter.replaceData(using: state)
 
                 // Then:
                 #expect(!counter.testsOnly_createOperationIsMerged)
@@ -92,7 +92,7 @@ struct InternalDefaultLiveCounterTests {
                 let state = TestFactories.counterObjectState(
                     count: 42, // Test value
                 )
-                counter.replaceData(using: state)
+                _ = counter.replaceData(using: state)
                 #expect(try counter.value(coreSDK: coreSDK) == 42)
             }
 
@@ -102,7 +102,7 @@ struct InternalDefaultLiveCounterTests {
                 let logger = TestLogger()
                 let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main)
                 let coreSDK = MockCoreSDK(channelState: .attaching)
-                counter.replaceData(using: TestFactories.counterObjectState(
+                _ = counter.replaceData(using: TestFactories.counterObjectState(
                     count: nil, // Test value - must be nil
                 ))
                 #expect(try counter.value(coreSDK: coreSDK) == 0)
@@ -121,7 +121,7 @@ struct InternalDefaultLiveCounterTests {
                     createOp: TestFactories.counterCreateOperation(count: 10), // Test value - must exist
                     count: 5, // Test value - must exist
                 )
-                counter.replaceData(using: state)
+                _ = counter.replaceData(using: state)
                 #expect(try counter.value(coreSDK: coreSDK) == 15) // First sets to 5 (RTLC6c) then adds 10 (RTLC10a)
                 #expect(counter.testsOnly_createOperationIsMerged)
             }
@@ -131,6 +131,7 @@ struct InternalDefaultLiveCounterTests {
     /// Tests for the `testsOnly_mergeInitialValue` method, covering RTLC10 specification points
     struct MergeInitialValueTests {
         // @specOneOf(1/2) RTLC10a - with count
+        // @spec RTLC10c
         @Test
         func addsCounterCountToData() throws {
             let logger = TestLogger()
@@ -138,17 +139,21 @@ struct InternalDefaultLiveCounterTests {
             let coreSDK = MockCoreSDK(channelState: .attaching)
 
             // Set initial data
-            counter.replaceData(using: TestFactories.counterObjectState(count: 5))
+            _ = counter.replaceData(using: TestFactories.counterObjectState(count: 5))
             #expect(try counter.value(coreSDK: coreSDK) == 5)
 
             // Apply merge operation
             let operation = TestFactories.counterCreateOperation(count: 10) // Test value - must exist
-            counter.testsOnly_mergeInitialValue(from: operation)
+            let update = counter.testsOnly_mergeInitialValue(from: operation)
 
             #expect(try counter.value(coreSDK: coreSDK) == 15) // 5 + 10
+
+            // Check return value
+            #expect(try #require(update.update).amount == 10)
         }
 
         // @specOneOf(2/2) RTLC10a - no count
+        // @spec RTLC10d
         @Test
         func doesNotModifyDataWhenCounterCountDoesNotExist() throws {
             let logger = TestLogger()
@@ -156,7 +161,7 @@ struct InternalDefaultLiveCounterTests {
             let coreSDK = MockCoreSDK(channelState: .attaching)
 
             // Set initial data
-            counter.replaceData(using: TestFactories.counterObjectState(count: 5))
+            _ = counter.replaceData(using: TestFactories.counterObjectState(count: 5))
             #expect(try counter.value(coreSDK: coreSDK) == 5)
 
             // Apply merge operation with no count
@@ -164,9 +169,12 @@ struct InternalDefaultLiveCounterTests {
                 action: .known(.counterCreate),
                 counter: nil, // Test value - must be nil
             )
-            counter.testsOnly_mergeInitialValue(from: operation)
+            let update = counter.testsOnly_mergeInitialValue(from: operation)
 
             #expect(try counter.value(coreSDK: coreSDK) == 5) // Unchanged
+
+            // Check return value
+            #expect(update.isNoop)
         }
 
         // @spec RTLC10b
@@ -177,7 +185,7 @@ struct InternalDefaultLiveCounterTests {
 
             // Apply merge operation
             let operation = TestFactories.counterCreateOperation(count: 10) // Test value - must exist
-            counter.testsOnly_mergeInitialValue(from: operation)
+            _ = counter.testsOnly_mergeInitialValue(from: operation)
 
             #expect(counter.testsOnly_createOperationIsMerged)
         }
@@ -193,19 +201,23 @@ struct InternalDefaultLiveCounterTests {
             let coreSDK = MockCoreSDK(channelState: .attaching)
 
             // Set initial data and mark create operation as merged
-            counter.replaceData(using: TestFactories.counterObjectState(count: 5))
-            counter.testsOnly_mergeInitialValue(from: TestFactories.counterCreateOperation(count: 10))
+            _ = counter.replaceData(using: TestFactories.counterObjectState(count: 5))
+            _ = counter.testsOnly_mergeInitialValue(from: TestFactories.counterCreateOperation(count: 10))
             #expect(counter.testsOnly_createOperationIsMerged)
 
             // Try to apply another COUNTER_CREATE operation
             let operation = TestFactories.counterCreateOperation(count: 20)
-            counter.testsOnly_applyCounterCreateOperation(operation)
+            let update = counter.testsOnly_applyCounterCreateOperation(operation)
 
             // Verify the operation was discarded - data unchanged
             #expect(try counter.value(coreSDK: coreSDK) == 15) // 5 + 10, not 5 + 10 + 20
+
+            // Verify return value
+            #expect(update.isNoop)
         }
 
         // @spec RTLC8c
+        // @spec RTLC8e
         @Test
         func mergesInitialValue() throws {
             let logger = TestLogger()
@@ -213,40 +225,58 @@ struct InternalDefaultLiveCounterTests {
             let coreSDK = MockCoreSDK(channelState: .attaching)
 
             // Set initial data but don't mark create operation as merged
-            counter.replaceData(using: TestFactories.counterObjectState(count: 5))
+            _ = counter.replaceData(using: TestFactories.counterObjectState(count: 5))
             #expect(!counter.testsOnly_createOperationIsMerged)
 
             // Apply COUNTER_CREATE operation
             let operation = TestFactories.counterCreateOperation(count: 10)
-            counter.testsOnly_applyCounterCreateOperation(operation)
+            let update = counter.testsOnly_applyCounterCreateOperation(operation)
 
             // Verify the operation was applied - initial value merged. (The full logic of RTLC10 is tested elsewhere; we just check for some of its side effects here.)
             #expect(try counter.value(coreSDK: coreSDK) == 15) // 5 + 10
             #expect(counter.testsOnly_createOperationIsMerged)
+
+            // Verify return value per RTLC8e
+            #expect(try #require(update.update).amount == 10)
         }
     }
 
     /// Tests for `COUNTER_INC` operations, covering RTLC9 specification points
     struct CounterIncOperationTests {
         // @spec RTLC9b
-        @Test(arguments: [
-            (operation: TestFactories.counterOp(amount: 10), expectedValue: 15.0), // 5 + 10
-            (operation: nil as WireObjectsCounterOp?, expectedValue: 5.0), // unchanged
-        ] as [(operation: WireObjectsCounterOp?, expectedValue: Double)])
-        func addsAmountToData(operation: WireObjectsCounterOp?, expectedValue: Double) throws {
+        // @spec RTLC9d
+        // @spec RTLC9e
+        @Test(
+            arguments: [
+                (
+                    operation: TestFactories.counterOp(amount: 10),
+                    expectedValue: 15.0, // 5 + 10
+                    expectedUpdate: .update(.init(amount: 10)) // RTLC9d
+                ),
+                (
+                    operation: nil as WireObjectsCounterOp?,
+                    expectedValue: 5.0, // unchanged
+                    expectedUpdate: .noop // RTLC9e
+                ),
+            ] as [(operation: WireObjectsCounterOp?, expectedValue: Double, expectedUpdate: LiveObjectUpdate<DefaultLiveCounterUpdate>)],
+        )
+        func addsAmountToData(operation: WireObjectsCounterOp?, expectedValue: Double, expectedUpdate: LiveObjectUpdate<DefaultLiveCounterUpdate>) throws {
             let logger = TestLogger()
             let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main)
             let coreSDK = MockCoreSDK(channelState: .attaching)
 
             // Set initial data
-            counter.replaceData(using: TestFactories.counterObjectState(count: 5))
+            _ = counter.replaceData(using: TestFactories.counterObjectState(count: 5))
             #expect(try counter.value(coreSDK: coreSDK) == 5)
 
             // Apply COUNTER_INC operation
-            counter.testsOnly_applyCounterIncOperation(operation)
+            let update = counter.testsOnly_applyCounterIncOperation(operation)
 
             // Verify the operation was applied correctly
             #expect(try counter.value(coreSDK: coreSDK) == expectedValue)
+
+            // Verify return value
+            #expect(update == expectedUpdate)
         }
     }
 
@@ -260,7 +290,7 @@ struct InternalDefaultLiveCounterTests {
             let coreSDK = MockCoreSDK(channelState: .attaching)
 
             // Set up the counter with an existing site timeserial that will cause the operation to be discarded
-            counter.replaceData(using: TestFactories.counterObjectState(
+            _ = counter.replaceData(using: TestFactories.counterObjectState(
                 siteTimeserials: ["site1": "ts2"], // Existing serial "ts2"
                 count: 5,
             ))
@@ -288,11 +318,16 @@ struct InternalDefaultLiveCounterTests {
 
         // @specOneOf(1/2) RTLC7c - We test this spec point for each possible operation
         // @spec RTLC7d1 - Tests COUNTER_CREATE operation application
+        // @spec RTLC7d1a
+        @available(iOS 17.0.0, tvOS 17.0.0, *)
         @Test
-        func appliesCounterCreateOperation() throws {
+        func appliesCounterCreateOperation() async throws {
             let logger = TestLogger()
             let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main)
             let coreSDK = MockCoreSDK(channelState: .attaching)
+
+            let subscriber = Subscriber<DefaultLiveCounterUpdate, SubscribeResponse>(callbackQueue: .main)
+            try counter.subscribe(listener: subscriber.createListener(), coreSDK: coreSDK)
 
             let operation = TestFactories.counterCreateOperation(count: 15)
             var pool = ObjectsPool(logger: logger, userCallbackQueue: .main)
@@ -310,18 +345,27 @@ struct InternalDefaultLiveCounterTests {
             #expect(counter.testsOnly_createOperationIsMerged)
             // Verify RTLC7c side-effect: site timeserial was updated
             #expect(counter.testsOnly_siteTimeserials == ["site1": "ts1"])
+
+            // Verify update was emitted per RTLC7d1a
+            let subscriberInvocations = await subscriber.getInvocations()
+            #expect(subscriberInvocations.map(\.0) == [.init(amount: 15)])
         }
 
         // @specOneOf(2/2) RTLC7c - We test this spec point for each possible operation
         // @spec RTLC7d2 - Tests COUNTER_INC operation application
+        // @spec RTLC7d2a
+        @available(iOS 17.0.0, tvOS 17.0.0, *)
         @Test
-        func appliesCounterIncOperation() throws {
+        func appliesCounterIncOperation() async throws {
             let logger = TestLogger()
             let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main)
             let coreSDK = MockCoreSDK(channelState: .attaching)
 
+            let subscriber = Subscriber<DefaultLiveCounterUpdate, SubscribeResponse>(callbackQueue: .main)
+            try counter.subscribe(listener: subscriber.createListener(), coreSDK: coreSDK)
+
             // Set initial data
-            counter.replaceData(using: TestFactories.counterObjectState(siteTimeserials: [:], count: 5))
+            _ = counter.replaceData(using: TestFactories.counterObjectState(siteTimeserials: [:], count: 5))
             #expect(try counter.value(coreSDK: coreSDK) == 5)
 
             let operation = TestFactories.objectOperation(
@@ -342,8 +386,35 @@ struct InternalDefaultLiveCounterTests {
             #expect(try counter.value(coreSDK: coreSDK) == 15) // 5 + 10
             // Verify RTLC7c side-effect: site timeserial was updated
             #expect(counter.testsOnly_siteTimeserials == ["site1": "ts1"])
+
+            // Verify update was emitted per RTLC7d2a
+            let subscriberInvocations = await subscriber.getInvocations()
+            #expect(subscriberInvocations.map(\.0) == [.init(amount: 10)])
         }
 
-        // @specUntested RTLC7d3 - There is no way to check that it was a no-op since there are no side effects that this spec point tells us not to apply
+        // @spec RTLC7d3
+        @available(iOS 17.0.0, tvOS 17.0.0, *)
+        @Test
+        func noOpForOtherOperation() async throws {
+            let logger = TestLogger()
+            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main)
+            let coreSDK = MockCoreSDK(channelState: .attaching)
+
+            let subscriber = Subscriber<DefaultLiveCounterUpdate, SubscribeResponse>(callbackQueue: .main)
+            try counter.subscribe(listener: subscriber.createListener(), coreSDK: coreSDK)
+
+            // Try to apply a MAP_CREATE to the counter (not supported)
+            var pool = ObjectsPool(logger: logger, userCallbackQueue: .main)
+            counter.apply(
+                TestFactories.mapCreateOperation(),
+                objectMessageSerial: "ts1",
+                objectMessageSiteCode: "site1",
+                objectsPool: &pool,
+            )
+
+            // Check no update was emitted
+            let subscriberInvocations = await subscriber.getInvocations()
+            #expect(subscriberInvocations.isEmpty)
+        }
     }
 }

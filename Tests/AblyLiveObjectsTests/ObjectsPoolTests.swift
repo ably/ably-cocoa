@@ -77,18 +77,26 @@ struct ObjectsPoolTests {
         // MARK: - RTO5c1 Tests
 
         // @specOneOf(1/2) RTO5c1a1 - Override the internal data for existing map objects
+        // @specOneOf(1/2) RTO5c1a2 - Check we store the update for existing map objects
+        // @specOneOf(1/2) RTO5c7 - Check we emit the update for existing map objects
+        @available(iOS 17.0.0, tvOS 17.0.0, *)
         @Test
-        func updatesExistingMapObject() throws {
+        func updatesExistingMapObject() async throws {
             let logger = TestLogger()
             let delegate = MockLiveMapObjectPoolDelegate()
             let coreSDK = MockCoreSDK(channelState: .attaching)
             let existingMap = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main)
+            let existingMapSubscriber = Subscriber<DefaultLiveMapUpdate, SubscribeResponse>(callbackQueue: .main)
+            try existingMap.subscribe(listener: existingMapSubscriber.createListener(), coreSDK: coreSDK)
             var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, testsOnly_otherEntries: ["map:hash@123": .map(existingMap)])
 
             let (key, entry) = TestFactories.stringMapEntry(key: "key1", value: "updated_value")
             let objectState = TestFactories.mapObjectState(
                 objectId: "map:hash@123",
                 siteTimeserials: ["site1": "ts1"],
+                createOp: TestFactories.mapCreateOperation(objectId: "map:hash@123", entries: [
+                    "createOpKey": TestFactories.stringMapEntry(value: "bar").entry,
+                ]),
                 entries: [key: entry],
             )
 
@@ -101,20 +109,30 @@ struct ObjectsPoolTests {
             #expect(try updatedMap.get(key: "key1", coreSDK: coreSDK, delegate: delegate)?.stringValue == "updated_value")
             // Checking site timeserials to verify they were updated by replaceData
             #expect(updatedMap.testsOnly_siteTimeserials == ["site1": "ts1"])
+
+            // Check that the update was stored and emitted per RTO5c1a2 and RTO5c7
+            let subscriberInvocations = await existingMapSubscriber.getInvocations()
+            #expect(subscriberInvocations.map(\.0) == [.init(update: ["createOpKey": .updated])])
         }
 
         // @specOneOf(2/2) RTO5c1a1 - Override the internal data for existing counter objects
+        // @specOneOf(2/2) RTO5c1a2 - Check we store the update for existing counter objects
+        // @specOneOf(2/2) RTO5c7 - Check we emit the update for existing counter objects
+        @available(iOS 17.0.0, tvOS 17.0.0, *)
         @Test
-        func updatesExistingCounterObject() throws {
+        func updatesExistingCounterObject() async throws {
             let logger = TestLogger()
             let coreSDK = MockCoreSDK(channelState: .attaching)
             let existingCounter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main)
+            let existingCounterSubscriber = Subscriber<DefaultLiveCounterUpdate, SubscribeResponse>(callbackQueue: .main)
+            try existingCounter.subscribe(listener: existingCounterSubscriber.createListener(), coreSDK: coreSDK)
             var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, testsOnly_otherEntries: ["counter:hash@123": .counter(existingCounter)])
 
             let objectState = TestFactories.counterObjectState(
                 objectId: "counter:hash@123",
                 siteTimeserials: ["site1": "ts1"],
-                count: 42,
+                createOp: TestFactories.counterCreateOperation(objectId: "counter:hash@123", count: 5),
+                count: 10,
             )
 
             pool.applySyncObjectsPool([objectState], logger: logger, userCallbackQueue: .main)
@@ -123,9 +141,13 @@ struct ObjectsPoolTests {
             let updatedCounter = try #require(pool.entries["counter:hash@123"]?.counterValue)
             #expect(updatedCounter === existingCounter)
             // Checking counter value to verify replaceData was called successfully
-            #expect(try updatedCounter.value(coreSDK: coreSDK) == 42)
+            #expect(try updatedCounter.value(coreSDK: coreSDK) == 15) // 10 (state) + 5 (createOp)
             // Checking site timeserials to verify they were updated by replaceData
             #expect(updatedCounter.testsOnly_siteTimeserials == ["site1": "ts1"])
+
+            // Check that the update was stored and emitted per RTO5c1a2 and RTO5c7
+            let subscriberInvocations = await existingCounterSubscriber.getInvocations()
+            #expect(subscriberInvocations.map(\.0) == [.init(amount: 5)]) // From createOp
         }
 
         // @spec RTO5c1b1a
@@ -247,9 +269,10 @@ struct ObjectsPoolTests {
             #expect(pool.entries["map:hash@1"] == nil) // Should be removed
         }
 
-        // A more complete example of the behaviours described in RTO5c1 and RTO5c2.
+        // A more complete example of the behaviours described in RTO5c1, RTO5c2, and RTO5c7.
+        @available(iOS 17.0.0, tvOS 17.0.0, *)
         @Test
-        func handlesComplexSyncScenario() throws {
+        func handlesComplexSyncScenario() async throws {
             let logger = TestLogger()
             let delegate = MockLiveMapObjectPoolDelegate()
             let coreSDK = MockCoreSDK(channelState: .attaching)
@@ -257,6 +280,11 @@ struct ObjectsPoolTests {
             let existingMap = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main)
             let existingCounter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main)
             let toBeRemovedMap = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main)
+
+            let existingMapSubscriber = Subscriber<DefaultLiveMapUpdate, SubscribeResponse>(callbackQueue: .main)
+            try existingMap.subscribe(listener: existingMapSubscriber.createListener(), coreSDK: coreSDK)
+            let existingCounterSubscriber = Subscriber<DefaultLiveCounterUpdate, SubscribeResponse>(callbackQueue: .main)
+            try existingCounter.subscribe(listener: existingCounterSubscriber.createListener(), coreSDK: coreSDK)
 
             var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, testsOnly_otherEntries: [
                 "map:existing@1": .map(existingMap),
@@ -269,12 +297,16 @@ struct ObjectsPoolTests {
                 TestFactories.mapObjectState(
                     objectId: "map:existing@1",
                     siteTimeserials: ["site1": "ts1"],
+                    createOp: TestFactories.mapCreateOperation(objectId: "map:existing@1", entries: [
+                        "createOpKey": TestFactories.stringMapEntry(value: "bar").entry,
+                    ]),
                     entries: ["updated": TestFactories.mapEntry(data: ObjectData(string: .string("updated")))],
                 ),
                 // Update existing counter
                 TestFactories.counterObjectState(
                     objectId: "counter:existing@1",
                     siteTimeserials: ["site2": "ts2"],
+                    createOp: TestFactories.counterCreateOperation(objectId: "counter:existing@1", count: 5),
                     count: 100,
                 ),
                 // Create new map
@@ -305,9 +337,17 @@ struct ObjectsPoolTests {
             // Checking map data to verify replaceData was called successfully
             #expect(try updatedMap.get(key: "updated", coreSDK: coreSDK, delegate: delegate)?.stringValue == "updated")
 
+            // Check update emitted by existing map per RTO5c7
+            let existingMapSubscriberInvocations = await existingMapSubscriber.getInvocations()
+            #expect(existingMapSubscriberInvocations.map(\.0) == [.init(update: ["createOpKey": .updated])])
+
             let updatedCounter = try #require(pool.entries["counter:existing@1"]?.counterValue)
             // Checking counter value to verify replaceData was called successfully
-            #expect(try updatedCounter.value(coreSDK: coreSDK) == 100)
+            #expect(try updatedCounter.value(coreSDK: coreSDK) == 105)
+
+            // Check update emitted by existing counter per RTO5c7
+            let existingCounterInvocations = await existingCounterSubscriber.getInvocations()
+            #expect(existingCounterInvocations.map(\.0) == [.init(amount: 5)])
 
             // New objects - verify by checking side effects of replaceData calls
             let newMap = try #require(pool.entries["map:new@1"]?.mapValue)

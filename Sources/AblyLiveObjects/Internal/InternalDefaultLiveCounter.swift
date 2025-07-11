@@ -96,14 +96,29 @@ internal final class InternalDefaultLiveCounter: Sendable {
         notYetImplemented()
     }
 
-    internal func subscribe(listener _: @escaping LiveObjectUpdateCallback<LiveCounterUpdate>) -> any SubscribeResponse {
-        notYetImplemented()
+    @discardableResult
+    internal func subscribe(listener: @escaping LiveObjectUpdateCallback<DefaultLiveCounterUpdate>, coreSDK: CoreSDK) throws(ARTErrorInfo) -> any SubscribeResponse {
+        try mutex.ablyLiveObjects_withLockWithTypedThrow { () throws(ARTErrorInfo) in
+            // swiftlint:disable:next trailing_closure
+            try mutableState.liveObject.subscribe(listener: listener, coreSDK: coreSDK, updateSelfLater: { [weak self] action in
+                guard let self else {
+                    return
+                }
+
+                mutex.withLock {
+                    action(&mutableState.liveObject)
+                }
+            })
+        }
     }
 
     internal func unsubscribeAll() {
-        notYetImplemented()
+        mutex.withLock {
+            mutableState.liveObject.unsubscribeAll()
+        }
     }
 
+    @discardableResult
     internal func on(event _: LiveObjectLifecycleEvent, callback _: @escaping LiveObjectLifecycleEventCallback) -> any OnLiveObjectLifecycleEventResponse {
         notYetImplemented()
     }
@@ -112,31 +127,42 @@ internal final class InternalDefaultLiveCounter: Sendable {
         notYetImplemented()
     }
 
+    // MARK: - Emitting update from external sources
+
+    /// Emit an event from this `LiveCounter`.
+    ///
+    /// This is used to instruct this counter to emit updates during an `OBJECT_SYNC`.
+    internal func emit(_ update: LiveObjectUpdate<DefaultLiveCounterUpdate>) {
+        mutex.withLock {
+            mutableState.liveObject.emit(update, on: userCallbackQueue)
+        }
+    }
+
     // MARK: - Data manipulation
 
     /// Replaces the internal data of this counter with the provided ObjectState, per RTLC6.
-    internal func replaceData(using state: ObjectState) {
+    internal func replaceData(using state: ObjectState) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
         mutex.withLock {
             mutableState.replaceData(using: state)
         }
     }
 
     /// Test-only method to merge initial value from an ObjectOperation, per RTLC10.
-    internal func testsOnly_mergeInitialValue(from operation: ObjectOperation) {
+    internal func testsOnly_mergeInitialValue(from operation: ObjectOperation) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
         mutex.withLock {
             mutableState.mergeInitialValue(from: operation)
         }
     }
 
     /// Test-only method to apply a COUNTER_CREATE operation, per RTLC8.
-    internal func testsOnly_applyCounterCreateOperation(_ operation: ObjectOperation) {
+    internal func testsOnly_applyCounterCreateOperation(_ operation: ObjectOperation) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
         mutex.withLock {
             mutableState.applyCounterCreateOperation(operation, logger: logger)
         }
     }
 
     /// Test-only method to apply a COUNTER_INC operation, per RTLC9.
-    internal func testsOnly_applyCounterIncOperation(_ operation: WireObjectsCounterOp?) {
+    internal func testsOnly_applyCounterIncOperation(_ operation: WireObjectsCounterOp?) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
         mutex.withLock {
             mutableState.applyCounterIncOperation(operation)
         }
@@ -156,6 +182,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
                 objectMessageSiteCode: objectMessageSiteCode,
                 objectsPool: &objectsPool,
                 logger: logger,
+                userCallbackQueue: userCallbackQueue,
             )
         }
     }
@@ -164,13 +191,13 @@ internal final class InternalDefaultLiveCounter: Sendable {
 
     private struct MutableState {
         /// The mutable state common to all LiveObjects.
-        internal var liveObject: LiveObjectMutableState
+        internal var liveObject: LiveObjectMutableState<DefaultLiveCounterUpdate>
 
         /// The internal data that this map holds, per RTLC3.
         internal var data: Double
 
         /// Replaces the internal data of this counter with the provided ObjectState, per RTLC6.
-        internal mutating func replaceData(using state: ObjectState) {
+        internal mutating func replaceData(using state: ObjectState) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
             // RTLC6a: Replace the private siteTimeserials with the value from ObjectState.siteTimeserials
             liveObject.siteTimeserials = state.siteTimeserials
 
@@ -181,19 +208,32 @@ internal final class InternalDefaultLiveCounter: Sendable {
             data = state.counter?.count?.doubleValue ?? 0
 
             // RTLC6d: If ObjectState.createOp is present, merge the initial value into the LiveCounter as described in RTLC10
-            if let createOp = state.createOp {
+            return if let createOp = state.createOp {
                 mergeInitialValue(from: createOp)
+            } else {
+                // TODO: I assume this is what to do, clarify in https://github.com/ably/specification/pull/346/files#r2201363446
+                .noop
             }
         }
 
         /// Merges the initial value from an ObjectOperation into this LiveCounter, per RTLC10.
-        internal mutating func mergeInitialValue(from operation: ObjectOperation) {
+        internal mutating func mergeInitialValue(from operation: ObjectOperation) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
+            let update: LiveObjectUpdate<DefaultLiveCounterUpdate>
+
             // RTLC10a: Add ObjectOperation.counter.count to data, if it exists
             if let operationCount = operation.counter?.count?.doubleValue {
                 data += operationCount
+                // RTLC10c
+                update = .update(DefaultLiveCounterUpdate(amount: operationCount))
+            } else {
+                // RTLC10d
+                update = .noop
             }
+
             // RTLC10b: Set the private flag createOperationIsMerged to true
             liveObject.createOperationIsMerged = true
+
+            return update
         }
 
         /// Attempts to apply an operation from an inbound `ObjectMessage`, per RTLC7.
@@ -203,6 +243,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
             objectMessageSiteCode: String?,
             objectsPool: inout ObjectsPool,
             logger: Logger,
+            userCallbackQueue: DispatchQueue,
         ) {
             guard let applicableOperation = liveObject.canApplyOperation(objectMessageSerial: objectMessageSerial, objectMessageSiteCode: objectMessageSiteCode, logger: logger) else {
                 // RTLC7b
@@ -216,13 +257,17 @@ internal final class InternalDefaultLiveCounter: Sendable {
             switch operation.action {
             case .known(.counterCreate):
                 // RTLC7d1
-                applyCounterCreateOperation(
+                let update = applyCounterCreateOperation(
                     operation,
                     logger: logger,
                 )
+                // RTLC7d1a
+                liveObject.emit(update, on: userCallbackQueue)
             case .known(.counterInc):
                 // RTLC7d2
-                applyCounterIncOperation(operation.counterOp)
+                let update = applyCounterIncOperation(operation.counterOp)
+                // RTLC7d2a
+                liveObject.emit(update, on: userCallbackQueue)
             default:
                 // RTLC7d3
                 logger.log("Operation \(operation) has unsupported action for LiveCounter; discarding", level: .warn)
@@ -233,25 +278,28 @@ internal final class InternalDefaultLiveCounter: Sendable {
         internal mutating func applyCounterCreateOperation(
             _ operation: ObjectOperation,
             logger: Logger,
-        ) {
+        ) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
             if liveObject.createOperationIsMerged {
                 // RTLC8b
                 logger.log("Not applying COUNTER_CREATE because a COUNTER_CREATE has already been applied", level: .warn)
-                return
+                return .noop
             }
 
-            // RTLC8c
-            mergeInitialValue(from: operation)
+            // RTLC8c, RTLC8e
+            return mergeInitialValue(from: operation)
         }
 
         /// Applies a `COUNTER_INC` operation, per RTLC9.
-        internal mutating func applyCounterIncOperation(_ operation: WireObjectsCounterOp?) {
+        internal mutating func applyCounterIncOperation(_ operation: WireObjectsCounterOp?) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
             guard let operation else {
-                return
+                // RTL9e
+                return .noop
             }
 
-            // RTLC9b
-            data += operation.amount.doubleValue
+            // RTLC9b, RTLC9d
+            let amount = operation.amount.doubleValue
+            data += amount
+            return .update(DefaultLiveCounterUpdate(amount: amount))
         }
     }
 }

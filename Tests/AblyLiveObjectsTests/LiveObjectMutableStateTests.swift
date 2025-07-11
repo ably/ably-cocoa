@@ -13,7 +13,7 @@ struct LiveObjectMutableStateTests {
             let objectMessageSerial: String?
             let objectMessageSiteCode: String?
             let siteTimeserials: [String: String]
-            let expectedResult: LiveObjectMutableState.ApplicableOperation?
+            let expectedResult: LiveObjectMutableState<Void>.ApplicableOperation?
         }
 
         // @spec RTLO4a3
@@ -98,9 +98,9 @@ struct LiveObjectMutableStateTests {
             ),
         ])
         func canApplyOperation(testCase: TestCase) {
-            let state = LiveObjectMutableState(
+            let state = LiveObjectMutableState<Void>(
                 objectID: "test:object@123",
-                siteTimeserials: testCase.siteTimeserials,
+                testsOnly_siteTimeserials: testCase.siteTimeserials,
             )
             let logger = TestLogger()
 
@@ -112,5 +112,209 @@ struct LiveObjectMutableStateTests {
 
             #expect(result == testCase.expectedResult, "Expected \(String(describing: testCase.expectedResult)) for case: \(testCase.description)")
         }
+    }
+
+    struct SubscriptionTests {
+        // swiftlint:disable trailing_closure
+
+        // @spec RTLO4b2
+        @available(iOS 17.0.0, tvOS 17.0.0, *)
+        @Test(arguments: [.detached, .failed] as [ARTRealtimeChannelState])
+        func subscribeThrowsIfChannelIsDetachedOrFailed(channelState: ARTRealtimeChannelState) async throws {
+            var mutableState = LiveObjectMutableState<String>(objectID: "foo")
+            let queue = DispatchQueue.main
+            let subscriber = Subscriber<String, SubscribeResponse>(callbackQueue: queue)
+            let coreSDK = MockCoreSDK(channelState: channelState)
+
+            #expect {
+                try mutableState.subscribe(listener: subscriber.createListener(), coreSDK: coreSDK, updateSelfLater: { _ in fatalError("Not expected") })
+            } throws: { error in
+                guard let errorInfo = error as? ARTErrorInfo else {
+                    return false
+                }
+
+                return errorInfo.code == 90001 && errorInfo.statusCode == 400
+            }
+        }
+
+        struct EmitTests {
+            // @spec RTLO4b4c1
+            @available(iOS 17.0.0, tvOS 17.0.0, *)
+            @Test
+            func noop() async throws {
+                // Given
+                var mutableState = LiveObjectMutableState<String>(objectID: "foo")
+                let queue = DispatchQueue.main
+                let subscriber = Subscriber<String, SubscribeResponse>(callbackQueue: queue)
+                let coreSDK = MockCoreSDK(channelState: .attached)
+                try mutableState.subscribe(listener: subscriber.createListener(), coreSDK: coreSDK, updateSelfLater: { _ in fatalError("Not expected") })
+
+                // When
+                mutableState.emit(.noop, on: queue)
+
+                // Then
+                let subscriberInvocations = await subscriber.getInvocations()
+                #expect(subscriberInvocations.isEmpty)
+            }
+
+            // @spec RTLO4b4c2
+            @available(iOS 17.0.0, tvOS 17.0.0, *)
+            @Test
+            func update() async throws {
+                // Given
+                var mutableState = LiveObjectMutableState<String>(objectID: "foo")
+                let queue = DispatchQueue.main
+                let subscriber = Subscriber<String, SubscribeResponse>(callbackQueue: queue)
+                let coreSDK = MockCoreSDK(channelState: .attached)
+                try mutableState.subscribe(listener: subscriber.createListener(), coreSDK: coreSDK, updateSelfLater: { _ in fatalError("Not expected") })
+
+                // When
+                mutableState.emit(.update("bar"), on: queue)
+
+                // Then
+                let subscriberInvocations = await subscriber.getInvocations()
+                #expect(subscriberInvocations.map(\.0) == ["bar"])
+            }
+        }
+
+        struct UnsubscribeTests {
+            final class MutableStateStore<Update: Sendable>: Sendable {
+                private let mutex = NSLock()
+                private nonisolated(unsafe) var stored: LiveObjectMutableState<Update>
+
+                init(stored: LiveObjectMutableState<Update>) {
+                    self.stored = stored
+                }
+
+                @discardableResult
+                func subscribe(listener: @escaping LiveObjectUpdateCallback<Update>, coreSDK: CoreSDK) throws(ARTErrorInfo) -> SubscribeResponse {
+                    try mutex.ablyLiveObjects_withLockWithTypedThrow { () throws(ARTErrorInfo) in
+                        try stored.subscribe(listener: listener, coreSDK: coreSDK, updateSelfLater: { [weak self] action in
+                            guard let self else {
+                                return
+                            }
+
+                            mutex.withLock {
+                                action(&stored)
+                            }
+                        })
+                    }
+                }
+
+                func emit(_ update: LiveObjectUpdate<Update>, on queue: DispatchQueue) {
+                    mutex.withLock {
+                        stored.emit(update, on: queue)
+                    }
+                }
+
+                func unsubscribeAll() {
+                    mutex.withLock {
+                        stored.unsubscribeAll()
+                    }
+                }
+            }
+
+            // @specOneOf(1/3) RTLO4b5b - Check we can unsubscribe using the response that's returned from `subscribe`
+            @available(iOS 17.0.0, tvOS 17.0.0, *)
+            @Test
+            func unsubscribeFromReturnValue() async throws {
+                // Given
+                let store = MutableStateStore<String>(stored: .init(objectID: "foo"))
+                let queue = DispatchQueue.main
+                let subscriber = Subscriber<String, SubscribeResponse>(callbackQueue: queue)
+                let coreSDK = MockCoreSDK(channelState: .attached)
+                let subscription = try store.subscribe(listener: subscriber.createListener(), coreSDK: coreSDK)
+
+                // When
+                store.emit(.update("bar"), on: queue)
+                subscription.unsubscribe()
+                store.emit(.update("baz"), on: queue)
+
+                // Then
+                let subscriberInvocations = await subscriber.getInvocations()
+                #expect(subscriberInvocations.map(\.0) == ["bar"])
+            }
+
+            // @specOneOf(2/3) RTLO4b5b - Check we can unsubscribe using the `response` that's passed to the listener, and that when two updates are emitted back-to-back, the unsubscribe in the first listener causes us to not recieve the second update
+            @available(iOS 17.0.0, tvOS 17.0.0, *)
+            @Test(.disabled("This doesn't currently work and I don't think it's a priority, nor do I want to dwell on it right now or rush trying to fix it; see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/28"))
+            func unsubscribeInsideCallback_backToBackUpdates() async throws {
+                // Given
+                let store = MutableStateStore<String>(stored: .init(objectID: "foo"))
+                let queue = DispatchQueue.main
+                let subscriber = Subscriber<String, SubscribeResponse>(callbackQueue: queue)
+                let coreSDK = MockCoreSDK(channelState: .attached)
+                // Create a listener that calls `unsubscribe` on the `response` that's passed to the listener
+                let listener = subscriber.createListener { _, response in
+                    response.unsubscribe()
+                }
+                try store.subscribe(listener: listener, coreSDK: coreSDK)
+
+                // When
+                store.emit(.update("bar"), on: queue)
+                store.emit(.update("baz"), on: queue)
+
+                // Then
+                let subscriberInvocations = await subscriber.getInvocations()
+                // This is failing because it's still receiving "baz" too
+                #expect(subscriberInvocations.map(\.0) == ["bar"])
+            }
+
+            // @specOneOf(3/3) RTLO4b5b - Check we can unsubscribe using the `response` that's passed to the listener. This is a simpler version of the above test, in that there is an async pause between the unsubscribe-in-callback and the next `emit`.
+            @available(iOS 17.0.0, tvOS 17.0.0, *)
+            @Test
+            func unsubscribeInsideCallback_nonBackToBackUpdates() async throws {
+                // Given
+                let store = MutableStateStore<String>(stored: .init(objectID: "foo"))
+                let queue = DispatchQueue.main
+                let subscriber = Subscriber<String, SubscribeResponse>(callbackQueue: queue)
+                let coreSDK = MockCoreSDK(channelState: .attached)
+                // Create a listener that calls `unsubscribe` on the `response` that's passed to the listener
+                let listener = subscriber.createListener { _, response in
+                    response.unsubscribe()
+                }
+                try store.subscribe(listener: listener, coreSDK: coreSDK)
+
+                // When
+                store.emit(.update("bar"), on: queue)
+                // This is what distinguishes us from the previous test; the updates aren't back to back
+                _ = await subscriber.getInvocations()
+                store.emit(.update("baz"), on: queue)
+
+                // Then
+                let subscriberInvocations = await subscriber.getInvocations()
+                #expect(subscriberInvocations.map(\.0) == ["bar"])
+            }
+
+            // @spec RTLO4d
+            @available(iOS 17.0.0, tvOS 17.0.0, *)
+            @Test
+            func unsubscribeAll() async throws {
+                // Given
+                let store = MutableStateStore<String>(stored: .init(objectID: "foo"))
+                let queue = DispatchQueue.main
+                let coreSDK = MockCoreSDK(channelState: .attached)
+                let subscribers: [Subscriber<String, SubscribeResponse>] = [
+                    .init(callbackQueue: queue),
+                    .init(callbackQueue: queue),
+                ]
+                for subscriber in subscribers {
+                    try store.subscribe(listener: subscriber.createListener(), coreSDK: coreSDK)
+                }
+
+                // When
+                store.emit(.update("bar"), on: queue)
+                store.unsubscribeAll()
+                store.emit(.update("baz"), on: queue)
+
+                // Then
+                for subscriber in subscribers {
+                    let subscriberInvocations = await subscriber.getInvocations()
+                    #expect(subscriberInvocations.map(\.0) == ["bar"])
+                }
+            }
+        }
+
+        // swiftlint:enable trailing_closure
     }
 }

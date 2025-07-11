@@ -338,16 +338,22 @@ struct InternalDefaultRealtimeObjectsTests {
 
         // @spec RTO4b1
         // @spec RTO4b2
+        // @spec RTO4b2a
         // @spec RTO4b3
         // @spec RTO4b4
         // @spec RTO4b5
+        @available(iOS 17.0.0, tvOS 17.0.0, *)
         @Test
-        func handlesHasObjectsFalse() {
+        func handlesHasObjectsFalse() async throws {
             let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
 
             // Set up initial state with additional objects in the pool using sync
             realtimeObjects.handleObjectSyncProtocolMessage(
                 objectMessages: [
+                    TestFactories.mapObjectMessage(objectId: "root", entries: [
+                        "existingMap": TestFactories.objectReferenceMapEntry(key: "existingMap", objectId: "map:existing@123").entry,
+                        "existingCounter": TestFactories.objectReferenceMapEntry(key: "existingCounter", objectId: "counter:existing@456").entry,
+                    ]),
                     TestFactories.mapObjectMessage(objectId: "map:existing@123"),
                     TestFactories.counterObjectMessage(objectId: "counter:existing@456"),
                 ],
@@ -355,6 +361,11 @@ struct InternalDefaultRealtimeObjectsTests {
             )
 
             let originalPool = realtimeObjects.testsOnly_objectsPool
+            #expect(Set(originalPool.root.testsOnly_data.keys) == ["existingMap", "existingCounter"])
+
+            let rootSubscriber = Subscriber<DefaultLiveMapUpdate, SubscribeResponse>(callbackQueue: .main)
+            let coreSDK = MockCoreSDK(channelState: .attached)
+            try originalPool.root.subscribe(listener: rootSubscriber.createListener(), coreSDK: coreSDK)
 
             // Set up an in-progress sync sequence
             realtimeObjects.handleObjectSyncProtocolMessage(
@@ -379,6 +390,9 @@ struct InternalDefaultRealtimeObjectsTests {
             #expect(newPool.entries["root"] != nil)
             #expect(newPool.entries["map:existing@123"] == nil) // Should be removed
             #expect(newPool.entries["counter:existing@456"] == nil) // Should be removed
+            // Verify that `removed` was emitted for root's existing keys per RTO4b2a
+            let subscriberInvocations = await rootSubscriber.getInvocations()
+            #expect(subscriberInvocations.map(\.0) == [.init(update: ["existingMap": .removed, "existingCounter": .removed])])
 
             // Verify root is the same object, but with data cleared (RTO4b2)
             // TODO: this one is unclear (are we meant to replace the root or just clear its data?) https://github.com/ably/specification/pull/333/files#r2183493458. I believe that the answer is that we should just clear its data but the spec point needs to be clearer, see https://github.com/ably/specification/pull/346/files#r2201434895.

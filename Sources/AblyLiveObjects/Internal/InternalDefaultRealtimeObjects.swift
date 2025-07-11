@@ -138,6 +138,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
         notYetImplemented()
     }
 
+    @discardableResult
     internal func on(event _: ObjectsEvent, callback _: ObjectsEventCallback) -> any OnObjectsEventResponse {
         notYetImplemented()
     }
