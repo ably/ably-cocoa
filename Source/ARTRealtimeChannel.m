@@ -683,7 +683,9 @@ dispatch_sync(_queue, ^{
         self.channelSerial = message.channelSerial;
     }
 
-    [self.realtime.options.liveObjectsPlugin onChannelAttached:self
+    ARTPluginRealtimeChannel *pluginRealtimeChannel = [[ARTPluginRealtimeChannel alloc] initWithUnderlying:self];
+
+    [self.realtime.options.liveObjectsPlugin onChannelAttached:pluginRealtimeChannel
                                                     hasObjects:message.hasObjects];
 
     if (state == ARTRealtimeChannelAttached) {
