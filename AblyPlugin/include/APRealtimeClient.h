@@ -1,5 +1,6 @@
 @import Foundation;
-@import Ably;
+
+@class ARTErrorInfo;
 
 NS_ASSUME_NONNULL_BEGIN
 

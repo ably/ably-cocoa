@@ -3,8 +3,6 @@
 #import "ARTChannel+Private.h"
 #import "ARTInternalLog+APLogger.h"
 #import "ARTRealtimeChannel.h"
-#import "ARTRealtimeChannelInternal+APRealtimeChannel.h"
-#import "ARTRealtimeInternal+APRealtimeClient.h"
 #import "APDefaultPublicRealtimeChannelUnderlyingObjects.h"
 
 static ARTRealtimeChannelInternal *_internalRealtimeChannel(id<APRealtimeChannel> pluginRealtimeChannel) {
