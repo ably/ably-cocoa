@@ -287,6 +287,13 @@ internal final class InternalDefaultLiveMap: Sendable {
         }
     }
 
+    /// Resets the map's data, per RTO4b2. This is to be used when an `ATTACHED` ProtocolMessage indicates that the only object in a channel is an empty root map.
+    internal func resetData() {
+        mutex.withLock {
+            mutableState.resetData()
+        }
+    }
+
     // MARK: - Mutable state and the operations that affect it
 
     private struct MutableState {
@@ -543,6 +550,12 @@ internal final class InternalDefaultLiveMap: Sendable {
                 objectsPool: &objectsPool,
                 logger: logger,
             )
+        }
+
+        /// Resets the map's data, per RTO4b2. This is to be used when an `ATTACHED` ProtocolMessage indicates that the only object in a channel is an empty root map.
+        internal mutating func resetData() {
+            // RTO4b2
+            data = [:]
         }
     }
 

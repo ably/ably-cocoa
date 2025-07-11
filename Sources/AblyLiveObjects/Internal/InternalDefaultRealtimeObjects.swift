@@ -244,8 +244,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
             }
 
             // RTO4b1, RTO4b2: Reset the ObjectsPool to have a single empty root object
-            // TODO: this one is unclear (are we meant to replace the root or just clear its data?) https://github.com/ably/specification/pull/333/files#r2183493458
-            objectsPool = .init(logger: logger)
+            objectsPool.reset()
 
             // I have, for now, not directly implemented the "perform the actions for object sync completion" of RTO4b4 since my implementation doesn't quite match the model given there; here you only have a SyncObjectsPool if you have an OBJECT_SYNC in progress, which you might not have upon receiving an ATTACHED. Instead I've just implemented what seem like the relevant side effects. Can revisit this if "the actions for object sync completion" get more complex.
 

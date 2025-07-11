@@ -209,4 +209,16 @@ internal struct ObjectsPool {
 
         logger.log("applySyncObjectsPool completed. Pool now contains \(entries.count) objects", level: .debug)
     }
+
+    /// Removes all entries except the root, and clears the root's data. This is to be used when an `ATTACHED` ProtocolMessage indicates that the only object in a channel is an empty root map, per RTO4b.
+    internal mutating func reset() {
+        let root = root
+
+        // RTO4b1
+        entries = [Self.rootKey: .map(root)]
+
+        // RTO4b2
+        // TODO: this one is unclear (are we meant to replace the root or just clear its data?) https://github.com/ably/specification/pull/333/files#r2183493458. I believe that the answer is that we should just clear its data but the spec point needs to be clearer, see https://github.com/ably/specification/pull/346/files#r2201434895.
+        root.resetData()
+    }
 }

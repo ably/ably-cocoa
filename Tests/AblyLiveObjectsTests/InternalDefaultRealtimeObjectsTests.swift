@@ -383,10 +383,10 @@ struct InternalDefaultRealtimeObjectsTests {
             #expect(newPool.entries["map:existing@123"] == nil) // Should be removed
             #expect(newPool.entries["counter:existing@456"] == nil) // Should be removed
 
-            // Verify root is a new zero-valued map (RTO4b2)
-            // TODO: this one is unclear (are we meant to replace the root or just clear its data?) https://github.com/ably/specification/pull/333/files#r2183493458
+            // Verify root is the same object, but with data cleared (RTO4b2)
+            // TODO: this one is unclear (are we meant to replace the root or just clear its data?) https://github.com/ably/specification/pull/333/files#r2183493458. I believe that the answer is that we should just clear its data but the spec point needs to be clearer, see https://github.com/ably/specification/pull/346/files#r2201434895.
             let newRoot = newPool.root
-            #expect(newRoot as AnyObject !== originalPool.root as AnyObject) // Should be a new instance
+            #expect(newRoot as AnyObject === originalPool.root as AnyObject) // Should be same instance
             #expect(newRoot.testsOnly_data.isEmpty) // Should be zero-valued (empty)
 
             // RTO4b3, RTO4b4, RTO4b5: SyncObjectsPool must be cleared, sync sequence cleared, BufferedObjectOperations cleared
@@ -410,15 +410,14 @@ struct InternalDefaultRealtimeObjectsTests {
             realtimeObjects.onChannelAttached(hasObjects: false)
             #expect(realtimeObjects.testsOnly_onChannelAttachedHasObjects == false)
             let newPool = realtimeObjects.testsOnly_objectsPool
-            #expect(newPool.root as AnyObject !== originalRoot as AnyObject)
+            #expect(newPool.root as AnyObject === originalRoot as AnyObject)
             #expect(newPool.entries.count == 1)
 
             // Third call with hasObjects = true again (should do nothing)
-            let secondResetRoot = newPool.root
             realtimeObjects.onChannelAttached(hasObjects: true)
             #expect(realtimeObjects.testsOnly_onChannelAttachedHasObjects == true)
             let finalPool = realtimeObjects.testsOnly_objectsPool
-            #expect(finalPool.root as AnyObject === secondResetRoot as AnyObject) // Should be unchanged
+            #expect(finalPool.root as AnyObject === originalRoot as AnyObject) // Should be unchanged
         }
 
         /// Test that sync sequence is properly discarded even with complex sync state
