@@ -11,10 +11,11 @@
     ARTQueuedDealloc *_dealloc;
 }
 
-- (instancetype)initWithInternal:(ARTRealtimeChannelsInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc {
+- (instancetype)initWithInternal:(ARTRealtimeChannelsInternal *)internal realtimeInternal:(ARTRealtimeInternal *)realtimeInternal queuedDealloc:(ARTQueuedDealloc *)dealloc {
     self = [super init];
     if (self) {
         _internal = internal;
+        _realtimeInternal = realtimeInternal;
         _dealloc = dealloc;
     }
     return self;
@@ -25,11 +26,11 @@
 }
 
 - (ARTRealtimeChannel *)get:(NSString *)name {
-    return [[ARTRealtimeChannel alloc] initWithInternal:[_internal get:(NSString *)name] queuedDealloc:_dealloc];
+    return [[ARTRealtimeChannel alloc] initWithInternal:[_internal get:(NSString *)name] realtimeInternal:_realtimeInternal queuedDealloc:_dealloc];
 }
 
 - (ARTRealtimeChannel *)get:(NSString *)name options:(ARTRealtimeChannelOptions *)options {
-    return [[ARTRealtimeChannel alloc] initWithInternal:[_internal get:(NSString *)name options:options] queuedDealloc:_dealloc];
+    return [[ARTRealtimeChannel alloc] initWithInternal:[_internal get:(NSString *)name options:options] realtimeInternal:_realtimeInternal queuedDealloc:_dealloc];
 }
 
 - (void)release:(NSString *)name callback:(nullable ARTCallback)errorInfo {
@@ -42,7 +43,7 @@
 
 - (id<NSFastEnumeration>)iterate {
     return [_internal copyIntoIteratorWithMapper:^ARTRealtimeChannel *(ARTRealtimeChannelInternal *internalChannel) {
-        return [[ARTRealtimeChannel alloc] initWithInternal:internalChannel queuedDealloc:self->_dealloc];
+        return [[ARTRealtimeChannel alloc] initWithInternal:internalChannel realtimeInternal:self->_realtimeInternal queuedDealloc:self->_dealloc];
     }];
 }
 
