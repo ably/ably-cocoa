@@ -64,7 +64,7 @@
         // If the LiveObjects plugin has been provided, set up LiveObjects functionality for this channel.
         id<APLiveObjectsInternalPluginProtocol> liveObjectsPlugin = internal.realtime.options.liveObjectsPlugin;
         if (liveObjectsPlugin) {
-            [liveObjectsPlugin prepareChannel:internal];
+            [liveObjectsPlugin prepareChannel:internal client:realtimeInternal];
         }
     }
     return self;

@@ -7,6 +7,7 @@
 @protocol APObjectMessageProtocol;
 @protocol APDecodingContextProtocol;
 @protocol APRealtimeChannel;
+@protocol APRealtimeClient;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -32,7 +33,7 @@ NS_SWIFT_SENDABLE
 /// ably-cocoa will call this method when initializing an `ARTRealtimeChannel` instance.
 ///
 /// The plugin can use this as an opportunity to perform any initial setup of LiveObjects functionality for this channel.
-- (void)prepareChannel:(id<APRealtimeChannel>)channel;
+- (void)prepareChannel:(id<APRealtimeChannel>)channel client:(id<APRealtimeClient>)client;
 
 /// Decodes an `ObjectMessage` received over the wire.
 ///
