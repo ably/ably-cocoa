@@ -90,7 +90,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
         notYetImplemented()
     }
 
-    internal func subscribe(listener _: (sending any LiveCounterUpdate) -> Void) -> any SubscribeResponse {
+    internal func subscribe(listener _: LiveObjectUpdateCallback<LiveCounterUpdate>) -> any SubscribeResponse {
         notYetImplemented()
     }
 
@@ -98,7 +98,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
         notYetImplemented()
     }
 
-    internal func on(event _: LiveObjectLifecycleEvent, callback _: () -> Void) -> any OnLiveObjectLifecycleEventResponse {
+    internal func on(event _: LiveObjectLifecycleEvent, callback _: LiveObjectLifecycleEventCallback) -> any OnLiveObjectLifecycleEventResponse {
         notYetImplemented()
     }
 

@@ -183,7 +183,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         notYetImplemented()
     }
 
-    internal func subscribe(listener _: (sending any LiveMapUpdate) -> Void) -> any SubscribeResponse {
+    internal func subscribe(listener _: LiveObjectUpdateCallback<LiveMapUpdate>) -> any SubscribeResponse {
         notYetImplemented()
     }
 
@@ -191,7 +191,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         notYetImplemented()
     }
 
-    internal func on(event _: LiveObjectLifecycleEvent, callback _: () -> Void) -> any OnLiveObjectLifecycleEventResponse {
+    internal func on(event _: LiveObjectLifecycleEvent, callback _: LiveObjectLifecycleEventCallback) -> any OnLiveObjectLifecycleEventResponse {
         notYetImplemented()
     }
 

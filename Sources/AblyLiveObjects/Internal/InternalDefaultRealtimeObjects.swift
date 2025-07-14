@@ -132,11 +132,11 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
         notYetImplemented()
     }
 
-    internal func batch(callback _: sending (sending any BatchContext) -> Void) async throws {
+    internal func batch(callback _: sending BatchCallback) async throws {
         notYetImplemented()
     }
 
-    internal func on(event _: ObjectsEvent, callback _: () -> Void) -> any OnObjectsEventResponse {
+    internal func on(event _: ObjectsEvent, callback _: ObjectsEventCallback) -> any OnObjectsEventResponse {
         notYetImplemented()
     }
 
