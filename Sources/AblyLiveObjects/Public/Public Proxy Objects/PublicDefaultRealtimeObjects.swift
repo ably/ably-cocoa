@@ -51,7 +51,7 @@ internal final class PublicDefaultRealtimeObjects: RealtimeObjects {
         try await proxied.batch(callback: callback)
     }
 
-    internal func on(event: ObjectsEvent, callback: sending @escaping ObjectsEventCallback) -> any OnObjectsEventResponse {
+    internal func on(event: ObjectsEvent, callback: @escaping ObjectsEventCallback) -> any OnObjectsEventResponse {
         proxied.on(event: event, callback: callback)
     }
 

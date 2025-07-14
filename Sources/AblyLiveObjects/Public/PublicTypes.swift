@@ -2,14 +2,19 @@ import Ably
 
 /// A callback used in ``LiveObject`` to listen for updates to the object.
 ///
-/// - Parameter update: The update object describing the changes made to the object.
-public typealias LiveObjectUpdateCallback<T> = (_ update: sending T) -> Void
+/// - Parameters:
+///   - update: The update object describing the changes made to the object.
+///   - subscription: A ``SubscribeResponse`` object that allows the provided listener to deregister itself from future updates.
+public typealias LiveObjectUpdateCallback<T> = @Sendable (_ update: sending T, _ subscription: SubscribeResponse) -> Void
 
 /// The callback used for the events emitted by ``RealtimeObjects``.
-public typealias ObjectsEventCallback = () -> Void
+///
+/// - Parameter subscription: An ``OnObjectsEventResponse`` object that allows the provided listener to deregister itself from future updates.
+public typealias ObjectsEventCallback = @Sendable (_ subscription: OnObjectsEventResponse) -> Void
 
 /// The callback used for the lifecycle events emitted by ``LiveObject``.
-public typealias LiveObjectLifecycleEventCallback = () -> Void
+/// - Parameter subscription: A ``OnLiveObjectLifecycleEventResponse`` object that allows the provided listener to deregister itself from future updates.
+public typealias LiveObjectLifecycleEventCallback = @Sendable (_ subscription: OnLiveObjectLifecycleEventResponse) -> Void
 
 /// A function passed to ``RealtimeObjects/batch(callback:)`` to group multiple Objects operations into a single channel message.
 ///
@@ -70,7 +75,7 @@ public protocol RealtimeObjects: Sendable {
     ///   - callback: The event listener.
     /// - Returns: An ``OnObjectsEventResponse`` object that allows the provided listener to be deregistered from future updates.
     @discardableResult
-    func on(event: ObjectsEvent, callback: sending @escaping ObjectsEventCallback) -> OnObjectsEventResponse
+    func on(event: ObjectsEvent, callback: @escaping ObjectsEventCallback) -> OnObjectsEventResponse
 
     /// Deregisters all registrations, for all events and listeners.
     func offAll()
@@ -337,7 +342,7 @@ public protocol LiveObject: AnyObject, Sendable {
     /// - Parameter listener: An event listener function that is called with an update object whenever this LiveObject is updated.
     /// - Returns: A ``SubscribeResponse`` object that allows the provided listener to be deregistered from future updates.
     @discardableResult
-    func subscribe(listener: sending @escaping LiveObjectUpdateCallback<Update>) -> SubscribeResponse
+    func subscribe(listener: @escaping LiveObjectUpdateCallback<Update>) -> SubscribeResponse
 
     /// Deregisters all listeners from updates for this LiveObject.
     func unsubscribeAll()
@@ -349,7 +354,7 @@ public protocol LiveObject: AnyObject, Sendable {
     ///   - callback: The event listener.
     /// - Returns: A ``OnLiveObjectLifecycleEventResponse`` object that allows the provided listener to be deregistered from future updates.
     @discardableResult
-    func on(event: LiveObjectLifecycleEvent, callback: sending @escaping LiveObjectLifecycleEventCallback) -> OnLiveObjectLifecycleEventResponse
+    func on(event: LiveObjectLifecycleEvent, callback: @escaping LiveObjectLifecycleEventCallback) -> OnLiveObjectLifecycleEventResponse
 
     /// Deregisters all registrations, for all events and listeners.
     func offAll()

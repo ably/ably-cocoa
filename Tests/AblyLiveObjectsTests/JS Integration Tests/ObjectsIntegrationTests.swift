@@ -90,8 +90,7 @@ func waitFixtureChannelIsReady(_: ARTRealtime) async throws {
 
 func waitForMapKeyUpdate(_ map: any LiveMap, _ key: String) async {
     await withCheckedContinuation { (continuation: CheckedContinuation<Void, _>) in
-        var subscription: SubscribeResponse!
-        subscription = map.subscribe { update in
+        map.subscribe { update, subscription in
             if update.update[key] != nil {
                 subscription.unsubscribe()
                 continuation.resume()
@@ -102,8 +101,7 @@ func waitForMapKeyUpdate(_ map: any LiveMap, _ key: String) async {
 
 func waitForCounterUpdate(_ counter: any LiveCounter) async {
     await withCheckedContinuation { (continuation: CheckedContinuation<Void, _>) in
-        var subscription: SubscribeResponse!
-        subscription = counter.subscribe { _ in
+        counter.subscribe { _, subscription in
             subscription.unsubscribe()
             continuation.resume()
         }
@@ -642,7 +640,7 @@ private struct ObjectsIntegrationTests {
 
                         async let counterSubPromise: Void = withCheckedThrowingContinuation { continuation in
                             do {
-                                try #require(root.get(key: "counter")?.liveCounterValue).subscribe { update in
+                                try #require(root.get(key: "counter")?.liveCounterValue).subscribe { update, _ in
                                     #expect(update.amount == -1, "Check counter subscription callback is called with an expected update object after OBJECT_SYNC sequence with \"tombstone=true\"")
                                     continuation.resume()
                                 }

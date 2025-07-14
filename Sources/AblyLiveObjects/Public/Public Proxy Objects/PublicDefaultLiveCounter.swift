@@ -34,7 +34,7 @@ internal final class PublicDefaultLiveCounter: LiveCounter {
         try await proxied.decrement(amount: amount)
     }
 
-    internal func subscribe(listener: sending @escaping LiveObjectUpdateCallback<LiveCounterUpdate>) -> any SubscribeResponse {
+    internal func subscribe(listener: @escaping LiveObjectUpdateCallback<LiveCounterUpdate>) -> any SubscribeResponse {
         proxied.subscribe(listener: listener)
     }
 
@@ -42,7 +42,7 @@ internal final class PublicDefaultLiveCounter: LiveCounter {
         proxied.unsubscribeAll()
     }
 
-    internal func on(event: LiveObjectLifecycleEvent, callback: sending @escaping LiveObjectLifecycleEventCallback) -> any OnLiveObjectLifecycleEventResponse {
+    internal func on(event: LiveObjectLifecycleEvent, callback: @escaping LiveObjectLifecycleEventCallback) -> any OnLiveObjectLifecycleEventResponse {
         proxied.on(event: event, callback: callback)
     }
 
