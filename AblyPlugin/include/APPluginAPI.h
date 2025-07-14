@@ -37,6 +37,9 @@ NS_SWIFT_SENDABLE
 /// - Parameter channel: The channel whose logger the returned logger should wrap.
 - (id<APLogger>)loggerForChannel:(id<APRealtimeChannel>)channel;
 
+/// Provides plugins with the queue on which all user callbacks for a given client should be called.
+- (dispatch_queue_t)callbackQueueForClient:(id<APRealtimeClient>)client;
+
 /// Throws an error if the channel is in a state in which a message should not be published. Copied from ably-js, not yet implemented. Will document this method properly once exact meaning decided, or may replace it with something that makes more sense for ably-cocoa.
 - (BOOL)throwIfUnpublishableStateForChannel:(id<APRealtimeChannel>)channel
                                       error:(ARTErrorInfo *_Nullable *_Nullable)error;
