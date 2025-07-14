@@ -45,6 +45,7 @@ internal final class InternalDefaultLiveMap: Sendable {
     }
 
     private let logger: AblyPlugin.Logger
+    private let userCallbackQueue: DispatchQueue
 
     // MARK: - Initialization
 
@@ -52,13 +53,15 @@ internal final class InternalDefaultLiveMap: Sendable {
         testsOnly_data data: [String: ObjectsMapEntry],
         objectID: String,
         testsOnly_semantics semantics: WireEnum<ObjectsMapSemantics>? = nil,
-        logger: AblyPlugin.Logger
+        logger: AblyPlugin.Logger,
+        userCallbackQueue: DispatchQueue,
     ) {
         self.init(
             data: data,
             objectID: objectID,
             semantics: semantics,
             logger: logger,
+            userCallbackQueue: userCallbackQueue,
         )
     }
 
@@ -66,10 +69,12 @@ internal final class InternalDefaultLiveMap: Sendable {
         data: [String: ObjectsMapEntry],
         objectID: String,
         semantics: WireEnum<ObjectsMapSemantics>?,
-        logger: AblyPlugin.Logger
+        logger: AblyPlugin.Logger,
+        userCallbackQueue: DispatchQueue,
     ) {
         mutableState = .init(liveObject: .init(objectID: objectID), data: data, semantics: semantics)
         self.logger = logger
+        self.userCallbackQueue = userCallbackQueue
     }
 
     /// Creates a "zero-value LiveMap", per RTLM4.
@@ -81,12 +86,14 @@ internal final class InternalDefaultLiveMap: Sendable {
         objectID: String,
         semantics: WireEnum<ObjectsMapSemantics>? = nil,
         logger: AblyPlugin.Logger,
+        userCallbackQueue: DispatchQueue,
     ) -> Self {
         .init(
             data: [:],
             objectID: objectID,
             semantics: semantics,
             logger: logger,
+            userCallbackQueue: userCallbackQueue,
         )
     }
 
@@ -211,6 +218,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                 using: state,
                 objectsPool: &objectsPool,
                 logger: logger,
+                userCallbackQueue: userCallbackQueue,
             )
         }
     }
@@ -222,6 +230,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                 from: operation,
                 objectsPool: &objectsPool,
                 logger: logger,
+                userCallbackQueue: userCallbackQueue,
             )
         }
     }
@@ -233,6 +242,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                 operation,
                 objectsPool: &objectsPool,
                 logger: logger,
+                userCallbackQueue: userCallbackQueue,
             )
         }
     }
@@ -251,6 +261,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                 objectMessageSiteCode: objectMessageSiteCode,
                 objectsPool: &objectsPool,
                 logger: logger,
+                userCallbackQueue: userCallbackQueue,
             )
         }
     }
@@ -271,6 +282,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                 operationData: operationData,
                 objectsPool: &objectsPool,
                 logger: logger,
+                userCallbackQueue: userCallbackQueue,
             )
         }
     }
@@ -314,6 +326,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             using state: ObjectState,
             objectsPool: inout ObjectsPool,
             logger: AblyPlugin.Logger,
+            userCallbackQueue: DispatchQueue,
         ) {
             // RTLM6a: Replace the private siteTimeserials with the value from ObjectState.siteTimeserials
             liveObject.siteTimeserials = state.siteTimeserials
@@ -330,6 +343,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                     from: createOp,
                     objectsPool: &objectsPool,
                     logger: logger,
+                    userCallbackQueue: userCallbackQueue,
                 )
             }
         }
@@ -339,6 +353,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             from operation: ObjectOperation,
             objectsPool: inout ObjectsPool,
             logger: AblyPlugin.Logger,
+            userCallbackQueue: DispatchQueue,
         ) {
             // RTLM17a: For each key–ObjectsMapEntry pair in ObjectOperation.map.entries
             if let entries = operation.map?.entries {
@@ -359,6 +374,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                             operationData: entry.data,
                             objectsPool: &objectsPool,
                             logger: logger,
+                            userCallbackQueue: userCallbackQueue,
                         )
                     }
                 }
@@ -374,6 +390,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             objectMessageSiteCode: String?,
             objectsPool: inout ObjectsPool,
             logger: Logger,
+            userCallbackQueue: DispatchQueue,
         ) {
             guard let applicableOperation = liveObject.canApplyOperation(objectMessageSerial: objectMessageSerial, objectMessageSiteCode: objectMessageSiteCode, logger: logger) else {
                 // RTLM15b
@@ -391,6 +408,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                     operation,
                     objectsPool: &objectsPool,
                     logger: logger,
+                    userCallbackQueue: userCallbackQueue,
                 )
             case .known(.mapSet):
                 guard let mapOp = operation.mapOp else {
@@ -409,6 +427,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                     operationData: data,
                     objectsPool: &objectsPool,
                     logger: logger,
+                    userCallbackQueue: userCallbackQueue,
                 )
             case .known(.mapRemove):
                 guard let mapOp = operation.mapOp else {
@@ -433,6 +452,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             operationData: ObjectData,
             objectsPool: inout ObjectsPool,
             logger: AblyPlugin.Logger,
+            userCallbackQueue: DispatchQueue,
         ) {
             // RTLM7a: If an entry exists in the private data for the specified key
             if let existingEntry = data[key] {
@@ -459,7 +479,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             // RTLM7c: If the operation has a non-empty ObjectData.objectId attribute
             if let objectId = operationData.objectId, !objectId.isEmpty {
                 // RTLM7c1: Create a zero-value LiveObject in the internal ObjectsPool per RTO6
-                _ = objectsPool.createZeroValueObject(forObjectID: objectId, logger: logger)
+                _ = objectsPool.createZeroValueObject(forObjectID: objectId, logger: logger, userCallbackQueue: userCallbackQueue)
             }
         }
 
@@ -535,6 +555,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             _ operation: ObjectOperation,
             objectsPool: inout ObjectsPool,
             logger: AblyPlugin.Logger,
+            userCallbackQueue: DispatchQueue,
         ) {
             if liveObject.createOperationIsMerged {
                 // RTLM16b
@@ -549,6 +570,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                 from: operation,
                 objectsPool: &objectsPool,
                 logger: logger,
+                userCallbackQueue: userCallbackQueue,
             )
         }
 

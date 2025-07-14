@@ -10,7 +10,7 @@ struct InternalDefaultRealtimeObjectsTests {
     /// Creates a InternalDefaultRealtimeObjects instance for testing
     static func createDefaultRealtimeObjects() -> InternalDefaultRealtimeObjects {
         let logger = TestLogger()
-        return InternalDefaultRealtimeObjects(logger: logger)
+        return InternalDefaultRealtimeObjects(logger: logger, userCallbackQueue: .main)
     }
 
     /// Tests for `InternalDefaultRealtimeObjects.handleObjectSyncProtocolMessage`, covering RTO5 specification points.

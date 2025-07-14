@@ -68,21 +68,24 @@ internal struct ObjectsPool {
     /// Creates an `ObjectsPool` whose root is a zero-value `LiveMap`.
     internal init(
         logger: AblyPlugin.Logger,
+        userCallbackQueue: DispatchQueue,
         testsOnly_otherEntries otherEntries: [String: Entry]? = nil,
     ) {
         self.init(
             logger: logger,
+            userCallbackQueue: userCallbackQueue,
             otherEntries: otherEntries,
         )
     }
 
     private init(
         logger: AblyPlugin.Logger,
+        userCallbackQueue: DispatchQueue,
         otherEntries: [String: Entry]?
     ) {
         entries = otherEntries ?? [:]
         // TODO: What initial root entry to use? https://github.com/ably/specification/pull/333/files#r2152312933
-        entries[Self.rootKey] = .map(.createZeroValued(objectID: Self.rootKey, logger: logger))
+        entries[Self.rootKey] = .map(.createZeroValued(objectID: Self.rootKey, logger: logger, userCallbackQueue: userCallbackQueue))
     }
 
     // MARK: - Typed root
@@ -108,8 +111,9 @@ internal struct ObjectsPool {
     /// - Parameters:
     ///   - objectID: The ID of the object to create
     ///   - logger: The logger to use for any created LiveObject
+    ///   - userCallbackQueue: The callback queue to use for any created LiveObject
     /// - Returns: The existing or newly created object
-    internal mutating func createZeroValueObject(forObjectID objectID: String, logger: AblyPlugin.Logger) -> Entry? {
+    internal mutating func createZeroValueObject(forObjectID objectID: String, logger: AblyPlugin.Logger, userCallbackQueue: DispatchQueue) -> Entry? {
         // RTO6a: If an object with objectId exists in ObjectsPool, do not create a new object
         if let existingEntry = entries[objectID] {
             return existingEntry
@@ -127,9 +131,9 @@ internal struct ObjectsPool {
         let entry: Entry
         switch typeString {
         case "map":
-            entry = .map(.createZeroValued(objectID: objectID, logger: logger))
+            entry = .map(.createZeroValued(objectID: objectID, logger: logger, userCallbackQueue: userCallbackQueue))
         case "counter":
-            entry = .counter(.createZeroValued(objectID: objectID, logger: logger))
+            entry = .counter(.createZeroValued(objectID: objectID, logger: logger, userCallbackQueue: userCallbackQueue))
         default:
             return nil
         }
@@ -143,6 +147,7 @@ internal struct ObjectsPool {
     internal mutating func applySyncObjectsPool(
         _ syncObjectsPool: [ObjectState],
         logger: AblyPlugin.Logger,
+        userCallbackQueue: DispatchQueue,
     ) {
         logger.log("applySyncObjectsPool called with \(syncObjectsPool.count) objects", level: .debug)
 
@@ -174,14 +179,14 @@ internal struct ObjectsPool {
                 if objectState.counter != nil {
                     // RTO5c1b1a: If ObjectState.counter is present, create a zero-value LiveCounter,
                     // set its private objectId equal to ObjectState.objectId and override its internal data per RTLC6
-                    let counter = InternalDefaultLiveCounter.createZeroValued(objectID: objectState.objectId, logger: logger)
+                    let counter = InternalDefaultLiveCounter.createZeroValued(objectID: objectState.objectId, logger: logger, userCallbackQueue: userCallbackQueue)
                     counter.replaceData(using: objectState)
                     newEntry = .counter(counter)
                 } else if let objectsMap = objectState.map {
                     // RTO5c1b1b: If ObjectState.map is present, create a zero-value LiveMap,
                     // set its private objectId equal to ObjectState.objectId, set its private semantics
                     // equal to ObjectState.map.semantics and override its internal data per RTLM6
-                    let map = InternalDefaultLiveMap.createZeroValued(objectID: objectState.objectId, semantics: objectsMap.semantics, logger: logger)
+                    let map = InternalDefaultLiveMap.createZeroValued(objectID: objectState.objectId, semantics: objectsMap.semantics, logger: logger, userCallbackQueue: userCallbackQueue)
                     map.replaceData(using: objectState, objectsPool: &self)
                     newEntry = .map(map)
                 } else {

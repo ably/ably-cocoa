@@ -9,6 +9,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
     private nonisolated(unsafe) var mutableState: MutableState!
 
     private let logger: AblyPlugin.Logger
+    private let userCallbackQueue: DispatchQueue
 
     // These drive the testsOnly_* properties that expose the received ProtocolMessages to the test suite.
     private let receivedObjectProtocolMessages: AsyncStream<[InboundObjectMessage]>
@@ -69,12 +70,13 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
         }
     }
 
-    internal init(logger: AblyPlugin.Logger) {
+    internal init(logger: AblyPlugin.Logger, userCallbackQueue: DispatchQueue) {
         self.logger = logger
+        self.userCallbackQueue = userCallbackQueue
         (receivedObjectProtocolMessages, receivedObjectProtocolMessagesContinuation) = AsyncStream.makeStream()
         (receivedObjectSyncProtocolMessages, receivedObjectSyncProtocolMessagesContinuation) = AsyncStream.makeStream()
         (waitingForSyncEvents, waitingForSyncEventsContinuation) = AsyncStream.makeStream()
-        mutableState = .init(objectsPool: .init(logger: logger))
+        mutableState = .init(objectsPool: .init(logger: logger, userCallbackQueue: userCallbackQueue))
     }
 
     // MARK: - LiveMapObjectPoolDelegate
@@ -171,6 +173,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
             mutableState.handleObjectProtocolMessage(
                 objectMessages: objectMessages,
                 logger: logger,
+                userCallbackQueue: userCallbackQueue,
                 receivedObjectProtocolMessagesContinuation: receivedObjectProtocolMessagesContinuation,
             )
         }
@@ -187,6 +190,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
                 objectMessages: objectMessages,
                 protocolMessageChannelSerial: protocolMessageChannelSerial,
                 logger: logger,
+                userCallbackQueue: userCallbackQueue,
                 receivedObjectSyncProtocolMessagesContinuation: receivedObjectSyncProtocolMessagesContinuation,
             )
         }
@@ -197,7 +201,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
     /// Intended as a way for tests to populate the object pool.
     internal func testsOnly_createZeroValueLiveObject(forObjectID objectID: String) -> ObjectsPool.Entry? {
         mutex.withLock {
-            mutableState.objectsPool.createZeroValueObject(forObjectID: objectID, logger: logger)
+            mutableState.objectsPool.createZeroValueObject(forObjectID: objectID, logger: logger, userCallbackQueue: userCallbackQueue)
         }
     }
 
@@ -258,6 +262,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
             objectMessages: [InboundObjectMessage],
             protocolMessageChannelSerial: String?,
             logger: Logger,
+            userCallbackQueue: DispatchQueue,
             receivedObjectSyncProtocolMessagesContinuation: AsyncStream<[InboundObjectMessage]>.Continuation,
         ) {
             logger.log("handleObjectSyncProtocolMessage(objectMessages: \(objectMessages), protocolMessageChannelSerial: \(String(describing: protocolMessageChannelSerial)))", level: .debug)
@@ -314,6 +319,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
                 objectsPool.applySyncObjectsPool(
                     completedSyncObjectsPool,
                     logger: logger,
+                    userCallbackQueue: userCallbackQueue,
                 )
 
                 // RTO5c6
@@ -323,6 +329,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
                         applyObjectProtocolMessageObjectMessage(
                             objectMessage,
                             logger: logger,
+                            userCallbackQueue: userCallbackQueue,
                         )
                     }
                 }
@@ -338,6 +345,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
         internal mutating func handleObjectProtocolMessage(
             objectMessages: [InboundObjectMessage],
             logger: Logger,
+            userCallbackQueue: DispatchQueue,
             receivedObjectProtocolMessagesContinuation: AsyncStream<[InboundObjectMessage]>.Continuation,
         ) {
             receivedObjectProtocolMessagesContinuation.yield(objectMessages)
@@ -356,6 +364,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
                     applyObjectProtocolMessageObjectMessage(
                         objectMessage,
                         logger: logger,
+                        userCallbackQueue: userCallbackQueue,
                     )
                 }
             }
@@ -365,6 +374,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
         private mutating func applyObjectProtocolMessageObjectMessage(
             _ objectMessage: InboundObjectMessage,
             logger: Logger,
+            userCallbackQueue: DispatchQueue,
         ) {
             guard let operation = objectMessage.operation else {
                 // RTO9a1
@@ -380,6 +390,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
                 guard let newEntry = objectsPool.createZeroValueObject(
                     forObjectID: operation.objectId,
                     logger: logger,
+                    userCallbackQueue: userCallbackQueue,
                 ) else {
                     logger.log("Unable to create zero-value object for \(operation.objectId) when processing OBJECT message; dropping", level: .warn)
                     return
