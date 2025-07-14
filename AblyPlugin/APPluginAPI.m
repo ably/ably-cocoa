@@ -53,6 +53,11 @@ static ARTRealtimeInternal *_internalRealtimeClient(id<APRealtimeClient> pluginR
     return _internalRealtimeChannel(channel).logger;
 }
 
+/// Provides plugins with the queue on which all user callbacks for a given client should be called.
+- (dispatch_queue_t)callbackQueueForClient:(id<APRealtimeClient>)client {
+    return _internalRealtimeClient(client).options.dispatchQueue;
+}
+
 - (BOOL)throwIfUnpublishableStateForChannel:(id<APRealtimeChannel>)channel error:(ARTErrorInfo * _Nullable __autoreleasing *)error {
     [NSException raise:NSInternalInconsistencyException format:@"Not yet implemented"];
 }
