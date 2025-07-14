@@ -7,6 +7,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol APObjectMessageProtocol;
 @protocol APRealtimeChannel;
 @protocol APRealtimeClient;
+@protocol APPublicRealtimeChannelUnderlyingObjects;
 
 /// `APPluginAPIProtocol` provides a stable API (that is, one which will not introduce backwards-incompatible changes within a given major version of ably-cocoa) for Ably-authored plugins to access certain private functionality of ably-cocoa.
 ///
@@ -15,10 +16,10 @@ NS_SWIFT_NAME(PluginAPIProtocol)
 NS_SWIFT_SENDABLE
 @protocol APPluginAPIProtocol
 
-/// Returns the internal `APRealtimeChannel` that corresponds to a public `ARTRealtimeChannel`.
+/// Returns the internal objects that correspond to a public `ARTRealtimeChannel`.
 ///
 /// Plugins should, in general, not make use of `ARTRealtimeChannel` internally, and instead use `APRealtimeChannel`. This method is intended only to be used in plugin-authored extensions of `ARTRealtimeChannel`.
-- (id<APRealtimeChannel>)channelForPublicRealtimeChannel:(ARTRealtimeChannel *)channel;
+- (id<APPublicRealtimeChannelUnderlyingObjects>)underlyingObjectsForPublicRealtimeChannel:(ARTRealtimeChannel *)channel;
 
 /// Allows a plugin to store arbitrary key-value data on a channel.
 ///

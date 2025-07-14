@@ -55,10 +55,11 @@
     });
 }
 
-- (instancetype)initWithInternal:(ARTRealtimeChannelInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc {
+- (instancetype)initWithInternal:(ARTRealtimeChannelInternal *)internal realtimeInternal:(ARTRealtimeInternal *)realtimeInternal queuedDealloc:(ARTQueuedDealloc *)dealloc {
     self = [super init];
     if (self) {
         _internal = internal;
+        _realtimeInternal = realtimeInternal;
         _dealloc = dealloc;
 
         // If the LiveObjects plugin has been provided, set up LiveObjects functionality for this channel.
