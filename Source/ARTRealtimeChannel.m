@@ -38,6 +38,7 @@
 #endif
 #import "APLiveObjectsPlugin.h"
 #import "ARTRealtimeChannelInternal+APRealtimeChannel.h"
+#import "ARTRealtimeInternal+APRealtimeClient.h"
 
 @implementation ARTRealtimeChannel {
     ARTQueuedDealloc *_dealloc;
@@ -65,7 +66,7 @@
         // If the LiveObjects plugin has been provided, set up LiveObjects functionality for this channel.
         id<APLiveObjectsInternalPluginProtocol> liveObjectsPlugin = internal.realtime.options.liveObjectsPlugin;
         if (liveObjectsPlugin) {
-            [liveObjectsPlugin prepareChannel:internal];
+            [liveObjectsPlugin prepareChannel:internal client:realtimeInternal];
         }
     }
     return self;
