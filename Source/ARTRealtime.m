@@ -85,7 +85,7 @@
 }
 
 - (ARTRealtimeChannels *)channels {
-    return [[ARTRealtimeChannels alloc] initWithInternal:_internal.channels queuedDealloc:_dealloc];
+    return [[ARTRealtimeChannels alloc] initWithInternal:_internal.channels realtimeInternal:_internal queuedDealloc:_dealloc];
 }
 
 - (ARTAuth *)auth {
