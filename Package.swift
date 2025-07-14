@@ -56,6 +56,14 @@ let package = Package(
             name: "AblyLiveObjectsTests",
             dependencies: [
                 "AblyLiveObjects",
+                .product(
+                    name: "Ably",
+                    package: "ably-cocoa",
+                ),
+                .product(
+                    name: "AblyPlugin",
+                    package: "ably-cocoa",
+                ),
             ],
             resources: [
                 .copy("ably-common"),

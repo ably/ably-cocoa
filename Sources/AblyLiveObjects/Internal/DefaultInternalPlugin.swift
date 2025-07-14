@@ -21,8 +21,8 @@ internal final class DefaultInternalPlugin: NSObject, AblyPlugin.LiveObjectsInte
     ///
     /// We expect this value to have been previously set by ``prepare(_:)``.
     internal static func objectsProperty(for channel: ARTRealtimeChannel, pluginAPI: AblyPlugin.PluginAPIProtocol) -> DefaultRealtimeObjects {
-        let pluginChannel = pluginAPI.channel(forPublicRealtimeChannel: channel)
-        return realtimeObjects(for: pluginChannel, pluginAPI: pluginAPI)
+        let underlyingObjects = pluginAPI.underlyingObjects(forPublicRealtimeChannel: channel)
+        return realtimeObjects(for: underlyingObjects.channel, pluginAPI: pluginAPI)
     }
 
     /// Retrieves the `RealtimeObjects` for this channel.
@@ -41,7 +41,7 @@ internal final class DefaultInternalPlugin: NSObject, AblyPlugin.LiveObjectsInte
     // MARK: - LiveObjectsInternalPluginProtocol
 
     // Populates the channel's `objects` property.
-    internal func prepare(_ channel: AblyPlugin.RealtimeChannel) {
+    internal func prepare(_ channel: AblyPlugin.RealtimeChannel, client _: AblyPlugin.RealtimeClient) {
         let logger = pluginAPI.logger(for: channel)
 
         logger.log("LiveObjects.DefaultInternalPlugin received prepare(_:)", level: .debug)
