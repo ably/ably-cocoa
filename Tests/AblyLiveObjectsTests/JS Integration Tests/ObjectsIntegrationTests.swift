@@ -88,22 +88,30 @@ func waitFixtureChannelIsReady(_: ARTRealtime) async throws {
     try await Task.sleep(nanoseconds: 5 * NSEC_PER_SEC)
 }
 
-func waitForMapKeyUpdate(_ map: any LiveMap, _ key: String) async {
-    await withCheckedContinuation { (continuation: CheckedContinuation<Void, _>) in
-        map.subscribe { update, subscription in
-            if update.update[key] != nil {
-                subscription.unsubscribe()
-                continuation.resume()
+func waitForMapKeyUpdate(_ map: any LiveMap, _ key: String) async throws {
+    try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, _>) in
+        do {
+            try map.subscribe { update, subscription in
+                if update.update[key] != nil {
+                    subscription.unsubscribe()
+                    continuation.resume()
+                }
             }
+        } catch {
+            continuation.resume(throwing: error)
         }
     }
 }
 
-func waitForCounterUpdate(_ counter: any LiveCounter) async {
-    await withCheckedContinuation { (continuation: CheckedContinuation<Void, _>) in
-        counter.subscribe { _, subscription in
-            subscription.unsubscribe()
-            continuation.resume()
+func waitForCounterUpdate(_ counter: any LiveCounter) async throws {
+    try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, _>) in
+        do {
+            try counter.subscribe { _, subscription in
+                subscription.unsubscribe()
+                continuation.resume()
+            }
+        } catch {
+            continuation.resume(throwing: error)
         }
     }
 }
@@ -310,10 +318,10 @@ private struct ObjectsIntegrationTests {
                         // Create the promise first, before the operations that will trigger it
                         async let objectsCreatedPromise: Void = withThrowingTaskGroup(of: Void.self) { group in
                             group.addTask {
-                                await waitForMapKeyUpdate(root, "counter")
+                                try await waitForMapKeyUpdate(root, "counter")
                             }
                             group.addTask {
-                                await waitForMapKeyUpdate(root, "map")
+                                try await waitForMapKeyUpdate(root, "map")
                             }
                             while try await group.next() != nil {}
                         }
@@ -331,13 +339,13 @@ private struct ObjectsIntegrationTests {
                         // Create the promise first, before the operations that will trigger it
                         async let operationsAppliedPromise: Void = withThrowingTaskGroup(of: Void.self) { group in
                             group.addTask {
-                                await waitForMapKeyUpdate(map, "anotherKey")
+                                try await waitForMapKeyUpdate(map, "anotherKey")
                             }
                             group.addTask {
-                                await waitForMapKeyUpdate(map, "shouldDelete")
+                                try await waitForMapKeyUpdate(map, "shouldDelete")
                             }
                             group.addTask {
-                                await waitForCounterUpdate(counter)
+                                try await waitForCounterUpdate(counter)
                             }
                             while try await group.next() != nil {}
                         }
@@ -382,10 +390,10 @@ private struct ObjectsIntegrationTests {
                         // Create the promise first, before the operations that will trigger it
                         async let objectsCreatedPromise: Void = withThrowingTaskGroup(of: Void.self) { group in
                             group.addTask {
-                                await waitForMapKeyUpdate(root, "counter")
+                                try await waitForMapKeyUpdate(root, "counter")
                             }
                             group.addTask {
-                                await waitForMapKeyUpdate(root, "map")
+                                try await waitForMapKeyUpdate(root, "map")
                             }
                             while try await group.next() != nil {}
                         }
@@ -582,7 +590,7 @@ private struct ObjectsIntegrationTests {
                             key: "counter",
                             createOp: objectsHelper.counterCreateRestOp(number: 1),
                         )
-                        _ = await counterCreatedPromise
+                        _ = try await counterCreatedPromise
 
                         #expect(try root.get(key: "counter") != nil, "Check counter exists on root before OBJECT_SYNC sequence with \"tombstone=true\"")
 
@@ -636,7 +644,7 @@ private struct ObjectsIntegrationTests {
                             key: "counter",
                             createOp: objectsHelper.counterCreateRestOp(number: 1),
                         )
-                        _ = await counterCreatedPromise
+                        _ = try await counterCreatedPromise
 
                         async let counterSubPromise: Void = withCheckedThrowingContinuation { continuation in
                             do {

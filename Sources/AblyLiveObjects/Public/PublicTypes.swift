@@ -342,7 +342,7 @@ public protocol LiveObject: AnyObject, Sendable {
     /// - Parameter listener: An event listener function that is called with an update object whenever this LiveObject is updated.
     /// - Returns: A ``SubscribeResponse`` object that allows the provided listener to be deregistered from future updates.
     @discardableResult
-    func subscribe(listener: @escaping LiveObjectUpdateCallback<Update>) -> SubscribeResponse
+    func subscribe(listener: @escaping LiveObjectUpdateCallback<Update>) throws(ARTErrorInfo) -> SubscribeResponse
 
     /// Deregisters all listeners from updates for this LiveObject.
     func unsubscribeAll()
