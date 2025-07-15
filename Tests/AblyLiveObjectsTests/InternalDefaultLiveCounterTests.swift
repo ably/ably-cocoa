@@ -344,6 +344,6 @@ struct InternalDefaultLiveCounterTests {
             #expect(counter.testsOnly_siteTimeserials == ["site1": "ts1"])
         }
 
-        // @specUntested RTLC7e3 - There is no way to check that it was a no-op since there are no side effects that this spec point tells us not to apply
+        // @specUntested RTLC7d3 - There is no way to check that it was a no-op since there are no side effects that this spec point tells us not to apply
     }
 }
