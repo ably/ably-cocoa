@@ -155,9 +155,9 @@ struct InternalDefaultRealtimeObjectsTests {
 
         // MARK: - RTO5c: Post-Sync Behavior Tests
 
-        // @spec(RTO5c2, RTO5c2a) Objects not in sync are removed, except root
+        // A smoke test that the RTO5c post-sync behaviours get performed. They are tested in more detail in the ObjectsPool.applySyncObjectsPool tests.
         @Test
-        func removesObjectsNotInSyncButPreservesRoot() async throws {
+        func performsPostSyncSteps() async throws {
             let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
 
             // Perform sync with only one object (RTO5a5 case)
@@ -172,9 +172,6 @@ struct InternalDefaultRealtimeObjectsTests {
             let finalPool = realtimeObjects.testsOnly_objectsPool
             #expect(finalPool.entries["root"] != nil) // Root preserved
             #expect(finalPool.entries["map:synced@1"] != nil) // Synced object added
-
-            // Note: We rely on applySyncObjectsPool being tested separately for RTO5c2 removal behavior
-            // as the side effect of removing pre-existing objects is tested in ObjectsPoolTests
         }
 
         // MARK: - Error Handling Tests

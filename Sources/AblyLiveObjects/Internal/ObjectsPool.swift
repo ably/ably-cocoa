@@ -143,7 +143,7 @@ internal struct ObjectsPool {
         return entry
     }
 
-    /// Applies the objects gathered during an `OBJECT_SYNC` to this `ObjectsPool`, per RTO5c1.
+    /// Applies the objects gathered during an `OBJECT_SYNC` to this `ObjectsPool`, per RTO5c1 and RTO5c2.
     internal mutating func applySyncObjectsPool(
         _ syncObjectsPool: [ObjectState],
         logger: AblyPlugin.Logger,

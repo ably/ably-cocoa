@@ -204,7 +204,7 @@ struct ObjectsPoolTests {
 
         // MARK: - RTO5c2 Tests
 
-        // @spec(RTO5c2) Remove objects not received during sync
+        // @spec RTO5c2
         @Test
         func removesObjectsNotInSync() throws {
             let logger = TestLogger()
@@ -231,7 +231,7 @@ struct ObjectsPoolTests {
             #expect(pool.entries["counter:hash@1"] == nil) // Should be removed
         }
 
-        // @spec(RTO5c2a) Root object must not be removed
+        // @spec RTO5c2a
         @Test
         func doesNotRemoveRootObject() throws {
             let logger = TestLogger()
@@ -247,7 +247,7 @@ struct ObjectsPoolTests {
             #expect(pool.entries["map:hash@1"] == nil) // Should be removed
         }
 
-        // @spec(RTO5c1, RTO5c2) Complete sync scenario with mixed operations
+        // A more complete example of the behaviours described in RTO5c1 and RTO5c2.
         @Test
         func handlesComplexSyncScenario() throws {
             let logger = TestLogger()
