@@ -9,7 +9,7 @@ import Testing
 
 // MARK: - Top-level helpers
 
-private func realtimeWithObjects(options: PartialClientOptions?) async throws -> ARTRealtime {
+private func realtimeWithObjects(options: PartialClientOptions = .init()) async throws -> ARTRealtime {
     let key = try await Sandbox.fetchSharedAPIKey()
     let clientOptions = ARTClientOptions(key: key)
     clientOptions.plugins = [.liveObjects: AblyLiveObjects.Plugin.self]
@@ -21,8 +21,8 @@ private func realtimeWithObjects(options: PartialClientOptions?) async throws ->
         clientOptions.logLevel = .verbose
     }
 
-    if let options {
-        clientOptions.useBinaryProtocol = options.useBinaryProtocol
+    if let useBinaryProtocol = options.useBinaryProtocol {
+        clientOptions.useBinaryProtocol = useBinaryProtocol
     }
 
     return ARTRealtime(options: clientOptions)
@@ -152,7 +152,7 @@ private let objectsFixturesChannel = "objects_fixtures"
 private struct TestCase<Context>: Identifiable, CustomStringConvertible {
     var disabled: Bool
     var scenario: TestScenario<Context>
-    var options: PartialClientOptions?
+    var options: PartialClientOptions
     var channelName: String
 
     /// This `Identifiable` conformance allows us to re-run individual test cases from the Xcode UI (https://developer.apple.com/documentation/testing/parameterizedtesting#Run-selected-test-cases)
@@ -164,8 +164,8 @@ private struct TestCase<Context>: Identifiable, CustomStringConvertible {
     var description: String {
         var result = scenario.description
 
-        if let options {
-            result += " (\(options.useBinaryProtocol ? "binary" : "text"))"
+        if let useBinaryProtocol = options.useBinaryProtocol {
+            result += " (\(useBinaryProtocol ? "binary" : "text"))"
         }
 
         return result
@@ -179,7 +179,7 @@ private struct TestCaseID: Encodable, Hashable {
 }
 
 private struct PartialClientOptions: Encodable, Hashable {
-    var useBinaryProtocol: Bool
+    var useBinaryProtocol: Bool?
 }
 
 /// The input to `forScenarios`.
@@ -193,19 +193,16 @@ private struct TestScenario<Context> {
 private func forScenarios<Context>(_ scenarios: [TestScenario<Context>]) -> [TestCase<Context>] {
     scenarios.map { scenario -> [TestCase<Context>] in
         if scenario.allTransportsAndProtocols {
-            [
-                PartialClientOptions(useBinaryProtocol: true),
-                PartialClientOptions(useBinaryProtocol: false),
-            ].map { options -> TestCase<Context> in
+            [true, false].map { useBinaryProtocol -> TestCase<Context> in
                 .init(
                     disabled: scenario.disabled,
                     scenario: scenario,
-                    options: options,
-                    channelName: "\(scenario.description) \(options.useBinaryProtocol ? "binary" : "text")",
+                    options: .init(useBinaryProtocol: useBinaryProtocol),
+                    channelName: "\(scenario.description) \(useBinaryProtocol ? "binary" : "text")",
                 )
             }
         } else {
-            [.init(disabled: scenario.disabled, scenario: scenario, options: nil, channelName: scenario.description)]
+            [.init(disabled: scenario.disabled, scenario: scenario, options: .init(), channelName: scenario.description)]
         }
     }
     .flatMap(\.self)
@@ -271,7 +268,7 @@ private struct ObjectsIntegrationTests {
             var channelName: String
             var channel: ARTRealtimeChannel
             var client: ARTRealtime
-            var clientOptions: PartialClientOptions?
+            var clientOptions: PartialClientOptions
         }
 
         static let scenarios: [TestScenario<Context>] = {
