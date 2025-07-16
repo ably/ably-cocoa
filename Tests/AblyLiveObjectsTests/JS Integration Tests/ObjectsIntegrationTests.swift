@@ -9,29 +9,12 @@ import Testing
 
 // MARK: - Top-level helpers
 
-private func realtimeWithObjects(options: PartialClientOptions = .init()) async throws -> ARTRealtime {
-    let key = try await Sandbox.fetchSharedAPIKey()
-    let clientOptions = ARTClientOptions(key: key)
-    clientOptions.plugins = [.liveObjects: AblyLiveObjects.Plugin.self]
-    clientOptions.environment = "sandbox"
-
-    clientOptions.testOptions.transportFactory = TestProxyTransportFactory()
-
-    if TestLogger.loggingEnabled {
-        clientOptions.logLevel = .verbose
-    }
-
-    if let useBinaryProtocol = options.useBinaryProtocol {
-        clientOptions.useBinaryProtocol = useBinaryProtocol
-    }
-
-    return ARTRealtime(options: clientOptions)
+private func realtimeWithObjects(options: ClientHelper.PartialClientOptions) async throws -> ARTRealtime {
+    try await ClientHelper.realtimeWithObjects(options: options)
 }
 
 private func channelOptionsWithObjects() -> ARTRealtimeChannelOptions {
-    let options = ARTRealtimeChannelOptions()
-    options.modes = [.objectSubscribe, .objectPublish]
-    return options
+    ClientHelper.channelOptionsWithObjects()
 }
 
 // Swift version of the JS lexicoTimeserial function
@@ -152,7 +135,7 @@ private let objectsFixturesChannel = "objects_fixtures"
 private struct TestCase<Context>: Identifiable, CustomStringConvertible {
     var disabled: Bool
     var scenario: TestScenario<Context>
-    var options: PartialClientOptions
+    var options: ClientHelper.PartialClientOptions
     var channelName: String
 
     /// This `Identifiable` conformance allows us to re-run individual test cases from the Xcode UI (https://developer.apple.com/documentation/testing/parameterizedtesting#Run-selected-test-cases)
@@ -175,11 +158,7 @@ private struct TestCase<Context>: Identifiable, CustomStringConvertible {
 /// Enables `TestCase`'s conformance to `Identifiable`.
 private struct TestCaseID: Encodable, Hashable {
     var description: String
-    var options: PartialClientOptions?
-}
-
-private struct PartialClientOptions: Encodable, Hashable {
-    var useBinaryProtocol: Bool?
+    var options: ClientHelper.PartialClientOptions?
 }
 
 /// The input to `forScenarios`.
@@ -268,7 +247,7 @@ private struct ObjectsIntegrationTests {
             var channelName: String
             var channel: ARTRealtimeChannel
             var client: ARTRealtime
-            var clientOptions: PartialClientOptions
+            var clientOptions: ClientHelper.PartialClientOptions
         }
 
         static let scenarios: [TestScenario<Context>] = {
