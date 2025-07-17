@@ -1,13 +1,17 @@
-# Ably Pub/Sub Java SDK
+![Ably Pub/Sub Cocoa Header](Images/CocoaSDK-github.png)
+[![Latest Version](https://img.shields.io/github/v/release/ably/ably-cocoa)](https://swiftpackageindex.com/ably/ably-cocoa)
+[![License](https://badgen.net/github/license/ably/ably-cocoa)](https://github.com/ably/ably-cocoa/blob/main/LICENSE)
 
-Build any realtime experience using Ably’s Pub/Sub Java SDK. Supported on all popular platforms and frameworks, including Swift and Objective-C.
+# Ably Pub/Sub Cocoa SDK
+
+Build any realtime experience using Ably’s Pub/Sub Cocoa SDK. Supported on all popular platforms and frameworks, including Swift and Objective-C.
 
 Ably Pub/Sub provides flexible APIs that deliver features such as pub-sub messaging, message history, presence, and push notifications. Utilizing Ably’s realtime messaging platform, applications benefit from its highly performant, reliable, and scalable infrastructure.
 
 Find out more:
 
-* [Ably Pub/Sub docs](https://ably.com/docs/basics)
-* [Ably Pub/Sub examples](https://ably.com/examples?product=pubsub)
+* [Ably Pub/Sub docs.](https://ably.com/docs/basics)
+* [Ably Pub/Sub examples.](https://ably.com/examples?product=pubsub)
 
 ---
 
@@ -15,7 +19,8 @@ Find out more:
 
 Everything you need to get started with Ably:
 
-* [Quickstart in Pub/Sub using Swift](https://ably.com/docs/getting-started/quickstart?lang=swift)
+* [Getting started in Pub/Sub using Swift.](https://ably.com/docs/getting-started/swift?lang=swift)
+* [SDK Setup for Swift.](https://ably.com/docs/getting-started/setup?lang=swift)
 
 ---
 
@@ -27,39 +32,25 @@ The following platforms are supported:
 
 | Platform | Support |
 |----------|---------|
-| Swift | >= 5.3 |
-| Objective-C | Xcode 7.3+ |
-| iOS| >= 10.0 |
-| tvOS | >= 10.0 |
-| macOS| >= 10.12 |
+| iOS| >= 10 |
+| tvOS | >= 9 |
+| macOS| >= 10 |
 
 > [!IMPORTANT]
-> SDK Swift / Objective-C versions < 1.2.24 will be [deprecated](https://ably.com/docs/platform/deprecate/protocol-v1) from November 1, 2025.
-
----
-
-## Known Limitations
-
-This client library is currently *not compatible* with some of the Ably features:
-
-| Feature |
-| :--- |
-| [Custom transportParams](https://ably.com/docs/realtime/usage#client-options) |
-| [Remember fallback host during failures](https://ably.com/docs/realtime/usage#client-options) | 
-| [ErrorInfo URLs to help debug issues](https://ably.com/docs/realtime/types#error-info) |
+> SDK Cocoa versions below 1.2.23 will be [deprecated](https://ably.com/docs/platform/deprecate/protocol-v1) from November 1, 2025.
 
 ---
 
 ## Installation
 
-You can install Ably for iOS and macOS through [Swift package manager](#swift-package-manager), [CocoaPods](#carthage), [Carthage](#carthage) or [install manually](#manual).
+You can install Ably for iOS and macOS through [Swift package manager](#swift-package-manager), [CocoaPods](#cocoapods), [Carthage](#carthage) or [install manually](#manual).
 
-### Swift package manager
+### Swift Package Manager
 
 The Ably Pub/Sub SDK includes installation support for [Swift Package Manager](https://swift.org/package-manager/).
 
 <details>
-<summary>Swift package manager installation details.</summary>
+<summary>Swift Package Manager installation details.</summary>
 
 To install the `ably-cocoa` package in your Xcode project: 
 
@@ -99,6 +90,8 @@ $ pod install
 
 </details>
 
+
+
 ### Carthage
 
 The Ably Pub/Sub SDK includes installation support for [Carthage](https://github.com/Carthage/Carthage/).
@@ -129,13 +122,13 @@ After building the framework (located in `[PROJECT_ROOT]/Carthage/Build`), drag 
 * For applications, select **Embed & Sign**
 * For other targets, select **Do Not Embed**
 
-If you encounter an error like:
+If you encounter an error similar to the following, you’ve likely missed adding one or more required dependencies:
 
 ```
 dyld: Library not loaded: @rpath/AblyDeltaCodec.framework/AblyDeltaCodec
 ```
 
-you’ve likely missed adding one or more required dependencies. See [this Carthage guide](https://github.com/Carthage/Carthage#adding-frameworks-to-an-application) for more help.
+For further information review the Carthage [adding frameworks to an application](https://github.com/Carthage/Carthage#adding-frameworks-to-an-application) guide.
 
 </details>
 
@@ -146,14 +139,50 @@ The Ably Pub/Sub SDK includes manual installation support.
 <details>
 <summary>Manual installation details.</summary>
 
-* Download the [Ably Pub/Sub Cocoa SDK](https://github.com/ably/ably-cocoa).
-* Drag the ably-cocoa/ably-cocoa directory into your Xcode project as a group.
+* Download the [Ably Pub/Sub Cocoa SDK.](https://github.com/ably/ably-cocoa)
+* Drag the `ably-cocoa/ably-cocoa` directory into your Xcode project as a group.
 
 Ably depends on our [MessagePack Fork](https://github.com/ably-forks/msgpack-objective-C) 0.2.0; get it [from the releases page](https://github.com/ably-forks/msgpack-objective-C/releases/tag/0.2.0-ably-1) and link it into your project.
 
 </details>
 
 ---
+
+## Usage
+
+```swift
+// Initialize Ably Realtime client
+let clientOptions = ARTClientOptions(key: "your-ably-api-key")
+clientOptions.clientId = "me"
+let realtime = ARTRealtime(options: clientOptions)
+
+// Wait for connection to be established
+realtime.connection.on { stateChange in
+    if stateChange.current == .connected {
+        print("Connected to Ably")
+        
+        // Get a reference to the 'test-channel' channel
+        let channel = realtime.channels.get("test-channel")
+        
+        // Subscribe to all messages published to this channel
+        channel.subscribe { message in
+            print("Received message: \(message.data ?? "")")
+        }
+        
+        // Publish a test message to the channel
+        channel?.publish("test-event", data: "hello world!") { error in
+            guard error == nil else {
+                print("Error publishing message: \(error!.message)")
+                return
+            }
+            print("Message successfully published")
+        }
+    }
+}
+```
+
+---
+
 
 ## Contribute
 
@@ -163,18 +192,17 @@ Read the [CONTRIBUTING.md](./CONTRIBUTING.md) guidelines to contribute to Ably.
 
 ## Releases
 
-The [CHANGELOG.md](/ably/ably-js/blob/main/CHANGELOG.md) contains details of the latest releases for this SDK. You can also view all Ably releases on [changelog.ably.com](https://changelog.ably.com).
+The [CHANGELOG.md](ably/ably-cocoa/blob/main/CHANGELOG.md) contains details of the latest releases for this SDK. You can also view all Ably releases on [changelog.ably.com](https://changelog.ably.com).
 
 ---
 
-## Support and known issues
+## Support, feedback, and troubleshooting
 
-For help or technical support, visit Ably's [support page](https://ably.com/support).
-
+For help or technical support, visit Ably's [support page](https://ably.com/support) or [GitHub Issues](https://github.com/ably/ably-cocoa/issues) for community-reported bugs and discussions.
 
 ## Unsupported features
 
-This SDK currently not compatible with the following Ably features:
+This SDK is currently not compatible with the following Ably features:
 
 | Unsupported feature | Description |
 | --------------------| ------------|
