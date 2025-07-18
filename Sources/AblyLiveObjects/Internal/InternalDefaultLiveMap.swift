@@ -22,7 +22,7 @@ internal final class InternalDefaultLiveMap: Sendable {
 
     internal var testsOnly_objectID: String {
         mutex.withLock {
-            mutableState.liveObject.objectID
+            mutableState.liveObjectMutableState.objectID
         }
     }
 
@@ -34,13 +34,13 @@ internal final class InternalDefaultLiveMap: Sendable {
 
     internal var testsOnly_siteTimeserials: [String: String] {
         mutex.withLock {
-            mutableState.liveObject.siteTimeserials
+            mutableState.liveObjectMutableState.siteTimeserials
         }
     }
 
     internal var testsOnly_createOperationIsMerged: Bool {
         mutex.withLock {
-            mutableState.liveObject.createOperationIsMerged
+            mutableState.liveObjectMutableState.createOperationIsMerged
         }
     }
 
@@ -76,7 +76,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock,
     ) {
-        mutableState = .init(liveObject: .init(objectID: objectID), data: data, semantics: semantics)
+        mutableState = .init(liveObjectMutableState: .init(objectID: objectID), data: data, semantics: semantics)
         self.logger = logger
         self.userCallbackQueue = userCallbackQueue
         self.clock = clock
@@ -201,13 +201,13 @@ internal final class InternalDefaultLiveMap: Sendable {
     internal func subscribe(listener: @escaping LiveObjectUpdateCallback<DefaultLiveMapUpdate>, coreSDK: CoreSDK) throws(ARTErrorInfo) -> any SubscribeResponse {
         try mutex.ablyLiveObjects_withLockWithTypedThrow { () throws(ARTErrorInfo) in
             // swiftlint:disable:next trailing_closure
-            try mutableState.liveObject.subscribe(listener: listener, coreSDK: coreSDK, updateSelfLater: { [weak self] action in
+            try mutableState.liveObjectMutableState.subscribe(listener: listener, coreSDK: coreSDK, updateSelfLater: { [weak self] action in
                 guard let self else {
                     return
                 }
 
                 mutex.withLock {
-                    action(&mutableState.liveObject)
+                    action(&mutableState.liveObjectMutableState)
                 }
             })
         }
@@ -215,7 +215,7 @@ internal final class InternalDefaultLiveMap: Sendable {
 
     internal func unsubscribeAll() {
         mutex.withLock {
-            mutableState.liveObject.unsubscribeAll()
+            mutableState.liveObjectMutableState.unsubscribeAll()
         }
     }
 
@@ -235,7 +235,7 @@ internal final class InternalDefaultLiveMap: Sendable {
     /// This is used to instruct this map to emit updates during an `OBJECT_SYNC`.
     internal func emit(_ update: LiveObjectUpdate<DefaultLiveMapUpdate>) {
         mutex.withLock {
-            mutableState.liveObject.emit(update, on: userCallbackQueue)
+            mutableState.liveObjectMutableState.emit(update, on: userCallbackQueue)
         }
     }
 
@@ -346,9 +346,9 @@ internal final class InternalDefaultLiveMap: Sendable {
 
     // MARK: - Mutable state and the operations that affect it
 
-    private struct MutableState {
+    private struct MutableState: InternalLiveObject {
         /// The mutable state common to all LiveObjects.
-        internal var liveObject: LiveObjectMutableState<DefaultLiveMapUpdate>
+        internal var liveObjectMutableState: LiveObjectMutableState<DefaultLiveMapUpdate>
 
         /// The internal data that this map holds, per RTLM3.
         internal var data: [String: InternalObjectsMapEntry]
@@ -368,10 +368,10 @@ internal final class InternalDefaultLiveMap: Sendable {
             userCallbackQueue: DispatchQueue,
         ) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
             // RTLM6a: Replace the private siteTimeserials with the value from ObjectState.siteTimeserials
-            liveObject.siteTimeserials = state.siteTimeserials
+            liveObjectMutableState.siteTimeserials = state.siteTimeserials
 
             // RTLM6b: Set the private flag createOperationIsMerged to false
-            liveObject.createOperationIsMerged = false
+            liveObjectMutableState.createOperationIsMerged = false
 
             // RTLM6c: Set data to ObjectState.map.entries, or to an empty map if it does not exist
             data = state.map?.entries?.mapValues { .init(objectsMapEntry: $0) } ?? [:]
@@ -428,7 +428,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             }
 
             // RTLM17b: Set the private flag createOperationIsMerged to true
-            liveObject.createOperationIsMerged = true
+            liveObjectMutableState.createOperationIsMerged = true
 
             // RTLM17c: Merge the updates, skipping no-ops
             // I don't love having to use uniqueKeysWithValues, when I shouldn't have to. I should be able to reason _statically_ that there are no overlapping keys. The problem that we're trying to use LiveMapUpdate throughout instead of something more communicative. But I don't know what's to come in the spec so I don't want to mess with this internal interface.
@@ -457,14 +457,14 @@ internal final class InternalDefaultLiveMap: Sendable {
             userCallbackQueue: DispatchQueue,
             clock: SimpleClock,
         ) {
-            guard let applicableOperation = liveObject.canApplyOperation(objectMessageSerial: objectMessageSerial, objectMessageSiteCode: objectMessageSiteCode, logger: logger) else {
+            guard let applicableOperation = liveObjectMutableState.canApplyOperation(objectMessageSerial: objectMessageSerial, objectMessageSiteCode: objectMessageSiteCode, logger: logger) else {
                 // RTLM15b
                 logger.log("Operation \(operation) (serial: \(String(describing: objectMessageSerial)), siteCode: \(String(describing: objectMessageSiteCode))) should not be applied; discarding", level: .debug)
                 return
             }
 
             // RTLM15c
-            liveObject.siteTimeserials[applicableOperation.objectMessageSiteCode] = applicableOperation.objectMessageSerial
+            liveObjectMutableState.siteTimeserials[applicableOperation.objectMessageSiteCode] = applicableOperation.objectMessageSerial
 
             switch operation.action {
             case .known(.mapCreate):
@@ -477,7 +477,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                     clock: clock,
                 )
                 // RTLM15d1a
-                liveObject.emit(update, on: userCallbackQueue)
+                liveObjectMutableState.emit(update, on: userCallbackQueue)
             case .known(.mapSet):
                 guard let mapOp = operation.mapOp else {
                     logger.log("Could not apply MAP_SET since operation.mapOp is missing", level: .warn)
@@ -499,7 +499,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                     clock: clock,
                 )
                 // RTLM15d2a
-                liveObject.emit(update, on: userCallbackQueue)
+                liveObjectMutableState.emit(update, on: userCallbackQueue)
             case .known(.mapRemove):
                 guard let mapOp = operation.mapOp else {
                     return
@@ -511,7 +511,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                     operationTimeserial: applicableOperation.objectMessageSerial,
                 )
                 // RTLM15d3a
-                liveObject.emit(update, on: userCallbackQueue)
+                liveObjectMutableState.emit(update, on: userCallbackQueue)
             default:
                 // RTLM15d4
                 logger.log("Operation \(operation) has unsupported action for LiveMap; discarding", level: .warn)
@@ -637,7 +637,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             userCallbackQueue: DispatchQueue,
             clock: SimpleClock,
         ) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
-            if liveObject.createOperationIsMerged {
+            if liveObjectMutableState.createOperationIsMerged {
                 // RTLM16b
                 logger.log("Not applying MAP_CREATE because a MAP_CREATE has already been applied", level: .warn)
                 return .noop
@@ -663,7 +663,7 @@ internal final class InternalDefaultLiveMap: Sendable {
 
             // RTO4b2a
             let mapUpdate = DefaultLiveMapUpdate(update: previousData.mapValues { _ in .removed })
-            liveObject.emit(.update(mapUpdate), on: userCallbackQueue)
+            liveObjectMutableState.emit(.update(mapUpdate), on: userCallbackQueue)
         }
     }
 
