@@ -29,6 +29,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
 
     private let logger: AblyPlugin.Logger
     private let userCallbackQueue: DispatchQueue
+    private let clock: SimpleClock
 
     // MARK: - Initialization
 
@@ -36,20 +37,23 @@ internal final class InternalDefaultLiveCounter: Sendable {
         testsOnly_data data: Double,
         objectID: String,
         logger: AblyPlugin.Logger,
-        userCallbackQueue: DispatchQueue
+        userCallbackQueue: DispatchQueue,
+        clock: SimpleClock
     ) {
-        self.init(data: data, objectID: objectID, logger: logger, userCallbackQueue: userCallbackQueue)
+        self.init(data: data, objectID: objectID, logger: logger, userCallbackQueue: userCallbackQueue, clock: clock)
     }
 
     private init(
         data: Double,
         objectID: String,
         logger: AblyPlugin.Logger,
-        userCallbackQueue: DispatchQueue
+        userCallbackQueue: DispatchQueue,
+        clock: SimpleClock
     ) {
         mutableState = .init(liveObject: .init(objectID: objectID), data: data)
         self.logger = logger
         self.userCallbackQueue = userCallbackQueue
+        self.clock = clock
     }
 
     /// Creates a "zero-value LiveCounter", per RTLC4.
@@ -60,12 +64,14 @@ internal final class InternalDefaultLiveCounter: Sendable {
         objectID: String,
         logger: AblyPlugin.Logger,
         userCallbackQueue: DispatchQueue,
+        clock: SimpleClock,
     ) -> Self {
         .init(
             data: 0,
             objectID: objectID,
             logger: logger,
             userCallbackQueue: userCallbackQueue,
+            clock: clock,
         )
     }
 
