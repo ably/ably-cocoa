@@ -317,5 +317,11 @@ internal final class InternalDefaultLiveCounter: Sendable {
             data += amount
             return .update(DefaultLiveCounterUpdate(amount: amount))
         }
+
+        /// Needed for ``InternalLiveObject`` conformance.
+        mutating func resetDataToZeroValued() {
+            // RTLC4
+            data = 0
+        }
     }
 }

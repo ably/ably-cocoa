@@ -10,6 +10,14 @@ internal struct LiveObjectMutableState<Update: Sendable> {
     internal var siteTimeserials: [String: String] = [:]
     // RTLO3c
     internal var createOperationIsMerged = false
+    // RTLO3d
+    internal var isTombstone: Bool {
+        // TODO: Confirm that we don't need to store this (https://github.com/ably/specification/pull/350/files#r2213895661)
+        tombstonedAt != nil
+    }
+
+    // RTLO3e
+    internal var tombstonedAt: Date?
 
     /// Internal bookkeeping for subscriptions.
     private var subscriptionsByID: [Subscription.ID: Subscription] = [:]
@@ -17,9 +25,11 @@ internal struct LiveObjectMutableState<Update: Sendable> {
     internal init(
         objectID: String,
         testsOnly_siteTimeserials siteTimeserials: [String: String]? = nil,
+        testsOnly_tombstonedAt tombstonedAt: Date? = nil,
     ) {
         self.objectID = objectID
         self.siteTimeserials = siteTimeserials ?? [:]
+        self.tombstonedAt = tombstonedAt
     }
 
     /// Represents parameters of an operation that `canApplyOperation` has decided can be applied to a `LiveObject`.
