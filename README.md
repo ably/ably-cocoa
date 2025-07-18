@@ -33,17 +33,17 @@ The following platforms are supported:
 | Platform | Support |
 |----------|---------|
 | iOS| >= 10 |
-| tvOS | >= 9 |
-| macOS| >= 10 |
+| macOS| >= 10.12 |
+| tvOS | >= 10 |
 
 > [!IMPORTANT]
-> SDK Cocoa versions below 1.2.23 will be [deprecated](https://ably.com/docs/platform/deprecate/protocol-v1) from November 1, 2025.
+> Ably Cocoa SDK versions below 1.2.23 will be [deprecated](https://ably.com/docs/platform/deprecate/protocol-v1) from November 1, 2025.
 
 ---
 
 ## Installation
 
-You can install Ably for iOS and macOS through [Swift package manager](#swift-package-manager), [CocoaPods](#cocoapods), [Carthage](#carthage) or [install manually](#manual).
+You can install Ably for iOS and macOS through [Swift package manager](#swift-package-manager), [CocoaPods](#cocoapods), [Carthage](#carthage) or [install manually](#manual-install).
 
 ### Swift Package Manager
 
@@ -183,7 +183,6 @@ realtime.connection.on { stateChange in
 
 ---
 
-
 ## Contribute
 
 Read the [CONTRIBUTING.md](./CONTRIBUTING.md) guidelines to contribute to Ably.
@@ -199,15 +198,3 @@ The [CHANGELOG.md](ably/ably-cocoa/blob/main/CHANGELOG.md) contains details of t
 ## Support, feedback, and troubleshooting
 
 For help or technical support, visit Ably's [support page](https://ably.com/support) or [GitHub Issues](https://github.com/ably/ably-cocoa/issues) for community-reported bugs and discussions.
-
-## Unsupported features
-
-This SDK is currently not compatible with the following Ably features:
-
-| Unsupported feature | Description |
-| --------------------| ------------|
-| Custom `transportParams` | Enables sending custom  parameters with connection requests. |
-| [Remember fallback host during failures](https://ably.com/docs/getting-started/setup#options) | Persists the fallback host used during a failed connection attempt. |
-| [`ErrorInfo` URLs](https://ably.com/docs/realtime/types#error-info) | Provides direct URLs in error messages to help debug issues. |
-
-
