@@ -15,6 +15,7 @@ internal struct InboundWireObjectMessage {
     internal var object: WireObjectState? // OM2g
     internal var serial: String? // OM2h
     internal var siteCode: String? // OM2i
+    internal var serialTimestamp: Date? // OM2j
 }
 
 /// An `ObjectMessage` to be sent in the `state` property of an `OBJECT` `ProtocolMessage`.
@@ -28,6 +29,7 @@ internal struct OutboundWireObjectMessage {
     internal var object: WireObjectState? // OM2g
     internal var serial: String? // OM2h
     internal var siteCode: String? // OM2i
+    internal var serialTimestamp: Date? // OM2j
 }
 
 /// The keys for decoding an `InboundWireObjectMessage` or encoding an `OutboundWireObjectMessage`.
@@ -41,6 +43,7 @@ internal enum WireObjectMessageWireKey: String {
     case object
     case serial
     case siteCode
+    case serialTimestamp
 }
 
 internal extension InboundWireObjectMessage {
@@ -96,6 +99,7 @@ internal extension InboundWireObjectMessage {
         object = try wireObject.optionalDecodableValueForKey(WireObjectMessageWireKey.object.rawValue)
         serial = try wireObject.optionalStringValueForKey(WireObjectMessageWireKey.serial.rawValue)
         siteCode = try wireObject.optionalStringValueForKey(WireObjectMessageWireKey.siteCode.rawValue)
+        serialTimestamp = try wireObject.optionalAblyProtocolDateValueForKey(WireObjectMessageWireKey.serialTimestamp.rawValue)
     }
 }
 
@@ -130,6 +134,9 @@ extension OutboundWireObjectMessage: WireObjectEncodable {
         }
         if let object {
             result[WireObjectMessageWireKey.object.rawValue] = .object(object.toWireObject)
+        }
+        if let serialTimestamp {
+            result[WireObjectMessageWireKey.serialTimestamp.rawValue] = .number(NSNumber(value: serialTimestamp.timeIntervalSince1970 * 1000))
         }
         return result
     }
@@ -386,6 +393,7 @@ internal struct WireObjectsMapEntry {
     internal var tombstone: Bool? // OME2a
     internal var timeserial: String? // OME2b
     internal var data: WireObjectData // OME2c
+    internal var serialTimestamp: Date? // OME2d
 }
 
 extension WireObjectsMapEntry: WireObjectCodable {
@@ -393,12 +401,14 @@ extension WireObjectsMapEntry: WireObjectCodable {
         case tombstone
         case timeserial
         case data
+        case serialTimestamp
     }
 
     internal init(wireObject: [String: WireValue]) throws(InternalError) {
         tombstone = try wireObject.optionalBoolValueForKey(WireKey.tombstone.rawValue)
         timeserial = try wireObject.optionalStringValueForKey(WireKey.timeserial.rawValue)
         data = try wireObject.decodableValueForKey(WireKey.data.rawValue)
+        serialTimestamp = try wireObject.optionalAblyProtocolDateValueForKey(WireKey.serialTimestamp.rawValue)
     }
 
     internal var toWireObject: [String: WireValue] {
@@ -411,6 +421,9 @@ extension WireObjectsMapEntry: WireObjectCodable {
         }
         if let timeserial {
             result[WireKey.timeserial.rawValue] = .string(timeserial)
+        }
+        if let serialTimestamp {
+            result[WireKey.serialTimestamp.rawValue] = .number(NSNumber(value: serialTimestamp.timeIntervalSince1970 * 1000))
         }
 
         return result

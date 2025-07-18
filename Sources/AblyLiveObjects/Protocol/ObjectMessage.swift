@@ -14,6 +14,7 @@ internal struct InboundObjectMessage {
     internal var object: ObjectState? // OM2g
     internal var serial: String? // OM2h
     internal var siteCode: String? // OM2i
+    internal var serialTimestamp: Date? // OM2j
 }
 
 /// An `ObjectMessage` to be sent in the `state` property of an `OBJECT` `ProtocolMessage`.
@@ -27,6 +28,7 @@ internal struct OutboundObjectMessage {
     internal var object: ObjectState? // OM2g
     internal var serial: String? // OM2h
     internal var siteCode: String? // OM2i
+    internal var serialTimestamp: Date? // OM2j
 }
 
 internal struct ObjectOperation {
@@ -65,6 +67,7 @@ internal struct ObjectsMapEntry {
     internal var tombstone: Bool? // OME2a
     internal var timeserial: String? // OME2b
     internal var data: ObjectData // OME2c
+    internal var serialTimestamp: Date? // OME2d
 }
 
 internal struct ObjectsMap {
@@ -104,6 +107,7 @@ internal extension InboundObjectMessage {
         }
         serial = wireObjectMessage.serial
         siteCode = wireObjectMessage.siteCode
+        serialTimestamp = wireObjectMessage.serialTimestamp
     }
 }
 
@@ -123,6 +127,7 @@ internal extension OutboundObjectMessage {
             object: object?.toWire(format: format),
             serial: serial,
             siteCode: siteCode,
+            serialTimestamp: serialTimestamp,
         )
     }
 }
@@ -360,6 +365,7 @@ internal extension ObjectsMapEntry {
         tombstone = wireObjectsMapEntry.tombstone
         timeserial = wireObjectsMapEntry.timeserial
         data = try .init(wireObjectData: wireObjectsMapEntry.data, format: format)
+        serialTimestamp = wireObjectsMapEntry.serialTimestamp
     }
 
     /// Converts this `ObjectsMapEntry` to a `WireObjectsMapEntry`, applying the data encoding rules of OD4.
