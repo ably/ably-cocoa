@@ -38,7 +38,7 @@ struct InternalDefaultLiveMapTests {
         @Test
         func returnsNilWhenEntryIsTombstoned() throws {
             let logger = TestLogger()
-            let entry = TestFactories.mapEntry(
+            let entry = TestFactories.internalMapEntry(
                 tombstone: true,
                 data: ObjectData(boolean: true), // Value doesn't matter as it's tombstoned
             )
@@ -51,7 +51,7 @@ struct InternalDefaultLiveMapTests {
         @Test
         func returnsBooleanValue() throws {
             let logger = TestLogger()
-            let entry = TestFactories.mapEntry(data: ObjectData(boolean: true))
+            let entry = TestFactories.internalMapEntry(data: ObjectData(boolean: true))
             let coreSDK = MockCoreSDK(channelState: .attaching)
             let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, userCallbackQueue: .main)
             let result = try map.get(key: "key", coreSDK: coreSDK, delegate: MockLiveMapObjectPoolDelegate())
@@ -63,7 +63,7 @@ struct InternalDefaultLiveMapTests {
         func returnsBytesValue() throws {
             let logger = TestLogger()
             let bytes = Data([0x01, 0x02, 0x03])
-            let entry = TestFactories.mapEntry(data: ObjectData(bytes: bytes))
+            let entry = TestFactories.internalMapEntry(data: ObjectData(bytes: bytes))
             let coreSDK = MockCoreSDK(channelState: .attaching)
             let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, userCallbackQueue: .main)
             let result = try map.get(key: "key", coreSDK: coreSDK, delegate: MockLiveMapObjectPoolDelegate())
@@ -74,7 +74,7 @@ struct InternalDefaultLiveMapTests {
         @Test
         func returnsNumberValue() throws {
             let logger = TestLogger()
-            let entry = TestFactories.mapEntry(data: ObjectData(number: NSNumber(value: 123.456)))
+            let entry = TestFactories.internalMapEntry(data: ObjectData(number: NSNumber(value: 123.456)))
             let coreSDK = MockCoreSDK(channelState: .attaching)
             let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, userCallbackQueue: .main)
             let result = try map.get(key: "key", coreSDK: coreSDK, delegate: MockLiveMapObjectPoolDelegate())
@@ -85,7 +85,7 @@ struct InternalDefaultLiveMapTests {
         @Test
         func returnsStringValue() throws {
             let logger = TestLogger()
-            let entry = TestFactories.mapEntry(data: ObjectData(string: .string("test")))
+            let entry = TestFactories.internalMapEntry(data: ObjectData(string: .string("test")))
             let coreSDK = MockCoreSDK(channelState: .attaching)
             let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, userCallbackQueue: .main)
             let result = try map.get(key: "key", coreSDK: coreSDK, delegate: MockLiveMapObjectPoolDelegate())
@@ -96,7 +96,7 @@ struct InternalDefaultLiveMapTests {
         @Test
         func returnsNilWhenReferencedObjectDoesNotExist() throws {
             let logger = TestLogger()
-            let entry = TestFactories.mapEntry(data: ObjectData(objectId: "missing"))
+            let entry = TestFactories.internalMapEntry(data: ObjectData(objectId: "missing"))
             let delegate = MockLiveMapObjectPoolDelegate()
             let coreSDK = MockCoreSDK(channelState: .attaching)
             let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, userCallbackQueue: .main)
@@ -108,7 +108,7 @@ struct InternalDefaultLiveMapTests {
         func returnsReferencedMap() throws {
             let logger = TestLogger()
             let objectId = "map1"
-            let entry = TestFactories.mapEntry(data: ObjectData(objectId: objectId))
+            let entry = TestFactories.internalMapEntry(data: ObjectData(objectId: objectId))
             let delegate = MockLiveMapObjectPoolDelegate()
             let coreSDK = MockCoreSDK(channelState: .attaching)
             let referencedMap = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main)
@@ -124,7 +124,7 @@ struct InternalDefaultLiveMapTests {
         func returnsReferencedCounter() throws {
             let logger = TestLogger()
             let objectId = "counter1"
-            let entry = TestFactories.mapEntry(data: ObjectData(objectId: objectId))
+            let entry = TestFactories.internalMapEntry(data: ObjectData(objectId: objectId))
             let delegate = MockLiveMapObjectPoolDelegate()
             let coreSDK = MockCoreSDK(channelState: .attaching)
             let referencedCounter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main)
@@ -139,7 +139,7 @@ struct InternalDefaultLiveMapTests {
         @Test
         func returnsNullOtherwise() throws {
             let logger = TestLogger()
-            let entry = TestFactories.mapEntry(data: ObjectData())
+            let entry = TestFactories.internalMapEntry(data: ObjectData())
             let delegate = MockLiveMapObjectPoolDelegate()
             let coreSDK = MockCoreSDK(channelState: .attaching)
             let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, userCallbackQueue: .main)
@@ -294,11 +294,11 @@ struct InternalDefaultLiveMapTests {
             let map = InternalDefaultLiveMap(
                 testsOnly_data: [
                     // tombstone is nil, so not considered tombstoned
-                    "active1": TestFactories.mapEntry(data: ObjectData(string: .string("value1"))),
+                    "active1": TestFactories.internalMapEntry(data: ObjectData(string: .string("value1"))),
                     // tombstone is false, so not considered tombstoned[
-                    "active2": TestFactories.mapEntry(tombstone: false, data: ObjectData(string: .string("value2"))),
-                    "tombstoned": TestFactories.mapEntry(tombstone: true, data: ObjectData(string: .string("tombstoned"))),
-                    "tombstoned2": TestFactories.mapEntry(tombstone: true, data: ObjectData(string: .string("tombstoned2"))),
+                    "active2": TestFactories.internalMapEntry(tombstone: false, data: ObjectData(string: .string("value2"))),
+                    "tombstoned": TestFactories.internalMapEntry(tombstone: true, data: ObjectData(string: .string("tombstoned"))),
+                    "tombstoned2": TestFactories.internalMapEntry(tombstone: true, data: ObjectData(string: .string("tombstoned2"))),
                 ],
                 objectID: "arbitrary",
                 logger: logger,
@@ -339,9 +339,9 @@ struct InternalDefaultLiveMapTests {
             let delegate = MockLiveMapObjectPoolDelegate()
             let map = InternalDefaultLiveMap(
                 testsOnly_data: [
-                    "key1": TestFactories.mapEntry(data: ObjectData(string: .string("value1"))),
-                    "key2": TestFactories.mapEntry(data: ObjectData(string: .string("value2"))),
-                    "key3": TestFactories.mapEntry(data: ObjectData(string: .string("value3"))),
+                    "key1": TestFactories.internalMapEntry(data: ObjectData(string: .string("value1"))),
+                    "key2": TestFactories.internalMapEntry(data: ObjectData(string: .string("value2"))),
+                    "key3": TestFactories.internalMapEntry(data: ObjectData(string: .string("value3"))),
                 ],
                 objectID: "arbitrary",
                 logger: logger,
@@ -383,12 +383,12 @@ struct InternalDefaultLiveMapTests {
 
             let map = InternalDefaultLiveMap(
                 testsOnly_data: [
-                    "boolean": TestFactories.mapEntry(data: ObjectData(boolean: true)), // RTLM5d2b
-                    "bytes": TestFactories.mapEntry(data: ObjectData(bytes: Data([0x01, 0x02, 0x03]))), // RTLM5d2c
-                    "number": TestFactories.mapEntry(data: ObjectData(number: NSNumber(value: 42))), // RTLM5d2d
-                    "string": TestFactories.mapEntry(data: ObjectData(string: .string("hello"))), // RTLM5d2e
-                    "mapRef": TestFactories.mapEntry(data: ObjectData(objectId: "map:ref@123")), // RTLM5d2f2
-                    "counterRef": TestFactories.mapEntry(data: ObjectData(objectId: "counter:ref@456")), // RTLM5d2f2
+                    "boolean": TestFactories.internalMapEntry(data: ObjectData(boolean: true)), // RTLM5d2b
+                    "bytes": TestFactories.internalMapEntry(data: ObjectData(bytes: Data([0x01, 0x02, 0x03]))), // RTLM5d2c
+                    "number": TestFactories.internalMapEntry(data: ObjectData(number: NSNumber(value: 42))), // RTLM5d2d
+                    "string": TestFactories.internalMapEntry(data: ObjectData(string: .string("hello"))), // RTLM5d2e
+                    "mapRef": TestFactories.internalMapEntry(data: ObjectData(objectId: "map:ref@123")), // RTLM5d2f2
+                    "counterRef": TestFactories.internalMapEntry(data: ObjectData(objectId: "counter:ref@456")), // RTLM5d2f2
                 ],
                 objectID: "arbitrary",
                 logger: logger,
@@ -434,7 +434,7 @@ struct InternalDefaultLiveMapTests {
                 let delegate = MockLiveMapObjectPoolDelegate()
                 let coreSDK = MockCoreSDK(channelState: .attaching)
                 let map = InternalDefaultLiveMap(
-                    testsOnly_data: ["key1": TestFactories.mapEntry(timeserial: "ts2", data: ObjectData(string: .string("existing")))],
+                    testsOnly_data: ["key1": TestFactories.internalMapEntry(timeserial: "ts2", data: ObjectData(string: .string("existing")))],
                     objectID: "arbitrary",
                     logger: logger,
                     userCallbackQueue: .main,
@@ -473,7 +473,7 @@ struct InternalDefaultLiveMapTests {
                 let delegate = MockLiveMapObjectPoolDelegate()
                 let coreSDK = MockCoreSDK(channelState: .attaching)
                 let map = InternalDefaultLiveMap(
-                    testsOnly_data: ["key1": TestFactories.mapEntry(tombstone: true, timeserial: "ts1", data: ObjectData(string: .string("existing")))],
+                    testsOnly_data: ["key1": TestFactories.internalMapEntry(tombstone: true, timeserial: "ts1", data: ObjectData(string: .string("existing")))],
                     objectID: "arbitrary",
                     logger: logger,
                     userCallbackQueue: .main,
@@ -642,7 +642,7 @@ struct InternalDefaultLiveMapTests {
                 let delegate = MockLiveMapObjectPoolDelegate()
                 let coreSDK = MockCoreSDK(channelState: .attaching)
                 let map = InternalDefaultLiveMap(
-                    testsOnly_data: ["key1": TestFactories.mapEntry(timeserial: "ts2", data: ObjectData(string: .string("existing")))],
+                    testsOnly_data: ["key1": TestFactories.internalMapEntry(timeserial: "ts2", data: ObjectData(string: .string("existing")))],
                     objectID: "arbitrary",
                     logger: logger,
                     userCallbackQueue: .main,
@@ -667,7 +667,7 @@ struct InternalDefaultLiveMapTests {
                 let delegate = MockLiveMapObjectPoolDelegate()
                 let coreSDK = MockCoreSDK(channelState: .attaching)
                 let map = InternalDefaultLiveMap(
-                    testsOnly_data: ["key1": TestFactories.mapEntry(tombstone: false, timeserial: "ts1", data: ObjectData(string: .string("existing")))],
+                    testsOnly_data: ["key1": TestFactories.internalMapEntry(tombstone: false, timeserial: "ts1", data: ObjectData(string: .string("existing")))],
                     objectID: "arbitrary",
                     logger: logger,
                     userCallbackQueue: .main,
@@ -791,7 +791,7 @@ struct InternalDefaultLiveMapTests {
             let delegate = MockLiveMapObjectPoolDelegate()
             let coreSDK = MockCoreSDK(channelState: .attaching)
             let map = InternalDefaultLiveMap(
-                testsOnly_data: ["key1": TestFactories.mapEntry(timeserial: entrySerial, data: ObjectData(string: .string("existing")))],
+                testsOnly_data: ["key1": TestFactories.internalMapEntry(timeserial: entrySerial, data: ObjectData(string: .string("existing")))],
                 objectID: "arbitrary",
                 logger: logger,
                 userCallbackQueue: .main,
@@ -849,7 +849,7 @@ struct InternalDefaultLiveMapTests {
             let delegate = MockLiveMapObjectPoolDelegate()
             let coreSDK = MockCoreSDK(channelState: .attaching)
             let map = InternalDefaultLiveMap(
-                testsOnly_data: ["key1": TestFactories.stringMapEntry().entry],
+                testsOnly_data: ["key1": TestFactories.internalStringMapEntry().entry],
                 objectID: "arbitrary",
                 logger: logger,
                 userCallbackQueue: .main,
@@ -881,8 +881,8 @@ struct InternalDefaultLiveMapTests {
             let logger = TestLogger()
             let map = InternalDefaultLiveMap(
                 testsOnly_data: [
-                    "keyThatWillBeRemoved": TestFactories.stringMapEntry(timeserial: "ts1").entry,
-                    "keyThatWillNotBeRemoved": TestFactories.stringMapEntry(timeserial: "ts1").entry,
+                    "keyThatWillBeRemoved": TestFactories.internalStringMapEntry(timeserial: "ts1").entry,
+                    "keyThatWillNotBeRemoved": TestFactories.internalStringMapEntry(timeserial: "ts1").entry,
                 ],
                 objectID: "arbitrary",
                 logger: logger,

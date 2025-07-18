@@ -14,7 +14,7 @@ internal final class InternalDefaultLiveMap: Sendable {
 
     private nonisolated(unsafe) var mutableState: MutableState
 
-    internal var testsOnly_data: [String: ObjectsMapEntry] {
+    internal var testsOnly_data: [String: InternalObjectsMapEntry] {
         mutex.withLock {
             mutableState.data
         }
@@ -50,7 +50,7 @@ internal final class InternalDefaultLiveMap: Sendable {
     // MARK: - Initialization
 
     internal convenience init(
-        testsOnly_data data: [String: ObjectsMapEntry],
+        testsOnly_data data: [String: InternalObjectsMapEntry],
         objectID: String,
         testsOnly_semantics semantics: WireEnum<ObjectsMapSemantics>? = nil,
         logger: AblyPlugin.Logger,
@@ -66,7 +66,7 @@ internal final class InternalDefaultLiveMap: Sendable {
     }
 
     private init(
-        data: [String: ObjectsMapEntry],
+        data: [String: InternalObjectsMapEntry],
         objectID: String,
         semantics: WireEnum<ObjectsMapSemantics>?,
         logger: AblyPlugin.Logger,
@@ -339,7 +339,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         internal var liveObject: LiveObjectMutableState<DefaultLiveMapUpdate>
 
         /// The internal data that this map holds, per RTLM3.
-        internal var data: [String: ObjectsMapEntry]
+        internal var data: [String: InternalObjectsMapEntry]
 
         /// The "private `semantics` field" of RTO5c1b1b.
         internal var semantics: WireEnum<ObjectsMapSemantics>?
@@ -361,7 +361,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             liveObject.createOperationIsMerged = false
 
             // RTLM6c: Set data to ObjectState.map.entries, or to an empty map if it does not exist
-            data = state.map?.entries ?? [:]
+            data = state.map?.entries?.mapValues { .init(objectsMapEntry: $0) } ?? [:]
 
             // RTLM6d: If ObjectState.createOp is present, merge the initial value into the LiveMap as described in RTLM17
             return if let createOp = state.createOp {
@@ -527,7 +527,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                 // RTLM7b: If an entry does not exist in the private data for the specified key
                 // RTLM7b1: Create a new entry in data for the specified key with the provided ObjectData and the operation's serial
                 // RTLM7b2: Set ObjectsMapEntry.tombstone for the new entry to false
-                data[key] = ObjectsMapEntry(tombstone: false, timeserial: operationTimeserial, data: operationData)
+                data[key] = InternalObjectsMapEntry(tombstone: false, timeserial: operationTimeserial, data: operationData)
             }
 
             // RTLM7c: If the operation has a non-empty ObjectData.objectId attribute
@@ -563,7 +563,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                 // RTLM8b: If an entry does not exist in the private data for the specified key
                 // RTLM8b1: Create a new entry in data for the specified key, with ObjectsMapEntry.data set to undefined/null and the operation's serial
                 // RTLM8b2: Set ObjectsMapEntry.tombstone for the new entry to true
-                data[key] = ObjectsMapEntry(tombstone: true, timeserial: operationTimeserial, data: ObjectData())
+                data[key] = InternalObjectsMapEntry(tombstone: true, timeserial: operationTimeserial, data: ObjectData())
             }
 
             return .update(DefaultLiveMapUpdate(update: [key: .removed]))
@@ -647,9 +647,9 @@ internal final class InternalDefaultLiveMap: Sendable {
 
     // MARK: - Helper Methods
 
-    /// Converts an ObjectsMapEntry to LiveMapValue using the same logic as get(key:)
+    /// Converts an InternalObjectsMapEntry to LiveMapValue using the same logic as get(key:)
     /// This is used by entries to ensure consistent value conversion
-    private func convertEntryToLiveMapValue(_ entry: ObjectsMapEntry, delegate: LiveMapObjectPoolDelegate) -> InternalLiveMapValue? {
+    private func convertEntryToLiveMapValue(_ entry: InternalObjectsMapEntry, delegate: LiveMapObjectPoolDelegate) -> InternalLiveMapValue? {
         // RTLM5d2a: If ObjectsMapEntry.tombstone is true, return undefined/null
         // This is also equivalent to the RTLM14 check
         if entry.tombstone == true {
