@@ -28,6 +28,22 @@
     return self;
 }
 
+- (void)getForMessage:(ARTMessage *)message query:(ARTAnnotationsQuery *)query callback:(ARTPaginatedAnnotationsCallback)callback {
+    [_internal getForMessage:message query:query callback:callback];
+}
+
+- (void)getForMessageSerial:(NSString *)messageSerial query:(ARTAnnotationsQuery *)query callback:(ARTPaginatedAnnotationsCallback)callback {
+    [_internal getForMessageSerial:messageSerial query:query callback:callback];
+}
+
+- (void)publish:(ARTAnnotation *)annotation messageSerial:(NSString *)messageSerial callback:(ARTAnnotationErrorCallback)callback {
+    [_internal publish:annotation messageSerial:messageSerial callback:callback];
+}
+
+- (void)deleteAnnotation:(ARTAnnotation *)annotation messageSerial:(NSString *)messageSerial callback:(ARTAnnotationErrorCallback)callback {
+    [_internal deleteAnnotation:annotation messageSerial:messageSerial callback:callback];
+}
+
 - (ARTEventListener *)subscribe:(ARTAnnotationCallback)callback {
     return [_internal subscribe:callback];
 }
@@ -77,6 +93,66 @@
         _dataEncoder = _channel.dataEncoder;
     }
     return self;
+}
+
+- (void)getForMessage:(ARTMessage *)message query:(ARTAnnotationsQuery *)query callback:(ARTPaginatedAnnotationsCallback)callback {
+    [self getForMessageSerial:message.serial query:query callback:callback];
+}
+
+- (void)getForMessageSerial:(NSString *)messageSerial query:(ARTAnnotationsQuery *)query callback:(ARTPaginatedAnnotationsCallback)callback {
+    // TODO: implement
+}
+
+- (void)publish:(ARTAnnotation *)annotation messageSerial:(NSString *)messageSerial callback:(ARTAnnotationErrorCallback)callback {
+    if (callback) {
+        ARTAnnotationErrorCallback userCallback = callback;
+        callback = ^(ARTAnnotation *_Nullable annotation, ARTErrorInfo *_Nullable error) {
+            dispatch_async(self->_userQueue, ^{
+                userCallback(annotation, error);
+            });
+        };
+    }
+    
+dispatch_sync(_queue, ^{
+    if (!self.realtime.connection.isActive_nosync) {
+        if (callback) {
+            callback(nil, self.realtime.connection.error_nosync);
+        }
+        return;
+    }
+    
+    // RTAN1c
+    ARTProtocolMessage *pm = [[ARTProtocolMessage alloc] init];
+    pm.action = ARTProtocolMessageAnnotation;
+    pm.channel = _channel.name;
+    pm.annotations = @[annotation];
+    
+    switch (_channel.state_nosync) {
+        case ARTRealtimeChannelSuspended:
+        case ARTRealtimeChannelFailed: {
+            if (callback) {
+                callback(nil, [ARTErrorInfo createWithCode:ARTErrorChannelOperationFailedInvalidState message:[NSString stringWithFormat:@"channel operation failed (invalid channel state: %@)", ARTRealtimeChannelStateToStr(self->_channel.state_nosync)]]);
+            }
+            break;
+        }
+        case ARTRealtimeChannelInitialized:
+        case ARTRealtimeChannelDetaching:
+        case ARTRealtimeChannelDetached:
+        case ARTRealtimeChannelAttaching:
+        case ARTRealtimeChannelAttached: {
+            [self.realtime send:pm sentCallback:nil ackCallback:^(ARTStatus *status) {
+                if (callback) {
+                    callback(nil, status.errorInfo);
+                }
+            }];
+            break;
+        }
+    }
+});
+}
+
+- (void)deleteAnnotation:(ARTAnnotation *)annotation messageSerial:(NSString *)messageSerial callback:(ARTAnnotationErrorCallback)callback {
+    // TODO: implement
 }
 
 - (ARTEventListener *)_subscribe:(NSString *_Nullable)type onAttach:(ARTCallback)onAttach callback:(ARTAnnotationCallback)cb {

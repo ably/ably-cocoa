@@ -184,4 +184,8 @@
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
 }
 
+- (void)internalPostAnnotations:(id)data callback:(ARTCallback)callback {
+    NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
+}
+
 @end

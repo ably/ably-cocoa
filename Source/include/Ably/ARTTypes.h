@@ -508,7 +508,7 @@ typedef void (^ARTPresenceMessagesCallback)(NSArray<ARTPresenceMessage *> *_Null
 typedef void (^ARTAnnotationCallback)(ARTAnnotation *annotation);
 
 /// :nodoc:
-typedef void (^ARTAnnotationErrorCallback)(ARTAnnotation *annotation, ARTErrorInfo *_Nullable error);
+typedef void (^ARTAnnotationErrorCallback)(ARTAnnotation *_Nullable annotation, ARTErrorInfo *_Nullable error);
 
 /// :nodoc:
 typedef void (^ARTPaginatedAnnotationsCallback)(ARTPaginatedResult<ARTAnnotation *> *_Nullable result, ARTErrorInfo *_Nullable error);

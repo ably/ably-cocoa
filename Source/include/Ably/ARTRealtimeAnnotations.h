@@ -1,5 +1,6 @@
 #import <Foundation/Foundation.h>
 #import <Ably/ARTAnnotation.h>
+#import <Ably/ARTRestAnnotations.h>
 #import <Ably/ARTDataQuery.h>
 #import <Ably/ARTEventEmitter.h>
 #import <Ably/ARTRealtimeChannel.h>
@@ -10,6 +11,42 @@ NS_ASSUME_NONNULL_BEGIN
  The protocol upon which the `ARTRealtimeAnnotations` is implemented.
  */
 @protocol ARTRealtimeAnnotationsProtocol
+
+/**
+ * Publish a new annotation for a message.
+ *
+ * @param annotation The annotation to publish. (Must include at least the `type`. Assumed to be an annotation.create if no action is specified)
+ * @param messageSerial The serial field of the message to annotate.
+ * @param callback A success or failure callback function.
+ */
+- (void)publish:(ARTAnnotation *)annotation messageSerial:(NSString *)messageSerial callback:(nullable ARTAnnotationErrorCallback)callback;
+
+/**
+ * Delete an annotation for a message.
+ *
+ * @param annotation The annotation to delete. (Must include at least the `type`.)
+ * @param messageSerial The serial field of the message to remove the annotation from.
+ * @param callback A success or failure callback function.
+ */
+- (void)deleteAnnotation:(ARTAnnotation *)annotation messageSerial:(NSString *)messageSerial callback:(nullable ARTAnnotationErrorCallback)callback;
+
+/**
+ * Get all annotations for a given message (as a paginated result).
+ *
+ * @param message The message to get annotations for.
+ * @param query Restrictions on which annotations to get (such as a `limit` on the size of the result page).
+ * @param callback A callback for retriving an `ARTPaginatedResult` containing annotations.
+ */
+- (void)getForMessage:(ARTMessage *)message query:(ARTAnnotationsQuery *)query callback:(ARTPaginatedAnnotationsCallback)callback;
+
+ /**
+  * Get all annotations for a given message (as a paginated result) (alternative form where you only have the serial of the message, not a complete Message object).
+  *
+  * @param messageSerial The `serial` of the message to get annotations for.
+  * @param query Restrictions on which annotations to get (such as a `limit` on the size of the result page).
+  * @param callback A callback for retriving an `ARTPaginatedResult` containing annotations.
+  */
+- (void)getForMessageSerial:(NSString *)messageSerial query:(ARTAnnotationsQuery *)query callback:(ARTPaginatedAnnotationsCallback)callback;
 
 /**
  * Registers a listener that is called each time an `ARTAnnotation` is received on the channel.

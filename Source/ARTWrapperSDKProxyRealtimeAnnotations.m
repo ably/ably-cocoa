@@ -32,6 +32,22 @@ NS_ASSUME_NONNULL_END
     return [self.underlyingRealtimeAnnotations subscribe:type callback:callback];
 }
 
+- (void)getForMessage:(ARTMessage *)message query:(ARTAnnotationsQuery *)query callback:(ARTPaginatedAnnotationsCallback)callback {
+    [self.underlyingRealtimeAnnotations getForMessage:message query:query callback:callback];
+}
+
+- (void)getForMessageSerial:(NSString *)messageSerial query:(ARTAnnotationsQuery *)query callback:(ARTPaginatedAnnotationsCallback)callback {
+    [self.underlyingRealtimeAnnotations getForMessageSerial:messageSerial query:query callback:callback];
+}
+
+- (void)publish:(ARTAnnotation *)annotation messageSerial:(NSString *)messageSerial callback:(ARTAnnotationErrorCallback)callback {
+    [self.underlyingRealtimeAnnotations publish:annotation messageSerial:messageSerial callback:callback];
+}
+
+- (void)deleteAnnotation:(ARTAnnotation *)annotation messageSerial:(NSString *)messageSerial callback:(ARTAnnotationErrorCallback)callback {
+    [self.underlyingRealtimeAnnotations deleteAnnotation:annotation messageSerial:messageSerial callback:callback];
+}
+
 - (void)unsubscribe {
     [self.underlyingRealtimeAnnotations unsubscribe];
 }
