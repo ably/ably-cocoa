@@ -320,11 +320,14 @@ internal final class InternalDefaultLiveMap: Sendable {
     /// Applies a `MAP_REMOVE` operation to a key, per RTLM8.
     ///
     /// This is currently exposed just so that the tests can test RTLM8 without having to go through a convoluted replaceData(…) call, but I _think_ that it's going to be used in further contexts when we introduce the handling of incoming object operations in a future spec PR.
-    internal func testsOnly_applyMapRemoveOperation(key: String, operationTimeserial: String?) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
+    internal func testsOnly_applyMapRemoveOperation(key: String, operationTimeserial: String?, operationSerialTimestamp: Date?) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
         mutex.withLock {
             mutableState.applyMapRemoveOperation(
                 key: key,
                 operationTimeserial: operationTimeserial,
+                operationSerialTimestamp: operationSerialTimestamp,
+                logger: logger,
+                clock: clock,
             )
         }
     }
@@ -396,7 +399,25 @@ internal final class InternalDefaultLiveMap: Sendable {
             liveObjectMutableState.createOperationIsMerged = false
 
             // RTLM6c: Set data to ObjectState.map.entries, or to an empty map if it does not exist
-            data = state.map?.entries?.mapValues { .init(objectsMapEntry: $0) } ?? [:]
+            data = state.map?.entries?.mapValues { entry in
+                // Set tombstonedAt for tombstoned entries
+                let tombstonedAt: Date?
+                if entry.tombstone == true {
+                    // RTLM6c1a
+                    if let serialTimestamp = entry.serialTimestamp {
+                        tombstonedAt = serialTimestamp
+                    } else {
+                        // RTLM6c1b
+                        logger.log("serialTimestamp not found in ObjectsMapEntry, using local clock for tombstone timestamp", level: .debug)
+                        // RTLM6cb1
+                        tombstonedAt = clock.now
+                    }
+                } else {
+                    tombstonedAt = nil
+                }
+
+                return .init(objectsMapEntry: entry, tombstonedAt: tombstonedAt)
+            } ?? [:]
 
             // RTLM6d: If ObjectState.createOp is present, merge the initial value into the LiveMap as described in RTLM17
             return if let createOp = state.createOp {
@@ -426,10 +447,13 @@ internal final class InternalDefaultLiveMap: Sendable {
                 entries.map { key, entry in
                     if entry.tombstone == true {
                         // RTLM17a2: If ObjectsMapEntry.tombstone is true, apply the MAP_REMOVE operation
-                        // as described in RTLM8, passing in the current key as ObjectsMapOp, and ObjectsMapEntry.timeserial as the operation's serial
+                        // as described in RTLM8, passing in the current key as ObjectsMapOp, ObjectsMapEntry.timeserial as the operation's serial, and ObjectsMapEntry.serialTimestamp as the operation's serial timestamp
                         applyMapRemoveOperation(
                             key: key,
                             operationTimeserial: entry.timeserial,
+                            operationSerialTimestamp: entry.serialTimestamp,
+                            logger: logger,
+                            clock: clock,
                         )
                     } else {
                         // RTLM17a1: If ObjectsMapEntry.tombstone is false, apply the MAP_SET operation
@@ -538,6 +562,9 @@ internal final class InternalDefaultLiveMap: Sendable {
                 let update = applyMapRemoveOperation(
                     key: mapOp.key,
                     operationTimeserial: applicableOperation.objectMessageSerial,
+                    operationSerialTimestamp: objectMessageSerialTimestamp,
+                    logger: logger,
+                    clock: clock,
                 )
                 // RTLM15d3a
                 liveObjectMutableState.emit(update, on: userCallbackQueue)
@@ -578,17 +605,17 @@ internal final class InternalDefaultLiveMap: Sendable {
                 // RTLM7a2: Otherwise, apply the operation
                 // RTLM7a2a: Set ObjectsMapEntry.data to the ObjectData from the operation
                 // RTLM7a2b: Set ObjectsMapEntry.timeserial to the operation's serial
-                // RTLM7a2c: Set ObjectsMapEntry.tombstone to false
+                // RTLM7a2c: Set ObjectsMapEntry.tombstone to false (same as RTLM7a2d: Set ObjectsMapEntry.tombstonedAt to nil)
                 var updatedEntry = existingEntry
                 updatedEntry.data = operationData
                 updatedEntry.timeserial = operationTimeserial
-                updatedEntry.tombstone = false
+                updatedEntry.tombstonedAt = nil
                 data[key] = updatedEntry
             } else {
                 // RTLM7b: If an entry does not exist in the private data for the specified key
                 // RTLM7b1: Create a new entry in data for the specified key with the provided ObjectData and the operation's serial
-                // RTLM7b2: Set ObjectsMapEntry.tombstone for the new entry to false
-                data[key] = InternalObjectsMapEntry(tombstone: false, timeserial: operationTimeserial, data: operationData)
+                // RTLM7b2: Set ObjectsMapEntry.tombstone for the new entry to false (same as RTLM7b3: Set tombstonedAt to nil)
+                data[key] = InternalObjectsMapEntry(tombstonedAt: nil, timeserial: operationTimeserial, data: operationData)
             }
 
             // RTLM7c: If the operation has a non-empty ObjectData.objectId attribute
@@ -602,8 +629,20 @@ internal final class InternalDefaultLiveMap: Sendable {
         }
 
         /// Applies a `MAP_REMOVE` operation to a key, per RTLM8.
-        internal mutating func applyMapRemoveOperation(key: String, operationTimeserial: String?) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
+        internal mutating func applyMapRemoveOperation(key: String, operationTimeserial: String?, operationSerialTimestamp: Date?, logger: Logger, clock: SimpleClock) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
             // (Note that, where the spec tells us to set ObjectsMapEntry.data to nil, we actually set it to an empty ObjectData, which is equivalent, since it contains no data)
+
+            // Calculate the tombstonedAt for the new or updated entry per RTLM8f
+            let tombstonedAt: Date?
+            if let operationSerialTimestamp {
+                // RTLM8f1
+                tombstonedAt = operationSerialTimestamp
+            } else {
+                // RTLM8f2
+                logger.log("serialTimestamp not provided for MAP_REMOVE, using local clock for tombstone timestamp", level: .debug)
+                // RTLM8f2a
+                tombstonedAt = clock.now
+            }
 
             // RTLM8a: If an entry exists in the private data for the specified key
             if let existingEntry = data[key] {
@@ -614,17 +653,19 @@ internal final class InternalDefaultLiveMap: Sendable {
                 // RTLM8a2: Otherwise, apply the operation
                 // RTLM8a2a: Set ObjectsMapEntry.data to undefined/null
                 // RTLM8a2b: Set ObjectsMapEntry.timeserial to the operation's serial
-                // RTLM8a2c: Set ObjectsMapEntry.tombstone to true
+                // RTLM8a2c: Set ObjectsMapEntry.tombstone to true (equivalent to next point)
+                // RTLM8a2d: Set ObjectsMapEntry.tombstonedAt per RTLM8a2d
                 var updatedEntry = existingEntry
                 updatedEntry.data = ObjectData()
                 updatedEntry.timeserial = operationTimeserial
-                updatedEntry.tombstone = true
+                updatedEntry.tombstonedAt = tombstonedAt
                 data[key] = updatedEntry
             } else {
                 // RTLM8b: If an entry does not exist in the private data for the specified key
                 // RTLM8b1: Create a new entry in data for the specified key, with ObjectsMapEntry.data set to undefined/null and the operation's serial
                 // RTLM8b2: Set ObjectsMapEntry.tombstone for the new entry to true
-                data[key] = InternalObjectsMapEntry(tombstone: true, timeserial: operationTimeserial, data: ObjectData())
+                // RTLM8b3: Set ObjectsMapEntry.tombstonedAt per RTLM8f
+                data[key] = InternalObjectsMapEntry(tombstonedAt: tombstonedAt, timeserial: operationTimeserial, data: ObjectData())
             }
 
             return .update(DefaultLiveMapUpdate(update: [key: .removed]))
