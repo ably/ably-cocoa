@@ -45,7 +45,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
         internal var id: String
 
         /// The `ObjectMessage`s gathered during this sync sequence.
-        internal var syncObjectsPool: [ObjectState]
+        internal var syncObjectsPool: [SyncObjectsPoolEntry]
 
         /// `OBJECT` ProtocolMessages that were received during this sync sequence, to be applied once the sync sequence is complete, per RTO7a.
         internal var bufferedObjectOperations: [InboundObjectMessage]
@@ -276,7 +276,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
             receivedObjectSyncProtocolMessagesContinuation.yield(objectMessages)
 
             // If populated, this contains a full set of sync data for the channel, and should be applied to the ObjectsPool.
-            let completedSyncObjectsPool: [ObjectState]?
+            let completedSyncObjectsPool: [SyncObjectsPoolEntry]?
             // If populated, this contains a set of buffered inbound OBJECT messages that should be applied.
             let completedSyncBufferedObjectOperations: [InboundObjectMessage]?
 
@@ -305,7 +305,13 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
                 }
 
                 // RTO5b
-                updatedSyncSequence.syncObjectsPool.append(contentsOf: objectMessages.compactMap(\.object))
+                updatedSyncSequence.syncObjectsPool.append(contentsOf: objectMessages.compactMap { objectMessage in
+                    if let object = objectMessage.object {
+                        .init(state: object)
+                    } else {
+                        nil
+                    }
+                })
 
                 syncSequence = updatedSyncSequence
 
@@ -316,7 +322,13 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
                 }
             } else {
                 // RTO5a5: The sync data is contained entirely within this single OBJECT_SYNC
-                completedSyncObjectsPool = objectMessages.compactMap(\.object)
+                completedSyncObjectsPool = objectMessages.compactMap { objectMessage in
+                    if let object = objectMessage.object {
+                        .init(state: object)
+                    } else {
+                        nil
+                    }
+                }
                 completedSyncBufferedObjectOperations = nil
             }
 

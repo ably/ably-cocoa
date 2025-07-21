@@ -177,7 +177,7 @@ internal struct ObjectsPool {
 
     /// Applies the objects gathered during an `OBJECT_SYNC` to this `ObjectsPool`, per RTO5c1 and RTO5c2.
     internal mutating func applySyncObjectsPool(
-        _ syncObjectsPool: [ObjectState],
+        _ syncObjectsPool: [SyncObjectsPoolEntry],
         logger: AblyPlugin.Logger,
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock,
@@ -191,46 +191,46 @@ internal struct ObjectsPool {
         var updatesToExistingObjects: [ObjectsPool.Entry.DeferredUpdate] = []
 
         // RTO5c1: For each ObjectState member in the SyncObjectsPool list
-        for objectState in syncObjectsPool {
-            receivedObjectIds.insert(objectState.objectId)
+        for syncObjectsPoolEntry in syncObjectsPool {
+            receivedObjectIds.insert(syncObjectsPoolEntry.state.objectId)
 
             // RTO5c1a: If an object with ObjectState.objectId exists in the internal ObjectsPool
-            if let existingEntry = entries[objectState.objectId] {
-                logger.log("Updating existing object with ID: \(objectState.objectId)", level: .debug)
+            if let existingEntry = entries[syncObjectsPoolEntry.state.objectId] {
+                logger.log("Updating existing object with ID: \(syncObjectsPoolEntry.state.objectId)", level: .debug)
 
                 // RTO5c1a1: Override the internal data for the object as per RTLC6, RTLM6
-                let deferredUpdate = existingEntry.replaceData(using: objectState, objectsPool: &self)
+                let deferredUpdate = existingEntry.replaceData(using: syncObjectsPoolEntry.state, objectsPool: &self)
                 // RTO5c1a2: Store this update to emit at end
                 updatesToExistingObjects.append(deferredUpdate)
             } else {
                 // RTO5c1b: If an object with ObjectState.objectId does not exist in the internal ObjectsPool
-                logger.log("Creating new object with ID: \(objectState.objectId)", level: .debug)
+                logger.log("Creating new object with ID: \(syncObjectsPoolEntry.state.objectId)", level: .debug)
 
                 // RTO5c1b1: Create a new LiveObject using the data from ObjectState and add it to the internal ObjectsPool:
                 let newEntry: Entry?
 
-                if objectState.counter != nil {
+                if syncObjectsPoolEntry.state.counter != nil {
                     // RTO5c1b1a: If ObjectState.counter is present, create a zero-value LiveCounter,
                     // set its private objectId equal to ObjectState.objectId and override its internal data per RTLC6
-                    let counter = InternalDefaultLiveCounter.createZeroValued(objectID: objectState.objectId, logger: logger, userCallbackQueue: userCallbackQueue, clock: clock)
-                    _ = counter.replaceData(using: objectState)
+                    let counter = InternalDefaultLiveCounter.createZeroValued(objectID: syncObjectsPoolEntry.state.objectId, logger: logger, userCallbackQueue: userCallbackQueue, clock: clock)
+                    _ = counter.replaceData(using: syncObjectsPoolEntry.state)
                     newEntry = .counter(counter)
-                } else if let objectsMap = objectState.map {
+                } else if let objectsMap = syncObjectsPoolEntry.state.map {
                     // RTO5c1b1b: If ObjectState.map is present, create a zero-value LiveMap,
                     // set its private objectId equal to ObjectState.objectId, set its private semantics
                     // equal to ObjectState.map.semantics and override its internal data per RTLM6
-                    let map = InternalDefaultLiveMap.createZeroValued(objectID: objectState.objectId, semantics: objectsMap.semantics, logger: logger, userCallbackQueue: userCallbackQueue, clock: clock)
-                    _ = map.replaceData(using: objectState, objectsPool: &self)
+                    let map = InternalDefaultLiveMap.createZeroValued(objectID: syncObjectsPoolEntry.state.objectId, semantics: objectsMap.semantics, logger: logger, userCallbackQueue: userCallbackQueue, clock: clock)
+                    _ = map.replaceData(using: syncObjectsPoolEntry.state, objectsPool: &self)
                     newEntry = .map(map)
                 } else {
                     // RTO5c1b1c: Otherwise, log a warning that an unsupported object state message has been received, and discard the current ObjectState without taking any action
-                    logger.log("Unsupported object state message received for objectId: \(objectState.objectId)", level: .warn)
+                    logger.log("Unsupported object state message received for objectId: \(syncObjectsPoolEntry.state.objectId)", level: .warn)
                     newEntry = nil
                 }
 
                 if let newEntry {
                     // Note that we will never replace the root object here, and thus never break the RTO3b invariant that the root object is always a map. This is because the pool always contains a root object and thus we always go through the RTO5c1a branch of the `if` above.
-                    entries[objectState.objectId] = newEntry
+                    entries[syncObjectsPoolEntry.state.objectId] = newEntry
                 }
             }
         }
