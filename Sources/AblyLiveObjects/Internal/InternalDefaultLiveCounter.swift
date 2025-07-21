@@ -279,6 +279,12 @@ internal final class InternalDefaultLiveCounter: Sendable {
             // RTLC7c
             liveObjectMutableState.siteTimeserials[applicableOperation.objectMessageSiteCode] = applicableOperation.objectMessageSerial
 
+            // RTLC7e
+            // TODO: are we still meant to update siteTimeserials? https://github.com/ably/specification/pull/350/files#r2218718854
+            if liveObjectMutableState.isTombstone {
+                return
+            }
+
             switch operation.action {
             case .known(.counterCreate):
                 // RTLC7d1

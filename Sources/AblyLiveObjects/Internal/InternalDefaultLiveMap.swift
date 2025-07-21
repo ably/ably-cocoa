@@ -470,6 +470,12 @@ internal final class InternalDefaultLiveMap: Sendable {
             // RTLM15c
             liveObjectMutableState.siteTimeserials[applicableOperation.objectMessageSiteCode] = applicableOperation.objectMessageSerial
 
+            // RTLM15e
+            // TODO: are we still meant to update siteTimeserials? https://github.com/ably/specification/pull/350/files#r2218718854
+            if liveObjectMutableState.isTombstone {
+                return
+            }
+
             switch operation.action {
             case .known(.mapCreate):
                 // RTLM15d1
