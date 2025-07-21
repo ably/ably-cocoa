@@ -100,7 +100,7 @@ struct ObjectsPoolTests {
                 entries: [key: entry],
             )
 
-            pool.applySyncObjectsPool([.init(state: objectState)], logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            pool.applySyncObjectsPool([.init(state: objectState, objectMessageSerialTimestamp: nil)], logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Verify the existing map was updated by checking side effects of InternalDefaultLiveMap.replaceData(using:)
             let updatedMap = try #require(pool.entries["map:hash@123"]?.mapValue)
@@ -135,7 +135,7 @@ struct ObjectsPoolTests {
                 count: 10,
             )
 
-            pool.applySyncObjectsPool([.init(state: objectState)], logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            pool.applySyncObjectsPool([.init(state: objectState, objectMessageSerialTimestamp: nil)], logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Verify the existing counter was updated by checking side effects of InternalDefaultLiveCounter.replaceData(using:)
             let updatedCounter = try #require(pool.entries["counter:hash@123"]?.counterValue)
@@ -163,7 +163,7 @@ struct ObjectsPoolTests {
                 count: 100,
             )
 
-            pool.applySyncObjectsPool([.init(state: objectState)], logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            pool.applySyncObjectsPool([.init(state: objectState, objectMessageSerialTimestamp: nil)], logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Verify a new counter was created and data was set by checking side effects of InternalDefaultLiveCounter.replaceData(using:)
             let newCounter = try #require(pool.entries["counter:hash@456"]?.counterValue)
@@ -191,7 +191,7 @@ struct ObjectsPoolTests {
                 entries: [key: entry],
             )
 
-            pool.applySyncObjectsPool([.init(state: objectState)], logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            pool.applySyncObjectsPool([.init(state: objectState, objectMessageSerialTimestamp: nil)], logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Verify a new map was created and data was set by checking side effects of InternalDefaultLiveMap.replaceData(using:)
             let newMap = try #require(pool.entries["map:hash@789"]?.mapValue)
@@ -218,7 +218,7 @@ struct ObjectsPoolTests {
 
             let invalidObjectState = TestFactories.objectState(objectId: "invalid")
 
-            pool.applySyncObjectsPool([invalidObjectState, validObjectState].map { .init(state: $0) }, logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            pool.applySyncObjectsPool([invalidObjectState, validObjectState].map { .init(state: $0, objectMessageSerialTimestamp: nil) }, logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Check that there's no entry for the key that we don't know how to handle, and that it didn't interfere with the insertion of the we one that we do know how to handle
             #expect(Set(pool.entries.keys) == ["root", "counter:hash@456"])
@@ -243,7 +243,7 @@ struct ObjectsPoolTests {
             // Only sync one of the existing objects
             let objectState = TestFactories.mapObjectState(objectId: "map:hash@1")
 
-            pool.applySyncObjectsPool([.init(state: objectState)], logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            pool.applySyncObjectsPool([.init(state: objectState, objectMessageSerialTimestamp: nil)], logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Verify only synced object and root remain
             #expect(pool.entries.count == 2) // root + map:hash@1
@@ -324,7 +324,7 @@ struct ObjectsPoolTests {
                 // Note: "map:toremove@1" is not in sync, so it should be removed
             ]
 
-            pool.applySyncObjectsPool(syncObjects.map { .init(state: $0) }, logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            pool.applySyncObjectsPool(syncObjects.map { .init(state: $0, objectMessageSerialTimestamp: nil) }, logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Verify final state
             #expect(pool.entries.count == 5) // root + 4 synced objects

@@ -247,10 +247,16 @@ internal final class InternalDefaultLiveMap: Sendable {
     ///
     /// - Parameters:
     ///   - objectsPool: The pool into which should be inserted any objects created by a `MAP_SET` operation.
-    internal func replaceData(using state: ObjectState, objectsPool: inout ObjectsPool) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
+    ///   - objectMessageSerialTimestamp: The `serialTimestamp` of the containing `ObjectMessage`. Used if we need to tombstone this map.
+    internal func replaceData(
+        using state: ObjectState,
+        objectMessageSerialTimestamp: Date?,
+        objectsPool: inout ObjectsPool,
+    ) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
         mutex.withLock {
             mutableState.replaceData(
                 using: state,
+                objectMessageSerialTimestamp: objectMessageSerialTimestamp,
                 objectsPool: &objectsPool,
                 logger: logger,
                 clock: clock,
@@ -290,6 +296,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         _ operation: ObjectOperation,
         objectMessageSerial: String?,
         objectMessageSiteCode: String?,
+        objectMessageSerialTimestamp: Date?,
         objectsPool: inout ObjectsPool,
     ) {
         mutex.withLock {
@@ -297,6 +304,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                 operation,
                 objectMessageSerial: objectMessageSerial,
                 objectMessageSiteCode: objectMessageSiteCode,
+                objectMessageSerialTimestamp: objectMessageSerialTimestamp,
                 objectsPool: &objectsPool,
                 logger: logger,
                 userCallbackQueue: userCallbackQueue,
@@ -362,8 +370,10 @@ internal final class InternalDefaultLiveMap: Sendable {
         ///
         /// - Parameters:
         ///   - objectsPool: The pool into which should be inserted any objects created by a `MAP_SET` operation.
+        ///   - objectMessageSerialTimestamp: The `serialTimestamp` of the containing `ObjectMessage`. Used if we need to tombstone this map.
         internal mutating func replaceData(
             using state: ObjectState,
+            objectMessageSerialTimestamp: Date?,
             objectsPool: inout ObjectsPool,
             logger: AblyPlugin.Logger,
             clock: SimpleClock,
@@ -454,6 +464,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             _ operation: ObjectOperation,
             objectMessageSerial: String?,
             objectMessageSiteCode: String?,
+            objectMessageSerialTimestamp: Date?,
             objectsPool: inout ObjectsPool,
             logger: Logger,
             userCallbackQueue: DispatchQueue,

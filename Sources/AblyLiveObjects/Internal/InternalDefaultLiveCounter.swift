@@ -149,9 +149,15 @@ internal final class InternalDefaultLiveCounter: Sendable {
     // MARK: - Data manipulation
 
     /// Replaces the internal data of this counter with the provided ObjectState, per RTLC6.
-    internal func replaceData(using state: ObjectState) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
+    ///
+    /// - Parameters:
+    ///   - objectMessageSerialTimestamp: The `serialTimestamp` of the containing `ObjectMessage`. Used if we need to tombstone this counter.
+    internal func replaceData(
+        using state: ObjectState,
+        objectMessageSerialTimestamp: Date?,
+    ) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
         mutex.withLock {
-            mutableState.replaceData(using: state)
+            mutableState.replaceData(using: state, objectMessageSerialTimestamp: objectMessageSerialTimestamp)
         }
     }
 
@@ -181,6 +187,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
         _ operation: ObjectOperation,
         objectMessageSerial: String?,
         objectMessageSiteCode: String?,
+        objectMessageSerialTimestamp: Date?,
         objectsPool: inout ObjectsPool,
     ) {
         mutex.withLock {
@@ -188,6 +195,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
                 operation,
                 objectMessageSerial: objectMessageSerial,
                 objectMessageSiteCode: objectMessageSiteCode,
+                objectMessageSerialTimestamp: objectMessageSerialTimestamp,
                 objectsPool: &objectsPool,
                 logger: logger,
                 userCallbackQueue: userCallbackQueue,
@@ -205,7 +213,13 @@ internal final class InternalDefaultLiveCounter: Sendable {
         internal var data: Double
 
         /// Replaces the internal data of this counter with the provided ObjectState, per RTLC6.
-        internal mutating func replaceData(using state: ObjectState) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
+        ///
+        /// - Parameters:
+        ///   - objectMessageSerialTimestamp: The `serialTimestamp` of the containing `ObjectMessage`. Used if we need to tombstone this counter.
+        internal mutating func replaceData(
+            using state: ObjectState,
+            objectMessageSerialTimestamp: Date?,
+        ) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
             // RTLC6a: Replace the private siteTimeserials with the value from ObjectState.siteTimeserials
             liveObjectMutableState.siteTimeserials = state.siteTimeserials
 
@@ -249,6 +263,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
             _ operation: ObjectOperation,
             objectMessageSerial: String?,
             objectMessageSiteCode: String?,
+            objectMessageSerialTimestamp: Date?,
             objectsPool: inout ObjectsPool,
             logger: Logger,
             userCallbackQueue: DispatchQueue,

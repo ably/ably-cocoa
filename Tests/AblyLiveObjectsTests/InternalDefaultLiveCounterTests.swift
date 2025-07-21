@@ -32,7 +32,7 @@ struct InternalDefaultLiveCounterTests {
             let coreSDK = MockCoreSDK(channelState: .attached)
 
             // Set some test data
-            _ = counter.replaceData(using: TestFactories.counterObjectState(count: 42))
+            _ = counter.replaceData(using: TestFactories.counterObjectState(count: 42), objectMessageSerialTimestamp: nil)
 
             #expect(try counter.value(coreSDK: coreSDK) == 42)
         }
@@ -48,7 +48,7 @@ struct InternalDefaultLiveCounterTests {
             let state = TestFactories.counterObjectState(
                 siteTimeserials: ["site1": "ts1"], // Test value
             )
-            _ = counter.replaceData(using: state)
+            _ = counter.replaceData(using: state, objectMessageSerialTimestamp: nil)
             #expect(counter.testsOnly_siteTimeserials == ["site1": "ts1"])
         }
 
@@ -67,7 +67,7 @@ struct InternalDefaultLiveCounterTests {
                             action: .known(.counterCreate),
                         ),
                     )
-                    _ = counter.replaceData(using: state)
+                    _ = counter.replaceData(using: state, objectMessageSerialTimestamp: nil)
                     #expect(counter.testsOnly_createOperationIsMerged)
 
                     return counter
@@ -77,7 +77,7 @@ struct InternalDefaultLiveCounterTests {
                 let state = TestFactories.counterObjectState(
                     createOp: nil, // Test value - must be nil to test RTLC6b
                 )
-                _ = counter.replaceData(using: state)
+                _ = counter.replaceData(using: state, objectMessageSerialTimestamp: nil)
 
                 // Then:
                 #expect(!counter.testsOnly_createOperationIsMerged)
@@ -92,7 +92,7 @@ struct InternalDefaultLiveCounterTests {
                 let state = TestFactories.counterObjectState(
                     count: 42, // Test value
                 )
-                _ = counter.replaceData(using: state)
+                _ = counter.replaceData(using: state, objectMessageSerialTimestamp: nil)
                 #expect(try counter.value(coreSDK: coreSDK) == 42)
             }
 
@@ -104,7 +104,8 @@ struct InternalDefaultLiveCounterTests {
                 let coreSDK = MockCoreSDK(channelState: .attaching)
                 _ = counter.replaceData(using: TestFactories.counterObjectState(
                     count: nil, // Test value - must be nil
-                ))
+                ), objectMessageSerialTimestamp: nil)
+
                 #expect(try counter.value(coreSDK: coreSDK) == 0)
             }
         }
@@ -121,7 +122,7 @@ struct InternalDefaultLiveCounterTests {
                     createOp: TestFactories.counterCreateOperation(count: 10), // Test value - must exist
                     count: 5, // Test value - must exist
                 )
-                _ = counter.replaceData(using: state)
+                _ = counter.replaceData(using: state, objectMessageSerialTimestamp: nil)
                 #expect(try counter.value(coreSDK: coreSDK) == 15) // First sets to 5 (RTLC6c) then adds 10 (RTLC10a)
                 #expect(counter.testsOnly_createOperationIsMerged)
             }
@@ -139,7 +140,7 @@ struct InternalDefaultLiveCounterTests {
             let coreSDK = MockCoreSDK(channelState: .attaching)
 
             // Set initial data
-            _ = counter.replaceData(using: TestFactories.counterObjectState(count: 5))
+            _ = counter.replaceData(using: TestFactories.counterObjectState(count: 5), objectMessageSerialTimestamp: nil)
             #expect(try counter.value(coreSDK: coreSDK) == 5)
 
             // Apply merge operation
@@ -161,7 +162,7 @@ struct InternalDefaultLiveCounterTests {
             let coreSDK = MockCoreSDK(channelState: .attaching)
 
             // Set initial data
-            _ = counter.replaceData(using: TestFactories.counterObjectState(count: 5))
+            _ = counter.replaceData(using: TestFactories.counterObjectState(count: 5), objectMessageSerialTimestamp: nil)
             #expect(try counter.value(coreSDK: coreSDK) == 5)
 
             // Apply merge operation with no count
@@ -201,7 +202,7 @@ struct InternalDefaultLiveCounterTests {
             let coreSDK = MockCoreSDK(channelState: .attaching)
 
             // Set initial data and mark create operation as merged
-            _ = counter.replaceData(using: TestFactories.counterObjectState(count: 5))
+            _ = counter.replaceData(using: TestFactories.counterObjectState(count: 5), objectMessageSerialTimestamp: nil)
             _ = counter.mergeInitialValue(from: TestFactories.counterCreateOperation(count: 10))
             #expect(counter.testsOnly_createOperationIsMerged)
 
@@ -225,7 +226,7 @@ struct InternalDefaultLiveCounterTests {
             let coreSDK = MockCoreSDK(channelState: .attaching)
 
             // Set initial data but don't mark create operation as merged
-            _ = counter.replaceData(using: TestFactories.counterObjectState(count: 5))
+            _ = counter.replaceData(using: TestFactories.counterObjectState(count: 5), objectMessageSerialTimestamp: nil)
             #expect(!counter.testsOnly_createOperationIsMerged)
 
             // Apply COUNTER_CREATE operation
@@ -266,7 +267,7 @@ struct InternalDefaultLiveCounterTests {
             let coreSDK = MockCoreSDK(channelState: .attaching)
 
             // Set initial data
-            _ = counter.replaceData(using: TestFactories.counterObjectState(count: 5))
+            _ = counter.replaceData(using: TestFactories.counterObjectState(count: 5), objectMessageSerialTimestamp: nil)
             #expect(try counter.value(coreSDK: coreSDK) == 5)
 
             // Apply COUNTER_INC operation
@@ -293,7 +294,7 @@ struct InternalDefaultLiveCounterTests {
             _ = counter.replaceData(using: TestFactories.counterObjectState(
                 siteTimeserials: ["site1": "ts2"], // Existing serial "ts2"
                 count: 5,
-            ))
+            ), objectMessageSerialTimestamp: nil)
 
             let operation = TestFactories.objectOperation(
                 action: .known(.counterInc),
@@ -306,6 +307,7 @@ struct InternalDefaultLiveCounterTests {
                 operation,
                 objectMessageSerial: "ts1", // Less than existing "ts2"
                 objectMessageSiteCode: "site1",
+                objectMessageSerialTimestamp: nil,
                 objectsPool: &pool,
             )
 
@@ -337,6 +339,7 @@ struct InternalDefaultLiveCounterTests {
                 operation,
                 objectMessageSerial: "ts1",
                 objectMessageSiteCode: "site1",
+                objectMessageSerialTimestamp: nil,
                 objectsPool: &pool,
             )
 
@@ -365,7 +368,7 @@ struct InternalDefaultLiveCounterTests {
             try counter.subscribe(listener: subscriber.createListener(), coreSDK: coreSDK)
 
             // Set initial data
-            _ = counter.replaceData(using: TestFactories.counterObjectState(siteTimeserials: [:], count: 5))
+            _ = counter.replaceData(using: TestFactories.counterObjectState(siteTimeserials: [:], count: 5), objectMessageSerialTimestamp: nil)
             #expect(try counter.value(coreSDK: coreSDK) == 5)
 
             let operation = TestFactories.objectOperation(
@@ -379,6 +382,7 @@ struct InternalDefaultLiveCounterTests {
                 operation,
                 objectMessageSerial: "ts1",
                 objectMessageSiteCode: "site1",
+                objectMessageSerialTimestamp: nil,
                 objectsPool: &pool,
             )
 
@@ -409,6 +413,7 @@ struct InternalDefaultLiveCounterTests {
                 TestFactories.mapCreateOperation(),
                 objectMessageSerial: "ts1",
                 objectMessageSiteCode: "site1",
+                objectMessageSerialTimestamp: nil,
                 objectsPool: &pool,
             )
 

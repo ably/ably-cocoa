@@ -307,7 +307,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
                 // RTO5b
                 updatedSyncSequence.syncObjectsPool.append(contentsOf: objectMessages.compactMap { objectMessage in
                     if let object = objectMessage.object {
-                        .init(state: object)
+                        .init(state: object, objectMessageSerialTimestamp: objectMessage.serialTimestamp)
                     } else {
                         nil
                     }
@@ -324,7 +324,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
                 // RTO5a5: The sync data is contained entirely within this single OBJECT_SYNC
                 completedSyncObjectsPool = objectMessages.compactMap { objectMessage in
                     if let object = objectMessage.object {
-                        .init(state: object)
+                        .init(state: object, objectMessageSerialTimestamp: objectMessage.serialTimestamp)
                     } else {
                         nil
                     }
@@ -432,6 +432,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
                         operation,
                         objectMessageSerial: objectMessage.serial,
                         objectMessageSiteCode: objectMessage.siteCode,
+                        objectMessageSerialTimestamp: objectMessage.serialTimestamp,
                         objectsPool: &objectsPool,
                     )
                 }

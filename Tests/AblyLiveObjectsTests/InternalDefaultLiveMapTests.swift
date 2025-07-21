@@ -159,7 +159,7 @@ struct InternalDefaultLiveMapTests {
                 siteTimeserials: ["site1": "ts1", "site2": "ts2"],
             )
             var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            _ = map.replaceData(using: state, objectsPool: &pool)
+            _ = map.replaceData(using: state, objectMessageSerialTimestamp: nil, objectsPool: &pool)
             #expect(map.testsOnly_siteTimeserials == ["site1": "ts1", "site2": "ts2"])
         }
 
@@ -176,7 +176,7 @@ struct InternalDefaultLiveMapTests {
                 let state = TestFactories.objectState(
                     createOp: TestFactories.mapCreateOperation(objectId: "arbitrary-id"),
                 )
-                _ = map.replaceData(using: state, objectsPool: &pool)
+                _ = map.replaceData(using: state, objectMessageSerialTimestamp: nil, objectsPool: &pool)
                 #expect(map.testsOnly_createOperationIsMerged)
 
                 return map
@@ -184,7 +184,7 @@ struct InternalDefaultLiveMapTests {
 
             // When:
             let state = TestFactories.objectState(objectId: "arbitrary-id", createOp: nil)
-            _ = map.replaceData(using: state, objectsPool: &pool)
+            _ = map.replaceData(using: state, objectMessageSerialTimestamp: nil, objectsPool: &pool)
 
             // Then:
             #expect(!map.testsOnly_createOperationIsMerged)
@@ -203,7 +203,7 @@ struct InternalDefaultLiveMapTests {
                 entries: [key: entry],
             )
             var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            _ = map.replaceData(using: state, objectsPool: &pool)
+            _ = map.replaceData(using: state, objectMessageSerialTimestamp: nil, objectsPool: &pool)
             let newData = map.testsOnly_data
             #expect(newData.count == 1)
             #expect(Set(newData.keys) == ["key1"])
@@ -234,7 +234,7 @@ struct InternalDefaultLiveMapTests {
                 ),
             )
             var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            _ = map.replaceData(using: state, objectsPool: &pool)
+            _ = map.replaceData(using: state, objectMessageSerialTimestamp: nil, objectsPool: &pool)
             // Note that we just check for some basic expected side effects of merging the initial value; RTLM17 is tested in more detail elsewhere
             // Check that it contains the data from the entries (per RTLM6c) and also the createOp (per RTLM6d)
             #expect(try map.get(key: "keyFromMapEntries", coreSDK: coreSDK, delegate: delegate)?.stringValue == "valueFromMapEntries")
@@ -952,7 +952,7 @@ struct InternalDefaultLiveMapTests {
             var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Set initial data and mark create operation as merged
-            _ = map.replaceData(using: TestFactories.mapObjectState(entries: ["key1": TestFactories.stringMapEntry().entry]), objectsPool: &pool)
+            _ = map.replaceData(using: TestFactories.mapObjectState(entries: ["key1": TestFactories.stringMapEntry().entry]), objectMessageSerialTimestamp: nil, objectsPool: &pool)
             _ = map.mergeInitialValue(from: TestFactories.mapCreateOperation(entries: ["key2": TestFactories.stringMapEntry(key: "key2", value: "value2").entry]), objectsPool: &pool)
             #expect(map.testsOnly_createOperationIsMerged)
 
@@ -980,7 +980,7 @@ struct InternalDefaultLiveMapTests {
             var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Set initial data but don't mark create operation as merged
-            _ = map.replaceData(using: TestFactories.mapObjectState(entries: ["key1": TestFactories.stringMapEntry().entry]), objectsPool: &pool)
+            _ = map.replaceData(using: TestFactories.mapObjectState(entries: ["key1": TestFactories.stringMapEntry().entry]), objectMessageSerialTimestamp: nil, objectsPool: &pool)
             #expect(!map.testsOnly_createOperationIsMerged)
 
             // Apply MAP_CREATE operation
@@ -1010,10 +1010,14 @@ struct InternalDefaultLiveMapTests {
             // Set up the map with an existing site timeserial that will cause the operation to be discarded
             var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
             let (key1, entry1) = TestFactories.stringMapEntry(key: "key1", value: "existing", timeserial: nil)
-            _ = map.replaceData(using: TestFactories.mapObjectState(
-                siteTimeserials: ["site1": "ts2"], // Existing serial "ts2"
-                entries: [key1: entry1],
-            ), objectsPool: &pool)
+            _ = map.replaceData(
+                using: TestFactories.mapObjectState(
+                    siteTimeserials: ["site1": "ts2"], // Existing serial "ts2"
+                    entries: [key1: entry1],
+                ),
+                objectMessageSerialTimestamp: nil,
+                objectsPool: &pool,
+            )
 
             let operation = TestFactories.objectOperation(
                 action: .known(.mapSet),
@@ -1025,6 +1029,7 @@ struct InternalDefaultLiveMapTests {
                 operation,
                 objectMessageSerial: "ts1", // Less than existing "ts2"
                 objectMessageSiteCode: "site1",
+                objectMessageSerialTimestamp: nil,
                 objectsPool: &pool,
             )
 
@@ -1059,6 +1064,7 @@ struct InternalDefaultLiveMapTests {
                 operation,
                 objectMessageSerial: "ts1",
                 objectMessageSiteCode: "site1",
+                objectMessageSerialTimestamp: nil,
                 objectsPool: &pool,
             )
 
@@ -1090,10 +1096,14 @@ struct InternalDefaultLiveMapTests {
             // Set initial data
             var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
             let (key1, entry1) = TestFactories.stringMapEntry(key: "key1", value: "existing", timeserial: nil)
-            _ = map.replaceData(using: TestFactories.mapObjectState(
-                siteTimeserials: [:],
-                entries: [key1: entry1],
-            ), objectsPool: &pool)
+            _ = map.replaceData(
+                using: TestFactories.mapObjectState(
+                    siteTimeserials: [:],
+                    entries: [key1: entry1],
+                ),
+                objectMessageSerialTimestamp: nil,
+                objectsPool: &pool,
+            )
             #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate)?.stringValue == "existing")
 
             let operation = TestFactories.objectOperation(
@@ -1106,6 +1116,7 @@ struct InternalDefaultLiveMapTests {
                 operation,
                 objectMessageSerial: "ts1",
                 objectMessageSiteCode: "site1",
+                objectMessageSerialTimestamp: nil,
                 objectsPool: &pool,
             )
 
@@ -1136,10 +1147,14 @@ struct InternalDefaultLiveMapTests {
             // Set initial data
             var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
             let (key1, entry1) = TestFactories.stringMapEntry(key: "key1", value: "existing", timeserial: nil)
-            _ = map.replaceData(using: TestFactories.mapObjectState(
-                siteTimeserials: [:],
-                entries: [key1: entry1],
-            ), objectsPool: &pool)
+            _ = map.replaceData(
+                using: TestFactories.mapObjectState(
+                    siteTimeserials: [:],
+                    entries: [key1: entry1],
+                ),
+                objectMessageSerialTimestamp: nil,
+                objectsPool: &pool,
+            )
             #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate)?.stringValue == "existing")
 
             let operation = TestFactories.objectOperation(
@@ -1152,6 +1167,7 @@ struct InternalDefaultLiveMapTests {
                 operation,
                 objectMessageSerial: "ts1",
                 objectMessageSiteCode: "site1",
+                objectMessageSerialTimestamp: nil,
                 objectsPool: &pool,
             )
 
@@ -1182,6 +1198,7 @@ struct InternalDefaultLiveMapTests {
                 TestFactories.counterCreateOperation(),
                 objectMessageSerial: "ts1",
                 objectMessageSiteCode: "site1",
+                objectMessageSerialTimestamp: nil,
                 objectsPool: &pool,
             )
 
