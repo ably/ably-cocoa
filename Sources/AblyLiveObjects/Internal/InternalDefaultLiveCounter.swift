@@ -196,6 +196,15 @@ internal final class InternalDefaultLiveCounter: Sendable {
         }
     }
 
+    // MARK: - LiveObject
+
+    /// Returns the object's RTLO3d `isTombstone` property.
+    internal var isTombstone: Bool {
+        mutex.withLock {
+            mutableState.liveObjectMutableState.isTombstone
+        }
+    }
+
     // MARK: - Mutable state and the operations that affect it
 
     private struct MutableState: InternalLiveObject {

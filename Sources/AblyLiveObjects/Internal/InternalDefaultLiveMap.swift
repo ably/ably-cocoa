@@ -113,6 +113,11 @@ internal final class InternalDefaultLiveMap: Sendable {
         // RTLM5c: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
         try coreSDK.validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveMap.get")
 
+        // RTLM5e - Return nil if self is tombstone
+        if isTombstone {
+            return nil
+        }
+
         let entry = mutex.withLock {
             mutableState.data[key]
         }
@@ -328,6 +333,15 @@ internal final class InternalDefaultLiveMap: Sendable {
     internal func resetData() {
         mutex.withLock {
             mutableState.resetData(userCallbackQueue: userCallbackQueue)
+        }
+    }
+
+    // MARK: - LiveObject
+
+    /// Returns the object's RTLO3d `isTombstone` property.
+    internal var isTombstone: Bool {
+        mutex.withLock {
+            mutableState.liveObjectMutableState.isTombstone
         }
     }
 
@@ -718,7 +732,12 @@ internal final class InternalDefaultLiveMap: Sendable {
                 return nil
             }
 
-            // RTLM5d2f2: If an object with id objectId exists, return it
+            // RTLM5d2f3: If referenced object is tombstoned, return nil
+            if poolEntry.isTombstone {
+                return nil
+            }
+
+            // RTLM5d2f2: Return referenced object
             switch poolEntry {
             case let .map(map):
                 return .liveMap(map)
