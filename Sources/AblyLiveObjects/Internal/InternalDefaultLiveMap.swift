@@ -378,6 +378,20 @@ internal final class InternalDefaultLiveMap: Sendable {
                 return .noop
             }
 
+            // RTLM6f: Tombstone if state indicates tombstoned
+            if state.tombstone {
+                let dataBeforeTombstoning = data
+
+                tombstone(
+                    objectMessageSerialTimestamp: objectMessageSerialTimestamp,
+                    logger: logger,
+                    clock: clock,
+                )
+
+                // RTLM6f1
+                return .update(.init(update: dataBeforeTombstoning.mapValues { _ in .removed }))
+            }
+
             // RTLM6b: Set the private flag createOperationIsMerged to false
             liveObjectMutableState.createOperationIsMerged = false
 

@@ -150,7 +150,12 @@ internal final class InternalDefaultLiveCounter: Sendable {
         objectMessageSerialTimestamp: Date?,
     ) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
         mutex.withLock {
-            mutableState.replaceData(using: state, objectMessageSerialTimestamp: objectMessageSerialTimestamp)
+            mutableState.replaceData(
+                using: state,
+                objectMessageSerialTimestamp: objectMessageSerialTimestamp,
+                logger: logger,
+                clock: clock,
+            )
         }
     }
 
@@ -221,6 +226,8 @@ internal final class InternalDefaultLiveCounter: Sendable {
         internal mutating func replaceData(
             using state: ObjectState,
             objectMessageSerialTimestamp: Date?,
+            logger: Logger,
+            clock: SimpleClock,
         ) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
             // RTLC6a: Replace the private siteTimeserials with the value from ObjectState.siteTimeserials
             liveObjectMutableState.siteTimeserials = state.siteTimeserials
@@ -228,6 +235,20 @@ internal final class InternalDefaultLiveCounter: Sendable {
             // RTLC6e, RTLC6e1: No-op if we're already tombstone
             if liveObjectMutableState.isTombstone {
                 return .noop
+            }
+
+            // RTLC6f: Tombstone if state indicates tombstoned
+            if state.tombstone {
+                let dataBeforeTombstoning = data
+
+                tombstone(
+                    objectMessageSerialTimestamp: objectMessageSerialTimestamp,
+                    logger: logger,
+                    clock: clock,
+                )
+
+                // RTLC6f1
+                return .update(.init(amount: -dataBeforeTombstoning))
             }
 
             // RTLC6b: Set the private flag createOperationIsMerged to false
