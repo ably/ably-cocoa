@@ -225,6 +225,11 @@ internal final class InternalDefaultLiveCounter: Sendable {
             // RTLC6a: Replace the private siteTimeserials with the value from ObjectState.siteTimeserials
             liveObjectMutableState.siteTimeserials = state.siteTimeserials
 
+            // RTLC6e, RTLC6e1: No-op if we're already tombstone
+            if liveObjectMutableState.isTombstone {
+                return .noop
+            }
+
             // RTLC6b: Set the private flag createOperationIsMerged to false
             liveObjectMutableState.createOperationIsMerged = false
 

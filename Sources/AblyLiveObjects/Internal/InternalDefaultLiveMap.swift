@@ -373,6 +373,11 @@ internal final class InternalDefaultLiveMap: Sendable {
             // RTLM6a: Replace the private siteTimeserials with the value from ObjectState.siteTimeserials
             liveObjectMutableState.siteTimeserials = state.siteTimeserials
 
+            // RTLM6e, RTLM6e1: No-op if we're already tombstone
+            if liveObjectMutableState.isTombstone {
+                return .noop
+            }
+
             // RTLM6b: Set the private flag createOperationIsMerged to false
             liveObjectMutableState.createOperationIsMerged = false
 
