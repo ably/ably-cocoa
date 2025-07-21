@@ -196,6 +196,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
                 objectMessageSerialTimestamp: objectMessageSerialTimestamp,
                 objectsPool: &objectsPool,
                 logger: logger,
+                clock: clock,
                 userCallbackQueue: userCallbackQueue,
             )
         }
@@ -294,6 +295,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
             objectMessageSerialTimestamp: Date?,
             objectsPool: inout ObjectsPool,
             logger: Logger,
+            clock: SimpleClock,
             userCallbackQueue: DispatchQueue,
         ) {
             guard let applicableOperation = liveObjectMutableState.canApplyOperation(objectMessageSerial: objectMessageSerial, objectMessageSiteCode: objectMessageSiteCode, logger: logger) else {
@@ -325,6 +327,18 @@ internal final class InternalDefaultLiveCounter: Sendable {
                 let update = applyCounterIncOperation(operation.counterOp)
                 // RTLC7d2a
                 liveObjectMutableState.emit(update, on: userCallbackQueue)
+            case .known(.objectDelete):
+                let dataBeforeApplyingOperation = data
+
+                // RTLC7d4
+                applyObjectDeleteOperation(
+                    objectMessageSerialTimestamp: objectMessageSerialTimestamp,
+                    logger: logger,
+                    clock: clock,
+                )
+
+                // RTLC7d4a
+                liveObjectMutableState.emit(.update(.init(amount: -dataBeforeApplyingOperation)), on: userCallbackQueue)
             default:
                 // RTLC7d3
                 logger.log("Operation \(operation) has unsupported action for LiveCounter; discarding", level: .warn)

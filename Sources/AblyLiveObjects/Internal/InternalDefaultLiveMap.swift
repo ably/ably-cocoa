@@ -541,6 +541,18 @@ internal final class InternalDefaultLiveMap: Sendable {
                 )
                 // RTLM15d3a
                 liveObjectMutableState.emit(update, on: userCallbackQueue)
+            case .known(.objectDelete):
+                let dataBeforeApplyingOperation = data
+
+                // RTLM15d5
+                applyObjectDeleteOperation(
+                    objectMessageSerialTimestamp: objectMessageSerialTimestamp,
+                    logger: logger,
+                    clock: clock,
+                )
+
+                // RTLM15d5a
+                liveObjectMutableState.emit(.update(.init(update: dataBeforeApplyingOperation.mapValues { _ in .removed })), on: userCallbackQueue)
             default:
                 // RTLM15d4
                 logger.log("Operation \(operation) has unsupported action for LiveMap; discarding", level: .warn)
