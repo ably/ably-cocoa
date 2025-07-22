@@ -284,7 +284,7 @@ struct InternalDefaultLiveMapTests {
 
             // Define actions to test
             let actions: [(String, () throws -> Any)] = [
-                ("size", { try map.size(coreSDK: coreSDK) }),
+                ("size", { try map.size(coreSDK: coreSDK, delegate: delegate) }),
                 ("entries", { try map.entries(coreSDK: coreSDK, delegate: delegate) }),
                 ("keys", { try map.keys(coreSDK: coreSDK, delegate: delegate) }),
                 ("values", { try map.values(coreSDK: coreSDK, delegate: delegate) }),
@@ -330,7 +330,7 @@ struct InternalDefaultLiveMapTests {
             )
 
             // Test size - should only count non-tombstoned entries
-            let size = try map.size(coreSDK: coreSDK)
+            let size = try map.size(coreSDK: coreSDK, delegate: delegate)
             #expect(size == 1)
 
             // Test entries - should only return non-tombstoned entries
@@ -372,7 +372,7 @@ struct InternalDefaultLiveMapTests {
                 clock: MockSimpleClock(),
             )
 
-            let size = try map.size(coreSDK: coreSDK)
+            let size = try map.size(coreSDK: coreSDK, delegate: delegate)
             let entries = try map.entries(coreSDK: coreSDK, delegate: delegate)
             let keys = try map.keys(coreSDK: coreSDK, delegate: delegate)
             let values = try map.values(coreSDK: coreSDK, delegate: delegate)
@@ -422,7 +422,7 @@ struct InternalDefaultLiveMapTests {
                 clock: MockSimpleClock(),
             )
 
-            let size = try map.size(coreSDK: coreSDK)
+            let size = try map.size(coreSDK: coreSDK, delegate: delegate)
             let entries = try map.entries(coreSDK: coreSDK, delegate: delegate)
             let keys = try map.keys(coreSDK: coreSDK, delegate: delegate)
             let values = try map.values(coreSDK: coreSDK, delegate: delegate)

@@ -131,14 +131,14 @@ internal final class InternalDefaultLiveMap: Sendable {
         return convertEntryToLiveMapValue(entry, delegate: delegate)
     }
 
-    internal func size(coreSDK: CoreSDK) throws(ARTErrorInfo) -> Int {
+    internal func size(coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> Int {
         // RTLM10c: If the channel is in the DETACHED or FAILED state, the library should throw an ErrorInfo error with statusCode 400 and code 90001
         try coreSDK.validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveMap.size")
 
         return mutex.withLock {
             // RTLM10d: Returns the number of non-tombstoned entries (per RTLM14) in the internal data map
             mutableState.data.values.count { entry in
-                !Self.isEntryTombstoned(entry)
+                !Self.isEntryTombstoned(entry, delegate: delegate)
             }
         }
     }
@@ -152,7 +152,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             // RTLM11d1: Pairs with tombstoned entries (per RTLM14) are not returned
             var result: [(key: String, value: InternalLiveMapValue)] = []
 
-            for (key, entry) in mutableState.data where !Self.isEntryTombstoned(entry) {
+            for (key, entry) in mutableState.data where !Self.isEntryTombstoned(entry, delegate: delegate) {
                 // Convert entry to LiveMapValue using the same logic as get(key:)
                 if let value = convertEntryToLiveMapValue(entry, delegate: delegate) {
                     result.append((key: key, value: value))
@@ -758,9 +758,21 @@ internal final class InternalDefaultLiveMap: Sendable {
     // MARK: - Helper Methods
 
     /// Returns whether a map entry should be considered tombstoned, per the check described in RTLM14.
-    private static func isEntryTombstoned(_ entry: InternalObjectsMapEntry) -> Bool {
-        // RTLM14a, RTLM14b
-        entry.tombstone == true
+    private static func isEntryTombstoned(_ entry: InternalObjectsMapEntry, delegate: LiveMapObjectPoolDelegate) -> Bool {
+        // RTLM14a
+        if entry.tombstone {
+            return true
+        }
+
+        // RTLM14c
+        if let objectId = entry.data.objectId {
+            if let poolEntry = delegate.getObjectFromPool(id: objectId), poolEntry.isTombstone {
+                return true
+            }
+        }
+
+        // RTLM14b
+        return false
     }
 
     /// Converts an InternalObjectsMapEntry to LiveMapValue using the same logic as get(key:)
