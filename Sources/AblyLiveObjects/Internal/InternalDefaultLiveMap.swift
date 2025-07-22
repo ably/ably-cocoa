@@ -147,9 +147,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         return mutex.withLock {
             // RTLM10d: Returns the number of non-tombstoned entries (per RTLM14) in the internal data map
             mutableState.data.values.count { entry in
-                // RTLM14a: The method returns true if ObjectsMapEntry.tombstone is true
-                // RTLM14b: Otherwise, it returns false
-                entry.tombstone != true
+                !Self.isEntryTombstoned(entry)
             }
         }
     }
@@ -170,7 +168,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             // RTLM11d1: Pairs with tombstoned entries (per RTLM14) are not returned
             var result: [(key: String, value: InternalLiveMapValue)] = []
 
-            for (key, entry) in mutableState.data {
+            for (key, entry) in mutableState.data where !Self.isEntryTombstoned(entry) {
                 // Convert entry to LiveMapValue using the same logic as get(key:)
                 if let value = convertEntryToLiveMapValue(entry, delegate: delegate) {
                     result.append((key: key, value: value))
@@ -682,11 +680,16 @@ internal final class InternalDefaultLiveMap: Sendable {
 
     // MARK: - Helper Methods
 
+    /// Returns whether a map entry should be considered tombstoned, per the check described in RTLM14.
+    private static func isEntryTombstoned(_ entry: InternalObjectsMapEntry) -> Bool {
+        // RTLM14a, RTLM14b
+        entry.tombstone == true
+    }
+
     /// Converts an InternalObjectsMapEntry to LiveMapValue using the same logic as get(key:)
     /// This is used by entries to ensure consistent value conversion
     private func convertEntryToLiveMapValue(_ entry: InternalObjectsMapEntry, delegate: LiveMapObjectPoolDelegate) -> InternalLiveMapValue? {
         // RTLM5d2a: If ObjectsMapEntry.tombstone is true, return undefined/null
-        // This is also equivalent to the RTLM14 check
         if entry.tombstone == true {
             return nil
         }
