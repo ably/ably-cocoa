@@ -211,6 +211,13 @@ internal final class InternalDefaultLiveCounter: Sendable {
         }
     }
 
+    /// Returns the object's RTLO3e `tombstonedAt` property.
+    internal var tombstonedAt: Date? {
+        mutex.withLock {
+            mutableState.liveObjectMutableState.tombstonedAt
+        }
+    }
+
     // MARK: - Mutable state and the operations that affect it
 
     private struct MutableState: InternalLiveObject {

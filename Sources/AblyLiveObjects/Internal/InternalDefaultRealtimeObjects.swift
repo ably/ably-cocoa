@@ -18,6 +18,26 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
     private let receivedObjectSyncProtocolMessages: AsyncStream<[InboundObjectMessage]>
     private let receivedObjectSyncProtocolMessagesContinuation: AsyncStream<[InboundObjectMessage]>.Continuation
 
+    /// The RTO10a interval at which we will perform garbage collection.
+    private let garbageCollectionInterval: TimeInterval
+    /// The RTO10b grace period for which we will retain tombstoned objects and map entries.
+    private nonisolated(unsafe) var garbageCollectionGracePeriod: TimeInterval
+    // The task that runs the periodic garbage collection described in RTO10.
+    private nonisolated(unsafe) var garbageCollectionTask: Task<Void, Never>!
+
+    /// Parameters used to control the garbage collection of tombstoned objects and map entries, as described in RTO10.
+    internal struct GarbageCollectionOptions {
+        /// The RTO10a interval at which we will perform garbage collection.
+        ///
+        /// The default value comes from the suggestion in RTO10a.
+        internal var interval: TimeInterval = 5 * 60
+
+        /// The initial RTO10b grace period for which we will retain tombstoned objects and map entries. This value may later get overridden by the `gcGracePeriod` of a `CONNECTED` `ProtocolMessage` from Realtime.
+        ///
+        /// This default value comes from RTO10b3; can be overridden for testing.
+        internal var gracePeriod: TimeInterval = 24 * 60 * 60
+    }
+
     internal var testsOnly_objectsPool: ObjectsPool {
         mutex.withLock {
             mutableState.objectsPool
@@ -71,7 +91,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
         }
     }
 
-    internal init(logger: AblyPlugin.Logger, userCallbackQueue: DispatchQueue, clock: SimpleClock) {
+    internal init(logger: AblyPlugin.Logger, userCallbackQueue: DispatchQueue, clock: SimpleClock, garbageCollectionOptions: GarbageCollectionOptions = .init()) {
         self.logger = logger
         self.userCallbackQueue = userCallbackQueue
         self.clock = clock
@@ -79,6 +99,30 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
         (receivedObjectSyncProtocolMessages, receivedObjectSyncProtocolMessagesContinuation) = AsyncStream.makeStream()
         (waitingForSyncEvents, waitingForSyncEventsContinuation) = AsyncStream.makeStream()
         mutableState = .init(objectsPool: .init(logger: logger, userCallbackQueue: userCallbackQueue, clock: clock))
+        garbageCollectionInterval = garbageCollectionOptions.interval
+        garbageCollectionGracePeriod = garbageCollectionOptions.gracePeriod
+
+        garbageCollectionTask = Task { [weak self, garbageCollectionInterval] in
+            do {
+                while true {
+                    logger.log("Will perform garbage collection in \(garbageCollectionInterval)s", level: .debug)
+                    try await Task.sleep(nanoseconds: UInt64(garbageCollectionInterval) * NSEC_PER_SEC)
+
+                    guard let self else {
+                        return
+                    }
+
+                    performGarbageCollection()
+                }
+            } catch {
+                precondition(error is CancellationError)
+                logger.log("Garbage collection task terminated due to cancellation", level: .debug)
+            }
+        }
+    }
+
+    deinit {
+        garbageCollectionTask.cancel()
     }
 
     // MARK: - LiveMapObjectPoolDelegate
@@ -208,6 +252,19 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
     // This is currently exposed so that we can try calling it from the tests in the early days of the SDK to check that we can send an OBJECT ProtocolMessage. We'll probably make it private later on.
     internal func testsOnly_publish(objectMessages: [OutboundObjectMessage], coreSDK: CoreSDK) async throws(InternalError) {
         try await coreSDK.publish(objectMessages: objectMessages)
+    }
+
+    // MARK: - Garbage collection of deleted objects and map entries
+
+    /// Performs garbage collection of tombstoned objects and map entries, per RTO10c.
+    internal func performGarbageCollection() {
+        mutex.withLock {
+            mutableState.objectsPool.performGarbageCollection(
+                gracePeriod: garbageCollectionGracePeriod,
+                clock: clock,
+                logger: logger,
+            )
+        }
     }
 
     // MARK: - Testing

@@ -339,12 +339,26 @@ internal final class InternalDefaultLiveMap: Sendable {
         }
     }
 
+    /// Releases entries that were tombstoned more than `gracePeriod` ago, per RTLM19.
+    internal func releaseTombstonedEntries(gracePeriod: TimeInterval, clock: SimpleClock) {
+        mutex.withLock {
+            mutableState.releaseTombstonedEntries(gracePeriod: gracePeriod, logger: logger, clock: clock)
+        }
+    }
+
     // MARK: - LiveObject
 
     /// Returns the object's RTLO3d `isTombstone` property.
     internal var isTombstone: Bool {
         mutex.withLock {
             mutableState.liveObjectMutableState.isTombstone
+        }
+    }
+
+    /// Returns the object's RTLO3e `tombstonedAt` property.
+    internal var tombstonedAt: Date? {
+        mutex.withLock {
+            mutableState.liveObjectMutableState.tombstonedAt
         }
     }
 
@@ -752,6 +766,31 @@ internal final class InternalDefaultLiveMap: Sendable {
         mutating func resetDataToZeroValued() {
             // RTLM4
             data = [:]
+        }
+
+        /// Releases entries that were tombstoned more than `gracePeriod` ago, per RTLM19.
+        internal mutating func releaseTombstonedEntries(
+            gracePeriod: TimeInterval,
+            logger: Logger,
+            clock: SimpleClock,
+        ) {
+            let now = clock.now
+
+            // RTLM19a, RTLM19a1
+            data = data.filter { key, entry in
+                let shouldRelease = {
+                    guard let tombstonedAt = entry.tombstonedAt else {
+                        return false
+                    }
+
+                    return now.timeIntervalSince(tombstonedAt) >= gracePeriod
+                }()
+
+                if shouldRelease {
+                    logger.log("Releasing tombstoned entry \(entry) for key \(key)", level: .debug)
+                }
+                return !shouldRelease
+            }
         }
     }
 
