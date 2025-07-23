@@ -46,29 +46,38 @@ internal final class DefaultInternalPlugin: NSObject, AblyPlugin.LiveObjectsInte
         Self.objectsProperty(for: channel, pluginAPI: pluginAPI)
     }
 
-    /// A class that wraps an ``ObjectMessage``.
+    /// A class that wraps a ``WireObjectMessage``.
     ///
-    /// We need this intermediate type because we want `ObjectMessage` to be a struct — because it's nicer to work with internally — but a struct can't conform to the class-bound `AblyPlugin.ObjectMessage` protocol.
-    private final class ObjectMessageBox: AblyPlugin.ObjectMessageProtocol {
-        internal let objectMessage: ObjectMessage
+    /// We need this intermediate type because we want `WireObjectMessage` to be a struct — because it's nicer to work with internally — but a struct can't conform to the class-bound `AblyPlugin.WireObjectMessage` protocol.
+    private final class WireObjectMessageBox<T>: AblyPlugin.ObjectMessageProtocol where T: Sendable {
+        internal let wireObjectMessage: T
 
-        init(objectMessage: ObjectMessage) {
-            self.objectMessage = objectMessage
+        init(wireObjectMessage: T) {
+            self.wireObjectMessage = wireObjectMessage
         }
     }
 
-    internal func decodeObjectMessage(_: [AnyHashable: Any]) -> any AblyPlugin.ObjectMessageProtocol {
-        // TODO: do something with the dictionary
-        let objectMessage = ObjectMessage()
-        return ObjectMessageBox(objectMessage: objectMessage)
+    internal func decodeObjectMessage(_ serialized: [String: Any], context: DecodingContextProtocol, error errorPtr: AutoreleasingUnsafeMutablePointer<ARTErrorInfo?>?) -> (any ObjectMessageProtocol)? {
+        let jsonObject = JSONValue.objectFromAblyPluginData(serialized)
+
+        do {
+            let wireObjectMessage = try InboundWireObjectMessage(
+                jsonObject: jsonObject,
+                decodingContext: context,
+            )
+            return WireObjectMessageBox(wireObjectMessage: wireObjectMessage)
+        } catch {
+            errorPtr?.pointee = error.toARTErrorInfo()
+            return nil
+        }
     }
 
-    internal func encodeObjectMessage(_ publicObjectMessage: any AblyPlugin.ObjectMessageProtocol) -> [AnyHashable: Any] {
-        guard publicObjectMessage is ObjectMessageBox else {
-            preconditionFailure("Expected to receive the same ObjectMessage type as we emit")
+    internal func encodeObjectMessage(_ publicObjectMessage: any AblyPlugin.ObjectMessageProtocol) -> [String: Any] {
+        guard let wireObjectMessageBox = publicObjectMessage as? WireObjectMessageBox<OutboundWireObjectMessage> else {
+            preconditionFailure("Expected to receive the same WireObjectMessage type as we emit")
         }
 
-        notYetImplemented()
+        return wireObjectMessageBox.wireObjectMessage.toJSONObject.toAblyPluginDataDictionary
     }
 
     internal func onChannelAttached(_ channel: ARTRealtimeChannel, hasObjects: Bool) {
@@ -76,27 +85,50 @@ internal final class DefaultInternalPlugin: NSObject, AblyPlugin.LiveObjectsInte
     }
 
     internal func handleObjectProtocolMessage(withObjectMessages publicObjectMessages: [any AblyPlugin.ObjectMessageProtocol], channel: ARTRealtimeChannel) {
-        guard let objectMessageBoxes = publicObjectMessages as? [ObjectMessageBox] else {
-            preconditionFailure("Expected to receive the same ObjectMessage type as we emit")
+        guard let wireObjectMessageBoxes = publicObjectMessages as? [WireObjectMessageBox<InboundWireObjectMessage>] else {
+            preconditionFailure("Expected to receive the same WireObjectMessage type as we emit")
         }
 
-        let objectMessages = objectMessageBoxes.map(\.objectMessage)
+        let wireObjectMessages = wireObjectMessageBoxes.map(\.wireObjectMessage)
 
         objectsProperty(for: channel).handleObjectProtocolMessage(
-            objectMessages: objectMessages,
+            wireObjectMessages: wireObjectMessages,
         )
     }
 
     internal func handleObjectSyncProtocolMessage(withObjectMessages publicObjectMessages: [any AblyPlugin.ObjectMessageProtocol], protocolMessageChannelSerial: String, channel: ARTRealtimeChannel) {
-        guard let objectMessageBoxes = publicObjectMessages as? [ObjectMessageBox] else {
-            preconditionFailure("Expected to receive the same ObjectMessage type as we emit")
+        guard let objectMessageBoxes = publicObjectMessages as? [WireObjectMessageBox<InboundWireObjectMessage>] else {
+            preconditionFailure("Expected to receive the same WireObjectMessage type as we emit")
         }
 
-        let objectMessages = objectMessageBoxes.map(\.objectMessage)
+        let wireObjectMessages = objectMessageBoxes.map(\.wireObjectMessage)
 
         objectsProperty(for: channel).handleObjectSyncProtocolMessage(
-            objectMessages: objectMessages,
+            wireObjectMessages: wireObjectMessages,
             protocolMessageChannelSerial: protocolMessageChannelSerial,
         )
+    }
+
+    // MARK: - Sending `OBJECT` ProtocolMessage
+
+    internal static func sendObject(
+        objectMessages: [OutboundWireObjectMessage],
+        channel: ARTRealtimeChannel,
+        pluginAPI: PluginAPIProtocol,
+    ) async throws(InternalError) {
+        let objectMessageBoxes: [WireObjectMessageBox<OutboundWireObjectMessage>] = objectMessages.map { .init(wireObjectMessage: $0) }
+
+        try await withCheckedContinuation { (continuation: CheckedContinuation<Result<Void, InternalError>, _>) in
+            pluginAPI.sendObject(
+                withObjectMessages: objectMessageBoxes,
+                channel: channel,
+            ) { error in
+                if let error {
+                    continuation.resume(returning: .failure(error.toInternalError()))
+                } else {
+                    continuation.resume(returning: .success(()))
+                }
+            }
+        }.get()
     }
 }

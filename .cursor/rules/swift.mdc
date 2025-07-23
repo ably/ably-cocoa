@@ -1,0 +1,10 @@
+---
+description: Guidelines for writing Swift
+globs: 
+alwaysApply: false
+---
+When writing Swift:
+
+- Be sure to satisfy SwiftLint's `explicit_acl` rule ("All declarations should specify Access Control Level keywords explicitly).
+    - When writing an `extension` of a type, favour placing the access level on the declaration of the extension rather than each of its individual members.
+    - This does not apply when writing test code.

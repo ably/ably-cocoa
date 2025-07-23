@@ -15,3 +15,6 @@ docs-coverage-report
 
 # User-created file that contains their Ably API key
 /Example/AblyLiveObjectsExample/Secrets.swift
+
+# Stuff that Cursor checks out to use locally (this is my naming, not any special Cursor thing)
+/cursor-support

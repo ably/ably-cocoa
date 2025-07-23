@@ -1,0 +1,11 @@
+---
+description: Guidelines for writing tests
+globs: 
+alwaysApply: false
+---
+When writing tests:
+
+- Use the Swift Testing framework (`import Testing`), not XCTest.
+- Do not use `fatalError` in response to a test expectation failure. Favour the usage of Swift Testing's `#require` macro.
+- Only add labels to test cases or suites when the label is different to the name of the suite `struct` or test method.
+- When writing tests, follow the guidelines given under "Attributing tests to a spec point" in the file `CONTRIBUTING.md` in order to tag the unit tests with the relevant specification points. Pay particular attention to the difference between the meaning of `@spec` and `@specPartial` and be sure not to write `@spec` multiple times for the same specification point.
