@@ -20,7 +20,7 @@ struct AblyLiveObjectsTests {
         // Then
 
         // Check that the `channel.objects` property works and gives the internal type we expect
-        #expect(channel.objects is DefaultLiveObjects)
+        #expect(channel.objects is DefaultRealtimeObjects)
     }
 
     /// A basic test of the core interactions between this plugin and ably-cocoa.

@@ -20,14 +20,14 @@ internal final class DefaultInternalPlugin: NSObject, AblyPlugin.LiveObjectsInte
     /// Retrieves the value that should be returned by `ARTRealtimeChannel.objects`.
     ///
     /// We expect this value to have been previously set by ``prepare(_:)``.
-    internal static func objectsProperty(for channel: ARTRealtimeChannel, pluginAPI: AblyPlugin.PluginAPIProtocol) -> DefaultLiveObjects {
+    internal static func objectsProperty(for channel: ARTRealtimeChannel, pluginAPI: AblyPlugin.PluginAPIProtocol) -> DefaultRealtimeObjects {
         guard let pluginData = pluginAPI.pluginDataValue(forKey: pluginDataKey, channel: channel) else {
             // InternalPlugin.prepare was not called
             fatalError("To access LiveObjects functionality, you must pass the LiveObjects plugin in the client options when creating the ARTRealtime instance: `clientOptions.plugins = [.liveObjects: AblyLiveObjects.Plugin.self]`")
         }
 
         // swiftlint:disable:next force_cast
-        return pluginData as! DefaultLiveObjects
+        return pluginData as! DefaultRealtimeObjects
     }
 
     // MARK: - LiveObjectsInternalPluginProtocol
@@ -37,12 +37,12 @@ internal final class DefaultInternalPlugin: NSObject, AblyPlugin.LiveObjectsInte
         let logger = pluginAPI.logger(for: channel)
 
         logger.log("LiveObjects.DefaultInternalPlugin received prepare(_:)", level: .debug)
-        let liveObjects = DefaultLiveObjects(channel: channel, logger: logger, pluginAPI: pluginAPI)
+        let liveObjects = DefaultRealtimeObjects(channel: channel, logger: logger, pluginAPI: pluginAPI)
         pluginAPI.setPluginDataValue(liveObjects, forKey: Self.pluginDataKey, channel: channel)
     }
 
     /// Retrieves the internally-typed `objects` property for the channel.
-    private func objectsProperty(for channel: ARTRealtimeChannel) -> DefaultLiveObjects {
+    private func objectsProperty(for channel: ARTRealtimeChannel) -> DefaultRealtimeObjects {
         Self.objectsProperty(for: channel, pluginAPI: pluginAPI)
     }
 
