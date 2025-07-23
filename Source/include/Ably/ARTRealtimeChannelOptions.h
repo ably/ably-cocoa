@@ -8,21 +8,29 @@
 NS_SWIFT_SENDABLE
 typedef NS_OPTIONS(NSUInteger, ARTChannelMode) {
     /**
-         * The client can enter the presence set.
-         */
+     * The client can enter the presence set.
+     */
     ARTChannelModePresence = 1 << 16,
     /**
-         * The client can publish messages.
-         */
+     * The client can publish messages.
+     */
     ARTChannelModePublish = 1 << 17,
     /**
-         * The client can subscribe to messages.
-         */
+     * The client can subscribe to messages.
+     */
     ARTChannelModeSubscribe = 1 << 18,
     /**
-         * The client can receive presence messages.
-         */
+     * The client can receive presence messages.
+     */
     ARTChannelModePresenceSubscribe = 1 << 19,
+    /**
+     * The client can publish annotations to messages.
+     */
+    ARTChannelModeAnnotationPublish = 1 << 21,
+    /**
+     * The client can receive annotations for messages.
+     */
+    ARTChannelModeAnnotationSubscribe = 1 << 22,
     /**
      * The client can receive object messages.
      */
