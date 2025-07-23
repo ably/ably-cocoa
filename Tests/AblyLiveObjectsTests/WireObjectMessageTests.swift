@@ -22,7 +22,7 @@ enum WireObjectMessageTests {
         @Test
         func decodesAllFields() throws {
             let timestamp = Date(timeIntervalSince1970: 1_234_567_890)
-            let json: [String: JSONValue] = [
+            let wire: [String: WireValue] = [
                 "id": "id1",
                 "clientId": "client1",
                 "connectionId": "conn1",
@@ -34,7 +34,7 @@ enum WireObjectMessageTests {
                 "siteCode": "siteA",
             ]
             let ctx = FakeDecodingContext(parentID: nil, parentConnectionID: nil, parentTimestamp: nil, indexInParent: 0)
-            let msg = try InboundWireObjectMessage(jsonObject: json, decodingContext: ctx)
+            let msg = try InboundWireObjectMessage(wireObject: wire, decodingContext: ctx)
             #expect(msg.id == "id1")
             #expect(msg.clientId == "client1")
             #expect(msg.connectionId == "conn1")
@@ -48,9 +48,9 @@ enum WireObjectMessageTests {
 
         @Test
         func optionalFieldsAbsent() throws {
-            let json: [String: JSONValue] = [:]
+            let wire: [String: WireValue] = [:]
             let ctx = FakeDecodingContext(parentID: nil, parentConnectionID: nil, parentTimestamp: nil, indexInParent: 0)
-            let msg = try InboundWireObjectMessage(jsonObject: json, decodingContext: ctx)
+            let msg = try InboundWireObjectMessage(wireObject: wire, decodingContext: ctx)
             #expect(msg.id == nil)
             #expect(msg.clientId == nil)
             #expect(msg.connectionId == nil)
@@ -65,36 +65,36 @@ enum WireObjectMessageTests {
         // @specOneOf(1/2) OM2a
         @Test
         func idFromParent_whenPresentInParent() throws {
-            let json: [String: JSONValue] = [:]
+            let wire: [String: WireValue] = [:]
             let ctx = FakeDecodingContext(parentID: "parent1", parentConnectionID: nil, parentTimestamp: nil, indexInParent: 2)
-            let msg = try InboundWireObjectMessage(jsonObject: json, decodingContext: ctx)
+            let msg = try InboundWireObjectMessage(wireObject: wire, decodingContext: ctx)
             #expect(msg.id == "parent1:2")
         }
 
         // @specOneOf(2/2) OM2a
         @Test
         func idFromParent_whenAbsentInParent() throws {
-            let json: [String: JSONValue] = [:]
+            let wire: [String: WireValue] = [:]
             let ctx = FakeDecodingContext(parentID: nil, parentConnectionID: nil, parentTimestamp: nil, indexInParent: 2)
-            let msg = try InboundWireObjectMessage(jsonObject: json, decodingContext: ctx)
+            let msg = try InboundWireObjectMessage(wireObject: wire, decodingContext: ctx)
             #expect(msg.id == nil)
         }
 
         // @spec OM2c
         @Test(arguments: [nil, "parentConn1"])
         func connectionIdFromParent(parentValue: String?) throws {
-            let json: [String: JSONValue] = [:]
+            let wire: [String: WireValue] = [:]
             let ctx = FakeDecodingContext(parentID: nil, parentConnectionID: parentValue, parentTimestamp: nil, indexInParent: 0)
-            let msg = try InboundWireObjectMessage(jsonObject: json, decodingContext: ctx)
+            let msg = try InboundWireObjectMessage(wireObject: wire, decodingContext: ctx)
             #expect(msg.connectionId == parentValue)
         }
 
         // @spec OM2e
         @Test(arguments: [nil, Date(timeIntervalSince1970: 1_234_567_890)])
         func timestampFromParent(parentValue: Date?) throws {
-            let json: [String: JSONValue] = [:]
+            let wire: [String: WireValue] = [:]
             let ctx = FakeDecodingContext(parentID: nil, parentConnectionID: nil, parentTimestamp: parentValue, indexInParent: 0)
-            let msg = try InboundWireObjectMessage(jsonObject: json, decodingContext: ctx)
+            let msg = try InboundWireObjectMessage(wireObject: wire, decodingContext: ctx)
             #expect(msg.timestamp == parentValue)
         }
     }
@@ -124,8 +124,8 @@ enum WireObjectMessageTests {
                 serial: "s1",
                 siteCode: "siteA",
             )
-            let json = msg.toJSONObject
-            #expect(json == [
+            let wire = msg.toWireObject
+            #expect(wire == [
                 "id": "id1",
                 "clientId": "client1",
                 "connectionId": "conn1",
@@ -151,8 +151,8 @@ enum WireObjectMessageTests {
                 serial: nil,
                 siteCode: nil,
             )
-            let json = msg.toJSONObject
-            #expect(json == [
+            let wire = msg.toWireObject
+            #expect(wire == [
                 "id": "id1",
                 "timestamp": .number(NSNumber(value: Int(timestamp.timeIntervalSince1970 * 1000))),
             ])
@@ -160,9 +160,12 @@ enum WireObjectMessageTests {
     }
 
     struct WireObjectOperationTests {
+        // @spec OOP3g
+        // @spec OOP3h
+        // @spec OOP3i
         @Test
         func decodesAllFields() throws {
-            let json: [String: JSONValue] = [
+            let wire: [String: WireValue] = [
                 "action": 0, // mapCreate
                 "objectId": "obj1",
                 "mapOp": ["key": "key1", "data": ["string": "value1"]],
@@ -172,7 +175,7 @@ enum WireObjectMessageTests {
                 "nonce": "nonce1",
                 "initialValueEncoding": "utf8",
             ]
-            let op = try WireObjectOperation(jsonObject: json)
+            let op = try WireObjectOperation(wireObject: wire)
             #expect(op.action == .known(.mapCreate))
             #expect(op.objectId == "obj1")
             #expect(op.mapOp?.key == "key1")
@@ -182,17 +185,22 @@ enum WireObjectMessageTests {
             #expect(op.map?.entries?["key1"]?.data.string == "value1")
             #expect(op.map?.entries?["key1"]?.tombstone == false)
             #expect(op.counter?.count == 42)
-            #expect(op.nonce == "nonce1")
-            #expect(op.initialValueEncoding == "utf8")
+
+            // Per OOP3g we should not try and extract this
+            #expect(op.nonce == nil)
+            // Per OOP3h we should not try and extract this
+            #expect(op.initialValueEncoding == nil)
+            // Per OOP3i we should not try and extract this
+            #expect(op.initialValue == nil)
         }
 
         @Test
         func decodesWithOptionalFieldsAbsent() throws {
-            let json: [String: JSONValue] = [
+            let wire: [String: WireValue] = [
                 "action": 0,
                 "objectId": "obj1",
             ]
-            let op = try WireObjectOperation(jsonObject: json)
+            let op = try WireObjectOperation(wireObject: wire)
             #expect(op.action == .known(.mapCreate))
             #expect(op.objectId == "obj1")
             #expect(op.mapOp == nil)
@@ -206,11 +214,11 @@ enum WireObjectMessageTests {
 
         @Test
         func decodesWithUnknownAction() throws {
-            let json: [String: JSONValue] = [
+            let wire: [String: WireValue] = [
                 "action": 999, // Unknown WireObjectOperation
                 "objectId": "obj1",
             ]
-            let op = try WireObjectOperation(jsonObject: json)
+            let op = try WireObjectOperation(wireObject: wire)
             #expect(op.action == .unknown(999))
         }
 
@@ -230,8 +238,8 @@ enum WireObjectMessageTests {
                 initialValue: nil,
                 initialValueEncoding: "utf8",
             )
-            let json = op.toJSONObject
-            #expect(json == [
+            let wire = op.toWireObject
+            #expect(wire == [
                 "action": 0,
                 "objectId": "obj1",
                 "mapOp": ["key": "key1", "data": ["string": "value1"]],
@@ -256,8 +264,8 @@ enum WireObjectMessageTests {
                 initialValue: nil,
                 initialValueEncoding: nil,
             )
-            let json = op.toJSONObject
-            #expect(json == [
+            let wire = op.toWireObject
+            #expect(wire == [
                 "action": 0,
                 "objectId": "obj1",
             ])
@@ -267,7 +275,7 @@ enum WireObjectMessageTests {
     struct WireObjectStateTests {
         @Test
         func decodesAllFields() throws {
-            let json: [String: JSONValue] = [
+            let wire: [String: WireValue] = [
                 "objectId": "obj1",
                 "siteTimeserials": ["site1": "ts1"],
                 "tombstone": true,
@@ -275,7 +283,7 @@ enum WireObjectMessageTests {
                 "map": ["semantics": 0, "entries": ["key1": ["data": ["string": "value1"], "tombstone": false]]],
                 "counter": ["count": 42],
             ]
-            let state = try WireObjectState(jsonObject: json)
+            let state = try WireObjectState(wireObject: wire)
             #expect(state.objectId == "obj1")
             #expect(state.siteTimeserials["site1"] == "ts1")
             #expect(state.tombstone == true)
@@ -289,12 +297,12 @@ enum WireObjectMessageTests {
 
         @Test
         func decodesWithOptionalFieldsAbsent() throws {
-            let json: [String: JSONValue] = [
+            let wire: [String: WireValue] = [
                 "objectId": "obj1",
                 "siteTimeserials": [:],
                 "tombstone": false,
             ]
-            let state = try WireObjectState(jsonObject: json)
+            let state = try WireObjectState(wireObject: wire)
             #expect(state.objectId == "obj1")
             #expect(state.siteTimeserials.isEmpty)
             #expect(state.tombstone == false)
@@ -326,8 +334,8 @@ enum WireObjectMessageTests {
                 ),
                 counter: WireCounter(count: 42),
             )
-            let json = state.toJSONObject
-            #expect(json == [
+            let wire = state.toWireObject
+            #expect(wire == [
                 "objectId": "obj1",
                 "siteTimeserials": ["site1": "ts1"],
                 "tombstone": true,
@@ -347,8 +355,8 @@ enum WireObjectMessageTests {
                 map: nil,
                 counter: nil,
             )
-            let json = state.toJSONObject
-            #expect(json == [
+            let wire = state.toWireObject
+            #expect(wire == [
                 "objectId": "obj1",
                 "siteTimeserials": [:],
                 "tombstone": false,
@@ -359,14 +367,14 @@ enum WireObjectMessageTests {
     struct WireObjectDataTests {
         @Test
         func decodesAllFields() throws {
-            let json: [String: JSONValue] = [
+            let json: [String: WireValue] = [
                 "objectId": "obj1",
                 "encoding": "utf8",
                 "boolean": true,
                 "number": 42,
                 "string": "value1",
             ]
-            let data = try WireObjectData(jsonObject: json)
+            let data = try WireObjectData(wireObject: json)
             #expect(data.objectId == "obj1")
             #expect(data.encoding == "utf8")
             #expect(data.boolean == true)
@@ -376,8 +384,8 @@ enum WireObjectMessageTests {
 
         @Test
         func decodesWithOptionalFieldsAbsent() throws {
-            let json: [String: JSONValue] = [:]
-            let data = try WireObjectData(jsonObject: json)
+            let json: [String: WireValue] = [:]
+            let data = try WireObjectData(wireObject: json)
             #expect(data.objectId == nil)
             #expect(data.encoding == nil)
             #expect(data.boolean == nil)
@@ -396,8 +404,8 @@ enum WireObjectMessageTests {
                 number: 42,
                 string: "value1",
             )
-            let json = data.toJSONObject
-            #expect(json == [
+            let wire = data.toWireObject
+            #expect(wire == [
                 "objectId": "obj1",
                 "encoding": "utf8",
                 "boolean": true,
@@ -416,27 +424,27 @@ enum WireObjectMessageTests {
                 number: nil,
                 string: nil,
             )
-            let json = data.toJSONObject
-            #expect(json.isEmpty)
+            let wire = data.toWireObject
+            #expect(wire.isEmpty)
         }
     }
 
     struct WireMapOpTests {
         @Test
         func decodesAllFields() throws {
-            let json: [String: JSONValue] = [
+            let json: [String: WireValue] = [
                 "key": "key1",
                 "data": ["string": "value1"],
             ]
-            let op = try WireMapOp(jsonObject: json)
+            let op = try WireMapOp(wireObject: json)
             #expect(op.key == "key1")
             #expect(op.data?.string == "value1")
         }
 
         @Test
         func decodesWithOptionalFieldsAbsent() throws {
-            let json: [String: JSONValue] = ["key": "key1"]
-            let op = try WireMapOp(jsonObject: json)
+            let json: [String: WireValue] = ["key": "key1"]
+            let op = try WireMapOp(wireObject: json)
             #expect(op.key == "key1")
             #expect(op.data == nil)
         }
@@ -447,8 +455,8 @@ enum WireObjectMessageTests {
                 key: "key1",
                 data: WireObjectData(string: "value1"),
             )
-            let json = op.toJSONObject
-            #expect(json == [
+            let wire = op.toWireObject
+            #expect(wire == [
                 "key": "key1",
                 "data": ["string": "value1"],
             ])
@@ -460,8 +468,8 @@ enum WireObjectMessageTests {
                 key: "key1",
                 data: nil,
             )
-            let json = op.toJSONObject
-            #expect(json == [
+            let wire = op.toWireObject
+            #expect(wire == [
                 "key": "key1",
             ])
         }
@@ -470,30 +478,30 @@ enum WireObjectMessageTests {
     struct WireCounterOpTests {
         @Test
         func decodesAllFields() throws {
-            let json: [String: JSONValue] = ["amount": 42]
-            let op = try WireCounterOp(jsonObject: json)
+            let json: [String: WireValue] = ["amount": 42]
+            let op = try WireCounterOp(wireObject: json)
             #expect(op.amount == 42)
         }
 
         @Test
         func encodesAllFields() {
             let op = WireCounterOp(amount: 42)
-            let json = op.toJSONObject
-            #expect(json == ["amount": 42])
+            let wire = op.toWireObject
+            #expect(wire == ["amount": 42])
         }
     }
 
     struct WireMapTests {
         @Test
         func decodesAllFields() throws {
-            let json: [String: JSONValue] = [
+            let json: [String: WireValue] = [
                 "semantics": 0,
                 "entries": [
                     "key1": ["data": ["string": "value1"], "tombstone": false, "timeserial": "ts1"],
                     "key2": ["data": ["string": "value2"], "tombstone": true],
                 ],
             ]
-            let map = try WireMap(jsonObject: json)
+            let map = try WireMap(wireObject: json)
             #expect(map.semantics == .known(.lww))
             #expect(map.entries?["key1"]?.data.string == "value1")
             #expect(map.entries?["key1"]?.tombstone == false)
@@ -505,18 +513,18 @@ enum WireObjectMessageTests {
 
         @Test
         func decodesWithOptionalFieldsAbsent() throws {
-            let json: [String: JSONValue] = ["semantics": 0]
-            let map = try WireMap(jsonObject: json)
+            let json: [String: WireValue] = ["semantics": 0]
+            let map = try WireMap(wireObject: json)
             #expect(map.semantics == .known(.lww))
             #expect(map.entries == nil)
         }
 
         @Test
         func decodesWithUnknownSemantics() throws {
-            let json: [String: JSONValue] = [
+            let json: [String: WireValue] = [
                 "semantics": 999, // Unknown MapSemantics
             ]
-            let map = try WireMap(jsonObject: json)
+            let map = try WireMap(wireObject: json)
             #expect(map.semantics == .unknown(999))
         }
 
@@ -529,8 +537,8 @@ enum WireObjectMessageTests {
                     "key2": WireMapEntry(tombstone: true, timeserial: nil, data: WireObjectData(string: "value2")),
                 ],
             )
-            let json = map.toJSONObject
-            #expect(json == [
+            let wire = map.toWireObject
+            #expect(wire == [
                 "semantics": 0,
                 "entries": [
                     "key1": ["data": ["string": "value1"], "tombstone": false, "timeserial": "ts1"],
@@ -545,8 +553,8 @@ enum WireObjectMessageTests {
                 semantics: .known(.lww),
                 entries: nil,
             )
-            let json = map.toJSONObject
-            #expect(json == [
+            let wire = map.toWireObject
+            #expect(wire == [
                 "semantics": 0,
             ])
         }
@@ -555,42 +563,42 @@ enum WireObjectMessageTests {
     struct WireCounterTests {
         @Test
         func decodesAllFields() throws {
-            let json: [String: JSONValue] = ["count": 42]
-            let counter = try WireCounter(jsonObject: json)
+            let json: [String: WireValue] = ["count": 42]
+            let counter = try WireCounter(wireObject: json)
             #expect(counter.count == 42)
         }
 
         @Test
         func decodesWithOptionalFieldsAbsent() throws {
-            let json: [String: JSONValue] = [:]
-            let counter = try WireCounter(jsonObject: json)
+            let json: [String: WireValue] = [:]
+            let counter = try WireCounter(wireObject: json)
             #expect(counter.count == nil)
         }
 
         @Test
         func encodesAllFields() {
             let counter = WireCounter(count: 42)
-            let json = counter.toJSONObject
-            #expect(json == ["count": 42])
+            let wire = counter.toWireObject
+            #expect(wire == ["count": 42])
         }
 
         @Test
         func encodesWithOptionalFieldsNil() {
             let counter = WireCounter(count: nil)
-            let json = counter.toJSONObject
-            #expect(json.isEmpty)
+            let wire = counter.toWireObject
+            #expect(wire.isEmpty)
         }
     }
 
     struct WireMapEntryTests {
         @Test
         func decodesAllFields() throws {
-            let json: [String: JSONValue] = [
+            let json: [String: WireValue] = [
                 "data": ["string": "value1"],
                 "tombstone": true,
                 "timeserial": "ts1",
             ]
-            let entry = try WireMapEntry(jsonObject: json)
+            let entry = try WireMapEntry(wireObject: json)
             #expect(entry.data.string == "value1")
             #expect(entry.tombstone == true)
             #expect(entry.timeserial == "ts1")
@@ -598,8 +606,8 @@ enum WireObjectMessageTests {
 
         @Test
         func decodesWithOptionalFieldsAbsent() throws {
-            let json: [String: JSONValue] = ["data": ["string": "value1"]]
-            let entry = try WireMapEntry(jsonObject: json)
+            let json: [String: WireValue] = ["data": ["string": "value1"]]
+            let entry = try WireMapEntry(wireObject: json)
             #expect(entry.data.string == "value1")
             #expect(entry.tombstone == nil)
             #expect(entry.timeserial == nil)
@@ -612,8 +620,8 @@ enum WireObjectMessageTests {
                 timeserial: "ts1",
                 data: WireObjectData(string: "value1"),
             )
-            let json = entry.toJSONObject
-            #expect(json == [
+            let wire = entry.toWireObject
+            #expect(wire == [
                 "data": ["string": "value1"],
                 "tombstone": true,
                 "timeserial": "ts1",
@@ -627,8 +635,8 @@ enum WireObjectMessageTests {
                 timeserial: nil,
                 data: WireObjectData(string: "value1"),
             )
-            let json = entry.toJSONObject
-            #expect(json == [
+            let wire = entry.toWireObject
+            #expect(wire == [
                 "data": ["string": "value1"],
             ])
         }

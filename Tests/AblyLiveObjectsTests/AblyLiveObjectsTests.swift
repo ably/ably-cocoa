@@ -91,7 +91,7 @@ struct AblyLiveObjectsTests {
         let realtimeCreatedMapObjectID = "map:iC4Nq8EbTSEmw-_tDJdVV8HfiBvJGpZmO_WbGbh0_-4@\(currentAblyTimestamp)"
 
         try await channel.testsOnly_internallyTypedObjects.testsOnly_sendObject(objectMessages: [
-            OutboundWireObjectMessage(
+            OutboundObjectMessage(
                 operation: .init(
                     action: .known(.mapCreate),
                     objectId: realtimeCreatedMapObjectID,

@@ -126,73 +126,167 @@ extension JSONValue: ExpressibleByBooleanLiteral {
     }
 }
 
-// MARK: - Bridging with ably-cocoa
+// MARK: - Bridging with JSONSerialization
 
 internal extension JSONValue {
-    /// Creates a `JSONValue` from an AblyPlugin deserialized JSON object.
+    /// Creates a `JSONValue` from the output of Foundation's `JSONSerialization`.
     ///
-    /// Specifically, `ablyCocoaData` can be a value that was passed to `LiveObjectsPlugin.decodeObjectMessage:…`.
-    init(ablyPluginData: Any) {
-        switch ablyPluginData {
-        case let dictionary as [String: Any]:
-            self = .object(dictionary.mapValues { .init(ablyPluginData: $0) })
-        case let array as [Any]:
-            self = .array(array.map { .init(ablyPluginData: $0) })
-        case let string as String:
-            self = .string(string)
-        case let number as NSNumber:
-            // We need to be careful to distinguish booleans from numbers of value 0 or 1; technique taken from https://forums.swift.org/t/jsonserialization-turns-bool-value-to-nsnumber/31909/3
-            if number === kCFBooleanTrue {
-                self = .bool(true)
-            } else if number === kCFBooleanFalse {
-                self = .bool(false)
-            } else {
-                self = .number(number)
-            }
-        case is NSNull:
-            self = .null
-        default:
-            // ably-cocoa is not conforming to our assumptions; either its behaviour is wrong or our assumptions are wrong. Either way, bring this loudly to our attention instead of trying to carry on
-            preconditionFailure("JSONValue(ablyPluginData:) was given \(ablyPluginData)")
-        }
+    /// This means that it accepts either:
+    ///
+    /// - The result of serializing an array or dictionary using `JSONSerialization`
+    /// - Some nested element of the result of serializing such an array or dictionary
+    init(jsonSerializationOutput: Any) {
+        // swiftlint:disable:next trailing_closure
+        let extended = ExtendedJSONValue<Never>(deserialized: jsonSerializationOutput, createExtraValue: { deserializedExtraValue in
+            // JSONSerialization is not conforming to our assumptions; our assumptions are probably wrong. Either way, bring this loudly to our attention instead of trying to carry on
+            preconditionFailure("JSONValue(jsonSerializationOutput:) was given unsupported value \(deserializedExtraValue)")
+        })
+
+        self.init(extendedJSONValue: extended)
     }
 
-    /// Creates a `JSONValue` from an AblyPlugin deserialized JSON object. Specifically, `ablyPluginData` can be a value that was passed to `LiveObjectsPlugin.decodeObjectMessage:…`.
-    static func objectFromAblyPluginData(_ ablyPluginData: [String: Any]) -> [String: JSONValue] {
-        let jsonValue = JSONValue(ablyPluginData: ablyPluginData)
-        guard case let .object(jsonObject) = jsonValue else {
-            preconditionFailure()
-        }
+    /// Converts a `JSONValue` to an input for Foundation's `JSONSerialization`.
+    ///
+    /// This means that it returns:
+    ///
+    /// - All cases: An object which we can put inside an array or dictionary that we ask `JSONSerialization` to serialize
+    /// - Additionally, if case `object` or `array`: An object which we can ask `JSONSerialization` to serialize
+    var toJSONSerializationInputElement: Any {
+        toExtendedJSONValue.serialized
+    }
+}
 
-        return jsonObject
+// MARK: - JSON objects and arrays
+
+/// A subset of ``JSONValue`` that has only `object` or `array` cases.
+internal enum JSONObjectOrArray: Equatable {
+    case object([String: JSONValue])
+    case array([JSONValue])
+
+    internal enum ConversionError: Swift.Error {
+        case incompatibleJSONValue(JSONValue)
     }
 
-    /// Creates an AblyPlugin deserialized JSON object from a `JSONValue`.
-    ///
-    /// Used by `[String: JSONValue].toAblyPluginDataDictionary`.
-    var toAblyPluginData: Any {
-        switch self {
-        case let .object(underlying):
-            underlying.toAblyPluginDataDictionary
-        case let .array(underlying):
-            underlying.map(\.toAblyPluginData)
-        case let .string(underlying):
-            underlying
-        case let .number(underlying):
-            underlying
-        case let .bool(underlying):
-            underlying
-        case .null:
-            NSNull()
+    internal init(jsonValue: JSONValue) throws(InternalError) {
+        self = switch jsonValue {
+        case let .array(array):
+            .array(array)
+        case let .object(object):
+            .object(object)
+        case .bool, .number, .string, .null:
+            throw ConversionError.incompatibleJSONValue(jsonValue).toInternalError()
         }
     }
 }
 
+extension JSONObjectOrArray: ExpressibleByDictionaryLiteral {
+    internal init(dictionaryLiteral elements: (String, JSONValue)...) {
+        self = .object(.init(uniqueKeysWithValues: elements))
+    }
+}
+
+extension JSONObjectOrArray: ExpressibleByArrayLiteral {
+    internal init(arrayLiteral elements: JSONValue...) {
+        self = .array(elements)
+    }
+}
+
 internal extension [String: JSONValue] {
-    /// Creates an AblyPlugin deserialized JSON object from a dictionary that has string keys and `JSONValue` values.
-    ///
-    /// Specifically, the value of this property can be returned from `APLiveObjectsPlugin.encodeObjectMessage:`.
-    var toAblyPluginDataDictionary: [String: Any] {
-        mapValues(\.toAblyPluginData)
+    /// Converts a dictionary that has string keys and `JSONValue` values into an input for Foundation's `JSONSerialization`.
+    var toJSONSerializationInput: [String: Any] {
+        mapValues(\.toJSONSerializationInputElement)
+    }
+}
+
+internal extension [JSONValue] {
+    /// Converts an array that has `JSONValue` values into an input for Foundation's `JSONSerialization`.
+    var toJSONSerializationInput: [Any] {
+        map(\.toJSONSerializationInputElement)
+    }
+}
+
+// MARK: - Conversion to/from ExtendedJSONValue
+
+internal extension JSONValue {
+    init(extendedJSONValue: ExtendedJSONValue<Never>) {
+        switch extendedJSONValue {
+        case let .object(underlying):
+            self = .object(underlying.mapValues { .init(extendedJSONValue: $0) })
+        case let .array(underlying):
+            self = .array(underlying.map { .init(extendedJSONValue: $0) })
+        case let .string(underlying):
+            self = .string(underlying)
+        case let .number(underlying):
+            self = .number(underlying)
+        case let .bool(underlying):
+            self = .bool(underlying)
+        case .null:
+            self = .null
+        }
+    }
+
+    var toExtendedJSONValue: ExtendedJSONValue<Never> {
+        switch self {
+        case let .object(underlying):
+            .object(underlying.mapValues(\.toExtendedJSONValue))
+        case let .array(underlying):
+            .array(underlying.map(\.toExtendedJSONValue))
+        case let .string(underlying):
+            .string(underlying)
+        case let .number(underlying):
+            .number(underlying)
+        case let .bool(underlying):
+            .bool(underlying)
+        case .null:
+            .null
+        }
+    }
+}
+
+// MARK: Serializing to and deserializing from a JSON string
+
+internal extension JSONObjectOrArray {
+    enum DecodingError: Swift.Error {
+        case incompatibleJSONValue(JSONValue)
+    }
+
+    /// Deserializes a JSON string into a `JSONObjectOrArray`. Throws an error if not given a valid JSON string.
+    init(jsonString: String) throws(InternalError) {
+        let data = Data(jsonString.utf8)
+        let jsonSerializationOutput: Any
+        do {
+            jsonSerializationOutput = try JSONSerialization.jsonObject(with: data)
+        } catch {
+            throw error.toInternalError()
+        }
+
+        let jsonValue = JSONValue(jsonSerializationOutput: jsonSerializationOutput)
+        try self.init(jsonValue: jsonValue)
+    }
+
+    /// Converts a `JSONObjectOrArray` into an input for Foundation's `JSONSerialization`.
+    private var toJSONSerializationInput: Any {
+        switch self {
+        case let .array(array):
+            array.toJSONSerializationInput
+        case let .object(object):
+            object.toJSONSerializationInput
+        }
+    }
+
+    /// Serializes a `JSONObjectOrArray` to a JSON string.
+    var toJSONString: String {
+        let data: Data
+        do {
+            data = try JSONSerialization.data(withJSONObject: toJSONSerializationInput)
+        } catch {
+            preconditionFailure("Unexpected error encoding to JSON: \(error)")
+        }
+
+        guard let string = String(data: data, encoding: .utf8) else {
+            preconditionFailure("Unexpected failure to decode output of JSONSerialization as UTF-8")
+        }
+
+        return string
     }
 }
