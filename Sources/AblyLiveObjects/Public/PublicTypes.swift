@@ -82,6 +82,52 @@ public enum LiveMapValue: Sendable {
     case primitive(PrimitiveObjectValue)
     case liveMap(any LiveMap)
     case liveCounter(any LiveCounter)
+
+    // MARK: - Convenience getters for associated values
+
+    /// If this `LiveMapValue` has case `primitive`, this returns the associated value. Else, it returns `nil`.
+    public var primitiveValue: PrimitiveObjectValue? {
+        if case let .primitive(value) = self {
+            return value
+        }
+        return nil
+    }
+
+    /// If this `LiveMapValue` has case `liveMap`, this returns the associated value. Else, it returns `nil`.
+    public var liveMapValue: (any LiveMap)? {
+        if case let .liveMap(value) = self {
+            return value
+        }
+        return nil
+    }
+
+    /// If this `LiveMapValue` has case `liveCounter`, this returns the associated value. Else, it returns `nil`.
+    public var liveCounterValue: (any LiveCounter)? {
+        if case let .liveCounter(value) = self {
+            return value
+        }
+        return nil
+    }
+
+    /// If this `LiveMapValue` has case `primitive` with a string value, this returns that value. Else, it returns `nil`.
+    public var stringValue: String? {
+        primitiveValue?.stringValue
+    }
+
+    /// If this `LiveMapValue` has case `primitive` with a number value, this returns that value. Else, it returns `nil`.
+    public var numberValue: Double? {
+        primitiveValue?.numberValue
+    }
+
+    /// If this `LiveMapValue` has case `primitive` with a boolean value, this returns that value. Else, it returns `nil`.
+    public var boolValue: Bool? {
+        primitiveValue?.boolValue
+    }
+
+    /// If this `LiveMapValue` has case `primitive` with a data value, this returns that value. Else, it returns `nil`.
+    public var dataValue: Data? {
+        primitiveValue?.dataValue
+    }
 }
 
 /// Object returned from an `on` call, allowing the listener provided in that call to be deregistered.
@@ -162,7 +208,7 @@ public protocol LiveMap: LiveObject where Update == LiveMapUpdate {
     ///
     /// - Parameter key: The key to retrieve the value for.
     /// - Returns: A ``LiveObject``, a primitive type (string, number, boolean, or binary data) or `nil` if the key doesn't exist in a map or the associated ``LiveObject`` has been deleted. Always `nil` if this map object is deleted.
-    func get(key: String) -> LiveMapValue?
+    func get(key: String) throws(ARTErrorInfo) -> LiveMapValue?
 
     /// Returns the number of key-value pairs in the map.
     var size: Int { get }
@@ -219,12 +265,46 @@ public enum PrimitiveObjectValue: Sendable {
     case number(Double)
     case bool(Bool)
     case data(Data)
+
+    // MARK: - Convenience getters for associated values
+
+    /// If this `PrimitiveObjectValue` has case `string`, this returns the associated value. Else, it returns `nil`.
+    public var stringValue: String? {
+        if case let .string(value) = self {
+            return value
+        }
+        return nil
+    }
+
+    /// If this `PrimitiveObjectValue` has case `number`, this returns the associated value. Else, it returns `nil`.
+    public var numberValue: Double? {
+        if case let .number(value) = self {
+            return value
+        }
+        return nil
+    }
+
+    /// If this `PrimitiveObjectValue` has case `bool`, this returns the associated value. Else, it returns `nil`.
+    public var boolValue: Bool? {
+        if case let .bool(value) = self {
+            return value
+        }
+        return nil
+    }
+
+    /// If this `PrimitiveObjectValue` has case `data`, this returns the associated value. Else, it returns `nil`.
+    public var dataValue: Data? {
+        if case let .data(value) = self {
+            return value
+        }
+        return nil
+    }
 }
 
 /// The `LiveCounter` class represents a counter that can be incremented or decremented and is synchronized across clients in realtime.
 public protocol LiveCounter: LiveObject where Update == LiveCounterUpdate {
     /// Returns the current value of the counter.
-    var value: Double { get }
+    var value: Double { get throws(ARTErrorInfo) }
 
     /// Sends an operation to the Ably system to increment the value of this `LiveCounter` object.
     ///

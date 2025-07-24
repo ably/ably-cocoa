@@ -6,3 +6,11 @@ internal struct WeakRef<Referenced: AnyObject> {
 }
 
 extension WeakRef: Sendable where Referenced: Sendable {}
+
+// MARK: - Specialized versions of WeakRef
+
+// These are protocol-specific versions of ``WeakRef`` that hold an existential type (e.g. `any CoreSDK`). (This is because the compiler complains that an existential of a class-bound protocol doesn't conform to `AnyObject`.)
+
+internal struct WeakLiveMapObjectPoolDelegateRef: Sendable {
+    internal weak var referenced: LiveMapObjectPoolDelegate?
+}

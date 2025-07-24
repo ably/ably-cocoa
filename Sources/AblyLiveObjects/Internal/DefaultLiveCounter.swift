@@ -1,0 +1,152 @@
+import Ably
+import Foundation
+
+/// Our default implementation of ``LiveCounter``.
+internal final class DefaultLiveCounter: LiveCounter {
+    // Used for synchronizing access to all of this instance's mutable state. This is a temporary solution just to allow us to implement `Sendable`, and we'll revisit it in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/3.
+    private let mutex = NSLock()
+
+    private nonisolated(unsafe) var mutableState: MutableState
+
+    internal var testsOnly_siteTimeserials: [String: String]? {
+        mutex.withLock {
+            mutableState.siteTimeserials
+        }
+    }
+
+    internal var testsOnly_createOperationIsMerged: Bool? {
+        mutex.withLock {
+            mutableState.createOperationIsMerged
+        }
+    }
+
+    internal var testsOnly_objectID: String? {
+        mutex.withLock {
+            mutableState.objectID
+        }
+    }
+
+    private let coreSDK: CoreSDK
+
+    // MARK: - Initialization
+
+    internal convenience init(
+        testsOnly_data data: Double,
+        objectID: String?,
+        coreSDK: CoreSDK
+    ) {
+        self.init(data: data, objectID: objectID, coreSDK: coreSDK)
+    }
+
+    private init(
+        data: Double,
+        objectID: String?,
+        coreSDK: CoreSDK
+    ) {
+        mutableState = .init(data: data, objectID: objectID)
+        self.coreSDK = coreSDK
+    }
+
+    /// Creates a "zero-value LiveCounter", per RTLC4.
+    ///
+    /// - Parameters:
+    ///   - objectID: The value for the "private objectId field" of RTO5c1b1a.
+    internal static func createZeroValued(
+        objectID: String? = nil,
+        coreSDK: CoreSDK,
+    ) -> Self {
+        .init(
+            data: 0,
+            objectID: objectID,
+            coreSDK: coreSDK,
+        )
+    }
+
+    // MARK: - LiveCounter conformance
+
+    internal var value: Double {
+        get throws(ARTErrorInfo) {
+            // RTLC5b: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
+            let currentChannelState = coreSDK.channelState
+            if currentChannelState == .detached || currentChannelState == .failed {
+                throw ARTErrorInfo.create(withCode: Int(ARTErrorCode.channelOperationFailedInvalidState.rawValue), message: "LiveCounter.value operation failed (invalid channel state: \(currentChannelState))")
+            }
+
+            return mutex.withLock {
+                // RTLC5c
+                mutableState.data
+            }
+        }
+    }
+
+    internal func increment(amount _: Double) async throws(ARTErrorInfo) {
+        notYetImplemented()
+    }
+
+    internal func decrement(amount _: Double) async throws(ARTErrorInfo) {
+        notYetImplemented()
+    }
+
+    internal func subscribe(listener _: (sending any LiveCounterUpdate) -> Void) -> any SubscribeResponse {
+        notYetImplemented()
+    }
+
+    internal func unsubscribeAll() {
+        notYetImplemented()
+    }
+
+    internal func on(event _: LiveObjectLifecycleEvent, callback _: () -> Void) -> any OnLiveObjectLifecycleEventResponse {
+        notYetImplemented()
+    }
+
+    internal func offAll() {
+        notYetImplemented()
+    }
+
+    // MARK: - Data manipulation
+
+    /// Replaces the internal data of this counter with the provided ObjectState, per RTLC6.
+    internal func replaceData(using state: ObjectState) {
+        mutex.withLock {
+            mutableState.replaceData(using: state)
+        }
+    }
+
+    // MARK: - Mutable state and the operations that affect it
+
+    private struct MutableState {
+        /// The internal data that this map holds, per RTLC3.
+        internal var data: Double
+
+        /// The site timeserials for this counter, per RTLC6a.
+        internal var siteTimeserials: [String: String]?
+
+        /// Whether the create operation has been merged, per RTLC6b and RTLC6d2.
+        internal var createOperationIsMerged: Bool?
+
+        /// The "private `objectId` field" of RTO5c1b1a.
+        internal var objectID: String?
+
+        /// Replaces the internal data of this counter with the provided ObjectState, per RTLC6.
+        internal mutating func replaceData(using state: ObjectState) {
+            // RTLC6a: Replace the private siteTimeserials with the value from ObjectState.siteTimeserials
+            siteTimeserials = state.siteTimeserials
+
+            // RTLC6b: Set the private flag createOperationIsMerged to false
+            createOperationIsMerged = false
+
+            // RTLC6c: Set data to the value of ObjectState.counter.count, or to 0 if it does not exist
+            data = state.counter?.count?.doubleValue ?? 0
+
+            // RTLC6d: If ObjectState.createOp is present
+            if let createOp = state.createOp {
+                // RTLC6d1: Add ObjectState.createOp.counter.count to data, if it exists
+                if let createOpCount = createOp.counter?.count?.doubleValue {
+                    data += createOpCount
+                }
+                // RTLC6d2: Set the private flag createOperationIsMerged to true
+                createOperationIsMerged = true
+            }
+        }
+    }
+}
