@@ -1,7 +1,7 @@
 import Foundation
 
 /// The entries stored in a `LiveMap`'s data. Same as an `ObjectsMapEntry` but with an additional `tombstonedAt` property, per RTLM3a.
-internal struct InternalObjectsMapEntry {
+internal struct InternalObjectsMapEntry: Equatable {
     internal var tombstonedAt: Date? // RTLM3a
     internal var tombstone: Bool {
         // TODO: Confirm that we don't need to store this (https://github.com/ably/specification/pull/350/files#r2213895661)

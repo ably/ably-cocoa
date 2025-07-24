@@ -177,6 +177,24 @@ internal enum JSONObjectOrArray: Equatable {
             throw ConversionError.incompatibleJSONValue(jsonValue).toInternalError()
         }
     }
+
+    // MARK: - Convenience getters for associated values
+
+    /// If this `JSONObjectOrArray` has case `object`, this returns the associated value. Else, it returns `nil`.
+    internal var objectValue: [String: JSONValue]? {
+        if case let .object(value) = self {
+            return value
+        }
+        return nil
+    }
+
+    /// If this `JSONObjectOrArray` has case `array`, this returns the associated value. Else, it returns `nil`.
+    internal var arrayValue: [JSONValue]? {
+        if case let .array(value) = self {
+            return value
+        }
+        return nil
+    }
 }
 
 extension JSONObjectOrArray: ExpressibleByDictionaryLiteral {

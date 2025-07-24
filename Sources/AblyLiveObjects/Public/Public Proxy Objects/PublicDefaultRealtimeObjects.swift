@@ -36,19 +36,54 @@ internal final class PublicDefaultRealtimeObjects: RealtimeObjects {
     }
 
     internal func createMap(entries: [String: LiveMapValue]) async throws(ARTErrorInfo) -> any LiveMap {
-        try await proxied.createMap(entries: entries)
+        let internalEntries: [String: InternalLiveMapValue] = entries.mapValues { .init(liveMapValue: $0) }
+        let internalMap = try await proxied.createMap(entries: internalEntries, coreSDK: coreSDK)
+
+        return PublicObjectsStore.shared.getOrCreateMap(
+            proxying: internalMap,
+            creationArgs: .init(
+                coreSDK: coreSDK,
+                delegate: proxied,
+                logger: logger,
+            ),
+        )
     }
 
     internal func createMap() async throws(ARTErrorInfo) -> any LiveMap {
-        try await proxied.createMap()
+        let internalMap = try await proxied.createMap(coreSDK: coreSDK)
+
+        return PublicObjectsStore.shared.getOrCreateMap(
+            proxying: internalMap,
+            creationArgs: .init(
+                coreSDK: coreSDK,
+                delegate: proxied,
+                logger: logger,
+            ),
+        )
     }
 
     internal func createCounter(count: Double) async throws(ARTErrorInfo) -> any LiveCounter {
-        try await proxied.createCounter(count: count)
+        let internalCounter = try await proxied.createCounter(count: count, coreSDK: coreSDK)
+
+        return PublicObjectsStore.shared.getOrCreateCounter(
+            proxying: internalCounter,
+            creationArgs: .init(
+                coreSDK: coreSDK,
+                logger: logger,
+            ),
+        )
     }
 
     internal func createCounter() async throws(ARTErrorInfo) -> any LiveCounter {
-        try await proxied.createCounter()
+        let internalCounter = try await proxied.createCounter(coreSDK: coreSDK)
+
+        return PublicObjectsStore.shared.getOrCreateCounter(
+            proxying: internalCounter,
+            creationArgs: .init(
+                coreSDK: coreSDK,
+                logger: logger,
+            ),
+        )
     }
 
     internal func batch(callback: sending BatchCallback) async throws {

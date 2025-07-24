@@ -6,13 +6,18 @@ final class MockCoreSDK: CoreSDK {
     private let mutex = NSLock()
 
     private nonisolated(unsafe) var _channelState: ARTRealtimeChannelState
+    private nonisolated(unsafe) var _publishHandler: (([OutboundObjectMessage]) async throws(InternalError) -> Void)?
 
     init(channelState: ARTRealtimeChannelState) {
         _channelState = channelState
     }
 
-    func publish(objectMessages _: [AblyLiveObjects.OutboundObjectMessage]) async throws(AblyLiveObjects.InternalError) {
-        protocolRequirementNotImplemented()
+    func publish(objectMessages: [OutboundObjectMessage]) async throws(InternalError) {
+        if let handler = _publishHandler {
+            try await handler(objectMessages)
+        } else {
+            protocolRequirementNotImplemented()
+        }
     }
 
     var channelState: ARTRealtimeChannelState {
@@ -25,6 +30,13 @@ final class MockCoreSDK: CoreSDK {
             mutex.withLock {
                 _channelState = newValue
             }
+        }
+    }
+
+    /// Sets a custom publish handler for testing
+    func setPublishHandler(_ handler: @escaping ([OutboundObjectMessage]) async throws(InternalError) -> Void) {
+        mutex.withLock {
+            _publishHandler = handler
         }
     }
 }
