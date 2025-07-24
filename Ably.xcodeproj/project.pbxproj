@@ -4227,6 +4227,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/Source/Private",
 					"$(PROJECT_DIR)/AblyPlugin/include",
+					"$(PROJECT_DIR)/AblyPlugin/PrivateHeaders",
 				);
 				INFOPLIST_FILE = "Source/Info-iOS.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
@@ -4257,6 +4258,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/Source/Private",
 					"$(PROJECT_DIR)/AblyPlugin/include",
+					"$(PROJECT_DIR)/AblyPlugin/PrivateHeaders",
 				);
 				INFOPLIST_FILE = "Source/Info-iOS.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
@@ -4433,6 +4435,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/include",
 					"$(PROJECT_DIR)/AblyPlugin/include",
+					"$(PROJECT_DIR)/AblyPlugin/PrivateHeaders",
 				);
 				INFOPLIST_FILE = "Source/Info-macOS.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -4476,6 +4479,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/include",
 					"$(PROJECT_DIR)/AblyPlugin/include",
+					"$(PROJECT_DIR)/AblyPlugin/PrivateHeaders",
 				);
 				INFOPLIST_FILE = "Source/Info-macOS.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -4514,6 +4518,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/include",
 					"$(PROJECT_DIR)/AblyPlugin/include",
+					"$(PROJECT_DIR)/AblyPlugin/PrivateHeaders",
 				);
 				INFOPLIST_FILE = "Source/Info-tvOS.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -4556,6 +4561,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/include",
 					"$(PROJECT_DIR)/AblyPlugin/include",
+					"$(PROJECT_DIR)/AblyPlugin/PrivateHeaders",
 				);
 				INFOPLIST_FILE = "Source/Info-tvOS.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";

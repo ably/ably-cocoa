@@ -6,6 +6,7 @@
 @protocol APLiveObjectsInternalPluginProtocol;
 @protocol APObjectMessageProtocol;
 @protocol APDecodingContextProtocol;
+@protocol APRealtimeChannel;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -31,7 +32,7 @@ NS_SWIFT_SENDABLE
 /// ably-cocoa will call this method when initializing an `ARTRealtimeChannel` instance.
 ///
 /// The plugin can use this as an opportunity to perform any initial setup of LiveObjects functionality for this channel.
-- (void)prepareChannel:(ARTRealtimeChannel *)channel;
+- (void)prepareChannel:(id<APRealtimeChannel>)channel;
 
 /// Decodes an `ObjectMessage` received over the wire.
 ///
@@ -63,7 +64,7 @@ NS_SWIFT_SENDABLE
 /// Parameters:
 /// - channel: The channel that received the `ProtocolMessage`.
 /// - hasObjects: Whether the `ProtocolMessage` has the `HAS_OBJECTS` flag set.
-- (void)onChannelAttached:(ARTRealtimeChannel *)channel
+- (void)onChannelAttached:(id<APRealtimeChannel>)channel
                hasObjects:(BOOL)hasObjects;
 
 /// Processes a received `OBJECT` `ProtocolMessage`.
@@ -74,7 +75,7 @@ NS_SWIFT_SENDABLE
 /// - objectMessages: The contents of the `ProtocolMessage`'s `state` property.
 /// - channel: The channel on which the `ProtocolMessage` was received.
 - (void)handleObjectProtocolMessageWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
-                                              channel:(ARTRealtimeChannel *)channel;
+                                              channel:(id<APRealtimeChannel>)channel;
 
 /// Processes a received `OBJECT_SYNC` `ProtocolMessage`.
 ///
@@ -85,7 +86,7 @@ NS_SWIFT_SENDABLE
 /// - channel: The channel on which the `ProtocolMessage` was received.
 - (void)handleObjectSyncProtocolMessageWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
                              protocolMessageChannelSerial:(nullable NSString *)protocolMessageChannelSerial
-                                                  channel:(ARTRealtimeChannel *)channel;
+                                                  channel:(id<APRealtimeChannel>)channel;
 
 @end
 
