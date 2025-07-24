@@ -341,8 +341,7 @@ struct TestFactories {
         map: ObjectsMap? = nil,
         counter: WireObjectsCounter? = nil,
         nonce: String? = nil,
-        initialValue: Data? = nil,
-        initialValueEncoding: String? = nil,
+        initialValue: String? = nil,
     ) -> ObjectOperation {
         ObjectOperation(
             action: action,
@@ -353,7 +352,6 @@ struct TestFactories {
             counter: counter,
             nonce: nonce,
             initialValue: initialValue,
-            initialValueEncoding: initialValueEncoding,
         )
     }
 

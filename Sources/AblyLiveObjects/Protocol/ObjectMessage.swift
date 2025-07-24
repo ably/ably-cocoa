@@ -39,8 +39,7 @@ internal struct ObjectOperation {
     internal var map: ObjectsMap? // OOP3e
     internal var counter: WireObjectsCounter? // OOP3f
     internal var nonce: String? // OOP3g
-    internal var initialValue: Data? // OOP3h
-    internal var initialValueEncoding: String? // OOP3i
+    internal var initialValue: String? // OOP3h
 }
 
 internal struct ObjectData {
@@ -157,41 +156,14 @@ internal extension ObjectOperation {
         nonce = nil
         // Do not access on inbound data, per OOP3h
         initialValue = nil
-        // Do not access on inbound data, per OOP3i
-        initialValueEncoding = nil
     }
 
-    /// Converts this `ObjectOperation` to a `WireObjectOperation`, applying the data encoding rules of OD4 and OOP5.
+    /// Converts this `ObjectOperation` to a `WireObjectOperation`, applying the data encoding rules of OD4.
     ///
     /// - Parameters:
-    ///   - format: The format to use when applying the encoding rules of OD4 and OOP5.
+    ///   - format: The format to use when applying the encoding rules of OD4.
     func toWire(format: AblyPlugin.EncodingFormat) -> WireObjectOperation {
-        // OOP5: Encode initialValue based on format
-        let wireInitialValue: StringOrData?
-        let wireInitialValueEncoding: String?
-
-        if let initialValue {
-            switch format {
-            case .messagePack:
-                // OOP5a: When the MessagePack protocol is used
-                // OOP5a1: A binary ObjectOperation.initialValue is encoded as a MessagePack binary type
-                wireInitialValue = .data(initialValue)
-                // OOP5a2: Set ObjectOperation.initialValueEncoding to msgpack
-                wireInitialValueEncoding = "msgpack"
-
-            case .json:
-                // OOP5b: When the JSON protocol is used
-                // OOP5b1: A binary ObjectOperation.initialValue is Base64-encoded and represented as a JSON string
-                wireInitialValue = .string(initialValue.base64EncodedString())
-                // OOP5b2: Set ObjectOperation.initialValueEncoding to json
-                wireInitialValueEncoding = "json"
-            }
-        } else {
-            wireInitialValue = nil
-            wireInitialValueEncoding = nil
-        }
-
-        return .init(
+        .init(
             action: action,
             objectId: objectId,
             mapOp: mapOp?.toWire(format: format),
@@ -199,8 +171,7 @@ internal extension ObjectOperation {
             map: map?.toWire(format: format),
             counter: counter,
             nonce: nonce,
-            initialValue: wireInitialValue,
-            initialValueEncoding: wireInitialValueEncoding,
+            initialValue: initialValue,
         )
     }
 }

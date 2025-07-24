@@ -165,8 +165,7 @@ internal struct WireObjectOperation {
     internal var map: WireObjectsMap? // OOP3e
     internal var counter: WireObjectsCounter? // OOP3f
     internal var nonce: String? // OOP3g
-    internal var initialValue: StringOrData? // OOP3h
-    internal var initialValueEncoding: String? // OOP3i
+    internal var initialValue: String? // OOP3h
 }
 
 extension WireObjectOperation: WireObjectCodable {
@@ -179,7 +178,6 @@ extension WireObjectOperation: WireObjectCodable {
         case counter
         case nonce
         case initialValue
-        case initialValueEncoding
     }
 
     internal init(wireObject: [String: WireValue]) throws(InternalError) {
@@ -194,8 +192,6 @@ extension WireObjectOperation: WireObjectCodable {
         nonce = nil
         // Do not access on inbound data, per OOP3h
         initialValue = nil
-        // Do not access on inbound data, per OOP3i
-        initialValueEncoding = nil
     }
 
     internal var toWireObject: [String: WireValue] {
@@ -220,10 +216,7 @@ extension WireObjectOperation: WireObjectCodable {
             result[WireKey.nonce.rawValue] = .string(nonce)
         }
         if let initialValue {
-            result[WireKey.initialValue.rawValue] = initialValue.toWireValue
-        }
-        if let initialValueEncoding {
-            result[WireKey.initialValueEncoding.rawValue] = .string(initialValueEncoding)
+            result[WireKey.initialValue.rawValue] = .string(initialValue)
         }
 
         return result
@@ -486,10 +479,7 @@ extension WireObjectData: WireObjectCodable {
 
 /// A type that can be either a string or binary data.
 ///
-/// Used to represent:
-///
-/// - the values that `WireObjectData.bytes` might hold, after being encoded per OD4 or before being decoded per OD5
-/// - the values that `WireObjectOperation.initialValue` might hold, after being encoded per OOP5
+/// Used to represent the values that `WireObjectData.bytes` might hold, after being encoded per OD4 or before being decoded per OD5.
 internal enum StringOrData: WireCodable {
     case string(String)
     case data(Data)

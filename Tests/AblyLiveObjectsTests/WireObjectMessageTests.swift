@@ -118,7 +118,6 @@ enum WireObjectMessageTests {
                     counter: nil,
                     nonce: nil,
                     initialValue: nil,
-                    initialValueEncoding: nil,
                 ),
                 object: nil,
                 serial: "s1",
@@ -173,7 +172,6 @@ enum WireObjectMessageTests {
                 "map": ["semantics": 0, "entries": ["key1": ["data": ["string": "value1"], "tombstone": false]]],
                 "counter": ["count": 42],
                 "nonce": "nonce1",
-                "initialValueEncoding": "utf8",
             ]
             let op = try WireObjectOperation(wireObject: wire)
             #expect(op.action == .known(.mapCreate))
@@ -189,8 +187,6 @@ enum WireObjectMessageTests {
             // Per OOP3g we should not try and extract this
             #expect(op.nonce == nil)
             // Per OOP3h we should not try and extract this
-            #expect(op.initialValueEncoding == nil)
-            // Per OOP3i we should not try and extract this
             #expect(op.initialValue == nil)
         }
 
@@ -209,7 +205,6 @@ enum WireObjectMessageTests {
             #expect(op.counter == nil)
             #expect(op.nonce == nil)
             #expect(op.initialValue == nil)
-            #expect(op.initialValueEncoding == nil)
         }
 
         @Test
@@ -236,7 +231,6 @@ enum WireObjectMessageTests {
                 counter: WireObjectsCounter(count: 42),
                 nonce: "nonce1",
                 initialValue: nil,
-                initialValueEncoding: "utf8",
             )
             let wire = op.toWireObject
             #expect(wire == [
@@ -247,7 +241,6 @@ enum WireObjectMessageTests {
                 "map": ["semantics": 0, "entries": ["key1": ["data": ["string": "value1"], "tombstone": false]]],
                 "counter": ["count": 42],
                 "nonce": "nonce1",
-                "initialValueEncoding": "utf8",
             ])
         }
 
@@ -262,7 +255,6 @@ enum WireObjectMessageTests {
                 counter: nil,
                 nonce: nil,
                 initialValue: nil,
-                initialValueEncoding: nil,
             )
             let wire = op.toWireObject
             #expect(wire == [
@@ -326,7 +318,6 @@ enum WireObjectMessageTests {
                     counter: nil,
                     nonce: nil,
                     initialValue: nil,
-                    initialValueEncoding: nil,
                 ),
                 map: WireObjectsMap(
                     semantics: .known(.lww),
