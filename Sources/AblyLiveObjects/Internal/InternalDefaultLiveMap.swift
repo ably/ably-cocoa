@@ -20,12 +20,6 @@ internal final class InternalDefaultLiveMap: Sendable {
         }
     }
 
-    internal var testsOnly_objectID: String {
-        mutex.withLock {
-            mutableState.liveObjectMutableState.objectID
-        }
-    }
-
     internal var testsOnly_semantics: WireEnum<ObjectsMapSemantics>? {
         mutex.withLock {
             mutableState.semantics
@@ -102,6 +96,14 @@ internal final class InternalDefaultLiveMap: Sendable {
             userCallbackQueue: userCallbackQueue,
             clock: clock,
         )
+    }
+
+    // MARK: - Data access
+
+    internal var objectID: String {
+        mutex.withLock {
+            mutableState.liveObjectMutableState.objectID
+        }
     }
 
     // MARK: - Internal methods that back LiveMap conformance

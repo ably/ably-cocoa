@@ -21,12 +21,6 @@ internal final class InternalDefaultLiveCounter: Sendable {
         }
     }
 
-    internal var testsOnly_objectID: String {
-        mutex.withLock {
-            mutableState.liveObjectMutableState.objectID
-        }
-    }
-
     private let logger: AblyPlugin.Logger
     private let userCallbackQueue: DispatchQueue
     private let clock: SimpleClock
@@ -73,6 +67,14 @@ internal final class InternalDefaultLiveCounter: Sendable {
             userCallbackQueue: userCallbackQueue,
             clock: clock,
         )
+    }
+
+    // MARK: - Data access
+
+    internal var objectID: String {
+        mutex.withLock {
+            mutableState.liveObjectMutableState.objectID
+        }
     }
 
     // MARK: - Internal methods that back LiveCounter conformance

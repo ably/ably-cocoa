@@ -30,7 +30,7 @@ struct ObjectsPoolTests {
             #expect(pool.entries["map:123@456"]?.mapValue != nil)
 
             // Verify the objectID is correctly set
-            #expect(map.testsOnly_objectID == "map:123@456")
+            #expect(map.objectID == "map:123@456")
         }
 
         // @spec RTO6b3
@@ -47,7 +47,7 @@ struct ObjectsPoolTests {
             // Verify it was added to the pool
             #expect(pool.entries["counter:123@456"]?.counterValue != nil)
             // Verify the objectID is correctly set
-            #expect(counter.testsOnly_objectID == "counter:123@456")
+            #expect(counter.objectID == "counter:123@456")
         }
 
         // Sense check to see how it behaves when given an object ID not in the format of RTO6b1 (spec isn't prescriptive here)
@@ -172,7 +172,7 @@ struct ObjectsPoolTests {
             // Checking site timeserials to verify they were set by replaceData
             #expect(newCounter.testsOnly_siteTimeserials == ["site2": "ts2"])
             // Verify the objectID is correctly set per RTO5c1b1a
-            #expect(newCounter.testsOnly_objectID == "counter:hash@456")
+            #expect(newCounter.objectID == "counter:hash@456")
         }
 
         // @spec RTO5c1b1b
@@ -200,7 +200,7 @@ struct ObjectsPoolTests {
             // Checking site timeserials to verify they were set by replaceData
             #expect(newMap.testsOnly_siteTimeserials == ["site3": "ts3"])
             // Verify the objectID and semantics are correctly set per RTO5c1b1b
-            #expect(newMap.testsOnly_objectID == "map:hash@789")
+            #expect(newMap.objectID == "map:hash@789")
             #expect(newMap.testsOnly_semantics == .known(.lww))
         }
 
@@ -354,14 +354,14 @@ struct ObjectsPoolTests {
             // Checking map data to verify the new map was created and replaceData was called
             #expect(try newMap.get(key: "new", coreSDK: coreSDK, delegate: delegate)?.stringValue == "new")
             // Verify the objectID and semantics are correctly set per RTO5c1b1b
-            #expect(newMap.testsOnly_objectID == "map:new@1")
+            #expect(newMap.objectID == "map:new@1")
             #expect(newMap.testsOnly_semantics == .known(.lww))
 
             let newCounter = try #require(pool.entries["counter:new@1"]?.counterValue)
             // Checking counter value to verify the new counter was created and replaceData was called
             #expect(try newCounter.value(coreSDK: coreSDK) == 50)
             // Verify the objectID is correctly set per RTO5c1b1a
-            #expect(newCounter.testsOnly_objectID == "counter:new@1")
+            #expect(newCounter.objectID == "counter:new@1")
 
             // Removed object
             #expect(pool.entries["map:toremove@1"] == nil)
