@@ -4,6 +4,7 @@
 #import "ARTInternalLog+APLogger.h"
 #import "ARTRealtimeChannelInternal+APRealtimeChannel.h"
 #import "ARTRealtimeInternal+APRealtimeClient.h"
+#import "APDefaultPublicRealtimeChannelUnderlyingObjects.h"
 
 static ARTRealtimeChannelInternal *_internalRealtimeChannel(id<APRealtimeChannel> pluginRealtimeChannel) {
     if (![pluginRealtimeChannel isKindOfClass:[ARTRealtimeChannelInternal class]]) {
@@ -31,8 +32,10 @@ static ARTRealtimeInternal *_internalRealtimeClient(id<APRealtimeClient> pluginR
     return sharedInstance;
 }
 
-- (id<APRealtimeChannel>)channelForPublicRealtimeChannel:(ARTRealtimeChannel *)channel {
-    return channel.internal;
+- (id<APPublicRealtimeChannelUnderlyingObjects>)underlyingObjectsForPublicRealtimeChannel:(ARTRealtimeChannel *)channel {
+    return [[APDefaultPublicRealtimeChannelUnderlyingObjects alloc] initWithClient:channel.realtimeInternal
+                                                                           channel:channel.internal];
+
 }
 
 - (void)setPluginDataValue:(nonnull id)value
@@ -48,6 +51,11 @@ static ARTRealtimeInternal *_internalRealtimeClient(id<APRealtimeClient> pluginR
 
 - (id<APLogger>)loggerForChannel:(id<APRealtimeChannel>)channel {
     return _internalRealtimeChannel(channel).logger;
+}
+
+/// Provides plugins with the queue on which all user callbacks for a given client should be called.
+- (dispatch_queue_t)callbackQueueForClient:(id<APRealtimeClient>)client {
+    return _internalRealtimeClient(client).options.dispatchQueue;
 }
 
 - (BOOL)throwIfUnpublishableStateForChannel:(id<APRealtimeChannel>)channel error:(ARTErrorInfo * _Nullable __autoreleasing *)error {
