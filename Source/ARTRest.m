@@ -588,7 +588,8 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     if (![[method lowercaseString] isEqualToString:@"get"] &&
         ![[method lowercaseString] isEqualToString:@"post"] &&
         ![[method lowercaseString] isEqualToString:@"patch"] &&
-        ![[method lowercaseString] isEqualToString:@"put"]) {
+        ![[method lowercaseString] isEqualToString:@"put"] &&
+        ![[method lowercaseString] isEqualToString:@"delete"]) {
         if (errorPtr) {
             *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
                                             code:ARTCustomRequestErrorInvalidMethod
