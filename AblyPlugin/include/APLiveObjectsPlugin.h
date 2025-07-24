@@ -84,7 +84,7 @@ NS_SWIFT_SENDABLE
 /// - objectMessages: The contents of the `ProtocolMessage`'s `state` property.
 /// - channel: The channel on which the `ProtocolMessage` was received.
 - (void)handleObjectSyncProtocolMessageWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
-                             protocolMessageChannelSerial:(NSString *)protocolMessageChannelSerial
+                             protocolMessageChannelSerial:(nullable NSString *)protocolMessageChannelSerial
                                                   channel:(ARTRealtimeChannel *)channel;
 
 @end
