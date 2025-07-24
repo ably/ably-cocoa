@@ -18,7 +18,7 @@ struct DefaultLiveMapTests {
                     return false
                 }
 
-                return errorInfo.code == 90001
+                return errorInfo.code == 90001 && errorInfo.statusCode == 400
             }
         }
 
@@ -260,6 +260,174 @@ struct DefaultLiveMapTests {
             var pool = ObjectsPool(rootDelegate: delegate, rootCoreSDK: coreSDK)
             map.replaceData(using: state, objectsPool: &pool)
             #expect(map.testsOnly_createOperationIsMerged == true)
+        }
+    }
+
+    /// Tests for the `size`, `entries`, `keys`, and `values` properties, covering RTLM10, RTLM11, RTLM12, and RTLM13 specification points
+    struct AccessPropertiesTests {
+        // MARK: - Error Throwing Tests (RTLM10c, RTLM11c, RTLM12b, RTLM13b)
+
+        // @spec RTLM10c
+        // @spec RTLM11c
+        // @spec RTLM12b
+        // @spec RTLM13b
+        @Test(arguments: [.detached, .failed] as [ARTRealtimeChannelState])
+        func allPropertiesThrowIfChannelIsDetachedOrFailed(channelState: ARTRealtimeChannelState) async throws {
+            let map = DefaultLiveMap.createZeroValued(delegate: MockLiveMapObjectPoolDelegate(), coreSDK: MockCoreSDK(channelState: channelState))
+
+            // Define actions to test
+            let actions: [(String, () throws -> Any)] = [
+                ("size", { try map.size }),
+                ("entries", { try map.entries }),
+                ("keys", { try map.keys }),
+                ("values", { try map.values }),
+            ]
+
+            // Test each property throws the expected error
+            for (propertyName, action) in actions {
+                #expect("\(propertyName) should throw") {
+                    _ = try action()
+                } throws: { error in
+                    guard let errorInfo = error as? ARTErrorInfo else {
+                        return false
+                    }
+                    return errorInfo.code == 90001 && errorInfo.statusCode == 400
+                }
+            }
+        }
+
+        // MARK: - Tombstone Filtering Tests (RTLM10d, RTLM11d1, RTLM12b, RTLM13b)
+
+        // @specOneOf(1/2) RTLM10d - Tests the "non-tombstoned" part of spec point
+        // @spec RTLM11d1
+        // @specOneOf(1/2) RTLM12b - Tests the "non-tombstoned" part of RTLM10d
+        // @specOneOf(1/2) RTLM13b - Tests the "non-tombstoned" part of RTLM10d
+        // @spec RTLM14
+        @Test
+        func allPropertiesFilterOutTombstonedEntries() throws {
+            let coreSDK = MockCoreSDK(channelState: .attaching)
+            let map = DefaultLiveMap(
+                testsOnly_data: [
+                    // tombstone is nil, so not considered tombstoned
+                    "active1": TestFactories.mapEntry(data: ObjectData(string: .string("value1"))),
+                    // tombstone is false, so not considered tombstoned[
+                    "active2": TestFactories.mapEntry(tombstone: false, data: ObjectData(string: .string("value2"))),
+                    "tombstoned": TestFactories.mapEntry(tombstone: true, data: ObjectData(string: .string("tombstoned"))),
+                    "tombstoned2": TestFactories.mapEntry(tombstone: true, data: ObjectData(string: .string("tombstoned2"))),
+                ],
+                delegate: nil,
+                coreSDK: coreSDK,
+            )
+
+            // Test size - should only count non-tombstoned entries
+            let size = try map.size
+            #expect(size == 2)
+
+            // Test entries - should only return non-tombstoned entries
+            let entries = try map.entries
+            #expect(entries.count == 2)
+            #expect(Set(entries.map(\.key)) == ["active1", "active2"])
+            #expect(entries.first { $0.key == "active1" }?.value.stringValue == "value1")
+            #expect(entries.first { $0.key == "active2" }?.value.stringValue == "value2")
+
+            // Test keys - should only return keys from non-tombstoned entries
+            let keys = try map.keys
+            #expect(keys.count == 2)
+            #expect(Set(keys) == ["active1", "active2"])
+
+            // Test values - should only return values from non-tombstoned entries
+            let values = try map.values
+            #expect(values.count == 2)
+            #expect(Set(values.compactMap(\.stringValue)) == Set(["value1", "value2"]))
+        }
+
+        // MARK: - Consistency Tests
+
+        // @specOneOf(2/2) RTLM10d
+        // @specOneOf(2/2) RTLM12b
+        // @specOneOf(2/2) RTLM13b
+        @Test
+        func allAccessPropertiesReturnExpectedValuesAndAreConsistentWithEachOther() throws {
+            let coreSDK = MockCoreSDK(channelState: .attaching)
+            let map = DefaultLiveMap(
+                testsOnly_data: [
+                    "key1": TestFactories.mapEntry(data: ObjectData(string: .string("value1"))),
+                    "key2": TestFactories.mapEntry(data: ObjectData(string: .string("value2"))),
+                    "key3": TestFactories.mapEntry(data: ObjectData(string: .string("value3"))),
+                ],
+                delegate: nil,
+                coreSDK: coreSDK,
+            )
+
+            let size = try map.size
+            let entries = try map.entries
+            let keys = try map.keys
+            let values = try map.values
+
+            // All properties should return the same count
+            #expect(size == 3)
+            #expect(entries.count == 3)
+            #expect(keys.count == 3)
+            #expect(values.count == 3)
+
+            // Keys should match the keys from entries
+            #expect(Set(keys) == Set(entries.map(\.key)))
+
+            // Values should match the values from entries
+            #expect(Set(values.compactMap(\.stringValue)) == Set(entries.compactMap(\.value.stringValue)))
+        }
+
+        // MARK: - `entries` handling of different value types, per RTLM5d2
+
+        // @spec RTLM11d
+        @Test
+        func entriesHandlesAllValueTypes() throws {
+            let delegate = MockLiveMapObjectPoolDelegate()
+            let coreSDK = MockCoreSDK(channelState: .attaching)
+
+            // Create referenced objects for testing
+            let referencedMap = DefaultLiveMap.createZeroValued(delegate: delegate, coreSDK: coreSDK)
+            let referencedCounter = DefaultLiveCounter.createZeroValued(coreSDK: coreSDK)
+            delegate.objects["map:ref@123"] = .map(referencedMap)
+            delegate.objects["counter:ref@456"] = .counter(referencedCounter)
+
+            let map = DefaultLiveMap(
+                testsOnly_data: [
+                    "boolean": TestFactories.mapEntry(data: ObjectData(boolean: true)), // RTLM5d2b
+                    "bytes": TestFactories.mapEntry(data: ObjectData(bytes: Data([0x01, 0x02, 0x03]))), // RTLM5d2c
+                    "number": TestFactories.mapEntry(data: ObjectData(number: NSNumber(value: 42))), // RTLM5d2d
+                    "string": TestFactories.mapEntry(data: ObjectData(string: .string("hello"))), // RTLM5d2e
+                    "mapRef": TestFactories.mapEntry(data: ObjectData(objectId: "map:ref@123")), // RTLM5d2f2
+                    "counterRef": TestFactories.mapEntry(data: ObjectData(objectId: "counter:ref@456")), // RTLM5d2f2
+                ],
+                delegate: delegate,
+                coreSDK: coreSDK,
+            )
+
+            let size = try map.size
+            let entries = try map.entries
+            let keys = try map.keys
+            let values = try map.values
+
+            #expect(size == 6)
+            #expect(entries.count == 6)
+            #expect(keys.count == 6)
+            #expect(values.count == 6)
+
+            // Verify the correct values are returned by `entries`
+            let booleanEntry = entries.first { $0.key == "boolean" } // RTLM5d2b
+            let bytesEntry = entries.first { $0.key == "bytes" } // RTLM5d2c
+            let numberEntry = entries.first { $0.key == "number" } // RTLM5d2d
+            let stringEntry = entries.first { $0.key == "string" } // RTLM5d2e
+            let mapRefEntry = entries.first { $0.key == "mapRef" } // RTLM5d2f2
+            let counterRefEntry = entries.first { $0.key == "counterRef" } // RTLM5d2f2
+
+            #expect(booleanEntry?.value.boolValue == true) // RTLM5d2b
+            #expect(bytesEntry?.value.dataValue == Data([0x01, 0x02, 0x03])) // RTLM5d2c
+            #expect(numberEntry?.value.numberValue == 42) // RTLM5d2d
+            #expect(stringEntry?.value.stringValue == "hello") // RTLM5d2e
+            #expect(mapRefEntry?.value.liveMapValue as AnyObject === referencedMap as AnyObject) // RTLM5d2f2
+            #expect(counterRefEntry?.value.liveCounterValue as AnyObject === referencedCounter as AnyObject) // RTLM5d2f2
         }
     }
 
