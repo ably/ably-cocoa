@@ -1,4 +1,5 @@
 import Ably
+internal import AblyPlugin
 
 /// Protocol for accessing objects from the ObjectsPool. This is used by a LiveMap when it needs to return an object given an object ID.
 internal protocol LiveMapObjectPoolDelegate: AnyObject, Sendable {
@@ -19,9 +20,9 @@ internal final class DefaultLiveMap: LiveMap {
         }
     }
 
-    internal var testsOnly_objectID: String? {
+    internal var testsOnly_objectID: String {
         mutex.withLock {
-            mutableState.objectID
+            mutableState.liveObject.objectID
         }
     }
 
@@ -31,15 +32,15 @@ internal final class DefaultLiveMap: LiveMap {
         }
     }
 
-    internal var testsOnly_siteTimeserials: [String: String]? {
+    internal var testsOnly_siteTimeserials: [String: String] {
         mutex.withLock {
-            mutableState.siteTimeserials
+            mutableState.liveObject.siteTimeserials
         }
     }
 
-    internal var testsOnly_createOperationIsMerged: Bool? {
+    internal var testsOnly_createOperationIsMerged: Bool {
         mutex.withLock {
-            mutableState.createOperationIsMerged
+            mutableState.liveObject.createOperationIsMerged
         }
     }
 
@@ -50,15 +51,17 @@ internal final class DefaultLiveMap: LiveMap {
     }
 
     private let coreSDK: CoreSDK
+    private let logger: AblyPlugin.Logger
 
     // MARK: - Initialization
 
     internal convenience init(
         testsOnly_data data: [String: ObjectsMapEntry],
-        objectID: String? = nil,
+        objectID: String,
         testsOnly_semantics semantics: WireEnum<ObjectsMapSemantics>? = nil,
         delegate: LiveMapObjectPoolDelegate?,
-        coreSDK: CoreSDK
+        coreSDK: CoreSDK,
+        logger: AblyPlugin.Logger
     ) {
         self.init(
             data: data,
@@ -66,31 +69,35 @@ internal final class DefaultLiveMap: LiveMap {
             semantics: semantics,
             delegate: delegate,
             coreSDK: coreSDK,
+            logger: logger,
         )
     }
 
     private init(
         data: [String: ObjectsMapEntry],
-        objectID: String?,
+        objectID: String,
         semantics: WireEnum<ObjectsMapSemantics>?,
         delegate: LiveMapObjectPoolDelegate?,
-        coreSDK: CoreSDK
+        coreSDK: CoreSDK,
+        logger: AblyPlugin.Logger
     ) {
-        mutableState = .init(data: data, objectID: objectID, semantics: semantics)
+        mutableState = .init(liveObject: .init(objectID: objectID), data: data, semantics: semantics)
         self.delegate = .init(referenced: delegate)
         self.coreSDK = coreSDK
+        self.logger = logger
     }
 
     /// Creates a "zero-value LiveMap", per RTLM4.
     ///
     /// - Parameters:
-    ///   - objectID: The value to use for the "private `objectId` field" of RTO5c1b1b.
+    ///   - objectID: The value to use for the RTLO3a `objectID` property.
     ///   - semantics: The value to use for the "private `semantics` field" of RTO5c1b1b.
     internal static func createZeroValued(
-        objectID: String? = nil,
+        objectID: String,
         semantics: WireEnum<ObjectsMapSemantics>? = nil,
         delegate: LiveMapObjectPoolDelegate?,
         coreSDK: CoreSDK,
+        logger: AblyPlugin.Logger,
     ) -> Self {
         .init(
             data: [:],
@@ -98,6 +105,7 @@ internal final class DefaultLiveMap: LiveMap {
             semantics: semantics,
             delegate: delegate,
             coreSDK: coreSDK,
+            logger: logger,
         )
     }
 
@@ -231,6 +239,53 @@ internal final class DefaultLiveMap: LiveMap {
                 objectsPool: &objectsPool,
                 mapDelegate: delegate.referenced,
                 coreSDK: coreSDK,
+                logger: logger,
+            )
+        }
+    }
+
+    /// Test-only method to merge initial value from an ObjectOperation, per RTLM17.
+    internal func testsOnly_mergeInitialValue(from operation: ObjectOperation, objectsPool: inout ObjectsPool) {
+        mutex.withLock {
+            mutableState.mergeInitialValue(
+                from: operation,
+                objectsPool: &objectsPool,
+                mapDelegate: delegate.referenced,
+                coreSDK: coreSDK,
+                logger: logger,
+            )
+        }
+    }
+
+    /// Test-only method to apply a MAP_CREATE operation, per RTLM16.
+    internal func testsOnly_applyMapCreateOperation(_ operation: ObjectOperation, objectsPool: inout ObjectsPool) {
+        mutex.withLock {
+            mutableState.applyMapCreateOperation(
+                operation,
+                objectsPool: &objectsPool,
+                mapDelegate: delegate.referenced,
+                coreSDK: coreSDK,
+                logger: logger,
+            )
+        }
+    }
+
+    /// Attempts to apply an operation from an inbound `ObjectMessage`, per RTLM15.
+    internal func apply(
+        _ operation: ObjectOperation,
+        objectMessageSerial: String?,
+        objectMessageSiteCode: String?,
+        objectsPool: inout ObjectsPool,
+    ) {
+        mutex.withLock {
+            mutableState.apply(
+                operation,
+                objectMessageSerial: objectMessageSerial,
+                objectMessageSiteCode: objectMessageSiteCode,
+                objectsPool: &objectsPool,
+                mapDelegate: delegate.referenced,
+                coreSDK: coreSDK,
+                logger: logger,
             )
         }
     }
@@ -252,6 +307,7 @@ internal final class DefaultLiveMap: LiveMap {
                 objectsPool: &objectsPool,
                 mapDelegate: delegate.referenced,
                 coreSDK: coreSDK,
+                logger: logger,
             )
         }
     }
@@ -271,20 +327,14 @@ internal final class DefaultLiveMap: LiveMap {
     // MARK: - Mutable state and the operations that affect it
 
     private struct MutableState {
+        /// The mutable state common to all LiveObjects.
+        internal var liveObject: LiveObjectMutableState
+
         /// The internal data that this map holds, per RTLM3.
         internal var data: [String: ObjectsMapEntry]
 
-        /// The "private `objectId` field" of RTO5c1b1b.
-        internal var objectID: String?
-
         /// The "private `semantics` field" of RTO5c1b1b.
         internal var semantics: WireEnum<ObjectsMapSemantics>?
-
-        /// The site timeserials for this map, per RTLM6a.
-        internal var siteTimeserials: [String: String]?
-
-        /// Whether the create operation has been merged, per RTLM6b and RTLM6d2.
-        internal var createOperationIsMerged: Bool?
 
         /// Replaces the internal data of this map with the provided ObjectState, per RTLM6.
         ///
@@ -295,44 +345,128 @@ internal final class DefaultLiveMap: LiveMap {
             objectsPool: inout ObjectsPool,
             mapDelegate: LiveMapObjectPoolDelegate?,
             coreSDK: CoreSDK,
+            logger: AblyPlugin.Logger,
         ) {
             // RTLM6a: Replace the private siteTimeserials with the value from ObjectState.siteTimeserials
-            siteTimeserials = state.siteTimeserials
+            liveObject.siteTimeserials = state.siteTimeserials
 
             // RTLM6b: Set the private flag createOperationIsMerged to false
-            createOperationIsMerged = false
+            liveObject.createOperationIsMerged = false
 
             // RTLM6c: Set data to ObjectState.map.entries, or to an empty map if it does not exist
             data = state.map?.entries ?? [:]
 
-            // RTLM6d: If ObjectState.createOp is present
+            // RTLM6d: If ObjectState.createOp is present, merge the initial value into the LiveMap as described in RTLM17
             if let createOp = state.createOp {
-                // RTLM6d1: For each key–ObjectsMapEntry pair in ObjectState.createOp.map.entries
-                if let entries = createOp.map?.entries {
-                    for (key, entry) in entries {
-                        if entry.tombstone == true {
-                            // RTLM6d1b: If ObjectsMapEntry.tombstone is true, apply the MAP_REMOVE operation
-                            // to the specified key using ObjectsMapEntry.timeserial per RTLM8
-                            applyMapRemoveOperation(
-                                key: key,
-                                operationTimeserial: entry.timeserial,
-                            )
-                        } else {
-                            // RTLM6d1a: If ObjectsMapEntry.tombstone is false, apply the MAP_SET operation
-                            // to the specified key using ObjectsMapEntry.timeserial and ObjectsMapEntry.data per RTLM7
-                            applyMapSetOperation(
-                                key: key,
-                                operationTimeserial: entry.timeserial,
-                                operationData: entry.data,
-                                objectsPool: &objectsPool,
-                                mapDelegate: mapDelegate,
-                                coreSDK: coreSDK,
-                            )
-                        }
+                mergeInitialValue(
+                    from: createOp,
+                    objectsPool: &objectsPool,
+                    mapDelegate: mapDelegate,
+                    coreSDK: coreSDK,
+                    logger: logger,
+                )
+            }
+        }
+
+        /// Merges the initial value from an ObjectOperation into this LiveMap, per RTLM17.
+        internal mutating func mergeInitialValue(
+            from operation: ObjectOperation,
+            objectsPool: inout ObjectsPool,
+            mapDelegate: LiveMapObjectPoolDelegate?,
+            coreSDK: CoreSDK,
+            logger: AblyPlugin.Logger,
+        ) {
+            // RTLM17a: For each key–ObjectsMapEntry pair in ObjectOperation.map.entries
+            if let entries = operation.map?.entries {
+                for (key, entry) in entries {
+                    if entry.tombstone == true {
+                        // RTLM17a2: If ObjectsMapEntry.tombstone is true, apply the MAP_REMOVE operation
+                        // as described in RTLM8, passing in the current key as ObjectsMapOp, and ObjectsMapEntry.timeserial as the operation's serial
+                        applyMapRemoveOperation(
+                            key: key,
+                            operationTimeserial: entry.timeserial,
+                        )
+                    } else {
+                        // RTLM17a1: If ObjectsMapEntry.tombstone is false, apply the MAP_SET operation
+                        // as described in RTLM7, passing in ObjectsMapEntry.data and the current key as ObjectsMapOp, and ObjectsMapEntry.timeserial as the operation's serial
+                        applyMapSetOperation(
+                            key: key,
+                            operationTimeserial: entry.timeserial,
+                            operationData: entry.data,
+                            objectsPool: &objectsPool,
+                            mapDelegate: mapDelegate,
+                            coreSDK: coreSDK,
+                            logger: logger,
+                        )
                     }
                 }
-                // RTLM6d2: Set the private flag createOperationIsMerged to true
-                createOperationIsMerged = true
+            }
+            // RTLM17b: Set the private flag createOperationIsMerged to true
+            liveObject.createOperationIsMerged = true
+        }
+
+        /// Attempts to apply an operation from an inbound `ObjectMessage`, per RTLM15.
+        internal mutating func apply(
+            _ operation: ObjectOperation,
+            objectMessageSerial: String?,
+            objectMessageSiteCode: String?,
+            objectsPool: inout ObjectsPool,
+            mapDelegate: LiveMapObjectPoolDelegate?,
+            coreSDK: CoreSDK,
+            logger: Logger,
+        ) {
+            guard let applicableOperation = liveObject.canApplyOperation(objectMessageSerial: objectMessageSerial, objectMessageSiteCode: objectMessageSiteCode, logger: logger) else {
+                // RTLM15b
+                logger.log("Operation \(operation) (serial: \(String(describing: objectMessageSerial)), siteCode: \(String(describing: objectMessageSiteCode))) should not be applied; discarding", level: .debug)
+                return
+            }
+
+            // RTLM15c
+            liveObject.siteTimeserials[applicableOperation.objectMessageSiteCode] = applicableOperation.objectMessageSerial
+
+            switch operation.action {
+            case .known(.mapCreate):
+                // RTLM15d1
+                applyMapCreateOperation(
+                    operation,
+                    objectsPool: &objectsPool,
+                    mapDelegate: mapDelegate,
+                    coreSDK: coreSDK,
+                    logger: logger,
+                )
+            case .known(.mapSet):
+                guard let mapOp = operation.mapOp else {
+                    logger.log("Could not apply MAP_SET since operation.mapOp is missing", level: .warn)
+                    return
+                }
+                guard let data = mapOp.data else {
+                    logger.log("Could not apply MAP_SET since operation.data is missing", level: .warn)
+                    return
+                }
+
+                // RTLM15d2
+                applyMapSetOperation(
+                    key: mapOp.key,
+                    operationTimeserial: applicableOperation.objectMessageSerial,
+                    operationData: data,
+                    objectsPool: &objectsPool,
+                    mapDelegate: mapDelegate,
+                    coreSDK: coreSDK,
+                    logger: logger,
+                )
+            case .known(.mapRemove):
+                guard let mapOp = operation.mapOp else {
+                    return
+                }
+
+                // RTLM15d3
+                applyMapRemoveOperation(
+                    key: mapOp.key,
+                    operationTimeserial: applicableOperation.objectMessageSerial,
+                )
+            default:
+                // RTLM15d4
+                logger.log("Operation \(operation) has unsupported action for LiveMap; discarding", level: .warn)
             }
         }
 
@@ -344,6 +478,7 @@ internal final class DefaultLiveMap: LiveMap {
             objectsPool: inout ObjectsPool,
             mapDelegate: LiveMapObjectPoolDelegate?,
             coreSDK: CoreSDK,
+            logger: AblyPlugin.Logger,
         ) {
             // RTLM7a: If an entry exists in the private data for the specified key
             if let existingEntry = data[key] {
@@ -370,7 +505,7 @@ internal final class DefaultLiveMap: LiveMap {
             // RTLM7c: If the operation has a non-empty ObjectData.objectId attribute
             if let objectId = operationData.objectId, !objectId.isEmpty {
                 // RTLM7c1: Create a zero-value LiveObject in the internal ObjectsPool per RTO6
-                _ = objectsPool.createZeroValueObject(forObjectID: objectId, mapDelegate: mapDelegate, coreSDK: coreSDK)
+                _ = objectsPool.createZeroValueObject(forObjectID: objectId, mapDelegate: mapDelegate, coreSDK: coreSDK, logger: logger)
             }
         }
 
@@ -439,6 +574,32 @@ internal final class DefaultLiveMap: LiveMap {
                 // so the operation must not be applied
                 false
             }
+        }
+
+        /// Applies a `MAP_CREATE` operation, per RTLM16.
+        internal mutating func applyMapCreateOperation(
+            _ operation: ObjectOperation,
+            objectsPool: inout ObjectsPool,
+            mapDelegate: LiveMapObjectPoolDelegate?,
+            coreSDK: CoreSDK,
+            logger: AblyPlugin.Logger,
+        ) {
+            if liveObject.createOperationIsMerged {
+                // RTLM16b
+                logger.log("Not applying MAP_CREATE because a MAP_CREATE has already been applied", level: .warn)
+                return
+            }
+
+            // TODO: RTLM16c `semantics` comparison; outstanding question in https://github.com/ably/specification/pull/343/files#r2192784482
+
+            // RTLM16d
+            mergeInitialValue(
+                from: operation,
+                objectsPool: &objectsPool,
+                mapDelegate: mapDelegate,
+                coreSDK: coreSDK,
+                logger: logger,
+            )
         }
     }
 
