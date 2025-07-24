@@ -155,8 +155,8 @@ internal final class InternalDefaultLiveCounter: Sendable {
         }
     }
 
-    /// Test-only method to merge initial value from an ObjectOperation, per RTLC10.
-    internal func testsOnly_mergeInitialValue(from operation: ObjectOperation) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
+    /// Merges the initial value from an ObjectOperation into this LiveCounter, per RTLC10.
+    internal func mergeInitialValue(from operation: ObjectOperation) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
         mutex.withLock {
             mutableState.mergeInitialValue(from: operation)
         }

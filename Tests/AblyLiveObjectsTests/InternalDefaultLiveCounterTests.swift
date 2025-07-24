@@ -128,7 +128,7 @@ struct InternalDefaultLiveCounterTests {
         }
     }
 
-    /// Tests for the `testsOnly_mergeInitialValue` method, covering RTLC10 specification points
+    /// Tests for the `mergeInitialValue` method, covering RTLC10 specification points
     struct MergeInitialValueTests {
         // @specOneOf(1/2) RTLC10a - with count
         // @spec RTLC10c
@@ -144,7 +144,7 @@ struct InternalDefaultLiveCounterTests {
 
             // Apply merge operation
             let operation = TestFactories.counterCreateOperation(count: 10) // Test value - must exist
-            let update = counter.testsOnly_mergeInitialValue(from: operation)
+            let update = counter.mergeInitialValue(from: operation)
 
             #expect(try counter.value(coreSDK: coreSDK) == 15) // 5 + 10
 
@@ -169,7 +169,7 @@ struct InternalDefaultLiveCounterTests {
                 action: .known(.counterCreate),
                 counter: nil, // Test value - must be nil
             )
-            let update = counter.testsOnly_mergeInitialValue(from: operation)
+            let update = counter.mergeInitialValue(from: operation)
 
             #expect(try counter.value(coreSDK: coreSDK) == 5) // Unchanged
 
@@ -185,7 +185,7 @@ struct InternalDefaultLiveCounterTests {
 
             // Apply merge operation
             let operation = TestFactories.counterCreateOperation(count: 10) // Test value - must exist
-            _ = counter.testsOnly_mergeInitialValue(from: operation)
+            _ = counter.mergeInitialValue(from: operation)
 
             #expect(counter.testsOnly_createOperationIsMerged)
         }
@@ -202,7 +202,7 @@ struct InternalDefaultLiveCounterTests {
 
             // Set initial data and mark create operation as merged
             _ = counter.replaceData(using: TestFactories.counterObjectState(count: 5))
-            _ = counter.testsOnly_mergeInitialValue(from: TestFactories.counterCreateOperation(count: 10))
+            _ = counter.mergeInitialValue(from: TestFactories.counterCreateOperation(count: 10))
             #expect(counter.testsOnly_createOperationIsMerged)
 
             // Try to apply another COUNTER_CREATE operation

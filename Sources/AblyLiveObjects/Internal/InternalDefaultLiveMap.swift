@@ -259,8 +259,8 @@ internal final class InternalDefaultLiveMap: Sendable {
         }
     }
 
-    /// Test-only method to merge initial value from an ObjectOperation, per RTLM17.
-    internal func testsOnly_mergeInitialValue(from operation: ObjectOperation, objectsPool: inout ObjectsPool) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
+    /// Merges the initial value from an ObjectOperation into this LiveMap, per RTLM17.
+    internal func mergeInitialValue(from operation: ObjectOperation, objectsPool: inout ObjectsPool) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
         mutex.withLock {
             mutableState.mergeInitialValue(
                 from: operation,

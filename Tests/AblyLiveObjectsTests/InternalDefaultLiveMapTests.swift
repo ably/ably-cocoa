@@ -827,7 +827,7 @@ struct InternalDefaultLiveMapTests {
         }
     }
 
-    /// Tests for the `testsOnly_mergeInitialValue` method, covering RTLM17 specification points
+    /// Tests for the `mergeInitialValue` method, covering RTLM17 specification points
     struct MergeInitialValueTests {
         // @spec RTLM17a1
         @Test
@@ -845,7 +845,7 @@ struct InternalDefaultLiveMapTests {
                     "keyFromCreateOp": TestFactories.stringMapEntry(key: "keyFromCreateOp", value: "valueFromCreateOp").entry,
                 ],
             )
-            _ = map.testsOnly_mergeInitialValue(from: operation, objectsPool: &pool)
+            _ = map.mergeInitialValue(from: operation, objectsPool: &pool)
 
             // Note that we just check for some basic expected side effects of applying MAP_SET; RTLM7 is tested in more detail elsewhere
             // Check that it contains the data from the operation (per RTLM17a1)
@@ -880,7 +880,7 @@ struct InternalDefaultLiveMapTests {
                 objectId: "arbitrary-id",
                 entries: ["key1": entry],
             )
-            _ = map.testsOnly_mergeInitialValue(from: operation, objectsPool: &pool)
+            _ = map.mergeInitialValue(from: operation, objectsPool: &pool)
 
             // Verify the MAP_REMOVE operation was applied
             #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate) == nil)
@@ -919,7 +919,7 @@ struct InternalDefaultLiveMapTests {
                     "keyFromCreateOp": TestFactories.stringMapEntry(key: "keyFromCreateOp", value: "valueFromCreateOp").entry,
                 ],
             )
-            let update = map.testsOnly_mergeInitialValue(from: operation, objectsPool: &pool)
+            let update = map.mergeInitialValue(from: operation, objectsPool: &pool)
 
             // Verify merged return value per RTLM17c
             #expect(try #require(update.update).update == ["keyThatWillBeRemoved": .removed, "keyFromCreateOp": .updated])
@@ -934,7 +934,7 @@ struct InternalDefaultLiveMapTests {
 
             // Apply merge operation
             let operation = TestFactories.mapCreateOperation(objectId: "arbitrary-id")
-            _ = map.testsOnly_mergeInitialValue(from: operation, objectsPool: &pool)
+            _ = map.mergeInitialValue(from: operation, objectsPool: &pool)
 
             #expect(map.testsOnly_createOperationIsMerged)
         }
@@ -953,7 +953,7 @@ struct InternalDefaultLiveMapTests {
 
             // Set initial data and mark create operation as merged
             _ = map.replaceData(using: TestFactories.mapObjectState(entries: ["key1": TestFactories.stringMapEntry().entry]), objectsPool: &pool)
-            _ = map.testsOnly_mergeInitialValue(from: TestFactories.mapCreateOperation(entries: ["key2": TestFactories.stringMapEntry(key: "key2", value: "value2").entry]), objectsPool: &pool)
+            _ = map.mergeInitialValue(from: TestFactories.mapCreateOperation(entries: ["key2": TestFactories.stringMapEntry(key: "key2", value: "value2").entry]), objectsPool: &pool)
             #expect(map.testsOnly_createOperationIsMerged)
 
             // Try to apply another MAP_CREATE operation
