@@ -1102,6 +1102,16 @@
     return encoded;
 }
 
+/// Converts an `ARTEncoderFormat` to an `APEncodingFormat`.
+- (APEncodingFormat)apEncodingFormatFromARTEncoderFormat:(ARTEncoderFormat)format {
+    switch (format) {
+        case ARTEncoderFormatJson:
+            return APEncodingFormatJSON;
+        case ARTEncoderFormatMsgPack:
+            return APEncodingFormatMessagePack;
+    }
+}
+
 /// Uses the LiveObjects plugin to decode an array of `ObjectMessage`s.
 ///
 /// Returns `nil` if the LiveObjects plugin has not been supplied, or if we fail to decode any of the `ObjectMessage`s.
@@ -1134,9 +1144,11 @@
                                                                                          indexInParent:i];
 
         ARTErrorInfo *error;
+        APEncodingFormat format = [self apEncodingFormatFromARTEncoderFormat:[self format]];
 
         id<APObjectMessageProtocol> objectMessage = [liveObjectsPlugin decodeObjectMessage:item
                                                                                    context:decodingContext
+                                                                                    format:format
                                                                                      error:&error];
 
         if (!objectMessage) {
@@ -1167,9 +1179,10 @@
     }
 
     NSMutableArray<NSDictionary *> *result = [NSMutableArray array];
+    APEncodingFormat format = [self apEncodingFormatFromARTEncoderFormat:[self format]];
 
     for (id objectMessage in objectMessages) {
-        [result addObject:[liveObjectsPlugin encodeObjectMessage:objectMessage]];
+        [result addObject:[liveObjectsPlugin encodeObjectMessage:objectMessage format:format]];
     }
 
     return result;
