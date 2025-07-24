@@ -4,10 +4,7 @@ import Ably
 ///
 /// This is largely a wrapper around ``InternalDefaultLiveMap``.
 internal final class PublicDefaultLiveMap: LiveMap {
-    private let proxied: InternalDefaultLiveMap
-    internal var testsOnly_proxied: InternalDefaultLiveMap {
-        proxied
-    }
+    internal let proxied: InternalDefaultLiveMap
 
     // MARK: - Dependencies that hold a strong reference to `proxied`
 

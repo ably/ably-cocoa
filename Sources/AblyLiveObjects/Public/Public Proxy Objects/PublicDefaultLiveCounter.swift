@@ -4,10 +4,7 @@ import Ably
 ///
 /// This is largely a wrapper around ``InternalDefaultLiveCounter``.
 internal final class PublicDefaultLiveCounter: LiveCounter {
-    private let proxied: InternalDefaultLiveCounter
-    internal var testsOnly_proxied: InternalDefaultLiveCounter {
-        proxied
-    }
+    internal let proxied: InternalDefaultLiveCounter
 
     // MARK: - Dependencies that hold a strong reference to `proxied`
 

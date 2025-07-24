@@ -162,7 +162,7 @@ struct ObjectLifetimesTests {
                     weakPublicRealtimeObjects: objects,
                     weakInternalRealtimeObjects: objects.testsOnly_proxied,
                     strongPublicLiveObject: root,
-                    weakInternalLiveObject: root.testsOnly_proxied,
+                    weakInternalLiveObject: root.proxied,
                 )
             }
 
