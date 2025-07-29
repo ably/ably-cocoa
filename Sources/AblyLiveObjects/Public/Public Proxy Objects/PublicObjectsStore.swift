@@ -1,3 +1,4 @@
+internal import AblyPlugin
 import Foundation
 
 /// Stores the public objects that wrap the SDK's internal components.
@@ -20,6 +21,7 @@ internal final class PublicObjectsStore: Sendable {
 
     internal struct RealtimeObjectsCreationArgs {
         internal var coreSDK: CoreSDK
+        internal var logger: AblyPlugin.Logger
     }
 
     /// Fetches the cached `PublicDefaultRealtimeObjects` that wraps a given `InternalDefaultRealtimeObjects`, creating a new public object if there isn't already one.
@@ -31,6 +33,7 @@ internal final class PublicObjectsStore: Sendable {
 
     internal struct CounterCreationArgs {
         internal var coreSDK: CoreSDK
+        internal var logger: AblyPlugin.Logger
     }
 
     /// Fetches the cached `PublicDefaultLiveCounter` that wraps a given `InternalDefaultLiveCounter`, creating a new public object if there isn't already one.
@@ -43,6 +46,7 @@ internal final class PublicObjectsStore: Sendable {
     internal struct MapCreationArgs {
         internal var coreSDK: CoreSDK
         internal var delegate: LiveMapObjectPoolDelegate
+        internal var logger: AblyPlugin.Logger
     }
 
     /// Fetches the cached `PublicDefaultLiveMap` that wraps a given `InternalDefaultLiveMap`, creating a new public object if there isn't already one.
@@ -64,27 +68,37 @@ internal final class PublicObjectsStore: Sendable {
             /// Fetches the proxy that wraps `proxied`, creating a new proxy if there isn't already one. Stores a weak reference to the proxy.
             mutating func getOrCreate(
                 proxying proxied: some AnyObject,
+                logger: AblyPlugin.Logger,
+                logObjectType: String,
                 createProxy: () -> Proxy,
             ) -> Proxy {
                 // Remove any entries that are no longer useful
-                removeDeallocatedEntries()
+                removeDeallocatedEntries(logger: logger, logObjectType: logObjectType)
 
                 // Do the get-or-create
                 let proxiedObjectIdentifier = ObjectIdentifier(proxied)
 
                 if let existing = proxiesByProxiedObjectIdentifier[proxiedObjectIdentifier]?.referenced {
+                    logger.log("Reusing existing \(logObjectType) proxy (proxy: \(ObjectIdentifier(existing)), proxied: \(proxiedObjectIdentifier))", level: .debug)
                     return existing
                 }
 
                 let created = createProxy()
                 proxiesByProxiedObjectIdentifier[proxiedObjectIdentifier] = .init(referenced: created)
+                logger.log("Creating new \(logObjectType) proxy (proxy: \(ObjectIdentifier(created)), proxied: \(proxiedObjectIdentifier))", level: .debug)
 
                 return created
             }
 
-            private mutating func removeDeallocatedEntries() {
-                proxiesByProxiedObjectIdentifier = proxiesByProxiedObjectIdentifier.filter { entry in
-                    entry.value.referenced != nil
+            private mutating func removeDeallocatedEntries(logger: AblyPlugin.Logger, logObjectType: String) {
+                var keysToRemove: Set<ObjectIdentifier> = []
+                for (proxiedObjectIdentifier, weakProxyRef) in proxiesByProxiedObjectIdentifier where weakProxyRef.referenced == nil {
+                    logger.log("Clearing unused \(logObjectType) proxy from cache (proxied: \(proxiedObjectIdentifier))", level: .debug)
+                    keysToRemove.insert(proxiedObjectIdentifier)
+                }
+
+                for key in keysToRemove {
+                    proxiesByProxiedObjectIdentifier.removeValue(forKey: key)
                 }
             }
         }
@@ -93,10 +107,15 @@ internal final class PublicObjectsStore: Sendable {
             proxying proxied: InternalDefaultRealtimeObjects,
             creationArgs: RealtimeObjectsCreationArgs,
         ) -> PublicDefaultRealtimeObjects {
-            realtimeObjectsProxies.getOrCreate(proxying: proxied) {
+            realtimeObjectsProxies.getOrCreate(
+                proxying: proxied,
+                logger: creationArgs.logger,
+                logObjectType: "RealtimeObjects",
+            ) {
                 .init(
                     proxied: proxied,
                     coreSDK: creationArgs.coreSDK,
+                    logger: creationArgs.logger,
                 )
             }
         }
@@ -105,10 +124,15 @@ internal final class PublicObjectsStore: Sendable {
             proxying proxied: InternalDefaultLiveCounter,
             creationArgs: CounterCreationArgs,
         ) -> PublicDefaultLiveCounter {
-            counterProxies.getOrCreate(proxying: proxied) {
+            counterProxies.getOrCreate(
+                proxying: proxied,
+                logger: creationArgs.logger,
+                logObjectType: "LiveCounter",
+            ) {
                 .init(
                     proxied: proxied,
                     coreSDK: creationArgs.coreSDK,
+                    logger: creationArgs.logger,
                 )
             }
         }
@@ -117,11 +141,16 @@ internal final class PublicObjectsStore: Sendable {
             proxying proxied: InternalDefaultLiveMap,
             creationArgs: MapCreationArgs,
         ) -> PublicDefaultLiveMap {
-            mapProxies.getOrCreate(proxying: proxied) {
+            mapProxies.getOrCreate(
+                proxying: proxied,
+                logger: creationArgs.logger,
+                logObjectType: "LiveMap",
+            ) {
                 .init(
                     proxied: proxied,
                     coreSDK: creationArgs.coreSDK,
                     delegate: creationArgs.delegate,
+                    logger: creationArgs.logger,
                 )
             }
         }

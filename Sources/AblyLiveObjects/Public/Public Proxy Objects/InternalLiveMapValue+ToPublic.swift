@@ -1,16 +1,19 @@
+internal import AblyPlugin
+
 internal extension InternalLiveMapValue {
     // MARK: - Mapping to public types
 
     struct PublicValueCreationArgs {
         internal var coreSDK: CoreSDK
         internal var mapDelegate: LiveMapObjectPoolDelegate
+        internal var logger: AblyPlugin.Logger
 
         internal var toCounterCreationArgs: PublicObjectsStore.CounterCreationArgs {
-            .init(coreSDK: coreSDK)
+            .init(coreSDK: coreSDK, logger: logger)
         }
 
         internal var toMapCreationArgs: PublicObjectsStore.MapCreationArgs {
-            .init(coreSDK: coreSDK, delegate: mapDelegate)
+            .init(coreSDK: coreSDK, delegate: mapDelegate, logger: logger)
         }
     }
 

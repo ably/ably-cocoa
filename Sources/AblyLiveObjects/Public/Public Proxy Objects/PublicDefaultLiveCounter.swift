@@ -1,4 +1,5 @@
 import Ably
+internal import AblyPlugin
 
 /// Our default implementation of ``LiveCounter``.
 ///
@@ -9,10 +10,12 @@ internal final class PublicDefaultLiveCounter: LiveCounter {
     // MARK: - Dependencies that hold a strong reference to `proxied`
 
     private let coreSDK: CoreSDK
+    private let logger: AblyPlugin.Logger
 
-    internal init(proxied: InternalDefaultLiveCounter, coreSDK: CoreSDK) {
+    internal init(proxied: InternalDefaultLiveCounter, coreSDK: CoreSDK, logger: AblyPlugin.Logger) {
         self.proxied = proxied
         self.coreSDK = coreSDK
+        self.logger = logger
     }
 
     // MARK: - `LiveCounter` protocol
