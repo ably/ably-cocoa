@@ -76,11 +76,13 @@ internal final class PublicDefaultLiveMap: LiveMap {
     }
 
     internal func set(key: String, value: LiveMapValue) async throws(ARTErrorInfo) {
-        try await proxied.set(key: key, value: value)
+        let internalValue = InternalLiveMapValue(liveMapValue: value)
+
+        try await proxied.set(key: key, value: internalValue, coreSDK: coreSDK)
     }
 
     internal func remove(key: String) async throws(ARTErrorInfo) {
-        try await proxied.remove(key: key)
+        try await proxied.remove(key: key, coreSDK: coreSDK)
     }
 
     internal func subscribe(listener: @escaping LiveObjectUpdateCallback<LiveMapUpdate>) throws(ARTErrorInfo) -> any SubscribeResponse {

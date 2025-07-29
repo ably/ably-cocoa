@@ -27,11 +27,11 @@ internal final class PublicDefaultLiveCounter: LiveCounter {
     }
 
     internal func increment(amount: Double) async throws(ARTErrorInfo) {
-        try await proxied.increment(amount: amount)
+        try await proxied.increment(amount: amount, coreSDK: coreSDK)
     }
 
     internal func decrement(amount: Double) async throws(ARTErrorInfo) {
-        try await proxied.decrement(amount: amount)
+        try await proxied.decrement(amount: amount, coreSDK: coreSDK)
     }
 
     internal func subscribe(listener: @escaping LiveObjectUpdateCallback<LiveCounterUpdate>) throws(ARTErrorInfo) -> any SubscribeResponse {

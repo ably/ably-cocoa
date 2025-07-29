@@ -1235,4 +1235,181 @@ struct InternalDefaultLiveMapTests {
             #expect(subscriberInvocations.isEmpty)
         }
     }
+
+    /// Tests for the `set` method, covering RTLM20 specification points
+    struct SetTests {
+        // @spec RTLM20c
+        @Test(arguments: [.detached, .failed, .suspended] as [ARTRealtimeChannelState])
+        func throwsErrorForInvalidChannelState(channelState: ARTRealtimeChannelState) async throws {
+            let logger = TestLogger()
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: channelState)
+
+            await #expect {
+                try await map.set(key: "test", value: .primitive(.string("value")), coreSDK: coreSDK)
+            } throws: { error in
+                guard let errorInfo = error as? ARTErrorInfo else {
+                    return false
+                }
+
+                return errorInfo.code == 90001 && errorInfo.statusCode == 400
+            }
+        }
+
+        // @spec RTLM20e
+        // @specUntested RTLM20e1 - Not needed with Swift's type system
+        // @spec RTLM20e2
+        // @spec RTLM20e3
+        // @spec RTLM20e4
+        // @spec RTLM20e5a
+        // @spec RTLM20e5b
+        // @spec RTLM20e5c
+        // @spec RTLM20e5d
+        // @spec RTLM20e5e
+        // @spec RTLM20e5f
+        // @spec RTLM20f
+        @Test(arguments: [
+            // RTLM20e5a
+            (value: .liveMap(.createZeroValued(objectID: "map:test@123", logger: TestLogger(), userCallbackQueue: .main, clock: MockSimpleClock())), expectedData: .init(objectId: "map:test@123")),
+            (value: .liveCounter(.createZeroValued(objectID: "map:test@123", logger: TestLogger(), userCallbackQueue: .main, clock: MockSimpleClock())), expectedData: .init(objectId: "map:test@123")),
+            // RTLM20e5b
+            (value: .primitive(.jsonArray(["test"])), expectedData: .init(json: .array(["test"]))),
+            (value: .primitive(.jsonObject(["foo": "bar"])), expectedData: .init(json: .object(["foo": "bar"]))),
+            // RTLM20e5c
+            (value: .primitive(.string("test")), expectedData: .init(string: "test")),
+            // RTLM20e5d
+            (value: .primitive(.number(42.5)), expectedData: .init(number: NSNumber(value: 42.5))),
+            // RTLM20e5e
+            (value: .primitive(.bool(true)), expectedData: .init(boolean: true)),
+            // RTLM20e5f
+            (value: .primitive(.data(Data([0x01, 0x02]))), expectedData: .init(bytes: Data([0x01, 0x02]))),
+        ] as [(value: InternalLiveMapValue, expectedData: ObjectData)])
+        func publishesCorrectObjectMessageForDifferentValueTypes(value: InternalLiveMapValue, expectedData: ObjectData) async throws {
+            let logger = TestLogger()
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "map:test@123", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attached)
+
+            var publishedMessage: OutboundObjectMessage?
+            coreSDK.setPublishHandler { messages in
+                publishedMessage = messages.first
+            }
+
+            try await map.set(key: "testKey", value: value, coreSDK: coreSDK)
+
+            let expectedMessage = OutboundObjectMessage(
+                operation: ObjectOperation(
+                    // RTLM20e2
+                    action: .known(.mapSet),
+                    // RTLM20e3
+                    objectId: "map:test@123",
+                    mapOp: ObjectsMapOp(
+                        // RTLM20e4
+                        key: "testKey",
+                        // RTLM20e5
+                        data: expectedData,
+                    ),
+                ),
+            )
+            // RTLM20f
+            let message = try #require(publishedMessage)
+            #expect(message == expectedMessage)
+        }
+
+        @Test
+        func throwsErrorWhenPublishFails() async throws {
+            let logger = TestLogger()
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "map:test@123", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attached)
+
+            coreSDK.setPublishHandler { _ throws(InternalError) in
+                throw NSError(domain: "test", code: 0, userInfo: [NSLocalizedDescriptionKey: "Publish failed"]).toInternalError()
+            }
+
+            await #expect {
+                try await map.set(key: "testKey", value: .primitive(.string("testValue")), coreSDK: coreSDK)
+            } throws: { error in
+                guard let errorInfo = error as? ARTErrorInfo else {
+                    return false
+                }
+                return errorInfo.message.contains("Publish failed")
+            }
+        }
+    }
+
+    /// Tests for the `remove` method, covering RTLM21 specification points
+    struct RemoveTests {
+        // @spec RTLM21c
+        @Test(arguments: [.detached, .failed, .suspended] as [ARTRealtimeChannelState])
+        func throwsErrorForInvalidChannelState(channelState: ARTRealtimeChannelState) async throws {
+            let logger = TestLogger()
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: channelState)
+
+            await #expect {
+                try await map.remove(key: "test", coreSDK: coreSDK)
+            } throws: { error in
+                guard let errorInfo = error as? ARTErrorInfo else {
+                    return false
+                }
+
+                return errorInfo.code == 90001 && errorInfo.statusCode == 400
+            }
+        }
+
+        // @specUntested RTLM21e
+        // @specUntested RTLM21e1 - Not needed with Swift's type system
+        // @spec RTLM21e2
+        // @spec RTLM21e3
+        // @spec RTLM21e4
+        // @spec RTLM21f
+        func publishesCorrectObjectMessage() async throws {
+            let logger = TestLogger()
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "map:test@123", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attached)
+
+            var publishedMessages: [OutboundObjectMessage] = []
+            coreSDK.setPublishHandler { messages in
+                publishedMessages.append(contentsOf: messages)
+            }
+
+            try await map.remove(key: "testKey", coreSDK: coreSDK)
+
+            let expectedMessage = OutboundObjectMessage(
+                operation: ObjectOperation(
+                    // RTLM21e2
+                    action: .known(.mapRemove),
+                    // RTLM21e3
+                    objectId: "map:test@123",
+                    mapOp: ObjectsMapOp(
+                        // RTLM21e4
+                        key: "testKey",
+                        data: nil,
+                    ),
+                ),
+            )
+            // RTLM21f
+            #expect(publishedMessages.count == 1)
+            #expect(publishedMessages[0] == expectedMessage)
+        }
+
+        @Test
+        func throwsErrorWhenPublishFails() async throws {
+            let logger = TestLogger()
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "map:test@123", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attached)
+
+            coreSDK.setPublishHandler { _ throws(InternalError) in
+                throw NSError(domain: "test", code: 0, userInfo: [NSLocalizedDescriptionKey: "Publish failed"]).toInternalError()
+            }
+
+            await #expect {
+                try await map.remove(key: "testKey", coreSDK: coreSDK)
+            } throws: { error in
+                guard let errorInfo = error as? ARTErrorInfo else {
+                    return false
+                }
+                return errorInfo.message.contains("Publish failed")
+            }
+        }
+    }
 }
