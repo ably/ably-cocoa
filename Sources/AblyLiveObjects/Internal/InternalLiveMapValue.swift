@@ -1,7 +1,7 @@
 import Foundation
 
 /// Same as the public ``LiveMapValue`` type but with associated values of internal type.
-internal enum InternalLiveMapValue: Sendable {
+internal enum InternalLiveMapValue: Sendable, Equatable {
     case primitive(PrimitiveObjectValue)
     case liveMap(InternalDefaultLiveMap)
     case liveCounter(InternalDefaultLiveCounter)
@@ -50,5 +50,26 @@ internal enum InternalLiveMapValue: Sendable {
     /// If this `InternalLiveMapValue` has case `primitive` with a data value, this returns that value. Else, it returns `nil`.
     internal var dataValue: Data? {
         primitiveValue?.dataValue
+    }
+
+    // MARK: - Equatable Implementation
+
+    internal static func == (lhs: InternalLiveMapValue, rhs: InternalLiveMapValue) -> Bool {
+        switch lhs {
+        case let .primitive(lhsValue):
+            if case let .primitive(rhsValue) = rhs, lhsValue == rhsValue {
+                return true
+            }
+        case let .liveMap(lhsMap):
+            if case let .liveMap(rhsMap) = rhs, lhsMap === rhsMap {
+                return true
+            }
+        case let .liveCounter(lhsCounter):
+            if case let .liveCounter(rhsCounter) = rhs, lhsCounter === rhsCounter {
+                return true
+            }
+        }
+
+        return false
     }
 }

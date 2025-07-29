@@ -83,7 +83,7 @@ public protocol RealtimeObjects: Sendable {
 
 /// Represents the type of data stored for a given key in a ``LiveMap``.
 /// It may be a primitive value (``PrimitiveObjectValue``), or another ``LiveObject``.
-public enum LiveMapValue: Sendable {
+public enum LiveMapValue: Sendable, Equatable {
     case primitive(PrimitiveObjectValue)
     case liveMap(any LiveMap)
     case liveCounter(any LiveCounter)
@@ -132,6 +132,27 @@ public enum LiveMapValue: Sendable {
     /// If this `LiveMapValue` has case `primitive` with a data value, this returns that value. Else, it returns `nil`.
     public var dataValue: Data? {
         primitiveValue?.dataValue
+    }
+
+    // MARK: - Equatable Implementation
+
+    public static func == (lhs: LiveMapValue, rhs: LiveMapValue) -> Bool {
+        switch lhs {
+        case let .primitive(lhsValue):
+            if case let .primitive(rhsValue) = rhs, lhsValue == rhsValue {
+                return true
+            }
+        case let .liveMap(lhsMap):
+            if case let .liveMap(rhsMap) = rhs, lhsMap === rhsMap {
+                return true
+            }
+        case let .liveCounter(lhsCounter):
+            if case let .liveCounter(rhsCounter) = rhs, lhsCounter === rhsCounter {
+                return true
+            }
+        }
+
+        return false
     }
 }
 
@@ -265,7 +286,7 @@ public protocol LiveMapUpdate: Sendable {
 }
 
 /// Represents a primitive value that can be stored in a ``LiveMap``.
-public enum PrimitiveObjectValue: Sendable {
+public enum PrimitiveObjectValue: Sendable, Equatable {
     case string(String)
     case number(Double)
     case bool(Bool)
