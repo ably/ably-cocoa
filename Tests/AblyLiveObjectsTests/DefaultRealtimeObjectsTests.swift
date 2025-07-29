@@ -53,6 +53,7 @@ struct DefaultRealtimeObjectsTests {
         // @spec RTO5b
         // @spec RTO5c3
         // @spec RTO5c4
+        // @spec RTO5c5
         @Test
         func handlesMultiProtocolMessageSync() async throws {
             let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
@@ -94,7 +95,7 @@ struct DefaultRealtimeObjectsTests {
                 protocolMessageChannelSerial: "\(sequenceId):", // Empty cursor indicates end
             )
 
-            // Verify sync sequence is cleared and there is no SyncObjectsPool (RTO5c3, RTO5c4)
+            // Verify sync sequence is cleared and there is no SyncObjectsPool or BufferedObjectOperations (RTO5c3, RTO5c4, RTO5c5)
             #expect(!realtimeObjects.testsOnly_hasSyncSequence)
 
             // Verify all objects were applied to pool (side effect of applySyncObjectsPool per RTO5c1b1b)
@@ -108,6 +109,7 @@ struct DefaultRealtimeObjectsTests {
 
         // @spec RTO5a2
         // @spec RTO5a2a
+        // @spec RTO5a2b
         @Test
         func newSequenceIdDiscardsInFlightSync() async throws {
             let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
@@ -122,6 +124,11 @@ struct DefaultRealtimeObjectsTests {
             )
 
             #expect(realtimeObjects.testsOnly_hasSyncSequence)
+
+            // Inject an OBJECT; it will get buffered per RTO8a and subsequently discarded per RTO5a2b
+            realtimeObjects.handleObjectProtocolMessage(objectMessages: [
+                TestFactories.mapCreateOperationMessage(objectId: "map:3@789"),
+            ])
 
             // Start new sequence with different ID (RTO5a2)
             let secondMessages = [TestFactories.simpleMapMessage(objectId: "map:2@456")]
@@ -142,6 +149,7 @@ struct DefaultRealtimeObjectsTests {
             // Verify only the second sequence's objects were applied (RTO5a2a - previous cleared)
             let pool = realtimeObjects.testsOnly_objectsPool
             #expect(pool.entries["map:1@123"] == nil) // From discarded first sequence
+            #expect(pool.entries["map:3@789"] == nil) // Check we discarded the OBJECT that was buffered during discarded first sequence (RTO5a2b)
             #expect(pool.entries["map:2@456"] != nil) // From completed second sequence
             #expect(!realtimeObjects.testsOnly_hasSyncSequence)
         }
@@ -336,6 +344,7 @@ struct DefaultRealtimeObjectsTests {
         // @spec RTO4b2
         // @spec RTO4b3
         // @spec RTO4b4
+        // @spec RTO4b5
         @Test
         func handlesHasObjectsFalse() {
             let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
@@ -381,7 +390,7 @@ struct DefaultRealtimeObjectsTests {
             #expect(newRoot as AnyObject !== originalPool.root as AnyObject) // Should be a new instance
             #expect(newRoot.testsOnly_data.isEmpty) // Should be zero-valued (empty)
 
-            // RTO4b3, RTO4b4: SyncObjectsPool must be cleared, sync sequence cleared
+            // RTO4b3, RTO4b4, RTO4b5: SyncObjectsPool must be cleared, sync sequence cleared, BufferedObjectOperations cleared
             #expect(!realtimeObjects.testsOnly_hasSyncSequence)
         }
 
@@ -920,6 +929,93 @@ struct DefaultRealtimeObjectsTests {
                 let finalValue = try counter.value
                 #expect(finalValue == 15) // 5 + 10
                 #expect(counter.testsOnly_siteTimeserials["site1"] == "ts2")
+            }
+        }
+
+        // Tests that when an OBJECT ProtocolMessage is received during a sync sequence, its operations are buffered per RTO8a and applied after sync completion per RTO5c6.
+        struct BufferOperationTests {
+            // @spec RTO8a
+            // @spec RTO5c6
+            @Test
+            func buffersObjectOperationsDuringSyncAndAppliesAfterCompletion() async throws {
+                let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+                let sequenceId = "seq123"
+
+                // Start sync sequence with first OBJECT_SYNC message
+                let (entryKey, entry) = TestFactories.stringMapEntry(key: "existingKey", value: "existingValue")
+                let firstSyncMessages = [
+                    TestFactories.mapObjectMessage(
+                        objectId: "map:1@123",
+                        siteTimeserials: ["site1": "ts1"], // Explicit sync data siteCode and serial
+                        entries: [entryKey: entry],
+                    ),
+                ]
+                realtimeObjects.handleObjectSyncProtocolMessage(
+                    objectMessages: firstSyncMessages,
+                    protocolMessageChannelSerial: "\(sequenceId):cursor1",
+                )
+
+                // Verify sync sequence is active
+                #expect(realtimeObjects.testsOnly_hasSyncSequence)
+
+                // Inject first OBJECT ProtocolMessage during sync (RTO8a)
+                let firstObjectMessage = TestFactories.mapSetOperationMessage(
+                    objectId: "map:1@123",
+                    key: "key1",
+                    value: "value1",
+                    serial: "ts3", // Higher than sync data "ts1"
+                    siteCode: "site1",
+                )
+                realtimeObjects.handleObjectProtocolMessage(objectMessages: [firstObjectMessage])
+
+                // Verify the operation was buffered and not applied yet
+                let poolAfterFirstObject = realtimeObjects.testsOnly_objectsPool
+                #expect(poolAfterFirstObject.entries["map:1@123"] == nil) // Object not yet created from sync
+
+                // Inject second OBJECT ProtocolMessage during sync (RTO8a)
+                let secondObjectMessage = TestFactories.counterIncOperationMessage(
+                    objectId: "counter:1@456",
+                    amount: 10,
+                    serial: "ts4", // Higher than sync data "ts2"
+                    siteCode: "site1",
+                )
+                realtimeObjects.handleObjectProtocolMessage(objectMessages: [secondObjectMessage])
+
+                // Verify the second operation was also buffered and not applied yet
+                let poolAfterSecondObject = realtimeObjects.testsOnly_objectsPool
+                #expect(poolAfterSecondObject.entries["counter:1@456"] == nil) // Object not yet created from sync
+
+                // Complete sync sequence with final OBJECT_SYNC message
+                let finalSyncMessages = [
+                    TestFactories.counterObjectMessage(
+                        objectId: "counter:1@456",
+                        siteTimeserials: ["site1": "ts2"],
+                        count: 5,
+                    ),
+                ]
+                realtimeObjects.handleObjectSyncProtocolMessage(
+                    objectMessages: finalSyncMessages,
+                    protocolMessageChannelSerial: "\(sequenceId):", // Empty cursor indicates end
+                )
+
+                // Verify sync sequence is cleared
+                #expect(!realtimeObjects.testsOnly_hasSyncSequence)
+
+                // Verify all objects were applied to pool from sync
+                let finalPool = realtimeObjects.testsOnly_objectsPool
+                let map = try #require(finalPool.entries["map:1@123"]?.mapValue)
+                let counter = try #require(finalPool.entries["counter:1@456"]?.counterValue)
+
+                // Verify the buffered operations were applied after sync completion (RTO5c6)
+                // Check that MAP_SET operation was applied to the map
+                let mapValue = try #require(map.get(key: "key1")?.stringValue)
+                #expect(mapValue == "value1")
+                #expect(map.testsOnly_siteTimeserials["site1"] == "ts3")
+
+                // Check that COUNTER_INC operation was applied to the counter
+                let counterValue = try counter.value
+                #expect(counterValue == 15) // 5 (from sync) + 10 (from buffered operation)
+                #expect(counter.testsOnly_siteTimeserials["site1"] == "ts4")
             }
         }
     }
