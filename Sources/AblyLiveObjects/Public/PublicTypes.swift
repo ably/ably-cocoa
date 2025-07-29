@@ -371,3 +371,29 @@ public protocol OnLiveObjectLifecycleEventResponse: Sendable {
     /// Deregisters the listener passed to the `on` call.
     func off()
 }
+
+// MARK: - AsyncSequence Extensions
+
+/// Extension to provide AsyncSequence-based subscription for `LiveObject` updates.
+public extension LiveObject {
+    /// Returns an `AsyncSequence` that emits updates to this `LiveObject`.
+    ///
+    /// This provides an alternative to the callback-based ``subscribe(listener:)`` method,
+    /// allowing you to use Swift's structured concurrency features like `for await` loops.
+    ///
+    /// - Returns: An AsyncSequence that emits ``Update`` values when the object is updated.
+    /// - Throws: An ``ARTErrorInfo`` if the subscription fails.
+    func updates() throws(ARTErrorInfo) -> AsyncStream<Update> {
+        let (stream, continuation) = AsyncStream.makeStream(of: Update.self)
+
+        let subscription = try subscribe { update, _ in
+            continuation.yield(update)
+        }
+
+        continuation.onTermination = { _ in
+            subscription.unsubscribe()
+        }
+
+        return stream
+    }
+}
