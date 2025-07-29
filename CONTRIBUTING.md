@@ -45,6 +45,28 @@ To check formatting and code quality, run `swift run BuildTool lint`. Run with `
 - The public API of the SDK should use typed throws, and the thrown errors should be of type `ARTErrorInfo`.
 - `Dictionary.mapValues` does not support typed throws. We have our own extension `ablyLiveObjects_mapValuesWithTypedThrow` which does; use this.
 
+### Memory management
+
+We follow an approach to memory management that is broadly similar to that of ably-cocoa: we keep all of the internal components of the SDK alive as long as the user is holding a strong reference to any object vended by the public API of the SDK. This means that, for example, a user can use LiveObjects functionality by maintaining only a reference to the root `LiveMap`; even if they relinquish their references to, say, the `ARTRealtime` or `ARTRealtimeChannel` instance, they will continue to receive events from the `LiveMap` and they will be able to use its methods.
+
+We achieve this by vending a set of public types which maintain strong references to all of the internal components of the SDK which are needed in order for the public type to function correctly. For example, the public `PublicDefaultLiveMap` type wraps an `InternalDefaultLiveMap`, and holds strong references to the `CoreSDK` object, which in turn holds the following sequence of strong references: `CoreSDK` → `RealtimeClient` → `RealtimeChannel` → `InternalDefaultRealtimeObjects`, thus ensuring that:
+
+1. the `InternalDefaultLiveMap` can always perform actions on these dependencies in response to a user action
+2. these dependencies, which deliver events to the `InternalDefaultLiveMap`, remain alive and thus remain delivering events
+
+The key rules that must be followed in order to avoid a strong reference cycle are that the SDK's _internal_ classes (that is `InternalDefaultLiveMap` etc) _must never hold a strong reference to_:
+
+- any of the corresponding public types (e.g. `PublicDefaultLiveMap`)
+- any of the ably-cocoa components that hold a strong reference to these internal components (that is, the realtime client or channel); thus, they must never hold a strong reference to a `CoreSDK` object
+
+Note that, unlike ably-cocoa, the internal components do not even hold weak references to their dependencies; rather, these dependencies are passed in by the public object when the user performs an action that requires one of these dependencies. (There may turn out to be limitations to this approach, but haven't found them yet.)
+
+Also note that, unlike ably-cocoa, we aim to provide a stable pointer identity for the public objects vended by the SDK, instead of creating a new object each time the user requests one. See the `PublicObjectsStore` class for more details.
+
+The `Public…` classes all follow the same pattern and are not very interesting; the business logic should be in the `Internal…` classes and those should be where we focus our unit testing effort.
+
+`ObjectLifetimesTests.swift` contains tests of the behaviour described in this section.
+
 ### Testing guidelines
 
 #### Attributing tests to a spec point

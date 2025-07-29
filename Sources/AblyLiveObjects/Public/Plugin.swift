@@ -22,7 +22,10 @@ import ObjectiveC.NSObject
 /// ```
 @objc
 public class Plugin: NSObject {
+    /// The `AblyPlugin.PluginAPIProtocol` that the LiveObjects plugin should use by default (i.e. when one hasn't been injected for test purposes).
+    internal static let defaultPluginAPI: AblyPlugin.PluginAPIProtocol = AblyPlugin.PluginAPI.sharedInstance()
+
     // MARK: - Informal conformance to AblyPlugin.LiveObjectsPluginProtocol
 
-    @objc private static let internalPlugin = DefaultInternalPlugin(pluginAPI: AblyPlugin.PluginAPI.sharedInstance())
+    @objc private static let internalPlugin = DefaultInternalPlugin(pluginAPI: defaultPluginAPI)
 }

@@ -1,14 +1,13 @@
 import Ably
 internal import AblyPlugin
 
-/// The class that provides the public API for interacting with LiveObjects, via the ``ARTRealtimeChannel/objects`` property.
-internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolDelegate {
+/// This provides the implementation behind ``PublicDefaultRealtimeObjects``, via internal versions of the ``RealtimeObjects`` API.
+internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPoolDelegate {
     // Used for synchronizing access to all of this instance's mutable state. This is a temporary solution just to allow us to implement `Sendable`, and we'll revisit it in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/3.
     private let mutex = NSLock()
 
     private nonisolated(unsafe) var mutableState: MutableState!
 
-    private let coreSDK: CoreSDK
     private let logger: AblyPlugin.Logger
 
     // These drive the testsOnly_* properties that expose the received ProtocolMessages to the test suite.
@@ -70,13 +69,12 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
         }
     }
 
-    internal init(coreSDK: CoreSDK, logger: AblyPlugin.Logger) {
-        self.coreSDK = coreSDK
+    internal init(logger: AblyPlugin.Logger) {
         self.logger = logger
         (receivedObjectProtocolMessages, receivedObjectProtocolMessagesContinuation) = AsyncStream.makeStream()
         (receivedObjectSyncProtocolMessages, receivedObjectSyncProtocolMessagesContinuation) = AsyncStream.makeStream()
         (waitingForSyncEvents, waitingForSyncEventsContinuation) = AsyncStream.makeStream()
-        mutableState = .init(objectsPool: .init(rootDelegate: self, rootCoreSDK: coreSDK, logger: logger))
+        mutableState = .init(objectsPool: .init(logger: logger))
     }
 
     // MARK: - LiveMapObjectPoolDelegate
@@ -87,9 +85,9 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
         }
     }
 
-    // MARK: `RealtimeObjects` protocol
+    // MARK: - Internal methods that power RealtimeObjects conformance
 
-    internal func getRoot() async throws(ARTErrorInfo) -> any LiveMap {
+    internal func getRoot(coreSDK: CoreSDK) async throws(ARTErrorInfo) -> InternalDefaultLiveMap {
         // RTO1b: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
         let currentChannelState = coreSDK.channelState
         if currentChannelState == .detached || currentChannelState == .failed {
@@ -159,8 +157,6 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
             mutableState.onChannelAttached(
                 hasObjects: hasObjects,
                 logger: logger,
-                mapDelegate: self,
-                coreSDK: coreSDK,
             )
         }
     }
@@ -176,8 +172,6 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
                 objectMessages: objectMessages,
                 logger: logger,
                 receivedObjectProtocolMessagesContinuation: receivedObjectProtocolMessagesContinuation,
-                mapDelegate: self,
-                coreSDK: coreSDK,
             )
         }
     }
@@ -194,8 +188,6 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
                 protocolMessageChannelSerial: protocolMessageChannelSerial,
                 logger: logger,
                 receivedObjectSyncProtocolMessagesContinuation: receivedObjectSyncProtocolMessagesContinuation,
-                mapDelegate: self,
-                coreSDK: coreSDK,
             )
         }
     }
@@ -203,16 +195,16 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
     /// Creates a zero-value LiveObject in the object pool for this object ID.
     ///
     /// Intended as a way for tests to populate the object pool.
-    internal func testsOnly_createZeroValueLiveObject(forObjectID objectID: String, coreSDK: CoreSDK) -> ObjectsPool.Entry? {
+    internal func testsOnly_createZeroValueLiveObject(forObjectID objectID: String) -> ObjectsPool.Entry? {
         mutex.withLock {
-            mutableState.objectsPool.createZeroValueObject(forObjectID: objectID, mapDelegate: self, coreSDK: coreSDK, logger: logger)
+            mutableState.objectsPool.createZeroValueObject(forObjectID: objectID, logger: logger)
         }
     }
 
     // MARK: - Sending `OBJECT` ProtocolMessage
 
     // This is currently exposed so that we can try calling it from the tests in the early days of the SDK to check that we can send an OBJECT ProtocolMessage. We'll probably make it private later on.
-    internal func testsOnly_sendObject(objectMessages: [OutboundObjectMessage]) async throws(InternalError) {
+    internal func testsOnly_sendObject(objectMessages: [OutboundObjectMessage], coreSDK: CoreSDK) async throws(InternalError) {
         try await coreSDK.sendObject(objectMessages: objectMessages)
     }
 
@@ -241,8 +233,6 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
         internal mutating func onChannelAttached(
             hasObjects: Bool,
             logger: Logger,
-            mapDelegate: LiveMapObjectPoolDelegate,
-            coreSDK: CoreSDK,
         ) {
             logger.log("onChannelAttached(hasObjects: \(hasObjects)", level: .debug)
 
@@ -255,7 +245,7 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
 
             // RTO4b1, RTO4b2: Reset the ObjectsPool to have a single empty root object
             // TODO: this one is unclear (are we meant to replace the root or just clear its data?) https://github.com/ably/specification/pull/333/files#r2183493458
-            objectsPool = .init(rootDelegate: mapDelegate, rootCoreSDK: coreSDK, logger: logger)
+            objectsPool = .init(logger: logger)
 
             // I have, for now, not directly implemented the "perform the actions for object sync completion" of RTO4b4 since my implementation doesn't quite match the model given there; here you only have a SyncObjectsPool if you have an OBJECT_SYNC in progress, which you might not have upon receiving an ATTACHED. Instead I've just implemented what seem like the relevant side effects. Can revisit this if "the actions for object sync completion" get more complex.
 
@@ -270,8 +260,6 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
             protocolMessageChannelSerial: String?,
             logger: Logger,
             receivedObjectSyncProtocolMessagesContinuation: AsyncStream<[InboundObjectMessage]>.Continuation,
-            mapDelegate: LiveMapObjectPoolDelegate,
-            coreSDK: CoreSDK,
         ) {
             logger.log("handleObjectSyncProtocolMessage(objectMessages: \(objectMessages), protocolMessageChannelSerial: \(String(describing: protocolMessageChannelSerial)))", level: .debug)
 
@@ -326,8 +314,6 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
                 // RTO5c
                 objectsPool.applySyncObjectsPool(
                     completedSyncObjectsPool,
-                    mapDelegate: mapDelegate,
-                    coreSDK: coreSDK,
                     logger: logger,
                 )
 
@@ -338,8 +324,6 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
                         applyObjectProtocolMessageObjectMessage(
                             objectMessage,
                             logger: logger,
-                            mapDelegate: mapDelegate,
-                            coreSDK: coreSDK,
                         )
                     }
                 }
@@ -356,8 +340,6 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
             objectMessages: [InboundObjectMessage],
             logger: Logger,
             receivedObjectProtocolMessagesContinuation: AsyncStream<[InboundObjectMessage]>.Continuation,
-            mapDelegate: LiveMapObjectPoolDelegate,
-            coreSDK: CoreSDK,
         ) {
             receivedObjectProtocolMessagesContinuation.yield(objectMessages)
 
@@ -375,8 +357,6 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
                     applyObjectProtocolMessageObjectMessage(
                         objectMessage,
                         logger: logger,
-                        mapDelegate: mapDelegate,
-                        coreSDK: coreSDK,
                     )
                 }
             }
@@ -386,8 +366,6 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
         private mutating func applyObjectProtocolMessageObjectMessage(
             _ objectMessage: InboundObjectMessage,
             logger: Logger,
-            mapDelegate: LiveMapObjectPoolDelegate,
-            coreSDK: CoreSDK,
         ) {
             guard let operation = objectMessage.operation else {
                 // RTO9a1
@@ -402,8 +380,6 @@ internal final class DefaultRealtimeObjects: RealtimeObjects, LiveMapObjectPoolD
             } else {
                 guard let newEntry = objectsPool.createZeroValueObject(
                     forObjectID: operation.objectId,
-                    mapDelegate: mapDelegate,
-                    coreSDK: coreSDK,
                     logger: logger,
                 ) else {
                     logger.log("Unable to create zero-value object for \(operation.objectId) when processing OBJECT message; dropping", level: .warn)

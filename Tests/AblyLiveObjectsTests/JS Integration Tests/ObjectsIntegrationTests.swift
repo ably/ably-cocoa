@@ -9,29 +9,12 @@ import Testing
 
 // MARK: - Top-level helpers
 
-private func realtimeWithObjects(options: PartialClientOptions?) async throws -> ARTRealtime {
-    let key = try await Sandbox.fetchSharedAPIKey()
-    let clientOptions = ARTClientOptions(key: key)
-    clientOptions.plugins = [.liveObjects: AblyLiveObjects.Plugin.self]
-    clientOptions.environment = "sandbox"
-
-    clientOptions.testOptions.transportFactory = TestProxyTransportFactory()
-
-    if TestLogger.loggingEnabled {
-        clientOptions.logLevel = .verbose
-    }
-
-    if let options {
-        clientOptions.useBinaryProtocol = options.useBinaryProtocol
-    }
-
-    return ARTRealtime(options: clientOptions)
+private func realtimeWithObjects(options: ClientHelper.PartialClientOptions) async throws -> ARTRealtime {
+    try await ClientHelper.realtimeWithObjects(options: options)
 }
 
 private func channelOptionsWithObjects() -> ARTRealtimeChannelOptions {
-    let options = ARTRealtimeChannelOptions()
-    options.modes = [.objectSubscribe, .objectPublish]
-    return options
+    ClientHelper.channelOptionsWithObjects()
 }
 
 // Swift version of the JS lexicoTimeserial function
@@ -152,7 +135,7 @@ private let objectsFixturesChannel = "objects_fixtures"
 private struct TestCase<Context>: Identifiable, CustomStringConvertible {
     var disabled: Bool
     var scenario: TestScenario<Context>
-    var options: PartialClientOptions?
+    var options: ClientHelper.PartialClientOptions
     var channelName: String
 
     /// This `Identifiable` conformance allows us to re-run individual test cases from the Xcode UI (https://developer.apple.com/documentation/testing/parameterizedtesting#Run-selected-test-cases)
@@ -164,8 +147,8 @@ private struct TestCase<Context>: Identifiable, CustomStringConvertible {
     var description: String {
         var result = scenario.description
 
-        if let options {
-            result += " (\(options.useBinaryProtocol ? "binary" : "text"))"
+        if let useBinaryProtocol = options.useBinaryProtocol {
+            result += " (\(useBinaryProtocol ? "binary" : "text"))"
         }
 
         return result
@@ -175,11 +158,7 @@ private struct TestCase<Context>: Identifiable, CustomStringConvertible {
 /// Enables `TestCase`'s conformance to `Identifiable`.
 private struct TestCaseID: Encodable, Hashable {
     var description: String
-    var options: PartialClientOptions?
-}
-
-private struct PartialClientOptions: Encodable, Hashable {
-    var useBinaryProtocol: Bool
+    var options: ClientHelper.PartialClientOptions?
 }
 
 /// The input to `forScenarios`.
@@ -193,19 +172,16 @@ private struct TestScenario<Context> {
 private func forScenarios<Context>(_ scenarios: [TestScenario<Context>]) -> [TestCase<Context>] {
     scenarios.map { scenario -> [TestCase<Context>] in
         if scenario.allTransportsAndProtocols {
-            [
-                PartialClientOptions(useBinaryProtocol: true),
-                PartialClientOptions(useBinaryProtocol: false),
-            ].map { options -> TestCase<Context> in
+            [true, false].map { useBinaryProtocol -> TestCase<Context> in
                 .init(
                     disabled: scenario.disabled,
                     scenario: scenario,
-                    options: options,
-                    channelName: "\(scenario.description) \(options.useBinaryProtocol ? "binary" : "text")",
+                    options: .init(useBinaryProtocol: useBinaryProtocol),
+                    channelName: "\(scenario.description) \(useBinaryProtocol ? "binary" : "text")",
                 )
             }
         } else {
-            [.init(disabled: scenario.disabled, scenario: scenario, options: nil, channelName: scenario.description)]
+            [.init(disabled: scenario.disabled, scenario: scenario, options: .init(), channelName: scenario.description)]
         }
     }
     .flatMap(\.self)
@@ -271,7 +247,7 @@ private struct ObjectsIntegrationTests {
             var channelName: String
             var channel: ARTRealtimeChannel
             var client: ARTRealtime
-            var clientOptions: PartialClientOptions?
+            var clientOptions: ClientHelper.PartialClientOptions
         }
 
         static let scenarios: [TestScenario<Context>] = {
@@ -323,9 +299,6 @@ private struct ObjectsIntegrationTests {
                         for key in valueMapKeys {
                             #expect(try valuesMap.get(key: key) != nil, "Check value at key=\"\(key)\" in nested map exists")
                         }
-
-                        // TODO: remove (Swift-only) — keep channel alive until we've executed our test case. We'll address this in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/9
-                        withExtendedLifetime(channel) {}
                     },
                 ),
                 .init(
@@ -395,9 +368,6 @@ private struct ObjectsIntegrationTests {
                             #expect(try #require(map2.get(key: "shouldStay")?.stringValue) == "foo", "Check map has correct value for \"shouldStay\" key")
                             #expect(try #require(map2.get(key: "anotherKey")?.stringValue) == "baz", "Check map has correct value for \"anotherKey\" key")
                             #expect(try map2.get(key: "shouldDelete") == nil, "Check map does not have \"shouldDelete\" key")
-
-                            // TODO: remove (Swift-only) — keep channel alive until we've executed our test case. We'll address this in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/9
-                            withExtendedLifetime(channel2) {}
                         }
                     },
                 ),
@@ -471,9 +441,6 @@ private struct ObjectsIntegrationTests {
                             let counterObj = try #require(root.get(key: counter.key)?.liveCounterValue)
                             #expect(try counterObj.value == Double(counter.value), "Check counter at key=\"\(counter.key)\" in root has correct value")
                         }
-
-                        // TODO: remove (Swift-only) — keep channel alive until we've executed our test case. We'll address this in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/9
-                        withExtendedLifetime(channel) {}
                     },
                 ),
                 .init(
@@ -514,9 +481,6 @@ private struct ObjectsIntegrationTests {
 
                         let mapFromValuesMap = try #require(valuesMap.get(key: "mapKey")?.liveMapValue)
                         #expect(try mapFromValuesMap.size == 1, "Check nested map has correct number of keys")
-
-                        // TODO: remove (Swift-only) — keep channel alive until we've executed our test case. We'll address this in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/9
-                        withExtendedLifetime(channel) {}
                     },
                 ),
                 .init(
@@ -545,9 +509,6 @@ private struct ObjectsIntegrationTests {
                         let mapFromValuesMap = try #require(valuesMap.get(key: "mapKey")?.liveMapValue, "Check nested map is of type LiveMap")
                         #expect(try mapFromValuesMap.size == 1, "Check nested map has correct number of keys")
                         #expect(mapFromValuesMap === referencedMap, "Check nested map is the same object instance as map on the root")
-
-                        // TODO: remove (Swift-only) — keep channel alive until we've executed our test case. We'll address this in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/9
-                        withExtendedLifetime(channel) {}
                     },
                 ),
                 .init(
@@ -775,9 +736,6 @@ private struct ObjectsIntegrationTests {
                     clientOptions: testCase.options,
                 ),
             )
-
-            // TODO: remove (Swift-only) — keep channel alive until we've executed our test case. We'll address this in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/9
-            withExtendedLifetime(channel) {}
         }
     }
 

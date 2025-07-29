@@ -3,25 +3,24 @@ import Ably
 import AblyPlugin
 import Testing
 
-/// Tests for `DefaultRealtimeObjects`.
-struct DefaultRealtimeObjectsTests {
+/// Tests for `InternalDefaultRealtimeObjects`.
+struct InternalDefaultRealtimeObjectsTests {
     // MARK: - Test Helpers
 
-    /// Creates a DefaultRealtimeObjects instance for testing
-    static func createDefaultRealtimeObjects(channelState: ARTRealtimeChannelState = .attached) -> DefaultRealtimeObjects {
-        let coreSDK = MockCoreSDK(channelState: channelState)
+    /// Creates a InternalDefaultRealtimeObjects instance for testing
+    static func createDefaultRealtimeObjects() -> InternalDefaultRealtimeObjects {
         let logger = TestLogger()
-        return DefaultRealtimeObjects(coreSDK: coreSDK, logger: logger)
+        return InternalDefaultRealtimeObjects(logger: logger)
     }
 
-    /// Tests for `DefaultRealtimeObjects.handleObjectSyncProtocolMessage`, covering RTO5 specification points.
+    /// Tests for `InternalDefaultRealtimeObjects.handleObjectSyncProtocolMessage`, covering RTO5 specification points.
     struct HandleObjectSyncProtocolMessageTests {
         // MARK: - RTO5a5: Single ProtocolMessage Sync Tests
 
         // @spec RTO5a5
         @Test
         func handlesSingleProtocolMessageSync() async throws {
-            let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
             let objectMessages = [
                 TestFactories.simpleMapMessage(objectId: "map:1@123"),
                 TestFactories.simpleMapMessage(objectId: "map:2@456"),
@@ -56,7 +55,7 @@ struct DefaultRealtimeObjectsTests {
         // @spec RTO5c5
         @Test
         func handlesMultiProtocolMessageSync() async throws {
-            let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
             let sequenceId = "seq123"
 
             // First message in sequence
@@ -112,7 +111,7 @@ struct DefaultRealtimeObjectsTests {
         // @spec RTO5a2b
         @Test
         func newSequenceIdDiscardsInFlightSync() async throws {
-            let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
             let firstSequenceId = "seq1"
             let secondSequenceId = "seq2"
 
@@ -159,7 +158,7 @@ struct DefaultRealtimeObjectsTests {
         // @spec(RTO5c2, RTO5c2a) Objects not in sync are removed, except root
         @Test
         func removesObjectsNotInSyncButPreservesRoot() async throws {
-            let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
 
             // Perform sync with only one object (RTO5a5 case)
             let syncMessages = [TestFactories.mapObjectMessage(objectId: "map:synced@1")]
@@ -183,7 +182,7 @@ struct DefaultRealtimeObjectsTests {
         /// Test handling of invalid channelSerial format
         @Test
         func handlesInvalidChannelSerialFormat() async throws {
-            let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
             let objectMessages = [TestFactories.mapObjectMessage(objectId: "map:1@123")]
 
             // Call with invalid channelSerial (missing colon)
@@ -205,7 +204,7 @@ struct DefaultRealtimeObjectsTests {
         /// Test with empty sequence ID
         @Test
         func handlesEmptySequenceId() async throws {
-            let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
             let objectMessages = [TestFactories.mapObjectMessage(objectId: "map:1@123")]
 
             // Start sequence with empty sequence ID
@@ -231,7 +230,7 @@ struct DefaultRealtimeObjectsTests {
         /// Test mixed object types in single sync
         @Test
         func handlesMixedObjectTypesInSync() async throws {
-            let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
 
             let mixedMessages = [
                 TestFactories.mapObjectMessage(objectId: "map:1@123"),
@@ -255,7 +254,7 @@ struct DefaultRealtimeObjectsTests {
         /// Test continuation of sync after interruption by new sequence
         @Test
         func handlesSequenceInterruptionCorrectly() async throws {
-            let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
 
             // Start first sequence
             realtimeObjects.handleObjectSyncProtocolMessage(
@@ -294,7 +293,7 @@ struct DefaultRealtimeObjectsTests {
         }
     }
 
-    /// Tests for `DefaultRealtimeObjects.onChannelAttached`, covering RTO4 specification points.
+    /// Tests for `InternalDefaultRealtimeObjects.onChannelAttached`, covering RTO4 specification points.
     ///
     /// Note: These tests use `OBJECT_SYNC` messages to populate the initial state of objects pools
     /// and sync sequences. This approach is more realistic than directly manipulating internal state,
@@ -305,12 +304,12 @@ struct DefaultRealtimeObjectsTests {
         // @spec RTO4a - Checks that when the `HAS_OBJECTS` flag is 1 (i.e. the server will shortly perform an `OBJECT_SYNC` sequence) we don't modify any internal state
         @Test
         func doesNotModifyStateWhenHasObjectsIsTrue() {
-            let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
 
             // Set up initial state with additional objects by using the createZeroValueObject method
             let originalPool = realtimeObjects.testsOnly_objectsPool
             let originalRootObject = originalPool.root
-            _ = realtimeObjects.testsOnly_createZeroValueLiveObject(forObjectID: "map:test@123", coreSDK: MockCoreSDK(channelState: .attaching))
+            _ = realtimeObjects.testsOnly_createZeroValueLiveObject(forObjectID: "map:test@123")
 
             // Set up an in-progress sync sequence
             realtimeObjects.handleObjectSyncProtocolMessage(
@@ -347,7 +346,7 @@ struct DefaultRealtimeObjectsTests {
         // @spec RTO4b5
         @Test
         func handlesHasObjectsFalse() {
-            let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
 
             // Set up initial state with additional objects in the pool using sync
             realtimeObjects.handleObjectSyncProtocolMessage(
@@ -399,7 +398,7 @@ struct DefaultRealtimeObjectsTests {
         /// Test that multiple calls to onChannelAttached work correctly
         @Test
         func handlesMultipleCallsCorrectly() {
-            let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
 
             // First call with hasObjects = true (should do nothing)
             realtimeObjects.onChannelAttached(hasObjects: true)
@@ -425,7 +424,7 @@ struct DefaultRealtimeObjectsTests {
         /// Test that sync sequence is properly discarded even with complex sync state
         @Test
         func discardsComplexSyncSequence() {
-            let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
 
             // Create a complex sync sequence using OBJECT_SYNC messages
             // (This simulates realistic multi-message sync scenarios)
@@ -459,7 +458,7 @@ struct DefaultRealtimeObjectsTests {
         /// Test behavior when there's no sync sequence in progress
         @Test
         func handlesNoSyncSequenceCorrectly() {
-            let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
 
             // Add some objects to the pool using OBJECT_SYNC messages
             // (This is the realistic way objects enter the pool, not through direct manipulation)
@@ -488,28 +487,29 @@ struct DefaultRealtimeObjectsTests {
         /// Test that the root object's delegate is correctly set after reset
         @Test
         func setsCorrectDelegateOnNewRoot() {
-            let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
 
             // When: onChannelAttached is called with hasObjects = false
             realtimeObjects.onChannelAttached(hasObjects: false)
 
-            // Then: The new root should have the correct delegate
+            // Then: The new root should be properly initialized
             let newRoot = realtimeObjects.testsOnly_objectsPool.root
-            #expect(newRoot.testsOnly_delegate as AnyObject === realtimeObjects as AnyObject)
+            #expect(newRoot.testsOnly_data.isEmpty) // Should be zero-valued (empty)
         }
     }
 
-    /// Tests for `DefaultRealtimeObjects.getRoot`, covering RTO1 specification points
+    /// Tests for `InternalDefaultRealtimeObjects.getRoot`, covering RTO1 specification points
     struct GetRootTests {
         // MARK: - RTO1c Tests
 
         // @specOneOf(1/4) RTO1c - getRoot waits for sync completion when sync completes via ATTACHED with `HAS_OBJECTS` false (RTO4b)
         @Test
         func waitsForSyncCompletionViaAttachedHasObjectsFalse() async throws {
-            let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let coreSDK = MockCoreSDK(channelState: .attached)
 
             // Start getRoot call - it should wait for sync completion
-            async let getRootTask = realtimeObjects.getRoot()
+            async let getRootTask = realtimeObjects.getRoot(coreSDK: coreSDK)
 
             // Wait for getRoot to start waiting for sync
             _ = try #require(await realtimeObjects.testsOnly_waitingForSyncEvents.first { _ in true })
@@ -524,10 +524,11 @@ struct DefaultRealtimeObjectsTests {
         // @specOneOf(2/4) RTO1c - getRoot waits for sync completion when sync completes via single `OBJECT_SYNC` with no channelSerial (RTO5a5)
         @Test
         func waitsForSyncCompletionViaSingleObjectSync() async throws {
-            let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let coreSDK = MockCoreSDK(channelState: .attached)
 
             // Start getRoot call - it should wait for sync completion
-            async let getRootTask = realtimeObjects.getRoot()
+            async let getRootTask = realtimeObjects.getRoot(coreSDK: coreSDK)
 
             // Wait for getRoot to start waiting for sync
             _ = try #require(await realtimeObjects.testsOnly_waitingForSyncEvents.first { _ in true })
@@ -550,22 +551,23 @@ struct DefaultRealtimeObjectsTests {
             let root = try await getRootTask
 
             // Verify the root object contains the expected entries from the sync
-            let testValue = try root.get(key: "testKey")?.stringValue
+            let testValue = try root.get(key: "testKey", coreSDK: coreSDK, delegate: realtimeObjects)?.stringValue
             #expect(testValue == "testValue")
 
             // Verify the root object contains a reference to the other LiveObject
-            let referencedObject = try root.get(key: "referencedObject")
+            let referencedObject = try root.get(key: "referencedObject", coreSDK: coreSDK, delegate: realtimeObjects)
             #expect(referencedObject != nil)
         }
 
         // @specOneOf(3/4) RTO1c - getRoot waits for sync completion when sync completes via multiple `OBJECT_SYNC` messages (RTO5a4)
         @Test
         func waitsForSyncCompletionViaMultipleObjectSync() async throws {
-            let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let coreSDK = MockCoreSDK(channelState: .attached)
             let sequenceId = "seq123"
 
             // Start getRoot call - it should wait for sync completion
-            async let getRootTask = realtimeObjects.getRoot()
+            async let getRootTask = realtimeObjects.getRoot(coreSDK: coreSDK)
 
             // Wait for getRoot to start waiting for sync
             _ = try #require(await realtimeObjects.testsOnly_waitingForSyncEvents.first { _ in true })
@@ -608,10 +610,10 @@ struct DefaultRealtimeObjectsTests {
             let root = try await getRootTask
 
             // Verify the root object contains the expected entries from the sync sequence
-            let firstValue = try root.get(key: "firstKey")?.stringValue
-            let firstObject = try root.get(key: "firstObject")
-            let secondObject = try root.get(key: "secondObject")
-            let finalObject = try root.get(key: "finalObject")
+            let firstValue = try root.get(key: "firstKey", coreSDK: coreSDK, delegate: realtimeObjects)?.stringValue
+            let firstObject = try root.get(key: "firstObject", coreSDK: coreSDK, delegate: realtimeObjects)
+            let secondObject = try root.get(key: "secondObject", coreSDK: coreSDK, delegate: realtimeObjects)
+            let finalObject = try root.get(key: "finalObject", coreSDK: coreSDK, delegate: realtimeObjects)
             #expect(firstValue == "firstValue")
             #expect(firstObject != nil)
             #expect(secondObject != nil)
@@ -621,13 +623,14 @@ struct DefaultRealtimeObjectsTests {
         // @specOneOf(4/4) RTO1c - getRoot returns immediately when sync is already complete
         @Test
         func returnsImmediatelyWhenSyncAlreadyComplete() async throws {
-            let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let coreSDK = MockCoreSDK(channelState: .attached)
 
             // Complete sync first
             realtimeObjects.onChannelAttached(hasObjects: false)
 
             // getRoot should return
-            _ = try await realtimeObjects.getRoot()
+            _ = try await realtimeObjects.getRoot(coreSDK: coreSDK)
 
             // Verify no waiting events were emitted
             realtimeObjects.testsOnly_finishAllTestHelperStreams()
@@ -642,13 +645,14 @@ struct DefaultRealtimeObjectsTests {
         // @spec RTO1d
         @Test
         func returnsRootObjectFromObjectsPool() async throws {
-            let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let coreSDK = MockCoreSDK(channelState: .attached)
 
             // Complete sync first
             realtimeObjects.onChannelAttached(hasObjects: false)
 
             // Call getRoot
-            let root = try await realtimeObjects.getRoot()
+            let root = try await realtimeObjects.getRoot(coreSDK: coreSDK)
 
             // Verify it's the same object as the one in the pool with key "root"
             let poolRoot = realtimeObjects.testsOnly_objectsPool.entries["root"]?.mapValue
@@ -660,10 +664,11 @@ struct DefaultRealtimeObjectsTests {
         // @spec RTO1b
         @Test(arguments: [.detached, .failed] as [ARTRealtimeChannelState])
         func getRootThrowsIfChannelIsDetachedOrFailed(channelState: ARTRealtimeChannelState) async throws {
-            let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects(channelState: channelState)
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let coreSDK = MockCoreSDK(channelState: channelState)
 
             await #expect {
-                _ = try await realtimeObjects.getRoot()
+                _ = try await realtimeObjects.getRoot(coreSDK: coreSDK)
             } throws: { error in
                 guard let errorInfo = error as? ARTErrorInfo else {
                     return false
@@ -674,7 +679,7 @@ struct DefaultRealtimeObjectsTests {
         }
     }
 
-    /// Tests for `DefaultRealtimeObjects.handleObjectProtocolMessage`, covering RTO8 specification points.
+    /// Tests for `InternalDefaultRealtimeObjects.handleObjectProtocolMessage`, covering RTO8 specification points.
     struct HandleObjectProtocolMessageTests {
         // Tests that when an OBJECT ProtocolMessage is received and there isn't a sync in progress, its operations are handled per RTO8b.
         struct ApplyOperationTests {
@@ -686,7 +691,7 @@ struct DefaultRealtimeObjectsTests {
             // @spec RTO9a2a1 - Tests that if necessary it creates an object in the ObjectsPool
             @Test
             func createsObjectInObjectsPoolWhenNecessary() {
-                let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
                 let objectId = "map:new@123"
 
                 // Verify the object doesn't exist in the pool initially
@@ -715,7 +720,7 @@ struct DefaultRealtimeObjectsTests {
             // @specOneOf(1/5) RTO9a2a3 - Tests MAP_CREATE operation application
             @Test
             func appliesMapCreateOperation() throws {
-                let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
                 let objectId = "map:test@123"
 
                 // Create a map object in the pool first
@@ -733,7 +738,8 @@ struct DefaultRealtimeObjectsTests {
 
                 // Verify the object exists and has initial data
                 let map = try #require(realtimeObjects.testsOnly_objectsPool.entries[objectId]?.mapValue)
-                let initialValue = try #require(map.get(key: "existingKey")?.stringValue)
+                let coreSDK = MockCoreSDK(channelState: .attached)
+                let initialValue = try #require(map.get(key: "existingKey", coreSDK: coreSDK, delegate: realtimeObjects)?.stringValue)
                 #expect(initialValue == "existingValue")
 
                 // Create a MAP_CREATE operation message
@@ -750,7 +756,7 @@ struct DefaultRealtimeObjectsTests {
 
                 // Verify the operation was applied by checking for side effects
                 // The full logic of applying the operation is tested in RTLM15; we just check for some of its side effects here
-                let finalValue = try #require(map.get(key: "createKey")?.stringValue)
+                let finalValue = try #require(map.get(key: "createKey", coreSDK: coreSDK, delegate: realtimeObjects)?.stringValue)
                 #expect(finalValue == "createValue")
                 #expect(map.testsOnly_createOperationIsMerged)
                 #expect(map.testsOnly_siteTimeserials["site1"] == "ts2")
@@ -761,7 +767,7 @@ struct DefaultRealtimeObjectsTests {
             // @specOneOf(2/5) RTO9a2a3 - Tests MAP_SET operation application
             @Test
             func appliesMapSetOperation() throws {
-                let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
                 let objectId = "map:test@123"
 
                 // Create a map object in the pool first
@@ -779,7 +785,8 @@ struct DefaultRealtimeObjectsTests {
 
                 // Verify the object exists and has initial data
                 let map = try #require(realtimeObjects.testsOnly_objectsPool.entries[objectId]?.mapValue)
-                let initialValue = try #require(map.get(key: "existingKey")?.stringValue)
+                let coreSDK = MockCoreSDK(channelState: .attached)
+                let initialValue = try #require(map.get(key: "existingKey", coreSDK: coreSDK, delegate: realtimeObjects)?.stringValue)
                 #expect(initialValue == "existingValue")
 
                 // Create a MAP_SET operation message
@@ -796,7 +803,7 @@ struct DefaultRealtimeObjectsTests {
 
                 // Verify the operation was applied by checking for side effects
                 // The full logic of applying the operation is tested in RTLM15; we just check for some of its side effects here
-                let finalValue = try #require(map.get(key: "existingKey")?.stringValue)
+                let finalValue = try #require(map.get(key: "existingKey", coreSDK: coreSDK, delegate: realtimeObjects)?.stringValue)
                 #expect(finalValue == "newValue")
                 #expect(map.testsOnly_siteTimeserials["site1"] == "ts2")
             }
@@ -806,7 +813,7 @@ struct DefaultRealtimeObjectsTests {
             // @specOneOf(3/5) RTO9a2a3 - Tests MAP_REMOVE operation application
             @Test
             func appliesMapRemoveOperation() throws {
-                let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
                 let objectId = "map:test@123"
 
                 // Create a map object in the pool first
@@ -824,7 +831,8 @@ struct DefaultRealtimeObjectsTests {
 
                 // Verify the object exists and has initial data
                 let map = try #require(realtimeObjects.testsOnly_objectsPool.entries[objectId]?.mapValue)
-                let initialValue = try #require(map.get(key: "existingKey")?.stringValue)
+                let coreSDK = MockCoreSDK(channelState: .attached)
+                let initialValue = try #require(map.get(key: "existingKey", coreSDK: coreSDK, delegate: realtimeObjects)?.stringValue)
                 #expect(initialValue == "existingValue")
 
                 // Create a MAP_REMOVE operation message
@@ -840,7 +848,7 @@ struct DefaultRealtimeObjectsTests {
 
                 // Verify the operation was applied by checking for side effects
                 // The full logic of applying the operation is tested in RTLM15; we just check for some of its side effects here
-                let finalValue = try map.get(key: "existingKey")
+                let finalValue = try map.get(key: "existingKey", coreSDK: coreSDK, delegate: realtimeObjects)
                 #expect(finalValue == nil) // Key should be removed/tombstoned
                 #expect(map.testsOnly_siteTimeserials["site1"] == "ts2")
             }
@@ -850,7 +858,7 @@ struct DefaultRealtimeObjectsTests {
             // @specOneOf(4/5) RTO9a2a3 - Tests COUNTER_CREATE operation application
             @Test
             func appliesCounterCreateOperation() throws {
-                let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
                 let objectId = "counter:test@123"
 
                 // Create a counter object in the pool first
@@ -867,7 +875,8 @@ struct DefaultRealtimeObjectsTests {
 
                 // Verify the object exists and has initial data
                 let counter = try #require(realtimeObjects.testsOnly_objectsPool.entries[objectId]?.counterValue)
-                let initialValue = try counter.value
+                let coreSDK = MockCoreSDK(channelState: .attached)
+                let initialValue = try counter.value(coreSDK: coreSDK)
                 #expect(initialValue == 5)
 
                 // Create a COUNTER_CREATE operation message
@@ -883,7 +892,7 @@ struct DefaultRealtimeObjectsTests {
 
                 // Verify the operation was applied by checking for side effects
                 // The full logic of applying the operation is tested in RTLC7; we just check for some of its side effects here
-                let finalValue = try counter.value
+                let finalValue = try counter.value(coreSDK: coreSDK)
                 #expect(finalValue == 15) // 5 + 10 (initial value merged)
                 #expect(counter.testsOnly_siteTimeserials["site1"] == "ts2")
             }
@@ -893,7 +902,7 @@ struct DefaultRealtimeObjectsTests {
             // @specOneOf(5/5) RTO9a2a3 - Tests COUNTER_INC operation application
             @Test
             func appliesCounterIncOperation() throws {
-                let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
                 let objectId = "counter:test@123"
 
                 // Create a counter object in the pool first
@@ -910,7 +919,8 @@ struct DefaultRealtimeObjectsTests {
 
                 // Verify the object exists and has initial data
                 let counter = try #require(realtimeObjects.testsOnly_objectsPool.entries[objectId]?.counterValue)
-                let initialValue = try counter.value
+                let coreSDK = MockCoreSDK(channelState: .attached)
+                let initialValue = try counter.value(coreSDK: coreSDK)
                 #expect(initialValue == 5)
 
                 // Create a COUNTER_INC operation message
@@ -926,7 +936,7 @@ struct DefaultRealtimeObjectsTests {
 
                 // Verify the operation was applied by checking for side effects
                 // The full logic of applying the operation is tested in RTLC7; we just check for some of its side effects here
-                let finalValue = try counter.value
+                let finalValue = try counter.value(coreSDK: coreSDK)
                 #expect(finalValue == 15) // 5 + 10
                 #expect(counter.testsOnly_siteTimeserials["site1"] == "ts2")
             }
@@ -938,7 +948,7 @@ struct DefaultRealtimeObjectsTests {
             // @spec RTO5c6
             @Test
             func buffersObjectOperationsDuringSyncAndAppliesAfterCompletion() async throws {
-                let realtimeObjects = DefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
                 let sequenceId = "seq123"
 
                 // Start sync sequence with first OBJECT_SYNC message
@@ -1008,12 +1018,13 @@ struct DefaultRealtimeObjectsTests {
 
                 // Verify the buffered operations were applied after sync completion (RTO5c6)
                 // Check that MAP_SET operation was applied to the map
-                let mapValue = try #require(map.get(key: "key1")?.stringValue)
+                let coreSDK = MockCoreSDK(channelState: .attached)
+                let mapValue = try #require(map.get(key: "key1", coreSDK: coreSDK, delegate: realtimeObjects)?.stringValue)
                 #expect(mapValue == "value1")
                 #expect(map.testsOnly_siteTimeserials["site1"] == "ts3")
 
                 // Check that COUNTER_INC operation was applied to the counter
-                let counterValue = try counter.value
+                let counterValue = try counter.value(coreSDK: coreSDK)
                 #expect(counterValue == 15) // 5 (from sync) + 10 (from buffered operation)
                 #expect(counter.testsOnly_siteTimeserials["site1"] == "ts4")
             }

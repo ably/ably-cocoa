@@ -4,15 +4,30 @@ internal import AblyPlugin
 public extension ARTRealtimeChannel {
     /// A ``RealtimeObjects`` object.
     var objects: RealtimeObjects {
-        internallyTypedObjects
+        nonTypeErasedObjects
     }
 
-    private var internallyTypedObjects: DefaultRealtimeObjects {
-        DefaultInternalPlugin.objectsProperty(for: self, pluginAPI: AblyPlugin.PluginAPI.sharedInstance())
+    private var nonTypeErasedObjects: PublicDefaultRealtimeObjects {
+        let pluginAPI = Plugin.defaultPluginAPI
+        let underlyingObjects = pluginAPI.underlyingObjects(forPublicRealtimeChannel: self)
+        let internalObjects = DefaultInternalPlugin.realtimeObjects(for: underlyingObjects.channel, pluginAPI: pluginAPI)
+
+        let coreSDK = DefaultCoreSDK(
+            channel: underlyingObjects.channel,
+            client: underlyingObjects.client,
+            pluginAPI: Plugin.defaultPluginAPI,
+        )
+
+        return PublicObjectsStore.shared.getOrCreateRealtimeObjects(
+            proxying: internalObjects,
+            creationArgs: .init(
+                coreSDK: coreSDK,
+            ),
+        )
     }
 
-    /// For tests to access the non-public API of `DefaultRealtimeObjects`.
-    internal var testsOnly_internallyTypedObjects: DefaultRealtimeObjects {
-        internallyTypedObjects
+    /// For tests to access the non-public API of `PublicDefaultRealtimeObjects`.
+    internal var testsOnly_nonTypeErasedObjects: PublicDefaultRealtimeObjects {
+        nonTypeErasedObjects
     }
 }

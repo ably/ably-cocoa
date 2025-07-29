@@ -12,27 +12,18 @@ internal protocol CoreSDK: AnyObject, Sendable {
 }
 
 internal final class DefaultCoreSDK: CoreSDK {
-    // We hold a weak reference to the channel so that `DefaultLiveObjects` can hold a strong reference to us without causing a strong reference cycle. We'll revisit this in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/9.
-    private let weakChannel: WeakRef<AblyPlugin.RealtimeChannel>
+    private let channel: AblyPlugin.RealtimeChannel
+    private let client: AblyPlugin.RealtimeClient
     private let pluginAPI: PluginAPIProtocol
 
     internal init(
         channel: AblyPlugin.RealtimeChannel,
+        client: AblyPlugin.RealtimeClient,
         pluginAPI: PluginAPIProtocol
     ) {
-        weakChannel = .init(referenced: channel)
+        self.channel = channel
+        self.client = client
         self.pluginAPI = pluginAPI
-    }
-
-    // MARK: - Fetching channel
-
-    private var channel: AblyPlugin.RealtimeChannel {
-        guard let channel = weakChannel.referenced else {
-            // It's currently completely possible that the channel _does_ become deallocated during the usage of the LiveObjects SDK; in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/9 we'll figure out how to prevent this.
-            preconditionFailure("Expected channel to not become deallocated during usage of LiveObjects SDK")
-        }
-
-        return channel
     }
 
     // MARK: - CoreSDK conformance

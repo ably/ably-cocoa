@@ -7,8 +7,8 @@ internal protocol LiveMapObjectPoolDelegate: AnyObject, Sendable {
     func getObjectFromPool(id: String) -> ObjectsPool.Entry?
 }
 
-/// Our default implementation of ``LiveMap``.
-internal final class DefaultLiveMap: LiveMap {
+/// This provides the implementation behind ``PublicDefaultLiveMap``, via internal versions of the ``LiveMap`` API.
+internal final class InternalDefaultLiveMap: Sendable {
     // Used for synchronizing access to all of this instance's mutable state. This is a temporary solution just to allow us to implement `Sendable`, and we'll revisit it in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/3.
     private let mutex = NSLock()
 
@@ -44,13 +44,6 @@ internal final class DefaultLiveMap: LiveMap {
         }
     }
 
-    /// Delegate for accessing objects from the pool
-    private let delegate: WeakLiveMapObjectPoolDelegateRef
-    internal var testsOnly_delegate: LiveMapObjectPoolDelegate? {
-        delegate.referenced
-    }
-
-    private let coreSDK: CoreSDK
     private let logger: AblyPlugin.Logger
 
     // MARK: - Initialization
@@ -59,16 +52,12 @@ internal final class DefaultLiveMap: LiveMap {
         testsOnly_data data: [String: ObjectsMapEntry],
         objectID: String,
         testsOnly_semantics semantics: WireEnum<ObjectsMapSemantics>? = nil,
-        delegate: LiveMapObjectPoolDelegate?,
-        coreSDK: CoreSDK,
         logger: AblyPlugin.Logger
     ) {
         self.init(
             data: data,
             objectID: objectID,
             semantics: semantics,
-            delegate: delegate,
-            coreSDK: coreSDK,
             logger: logger,
         )
     }
@@ -77,13 +66,9 @@ internal final class DefaultLiveMap: LiveMap {
         data: [String: ObjectsMapEntry],
         objectID: String,
         semantics: WireEnum<ObjectsMapSemantics>?,
-        delegate: LiveMapObjectPoolDelegate?,
-        coreSDK: CoreSDK,
         logger: AblyPlugin.Logger
     ) {
         mutableState = .init(liveObject: .init(objectID: objectID), data: data, semantics: semantics)
-        self.delegate = .init(referenced: delegate)
-        self.coreSDK = coreSDK
         self.logger = logger
     }
 
@@ -95,24 +80,20 @@ internal final class DefaultLiveMap: LiveMap {
     internal static func createZeroValued(
         objectID: String,
         semantics: WireEnum<ObjectsMapSemantics>? = nil,
-        delegate: LiveMapObjectPoolDelegate?,
-        coreSDK: CoreSDK,
         logger: AblyPlugin.Logger,
     ) -> Self {
         .init(
             data: [:],
             objectID: objectID,
             semantics: semantics,
-            delegate: delegate,
-            coreSDK: coreSDK,
             logger: logger,
         )
     }
 
-    // MARK: - LiveMap conformance
+    // MARK: - Internal methods that back LiveMap conformance
 
     /// Returns the value associated with a given key, following RTLM5d specification.
-    internal func get(key: String) throws(ARTErrorInfo) -> LiveMapValue? {
+    internal func get(key: String, coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> InternalLiveMapValue? {
         // RTLM5c: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
         let currentChannelState = coreSDK.channelState
         if currentChannelState == .detached || currentChannelState == .failed {
@@ -133,73 +114,65 @@ internal final class DefaultLiveMap: LiveMap {
         }
 
         // RTLM5d2: If a ObjectsMapEntry exists at the key, convert it using the shared logic
-        return convertEntryToLiveMapValue(entry)
+        return convertEntryToLiveMapValue(entry, delegate: delegate)
     }
 
-    internal var size: Int {
-        get throws(ARTErrorInfo) {
-            // RTLM10c: If the channel is in the DETACHED or FAILED state, the library should throw an ErrorInfo error with statusCode 400 and code 90001
-            let currentChannelState = coreSDK.channelState
-            if currentChannelState == .detached || currentChannelState == .failed {
-                throw LiveObjectsError.objectsOperationFailedInvalidChannelState(
-                    operationDescription: "LiveMap.size",
-                    channelState: currentChannelState,
-                )
-                .toARTErrorInfo()
-            }
+    internal func size(coreSDK: CoreSDK) throws(ARTErrorInfo) -> Int {
+        // RTLM10c: If the channel is in the DETACHED or FAILED state, the library should throw an ErrorInfo error with statusCode 400 and code 90001
+        let currentChannelState = coreSDK.channelState
+        if currentChannelState == .detached || currentChannelState == .failed {
+            throw LiveObjectsError.objectsOperationFailedInvalidChannelState(
+                operationDescription: "LiveMap.size",
+                channelState: currentChannelState,
+            )
+            .toARTErrorInfo()
+        }
 
-            return mutex.withLock {
-                // RTLM10d: Returns the number of non-tombstoned entries (per RTLM14) in the internal data map
-                mutableState.data.values.count { entry in
-                    // RTLM14a: The method returns true if ObjectsMapEntry.tombstone is true
-                    // RTLM14b: Otherwise, it returns false
-                    entry.tombstone != true
+        return mutex.withLock {
+            // RTLM10d: Returns the number of non-tombstoned entries (per RTLM14) in the internal data map
+            mutableState.data.values.count { entry in
+                // RTLM14a: The method returns true if ObjectsMapEntry.tombstone is true
+                // RTLM14b: Otherwise, it returns false
+                entry.tombstone != true
+            }
+        }
+    }
+
+    internal func entries(coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> [(key: String, value: InternalLiveMapValue)] {
+        // RTLM11c: If the channel is in the DETACHED or FAILED state, the library should throw an ErrorInfo error with statusCode 400 and code 90001
+        let currentChannelState = coreSDK.channelState
+        if currentChannelState == .detached || currentChannelState == .failed {
+            throw LiveObjectsError.objectsOperationFailedInvalidChannelState(
+                operationDescription: "LiveMap.entries",
+                channelState: currentChannelState,
+            )
+            .toARTErrorInfo()
+        }
+
+        return mutex.withLock {
+            // RTLM11d: Returns key-value pairs from the internal data map
+            // RTLM11d1: Pairs with tombstoned entries (per RTLM14) are not returned
+            var result: [(key: String, value: InternalLiveMapValue)] = []
+
+            for (key, entry) in mutableState.data {
+                // Convert entry to LiveMapValue using the same logic as get(key:)
+                if let value = convertEntryToLiveMapValue(entry, delegate: delegate) {
+                    result.append((key: key, value: value))
                 }
             }
+
+            return result
         }
     }
 
-    internal var entries: [(key: String, value: LiveMapValue)] {
-        get throws(ARTErrorInfo) {
-            // RTLM11c: If the channel is in the DETACHED or FAILED state, the library should throw an ErrorInfo error with statusCode 400 and code 90001
-            let currentChannelState = coreSDK.channelState
-            if currentChannelState == .detached || currentChannelState == .failed {
-                throw LiveObjectsError.objectsOperationFailedInvalidChannelState(
-                    operationDescription: "LiveMap.entries",
-                    channelState: currentChannelState,
-                )
-                .toARTErrorInfo()
-            }
-
-            return mutex.withLock {
-                // RTLM11d: Returns key-value pairs from the internal data map
-                // RTLM11d1: Pairs with tombstoned entries (per RTLM14) are not returned
-                var result: [(key: String, value: LiveMapValue)] = []
-
-                for (key, entry) in mutableState.data {
-                    // Convert entry to LiveMapValue using the same logic as get(key:)
-                    if let value = convertEntryToLiveMapValue(entry) {
-                        result.append((key: key, value: value))
-                    }
-                }
-
-                return result
-            }
-        }
+    internal func keys(coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> [String] {
+        // RTLM12b: Identical to LiveMap#entries, except that it returns only the keys from the internal data map
+        try entries(coreSDK: coreSDK, delegate: delegate).map(\.key)
     }
 
-    internal var keys: [String] {
-        get throws(ARTErrorInfo) {
-            // RTLM12b: Identical to LiveMap#entries, except that it returns only the keys from the internal data map
-            try entries.map(\.key)
-        }
-    }
-
-    internal var values: [LiveMapValue] {
-        get throws(ARTErrorInfo) {
-            // RTLM13b: Identical to LiveMap#entries, except that it returns only the values from the internal data map
-            try entries.map(\.value)
-        }
+    internal func values(coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> [InternalLiveMapValue] {
+        // RTLM13b: Identical to LiveMap#entries, except that it returns only the values from the internal data map
+        try entries(coreSDK: coreSDK, delegate: delegate).map(\.value)
     }
 
     internal func set(key _: String, value _: LiveMapValue) async throws(ARTErrorInfo) {
@@ -237,8 +210,6 @@ internal final class DefaultLiveMap: LiveMap {
             mutableState.replaceData(
                 using: state,
                 objectsPool: &objectsPool,
-                mapDelegate: delegate.referenced,
-                coreSDK: coreSDK,
                 logger: logger,
             )
         }
@@ -250,8 +221,6 @@ internal final class DefaultLiveMap: LiveMap {
             mutableState.mergeInitialValue(
                 from: operation,
                 objectsPool: &objectsPool,
-                mapDelegate: delegate.referenced,
-                coreSDK: coreSDK,
                 logger: logger,
             )
         }
@@ -263,8 +232,6 @@ internal final class DefaultLiveMap: LiveMap {
             mutableState.applyMapCreateOperation(
                 operation,
                 objectsPool: &objectsPool,
-                mapDelegate: delegate.referenced,
-                coreSDK: coreSDK,
                 logger: logger,
             )
         }
@@ -283,8 +250,6 @@ internal final class DefaultLiveMap: LiveMap {
                 objectMessageSerial: objectMessageSerial,
                 objectMessageSiteCode: objectMessageSiteCode,
                 objectsPool: &objectsPool,
-                mapDelegate: delegate.referenced,
-                coreSDK: coreSDK,
                 logger: logger,
             )
         }
@@ -305,8 +270,6 @@ internal final class DefaultLiveMap: LiveMap {
                 operationTimeserial: operationTimeserial,
                 operationData: operationData,
                 objectsPool: &objectsPool,
-                mapDelegate: delegate.referenced,
-                coreSDK: coreSDK,
                 logger: logger,
             )
         }
@@ -343,8 +306,6 @@ internal final class DefaultLiveMap: LiveMap {
         internal mutating func replaceData(
             using state: ObjectState,
             objectsPool: inout ObjectsPool,
-            mapDelegate: LiveMapObjectPoolDelegate?,
-            coreSDK: CoreSDK,
             logger: AblyPlugin.Logger,
         ) {
             // RTLM6a: Replace the private siteTimeserials with the value from ObjectState.siteTimeserials
@@ -361,8 +322,6 @@ internal final class DefaultLiveMap: LiveMap {
                 mergeInitialValue(
                     from: createOp,
                     objectsPool: &objectsPool,
-                    mapDelegate: mapDelegate,
-                    coreSDK: coreSDK,
                     logger: logger,
                 )
             }
@@ -372,8 +331,6 @@ internal final class DefaultLiveMap: LiveMap {
         internal mutating func mergeInitialValue(
             from operation: ObjectOperation,
             objectsPool: inout ObjectsPool,
-            mapDelegate: LiveMapObjectPoolDelegate?,
-            coreSDK: CoreSDK,
             logger: AblyPlugin.Logger,
         ) {
             // RTLM17a: For each key–ObjectsMapEntry pair in ObjectOperation.map.entries
@@ -394,8 +351,6 @@ internal final class DefaultLiveMap: LiveMap {
                             operationTimeserial: entry.timeserial,
                             operationData: entry.data,
                             objectsPool: &objectsPool,
-                            mapDelegate: mapDelegate,
-                            coreSDK: coreSDK,
                             logger: logger,
                         )
                     }
@@ -411,8 +366,6 @@ internal final class DefaultLiveMap: LiveMap {
             objectMessageSerial: String?,
             objectMessageSiteCode: String?,
             objectsPool: inout ObjectsPool,
-            mapDelegate: LiveMapObjectPoolDelegate?,
-            coreSDK: CoreSDK,
             logger: Logger,
         ) {
             guard let applicableOperation = liveObject.canApplyOperation(objectMessageSerial: objectMessageSerial, objectMessageSiteCode: objectMessageSiteCode, logger: logger) else {
@@ -430,8 +383,6 @@ internal final class DefaultLiveMap: LiveMap {
                 applyMapCreateOperation(
                     operation,
                     objectsPool: &objectsPool,
-                    mapDelegate: mapDelegate,
-                    coreSDK: coreSDK,
                     logger: logger,
                 )
             case .known(.mapSet):
@@ -450,8 +401,6 @@ internal final class DefaultLiveMap: LiveMap {
                     operationTimeserial: applicableOperation.objectMessageSerial,
                     operationData: data,
                     objectsPool: &objectsPool,
-                    mapDelegate: mapDelegate,
-                    coreSDK: coreSDK,
                     logger: logger,
                 )
             case .known(.mapRemove):
@@ -476,8 +425,6 @@ internal final class DefaultLiveMap: LiveMap {
             operationTimeserial: String?,
             operationData: ObjectData,
             objectsPool: inout ObjectsPool,
-            mapDelegate: LiveMapObjectPoolDelegate?,
-            coreSDK: CoreSDK,
             logger: AblyPlugin.Logger,
         ) {
             // RTLM7a: If an entry exists in the private data for the specified key
@@ -505,7 +452,7 @@ internal final class DefaultLiveMap: LiveMap {
             // RTLM7c: If the operation has a non-empty ObjectData.objectId attribute
             if let objectId = operationData.objectId, !objectId.isEmpty {
                 // RTLM7c1: Create a zero-value LiveObject in the internal ObjectsPool per RTO6
-                _ = objectsPool.createZeroValueObject(forObjectID: objectId, mapDelegate: mapDelegate, coreSDK: coreSDK, logger: logger)
+                _ = objectsPool.createZeroValueObject(forObjectID: objectId, logger: logger)
             }
         }
 
@@ -580,8 +527,6 @@ internal final class DefaultLiveMap: LiveMap {
         internal mutating func applyMapCreateOperation(
             _ operation: ObjectOperation,
             objectsPool: inout ObjectsPool,
-            mapDelegate: LiveMapObjectPoolDelegate?,
-            coreSDK: CoreSDK,
             logger: AblyPlugin.Logger,
         ) {
             if liveObject.createOperationIsMerged {
@@ -596,8 +541,6 @@ internal final class DefaultLiveMap: LiveMap {
             mergeInitialValue(
                 from: operation,
                 objectsPool: &objectsPool,
-                mapDelegate: mapDelegate,
-                coreSDK: coreSDK,
                 logger: logger,
             )
         }
@@ -607,7 +550,7 @@ internal final class DefaultLiveMap: LiveMap {
 
     /// Converts an ObjectsMapEntry to LiveMapValue using the same logic as get(key:)
     /// This is used by entries to ensure consistent value conversion
-    private func convertEntryToLiveMapValue(_ entry: ObjectsMapEntry) -> LiveMapValue? {
+    private func convertEntryToLiveMapValue(_ entry: ObjectsMapEntry, delegate: LiveMapObjectPoolDelegate) -> InternalLiveMapValue? {
         // RTLM5d2a: If ObjectsMapEntry.tombstone is true, return undefined/null
         // This is also equivalent to the RTLM14 check
         if entry.tombstone == true {
@@ -645,7 +588,7 @@ internal final class DefaultLiveMap: LiveMap {
         // RTLM5d2f: If ObjectsMapEntry.data.objectId exists, get the object stored at that objectId from the internal ObjectsPool
         if let objectId = entry.data.objectId {
             // RTLM5d2f1: If an object with id objectId does not exist, return undefined/null
-            guard let poolEntry = delegate.referenced?.getObjectFromPool(id: objectId) else {
+            guard let poolEntry = delegate.getObjectFromPool(id: objectId) else {
                 return nil
             }
 
