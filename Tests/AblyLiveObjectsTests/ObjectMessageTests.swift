@@ -355,7 +355,7 @@ struct ObjectMessageTests {
                     #expect(objectData.string == nil)
                 }
 
-                // @specOneOf(3/3) OD5b1 - This spec point is a bit weirdly worded, but here we're testing the case where `encoding` is not set and hence OD5a3 does not apply to the `string` property
+                // @specOneOf(3/3) OD5b1 - This spec point is a bit weirdly worded, but here we're testing the case where `encoding` is not set and hence OD5b3 does not apply to the `string` property
                 @Test
                 func string() throws {
                     let testString = "hello world"
