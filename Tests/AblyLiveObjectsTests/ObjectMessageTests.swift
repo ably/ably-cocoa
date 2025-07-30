@@ -328,7 +328,7 @@ struct ObjectMessageTests {
             }
 
             struct JSONTests {
-                // @specOneOf(1/3) OD5b1 - This spec point is a bit weirdly worded, but here we're testing the case where `encoding` is not set and hence OD5a2 does not apply to the `string` property
+                // @specOneOf(1/3) OD5b1
                 @Test
                 func boolean() throws {
                     let wireData = WireObjectData(boolean: true)
