@@ -475,30 +475,30 @@ extension WireObjectsMapEntry: WireObjectCodable {
 
 internal struct WireObjectData {
     internal var objectId: String? // OD2a
-    internal var encoding: String? // OD2b
     internal var boolean: Bool? // OD2c
     internal var bytes: StringOrData? // OD2d
     internal var number: NSNumber? // OD2e
     internal var string: String? // OD2f
+    internal var json: String? // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
 }
 
 extension WireObjectData: WireObjectCodable {
     internal enum WireKey: String {
         case objectId
-        case encoding
         case boolean
         case bytes
         case number
         case string
+        case json
     }
 
     internal init(wireObject: [String: WireValue]) throws(InternalError) {
         objectId = try wireObject.optionalStringValueForKey(WireKey.objectId.rawValue)
-        encoding = try wireObject.optionalStringValueForKey(WireKey.encoding.rawValue)
         boolean = try wireObject.optionalBoolValueForKey(WireKey.boolean.rawValue)
         bytes = try wireObject.optionalDecodableValueForKey(WireKey.bytes.rawValue)
         number = try wireObject.optionalNumberValueForKey(WireKey.number.rawValue)
         string = try wireObject.optionalStringValueForKey(WireKey.string.rawValue)
+        json = try wireObject.optionalStringValueForKey(WireKey.json.rawValue)
     }
 
     internal var toWireObject: [String: WireValue] {
@@ -506,9 +506,6 @@ extension WireObjectData: WireObjectCodable {
 
         if let objectId {
             result[WireKey.objectId.rawValue] = .string(objectId)
-        }
-        if let encoding {
-            result[WireKey.encoding.rawValue] = .string(encoding)
         }
         if let boolean {
             result[WireKey.boolean.rawValue] = .bool(boolean)
@@ -521,6 +518,9 @@ extension WireObjectData: WireObjectCodable {
         }
         if let string {
             result[WireKey.string.rawValue] = .string(string)
+        }
+        if let json {
+            result[WireKey.json.rawValue] = .string(json)
         }
 
         return result

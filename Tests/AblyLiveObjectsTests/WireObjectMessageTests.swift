@@ -360,14 +360,12 @@ enum WireObjectMessageTests {
         func decodesAllFields() throws {
             let json: [String: WireValue] = [
                 "objectId": "obj1",
-                "encoding": "utf8",
                 "boolean": true,
                 "number": 42,
                 "string": "value1",
             ]
             let data = try WireObjectData(wireObject: json)
             #expect(data.objectId == "obj1")
-            #expect(data.encoding == "utf8")
             #expect(data.boolean == true)
             #expect(data.number == 42)
             #expect(data.string == "value1")
@@ -378,7 +376,6 @@ enum WireObjectMessageTests {
             let json: [String: WireValue] = [:]
             let data = try WireObjectData(wireObject: json)
             #expect(data.objectId == nil)
-            #expect(data.encoding == nil)
             #expect(data.boolean == nil)
             #expect(data.bytes == nil)
             #expect(data.number == nil)
@@ -389,7 +386,6 @@ enum WireObjectMessageTests {
         func encodesAllFields() {
             let data = WireObjectData(
                 objectId: "obj1",
-                encoding: "utf8",
                 boolean: true,
                 bytes: nil,
                 number: 42,
@@ -398,7 +394,6 @@ enum WireObjectMessageTests {
             let wire = data.toWireObject
             #expect(wire == [
                 "objectId": "obj1",
-                "encoding": "utf8",
                 "boolean": true,
                 "number": 42,
                 "string": "value1",
@@ -409,7 +404,6 @@ enum WireObjectMessageTests {
         func encodesWithOptionalFieldsNil() {
             let data = WireObjectData(
                 objectId: nil,
-                encoding: nil,
                 boolean: nil,
                 bytes: nil,
                 number: nil,

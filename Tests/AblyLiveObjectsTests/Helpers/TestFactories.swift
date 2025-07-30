@@ -429,7 +429,7 @@ struct TestFactories {
             entry: mapEntry(
                 tombstone: tombstone,
                 timeserial: timeserial,
-                data: ObjectData(string: .string(value)),
+                data: ObjectData(string: value),
             ),
         )
     }
@@ -448,7 +448,7 @@ struct TestFactories {
             entry: internalMapEntry(
                 tombstone: tombstone,
                 timeserial: timeserial,
-                data: ObjectData(string: .string(value)),
+                data: ObjectData(string: value),
             ),
         )
     }
@@ -539,7 +539,7 @@ struct TestFactories {
         entries: [String: String] = ["key1": "value1", "key2": "value2"],
     ) -> ObjectsMap {
         let mapEntries = entries.mapValues { value in
-            mapEntry(data: ObjectData(string: .string(value)))
+            mapEntry(data: ObjectData(string: value))
         }
         return objectsMap(entries: mapEntries)
     }
@@ -567,7 +567,7 @@ struct TestFactories {
                 objectId: objectId,
                 mapOp: ObjectsMapOp(
                     key: key,
-                    data: ObjectData(string: .string(value)),
+                    data: ObjectData(string: value),
                 ),
             ),
             serial: serial,
@@ -676,7 +676,7 @@ struct TestFactories {
         entries: [String: String] = ["key1": "value1", "key2": "value2"],
     ) -> InboundObjectMessage {
         let mapEntries = entries.mapValues { value in
-            mapEntry(data: ObjectData(string: .string(value)))
+            mapEntry(data: ObjectData(string: value))
         }
         return rootObjectMessage(entries: mapEntries)
     }

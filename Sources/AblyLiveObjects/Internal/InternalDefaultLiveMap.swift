@@ -692,16 +692,16 @@ internal final class InternalDefaultLiveMap: Sendable {
 
         // RTLM5d2e: If ObjectsMapEntry.data.string exists, return it
         if let string = entry.data.string {
-            switch string {
-            case let .string(string):
-                return .primitive(.string(string))
-            case let .json(objectOrArray):
-                switch objectOrArray {
-                case let .array(array):
-                    return .primitive(.jsonArray(array))
-                case let .object(object):
-                    return .primitive(.jsonObject(object))
-                }
+            return .primitive(.string(string))
+        }
+
+        // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
+        if let json = entry.data.json {
+            switch json {
+            case let .array(array):
+                return .primitive(.jsonArray(array))
+            case let .object(object):
+                return .primitive(.jsonObject(object))
             }
         }
 

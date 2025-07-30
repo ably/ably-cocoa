@@ -300,7 +300,7 @@ struct ObjectsPoolTests {
                     createOp: TestFactories.mapCreateOperation(objectId: "map:existing@1", entries: [
                         "createOpKey": TestFactories.stringMapEntry(value: "bar").entry,
                     ]),
-                    entries: ["updated": TestFactories.mapEntry(data: ObjectData(string: .string("updated")))],
+                    entries: ["updated": TestFactories.mapEntry(data: ObjectData(string: "updated"))],
                 ),
                 // Update existing counter
                 TestFactories.counterObjectState(
@@ -313,7 +313,7 @@ struct ObjectsPoolTests {
                 TestFactories.mapObjectState(
                     objectId: "map:new@1",
                     siteTimeserials: ["site3": "ts3"],
-                    entries: ["new": TestFactories.mapEntry(data: ObjectData(string: .string("new")))],
+                    entries: ["new": TestFactories.mapEntry(data: ObjectData(string: "new"))],
                 ),
                 // Create new counter
                 TestFactories.counterObjectState(

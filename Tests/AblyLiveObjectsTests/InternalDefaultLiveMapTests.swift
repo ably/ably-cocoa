@@ -81,33 +81,35 @@ struct InternalDefaultLiveMapTests {
             #expect(result?.numberValue == 123.456)
         }
 
-        // @specOneOf(1/3) RTLM5d2e - When `string` is a string
+        // @spec RTLM5d2e
         @Test
         func returnsStringValue() throws {
             let logger = TestLogger()
-            let entry = TestFactories.internalMapEntry(data: ObjectData(string: .string("test")))
+            let entry = TestFactories.internalMapEntry(data: ObjectData(string: "test"))
             let coreSDK = MockCoreSDK(channelState: .attaching)
             let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
             let result = try map.get(key: "key", coreSDK: coreSDK, delegate: MockLiveMapObjectPoolDelegate())
             #expect(result?.stringValue == "test")
         }
 
-        // @specOneOf(2/3) RTLM5d2e - When `string` is a JSON array
+        // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
+        // Tests when `json` is a JSON array
         @Test
         func returnsJSONArrayValue() throws {
             let logger = TestLogger()
-            let entry = TestFactories.internalMapEntry(data: ObjectData(string: .json(.array(["foo"]))))
+            let entry = TestFactories.internalMapEntry(data: ObjectData(json: .array(["foo"])))
             let coreSDK = MockCoreSDK(channelState: .attaching)
             let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
             let result = try map.get(key: "key", coreSDK: coreSDK, delegate: MockLiveMapObjectPoolDelegate())
             #expect(result?.jsonArrayValue == ["foo"])
         }
 
-        // @specOneOf(3/3) RTLM5d2e - When `string` is a JSON object
+        // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
+        // Tests when `json` is a JSON object
         @Test
         func returnsJSONObjectValue() throws {
             let logger = TestLogger()
-            let entry = TestFactories.internalMapEntry(data: ObjectData(string: .json(.object(["foo": "bar"]))))
+            let entry = TestFactories.internalMapEntry(data: ObjectData(json: .object(["foo": "bar"])))
             let coreSDK = MockCoreSDK(channelState: .attaching)
             let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
             let result = try map.get(key: "key", coreSDK: coreSDK, delegate: MockLiveMapObjectPoolDelegate())
@@ -316,11 +318,11 @@ struct InternalDefaultLiveMapTests {
             let map = InternalDefaultLiveMap(
                 testsOnly_data: [
                     // tombstone is nil, so not considered tombstoned
-                    "active1": TestFactories.internalMapEntry(data: ObjectData(string: .string("value1"))),
+                    "active1": TestFactories.internalMapEntry(data: ObjectData(string: "value1")),
                     // tombstone is false, so not considered tombstoned[
-                    "active2": TestFactories.internalMapEntry(tombstone: false, data: ObjectData(string: .string("value2"))),
-                    "tombstoned": TestFactories.internalMapEntry(tombstone: true, data: ObjectData(string: .string("tombstoned"))),
-                    "tombstoned2": TestFactories.internalMapEntry(tombstone: true, data: ObjectData(string: .string("tombstoned2"))),
+                    "active2": TestFactories.internalMapEntry(tombstone: false, data: ObjectData(string: "value2")),
+                    "tombstoned": TestFactories.internalMapEntry(tombstone: true, data: ObjectData(string: "tombstoned")),
+                    "tombstoned2": TestFactories.internalMapEntry(tombstone: true, data: ObjectData(string: "tombstoned2")),
                 ],
                 objectID: "arbitrary",
                 logger: logger,
@@ -362,9 +364,9 @@ struct InternalDefaultLiveMapTests {
             let delegate = MockLiveMapObjectPoolDelegate()
             let map = InternalDefaultLiveMap(
                 testsOnly_data: [
-                    "key1": TestFactories.internalMapEntry(data: ObjectData(string: .string("value1"))),
-                    "key2": TestFactories.internalMapEntry(data: ObjectData(string: .string("value2"))),
-                    "key3": TestFactories.internalMapEntry(data: ObjectData(string: .string("value3"))),
+                    "key1": TestFactories.internalMapEntry(data: ObjectData(string: "value1")),
+                    "key2": TestFactories.internalMapEntry(data: ObjectData(string: "value2")),
+                    "key3": TestFactories.internalMapEntry(data: ObjectData(string: "value3")),
                 ],
                 objectID: "arbitrary",
                 logger: logger,
@@ -410,9 +412,9 @@ struct InternalDefaultLiveMapTests {
                     "boolean": TestFactories.internalMapEntry(data: ObjectData(boolean: true)), // RTLM5d2b
                     "bytes": TestFactories.internalMapEntry(data: ObjectData(bytes: Data([0x01, 0x02, 0x03]))), // RTLM5d2c
                     "number": TestFactories.internalMapEntry(data: ObjectData(number: NSNumber(value: 42))), // RTLM5d2d
-                    "string": TestFactories.internalMapEntry(data: ObjectData(string: .string("hello"))), // RTLM5d2e
-                    "jsonArray": TestFactories.internalMapEntry(data: ObjectData(string: .json(.array(["foo"])))), // RTLM5d2e
-                    "jsonObject": TestFactories.internalMapEntry(data: ObjectData(string: .json(.object(["foo": "bar"])))), // RTLM5d2e
+                    "string": TestFactories.internalMapEntry(data: ObjectData(string: "hello")), // RTLM5d2e
+                    "jsonArray": TestFactories.internalMapEntry(data: ObjectData(json: .array(["foo"]))), // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
+                    "jsonObject": TestFactories.internalMapEntry(data: ObjectData(json: .object(["foo": "bar"]))), // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
                     "mapRef": TestFactories.internalMapEntry(data: ObjectData(objectId: "map:ref@123")), // RTLM5d2f2
                     "counterRef": TestFactories.internalMapEntry(data: ObjectData(objectId: "counter:ref@456")), // RTLM5d2f2
                 ],
@@ -465,7 +467,7 @@ struct InternalDefaultLiveMapTests {
                 let delegate = MockLiveMapObjectPoolDelegate()
                 let coreSDK = MockCoreSDK(channelState: .attaching)
                 let map = InternalDefaultLiveMap(
-                    testsOnly_data: ["key1": TestFactories.internalMapEntry(timeserial: "ts2", data: ObjectData(string: .string("existing")))],
+                    testsOnly_data: ["key1": TestFactories.internalMapEntry(timeserial: "ts2", data: ObjectData(string: "existing"))],
                     objectID: "arbitrary",
                     logger: logger,
                     userCallbackQueue: .main,
@@ -505,7 +507,7 @@ struct InternalDefaultLiveMapTests {
                 let delegate = MockLiveMapObjectPoolDelegate()
                 let coreSDK = MockCoreSDK(channelState: .attaching)
                 let map = InternalDefaultLiveMap(
-                    testsOnly_data: ["key1": TestFactories.internalMapEntry(tombstone: true, timeserial: "ts1", data: ObjectData(string: .string("existing")))],
+                    testsOnly_data: ["key1": TestFactories.internalMapEntry(tombstone: true, timeserial: "ts1", data: ObjectData(string: "existing"))],
                     objectID: "arbitrary",
                     logger: logger,
                     userCallbackQueue: .main,
@@ -677,7 +679,7 @@ struct InternalDefaultLiveMapTests {
                 let delegate = MockLiveMapObjectPoolDelegate()
                 let coreSDK = MockCoreSDK(channelState: .attaching)
                 let map = InternalDefaultLiveMap(
-                    testsOnly_data: ["key1": TestFactories.internalMapEntry(timeserial: "ts2", data: ObjectData(string: .string("existing")))],
+                    testsOnly_data: ["key1": TestFactories.internalMapEntry(timeserial: "ts2", data: ObjectData(string: "existing"))],
                     objectID: "arbitrary",
                     logger: logger,
                     userCallbackQueue: .main,
@@ -703,7 +705,7 @@ struct InternalDefaultLiveMapTests {
                 let delegate = MockLiveMapObjectPoolDelegate()
                 let coreSDK = MockCoreSDK(channelState: .attaching)
                 let map = InternalDefaultLiveMap(
-                    testsOnly_data: ["key1": TestFactories.internalMapEntry(tombstone: false, timeserial: "ts1", data: ObjectData(string: .string("existing")))],
+                    testsOnly_data: ["key1": TestFactories.internalMapEntry(tombstone: false, timeserial: "ts1", data: ObjectData(string: "existing"))],
                     objectID: "arbitrary",
                     logger: logger,
                     userCallbackQueue: .main,
@@ -828,7 +830,7 @@ struct InternalDefaultLiveMapTests {
             let delegate = MockLiveMapObjectPoolDelegate()
             let coreSDK = MockCoreSDK(channelState: .attaching)
             let map = InternalDefaultLiveMap(
-                testsOnly_data: ["key1": TestFactories.internalMapEntry(timeserial: entrySerial, data: ObjectData(string: .string("existing")))],
+                testsOnly_data: ["key1": TestFactories.internalMapEntry(timeserial: entrySerial, data: ObjectData(string: "existing"))],
                 objectID: "arbitrary",
                 logger: logger,
                 userCallbackQueue: .main,
@@ -839,7 +841,7 @@ struct InternalDefaultLiveMapTests {
             _ = map.testsOnly_applyMapSetOperation(
                 key: "key1",
                 operationTimeserial: operationSerial,
-                operationData: ObjectData(string: .string("new")),
+                operationData: ObjectData(string: "new"),
                 objectsPool: &pool,
             )
 
@@ -1049,7 +1051,7 @@ struct InternalDefaultLiveMapTests {
 
             let operation = TestFactories.objectOperation(
                 action: .known(.mapSet),
-                mapOp: ObjectsMapOp(key: "key1", data: ObjectData(string: .string("new"))),
+                mapOp: ObjectsMapOp(key: "key1", data: ObjectData(string: "new")),
             )
 
             // Apply operation with serial "ts1" which is lexicographically less than existing "ts2" and thus will be applied per RTLO4a (this is a non-pathological case of RTOL4a, that spec point being fully tested elsewhere)
@@ -1136,7 +1138,7 @@ struct InternalDefaultLiveMapTests {
 
             let operation = TestFactories.objectOperation(
                 action: .known(.mapSet),
-                mapOp: ObjectsMapOp(key: "key1", data: ObjectData(string: .string("new"))),
+                mapOp: ObjectsMapOp(key: "key1", data: ObjectData(string: "new")),
             )
 
             // Apply MAP_SET operation
