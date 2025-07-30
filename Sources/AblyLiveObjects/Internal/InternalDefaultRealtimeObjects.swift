@@ -206,8 +206,8 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
     // MARK: - Sending `OBJECT` ProtocolMessage
 
     // This is currently exposed so that we can try calling it from the tests in the early days of the SDK to check that we can send an OBJECT ProtocolMessage. We'll probably make it private later on.
-    internal func testsOnly_sendObject(objectMessages: [OutboundObjectMessage], coreSDK: CoreSDK) async throws(InternalError) {
-        try await coreSDK.sendObject(objectMessages: objectMessages)
+    internal func testsOnly_publish(objectMessages: [OutboundObjectMessage], coreSDK: CoreSDK) async throws(InternalError) {
+        try await coreSDK.publish(objectMessages: objectMessages)
     }
 
     // MARK: - Testing

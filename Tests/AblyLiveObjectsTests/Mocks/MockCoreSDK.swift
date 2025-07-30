@@ -11,7 +11,7 @@ final class MockCoreSDK: CoreSDK {
         _channelState = channelState
     }
 
-    func sendObject(objectMessages _: [AblyLiveObjects.OutboundObjectMessage]) async throws(AblyLiveObjects.InternalError) {
+    func publish(objectMessages _: [AblyLiveObjects.OutboundObjectMessage]) async throws(AblyLiveObjects.InternalError) {
         protocolRequirementNotImplemented()
     }
 

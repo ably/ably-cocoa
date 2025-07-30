@@ -75,8 +75,8 @@ internal final class PublicDefaultRealtimeObjects: RealtimeObjects {
         proxied.testsOnly_receivedObjectProtocolMessages
     }
 
-    internal func testsOnly_sendObject(objectMessages: [OutboundObjectMessage]) async throws(InternalError) {
-        try await proxied.testsOnly_sendObject(objectMessages: objectMessages, coreSDK: coreSDK)
+    internal func testsOnly_publish(objectMessages: [OutboundObjectMessage]) async throws(InternalError) {
+        try await proxied.testsOnly_publish(objectMessages: objectMessages, coreSDK: coreSDK)
     }
 
     internal var testsOnly_receivedObjectSyncProtocolMessages: AsyncStream<[InboundObjectMessage]> {
