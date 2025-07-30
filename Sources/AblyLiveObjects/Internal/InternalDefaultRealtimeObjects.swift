@@ -93,14 +93,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
 
     internal func getRoot(coreSDK: CoreSDK) async throws(ARTErrorInfo) -> InternalDefaultLiveMap {
         // RTO1b: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
-        let currentChannelState = coreSDK.channelState
-        if currentChannelState == .detached || currentChannelState == .failed {
-            throw LiveObjectsError.objectsOperationFailedInvalidChannelState(
-                operationDescription: "getRoot",
-                channelState: currentChannelState,
-            )
-            .toARTErrorInfo()
-        }
+        try coreSDK.validateChannelState(notIn: [.detached, .failed], operationDescription: "getRoot")
 
         let syncStatus = mutex.withLock {
             mutableState.syncStatus

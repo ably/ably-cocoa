@@ -40,3 +40,28 @@ internal final class DefaultCoreSDK: CoreSDK {
         channel.state
     }
 }
+
+// MARK: - Channel State Validation
+
+/// Extension on CoreSDK to provide channel state validation utilities.
+internal extension CoreSDK {
+    /// Validates that the channel is not in any of the specified invalid states.
+    ///
+    /// - Parameters:
+    ///   - invalidStates: Array of channel states that are considered invalid for the operation
+    ///   - operationDescription: A description of the operation being performed, used in error messages
+    /// - Throws: `ARTErrorInfo` with code 90001 and statusCode 400 if the channel is in any of the invalid states
+    func validateChannelState(
+        notIn invalidStates: [ARTRealtimeChannelState],
+        operationDescription: String,
+    ) throws(ARTErrorInfo) {
+        let currentChannelState = channelState
+        if invalidStates.contains(currentChannelState) {
+            throw LiveObjectsError.objectsOperationFailedInvalidChannelState(
+                operationDescription: operationDescription,
+                channelState: currentChannelState,
+            )
+            .toARTErrorInfo()
+        }
+    }
+}

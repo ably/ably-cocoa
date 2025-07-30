@@ -111,14 +111,7 @@ internal final class InternalDefaultLiveMap: Sendable {
     /// Returns the value associated with a given key, following RTLM5d specification.
     internal func get(key: String, coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> InternalLiveMapValue? {
         // RTLM5c: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
-        let currentChannelState = coreSDK.channelState
-        if currentChannelState == .detached || currentChannelState == .failed {
-            throw LiveObjectsError.objectsOperationFailedInvalidChannelState(
-                operationDescription: "LiveMap.get",
-                channelState: currentChannelState,
-            )
-            .toARTErrorInfo()
-        }
+        try coreSDK.validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveMap.get")
 
         let entry = mutex.withLock {
             mutableState.data[key]
@@ -135,14 +128,7 @@ internal final class InternalDefaultLiveMap: Sendable {
 
     internal func size(coreSDK: CoreSDK) throws(ARTErrorInfo) -> Int {
         // RTLM10c: If the channel is in the DETACHED or FAILED state, the library should throw an ErrorInfo error with statusCode 400 and code 90001
-        let currentChannelState = coreSDK.channelState
-        if currentChannelState == .detached || currentChannelState == .failed {
-            throw LiveObjectsError.objectsOperationFailedInvalidChannelState(
-                operationDescription: "LiveMap.size",
-                channelState: currentChannelState,
-            )
-            .toARTErrorInfo()
-        }
+        try coreSDK.validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveMap.size")
 
         return mutex.withLock {
             // RTLM10d: Returns the number of non-tombstoned entries (per RTLM14) in the internal data map
@@ -154,14 +140,7 @@ internal final class InternalDefaultLiveMap: Sendable {
 
     internal func entries(coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> [(key: String, value: InternalLiveMapValue)] {
         // RTLM11c: If the channel is in the DETACHED or FAILED state, the library should throw an ErrorInfo error with statusCode 400 and code 90001
-        let currentChannelState = coreSDK.channelState
-        if currentChannelState == .detached || currentChannelState == .failed {
-            throw LiveObjectsError.objectsOperationFailedInvalidChannelState(
-                operationDescription: "LiveMap.entries",
-                channelState: currentChannelState,
-            )
-            .toARTErrorInfo()
-        }
+        try coreSDK.validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveMap.entries")
 
         return mutex.withLock {
             // RTLM11d: Returns key-value pairs from the internal data map

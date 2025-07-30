@@ -81,14 +81,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
 
     internal func value(coreSDK: CoreSDK) throws(ARTErrorInfo) -> Double {
         // RTLC5b: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
-        let currentChannelState = coreSDK.channelState
-        if currentChannelState == .detached || currentChannelState == .failed {
-            throw LiveObjectsError.objectsOperationFailedInvalidChannelState(
-                operationDescription: "LiveCounter.value",
-                channelState: currentChannelState,
-            )
-            .toARTErrorInfo()
-        }
+        try coreSDK.validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveCounter.value")
 
         return mutex.withLock {
             // RTLC5c
