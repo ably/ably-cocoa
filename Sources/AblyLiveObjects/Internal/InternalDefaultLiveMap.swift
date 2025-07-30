@@ -695,9 +695,13 @@ internal final class InternalDefaultLiveMap: Sendable {
             switch string {
             case let .string(string):
                 return .primitive(.string(string))
-            case .json:
-                // TODO: Understand how to handle JSON values (https://github.com/ably/specification/pull/333/files#r2164561055)
-                notYetImplemented()
+            case let .json(objectOrArray):
+                switch objectOrArray {
+                case let .array(array):
+                    return .primitive(.jsonArray(array))
+                case let .object(object):
+                    return .primitive(.jsonObject(object))
+                }
             }
         }
 

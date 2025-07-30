@@ -81,7 +81,7 @@ struct InternalDefaultLiveMapTests {
             #expect(result?.numberValue == 123.456)
         }
 
-        // @spec RTLM5d2e
+        // @specOneOf(1/3) RTLM5d2e - When `string` is a string
         @Test
         func returnsStringValue() throws {
             let logger = TestLogger()
@@ -90,6 +90,28 @@ struct InternalDefaultLiveMapTests {
             let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
             let result = try map.get(key: "key", coreSDK: coreSDK, delegate: MockLiveMapObjectPoolDelegate())
             #expect(result?.stringValue == "test")
+        }
+
+        // @specOneOf(2/3) RTLM5d2e - When `string` is a JSON array
+        @Test
+        func returnsJSONArrayValue() throws {
+            let logger = TestLogger()
+            let entry = TestFactories.internalMapEntry(data: ObjectData(string: .json(.array(["foo"]))))
+            let coreSDK = MockCoreSDK(channelState: .attaching)
+            let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let result = try map.get(key: "key", coreSDK: coreSDK, delegate: MockLiveMapObjectPoolDelegate())
+            #expect(result?.jsonArrayValue == ["foo"])
+        }
+
+        // @specOneOf(3/3) RTLM5d2e - When `string` is a JSON object
+        @Test
+        func returnsJSONObjectValue() throws {
+            let logger = TestLogger()
+            let entry = TestFactories.internalMapEntry(data: ObjectData(string: .json(.object(["foo": "bar"]))))
+            let coreSDK = MockCoreSDK(channelState: .attaching)
+            let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let result = try map.get(key: "key", coreSDK: coreSDK, delegate: MockLiveMapObjectPoolDelegate())
+            #expect(result?.jsonObjectValue == ["foo": "bar"])
         }
 
         // @spec RTLM5d2f1
@@ -389,6 +411,8 @@ struct InternalDefaultLiveMapTests {
                     "bytes": TestFactories.internalMapEntry(data: ObjectData(bytes: Data([0x01, 0x02, 0x03]))), // RTLM5d2c
                     "number": TestFactories.internalMapEntry(data: ObjectData(number: NSNumber(value: 42))), // RTLM5d2d
                     "string": TestFactories.internalMapEntry(data: ObjectData(string: .string("hello"))), // RTLM5d2e
+                    "jsonArray": TestFactories.internalMapEntry(data: ObjectData(string: .json(.array(["foo"])))), // RTLM5d2e
+                    "jsonObject": TestFactories.internalMapEntry(data: ObjectData(string: .json(.object(["foo": "bar"])))), // RTLM5d2e
                     "mapRef": TestFactories.internalMapEntry(data: ObjectData(objectId: "map:ref@123")), // RTLM5d2f2
                     "counterRef": TestFactories.internalMapEntry(data: ObjectData(objectId: "counter:ref@456")), // RTLM5d2f2
                 ],
@@ -403,16 +427,18 @@ struct InternalDefaultLiveMapTests {
             let keys = try map.keys(coreSDK: coreSDK, delegate: delegate)
             let values = try map.values(coreSDK: coreSDK, delegate: delegate)
 
-            #expect(size == 6)
-            #expect(entries.count == 6)
-            #expect(keys.count == 6)
-            #expect(values.count == 6)
+            #expect(size == 8)
+            #expect(entries.count == 8)
+            #expect(keys.count == 8)
+            #expect(values.count == 8)
 
             // Verify the correct values are returned by `entries`
             let booleanEntry = entries.first { $0.key == "boolean" } // RTLM5d2b
             let bytesEntry = entries.first { $0.key == "bytes" } // RTLM5d2c
             let numberEntry = entries.first { $0.key == "number" } // RTLM5d2d
             let stringEntry = entries.first { $0.key == "string" } // RTLM5d2e
+            let jsonArrayEntry = entries.first { $0.key == "jsonArray" } // RTLM5d2e
+            let jsonObjectEntry = entries.first { $0.key == "jsonObject" } // RTLM5d2e
             let mapRefEntry = entries.first { $0.key == "mapRef" } // RTLM5d2f2
             let counterRefEntry = entries.first { $0.key == "counterRef" } // RTLM5d2f2
 
@@ -420,6 +446,8 @@ struct InternalDefaultLiveMapTests {
             #expect(bytesEntry?.value.dataValue == Data([0x01, 0x02, 0x03])) // RTLM5d2c
             #expect(numberEntry?.value.numberValue == 42) // RTLM5d2d
             #expect(stringEntry?.value.stringValue == "hello") // RTLM5d2e
+            #expect(jsonArrayEntry?.value.jsonArrayValue == ["foo"]) // RTLM5d2e
+            #expect(jsonObjectEntry?.value.jsonObjectValue == ["foo": "bar"]) // RTLM5d2e
             #expect(mapRefEntry?.value.liveMapValue as AnyObject === referencedMap as AnyObject) // RTLM5d2f2
             #expect(counterRefEntry?.value.liveCounterValue as AnyObject === referencedCounter as AnyObject) // RTLM5d2f2
         }

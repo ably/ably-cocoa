@@ -175,7 +175,7 @@ public protocol BatchContextLiveMap: AnyObject, Sendable {
     /// Mirrors the ``LiveMap/get(key:)`` method and returns the value associated with a key in the map.
     ///
     /// - Parameter key: The key to retrieve the value for.
-    /// - Returns: A ``LiveObject``, a primitive type (string, number, boolean, or binary data) or `nil` if the key doesn't exist in a map or the associated ``LiveObject`` has been deleted. Always `nil` if this map object is deleted.
+    /// - Returns: A ``LiveObject``, a primitive type (string, number, boolean, JSON-serializable object or array ,or binary data) or `nil` if the key doesn't exist in a map or the associated ``LiveObject`` has been deleted. Always `nil` if this map object is deleted.
     func get(key: String) -> LiveMapValue?
 
     /// Returns the number of key-value pairs in the map.
@@ -226,14 +226,14 @@ public protocol BatchContextLiveCounter: AnyObject, Sendable {
 /// Conflicts in a LiveMap are automatically resolved with last-write-wins (LWW) semantics,
 /// meaning that if two clients update the same key in the map, the update with the most recent timestamp wins.
 ///
-/// Keys must be strings. Values can be another ``LiveObject``, or a primitive type, such as a string, number, boolean, or binary data (see ``PrimitiveObjectValue``).
+/// Keys must be strings. Values can be another ``LiveObject``, or a primitive type, such as a string, number, boolean, JSON-serializable object or array, or binary data (see ``PrimitiveObjectValue``).
 public protocol LiveMap: LiveObject where Update == LiveMapUpdate {
     /// Returns the value associated with a given key. Returns `nil` if the key doesn't exist in a map or if the associated ``LiveObject`` has been deleted.
     ///
     /// Always returns `nil` if this map object is deleted.
     ///
     /// - Parameter key: The key to retrieve the value for.
-    /// - Returns: A ``LiveObject``, a primitive type (string, number, boolean, or binary data) or `nil` if the key doesn't exist in a map or the associated ``LiveObject`` has been deleted. Always `nil` if this map object is deleted.
+    /// - Returns: A ``LiveObject``, a primitive type (string, number, boolean, JSON-serializable object or array, or binary data) or `nil` if the key doesn't exist in a map or the associated ``LiveObject`` has been deleted. Always `nil` if this map object is deleted.
     func get(key: String) throws(ARTErrorInfo) -> LiveMapValue?
 
     /// Returns the number of key-value pairs in the map.
@@ -291,6 +291,8 @@ public enum PrimitiveObjectValue: Sendable, Equatable {
     case number(Double)
     case bool(Bool)
     case data(Data)
+    case jsonArray([JSONValue])
+    case jsonObject([String: JSONValue])
 
     // MARK: - Convenience getters for associated values
 
@@ -321,6 +323,22 @@ public enum PrimitiveObjectValue: Sendable, Equatable {
     /// If this `PrimitiveObjectValue` has case `data`, this returns the associated value. Else, it returns `nil`.
     public var dataValue: Data? {
         if case let .data(value) = self {
+            return value
+        }
+        return nil
+    }
+
+    /// If this `PrimitiveObjectValue` has case `jsonArray`, this returns the associated value. Else, it returns `nil`.
+    public var jsonArrayValue: [JSONValue]? {
+        if case let .jsonArray(value) = self {
+            return value
+        }
+        return nil
+    }
+
+    /// If this `PrimitiveObjectValue` has case `jsonObject`, this returns the associated value. Else, it returns `nil`.
+    public var jsonObjectValue: [String: JSONValue]? {
+        if case let .jsonObject(value) = self {
             return value
         }
         return nil
