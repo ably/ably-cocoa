@@ -157,9 +157,11 @@ internal enum ObjectsMapSemantics: Int {
     case lww = 0
 }
 
-internal struct WireObjectOperation {
+/// A partial version of `WireObjectOperation` that excludes the `objectId` property. Used for encoding initial values where the `objectId` is not yet known.
+///
+/// `WireObjectOperation` delegates its encoding and decoding to `PartialWireObjectOperation`.
+internal struct PartialWireObjectOperation {
     internal var action: WireEnum<ObjectOperationAction> // OOP3a
-    internal var objectId: String // OOP3b
     internal var mapOp: WireObjectsMapOp? // OOP3c
     internal var counterOp: WireObjectsCounterOp? // OOP3d
     internal var map: WireObjectsMap? // OOP3e
@@ -168,10 +170,9 @@ internal struct WireObjectOperation {
     internal var initialValue: String? // OOP3h
 }
 
-extension WireObjectOperation: WireObjectCodable {
+extension PartialWireObjectOperation: WireObjectCodable {
     internal enum WireKey: String {
         case action
-        case objectId
         case mapOp
         case counterOp
         case map
@@ -182,7 +183,6 @@ extension WireObjectOperation: WireObjectCodable {
 
     internal init(wireObject: [String: WireValue]) throws(InternalError) {
         action = try wireObject.wireEnumValueForKey(WireKey.action.rawValue)
-        objectId = try wireObject.stringValueForKey(WireKey.objectId.rawValue)
         mapOp = try wireObject.optionalDecodableValueForKey(WireKey.mapOp.rawValue)
         counterOp = try wireObject.optionalDecodableValueForKey(WireKey.counterOp.rawValue)
         map = try wireObject.optionalDecodableValueForKey(WireKey.map.rawValue)
@@ -197,7 +197,6 @@ extension WireObjectOperation: WireObjectCodable {
     internal var toWireObject: [String: WireValue] {
         var result: [String: WireValue] = [
             WireKey.action.rawValue: .number(action.rawValue as NSNumber),
-            WireKey.objectId.rawValue: .string(objectId),
         ]
 
         if let mapOp {
@@ -218,6 +217,57 @@ extension WireObjectOperation: WireObjectCodable {
         if let initialValue {
             result[WireKey.initialValue.rawValue] = .string(initialValue)
         }
+
+        return result
+    }
+}
+
+internal struct WireObjectOperation {
+    internal var action: WireEnum<ObjectOperationAction> // OOP3a
+    internal var objectId: String // OOP3b
+    internal var mapOp: WireObjectsMapOp? // OOP3c
+    internal var counterOp: WireObjectsCounterOp? // OOP3d
+    internal var map: WireObjectsMap? // OOP3e
+    internal var counter: WireObjectsCounter? // OOP3f
+    internal var nonce: String? // OOP3g
+    internal var initialValue: String? // OOP3h
+}
+
+extension WireObjectOperation: WireObjectCodable {
+    internal enum WireKey: String {
+        case objectId
+    }
+
+    internal init(wireObject: [String: WireValue]) throws(InternalError) {
+        // Decode the objectId first since it's not part of PartialWireObjectOperation
+        objectId = try wireObject.stringValueForKey(WireKey.objectId.rawValue)
+
+        // Delegate to PartialWireObjectOperation for decoding
+        let partialOperation = try PartialWireObjectOperation(wireObject: wireObject)
+
+        // Copy the decoded values
+        action = partialOperation.action
+        mapOp = partialOperation.mapOp
+        counterOp = partialOperation.counterOp
+        map = partialOperation.map
+        counter = partialOperation.counter
+        nonce = partialOperation.nonce
+        initialValue = partialOperation.initialValue
+    }
+
+    internal var toWireObject: [String: WireValue] {
+        var result = PartialWireObjectOperation(
+            action: action,
+            mapOp: mapOp,
+            counterOp: counterOp,
+            map: map,
+            counter: counter,
+            nonce: nonce,
+            initialValue: initialValue,
+        ).toWireObject
+
+        // Add the objectId field
+        result[WireKey.objectId.rawValue] = .string(objectId)
 
         return result
     }
