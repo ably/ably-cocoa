@@ -356,7 +356,7 @@ extension WireObjectsMapOp: WireObjectCodable {
     }
 }
 
-internal struct WireObjectsCounterOp {
+internal struct WireObjectsCounterOp: Equatable {
     internal var amount: NSNumber // OCO2a
 }
 
@@ -410,7 +410,7 @@ extension WireObjectsMap: WireObjectCodable {
     }
 }
 
-internal struct WireObjectsCounter {
+internal struct WireObjectsCounter: Equatable {
     internal var count: NSNumber? // OCN2a
 }
 
