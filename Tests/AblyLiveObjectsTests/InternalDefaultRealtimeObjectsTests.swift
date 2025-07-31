@@ -10,7 +10,7 @@ struct InternalDefaultRealtimeObjectsTests {
     /// Creates a InternalDefaultRealtimeObjects instance for testing
     static func createDefaultRealtimeObjects() -> InternalDefaultRealtimeObjects {
         let logger = TestLogger()
-        return InternalDefaultRealtimeObjects(logger: logger)
+        return InternalDefaultRealtimeObjects(logger: logger, userCallbackQueue: .main)
     }
 
     /// Tests for `InternalDefaultRealtimeObjects.handleObjectSyncProtocolMessage`, covering RTO5 specification points.
@@ -155,9 +155,9 @@ struct InternalDefaultRealtimeObjectsTests {
 
         // MARK: - RTO5c: Post-Sync Behavior Tests
 
-        // @spec(RTO5c2, RTO5c2a) Objects not in sync are removed, except root
+        // A smoke test that the RTO5c post-sync behaviours get performed. They are tested in more detail in the ObjectsPool.applySyncObjectsPool tests.
         @Test
-        func removesObjectsNotInSyncButPreservesRoot() async throws {
+        func performsPostSyncSteps() async throws {
             let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
 
             // Perform sync with only one object (RTO5a5 case)
@@ -172,9 +172,6 @@ struct InternalDefaultRealtimeObjectsTests {
             let finalPool = realtimeObjects.testsOnly_objectsPool
             #expect(finalPool.entries["root"] != nil) // Root preserved
             #expect(finalPool.entries["map:synced@1"] != nil) // Synced object added
-
-            // Note: We rely on applySyncObjectsPool being tested separately for RTO5c2 removal behavior
-            // as the side effect of removing pre-existing objects is tested in ObjectsPoolTests
         }
 
         // MARK: - Error Handling Tests
@@ -341,16 +338,22 @@ struct InternalDefaultRealtimeObjectsTests {
 
         // @spec RTO4b1
         // @spec RTO4b2
+        // @spec RTO4b2a
         // @spec RTO4b3
         // @spec RTO4b4
         // @spec RTO4b5
+        @available(iOS 17.0.0, tvOS 17.0.0, *)
         @Test
-        func handlesHasObjectsFalse() {
+        func handlesHasObjectsFalse() async throws {
             let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
 
             // Set up initial state with additional objects in the pool using sync
             realtimeObjects.handleObjectSyncProtocolMessage(
                 objectMessages: [
+                    TestFactories.mapObjectMessage(objectId: "root", entries: [
+                        "existingMap": TestFactories.objectReferenceMapEntry(key: "existingMap", objectId: "map:existing@123").entry,
+                        "existingCounter": TestFactories.objectReferenceMapEntry(key: "existingCounter", objectId: "counter:existing@456").entry,
+                    ]),
                     TestFactories.mapObjectMessage(objectId: "map:existing@123"),
                     TestFactories.counterObjectMessage(objectId: "counter:existing@456"),
                 ],
@@ -358,6 +361,11 @@ struct InternalDefaultRealtimeObjectsTests {
             )
 
             let originalPool = realtimeObjects.testsOnly_objectsPool
+            #expect(Set(originalPool.root.testsOnly_data.keys) == ["existingMap", "existingCounter"])
+
+            let rootSubscriber = Subscriber<DefaultLiveMapUpdate, SubscribeResponse>(callbackQueue: .main)
+            let coreSDK = MockCoreSDK(channelState: .attached)
+            try originalPool.root.subscribe(listener: rootSubscriber.createListener(), coreSDK: coreSDK)
 
             // Set up an in-progress sync sequence
             realtimeObjects.handleObjectSyncProtocolMessage(
@@ -382,11 +390,14 @@ struct InternalDefaultRealtimeObjectsTests {
             #expect(newPool.entries["root"] != nil)
             #expect(newPool.entries["map:existing@123"] == nil) // Should be removed
             #expect(newPool.entries["counter:existing@456"] == nil) // Should be removed
+            // Verify that `removed` was emitted for root's existing keys per RTO4b2a
+            let subscriberInvocations = await rootSubscriber.getInvocations()
+            #expect(subscriberInvocations.map(\.0) == [.init(update: ["existingMap": .removed, "existingCounter": .removed])])
 
-            // Verify root is a new zero-valued map (RTO4b2)
-            // TODO: this one is unclear (are we meant to replace the root or just clear its data?) https://github.com/ably/specification/pull/333/files#r2183493458
+            // Verify root is the same object, but with data cleared (RTO4b2)
+            // TODO: this one is unclear (are we meant to replace the root or just clear its data?) https://github.com/ably/specification/pull/333/files#r2183493458. I believe that the answer is that we should just clear its data but the spec point needs to be clearer, see https://github.com/ably/specification/pull/346/files#r2201434895.
             let newRoot = newPool.root
-            #expect(newRoot as AnyObject !== originalPool.root as AnyObject) // Should be a new instance
+            #expect(newRoot as AnyObject === originalPool.root as AnyObject) // Should be same instance
             #expect(newRoot.testsOnly_data.isEmpty) // Should be zero-valued (empty)
 
             // RTO4b3, RTO4b4, RTO4b5: SyncObjectsPool must be cleared, sync sequence cleared, BufferedObjectOperations cleared
@@ -410,15 +421,14 @@ struct InternalDefaultRealtimeObjectsTests {
             realtimeObjects.onChannelAttached(hasObjects: false)
             #expect(realtimeObjects.testsOnly_onChannelAttachedHasObjects == false)
             let newPool = realtimeObjects.testsOnly_objectsPool
-            #expect(newPool.root as AnyObject !== originalRoot as AnyObject)
+            #expect(newPool.root as AnyObject === originalRoot as AnyObject)
             #expect(newPool.entries.count == 1)
 
             // Third call with hasObjects = true again (should do nothing)
-            let secondResetRoot = newPool.root
             realtimeObjects.onChannelAttached(hasObjects: true)
             #expect(realtimeObjects.testsOnly_onChannelAttachedHasObjects == true)
             let finalPool = realtimeObjects.testsOnly_objectsPool
-            #expect(finalPool.root as AnyObject === secondResetRoot as AnyObject) // Should be unchanged
+            #expect(finalPool.root as AnyObject === originalRoot as AnyObject) // Should be unchanged
         }
 
         /// Test that sync sequence is properly discarded even with complex sync state

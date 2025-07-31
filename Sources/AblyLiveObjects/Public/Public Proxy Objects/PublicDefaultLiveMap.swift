@@ -80,15 +80,15 @@ internal final class PublicDefaultLiveMap: LiveMap {
         try await proxied.remove(key: key)
     }
 
-    internal func subscribe(listener: sending (sending any LiveMapUpdate) -> Void) -> any SubscribeResponse {
-        proxied.subscribe(listener: listener)
+    internal func subscribe(listener: @escaping LiveObjectUpdateCallback<LiveMapUpdate>) throws(ARTErrorInfo) -> any SubscribeResponse {
+        try proxied.subscribe(listener: listener, coreSDK: coreSDK)
     }
 
     internal func unsubscribeAll() {
         proxied.unsubscribeAll()
     }
 
-    internal func on(event: LiveObjectLifecycleEvent, callback: sending () -> Void) -> any OnLiveObjectLifecycleEventResponse {
+    internal func on(event: LiveObjectLifecycleEvent, callback: @escaping LiveObjectLifecycleEventCallback) -> any OnLiveObjectLifecycleEventResponse {
         proxied.on(event: event, callback: callback)
     }
 
