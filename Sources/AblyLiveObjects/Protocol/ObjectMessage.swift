@@ -56,18 +56,12 @@ internal struct ObjectOperation {
 }
 
 internal struct ObjectData {
-    /// The values that the `string` property might hold, before being encoded per OD4 or after being decoded per OD5.
-    internal enum StringPropertyContent {
-        case string(String)
-        case json(JSONObjectOrArray)
-    }
-
     internal var objectId: String? // OD2a
-    internal var encoding: String? // OD2b
     internal var boolean: Bool? // OD2c
     internal var bytes: Data? // OD2d
     internal var number: NSNumber? // OD2e
-    internal var string: StringPropertyContent? // OD2f
+    internal var string: String? // OD2f
+    internal var json: JSONObjectOrArray? // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
 }
 
 internal struct ObjectsMapOp {
@@ -264,9 +258,9 @@ internal extension ObjectData {
         format: AblyPlugin.EncodingFormat
     ) throws(InternalError) {
         objectId = wireObjectData.objectId
-        encoding = wireObjectData.encoding
         boolean = wireObjectData.boolean
         number = wireObjectData.number
+        string = wireObjectData.string
 
         // OD5: Decode data based on format
         switch format {
@@ -300,16 +294,12 @@ internal extension ObjectData {
             }
         }
 
-        if let wireString = wireObjectData.string {
-            // OD5a2, OD5b3: If ObjectData.encoding is set to "json", the ObjectData.string content is decoded by parsing the string as JSON
-            if wireObjectData.encoding == "json" {
-                let jsonValue = try JSONObjectOrArray(jsonString: wireString)
-                string = .json(jsonValue)
-            } else {
-                string = .string(wireString)
-            }
+        // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
+        if let wireJson = wireObjectData.json {
+            let jsonValue = try JSONObjectOrArray(jsonString: wireJson)
+            json = jsonValue
         } else {
-            string = nil
+            json = nil
         }
     }
 
@@ -334,20 +324,6 @@ internal extension ObjectData {
             nil
         }
 
-        // OD4c4: A string payload is encoded as a MessagePack string type, and the result is set on the ObjectData.string attribute
-        // OD4d4: A string payload is represented as a JSON string and set on the ObjectData.string attribute
-        let (wireString, wireEncoding): (String?, String?) = if let stringContent = string {
-            switch stringContent {
-            case let .string(str):
-                (str, nil)
-            case let .json(jsonValue):
-                // OD4c5, OD4d5: A payload consisting of a JSON-encodable object or array is stringified as a JSON object or array, represented as a JSON string and the result is set on the ObjectData.string attribute. The ObjectData.encoding attribute is then set to "json"
-                (jsonValue.toJSONString, "json")
-            }
-        } else {
-            (nil, nil)
-        }
-
         let wireNumber: NSNumber? = if let number {
             switch format {
             case .json:
@@ -363,11 +339,14 @@ internal extension ObjectData {
 
         return .init(
             objectId: objectId,
-            encoding: wireEncoding,
             boolean: boolean,
             bytes: wireBytes,
             number: wireNumber,
-            string: wireString,
+            // OD4c4: A string payload is encoded as a MessagePack string type, and the result is set on the ObjectData.string attribute
+            // OD4d4: A string payload is represented as a JSON string and set on the ObjectData.string attribute
+            string: string,
+            // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
+            json: json?.toJSONString,
         )
     }
 }

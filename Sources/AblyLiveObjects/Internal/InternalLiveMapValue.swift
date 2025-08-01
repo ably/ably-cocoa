@@ -52,6 +52,16 @@ internal enum InternalLiveMapValue: Sendable, Equatable {
         primitiveValue?.dataValue
     }
 
+    /// If this `InternalLiveMapValue` has case `primitive` with a JSON array value, this returns that value. Else, it returns `nil`.
+    internal var jsonArrayValue: [JSONValue]? {
+        primitiveValue?.jsonArrayValue
+    }
+
+    /// If this `InternalLiveMapValue` has case `primitive` with a JSON object value, this returns that value. Else, it returns `nil`.
+    internal var jsonObjectValue: [String: JSONValue]? {
+        primitiveValue?.jsonObjectValue
+    }
+
     // MARK: - Equatable Implementation
 
     internal static func == (lhs: InternalLiveMapValue, rhs: InternalLiveMapValue) -> Bool {
