@@ -31,11 +31,10 @@ internal struct OutboundObjectMessage: Equatable {
     internal var serialTimestamp: Date? // OM2j
 }
 
-/// A partial version of `ObjectOperation` that excludes the `objectId` property. Used for encoding initial values where the `objectId` is not yet known.
+/// A partial version of `ObjectOperation` that excludes the `action` and `objectId` property. Used for encoding initial values which don't include the `action` and where the `objectId` is not yet known.
 ///
 /// `ObjectOperation` delegates its encoding and decoding to `PartialObjectOperation`.
 internal struct PartialObjectOperation {
-    internal var action: WireEnum<ObjectOperationAction> // OOP3a
     internal var mapOp: ObjectsMapOp? // OOP3c
     internal var counterOp: WireObjectsCounterOp? // OOP3d
     internal var map: ObjectsMap? // OOP3e
@@ -148,13 +147,13 @@ internal extension ObjectOperation {
         wireObjectOperation: WireObjectOperation,
         format: AblyPlugin.EncodingFormat
     ) throws(InternalError) {
-        // Decode the objectId first since it's not part of PartialObjectOperation
+        // Decode the action and objectId first they're not part of PartialObjectOperation
+        action = wireObjectOperation.action
         objectId = wireObjectOperation.objectId
 
         // Delegate to PartialObjectOperation for decoding
         let partialOperation = try PartialObjectOperation(
             partialWireObjectOperation: PartialWireObjectOperation(
-                action: wireObjectOperation.action,
                 mapOp: wireObjectOperation.mapOp,
                 counterOp: wireObjectOperation.counterOp,
                 map: wireObjectOperation.map,
@@ -166,7 +165,6 @@ internal extension ObjectOperation {
         )
 
         // Copy the decoded values
-        action = partialOperation.action
         mapOp = partialOperation.mapOp
         counterOp = partialOperation.counterOp
         map = partialOperation.map
@@ -181,7 +179,6 @@ internal extension ObjectOperation {
     ///   - format: The format to use when applying the encoding rules of OD4.
     func toWire(format: AblyPlugin.EncodingFormat) -> WireObjectOperation {
         let partialWireOperation = PartialObjectOperation(
-            action: action,
             mapOp: mapOp,
             counterOp: counterOp,
             map: map,
@@ -190,9 +187,9 @@ internal extension ObjectOperation {
             initialValue: initialValue,
         ).toWire(format: format)
 
-        // Create WireObjectOperation from PartialWireObjectOperation and add objectId
+        // Create WireObjectOperation from PartialWireObjectOperation and add action and objectId
         return WireObjectOperation(
-            action: partialWireOperation.action,
+            action: action,
             objectId: objectId,
             mapOp: partialWireOperation.mapOp,
             counterOp: partialWireOperation.counterOp,
@@ -214,7 +211,6 @@ internal extension PartialObjectOperation {
         partialWireObjectOperation: PartialWireObjectOperation,
         format: AblyPlugin.EncodingFormat
     ) throws(InternalError) {
-        action = partialWireObjectOperation.action
         mapOp = try partialWireObjectOperation.mapOp.map { wireObjectsMapOp throws(InternalError) in
             try .init(wireObjectsMapOp: wireObjectsMapOp, format: format)
         }
@@ -236,7 +232,6 @@ internal extension PartialObjectOperation {
     ///   - format: The format to use when applying the encoding rules of OD4.
     func toWire(format: AblyPlugin.EncodingFormat) -> PartialWireObjectOperation {
         .init(
-            action: action,
             mapOp: mapOp?.toWire(format: format),
             counterOp: counterOp,
             map: map?.toWire(format: format),
