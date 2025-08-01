@@ -88,14 +88,7 @@ internal struct LiveObjectMutableState<Update: Sendable> {
     @discardableResult
     internal mutating func subscribe(listener: @escaping LiveObjectUpdateCallback<Update>, coreSDK: CoreSDK, updateSelfLater: @escaping UpdateLiveObject) throws(ARTErrorInfo) -> any AblyLiveObjects.SubscribeResponse {
         // RTLO4b2
-        let currentChannelState = coreSDK.channelState
-        if currentChannelState == .detached || currentChannelState == .failed {
-            throw LiveObjectsError.objectsOperationFailedInvalidChannelState(
-                operationDescription: "subscribe",
-                channelState: currentChannelState,
-            )
-            .toARTErrorInfo()
-        }
+        try coreSDK.validateChannelState(notIn: [.detached, .failed], operationDescription: "subscribe")
 
         let subscription = Subscription(listener: listener, updateLiveObject: updateSelfLater)
         subscriptionsByID[subscription.id] = subscription

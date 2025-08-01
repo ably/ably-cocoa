@@ -10,6 +10,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
 
     private let logger: AblyPlugin.Logger
     private let userCallbackQueue: DispatchQueue
+    private let clock: SimpleClock
 
     // These drive the testsOnly_* properties that expose the received ProtocolMessages to the test suite.
     private let receivedObjectProtocolMessages: AsyncStream<[InboundObjectMessage]>
@@ -44,7 +45,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
         internal var id: String
 
         /// The `ObjectMessage`s gathered during this sync sequence.
-        internal var syncObjectsPool: [ObjectState]
+        internal var syncObjectsPool: [SyncObjectsPoolEntry]
 
         /// `OBJECT` ProtocolMessages that were received during this sync sequence, to be applied once the sync sequence is complete, per RTO7a.
         internal var bufferedObjectOperations: [InboundObjectMessage]
@@ -70,13 +71,14 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
         }
     }
 
-    internal init(logger: AblyPlugin.Logger, userCallbackQueue: DispatchQueue) {
+    internal init(logger: AblyPlugin.Logger, userCallbackQueue: DispatchQueue, clock: SimpleClock) {
         self.logger = logger
         self.userCallbackQueue = userCallbackQueue
+        self.clock = clock
         (receivedObjectProtocolMessages, receivedObjectProtocolMessagesContinuation) = AsyncStream.makeStream()
         (receivedObjectSyncProtocolMessages, receivedObjectSyncProtocolMessagesContinuation) = AsyncStream.makeStream()
         (waitingForSyncEvents, waitingForSyncEventsContinuation) = AsyncStream.makeStream()
-        mutableState = .init(objectsPool: .init(logger: logger, userCallbackQueue: userCallbackQueue))
+        mutableState = .init(objectsPool: .init(logger: logger, userCallbackQueue: userCallbackQueue, clock: clock))
     }
 
     // MARK: - LiveMapObjectPoolDelegate
@@ -91,14 +93,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
 
     internal func getRoot(coreSDK: CoreSDK) async throws(ARTErrorInfo) -> InternalDefaultLiveMap {
         // RTO1b: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
-        let currentChannelState = coreSDK.channelState
-        if currentChannelState == .detached || currentChannelState == .failed {
-            throw LiveObjectsError.objectsOperationFailedInvalidChannelState(
-                operationDescription: "getRoot",
-                channelState: currentChannelState,
-            )
-            .toARTErrorInfo()
-        }
+        try coreSDK.validateChannelState(notIn: [.detached, .failed], operationDescription: "getRoot")
 
         let syncStatus = mutex.withLock {
             mutableState.syncStatus
@@ -175,6 +170,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
                 objectMessages: objectMessages,
                 logger: logger,
                 userCallbackQueue: userCallbackQueue,
+                clock: clock,
                 receivedObjectProtocolMessagesContinuation: receivedObjectProtocolMessagesContinuation,
             )
         }
@@ -192,6 +188,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
                 protocolMessageChannelSerial: protocolMessageChannelSerial,
                 logger: logger,
                 userCallbackQueue: userCallbackQueue,
+                clock: clock,
                 receivedObjectSyncProtocolMessagesContinuation: receivedObjectSyncProtocolMessagesContinuation,
             )
         }
@@ -202,15 +199,15 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
     /// Intended as a way for tests to populate the object pool.
     internal func testsOnly_createZeroValueLiveObject(forObjectID objectID: String) -> ObjectsPool.Entry? {
         mutex.withLock {
-            mutableState.objectsPool.createZeroValueObject(forObjectID: objectID, logger: logger, userCallbackQueue: userCallbackQueue)
+            mutableState.objectsPool.createZeroValueObject(forObjectID: objectID, logger: logger, userCallbackQueue: userCallbackQueue, clock: clock)
         }
     }
 
     // MARK: - Sending `OBJECT` ProtocolMessage
 
     // This is currently exposed so that we can try calling it from the tests in the early days of the SDK to check that we can send an OBJECT ProtocolMessage. We'll probably make it private later on.
-    internal func testsOnly_sendObject(objectMessages: [OutboundObjectMessage], coreSDK: CoreSDK) async throws(InternalError) {
-        try await coreSDK.sendObject(objectMessages: objectMessages)
+    internal func testsOnly_publish(objectMessages: [OutboundObjectMessage], coreSDK: CoreSDK) async throws(InternalError) {
+        try await coreSDK.publish(objectMessages: objectMessages)
     }
 
     // MARK: - Testing
@@ -264,6 +261,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
             protocolMessageChannelSerial: String?,
             logger: Logger,
             userCallbackQueue: DispatchQueue,
+            clock: SimpleClock,
             receivedObjectSyncProtocolMessagesContinuation: AsyncStream<[InboundObjectMessage]>.Continuation,
         ) {
             logger.log("handleObjectSyncProtocolMessage(objectMessages: \(objectMessages), protocolMessageChannelSerial: \(String(describing: protocolMessageChannelSerial)))", level: .debug)
@@ -271,7 +269,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
             receivedObjectSyncProtocolMessagesContinuation.yield(objectMessages)
 
             // If populated, this contains a full set of sync data for the channel, and should be applied to the ObjectsPool.
-            let completedSyncObjectsPool: [ObjectState]?
+            let completedSyncObjectsPool: [SyncObjectsPoolEntry]?
             // If populated, this contains a set of buffered inbound OBJECT messages that should be applied.
             let completedSyncBufferedObjectOperations: [InboundObjectMessage]?
 
@@ -300,7 +298,13 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
                 }
 
                 // RTO5b
-                updatedSyncSequence.syncObjectsPool.append(contentsOf: objectMessages.compactMap(\.object))
+                updatedSyncSequence.syncObjectsPool.append(contentsOf: objectMessages.compactMap { objectMessage in
+                    if let object = objectMessage.object {
+                        .init(state: object, objectMessageSerialTimestamp: objectMessage.serialTimestamp)
+                    } else {
+                        nil
+                    }
+                })
 
                 syncSequence = updatedSyncSequence
 
@@ -311,7 +315,13 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
                 }
             } else {
                 // RTO5a5: The sync data is contained entirely within this single OBJECT_SYNC
-                completedSyncObjectsPool = objectMessages.compactMap(\.object)
+                completedSyncObjectsPool = objectMessages.compactMap { objectMessage in
+                    if let object = objectMessage.object {
+                        .init(state: object, objectMessageSerialTimestamp: objectMessage.serialTimestamp)
+                    } else {
+                        nil
+                    }
+                }
                 completedSyncBufferedObjectOperations = nil
             }
 
@@ -321,6 +331,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
                     completedSyncObjectsPool,
                     logger: logger,
                     userCallbackQueue: userCallbackQueue,
+                    clock: clock,
                 )
 
                 // RTO5c6
@@ -331,6 +342,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
                             objectMessage,
                             logger: logger,
                             userCallbackQueue: userCallbackQueue,
+                            clock: clock,
                         )
                     }
                 }
@@ -347,6 +359,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
             objectMessages: [InboundObjectMessage],
             logger: Logger,
             userCallbackQueue: DispatchQueue,
+            clock: SimpleClock,
             receivedObjectProtocolMessagesContinuation: AsyncStream<[InboundObjectMessage]>.Continuation,
         ) {
             receivedObjectProtocolMessagesContinuation.yield(objectMessages)
@@ -366,6 +379,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
                         objectMessage,
                         logger: logger,
                         userCallbackQueue: userCallbackQueue,
+                        clock: clock,
                     )
                 }
             }
@@ -376,6 +390,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
             _ objectMessage: InboundObjectMessage,
             logger: Logger,
             userCallbackQueue: DispatchQueue,
+            clock: SimpleClock,
         ) {
             guard let operation = objectMessage.operation else {
                 // RTO9a1
@@ -392,6 +407,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
                     forObjectID: operation.objectId,
                     logger: logger,
                     userCallbackQueue: userCallbackQueue,
+                    clock: clock,
                 ) else {
                     logger.log("Unable to create zero-value object for \(operation.objectId) when processing OBJECT message; dropping", level: .warn)
                     return
@@ -409,6 +425,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
                         operation,
                         objectMessageSerial: objectMessage.serial,
                         objectMessageSiteCode: objectMessage.siteCode,
+                        objectMessageSerialTimestamp: objectMessage.serialTimestamp,
                         objectsPool: &objectsPool,
                     )
                 }

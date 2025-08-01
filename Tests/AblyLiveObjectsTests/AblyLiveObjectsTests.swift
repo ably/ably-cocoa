@@ -90,7 +90,7 @@ struct AblyLiveObjectsTests {
         // (This objectId comes from copying that which was given in an expected value in an error message from Realtime)
         let realtimeCreatedMapObjectID = "map:iC4Nq8EbTSEmw-_tDJdVV8HfiBvJGpZmO_WbGbh0_-4@\(currentAblyTimestamp)"
 
-        try await channel.testsOnly_nonTypeErasedObjects.testsOnly_sendObject(objectMessages: [
+        try await channel.testsOnly_nonTypeErasedObjects.testsOnly_publish(objectMessages: [
             OutboundObjectMessage(
                 operation: .init(
                     action: .known(.mapCreate),
@@ -110,7 +110,7 @@ struct AblyLiveObjectsTests {
         // 7. Now, send an invalid OBJECT ProtocolMessage to check that ably-cocoa correctly reports on its NACK.
         let invalidObjectThrownError = try await #require(throws: ARTErrorInfo.self) {
             do throws(InternalError) {
-                try await channel.testsOnly_nonTypeErasedObjects.testsOnly_sendObject(objectMessages: [
+                try await channel.testsOnly_nonTypeErasedObjects.testsOnly_publish(objectMessages: [
                     .init(),
                 ])
             } catch {

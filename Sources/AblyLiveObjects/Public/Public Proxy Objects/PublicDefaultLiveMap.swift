@@ -1,23 +1,23 @@
 import Ably
+internal import AblyPlugin
 
 /// Our default implementation of ``LiveMap``.
 ///
 /// This is largely a wrapper around ``InternalDefaultLiveMap``.
 internal final class PublicDefaultLiveMap: LiveMap {
-    private let proxied: InternalDefaultLiveMap
-    internal var testsOnly_proxied: InternalDefaultLiveMap {
-        proxied
-    }
+    internal let proxied: InternalDefaultLiveMap
 
     // MARK: - Dependencies that hold a strong reference to `proxied`
 
     private let coreSDK: CoreSDK
     private let delegate: LiveMapObjectPoolDelegate
+    private let logger: AblyPlugin.Logger
 
-    internal init(proxied: InternalDefaultLiveMap, coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) {
+    internal init(proxied: InternalDefaultLiveMap, coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate, logger: AblyPlugin.Logger) {
         self.proxied = proxied
         self.coreSDK = coreSDK
         self.delegate = delegate
+        self.logger = logger
     }
 
     // MARK: - `LiveMap` protocol
@@ -27,6 +27,7 @@ internal final class PublicDefaultLiveMap: LiveMap {
             creationArgs: .init(
                 coreSDK: coreSDK,
                 mapDelegate: delegate,
+                logger: logger,
             ),
         )
     }
@@ -46,6 +47,7 @@ internal final class PublicDefaultLiveMap: LiveMap {
                         creationArgs: .init(
                             coreSDK: coreSDK,
                             mapDelegate: delegate,
+                            logger: logger,
                         ),
                     )
                 )
@@ -66,6 +68,7 @@ internal final class PublicDefaultLiveMap: LiveMap {
                     creationArgs: .init(
                         coreSDK: coreSDK,
                         mapDelegate: delegate,
+                        logger: logger,
                     ),
                 )
             }

@@ -341,8 +341,7 @@ struct TestFactories {
         map: ObjectsMap? = nil,
         counter: WireObjectsCounter? = nil,
         nonce: String? = nil,
-        initialValue: Data? = nil,
-        initialValueEncoding: String? = nil,
+        initialValue: String? = nil,
     ) -> ObjectOperation {
         ObjectOperation(
             action: action,
@@ -353,7 +352,6 @@ struct TestFactories {
             counter: counter,
             nonce: nonce,
             initialValue: initialValue,
-            initialValueEncoding: initialValueEncoding,
         )
     }
 
@@ -404,6 +402,21 @@ struct TestFactories {
         )
     }
 
+    /// Creates an InternalObjectsMapEntry with sensible defaults
+    ///
+    /// This should be kept in sync with ``mapEntry``.
+    static func internalMapEntry(
+        tombstone: Bool? = false,
+        timeserial: String? = "ts1",
+        data: ObjectData,
+    ) -> InternalObjectsMapEntry {
+        InternalObjectsMapEntry(
+            tombstone: tombstone,
+            timeserial: timeserial,
+            data: data,
+        )
+    }
+
     /// Creates a map entry with string data
     static func stringMapEntry(
         key: String = "testKey",
@@ -414,6 +427,25 @@ struct TestFactories {
         (
             key: key,
             entry: mapEntry(
+                tombstone: tombstone,
+                timeserial: timeserial,
+                data: ObjectData(string: .string(value)),
+            ),
+        )
+    }
+
+    /// Creates an internal map entry with string data
+    ///
+    /// This should be kept in sync with ``stringMapEntry``.
+    static func internalStringMapEntry(
+        key: String = "testKey",
+        value: String = "testValue",
+        tombstone: Bool? = false,
+        timeserial: String? = "ts1",
+    ) -> (key: String, entry: InternalObjectsMapEntry) {
+        (
+            key: key,
+            entry: internalMapEntry(
                 tombstone: tombstone,
                 timeserial: timeserial,
                 data: ObjectData(string: .string(value)),

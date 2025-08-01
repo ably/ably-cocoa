@@ -18,10 +18,13 @@ public extension ARTRealtimeChannel {
             pluginAPI: Plugin.defaultPluginAPI,
         )
 
+        let logger = pluginAPI.logger(for: underlyingObjects.channel)
+
         return PublicObjectsStore.shared.getOrCreateRealtimeObjects(
             proxying: internalObjects,
             creationArgs: .init(
                 coreSDK: coreSDK,
+                logger: logger,
             ),
         )
     }

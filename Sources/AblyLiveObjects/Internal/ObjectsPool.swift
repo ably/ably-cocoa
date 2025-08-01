@@ -34,6 +34,7 @@ internal struct ObjectsPool {
             _ operation: ObjectOperation,
             objectMessageSerial: String?,
             objectMessageSiteCode: String?,
+            objectMessageSerialTimestamp: Date?,
             objectsPool: inout ObjectsPool,
         ) {
             switch self {
@@ -42,6 +43,7 @@ internal struct ObjectsPool {
                     operation,
                     objectMessageSerial: objectMessageSerial,
                     objectMessageSiteCode: objectMessageSiteCode,
+                    objectMessageSerialTimestamp: objectMessageSerialTimestamp,
                     objectsPool: &objectsPool,
                 )
             case let .counter(counter):
@@ -49,6 +51,7 @@ internal struct ObjectsPool {
                     operation,
                     objectMessageSerial: objectMessageSerial,
                     objectMessageSiteCode: objectMessageSiteCode,
+                    objectMessageSerialTimestamp: objectMessageSerialTimestamp,
                     objectsPool: &objectsPool,
                 )
             }
@@ -73,12 +76,32 @@ internal struct ObjectsPool {
         /// Overrides the internal data for the object as per RTLC6, RTLM6.
         ///
         /// Returns a ``DeferredUpdate`` which contains the object plus an update that should be emitted on this object once the `SyncObjectsPool` has been applied.
-        fileprivate func replaceData(using state: ObjectState, objectsPool: inout ObjectsPool) -> DeferredUpdate {
+        ///
+        /// - Parameters:
+        ///   - objectMessageSerialTimestamp: The `serialTimestamp` of the containing `ObjectMessage`. Used if we need to tombstone the object.
+        fileprivate func replaceData(
+            using state: ObjectState,
+            objectMessageSerialTimestamp: Date?,
+            objectsPool: inout ObjectsPool,
+        ) -> DeferredUpdate {
             switch self {
             case let .map(map):
-                .map(map, map.replaceData(using: state, objectsPool: &objectsPool))
+                .map(
+                    map,
+                    map.replaceData(
+                        using: state,
+                        objectMessageSerialTimestamp: objectMessageSerialTimestamp,
+                        objectsPool: &objectsPool,
+                    ),
+                )
             case let .counter(counter):
-                .counter(counter, counter.replaceData(using: state))
+                .counter(
+                    counter,
+                    counter.replaceData(
+                        using: state,
+                        objectMessageSerialTimestamp: objectMessageSerialTimestamp,
+                    ),
+                )
             }
         }
     }
@@ -97,11 +120,13 @@ internal struct ObjectsPool {
     internal init(
         logger: AblyPlugin.Logger,
         userCallbackQueue: DispatchQueue,
+        clock: SimpleClock,
         testsOnly_otherEntries otherEntries: [String: Entry]? = nil,
     ) {
         self.init(
             logger: logger,
             userCallbackQueue: userCallbackQueue,
+            clock: clock,
             otherEntries: otherEntries,
         )
     }
@@ -109,11 +134,12 @@ internal struct ObjectsPool {
     private init(
         logger: AblyPlugin.Logger,
         userCallbackQueue: DispatchQueue,
+        clock: SimpleClock,
         otherEntries: [String: Entry]?
     ) {
         entries = otherEntries ?? [:]
         // TODO: What initial root entry to use? https://github.com/ably/specification/pull/333/files#r2152312933
-        entries[Self.rootKey] = .map(.createZeroValued(objectID: Self.rootKey, logger: logger, userCallbackQueue: userCallbackQueue))
+        entries[Self.rootKey] = .map(.createZeroValued(objectID: Self.rootKey, logger: logger, userCallbackQueue: userCallbackQueue, clock: clock))
     }
 
     // MARK: - Typed root
@@ -140,8 +166,9 @@ internal struct ObjectsPool {
     ///   - objectID: The ID of the object to create
     ///   - logger: The logger to use for any created LiveObject
     ///   - userCallbackQueue: The callback queue to use for any created LiveObject
+    ///   - clock: The clock to use for any created LiveObject
     /// - Returns: The existing or newly created object
-    internal mutating func createZeroValueObject(forObjectID objectID: String, logger: AblyPlugin.Logger, userCallbackQueue: DispatchQueue) -> Entry? {
+    internal mutating func createZeroValueObject(forObjectID objectID: String, logger: AblyPlugin.Logger, userCallbackQueue: DispatchQueue, clock: SimpleClock) -> Entry? {
         // RTO6a: If an object with objectId exists in ObjectsPool, do not create a new object
         if let existingEntry = entries[objectID] {
             return existingEntry
@@ -159,9 +186,9 @@ internal struct ObjectsPool {
         let entry: Entry
         switch typeString {
         case "map":
-            entry = .map(.createZeroValued(objectID: objectID, logger: logger, userCallbackQueue: userCallbackQueue))
+            entry = .map(.createZeroValued(objectID: objectID, logger: logger, userCallbackQueue: userCallbackQueue, clock: clock))
         case "counter":
-            entry = .counter(.createZeroValued(objectID: objectID, logger: logger, userCallbackQueue: userCallbackQueue))
+            entry = .counter(.createZeroValued(objectID: objectID, logger: logger, userCallbackQueue: userCallbackQueue, clock: clock))
         default:
             return nil
         }
@@ -173,9 +200,10 @@ internal struct ObjectsPool {
 
     /// Applies the objects gathered during an `OBJECT_SYNC` to this `ObjectsPool`, per RTO5c1 and RTO5c2.
     internal mutating func applySyncObjectsPool(
-        _ syncObjectsPool: [ObjectState],
+        _ syncObjectsPool: [SyncObjectsPoolEntry],
         logger: AblyPlugin.Logger,
         userCallbackQueue: DispatchQueue,
+        clock: SimpleClock,
     ) {
         logger.log("applySyncObjectsPool called with \(syncObjectsPool.count) objects", level: .debug)
 
@@ -186,46 +214,57 @@ internal struct ObjectsPool {
         var updatesToExistingObjects: [ObjectsPool.Entry.DeferredUpdate] = []
 
         // RTO5c1: For each ObjectState member in the SyncObjectsPool list
-        for objectState in syncObjectsPool {
-            receivedObjectIds.insert(objectState.objectId)
+        for syncObjectsPoolEntry in syncObjectsPool {
+            receivedObjectIds.insert(syncObjectsPoolEntry.state.objectId)
 
             // RTO5c1a: If an object with ObjectState.objectId exists in the internal ObjectsPool
-            if let existingEntry = entries[objectState.objectId] {
-                logger.log("Updating existing object with ID: \(objectState.objectId)", level: .debug)
+            if let existingEntry = entries[syncObjectsPoolEntry.state.objectId] {
+                logger.log("Updating existing object with ID: \(syncObjectsPoolEntry.state.objectId)", level: .debug)
 
                 // RTO5c1a1: Override the internal data for the object as per RTLC6, RTLM6
-                let deferredUpdate = existingEntry.replaceData(using: objectState, objectsPool: &self)
+                let deferredUpdate = existingEntry.replaceData(
+                    using: syncObjectsPoolEntry.state,
+                    objectMessageSerialTimestamp: syncObjectsPoolEntry.objectMessageSerialTimestamp,
+                    objectsPool: &self,
+                )
                 // RTO5c1a2: Store this update to emit at end
                 updatesToExistingObjects.append(deferredUpdate)
             } else {
                 // RTO5c1b: If an object with ObjectState.objectId does not exist in the internal ObjectsPool
-                logger.log("Creating new object with ID: \(objectState.objectId)", level: .debug)
+                logger.log("Creating new object with ID: \(syncObjectsPoolEntry.state.objectId)", level: .debug)
 
                 // RTO5c1b1: Create a new LiveObject using the data from ObjectState and add it to the internal ObjectsPool:
                 let newEntry: Entry?
 
-                if objectState.counter != nil {
+                if syncObjectsPoolEntry.state.counter != nil {
                     // RTO5c1b1a: If ObjectState.counter is present, create a zero-value LiveCounter,
                     // set its private objectId equal to ObjectState.objectId and override its internal data per RTLC6
-                    let counter = InternalDefaultLiveCounter.createZeroValued(objectID: objectState.objectId, logger: logger, userCallbackQueue: userCallbackQueue)
-                    _ = counter.replaceData(using: objectState)
+                    let counter = InternalDefaultLiveCounter.createZeroValued(objectID: syncObjectsPoolEntry.state.objectId, logger: logger, userCallbackQueue: userCallbackQueue, clock: clock)
+                    _ = counter.replaceData(
+                        using: syncObjectsPoolEntry.state,
+                        objectMessageSerialTimestamp: syncObjectsPoolEntry.objectMessageSerialTimestamp,
+                    )
                     newEntry = .counter(counter)
-                } else if let objectsMap = objectState.map {
+                } else if let objectsMap = syncObjectsPoolEntry.state.map {
                     // RTO5c1b1b: If ObjectState.map is present, create a zero-value LiveMap,
                     // set its private objectId equal to ObjectState.objectId, set its private semantics
                     // equal to ObjectState.map.semantics and override its internal data per RTLM6
-                    let map = InternalDefaultLiveMap.createZeroValued(objectID: objectState.objectId, semantics: objectsMap.semantics, logger: logger, userCallbackQueue: userCallbackQueue)
-                    _ = map.replaceData(using: objectState, objectsPool: &self)
+                    let map = InternalDefaultLiveMap.createZeroValued(objectID: syncObjectsPoolEntry.state.objectId, semantics: objectsMap.semantics, logger: logger, userCallbackQueue: userCallbackQueue, clock: clock)
+                    _ = map.replaceData(
+                        using: syncObjectsPoolEntry.state,
+                        objectMessageSerialTimestamp: syncObjectsPoolEntry.objectMessageSerialTimestamp,
+                        objectsPool: &self,
+                    )
                     newEntry = .map(map)
                 } else {
                     // RTO5c1b1c: Otherwise, log a warning that an unsupported object state message has been received, and discard the current ObjectState without taking any action
-                    logger.log("Unsupported object state message received for objectId: \(objectState.objectId)", level: .warn)
+                    logger.log("Unsupported object state message received for objectId: \(syncObjectsPoolEntry.state.objectId)", level: .warn)
                     newEntry = nil
                 }
 
                 if let newEntry {
                     // Note that we will never replace the root object here, and thus never break the RTO3b invariant that the root object is always a map. This is because the pool always contains a root object and thus we always go through the RTO5c1a branch of the `if` above.
-                    entries[objectState.objectId] = newEntry
+                    entries[syncObjectsPoolEntry.state.objectId] = newEntry
                 }
             }
         }

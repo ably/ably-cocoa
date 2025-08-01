@@ -14,6 +14,7 @@ internal struct InboundObjectMessage {
     internal var object: ObjectState? // OM2g
     internal var serial: String? // OM2h
     internal var siteCode: String? // OM2i
+    internal var serialTimestamp: Date? // OM2j
 }
 
 /// An `ObjectMessage` to be sent in the `state` property of an `OBJECT` `ProtocolMessage`.
@@ -27,6 +28,20 @@ internal struct OutboundObjectMessage {
     internal var object: ObjectState? // OM2g
     internal var serial: String? // OM2h
     internal var siteCode: String? // OM2i
+    internal var serialTimestamp: Date? // OM2j
+}
+
+/// A partial version of `ObjectOperation` that excludes the `objectId` property. Used for encoding initial values where the `objectId` is not yet known.
+///
+/// `ObjectOperation` delegates its encoding and decoding to `PartialObjectOperation`.
+internal struct PartialObjectOperation {
+    internal var action: WireEnum<ObjectOperationAction> // OOP3a
+    internal var mapOp: ObjectsMapOp? // OOP3c
+    internal var counterOp: WireObjectsCounterOp? // OOP3d
+    internal var map: ObjectsMap? // OOP3e
+    internal var counter: WireObjectsCounter? // OOP3f
+    internal var nonce: String? // OOP3g
+    internal var initialValue: String? // OOP3h
 }
 
 internal struct ObjectOperation {
@@ -37,8 +52,7 @@ internal struct ObjectOperation {
     internal var map: ObjectsMap? // OOP3e
     internal var counter: WireObjectsCounter? // OOP3f
     internal var nonce: String? // OOP3g
-    internal var initialValue: Data? // OOP3h
-    internal var initialValueEncoding: String? // OOP3i
+    internal var initialValue: String? // OOP3h
 }
 
 internal struct ObjectData {
@@ -65,6 +79,7 @@ internal struct ObjectsMapEntry {
     internal var tombstone: Bool? // OME2a
     internal var timeserial: String? // OME2b
     internal var data: ObjectData // OME2c
+    internal var serialTimestamp: Date? // OME2d
 }
 
 internal struct ObjectsMap {
@@ -104,6 +119,7 @@ internal extension InboundObjectMessage {
         }
         serial = wireObjectMessage.serial
         siteCode = wireObjectMessage.siteCode
+        serialTimestamp = wireObjectMessage.serialTimestamp
     }
 }
 
@@ -123,6 +139,7 @@ internal extension OutboundObjectMessage {
             object: object?.toWire(format: format),
             serial: serial,
             siteCode: siteCode,
+            serialTimestamp: serialTimestamp,
         )
     }
 }
@@ -137,65 +154,101 @@ internal extension ObjectOperation {
         wireObjectOperation: WireObjectOperation,
         format: AblyPlugin.EncodingFormat
     ) throws(InternalError) {
-        action = wireObjectOperation.action
+        // Decode the objectId first since it's not part of PartialObjectOperation
         objectId = wireObjectOperation.objectId
-        mapOp = try wireObjectOperation.mapOp.map { wireObjectsMapOp throws(InternalError) in
+
+        // Delegate to PartialObjectOperation for decoding
+        let partialOperation = try PartialObjectOperation(
+            partialWireObjectOperation: PartialWireObjectOperation(
+                action: wireObjectOperation.action,
+                mapOp: wireObjectOperation.mapOp,
+                counterOp: wireObjectOperation.counterOp,
+                map: wireObjectOperation.map,
+                counter: wireObjectOperation.counter,
+                nonce: wireObjectOperation.nonce,
+                initialValue: wireObjectOperation.initialValue,
+            ),
+            format: format,
+        )
+
+        // Copy the decoded values
+        action = partialOperation.action
+        mapOp = partialOperation.mapOp
+        counterOp = partialOperation.counterOp
+        map = partialOperation.map
+        counter = partialOperation.counter
+        nonce = partialOperation.nonce
+        initialValue = partialOperation.initialValue
+    }
+
+    /// Converts this `ObjectOperation` to a `WireObjectOperation`, applying the data encoding rules of OD4.
+    ///
+    /// - Parameters:
+    ///   - format: The format to use when applying the encoding rules of OD4.
+    func toWire(format: AblyPlugin.EncodingFormat) -> WireObjectOperation {
+        let partialWireOperation = PartialObjectOperation(
+            action: action,
+            mapOp: mapOp,
+            counterOp: counterOp,
+            map: map,
+            counter: counter,
+            nonce: nonce,
+            initialValue: initialValue,
+        ).toWire(format: format)
+
+        // Create WireObjectOperation from PartialWireObjectOperation and add objectId
+        return WireObjectOperation(
+            action: partialWireOperation.action,
+            objectId: objectId,
+            mapOp: partialWireOperation.mapOp,
+            counterOp: partialWireOperation.counterOp,
+            map: partialWireOperation.map,
+            counter: partialWireOperation.counter,
+            nonce: partialWireOperation.nonce,
+            initialValue: partialWireOperation.initialValue,
+        )
+    }
+}
+
+internal extension PartialObjectOperation {
+    /// Initializes a `PartialObjectOperation` from a `PartialWireObjectOperation`, applying the data decoding rules of OD5.
+    ///
+    /// - Parameters:
+    ///   - format: The format to use when applying the decoding rules of OD5.
+    /// - Throws: `InternalError` if JSON or Base64 decoding fails.
+    init(
+        partialWireObjectOperation: PartialWireObjectOperation,
+        format: AblyPlugin.EncodingFormat
+    ) throws(InternalError) {
+        action = partialWireObjectOperation.action
+        mapOp = try partialWireObjectOperation.mapOp.map { wireObjectsMapOp throws(InternalError) in
             try .init(wireObjectsMapOp: wireObjectsMapOp, format: format)
         }
-        counterOp = wireObjectOperation.counterOp
-        map = try wireObjectOperation.map.map { wireMap throws(InternalError) in
+        counterOp = partialWireObjectOperation.counterOp
+        map = try partialWireObjectOperation.map.map { wireMap throws(InternalError) in
             try .init(wireObjectsMap: wireMap, format: format)
         }
-        counter = wireObjectOperation.counter
+        counter = partialWireObjectOperation.counter
 
         // Do not access on inbound data, per OOP3g
         nonce = nil
         // Do not access on inbound data, per OOP3h
         initialValue = nil
-        // Do not access on inbound data, per OOP3i
-        initialValueEncoding = nil
     }
 
-    /// Converts this `ObjectOperation` to a `WireObjectOperation`, applying the data encoding rules of OD4 and OOP5.
+    /// Converts this `PartialObjectOperation` to a `PartialWireObjectOperation`, applying the data encoding rules of OD4.
     ///
     /// - Parameters:
-    ///   - format: The format to use when applying the encoding rules of OD4 and OOP5.
-    func toWire(format: AblyPlugin.EncodingFormat) -> WireObjectOperation {
-        // OOP5: Encode initialValue based on format
-        let wireInitialValue: StringOrData?
-        let wireInitialValueEncoding: String?
-
-        if let initialValue {
-            switch format {
-            case .messagePack:
-                // OOP5a: When the MessagePack protocol is used
-                // OOP5a1: A binary ObjectOperation.initialValue is encoded as a MessagePack binary type
-                wireInitialValue = .data(initialValue)
-                // OOP5a2: Set ObjectOperation.initialValueEncoding to msgpack
-                wireInitialValueEncoding = "msgpack"
-
-            case .json:
-                // OOP5b: When the JSON protocol is used
-                // OOP5b1: A binary ObjectOperation.initialValue is Base64-encoded and represented as a JSON string
-                wireInitialValue = .string(initialValue.base64EncodedString())
-                // OOP5b2: Set ObjectOperation.initialValueEncoding to json
-                wireInitialValueEncoding = "json"
-            }
-        } else {
-            wireInitialValue = nil
-            wireInitialValueEncoding = nil
-        }
-
-        return .init(
+    ///   - format: The format to use when applying the encoding rules of OD4.
+    func toWire(format: AblyPlugin.EncodingFormat) -> PartialWireObjectOperation {
+        .init(
             action: action,
-            objectId: objectId,
             mapOp: mapOp?.toWire(format: format),
             counterOp: counterOp,
             map: map?.toWire(format: format),
             counter: counter,
             nonce: nonce,
-            initialValue: wireInitialValue,
-            initialValueEncoding: wireInitialValueEncoding,
+            initialValue: initialValue,
         )
     }
 }
@@ -360,6 +413,7 @@ internal extension ObjectsMapEntry {
         tombstone = wireObjectsMapEntry.tombstone
         timeserial = wireObjectsMapEntry.timeserial
         data = try .init(wireObjectData: wireObjectsMapEntry.data, format: format)
+        serialTimestamp = wireObjectsMapEntry.serialTimestamp
     }
 
     /// Converts this `ObjectsMapEntry` to a `WireObjectsMapEntry`, applying the data encoding rules of OD4.

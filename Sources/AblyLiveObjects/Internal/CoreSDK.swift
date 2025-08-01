@@ -5,7 +5,8 @@ internal import AblyPlugin
 ///
 /// This provides us with a mockable interface to ably-cocoa, and it also allows internal components and their tests not to need to worry about some of the boring details of how we bridge Swift types to AblyPlugin's Objective-C API (i.e. boxing).
 internal protocol CoreSDK: AnyObject, Sendable {
-    func sendObject(objectMessages: [OutboundObjectMessage]) async throws(InternalError)
+    /// Implements the internal `#publish` method of RTO15.
+    func publish(objectMessages: [OutboundObjectMessage]) async throws(InternalError)
 
     /// Returns the current state of the Realtime channel that this wraps.
     var channelState: ARTRealtimeChannelState { get }
@@ -28,7 +29,8 @@ internal final class DefaultCoreSDK: CoreSDK {
 
     // MARK: - CoreSDK conformance
 
-    internal func sendObject(objectMessages: [OutboundObjectMessage]) async throws(InternalError) {
+    internal func publish(objectMessages: [OutboundObjectMessage]) async throws(InternalError) {
+        // TODO: Implement the full spec of RTO15 (https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/47)
         try await DefaultInternalPlugin.sendObject(
             objectMessages: objectMessages,
             channel: channel,
@@ -38,5 +40,30 @@ internal final class DefaultCoreSDK: CoreSDK {
 
     internal var channelState: ARTRealtimeChannelState {
         channel.state
+    }
+}
+
+// MARK: - Channel State Validation
+
+/// Extension on CoreSDK to provide channel state validation utilities.
+internal extension CoreSDK {
+    /// Validates that the channel is not in any of the specified invalid states.
+    ///
+    /// - Parameters:
+    ///   - invalidStates: Array of channel states that are considered invalid for the operation
+    ///   - operationDescription: A description of the operation being performed, used in error messages
+    /// - Throws: `ARTErrorInfo` with code 90001 and statusCode 400 if the channel is in any of the invalid states
+    func validateChannelState(
+        notIn invalidStates: [ARTRealtimeChannelState],
+        operationDescription: String,
+    ) throws(ARTErrorInfo) {
+        let currentChannelState = channelState
+        if invalidStates.contains(currentChannelState) {
+            throw LiveObjectsError.objectsOperationFailedInvalidChannelState(
+                operationDescription: operationDescription,
+                channelState: currentChannelState,
+            )
+            .toARTErrorInfo()
+        }
     }
 }

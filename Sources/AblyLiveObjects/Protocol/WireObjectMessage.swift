@@ -15,6 +15,7 @@ internal struct InboundWireObjectMessage {
     internal var object: WireObjectState? // OM2g
     internal var serial: String? // OM2h
     internal var siteCode: String? // OM2i
+    internal var serialTimestamp: Date? // OM2j
 }
 
 /// An `ObjectMessage` to be sent in the `state` property of an `OBJECT` `ProtocolMessage`.
@@ -28,6 +29,7 @@ internal struct OutboundWireObjectMessage {
     internal var object: WireObjectState? // OM2g
     internal var serial: String? // OM2h
     internal var siteCode: String? // OM2i
+    internal var serialTimestamp: Date? // OM2j
 }
 
 /// The keys for decoding an `InboundWireObjectMessage` or encoding an `OutboundWireObjectMessage`.
@@ -41,6 +43,7 @@ internal enum WireObjectMessageWireKey: String {
     case object
     case serial
     case siteCode
+    case serialTimestamp
 }
 
 internal extension InboundWireObjectMessage {
@@ -96,6 +99,7 @@ internal extension InboundWireObjectMessage {
         object = try wireObject.optionalDecodableValueForKey(WireObjectMessageWireKey.object.rawValue)
         serial = try wireObject.optionalStringValueForKey(WireObjectMessageWireKey.serial.rawValue)
         siteCode = try wireObject.optionalStringValueForKey(WireObjectMessageWireKey.siteCode.rawValue)
+        serialTimestamp = try wireObject.optionalAblyProtocolDateValueForKey(WireObjectMessageWireKey.serialTimestamp.rawValue)
     }
 }
 
@@ -131,6 +135,9 @@ extension OutboundWireObjectMessage: WireObjectEncodable {
         if let object {
             result[WireObjectMessageWireKey.object.rawValue] = .object(object.toWireObject)
         }
+        if let serialTimestamp {
+            result[WireObjectMessageWireKey.serialTimestamp.rawValue] = .number(NSNumber(value: serialTimestamp.timeIntervalSince1970 * 1000))
+        }
         return result
     }
 }
@@ -150,34 +157,32 @@ internal enum ObjectsMapSemantics: Int {
     case lww = 0
 }
 
-internal struct WireObjectOperation {
+/// A partial version of `WireObjectOperation` that excludes the `objectId` property. Used for encoding initial values where the `objectId` is not yet known.
+///
+/// `WireObjectOperation` delegates its encoding and decoding to `PartialWireObjectOperation`.
+internal struct PartialWireObjectOperation {
     internal var action: WireEnum<ObjectOperationAction> // OOP3a
-    internal var objectId: String // OOP3b
     internal var mapOp: WireObjectsMapOp? // OOP3c
     internal var counterOp: WireObjectsCounterOp? // OOP3d
     internal var map: WireObjectsMap? // OOP3e
     internal var counter: WireObjectsCounter? // OOP3f
     internal var nonce: String? // OOP3g
-    internal var initialValue: StringOrData? // OOP3h
-    internal var initialValueEncoding: String? // OOP3i
+    internal var initialValue: String? // OOP3h
 }
 
-extension WireObjectOperation: WireObjectCodable {
+extension PartialWireObjectOperation: WireObjectCodable {
     internal enum WireKey: String {
         case action
-        case objectId
         case mapOp
         case counterOp
         case map
         case counter
         case nonce
         case initialValue
-        case initialValueEncoding
     }
 
     internal init(wireObject: [String: WireValue]) throws(InternalError) {
         action = try wireObject.wireEnumValueForKey(WireKey.action.rawValue)
-        objectId = try wireObject.stringValueForKey(WireKey.objectId.rawValue)
         mapOp = try wireObject.optionalDecodableValueForKey(WireKey.mapOp.rawValue)
         counterOp = try wireObject.optionalDecodableValueForKey(WireKey.counterOp.rawValue)
         map = try wireObject.optionalDecodableValueForKey(WireKey.map.rawValue)
@@ -187,14 +192,11 @@ extension WireObjectOperation: WireObjectCodable {
         nonce = nil
         // Do not access on inbound data, per OOP3h
         initialValue = nil
-        // Do not access on inbound data, per OOP3i
-        initialValueEncoding = nil
     }
 
     internal var toWireObject: [String: WireValue] {
         var result: [String: WireValue] = [
             WireKey.action.rawValue: .number(action.rawValue as NSNumber),
-            WireKey.objectId.rawValue: .string(objectId),
         ]
 
         if let mapOp {
@@ -213,11 +215,59 @@ extension WireObjectOperation: WireObjectCodable {
             result[WireKey.nonce.rawValue] = .string(nonce)
         }
         if let initialValue {
-            result[WireKey.initialValue.rawValue] = initialValue.toWireValue
+            result[WireKey.initialValue.rawValue] = .string(initialValue)
         }
-        if let initialValueEncoding {
-            result[WireKey.initialValueEncoding.rawValue] = .string(initialValueEncoding)
-        }
+
+        return result
+    }
+}
+
+internal struct WireObjectOperation {
+    internal var action: WireEnum<ObjectOperationAction> // OOP3a
+    internal var objectId: String // OOP3b
+    internal var mapOp: WireObjectsMapOp? // OOP3c
+    internal var counterOp: WireObjectsCounterOp? // OOP3d
+    internal var map: WireObjectsMap? // OOP3e
+    internal var counter: WireObjectsCounter? // OOP3f
+    internal var nonce: String? // OOP3g
+    internal var initialValue: String? // OOP3h
+}
+
+extension WireObjectOperation: WireObjectCodable {
+    internal enum WireKey: String {
+        case objectId
+    }
+
+    internal init(wireObject: [String: WireValue]) throws(InternalError) {
+        // Decode the objectId first since it's not part of PartialWireObjectOperation
+        objectId = try wireObject.stringValueForKey(WireKey.objectId.rawValue)
+
+        // Delegate to PartialWireObjectOperation for decoding
+        let partialOperation = try PartialWireObjectOperation(wireObject: wireObject)
+
+        // Copy the decoded values
+        action = partialOperation.action
+        mapOp = partialOperation.mapOp
+        counterOp = partialOperation.counterOp
+        map = partialOperation.map
+        counter = partialOperation.counter
+        nonce = partialOperation.nonce
+        initialValue = partialOperation.initialValue
+    }
+
+    internal var toWireObject: [String: WireValue] {
+        var result = PartialWireObjectOperation(
+            action: action,
+            mapOp: mapOp,
+            counterOp: counterOp,
+            map: map,
+            counter: counter,
+            nonce: nonce,
+            initialValue: initialValue,
+        ).toWireObject
+
+        // Add the objectId field
+        result[WireKey.objectId.rawValue] = .string(objectId)
 
         return result
     }
@@ -386,6 +436,7 @@ internal struct WireObjectsMapEntry {
     internal var tombstone: Bool? // OME2a
     internal var timeserial: String? // OME2b
     internal var data: WireObjectData // OME2c
+    internal var serialTimestamp: Date? // OME2d
 }
 
 extension WireObjectsMapEntry: WireObjectCodable {
@@ -393,12 +444,14 @@ extension WireObjectsMapEntry: WireObjectCodable {
         case tombstone
         case timeserial
         case data
+        case serialTimestamp
     }
 
     internal init(wireObject: [String: WireValue]) throws(InternalError) {
         tombstone = try wireObject.optionalBoolValueForKey(WireKey.tombstone.rawValue)
         timeserial = try wireObject.optionalStringValueForKey(WireKey.timeserial.rawValue)
         data = try wireObject.decodableValueForKey(WireKey.data.rawValue)
+        serialTimestamp = try wireObject.optionalAblyProtocolDateValueForKey(WireKey.serialTimestamp.rawValue)
     }
 
     internal var toWireObject: [String: WireValue] {
@@ -411,6 +464,9 @@ extension WireObjectsMapEntry: WireObjectCodable {
         }
         if let timeserial {
             result[WireKey.timeserial.rawValue] = .string(timeserial)
+        }
+        if let serialTimestamp {
+            result[WireKey.serialTimestamp.rawValue] = .number(NSNumber(value: serialTimestamp.timeIntervalSince1970 * 1000))
         }
 
         return result
@@ -473,10 +529,7 @@ extension WireObjectData: WireObjectCodable {
 
 /// A type that can be either a string or binary data.
 ///
-/// Used to represent:
-///
-/// - the values that `WireObjectData.bytes` might hold, after being encoded per OD4 or before being decoded per OD5
-/// - the values that `WireObjectOperation.initialValue` might hold, after being encoded per OOP5
+/// Used to represent the values that `WireObjectData.bytes` might hold, after being encoded per OD4 or before being decoded per OD5.
 internal enum StringOrData: WireCodable {
     case string(String)
     case data(Data)
