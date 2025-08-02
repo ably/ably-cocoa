@@ -73,6 +73,10 @@ NS_SWIFT_SENDABLE
              messageSerial:(NSString *)messageSerial
                       type:(NSString *)type
                     extras:(nullable id<ARTJsonCompatible>)extras;
+
+/// :nodoc:
+- (NSInteger)annotationSize;
+
 @end
 
 #pragma mark - ARTEvent
