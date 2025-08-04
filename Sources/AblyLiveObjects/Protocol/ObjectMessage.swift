@@ -468,3 +468,113 @@ internal extension ObjectState {
         )
     }
 }
+
+// MARK: - CustomDebugStringConvertible
+
+extension InboundObjectMessage: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        var parts: [String] = []
+
+        if let id { parts.append("id: \(id)") }
+        if let clientId { parts.append("clientId: \(clientId)") }
+        if let connectionId { parts.append("connectionId: \(connectionId)") }
+        if let extras { parts.append("extras: \(extras)") }
+        if let timestamp { parts.append("timestamp: \(timestamp)") }
+        if let operation { parts.append("operation: \(operation)") }
+        if let object { parts.append("object: \(object)") }
+        if let serial { parts.append("serial: \(serial)") }
+        if let siteCode { parts.append("siteCode: \(siteCode)") }
+        if let serialTimestamp { parts.append("serialTimestamp: \(serialTimestamp)") }
+
+        return "{ " + parts.joined(separator: ", ") + " }"
+    }
+}
+
+extension ObjectOperation: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        var parts: [String] = []
+
+        parts.append("action: \(action)")
+        parts.append("objectId: \(objectId)")
+        if let mapOp { parts.append("mapOp: \(mapOp)") }
+        if let counterOp { parts.append("counterOp: \(counterOp)") }
+        if let map { parts.append("map: \(map)") }
+        if let counter { parts.append("counter: \(counter)") }
+        if let nonce { parts.append("nonce: \(nonce)") }
+        if let initialValue { parts.append("initialValue: \(initialValue)") }
+
+        return "{ " + parts.joined(separator: ", ") + " }"
+    }
+}
+
+extension ObjectState: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        var parts: [String] = []
+
+        parts.append("objectId: \(objectId)")
+        parts.append("siteTimeserials: \(siteTimeserials)")
+        parts.append("tombstone: \(tombstone)")
+        if let createOp { parts.append("createOp: \(createOp)") }
+        if let map { parts.append("map: \(map)") }
+        if let counter { parts.append("counter: \(counter)") }
+
+        return "{ " + parts.joined(separator: ", ") + " }"
+    }
+}
+
+extension ObjectsMapOp: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        var parts: [String] = []
+
+        parts.append("key: \(key)")
+        if let data { parts.append("data: \(data)") }
+
+        return "{ " + parts.joined(separator: ", ") + " }"
+    }
+}
+
+extension ObjectsMap: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        var parts: [String] = []
+
+        parts.append("semantics: \(semantics)")
+        if let entries {
+            let formattedEntries = entries
+                .map { key, entry in
+                    "\(key): \(entry)"
+                }
+                .joined(separator: ", ")
+            parts.append("entries: { \(formattedEntries) }")
+        }
+
+        return "{ " + parts.joined(separator: ", ") + " }"
+    }
+}
+
+extension ObjectsMapEntry: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        var parts: [String] = []
+
+        if let tombstone { parts.append("tombstone: \(tombstone)") }
+        if let timeserial { parts.append("timeserial: \(timeserial)") }
+        parts.append("data: \(data)")
+        if let serialTimestamp { parts.append("serialTimestamp: \(serialTimestamp)") }
+
+        return "{ " + parts.joined(separator: ", ") + " }"
+    }
+}
+
+extension ObjectData: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        var parts: [String] = []
+
+        if let objectId { parts.append("objectId: \(objectId)") }
+        if let boolean { parts.append("boolean: \(boolean)") }
+        if let bytes { parts.append("bytes: \(bytes.count) bytes") }
+        if let number { parts.append("number: \(number)") }
+        if let string { parts.append("string: \(string)") }
+        if let json { parts.append("json: \(json)") }
+
+        return "{ " + parts.joined(separator: ", ") + " }"
+    }
+}

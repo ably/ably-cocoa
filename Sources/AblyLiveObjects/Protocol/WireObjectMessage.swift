@@ -555,3 +555,49 @@ internal enum StringOrData: WireCodable {
         }
     }
 }
+
+// MARK: - CustomDebugStringConvertible
+
+extension WireObjectsCounter: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        if let count {
+            "{ count: \(count) }"
+        } else {
+            "{ count: nil }"
+        }
+    }
+}
+
+extension WireObjectsCounterOp: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        "{ amount: \(amount) }"
+    }
+}
+
+extension WireObjectsMapEntry: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        var parts: [String] = []
+
+        if let tombstone { parts.append("tombstone: \(tombstone)") }
+        if let timeserial { parts.append("timeserial: \(timeserial)") }
+        parts.append("data: \(data)")
+        if let serialTimestamp { parts.append("serialTimestamp: \(serialTimestamp)") }
+
+        return "{ " + parts.joined(separator: ", ") + " }"
+    }
+}
+
+extension WireObjectData: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        var parts: [String] = []
+
+        if let objectId { parts.append("objectId: \(objectId)") }
+        if let boolean { parts.append("boolean: \(boolean)") }
+        if let bytes { parts.append("bytes: \(bytes)") }
+        if let number { parts.append("number: \(number)") }
+        if let string { parts.append("string: \(string)") }
+        if let json { parts.append("json: \(json)") }
+
+        return "{ " + parts.joined(separator: ", ") + " }"
+    }
+}
