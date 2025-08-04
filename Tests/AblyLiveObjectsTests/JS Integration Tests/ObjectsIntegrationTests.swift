@@ -226,6 +226,7 @@ private actor ObjectsFixturesTrait: SuiteTrait, TestScoping {
                     try await helper.initForChannel(objectsFixturesChannel)
                 }
             }
+            self.setupTask = setupTask
 
             try await setupTask.value
         }
