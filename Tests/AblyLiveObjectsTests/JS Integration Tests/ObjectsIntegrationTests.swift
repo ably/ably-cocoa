@@ -177,17 +177,21 @@ private struct TestScenario<Context> {
 
 private func forScenarios<Context>(_ scenarios: [TestScenario<Context>]) -> [TestCase<Context>] {
     scenarios.map { scenario -> [TestCase<Context>] in
+        var clientOptions = ClientHelper.PartialClientOptions(logIdentifier: "client1")
+
         if scenario.allTransportsAndProtocols {
-            [true, false].map { useBinaryProtocol -> TestCase<Context> in
-                .init(
+            return [true, false].map { useBinaryProtocol -> TestCase<Context> in
+                clientOptions.useBinaryProtocol = useBinaryProtocol
+
+                return .init(
                     disabled: scenario.disabled,
                     scenario: scenario,
-                    options: .init(useBinaryProtocol: useBinaryProtocol),
+                    options: clientOptions,
                     channelName: "\(scenario.description) \(useBinaryProtocol ? "binary" : "text")",
                 )
             }
         } else {
-            [.init(disabled: scenario.disabled, scenario: scenario, options: .init(), channelName: scenario.description)]
+            return [.init(disabled: scenario.disabled, scenario: scenario, options: clientOptions, channelName: scenario.description)]
         }
     }
     .flatMap(\.self)
