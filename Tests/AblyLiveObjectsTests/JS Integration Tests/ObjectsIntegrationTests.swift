@@ -293,7 +293,7 @@ private struct ObjectsIntegrationTests {
                     },
                 ),
                 .init(
-                    disabled: true, // Uses LiveMap.set which we haven't implemented yet
+                    disabled: false,
                     allTransportsAndProtocols: true,
                     description: "OBJECT_SYNC sequence builds object tree with all operations applied",
                     action: { ctx in
@@ -368,7 +368,7 @@ private struct ObjectsIntegrationTests {
                     },
                 ),
                 .init(
-                    disabled: true, // Uses LiveMap.set which we haven't implemented yet
+                    disabled: false,
                     allTransportsAndProtocols: false,
                     description: "OBJECT_SYNC sequence does not change references to existing objects",
                     action: { ctx in
@@ -510,7 +510,7 @@ private struct ObjectsIntegrationTests {
                     },
                 ),
                 .init(
-                    disabled: true, // This relies on the LiveMap.get returning `nil` when the referenced object's internal `tombstone` flag is true; this is not yet specified, have asked in https://ably-real-time.slack.com/archives/D067YAXGYQ5/p1751376526929339
+                    disabled: false,
                     allTransportsAndProtocols: false,
                     description: "OBJECT_SYNC sequence with object state \"tombstone\" property creates tombstoned object",
                     action: { ctx in
@@ -566,7 +566,7 @@ private struct ObjectsIntegrationTests {
                     },
                 ),
                 .init(
-                    disabled: true, // Uses LiveMap.subscribe (through waitForMapKeyUpdate) which we haven't implemented yet. It also seems to rely on the same internal `tombstone` flag as the previous test.
+                    disabled: false,
                     allTransportsAndProtocols: true,
                     description: "OBJECT_SYNC sequence with object state \"tombstone\" property deletes existing object",
                     action: { ctx in
@@ -621,7 +621,7 @@ private struct ObjectsIntegrationTests {
                     },
                 ),
                 .init(
-                    disabled: true, // Uses LiveMap.subscribe (through waitForMapKeyUpdate) which we haven't implemented yet
+                    disabled: false,
                     allTransportsAndProtocols: true,
                     description: "OBJECT_SYNC sequence with object state \"tombstone\" property triggers subscription callback for existing object",
                     action: { ctx in
