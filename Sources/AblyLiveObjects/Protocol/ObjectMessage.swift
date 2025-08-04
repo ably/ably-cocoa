@@ -490,6 +490,25 @@ extension InboundObjectMessage: CustomDebugStringConvertible {
     }
 }
 
+extension OutboundObjectMessage: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        var parts: [String] = []
+
+        if let id { parts.append("id: \(id)") }
+        if let clientId { parts.append("clientId: \(clientId)") }
+        if let connectionId { parts.append("connectionId: \(connectionId)") }
+        if let extras { parts.append("extras: \(extras)") }
+        if let timestamp { parts.append("timestamp: \(timestamp)") }
+        if let operation { parts.append("operation: \(operation)") }
+        if let object { parts.append("object: \(object)") }
+        if let serial { parts.append("serial: \(serial)") }
+        if let siteCode { parts.append("siteCode: \(siteCode)") }
+        if let serialTimestamp { parts.append("serialTimestamp: \(serialTimestamp)") }
+
+        return "{ " + parts.joined(separator: ", ") + " }"
+    }
+}
+
 extension ObjectOperation: CustomDebugStringConvertible {
     internal var debugDescription: String {
         var parts: [String] = []

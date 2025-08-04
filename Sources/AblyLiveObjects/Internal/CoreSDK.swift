@@ -16,20 +16,25 @@ internal final class DefaultCoreSDK: CoreSDK {
     private let channel: AblyPlugin.RealtimeChannel
     private let client: AblyPlugin.RealtimeClient
     private let pluginAPI: PluginAPIProtocol
+    private let logger: AblyPlugin.Logger
 
     internal init(
         channel: AblyPlugin.RealtimeChannel,
         client: AblyPlugin.RealtimeClient,
-        pluginAPI: PluginAPIProtocol
+        pluginAPI: PluginAPIProtocol,
+        logger: AblyPlugin.Logger
     ) {
         self.channel = channel
         self.client = client
         self.pluginAPI = pluginAPI
+        self.logger = logger
     }
 
     // MARK: - CoreSDK conformance
 
     internal func publish(objectMessages: [OutboundObjectMessage]) async throws(InternalError) {
+        logger.log("publish(objectMessages: \(LoggingUtilities.formatObjectMessagesForLogging(objectMessages)))", level: .debug)
+
         // TODO: Implement the full spec of RTO15 (https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/47)
         try await DefaultInternalPlugin.sendObject(
             objectMessages: objectMessages,
