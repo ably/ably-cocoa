@@ -9,7 +9,7 @@ internal struct InternalObjectsMapEntry: Equatable {
     }
 
     internal var timeserial: String? // OME2b
-    internal var data: ObjectData // OME2c
+    internal var data: ObjectData? // OME2c
 }
 
 internal extension InternalObjectsMapEntry {

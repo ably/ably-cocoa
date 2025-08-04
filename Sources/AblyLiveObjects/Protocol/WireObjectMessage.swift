@@ -431,7 +431,7 @@ extension WireObjectsCounter: WireObjectCodable {
 internal struct WireObjectsMapEntry {
     internal var tombstone: Bool? // OME2a
     internal var timeserial: String? // OME2b
-    internal var data: WireObjectData // OME2c
+    internal var data: WireObjectData? // OME2c
     internal var serialTimestamp: Date? // OME2d
 }
 
@@ -446,15 +446,16 @@ extension WireObjectsMapEntry: WireObjectCodable {
     internal init(wireObject: [String: WireValue]) throws(InternalError) {
         tombstone = try wireObject.optionalBoolValueForKey(WireKey.tombstone.rawValue)
         timeserial = try wireObject.optionalStringValueForKey(WireKey.timeserial.rawValue)
-        data = try wireObject.decodableValueForKey(WireKey.data.rawValue)
+        data = try wireObject.optionalDecodableValueForKey(WireKey.data.rawValue)
         serialTimestamp = try wireObject.optionalAblyProtocolDateValueForKey(WireKey.serialTimestamp.rawValue)
     }
 
     internal var toWireObject: [String: WireValue] {
-        var result: [String: WireValue] = [
-            WireKey.data.rawValue: .object(data.toWireObject),
-        ]
+        var result: [String: WireValue] = [:]
 
+        if let data {
+            result[WireKey.data.rawValue] = .object(data.toWireObject)
+        }
         if let tombstone {
             result[WireKey.tombstone.rawValue] = .bool(tombstone)
         }
@@ -580,7 +581,7 @@ extension WireObjectsMapEntry: CustomDebugStringConvertible {
 
         if let tombstone { parts.append("tombstone: \(tombstone)") }
         if let timeserial { parts.append("timeserial: \(timeserial)") }
-        parts.append("data: \(data)")
+        if let data { parts.append("data: \(data)") }
         if let serialTimestamp { parts.append("serialTimestamp: \(serialTimestamp)") }
 
         return "{ " + parts.joined(separator: ", ") + " }"

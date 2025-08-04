@@ -655,7 +655,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         internal mutating func applyMapSetOperation(
             key: String,
             operationTimeserial: String?,
-            operationData: ObjectData,
+            operationData: ObjectData?,
             objectsPool: inout ObjectsPool,
             logger: AblyPlugin.Logger,
             userCallbackQueue: DispatchQueue,
@@ -684,7 +684,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             }
 
             // RTLM7c: If the operation has a non-empty ObjectData.objectId attribute
-            if let objectId = operationData.objectId, !objectId.isEmpty {
+            if let objectId = operationData?.objectId, !objectId.isEmpty {
                 // RTLM7c1: Create a zero-value LiveObject in the internal ObjectsPool per RTO6
                 _ = objectsPool.createZeroValueObject(forObjectID: objectId, logger: logger, userCallbackQueue: userCallbackQueue, clock: clock)
             }
@@ -721,7 +721,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                 // RTLM8a2c: Set ObjectsMapEntry.tombstone to true (equivalent to next point)
                 // RTLM8a2d: Set ObjectsMapEntry.tombstonedAt per RTLM8a2d
                 var updatedEntry = existingEntry
-                updatedEntry.data = ObjectData()
+                updatedEntry.data = nil
                 updatedEntry.timeserial = operationTimeserial
                 updatedEntry.tombstonedAt = tombstonedAt
                 data[key] = updatedEntry
@@ -730,7 +730,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                 // RTLM8b1: Create a new entry in data for the specified key, with ObjectsMapEntry.data set to undefined/null and the operation's serial
                 // RTLM8b2: Set ObjectsMapEntry.tombstone for the new entry to true
                 // RTLM8b3: Set ObjectsMapEntry.tombstonedAt per RTLM8f
-                data[key] = InternalObjectsMapEntry(tombstonedAt: tombstonedAt, timeserial: operationTimeserial, data: ObjectData())
+                data[key] = InternalObjectsMapEntry(tombstonedAt: tombstonedAt, timeserial: operationTimeserial, data: nil)
             }
 
             return .update(DefaultLiveMapUpdate(update: [key: .removed]))
@@ -855,7 +855,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         }
 
         // RTLM14c
-        if let objectId = entry.data.objectId {
+        if let objectId = entry.data?.objectId {
             if let poolEntry = delegate.getObjectFromPool(id: objectId), poolEntry.isTombstone {
                 return true
             }
@@ -876,27 +876,27 @@ internal final class InternalDefaultLiveMap: Sendable {
         // Handle primitive values in the order specified by RTLM5d2b through RTLM5d2e
 
         // RTLM5d2b: If ObjectsMapEntry.data.boolean exists, return it
-        if let boolean = entry.data.boolean {
+        if let boolean = entry.data?.boolean {
             return .primitive(.bool(boolean))
         }
 
         // RTLM5d2c: If ObjectsMapEntry.data.bytes exists, return it
-        if let bytes = entry.data.bytes {
+        if let bytes = entry.data?.bytes {
             return .primitive(.data(bytes))
         }
 
         // RTLM5d2d: If ObjectsMapEntry.data.number exists, return it
-        if let number = entry.data.number {
+        if let number = entry.data?.number {
             return .primitive(.number(number.doubleValue))
         }
 
         // RTLM5d2e: If ObjectsMapEntry.data.string exists, return it
-        if let string = entry.data.string {
+        if let string = entry.data?.string {
             return .primitive(.string(string))
         }
 
         // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
-        if let json = entry.data.json {
+        if let json = entry.data?.json {
             switch json {
             case let .array(array):
                 return .primitive(.jsonArray(array))
@@ -906,7 +906,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         }
 
         // RTLM5d2f: If ObjectsMapEntry.data.objectId exists, get the object stored at that objectId from the internal ObjectsPool
-        if let objectId = entry.data.objectId {
+        if let objectId = entry.data?.objectId {
             // RTLM5d2f1: If an object with id objectId does not exist, return undefined/null
             guard let poolEntry = delegate.getObjectFromPool(id: objectId) else {
                 return nil

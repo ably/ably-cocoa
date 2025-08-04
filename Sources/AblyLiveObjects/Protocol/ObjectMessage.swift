@@ -71,7 +71,7 @@ internal struct ObjectsMapOp: Equatable {
 internal struct ObjectsMapEntry: Equatable {
     internal var tombstone: Bool? // OME2a
     internal var timeserial: String? // OME2b
-    internal var data: ObjectData // OME2c
+    internal var data: ObjectData? // OME2c
     internal var serialTimestamp: Date? // OME2d
 }
 
@@ -386,7 +386,11 @@ internal extension ObjectsMapEntry {
     ) throws(InternalError) {
         tombstone = wireObjectsMapEntry.tombstone
         timeserial = wireObjectsMapEntry.timeserial
-        data = try .init(wireObjectData: wireObjectsMapEntry.data, format: format)
+        data = if let wireObjectData = wireObjectsMapEntry.data {
+            try .init(wireObjectData: wireObjectData, format: format)
+        } else {
+            nil
+        }
         serialTimestamp = wireObjectsMapEntry.serialTimestamp
     }
 
@@ -398,7 +402,7 @@ internal extension ObjectsMapEntry {
         .init(
             tombstone: tombstone,
             timeserial: timeserial,
-            data: data.toWire(format: format),
+            data: data?.toWire(format: format),
         )
     }
 }
@@ -576,7 +580,7 @@ extension ObjectsMapEntry: CustomDebugStringConvertible {
 
         if let tombstone { parts.append("tombstone: \(tombstone)") }
         if let timeserial { parts.append("timeserial: \(timeserial)") }
-        parts.append("data: \(data)")
+        if let data { parts.append("data: \(data)") }
         if let serialTimestamp { parts.append("serialTimestamp: \(serialTimestamp)") }
 
         return "{ " + parts.joined(separator: ", ") + " }"

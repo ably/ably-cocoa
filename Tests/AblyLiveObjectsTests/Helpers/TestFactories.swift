@@ -393,7 +393,7 @@ struct TestFactories {
     static func mapEntry(
         tombstone: Bool? = false,
         timeserial: String? = "ts1",
-        data: ObjectData,
+        data: ObjectData?,
     ) -> ObjectsMapEntry {
         ObjectsMapEntry(
             tombstone: tombstone,
