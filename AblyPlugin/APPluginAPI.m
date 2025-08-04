@@ -58,6 +58,10 @@ static ARTRealtimeInternal *_internalRealtimeClient(id<APRealtimeClient> pluginR
     return _internalRealtimeClient(client).options.dispatchQueue;
 }
 
+- (dispatch_queue_t)internalQueueForClient:(id<APRealtimeClient>)client {
+    return _internalRealtimeClient(client).options.internalDispatchQueue;
+}
+
 - (BOOL)throwIfUnpublishableStateForChannel:(id<APRealtimeChannel>)channel error:(ARTErrorInfo * _Nullable __autoreleasing *)error {
     [NSException raise:NSInternalInconsistencyException format:@"Not yet implemented"];
 }

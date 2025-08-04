@@ -414,6 +414,8 @@ dispatch_sync(_queue, ^{
 
 - (void)sendStateWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
                          completion:(ARTCallback)completion {
+    dispatch_assert_queue(_queue);
+
     ARTProtocolMessage *pm = [[ARTProtocolMessage alloc] init];
     pm.action = ARTProtocolMessageObject;
     pm.channel = self.name;
