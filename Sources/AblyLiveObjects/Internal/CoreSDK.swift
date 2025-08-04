@@ -39,6 +39,7 @@ internal final class DefaultCoreSDK: CoreSDK {
         try await DefaultInternalPlugin.sendObject(
             objectMessages: objectMessages,
             channel: channel,
+            client: client,
             pluginAPI: pluginAPI,
         )
     }
