@@ -110,56 +110,20 @@ internal final class InternalDefaultLiveMap: Sendable {
 
     /// Returns the value associated with a given key, following RTLM5d specification.
     internal func get(key: String, coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> InternalLiveMapValue? {
-        // RTLM5c: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
-        try coreSDK.validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveMap.get")
-
-        // RTLM5e - Return nil if self is tombstone
-        if isTombstone {
-            return nil
+        try mutex.ablyLiveObjects_withLockWithTypedThrow { () throws(ARTErrorInfo) in
+            try mutableState.get(key: key, coreSDK: coreSDK, delegate: delegate)
         }
-
-        let entry = mutex.withLock {
-            mutableState.data[key]
-        }
-
-        // RTLM5d1: If no ObjectsMapEntry exists at the key, return undefined/null
-        guard let entry else {
-            return nil
-        }
-
-        // RTLM5d2: If a ObjectsMapEntry exists at the key, convert it using the shared logic
-        return convertEntryToLiveMapValue(entry, delegate: delegate)
     }
 
     internal func size(coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> Int {
-        // RTLM10c: If the channel is in the DETACHED or FAILED state, the library should throw an ErrorInfo error with statusCode 400 and code 90001
-        try coreSDK.validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveMap.size")
-
-        return mutex.withLock {
-            // RTLM10d: Returns the number of non-tombstoned entries (per RTLM14) in the internal data map
-            mutableState.data.values.count { entry in
-                !Self.isEntryTombstoned(entry, delegate: delegate)
-            }
+        try mutex.ablyLiveObjects_withLockWithTypedThrow { () throws(ARTErrorInfo) in
+            try mutableState.size(coreSDK: coreSDK, delegate: delegate)
         }
     }
 
     internal func entries(coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> [(key: String, value: InternalLiveMapValue)] {
-        // RTLM11c: If the channel is in the DETACHED or FAILED state, the library should throw an ErrorInfo error with statusCode 400 and code 90001
-        try coreSDK.validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveMap.entries")
-
-        return mutex.withLock {
-            // RTLM11d: Returns key-value pairs from the internal data map
-            // RTLM11d1: Pairs with tombstoned entries (per RTLM14) are not returned
-            var result: [(key: String, value: InternalLiveMapValue)] = []
-
-            for (key, entry) in mutableState.data where !Self.isEntryTombstoned(entry, delegate: delegate) {
-                // Convert entry to LiveMapValue using the same logic as get(key:)
-                if let value = convertEntryToLiveMapValue(entry, delegate: delegate) {
-                    result.append((key: key, value: value))
-                }
-            }
-
-            return result
+        try mutex.ablyLiveObjects_withLockWithTypedThrow { () throws(ARTErrorInfo) in
+            try mutableState.entries(coreSDK: coreSDK, delegate: delegate)
         }
     }
 
@@ -843,90 +807,137 @@ internal final class InternalDefaultLiveMap: Sendable {
                 return !shouldRelease
             }
         }
-    }
 
-    // MARK: - Helper Methods
+        /// Returns the value associated with a given key, following RTLM5d specification.
+        internal func get(key: String, coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> InternalLiveMapValue? {
+            // RTLM5c: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
+            try coreSDK.validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveMap.get")
 
-    /// Returns whether a map entry should be considered tombstoned, per the check described in RTLM14.
-    private static func isEntryTombstoned(_ entry: InternalObjectsMapEntry, delegate: LiveMapObjectPoolDelegate) -> Bool {
-        // RTLM14a
-        if entry.tombstone {
-            return true
+            // RTLM5e - Return nil if self is tombstone
+            if liveObjectMutableState.isTombstone {
+                return nil
+            }
+
+            // RTLM5d1: If no ObjectsMapEntry exists at the key, return undefined/null
+            guard let entry = data[key] else {
+                return nil
+            }
+
+            // RTLM5d2: If a ObjectsMapEntry exists at the key, convert it using the shared logic
+            return convertEntryToLiveMapValue(entry, delegate: delegate)
         }
 
-        // RTLM14c
-        if let objectId = entry.data?.objectId {
-            if let poolEntry = delegate.getObjectFromPool(id: objectId), poolEntry.isTombstone {
+        internal func size(coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> Int {
+            // RTLM10c: If the channel is in the DETACHED or FAILED state, the library should throw an ErrorInfo error with statusCode 400 and code 90001
+            try coreSDK.validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveMap.size")
+
+            // RTLM10d: Returns the number of non-tombstoned entries (per RTLM14) in the internal data map
+            return data.values.count { entry in
+                !Self.isEntryTombstoned(entry, delegate: delegate)
+            }
+        }
+
+        internal func entries(coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> [(key: String, value: InternalLiveMapValue)] {
+            // RTLM11c: If the channel is in the DETACHED or FAILED state, the library should throw an ErrorInfo error with statusCode 400 and code 90001
+            try coreSDK.validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveMap.entries")
+
+            // RTLM11d: Returns key-value pairs from the internal data map
+            // RTLM11d1: Pairs with tombstoned entries (per RTLM14) are not returned
+            var result: [(key: String, value: InternalLiveMapValue)] = []
+
+            for (key, entry) in data where !Self.isEntryTombstoned(entry, delegate: delegate) {
+                // Convert entry to LiveMapValue using the same logic as get(key:)
+                if let value = convertEntryToLiveMapValue(entry, delegate: delegate) {
+                    result.append((key: key, value: value))
+                }
+            }
+
+            return result
+        }
+
+        // MARK: - Helper Methods
+
+        /// Returns whether a map entry should be considered tombstoned, per the check described in RTLM14.
+        private static func isEntryTombstoned(_ entry: InternalObjectsMapEntry, delegate: LiveMapObjectPoolDelegate) -> Bool {
+            // RTLM14a
+            if entry.tombstone {
                 return true
             }
+
+            // RTLM14c
+            if let objectId = entry.data?.objectId {
+                if let poolEntry = delegate.getObjectFromPool(id: objectId), poolEntry.isTombstone {
+                    return true
+                }
+            }
+
+            // RTLM14b
+            return false
         }
 
-        // RTLM14b
-        return false
-    }
+        /// Converts an InternalObjectsMapEntry to LiveMapValue using the same logic as get(key:)
+        /// This is used by entries to ensure consistent value conversion
+        private func convertEntryToLiveMapValue(_ entry: InternalObjectsMapEntry, delegate: LiveMapObjectPoolDelegate) -> InternalLiveMapValue? {
+            // RTLM5d2a: If ObjectsMapEntry.tombstone is true, return undefined/null
+            if entry.tombstone == true {
+                return nil
+            }
 
-    /// Converts an InternalObjectsMapEntry to LiveMapValue using the same logic as get(key:)
-    /// This is used by entries to ensure consistent value conversion
-    private func convertEntryToLiveMapValue(_ entry: InternalObjectsMapEntry, delegate: LiveMapObjectPoolDelegate) -> InternalLiveMapValue? {
-        // RTLM5d2a: If ObjectsMapEntry.tombstone is true, return undefined/null
-        if entry.tombstone == true {
+            // Handle primitive values in the order specified by RTLM5d2b through RTLM5d2e
+
+            // RTLM5d2b: If ObjectsMapEntry.data.boolean exists, return it
+            if let boolean = entry.data?.boolean {
+                return .primitive(.bool(boolean))
+            }
+
+            // RTLM5d2c: If ObjectsMapEntry.data.bytes exists, return it
+            if let bytes = entry.data?.bytes {
+                return .primitive(.data(bytes))
+            }
+
+            // RTLM5d2d: If ObjectsMapEntry.data.number exists, return it
+            if let number = entry.data?.number {
+                return .primitive(.number(number.doubleValue))
+            }
+
+            // RTLM5d2e: If ObjectsMapEntry.data.string exists, return it
+            if let string = entry.data?.string {
+                return .primitive(.string(string))
+            }
+
+            // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
+            if let json = entry.data?.json {
+                switch json {
+                case let .array(array):
+                    return .primitive(.jsonArray(array))
+                case let .object(object):
+                    return .primitive(.jsonObject(object))
+                }
+            }
+
+            // RTLM5d2f: If ObjectsMapEntry.data.objectId exists, get the object stored at that objectId from the internal ObjectsPool
+            if let objectId = entry.data?.objectId {
+                // RTLM5d2f1: If an object with id objectId does not exist, return undefined/null
+                guard let poolEntry = delegate.getObjectFromPool(id: objectId) else {
+                    return nil
+                }
+
+                // RTLM5d2f3: If referenced object is tombstoned, return nil
+                if poolEntry.isTombstone {
+                    return nil
+                }
+
+                // RTLM5d2f2: Return referenced object
+                switch poolEntry {
+                case let .map(map):
+                    return .liveMap(map)
+                case let .counter(counter):
+                    return .liveCounter(counter)
+                }
+            }
+
+            // RTLM5d2g: Otherwise, return undefined/null
             return nil
         }
-
-        // Handle primitive values in the order specified by RTLM5d2b through RTLM5d2e
-
-        // RTLM5d2b: If ObjectsMapEntry.data.boolean exists, return it
-        if let boolean = entry.data?.boolean {
-            return .primitive(.bool(boolean))
-        }
-
-        // RTLM5d2c: If ObjectsMapEntry.data.bytes exists, return it
-        if let bytes = entry.data?.bytes {
-            return .primitive(.data(bytes))
-        }
-
-        // RTLM5d2d: If ObjectsMapEntry.data.number exists, return it
-        if let number = entry.data?.number {
-            return .primitive(.number(number.doubleValue))
-        }
-
-        // RTLM5d2e: If ObjectsMapEntry.data.string exists, return it
-        if let string = entry.data?.string {
-            return .primitive(.string(string))
-        }
-
-        // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
-        if let json = entry.data?.json {
-            switch json {
-            case let .array(array):
-                return .primitive(.jsonArray(array))
-            case let .object(object):
-                return .primitive(.jsonObject(object))
-            }
-        }
-
-        // RTLM5d2f: If ObjectsMapEntry.data.objectId exists, get the object stored at that objectId from the internal ObjectsPool
-        if let objectId = entry.data?.objectId {
-            // RTLM5d2f1: If an object with id objectId does not exist, return undefined/null
-            guard let poolEntry = delegate.getObjectFromPool(id: objectId) else {
-                return nil
-            }
-
-            // RTLM5d2f3: If referenced object is tombstoned, return nil
-            if poolEntry.isTombstone {
-                return nil
-            }
-
-            // RTLM5d2f2: Return referenced object
-            switch poolEntry {
-            case let .map(map):
-                return .liveMap(map)
-            case let .counter(counter):
-                return .liveCounter(counter)
-            }
-        }
-
-        // RTLM5d2g: Otherwise, return undefined/null
-        return nil
     }
 }
