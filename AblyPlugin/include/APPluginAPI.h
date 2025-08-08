@@ -40,11 +40,18 @@ NS_SWIFT_SENDABLE
 /// Provides plugins with the queue on which all user callbacks for a given client should be called.
 - (dispatch_queue_t)callbackQueueForClient:(id<APRealtimeClient>)client;
 
+/// Provides plugins with the queue which a given client uses to synchronize its internal state.
+///
+/// Certain `APPluginAPIProtocol` methods must be called on this queue (the method will document when this is the case).
+- (dispatch_queue_t)internalQueueForClient:(id<APRealtimeClient>)client;
+
 /// Throws an error if the channel is in a state in which a message should not be published. Copied from ably-js, not yet implemented. Will document this method properly once exact meaning decided, or may replace it with something that makes more sense for ably-cocoa.
 - (BOOL)throwIfUnpublishableStateForChannel:(id<APRealtimeChannel>)channel
                                       error:(ARTErrorInfo *_Nullable *_Nullable)error;
 
 /// Sends an `OBJECT` `ProtocolMessage` on a channel and indicates the result of waiting for an `ACK`. Copied from ably-js, not yet implemented. Will document this method properly once exact meaning decided, or may replace it with something that makes more sense for ably-cocoa.
+///
+/// This method must be called on the client's internal queue (see `-internalQueueForClient:`).
 - (void)sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
                              channel:(id<APRealtimeChannel>)channel
                           completion:(void (^ _Nullable)(ARTErrorInfo *_Nullable error))completion;
