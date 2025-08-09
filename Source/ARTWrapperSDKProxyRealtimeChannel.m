@@ -55,6 +55,10 @@ NS_ASSUME_NONNULL_END
 
 }
 
+- (ARTChannelMode)modes {
+    return self.underlyingChannel.modes;
+}
+
 - (void)history:(nonnull ARTPaginatedMessagesCallback)callback {
     [self.underlyingChannel.internal historyWithWrapperSDKAgents:self.proxyOptions.agents
                                                       completion:callback];

@@ -76,6 +76,10 @@
     return _internal.state;
 }
 
+- (ARTChannelMode)modes {
+    return _internal.modes;
+}
+
 - (ARTChannelProperties *)properties {
     return _internal.properties;
 }
@@ -265,6 +269,7 @@ NS_ASSUME_NONNULL_END
     dispatch_queue_t _queue;
     dispatch_queue_t _userQueue;
     ARTErrorInfo *_errorReason;
+    ARTChannelMode _modes;
 }
 
 - (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTRealtimeChannelOptions *)options logger:(ARTInternalLog *)logger {
@@ -275,6 +280,7 @@ NS_ASSUME_NONNULL_END
         _userQueue = realtime.rest.userQueue;
         _restChannel = [_realtime.rest.channels _getChannel:self.name options:options addPrefix:true];
         _state = ARTRealtimeChannelInitialized;
+        _modes = 0;
         _attachSerial = nil;
         _realtimePresence = [[ARTRealtimePresenceInternal alloc] initWithChannel:self logger:self.logger];
         _realtimeAnnotations = [[ARTRealtimeAnnotationsInternal alloc] initWithChannel:self logger:self.logger];
@@ -320,8 +326,20 @@ dispatch_sync(_queue, ^{
     return ret;
 }
 
+- (ARTChannelMode)modes {
+    __block ARTChannelMode ret;
+dispatch_sync(_queue, ^{
+    ret = [self modes_nosync];
+});
+    return ret;
+}
+
 - (ARTRealtimeChannelState)state_nosync {
     return _state;
+}
+
+- (ARTChannelMode)modes_nosync {
+    return _modes;
 }
 
 - (BOOL)canBeReattached {
@@ -701,10 +719,14 @@ dispatch_sync(_queue, ^{
     }
     // RTL15a
     self.attachSerial = message.channelSerial;
+    
     // RTL15b
     if (message.channelSerial) {
         self.channelSerial = message.channelSerial;
     }
+    
+    // RTL4m
+    self.modes = message.channelModes;
 
 #ifdef ABLY_SUPPORTS_PLUGINS
     [self.realtime.options.liveObjectsPlugin nosync_onChannelAttached:self

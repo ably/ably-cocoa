@@ -193,6 +193,14 @@
     return _connectionDetails;
 }
 
++ (ARTChannelMode)allChannelModes {
+    return ARTChannelModePresence | ARTChannelModePublish | ARTChannelModeSubscribe | ARTChannelModePresenceSubscribe | ARTChannelModeAnnotationPublish | ARTChannelModeAnnotationSubscribe;
+}
+
+- (ARTChannelMode)channelModes {
+    return self.flags & [self.class allChannelModes];
+}
+
 @end
 
 NSString* ARTProtocolMessageActionToStr(ARTProtocolMessageAction action) {
