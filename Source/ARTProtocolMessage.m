@@ -193,6 +193,10 @@
     return _connectionDetails;
 }
 
+- (ARTChannelMode)channelModes {
+    return self.flags & 0xFFFF0000; // remove flags that are not modes (less then 1UL << 16) per TB2d
+}
+
 @end
 
 NSString* ARTProtocolMessageActionToStr(ARTProtocolMessageAction action) {

@@ -5,6 +5,7 @@
 #import <Ably/ARTPresenceMessage.h>
 #import <Ably/ARTEventEmitter.h>
 #import <Ably/ARTRealtimePresence.h>
+#import <Ably/ARTRealtimeChannelOptions.h>
 #import <Ably/ARTDataQuery.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -26,6 +27,11 @@ NS_ASSUME_NONNULL_BEGIN
  * The current `ARTRealtimeChannelState` of the channel.
  */
 @property (readonly) ARTRealtimeChannelState state;
+
+/**
+ * The `ARTChannelMode` flags associated with the channel.
+ */
+@property (readonly) ARTChannelMode modes;
 
 /**
  * An `ARTChannelProperties` object.
