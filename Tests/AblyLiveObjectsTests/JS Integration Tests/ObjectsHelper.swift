@@ -318,20 +318,25 @@ final class ObjectsHelper: Sendable {
     private func processDeserializedProtocolMessage(
         _ deserialized: [String: JSONValue],
         channel: ARTRealtimeChannel,
-    ) {
-        let jsonEncoder = ARTJsonEncoder()
-        let encoder = ARTJsonLikeEncoder(
-            rest: channel.internal.realtime!.rest,
-            delegate: jsonEncoder,
-            logger: channel.internal.logger,
-        )
+    ) async {
+        await withCheckedContinuation { continuation in
+            channel.internal.queue.async {
+                let jsonEncoder = ARTJsonEncoder()
+                let encoder = ARTJsonLikeEncoder(
+                    rest: channel.internal.realtime!.rest,
+                    delegate: jsonEncoder,
+                    logger: channel.internal.logger,
+                )
 
-        let foundationObject = deserialized.toJSONSerializationInput
-        let protocolMessage = withExtendedLifetime(jsonEncoder) {
-            encoder.protocolMessage(from: foundationObject)!
+                let foundationObject = deserialized.toJSONSerializationInput
+                let protocolMessage = withExtendedLifetime(jsonEncoder) {
+                    encoder.protocolMessage(from: foundationObject)!
+                }
+
+                channel.internal.onChannelMessage(protocolMessage)
+                continuation.resume()
+            }
         }
-
-        channel.internal.onChannelMessage(protocolMessage)
     }
 
     /// Processes an object operation message on a channel
@@ -341,7 +346,7 @@ final class ObjectsHelper: Sendable {
         siteCode: String,
         state: [[String: JSONValue]]? = nil,
     ) async throws {
-        processDeserializedProtocolMessage(
+        await processDeserializedProtocolMessage(
             objectOperationMessage(
                 channelName: channel.name,
                 serial: serial,
@@ -358,7 +363,7 @@ final class ObjectsHelper: Sendable {
         syncSerial: String,
         state: [[String: JSONValue]]? = nil,
     ) async throws {
-        processDeserializedProtocolMessage(
+        await processDeserializedProtocolMessage(
             objectStateMessage(
                 channelName: channel.name,
                 syncSerial: syncSerial,
