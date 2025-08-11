@@ -9,6 +9,7 @@ final class Subscriber<each CallbackArg: Sendable>: Sendable {
     // Used to synchronize access to the nonisolated(unsafe) mutable state.
     private let mutex = NSLock()
     private nonisolated(unsafe) var invocations: [(repeat each CallbackArg)] = []
+    private nonisolated(unsafe) var listeners: [CallbackWrapper] = []
 
     /// Creates a `Subscriber`.
     ///
@@ -39,13 +40,50 @@ final class Subscriber<each CallbackArg: Sendable>: Sendable {
             guard let self else {
                 return
             }
-            mutex.withLock {
+            let callListeners = mutex.withLock {
                 let invocation = (repeat each arg)
                 invocations.append(invocation)
+
+                return { [listeners] in
+                    for listener in listeners {
+                        listener.callAsFunction(repeat each invocation)
+                    }
+                }
             }
             if let action {
                 action(repeat each arg)
             }
+            callListeners()
         }
+    }
+
+    /// A wrapper that allows us to store a callback that takes variadic args.
+    ///
+    /// This allows us to avoid the error "Cannot fully abstract a value of variadic function type '@Sendable (repeat each CallbackArg) -> ()' because different contexts will not be able to reliably agree on a calling convention; try wrapping it in a struct" that we get if we try to directly store the callback in an array. Claude suggested this solution.
+    private struct CallbackWrapper {
+        let callback: @Sendable (repeat each CallbackArg) -> Void
+
+        func callAsFunction(_ args: repeat each CallbackArg) {
+            callback(repeat each args)
+        }
+    }
+
+    /// Adds a listener which replays all previously buffered and future invocations of any function previously created by ``createListener(_:)``.
+    ///
+    /// This is useful for the scenario where you want to set up a subscription synchronously (so as not to miss any events) but then in an `async` context perform actions as a result of the invocation of the listener. (You could equally use the SDK's `AsyncSequence` interface but the approach here is a closer mapping of the ported JS integration tests that call `subscribe`.)
+    func addListener(_ listener: @escaping (@Sendable (repeat each CallbackArg) -> Void)) {
+        let performInvocations = mutex.withLock {
+            listeners.append(.init(callback: listener))
+
+            return { [invocations, callbackQueue] in
+                for invocation in invocations {
+                    callbackQueue.async {
+                        listener(repeat each invocation)
+                    }
+                }
+            }
+        }
+
+        performInvocations()
     }
 }

@@ -304,6 +304,20 @@ extension Trait where Self == ObjectsFixturesTrait {
     static var objectsFixtures: Self { Self() }
 }
 
+// MARK: - Utility types
+
+/// A class that isolates arbitrary mutable state to the main actor.
+///
+/// Intended for allowing a subscription callback to mutate some state that is shared between multiple callbacks. This allows us to port the JS pattern where callbacks synchronously mutate some local variable that's stored outside the callback (in Swift, local variables cannot be isolated to an actor).
+@MainActor
+class MainActorStorage<T> {
+    var value: T
+
+    init(value: T) {
+        self.value = value
+    }
+}
+
 // MARK: - Test suite
 
 @Suite(.objectsFixtures)
@@ -3196,6 +3210,493 @@ private struct ObjectsIntegrationTests {
                     channel: channel,
                     client: client,
                     clientOptions: testCase.options,
+                ),
+            )
+        }
+    }
+
+    @available(iOS 17.0.0, tvOS 17.0.0, *)
+    enum SubscriptionCallbacksScenarios: Scenarios {
+        struct Context {
+            var root: any LiveMap
+            var objectsHelper: ObjectsHelper
+            var channelName: String
+            var channel: ARTRealtimeChannel
+            var sampleMapKey: String
+            var sampleMapObjectId: String
+            var sampleCounterKey: String
+            var sampleCounterObjectId: String
+        }
+
+        static let scenarios: [TestScenario<Context>] = [
+            .init(
+                disabled: false,
+                allTransportsAndProtocols: true,
+                description: "can subscribe to the incoming COUNTER_INC operation on a LiveCounter",
+                action: { ctx in
+                    // Have split this #require into two because one of our formatting tools was trying to remove the parentheses from #require when it was a one-liner, making it invalid Swift 🤷
+                    let sampleCounterValue = try #require(try ctx.root.get(key: ctx.sampleCounterKey))
+                    let counter = try #require(sampleCounterValue.liveCounterValue)
+
+                    let updates = try counter.updates()
+                    async let subscriptionPromise: Void = {
+                        let update = try #require(await updates.first { _ in true })
+                        #expect(update.amount == 1, "Check counter subscription callback is called with an expected update object for COUNTER_INC operation")
+                    }()
+
+                    _ = try await ctx.objectsHelper.operationRequest(
+                        channelName: ctx.channelName,
+                        opBody: ctx.objectsHelper.counterIncRestOp(objectId: ctx.sampleCounterObjectId, number: 1),
+                    )
+
+                    try await subscriptionPromise
+                },
+            ),
+            .init(
+                disabled: false,
+                allTransportsAndProtocols: true,
+                description: "can subscribe to multiple incoming operations on a LiveCounter",
+                action: { @MainActor ctx in
+                    let counter = try #require(ctx.root.get(key: ctx.sampleCounterKey)?.liveCounterValue)
+                    let expectedCounterIncrements = [100.0, -100.0, Double(Int.max), Double(-Int.max)]
+                    let currentUpdateIndex = MainActorStorage<Int>(value: 0)
+
+                    let subscriber = Subscriber<LiveCounterUpdate, SubscribeResponse>(callbackQueue: .main)
+                    try counter.subscribe(listener: subscriber.createListener())
+                    async let subscriptionPromise: Void = withCheckedContinuation { continuation in
+                        subscriber.addListener { update, _ in
+                            MainActor.assumeIsolated {
+                                let expectedInc = expectedCounterIncrements[currentUpdateIndex.value]
+                                #expect(update.amount == expectedInc, "Check counter subscription callback is called with an expected update object for \(currentUpdateIndex.value + 1) times")
+
+                                if currentUpdateIndex.value == expectedCounterIncrements.count - 1 {
+                                    continuation.resume()
+                                }
+
+                                currentUpdateIndex.value += 1
+                            }
+                        }
+                    }
+
+                    for increment in expectedCounterIncrements {
+                        _ = try await ctx.objectsHelper.operationRequest(
+                            channelName: ctx.channelName,
+                            opBody: ctx.objectsHelper.counterIncRestOp(objectId: ctx.sampleCounterObjectId, number: increment),
+                        )
+                    }
+
+                    await subscriptionPromise
+                },
+            ),
+            .init(
+                disabled: false,
+                allTransportsAndProtocols: true,
+                description: "can subscribe to the incoming MAP_SET operation on a LiveMap",
+                action: { ctx in
+                    // Have split this #require into two because one of our formatting tools was trying to remove the parentheses from #require when it was a one-liner, making it invalid Swift 🤷
+                    let sampleMapValue = try #require(try ctx.root.get(key: ctx.sampleMapKey))
+                    let map = try #require(sampleMapValue.liveMapValue)
+
+                    let updates = try map.updates()
+                    async let subscriptionPromise: Void = {
+                        let update = try #require(await updates.first { _ in true })
+                        // Check that the update contains the expected key with "updated" status
+                        #expect(update.update["stringKey"] == .updated, "Check map subscription callback is called with an expected update object for MAP_SET operation")
+                    }()
+
+                    _ = try await ctx.objectsHelper.operationRequest(
+                        channelName: ctx.channelName,
+                        opBody: ctx.objectsHelper.mapSetRestOp(
+                            objectId: ctx.sampleMapObjectId,
+                            key: "stringKey",
+                            value: ["string": "stringValue"],
+                        ),
+                    )
+
+                    try await subscriptionPromise
+                },
+            ),
+            .init(
+                disabled: false,
+                allTransportsAndProtocols: true,
+                description: "can subscribe to the incoming MAP_REMOVE operation on a LiveMap",
+                action: { ctx in
+                    // Have split this #require into two because one of our formatting tools was trying to remove the parentheses from #require when it was a one-liner, making it invalid Swift 🤷
+                    let sampleMapValue = try #require(try ctx.root.get(key: ctx.sampleMapKey))
+                    let map = try #require(sampleMapValue.liveMapValue)
+
+                    let updates = try map.updates()
+                    async let subscriptionPromise: Void = {
+                        let update = try #require(await updates.first { _ in true })
+                        // Check that the update contains the expected key with "removed" status
+                        #expect(update.update["stringKey"] == .removed, "Check map subscription callback is called with an expected update object for MAP_REMOVE operation")
+                    }()
+
+                    _ = try await ctx.objectsHelper.operationRequest(
+                        channelName: ctx.channelName,
+                        opBody: ctx.objectsHelper.mapRemoveRestOp(
+                            objectId: ctx.sampleMapObjectId,
+                            key: "stringKey",
+                        ),
+                    )
+
+                    try await subscriptionPromise
+                },
+            ),
+            .init(
+                disabled: false,
+                allTransportsAndProtocols: true,
+                description: "can subscribe to multiple incoming operations on a LiveMap",
+                action: { @MainActor ctx in
+                    let map = try #require(ctx.root.get(key: ctx.sampleMapKey)?.liveMapValue)
+                    let expectedMapUpdates: [[String: LiveMapUpdateAction]] = [
+                        ["foo": .updated],
+                        ["bar": .updated],
+                        ["foo": .removed],
+                        ["baz": .updated],
+                        ["bar": .removed],
+                    ]
+                    let currentUpdateIndex = MainActorStorage<Int>(value: 0)
+
+                    let subscriber = Subscriber<LiveMapUpdate, SubscribeResponse>(callbackQueue: .main)
+                    try map.subscribe(listener: subscriber.createListener())
+                    async let subscriptionPromise: Void = withCheckedContinuation { continuation in
+                        subscriber.addListener { update, _ in
+                            MainActor.assumeIsolated {
+                                let expectedUpdate = expectedMapUpdates[currentUpdateIndex.value]
+                                #expect(update.update == expectedUpdate, "Check map subscription callback is called with an expected update object for \(currentUpdateIndex.value + 1) times")
+
+                                if currentUpdateIndex.value == expectedMapUpdates.count - 1 {
+                                    continuation.resume()
+                                }
+
+                                currentUpdateIndex.value += 1
+                            }
+                        }
+                    }
+
+                    _ = try await ctx.objectsHelper.operationRequest(
+                        channelName: ctx.channelName,
+                        opBody: ctx.objectsHelper.mapSetRestOp(
+                            objectId: ctx.sampleMapObjectId,
+                            key: "foo",
+                            value: ["string": "something"],
+                        ),
+                    )
+
+                    _ = try await ctx.objectsHelper.operationRequest(
+                        channelName: ctx.channelName,
+                        opBody: ctx.objectsHelper.mapSetRestOp(
+                            objectId: ctx.sampleMapObjectId,
+                            key: "bar",
+                            value: ["string": "something"],
+                        ),
+                    )
+
+                    _ = try await ctx.objectsHelper.operationRequest(
+                        channelName: ctx.channelName,
+                        opBody: ctx.objectsHelper.mapRemoveRestOp(
+                            objectId: ctx.sampleMapObjectId,
+                            key: "foo",
+                        ),
+                    )
+
+                    _ = try await ctx.objectsHelper.operationRequest(
+                        channelName: ctx.channelName,
+                        opBody: ctx.objectsHelper.mapSetRestOp(
+                            objectId: ctx.sampleMapObjectId,
+                            key: "baz",
+                            value: ["string": "something"],
+                        ),
+                    )
+
+                    _ = try await ctx.objectsHelper.operationRequest(
+                        channelName: ctx.channelName,
+                        opBody: ctx.objectsHelper.mapRemoveRestOp(
+                            objectId: ctx.sampleMapObjectId,
+                            key: "bar",
+                        ),
+                    )
+
+                    await subscriptionPromise
+                },
+            ),
+            .init(
+                disabled: false,
+                allTransportsAndProtocols: false,
+                description: "can unsubscribe from LiveCounter updates via returned unsubscribe callback",
+                action: { @MainActor ctx in
+                    let counter = try #require(ctx.root.get(key: ctx.sampleCounterKey)?.liveCounterValue)
+                    let callbackCalled = MainActorStorage<Int>(value: 0)
+
+                    let subscriber = Subscriber<LiveCounterUpdate, SubscribeResponse>(callbackQueue: .main)
+                    try counter.subscribe(listener: subscriber.createListener())
+                    async let subscriptionPromise: Void = withCheckedContinuation { continuation in
+                        subscriber.addListener { _, subscriptionResponse in
+                            MainActor.assumeIsolated {
+                                callbackCalled.value += 1
+                                // unsubscribe from future updates after the first call
+                                subscriptionResponse.unsubscribe()
+                                continuation.resume()
+                            }
+                        }
+                    }
+
+                    let increments = 3
+                    for i in 0 ..< increments {
+                        let counterUpdatesStream = try counter.updates()
+                        async let counterUpdatedPromise: Void = waitForCounterUpdate(counterUpdatesStream)
+                        _ = try await ctx.objectsHelper.operationRequest(
+                            channelName: ctx.channelName,
+                            opBody: ctx.objectsHelper.counterIncRestOp(objectId: ctx.sampleCounterObjectId, number: 1),
+                        )
+                        await counterUpdatedPromise
+                    }
+
+                    await subscriptionPromise
+
+                    #expect(try counter.value == 3, "Check counter has final expected value after all increments")
+                    #expect(callbackCalled.value == 1, "Check subscription callback was only called once")
+                },
+            ),
+            // Have not implemented "can unsubscribe from LiveCounter updates via LiveCounter.unsubscribe() call" because this method doesn't exist in the Swift SDK (functions don't have identity)
+            .init(
+                disabled: false,
+                allTransportsAndProtocols: false,
+                description: "can remove all LiveCounter update listeners via LiveCounter.unsubscribeAll() call",
+                action: { @MainActor ctx in
+                    let counter = try #require(ctx.root.get(key: ctx.sampleCounterKey)?.liveCounterValue)
+                    let callbacks = 3
+                    let callbacksCalled = MainActorStorage<[Int]>(value: Array(repeating: 0, count: callbacks))
+
+                    // Create multiple subscribers synchronously
+                    let subscribers = try (0 ..< callbacks).map { _ in
+                        let subscriber = Subscriber<LiveCounterUpdate, SubscribeResponse>(callbackQueue: .main)
+                        try counter.subscribe(listener: subscriber.createListener())
+                        return subscriber
+                    }
+
+                    // Set up subscription promises using TaskGroup
+                    async let subscriptionPromises: Void = withTaskGroup(of: Void.self) { group in
+                        for (index, subscriber) in subscribers.enumerated() {
+                            group.addTask {
+                                await withCheckedContinuation { continuation in
+                                    subscriber.addListener { _, _ in
+                                        MainActor.assumeIsolated {
+                                            callbacksCalled.value[index] += 1
+                                            continuation.resume()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Wait for all subscription tasks to complete
+                        for await _ in group {}
+                    }
+
+                    let increments = 3
+                    for i in 0 ..< increments {
+                        let counterUpdatesStream = try counter.updates()
+                        async let counterUpdatedPromise: Void = waitForCounterUpdate(counterUpdatesStream)
+                        _ = try await ctx.objectsHelper.operationRequest(
+                            channelName: ctx.channelName,
+                            opBody: ctx.objectsHelper.counterIncRestOp(objectId: ctx.sampleCounterObjectId, number: 1),
+                        )
+                        await counterUpdatedPromise
+
+                        if i == 0 {
+                            // unsub all after first operation
+                            counter.unsubscribeAll()
+                        }
+                    }
+
+                    // Wait for all subscription promises to complete
+                    await subscriptionPromises
+
+                    #expect(try counter.value == 3, "Check counter has final expected value after all increments")
+                    for i in 0 ..< callbacks {
+                        #expect(callbacksCalled.value[i] == 1, "Check subscription callback \(i) was called once")
+                    }
+                },
+            ),
+            .init(
+                disabled: false,
+                allTransportsAndProtocols: false,
+                description: "can unsubscribe from LiveMap updates via returned unsubscribe callback",
+                action: { @MainActor ctx in
+                    let map = try #require(ctx.root.get(key: ctx.sampleMapKey)?.liveMapValue)
+                    let callbackCalled = MainActorStorage<Int>(value: 0)
+
+                    let subscriber = Subscriber<LiveMapUpdate, SubscribeResponse>(callbackQueue: .main)
+                    try map.subscribe(listener: subscriber.createListener())
+                    async let subscriptionPromise: Void = withCheckedContinuation { continuation in
+                        subscriber.addListener { _, subscriptionResponse in
+                            MainActor.assumeIsolated {
+                                callbackCalled.value += 1
+                                // unsubscribe from future updates after the first call
+                                subscriptionResponse.unsubscribe()
+                                continuation.resume()
+                            }
+                        }
+                    }
+
+                    let mapSets = 3
+                    for i in 0 ..< mapSets {
+                        let mapUpdatesStream = try map.updates()
+                        async let mapUpdatedPromise: Void = waitForMapKeyUpdate(mapUpdatesStream, "foo-\(i)")
+                        _ = try await ctx.objectsHelper.operationRequest(
+                            channelName: ctx.channelName,
+                            opBody: ctx.objectsHelper.mapSetRestOp(
+                                objectId: ctx.sampleMapObjectId,
+                                key: "foo-\(i)",
+                                value: ["string": "exists"],
+                            ),
+                        )
+                        await mapUpdatedPromise
+                    }
+
+                    await subscriptionPromise
+
+                    for i in 0 ..< mapSets {
+                        let value = try #require(map.get(key: "foo-\(i)")?.stringValue)
+                        #expect(value == "exists", "Check map has value for key \"foo-\(i)\" after all map sets")
+                    }
+                    #expect(callbackCalled.value == 1, "Check subscription callback was only called once")
+                },
+            ),
+            // Have not implemented "can unsubscribe from LiveMap updates via LiveMap.unsubscribe() call" because this method doesn't exist in the Swift SDK (functions don't have identity)
+            .init(
+                disabled: false,
+                allTransportsAndProtocols: false,
+                description: "can remove all LiveMap update listeners via LiveMap.unsubscribeAll() call",
+                action: { @MainActor ctx in
+                    let map = try #require(ctx.root.get(key: ctx.sampleMapKey)?.liveMapValue)
+                    let callbacks = 3
+                    let callbacksCalled = MainActorStorage<[Int]>(value: Array(repeating: 0, count: callbacks))
+
+                    // Create multiple subscribers synchronously
+                    let subscribers = try (0 ..< callbacks).map { _ in
+                        let subscriber = Subscriber<LiveMapUpdate, SubscribeResponse>(callbackQueue: .main)
+                        try map.subscribe(listener: subscriber.createListener())
+                        return subscriber
+                    }
+
+                    // Set up subscription promises using TaskGroup
+                    async let subscriptionPromises: Void = withTaskGroup(of: Void.self) { group in
+                        for (index, subscriber) in subscribers.enumerated() {
+                            group.addTask {
+                                await withCheckedContinuation { continuation in
+                                    subscriber.addListener { _, _ in
+                                        MainActor.assumeIsolated {
+                                            callbacksCalled.value[index] += 1
+                                            continuation.resume()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Wait for all subscription tasks to complete
+                        for await _ in group {}
+                    }
+
+                    let mapSets = 3
+                    for i in 0 ..< mapSets {
+                        let mapUpdatesStream = try map.updates()
+                        async let mapUpdatedPromise: Void = waitForMapKeyUpdate(mapUpdatesStream, "foo-\(i)")
+                        _ = try await ctx.objectsHelper.operationRequest(
+                            channelName: ctx.channelName,
+                            opBody: ctx.objectsHelper.mapSetRestOp(
+                                objectId: ctx.sampleMapObjectId,
+                                key: "foo-\(i)",
+                                value: ["string": "exists"],
+                            ),
+                        )
+                        await mapUpdatedPromise
+
+                        if i == 0 {
+                            // unsub all after first operation
+                            map.unsubscribeAll()
+                        }
+                    }
+
+                    // Wait for all subscription promises to complete
+                    await subscriptionPromises
+
+                    for i in 0 ..< mapSets {
+                        let value = try #require(map.get(key: "foo-\(i)")?.stringValue)
+                        #expect(value == "exists", "Check map has value for key \"foo-\(i)\" after all map sets")
+                    }
+                    for i in 0 ..< callbacks {
+                        #expect(callbacksCalled.value[i] == 1, "Check subscription callback \(i) was called once")
+                    }
+                },
+            ),
+        ]
+    }
+
+    @available(iOS 17.0.0, tvOS 17.0.0, *)
+    @Test(arguments: SubscriptionCallbacksScenarios.testCases)
+    func subscriptionCallbacksScenarios(testCase: TestCase<SubscriptionCallbacksScenarios.Context>) async throws {
+        guard !testCase.disabled else {
+            withKnownIssue {
+                Issue.record("Test case is disabled")
+            }
+            return
+        }
+
+        let objectsHelper = try await ObjectsHelper()
+        let client = try await realtimeWithObjects(options: testCase.options)
+
+        try await monitorConnectionThenCloseAndFinishAsync(client) {
+            let channel = client.channels.get(testCase.channelName, options: channelOptionsWithObjects())
+            let objects = channel.objects
+
+            try await channel.attachAsync()
+            let root = try await objects.getRoot()
+
+            let sampleMapKey = "sampleMap"
+            let sampleCounterKey = "sampleCounter"
+
+            // Create promises for waiting for object updates
+            let objectsCreatedPromiseUpdates1 = try root.updates()
+            let objectsCreatedPromiseUpdates2 = try root.updates()
+            async let objectsCreatedPromise: Void = withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    await waitForMapKeyUpdate(objectsCreatedPromiseUpdates1, sampleMapKey)
+                }
+                group.addTask {
+                    await waitForMapKeyUpdate(objectsCreatedPromiseUpdates2, sampleCounterKey)
+                }
+                while try await group.next() != nil {}
+            }
+
+            // Prepare map and counter objects for use by the scenario
+            let sampleMapResult = try await objectsHelper.createAndSetOnMap(
+                channelName: testCase.channelName,
+                mapObjectId: "root",
+                key: sampleMapKey,
+                createOp: objectsHelper.mapCreateRestOp(),
+            )
+            let sampleCounterResult = try await objectsHelper.createAndSetOnMap(
+                channelName: testCase.channelName,
+                mapObjectId: "root",
+                key: sampleCounterKey,
+                createOp: objectsHelper.counterCreateRestOp(),
+            )
+            _ = try await objectsCreatedPromise
+
+            try await testCase.scenario.action(
+                .init(
+                    root: root,
+                    objectsHelper: objectsHelper,
+                    channelName: testCase.channelName,
+                    channel: channel,
+                    sampleMapKey: sampleMapKey,
+                    sampleMapObjectId: sampleMapResult.objectId,
+                    sampleCounterKey: sampleCounterKey,
+                    sampleCounterObjectId: sampleCounterResult.objectId,
                 ),
             )
         }
