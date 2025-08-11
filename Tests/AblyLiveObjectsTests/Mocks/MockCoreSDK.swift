@@ -20,6 +20,10 @@ final class MockCoreSDK: CoreSDK {
         }
     }
 
+    func testsOnly_overridePublish(with _: @escaping ([OutboundObjectMessage]) async throws(InternalError) -> Void) {
+        protocolRequirementNotImplemented()
+    }
+
     var channelState: ARTRealtimeChannelState {
         get {
             mutex.withLock {
