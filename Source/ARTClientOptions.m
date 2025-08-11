@@ -5,7 +5,6 @@
 #import "ARTDefault+Private.h"
 #import "ARTStatus.h"
 #import "ARTTokenParams.h"
-#import "ARTDeltaCodec.h"
 #import "ARTStringifiable.h"
 #import "ARTNSString+ARTUtil.h"
 #import "ARTTestClientOptions.h"

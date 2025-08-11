@@ -1,6 +1,6 @@
 #import "ARTCrypto+Private.h"
 #import "ARTDataEncoder.h"
-#import "ARTDeltaCodec.h"
+#import <AblyDeltaCodec/AblyDeltaCodec.h>
 
 @implementation ARTDataEncoderOutput
 
