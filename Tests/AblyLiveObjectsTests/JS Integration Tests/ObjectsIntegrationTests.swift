@@ -1916,7 +1916,414 @@ private struct ObjectsIntegrationTests {
             ]
 
             let applyOperationsDuringSyncScenarios: [TestScenario<Context>] = [
-                // TODO: Implement these scenarios
+                .init(
+                    disabled: false,
+                    allTransportsAndProtocols: false,
+                    description: "object operation messages are buffered during OBJECT_SYNC sequence",
+                    action: { ctx in
+                        let root = ctx.root
+                        let objectsHelper = ctx.objectsHelper
+                        let channel = ctx.channel
+                        let client = ctx.client
+
+                        // Start new sync sequence with a cursor so client will wait for the next OBJECT_SYNC messages
+                        await objectsHelper.processObjectStateMessageOnChannel(
+                            channel: channel,
+                            syncSerial: "serial:cursor",
+                        )
+
+                        // Inject operations, they should not be applied as sync is in progress
+                        // Note that unlike in the JS test we do not perform this concurrently because if we were to do that in Swift Concurrency we would not be able to guarantee that the operations are applied in the correct order (if they're not then messages will be discarded due to serials being out of order)
+                        for keyData in primitiveKeyData {
+                            var wireData = keyData.data.mapValues { WireValue(jsonValue: $0) }
+
+                            if let bytesValue = wireData["bytes"], client.internal.options.useBinaryProtocol {
+                                let bytesString = try #require(bytesValue.stringValue)
+                                wireData["bytes"] = try .data(#require(.init(base64Encoded: bytesString)))
+                            }
+
+                            await objectsHelper.processObjectOperationMessageOnChannel(
+                                channel: channel,
+                                serial: lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0),
+                                siteCode: "aaa",
+                                state: [objectsHelper.mapSetOp(objectId: "root", key: keyData.key, data: .object(wireData))],
+                            )
+                        }
+
+                        // Check root doesn't have data from operations
+                        for keyData in primitiveKeyData {
+                            #expect(try root.get(key: keyData.key) == nil, "Check \"\(keyData.key)\" key doesn't exist on root during OBJECT_SYNC")
+                        }
+                    },
+                ),
+                .init(
+                    disabled: false,
+                    allTransportsAndProtocols: false,
+                    description: "buffered object operation messages are applied when OBJECT_SYNC sequence ends",
+                    action: { ctx in
+                        let root = ctx.root
+                        let objectsHelper = ctx.objectsHelper
+                        let channel = ctx.channel
+                        let client = ctx.client
+
+                        // Start new sync sequence with a cursor so client will wait for the next OBJECT_SYNC messages
+                        await objectsHelper.processObjectStateMessageOnChannel(
+                            channel: channel,
+                            syncSerial: "serial:cursor",
+                        )
+
+                        // Inject operations, they should be applied when sync ends
+                        // Note that unlike in the JS test we do not perform this concurrently because if we were to do that in Swift Concurrency we would not be able to guarantee that the operations are applied in the correct order (if they're not then messages will be discarded due to serials being out of order)
+                        for (i, keyData) in primitiveKeyData.enumerated() {
+                            var wireData = keyData.data.mapValues { WireValue(jsonValue: $0) }
+
+                            if let bytesValue = wireData["bytes"], client.internal.options.useBinaryProtocol {
+                                let bytesString = try #require(bytesValue.stringValue)
+                                wireData["bytes"] = try .data(#require(.init(base64Encoded: bytesString)))
+                            }
+
+                            await objectsHelper.processObjectOperationMessageOnChannel(
+                                channel: channel,
+                                serial: lexicoTimeserial(seriesId: "aaa", timestamp: Int64(i), counter: 0),
+                                siteCode: "aaa",
+                                state: [objectsHelper.mapSetOp(objectId: "root", key: keyData.key, data: .object(wireData))],
+                            )
+                        }
+
+                        // End the sync with empty cursor
+                        await objectsHelper.processObjectStateMessageOnChannel(
+                            channel: channel,
+                            syncSerial: "serial:",
+                        )
+
+                        // Check everything is applied correctly
+                        for keyData in primitiveKeyData {
+                            if let bytesValue = keyData.data["bytes"] {
+                                if case let .string(base64String) = bytesValue {
+                                    let expectedData = Data(base64Encoded: base64String)
+                                    #expect(try #require(root.get(key: keyData.key)?.dataValue) == expectedData, "Check root has correct value for \"\(keyData.key)\" key after OBJECT_SYNC has ended and buffered operations are applied")
+                                }
+                            } else {
+                                // Handle other value types
+                                if let stringValue = keyData.data["string"] {
+                                    if case let .string(expectedString) = stringValue {
+                                        #expect(try #require(root.get(key: keyData.key)?.stringValue) == expectedString, "Check root has correct value for \"\(keyData.key)\" key after OBJECT_SYNC has ended and buffered operations are applied")
+                                    }
+                                } else if let numberValue = keyData.data["number"] {
+                                    if case let .number(expectedNumber) = numberValue {
+                                        #expect(try #require(root.get(key: keyData.key)?.numberValue) == expectedNumber.doubleValue, "Check root has correct value for \"\(keyData.key)\" key after OBJECT_SYNC has ended and buffered operations are applied")
+                                    }
+                                } else if let boolValue = keyData.data["boolean"] {
+                                    if case let .bool(expectedBool) = boolValue {
+                                        #expect(try #require(root.get(key: keyData.key)?.boolValue as Bool?) == expectedBool, "Check root has correct value for \"\(keyData.key)\" key after OBJECT_SYNC has ended and buffered operations are applied")
+                                    }
+                                }
+                            }
+                        }
+                    },
+                ),
+                .init(
+                    disabled: false,
+                    allTransportsAndProtocols: false,
+                    description: "buffered object operation messages are discarded when new OBJECT_SYNC sequence starts",
+                    action: { ctx in
+                        let root = ctx.root
+                        let objectsHelper = ctx.objectsHelper
+                        let channel = ctx.channel
+                        let client = ctx.client
+
+                        // Start new sync sequence with a cursor so client will wait for the next OBJECT_SYNC messages
+                        await objectsHelper.processObjectStateMessageOnChannel(
+                            channel: channel,
+                            syncSerial: "serial:cursor",
+                        )
+
+                        // Inject operations, expect them to be discarded when sync with new sequence id starts
+                        // Note that unlike in the JS test we do not perform this concurrently because if we were to do that in Swift Concurrency we would not be able to guarantee that the operations are applied in the correct order (if they're not then messages will be discarded due to serials being out of order)
+                        for (i, keyData) in primitiveKeyData.enumerated() {
+                            var wireData = keyData.data.mapValues { WireValue(jsonValue: $0) }
+
+                            if let bytesValue = wireData["bytes"], client.internal.options.useBinaryProtocol {
+                                let bytesString = try #require(bytesValue.stringValue)
+                                wireData["bytes"] = try .data(#require(.init(base64Encoded: bytesString)))
+                            }
+
+                            await objectsHelper.processObjectOperationMessageOnChannel(
+                                channel: channel,
+                                serial: lexicoTimeserial(seriesId: "aaa", timestamp: Int64(i), counter: 0),
+                                siteCode: "aaa",
+                                state: [objectsHelper.mapSetOp(objectId: "root", key: keyData.key, data: .object(wireData))],
+                            )
+                        }
+
+                        // Start new sync with new sequence id
+                        await objectsHelper.processObjectStateMessageOnChannel(
+                            channel: channel,
+                            syncSerial: "otherserial:cursor",
+                        )
+
+                        // Inject another operation that should be applied when latest sync ends
+                        await objectsHelper.processObjectOperationMessageOnChannel(
+                            channel: channel,
+                            serial: lexicoTimeserial(seriesId: "bbb", timestamp: 0, counter: 0),
+                            siteCode: "bbb",
+                            state: [objectsHelper.mapSetOp(objectId: "root", key: "foo", data: .object(["string": .string("bar")]))],
+                        )
+
+                        // End sync
+                        await objectsHelper.processObjectStateMessageOnChannel(
+                            channel: channel,
+                            syncSerial: "otherserial:",
+                        )
+
+                        // Check root doesn't have data from operations received during first sync
+                        for keyData in primitiveKeyData {
+                            #expect(try root.get(key: keyData.key) == nil, "Check \"\(keyData.key)\" key doesn't exist on root when OBJECT_SYNC has ended")
+                        }
+
+                        // Check root has data from operations received during second sync
+                        #expect(try #require(root.get(key: "foo")?.stringValue) == "bar", "Check root has data from operations received during second OBJECT_SYNC sequence")
+                    },
+                ),
+                .init(
+                    disabled: false,
+                    allTransportsAndProtocols: false,
+                    description: "buffered object operation messages are applied based on the site timeserials vector of the object",
+                    action: { ctx in
+                        let root = ctx.root
+                        let objectsHelper = ctx.objectsHelper
+                        let channel = ctx.channel
+
+                        // Start new sync sequence with a cursor so client will wait for the next OBJECT_SYNC messages
+                        let mapId = objectsHelper.fakeMapObjectId()
+                        let counterId = objectsHelper.fakeCounterObjectId()
+
+                        await objectsHelper.processObjectStateMessageOnChannel(
+                            channel: channel,
+                            syncSerial: "serial:cursor",
+                            // Add object state messages with non-empty site timeserials
+                            state: [
+                                // Next map and counter objects will be checked to have correct operations applied on them based on site timeserials
+                                objectsHelper.mapObject(
+                                    objectId: mapId,
+                                    siteTimeserials: [
+                                        "bbb": lexicoTimeserial(seriesId: "bbb", timestamp: 2, counter: 0),
+                                        "ccc": lexicoTimeserial(seriesId: "ccc", timestamp: 5, counter: 0),
+                                    ],
+                                    materialisedEntries: [
+                                        "foo1": .object([
+                                            "timeserial": .string(lexicoTimeserial(seriesId: "bbb", timestamp: 0, counter: 0)),
+                                            "data": .object(["string": .string("bar")]),
+                                        ]),
+                                        "foo2": .object([
+                                            "timeserial": .string(lexicoTimeserial(seriesId: "bbb", timestamp: 0, counter: 0)),
+                                            "data": .object(["string": .string("bar")]),
+                                        ]),
+                                        "foo3": .object([
+                                            "timeserial": .string(lexicoTimeserial(seriesId: "ccc", timestamp: 5, counter: 0)),
+                                            "data": .object(["string": .string("bar")]),
+                                        ]),
+                                        "foo4": .object([
+                                            "timeserial": .string(lexicoTimeserial(seriesId: "bbb", timestamp: 0, counter: 0)),
+                                            "data": .object(["string": .string("bar")]),
+                                        ]),
+                                        "foo5": .object([
+                                            "timeserial": .string(lexicoTimeserial(seriesId: "bbb", timestamp: 2, counter: 0)),
+                                            "data": .object(["string": .string("bar")]),
+                                        ]),
+                                        "foo6": .object([
+                                            "timeserial": .string(lexicoTimeserial(seriesId: "ccc", timestamp: 2, counter: 0)),
+                                            "data": .object(["string": .string("bar")]),
+                                        ]),
+                                        "foo7": .object([
+                                            "timeserial": .string(lexicoTimeserial(seriesId: "ccc", timestamp: 0, counter: 0)),
+                                            "data": .object(["string": .string("bar")]),
+                                        ]),
+                                        "foo8": .object([
+                                            "timeserial": .string(lexicoTimeserial(seriesId: "ccc", timestamp: 0, counter: 0)),
+                                            "data": .object(["string": .string("bar")]),
+                                        ]),
+                                    ],
+                                ),
+                                objectsHelper.counterObject(
+                                    objectId: counterId,
+                                    siteTimeserials: [
+                                        "bbb": lexicoTimeserial(seriesId: "bbb", timestamp: 1, counter: 0),
+                                    ],
+                                    initialCount: 1,
+                                ),
+                                // Add objects to the root so they're discoverable in the object tree
+                                objectsHelper.mapObject(
+                                    objectId: "root",
+                                    siteTimeserials: ["aaa": lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0)],
+                                    initialEntries: [
+                                        "map": .object([
+                                            "timeserial": .string(lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0)),
+                                            "data": .object(["objectId": .string(mapId)]),
+                                        ]),
+                                        "counter": .object([
+                                            "timeserial": .string(lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0)),
+                                            "data": .object(["objectId": .string(counterId)]),
+                                        ]),
+                                    ],
+                                ),
+                            ],
+                        )
+
+                        // Inject operations with various timeserial values
+                        // Map:
+                        let mapOperations: [(serial: String, siteCode: String)] = [
+                            (serial: lexicoTimeserial(seriesId: "bbb", timestamp: 1, counter: 0), siteCode: "bbb"), // existing site, earlier site CGO, not applied
+                            (serial: lexicoTimeserial(seriesId: "bbb", timestamp: 2, counter: 0), siteCode: "bbb"), // existing site, same site CGO, not applied
+                            (serial: lexicoTimeserial(seriesId: "bbb", timestamp: 3, counter: 0), siteCode: "bbb"), // existing site, later site CGO, earlier entry CGO, not applied but site timeserial updated
+                            // message with later site CGO, same entry CGO case is not possible, as timeserial from entry would be set for the corresponding site code or be less than that
+                            (serial: lexicoTimeserial(seriesId: "bbb", timestamp: 3, counter: 0), siteCode: "bbb"), // existing site, same site CGO (updated from last op), later entry CGO, not applied
+                            (serial: lexicoTimeserial(seriesId: "bbb", timestamp: 4, counter: 0), siteCode: "bbb"), // existing site, later site CGO, later entry CGO, applied
+                            (serial: lexicoTimeserial(seriesId: "aaa", timestamp: 1, counter: 0), siteCode: "aaa"), // different site, earlier entry CGO, not applied but site timeserial updated
+                            (serial: lexicoTimeserial(seriesId: "aaa", timestamp: 1, counter: 0), siteCode: "aaa"), // different site, same site CGO (updated from last op), later entry CGO, not applied
+                            // different site with matching entry CGO case is not possible, as matching entry timeserial means that that timeserial is in the site timeserials vector
+                            (serial: lexicoTimeserial(seriesId: "ddd", timestamp: 1, counter: 0), siteCode: "ddd"), // different site, later entry CGO, applied
+                        ]
+
+                        for (i, operation) in mapOperations.enumerated() {
+                            await objectsHelper.processObjectOperationMessageOnChannel(
+                                channel: channel,
+                                serial: operation.serial,
+                                siteCode: operation.siteCode,
+                                state: [objectsHelper.mapSetOp(objectId: mapId, key: "foo\(i + 1)", data: .object(["string": .string("baz")]))],
+                            )
+                        }
+
+                        // Counter:
+                        let counterOperations: [(serial: String, siteCode: String, amount: Double)] = [
+                            (serial: lexicoTimeserial(seriesId: "bbb", timestamp: 0, counter: 0), siteCode: "bbb", amount: 10), // existing site, earlier CGO, not applied
+                            (serial: lexicoTimeserial(seriesId: "bbb", timestamp: 1, counter: 0), siteCode: "bbb", amount: 100), // existing site, same CGO, not applied
+                            (serial: lexicoTimeserial(seriesId: "bbb", timestamp: 2, counter: 0), siteCode: "bbb", amount: 1000), // existing site, later CGO, applied, site timeserials updated
+                            (serial: lexicoTimeserial(seriesId: "bbb", timestamp: 2, counter: 0), siteCode: "bbb", amount: 10000), // existing site, same CGO (updated from last op), not applied
+                            (serial: lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0), siteCode: "aaa", amount: 100_000), // different site, earlier CGO, applied
+                            (serial: lexicoTimeserial(seriesId: "ccc", timestamp: 9, counter: 0), siteCode: "ccc", amount: 1_000_000), // different site, later CGO, applied
+                        ]
+
+                        for operation in counterOperations {
+                            await objectsHelper.processObjectOperationMessageOnChannel(
+                                channel: channel,
+                                serial: operation.serial,
+                                siteCode: operation.siteCode,
+                                state: [objectsHelper.counterIncOp(objectId: counterId, amount: Int(operation.amount))],
+                            )
+                        }
+
+                        // End sync
+                        await objectsHelper.processObjectStateMessageOnChannel(
+                            channel: channel,
+                            syncSerial: "serial:",
+                        )
+
+                        // Check only operations with correct timeserials were applied
+                        let expectedMapKeys: [(key: String, value: String)] = [
+                            (key: "foo1", value: "bar"),
+                            (key: "foo2", value: "bar"),
+                            (key: "foo3", value: "bar"),
+                            (key: "foo4", value: "bar"),
+                            (key: "foo5", value: "baz"), // updated
+                            (key: "foo6", value: "bar"),
+                            (key: "foo7", value: "bar"),
+                            (key: "foo8", value: "baz"), // updated
+                        ]
+
+                        let map = try #require(root.get(key: "map")?.liveMapValue)
+                        for expectedMapKey in expectedMapKeys {
+                            #expect(try #require(map.get(key: expectedMapKey.key)?.stringValue) == expectedMapKey.value, "Check \"\(expectedMapKey.key)\" key on map has expected value after OBJECT_SYNC has ended")
+                        }
+
+                        let counter = try #require(root.get(key: "counter")?.liveCounterValue)
+                        let expectedCounterValue = 1.0 + 1000.0 + 100_000.0 + 1_000_000.0 // sum of passing operations and the initial value
+                        #expect(try counter.value == expectedCounterValue, "Check counter has expected value after OBJECT_SYNC has ended")
+                    },
+                ),
+                .init(
+                    disabled: false,
+                    allTransportsAndProtocols: false,
+                    description: "subsequent object operation messages are applied immediately after OBJECT_SYNC ended and buffers are applied",
+                    action: { ctx in
+                        let root = ctx.root
+                        let objectsHelper = ctx.objectsHelper
+                        let channel = ctx.channel
+                        let channelName = ctx.channelName
+                        let client = ctx.client
+
+                        // Start new sync sequence with a cursor so client will wait for the next OBJECT_SYNC messages
+                        await objectsHelper.processObjectStateMessageOnChannel(
+                            channel: channel,
+                            syncSerial: "serial:cursor",
+                        )
+
+                        // Inject operations, they should be applied when sync ends
+                        // Note that unlike in the JS test we do not perform this concurrently because if we were to do that in Swift Concurrency we would not be able to guarantee that the operations are applied in the correct order (if they're not then messages will be discarded due to serials being out of order)
+                        for (i, keyData) in primitiveKeyData.enumerated() {
+                            var wireData = keyData.data.mapValues { WireValue(jsonValue: $0) }
+
+                            if let bytesValue = wireData["bytes"], client.internal.options.useBinaryProtocol {
+                                let bytesString = try #require(bytesValue.stringValue)
+                                wireData["bytes"] = try .data(#require(.init(base64Encoded: bytesString)))
+                            }
+
+                            await objectsHelper.processObjectOperationMessageOnChannel(
+                                channel: channel,
+                                serial: lexicoTimeserial(seriesId: "aaa", timestamp: Int64(i), counter: 0),
+                                siteCode: "aaa",
+                                state: [objectsHelper.mapSetOp(objectId: "root", key: keyData.key, data: .object(wireData))],
+                            )
+                        }
+
+                        // End the sync with empty cursor
+                        await objectsHelper.processObjectStateMessageOnChannel(
+                            channel: channel,
+                            syncSerial: "serial:",
+                        )
+
+                        let keyUpdatedPromiseUpdates = try root.updates()
+                        async let keyUpdatedPromise: Void = waitForMapKeyUpdate(keyUpdatedPromiseUpdates, "foo")
+
+                        // Send some more operations
+                        let operationResult = try await objectsHelper.operationRequest(
+                            channelName: channelName,
+                            opBody: objectsHelper.mapSetRestOp(
+                                objectId: "root",
+                                key: "foo",
+                                value: ["string": .string("bar")],
+                            ),
+                        )
+                        await keyUpdatedPromise
+
+                        // Check buffered operations are applied, as well as the most recent operation outside of the sync sequence is applied
+                        for keyData in primitiveKeyData {
+                            if let bytesValue = keyData.data["bytes"] {
+                                if case let .string(base64String) = bytesValue {
+                                    let expectedData = Data(base64Encoded: base64String)
+                                    #expect(try #require(root.get(key: keyData.key)?.dataValue) == expectedData, "Check root has correct value for \"\(keyData.key)\" key after OBJECT_SYNC has ended and buffered operations are applied")
+                                }
+                            } else {
+                                // Handle other value types
+                                if let stringValue = keyData.data["string"] {
+                                    if case let .string(expectedString) = stringValue {
+                                        #expect(try #require(root.get(key: keyData.key)?.stringValue) == expectedString, "Check root has correct value for \"\(keyData.key)\" key after OBJECT_SYNC has ended and buffered operations are applied")
+                                    }
+                                } else if let numberValue = keyData.data["number"] {
+                                    if case let .number(expectedNumber) = numberValue {
+                                        #expect(try #require(root.get(key: keyData.key)?.numberValue) == expectedNumber.doubleValue, "Check root has correct value for \"\(keyData.key)\" key after OBJECT_SYNC has ended and buffered operations are applied")
+                                    }
+                                } else if let boolValue = keyData.data["boolean"] {
+                                    if case let .bool(expectedBool) = boolValue {
+                                        #expect(try #require(root.get(key: keyData.key)?.boolValue as Bool?) == expectedBool, "Check root has correct value for \"\(keyData.key)\" key after OBJECT_SYNC has ended and buffered operations are applied")
+                                    }
+                                }
+                            }
+                        }
+
+                        #expect(try #require(root.get(key: "foo")?.stringValue) == "bar", "Check root has correct value for \"foo\" key from operation received outside of OBJECT_SYNC after other buffered operations were applied")
+                    },
+                ),
             ]
 
             let writeApiScenarios: [TestScenario<Context>] = [

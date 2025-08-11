@@ -472,7 +472,7 @@ final class ObjectsHelper: Sendable {
     }
 
     /// Sends an operation request to the REST API
-    private func operationRequest(channelName: String, opBody: [String: JSONValue]) async throws -> OperationResult {
+    func operationRequest(channelName: String, opBody: [String: JSONValue]) async throws -> OperationResult {
         let path = "/channels/\(channelName)/objects"
 
         do {
