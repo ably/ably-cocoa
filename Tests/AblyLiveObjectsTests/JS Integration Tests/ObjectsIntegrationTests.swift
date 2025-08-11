@@ -513,7 +513,7 @@ private struct ObjectsIntegrationTests {
                     disabled: false,
                     allTransportsAndProtocols: false,
                     description: "OBJECT_SYNC sequence with object state \"tombstone\" property creates tombstoned object",
-                    action: { ctx in
+                    action: { ctx throws in
                         let root = ctx.root
                         let objectsHelper = ctx.objectsHelper
                         let channel = ctx.channel
@@ -521,7 +521,7 @@ private struct ObjectsIntegrationTests {
                         let mapId = objectsHelper.fakeMapObjectId()
                         let counterId = objectsHelper.fakeCounterObjectId()
 
-                        try await objectsHelper.processObjectStateMessageOnChannel(
+                        await objectsHelper.processObjectStateMessageOnChannel(
                             channel: channel,
                             syncSerial: "serial:", // empty serial so sync sequence ends immediately
                             // add object states with tombstone=true
@@ -588,7 +588,7 @@ private struct ObjectsIntegrationTests {
                         #expect(try root.get(key: "counter") != nil, "Check counter exists on root before OBJECT_SYNC sequence with \"tombstone=true\"")
 
                         // inject an OBJECT_SYNC message where a counter is now tombstoned
-                        try await objectsHelper.processObjectStateMessageOnChannel(
+                        await objectsHelper.processObjectStateMessageOnChannel(
                             channel: channel,
                             syncSerial: "serial:", // empty serial so sync sequence ends immediately
                             state: [
@@ -647,7 +647,7 @@ private struct ObjectsIntegrationTests {
                         }()
 
                         // inject an OBJECT_SYNC message where a counter is now tombstoned
-                        try await objectsHelper.processObjectStateMessageOnChannel(
+                        await objectsHelper.processObjectStateMessageOnChannel(
                             channel: channel,
                             syncSerial: "serial:", // empty serial so sync sequence ends immediately
                             state: [

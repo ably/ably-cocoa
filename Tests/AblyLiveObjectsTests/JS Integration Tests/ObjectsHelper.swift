@@ -345,7 +345,7 @@ final class ObjectsHelper: Sendable {
         serial: String,
         siteCode: String,
         state: [[String: JSONValue]]? = nil,
-    ) async throws {
+    ) async {
         await processDeserializedProtocolMessage(
             objectOperationMessage(
                 channelName: channel.name,
@@ -362,7 +362,7 @@ final class ObjectsHelper: Sendable {
         channel: ARTRealtimeChannel,
         syncSerial: String,
         state: [[String: JSONValue]]? = nil,
-    ) async throws {
+    ) async {
         await processDeserializedProtocolMessage(
             objectStateMessage(
                 channelName: channel.name,
