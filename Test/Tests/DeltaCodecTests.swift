@@ -50,8 +50,24 @@ class DeltaCodecTests: XCTestCase {
             receivedMessages.append(message)
         }
 
-        for (i, data) in testData.enumerated() {
-            channel.publish(String(i), data: data)
+        // We publish the messages sequentially, waiting for one publish to complete before performing the next. This is to ensure that Realtime uses deltas when sending the message to the subscription (there is a limit of concurrent delta generations and we don't want to exceed it; see https://ably-real-time.slack.com/archives/C07D55B6NLQ/p1754995949137159?thread_ts=1754992828.228879&cid=C07D55B6NLQ)
+        func publishTestData(startingFromIndex index: Int, done: @escaping () -> Void) {
+            channel.publish(String(index), data: testData[index]) { error in
+                if let error {
+                    fail("Error publishing message: \(error)")
+                    return
+                }
+
+                if index + 1 < testData.endIndex {
+                    publishTestData(startingFromIndex: index + 1, done: done)
+                } else {
+                    done()
+                }
+            }
+
+        }
+        waitUntil(timeout: testTimeout) { done in
+            publishTestData(startingFromIndex: 0, done: done)
         }
 
         XCTAssertNil(channel.errorReason)
@@ -74,8 +90,10 @@ class DeltaCodecTests: XCTestCase {
         // Check that we did not receive more messages than we sent; this tells us that we successfully decoded the deltas and did not need to perform an RTL18 recovery.
         expect(messagesReceivedInProtocolMessages.count).to(equal(testData.count))
 
-        let messagesEncoding = messagesReceivedInProtocolMessages.compactMap(\.encoding)
-        expect(messagesEncoding).to(allPass(equal("utf-8/vcdiff")))
+        let messagesEncoding = messagesReceivedInProtocolMessages.map(\.encoding)
+
+        let expectedMessagesEncoding: [String?] = [nil] + Array(repeating: "utf-8/vcdiff", count: 4)
+        expect(messagesEncoding).to(equal(expectedMessagesEncoding))
     }
 
     // RTL20
