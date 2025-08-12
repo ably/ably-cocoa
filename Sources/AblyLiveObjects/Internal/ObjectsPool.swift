@@ -104,6 +104,25 @@ internal struct ObjectsPool {
                 )
             }
         }
+
+        /// Returns the object's RTLO3d `isTombstone` property.
+        internal var isTombstone: Bool {
+            switch self {
+            case let .counter(counter):
+                counter.isTombstone
+            case let .map(map):
+                map.isTombstone
+            }
+        }
+
+        internal var tombstonedAt: Date? {
+            switch self {
+            case let .counter(counter):
+                counter.tombstonedAt
+            case let .map(map):
+                map.tombstonedAt
+            }
+        }
     }
 
     /// Keyed by `objectId`.
@@ -297,5 +316,33 @@ internal struct ObjectsPool {
         // RTO4b2
         // TODO: this one is unclear (are we meant to replace the root or just clear its data?) https://github.com/ably/specification/pull/333/files#r2183493458. I believe that the answer is that we should just clear its data but the spec point needs to be clearer, see https://github.com/ably/specification/pull/346/files#r2201434895.
         root.resetData()
+    }
+
+    /// Performs garbage collection of tombstoned objects and map entries, per RTO10c.
+    internal mutating func performGarbageCollection(gracePeriod: TimeInterval, clock: SimpleClock, logger: Logger) {
+        logger.log("Performing garbage collection, grace period \(gracePeriod)s", level: .debug)
+
+        let now = clock.now
+
+        entries = entries.filter { key, entry in
+            if case let .map(map) = entry {
+                // RTO10c1a
+                map.releaseTombstonedEntries(gracePeriod: gracePeriod, clock: clock)
+            }
+
+            // RTO10c1b
+            let shouldRelease = {
+                guard let tombstonedAt = entry.tombstonedAt else {
+                    return false
+                }
+
+                return now.timeIntervalSince(tombstonedAt) >= gracePeriod
+            }()
+
+            if shouldRelease {
+                logger.log("Releasing tombstoned entry \(entry) for key \(key)", level: .debug)
+            }
+            return !shouldRelease
+        }
     }
 }

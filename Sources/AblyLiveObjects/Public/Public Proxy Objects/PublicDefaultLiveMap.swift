@@ -34,7 +34,7 @@ internal final class PublicDefaultLiveMap: LiveMap {
 
     internal var size: Int {
         get throws(ARTErrorInfo) {
-            try proxied.size(coreSDK: coreSDK)
+            try proxied.size(coreSDK: coreSDK, delegate: delegate)
         }
     }
 

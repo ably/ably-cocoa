@@ -39,7 +39,7 @@ struct InternalDefaultLiveMapTests {
         func returnsNilWhenEntryIsTombstoned() throws {
             let logger = TestLogger()
             let entry = TestFactories.internalMapEntry(
-                tombstone: true,
+                tombstonedAt: Date(),
                 data: ObjectData(boolean: true), // Value doesn't matter as it's tombstoned
             )
             let coreSDK = MockCoreSDK(channelState: .attaching)
@@ -284,7 +284,7 @@ struct InternalDefaultLiveMapTests {
 
             // Define actions to test
             let actions: [(String, () throws -> Any)] = [
-                ("size", { try map.size(coreSDK: coreSDK) }),
+                ("size", { try map.size(coreSDK: coreSDK, delegate: delegate) }),
                 ("entries", { try map.entries(coreSDK: coreSDK, delegate: delegate) }),
                 ("keys", { try map.keys(coreSDK: coreSDK, delegate: delegate) }),
                 ("values", { try map.values(coreSDK: coreSDK, delegate: delegate) }),
@@ -317,12 +317,11 @@ struct InternalDefaultLiveMapTests {
             let delegate = MockLiveMapObjectPoolDelegate()
             let map = InternalDefaultLiveMap(
                 testsOnly_data: [
-                    // tombstone is nil, so not considered tombstoned
+                    // tombstonedAt is nil, so not considered tombstoned
                     "active1": TestFactories.internalMapEntry(data: ObjectData(string: "value1")),
-                    // tombstone is false, so not considered tombstoned[
-                    "active2": TestFactories.internalMapEntry(tombstone: false, data: ObjectData(string: "value2")),
-                    "tombstoned": TestFactories.internalMapEntry(tombstone: true, data: ObjectData(string: "tombstoned")),
-                    "tombstoned2": TestFactories.internalMapEntry(tombstone: true, data: ObjectData(string: "tombstoned2")),
+                    // tombstonedAt is false, so not considered tombstoned
+                    "tombstoned": TestFactories.internalMapEntry(tombstonedAt: Date(), data: ObjectData(string: "tombstoned")),
+                    "tombstoned2": TestFactories.internalMapEntry(tombstonedAt: Date(), data: ObjectData(string: "tombstoned2")),
                 ],
                 objectID: "arbitrary",
                 logger: logger,
@@ -331,25 +330,24 @@ struct InternalDefaultLiveMapTests {
             )
 
             // Test size - should only count non-tombstoned entries
-            let size = try map.size(coreSDK: coreSDK)
-            #expect(size == 2)
+            let size = try map.size(coreSDK: coreSDK, delegate: delegate)
+            #expect(size == 1)
 
             // Test entries - should only return non-tombstoned entries
             let entries = try map.entries(coreSDK: coreSDK, delegate: delegate)
-            #expect(entries.count == 2)
-            #expect(Set(entries.map(\.key)) == ["active1", "active2"])
+            #expect(entries.count == 1)
+            #expect(Set(entries.map(\.key)) == ["active1"])
             #expect(entries.first { $0.key == "active1" }?.value.stringValue == "value1")
-            #expect(entries.first { $0.key == "active2" }?.value.stringValue == "value2")
 
             // Test keys - should only return keys from non-tombstoned entries
             let keys = try map.keys(coreSDK: coreSDK, delegate: delegate)
-            #expect(keys.count == 2)
-            #expect(Set(keys) == ["active1", "active2"])
+            #expect(keys.count == 1)
+            #expect(Set(keys) == ["active1"])
 
             // Test values - should only return values from non-tombstoned entries
             let values = try map.values(coreSDK: coreSDK, delegate: delegate)
-            #expect(values.count == 2)
-            #expect(Set(values.compactMap(\.stringValue)) == Set(["value1", "value2"]))
+            #expect(values.count == 1)
+            #expect(Set(values.compactMap(\.stringValue)) == Set(["value1"]))
         }
 
         // MARK: - Consistency Tests
@@ -374,7 +372,7 @@ struct InternalDefaultLiveMapTests {
                 clock: MockSimpleClock(),
             )
 
-            let size = try map.size(coreSDK: coreSDK)
+            let size = try map.size(coreSDK: coreSDK, delegate: delegate)
             let entries = try map.entries(coreSDK: coreSDK, delegate: delegate)
             let keys = try map.keys(coreSDK: coreSDK, delegate: delegate)
             let values = try map.values(coreSDK: coreSDK, delegate: delegate)
@@ -424,7 +422,7 @@ struct InternalDefaultLiveMapTests {
                 clock: MockSimpleClock(),
             )
 
-            let size = try map.size(coreSDK: coreSDK)
+            let size = try map.size(coreSDK: coreSDK, delegate: delegate)
             let entries = try map.entries(coreSDK: coreSDK, delegate: delegate)
             let keys = try map.keys(coreSDK: coreSDK, delegate: delegate)
             let values = try map.values(coreSDK: coreSDK, delegate: delegate)
@@ -507,7 +505,7 @@ struct InternalDefaultLiveMapTests {
                 let delegate = MockLiveMapObjectPoolDelegate()
                 let coreSDK = MockCoreSDK(channelState: .attaching)
                 let map = InternalDefaultLiveMap(
-                    testsOnly_data: ["key1": TestFactories.internalMapEntry(tombstone: true, timeserial: "ts1", data: ObjectData(string: "existing"))],
+                    testsOnly_data: ["key1": TestFactories.internalMapEntry(tombstonedAt: Date(), timeserial: "ts1", data: ObjectData(string: "existing"))],
                     objectID: "arbitrary",
                     logger: logger,
                     userCallbackQueue: .main,
@@ -687,7 +685,7 @@ struct InternalDefaultLiveMapTests {
                 )
 
                 // Try to apply operation with lower timeserial (ts1 < ts2), cannot be applied per RTLM9
-                let update = map.testsOnly_applyMapRemoveOperation(key: "key1", operationTimeserial: "ts1")
+                let update = map.testsOnly_applyMapRemoveOperation(key: "key1", operationTimeserial: "ts1", operationSerialTimestamp: nil)
 
                 // Verify the operation was discarded - existing data unchanged
                 #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate)?.stringValue == "existing")
@@ -705,7 +703,7 @@ struct InternalDefaultLiveMapTests {
                 let delegate = MockLiveMapObjectPoolDelegate()
                 let coreSDK = MockCoreSDK(channelState: .attaching)
                 let map = InternalDefaultLiveMap(
-                    testsOnly_data: ["key1": TestFactories.internalMapEntry(tombstone: false, timeserial: "ts1", data: ObjectData(string: "existing"))],
+                    testsOnly_data: ["key1": TestFactories.internalMapEntry(tombstonedAt: nil, timeserial: "ts1", data: ObjectData(string: "existing"))],
                     objectID: "arbitrary",
                     logger: logger,
                     userCallbackQueue: .main,
@@ -713,7 +711,7 @@ struct InternalDefaultLiveMapTests {
                 )
 
                 // Apply operation with higher timeserial (ts2 > ts1), so can be applied per RTLM9
-                let update = map.testsOnly_applyMapRemoveOperation(key: "key1", operationTimeserial: "ts2")
+                let update = map.testsOnly_applyMapRemoveOperation(key: "key1", operationTimeserial: "ts2", operationSerialTimestamp: nil)
 
                 // Verify the operation was applied
                 #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate) == nil)
@@ -747,7 +745,7 @@ struct InternalDefaultLiveMapTests {
                 let logger = TestLogger()
                 let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
 
-                let update = map.testsOnly_applyMapRemoveOperation(key: "newKey", operationTimeserial: "ts1")
+                let update = map.testsOnly_applyMapRemoveOperation(key: "newKey", operationTimeserial: "ts1", operationSerialTimestamp: nil)
 
                 // Verify new entry was created
                 let entry = map.testsOnly_data["newKey"]
@@ -769,7 +767,7 @@ struct InternalDefaultLiveMapTests {
                 let logger = TestLogger()
                 let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
 
-                _ = map.testsOnly_applyMapRemoveOperation(key: "newKey", operationTimeserial: "ts1")
+                _ = map.testsOnly_applyMapRemoveOperation(key: "newKey", operationTimeserial: "ts1", operationSerialTimestamp: nil)
 
                 // Verify tombstone is true for new entry
                 #expect(map.testsOnly_data["newKey"]?.tombstone == true)
