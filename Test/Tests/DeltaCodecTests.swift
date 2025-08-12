@@ -3,12 +3,22 @@ import AblyDeltaCodec
 import Nimble
 import XCTest
 
-private let testData: [String] = [
-    "{ foo: \"bar\", count: 1, status: \"active\" }",
-    "{ foo: \"bar\", count: 2, status: \"active\" }",
-    "{ foo: \"bar\", count: 2, status: \"inactive\" }",
-    "{ foo: \"bar\", count: 3, status: \"inactive\" }",
-    "{ foo: \"bar\", count: 3, status: \"active\" }",
+// Test all RSL4 message data types
+private let testData: [NSObject?] = [
+    // String data
+    "{ foo: \"bar\", count: 1, status: \"active\" }" as NSString,
+    "{ foo: \"bar\", count: 2, status: \"active\" }" as NSString,
+    "{ foo: \"bar\", count: 2, status: \"inactive\" }" as NSString,
+    // Binary data
+    Data(Array(repeating: 0x01, count: 20) + [0x01]) as NSData,
+    Data(Array(repeating: 0x01, count: 20) + [0x02]) as NSData,
+    Data(Array(repeating: 0x01, count: 20) + [0x03]) as NSData,
+    // JSON data
+    Array(repeating: "bar", count: 20) + ["bar"] as NSArray,
+    Array(repeating: "bar", count: 20) + ["baz"] as NSArray,
+    Array(repeating: "bar", count: 20) + ["bar"] as NSArray,
+    // nil data
+    nil,
 ]
 
 class DeltaCodecTests: XCTestCase {
@@ -20,9 +30,10 @@ class DeltaCodecTests: XCTestCase {
     }
 
     // RTL19
-    func test__001__DeltaCodec__decoding__should_decode_vcdiff_encoded_messages() throws {
+    func parameterizedTest__001__DeltaCodec__decoding__should_decode_vcdiff_encoded_messages(useBinaryProtocol: Bool) throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
+        options.useBinaryProtocol = useBinaryProtocol
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
 
@@ -76,7 +87,7 @@ class DeltaCodecTests: XCTestCase {
         for (i, message) in receivedMessages.enumerated() {
             if let name = message.name, let expectedMessageIndex = Int(name) {
                 XCTAssertEqual(i, expectedMessageIndex)
-                XCTAssertEqual(message.data as? String, testData[expectedMessageIndex])
+                XCTAssertEqual(message.data as? NSObject, testData[expectedMessageIndex])
             } else {
                 fail("Received message has an unexpected 'id': \(message)")
             }
@@ -92,8 +103,35 @@ class DeltaCodecTests: XCTestCase {
 
         let messagesEncoding = messagesReceivedInProtocolMessages.map(\.encoding)
 
-        let expectedMessagesEncoding: [String?] = [nil] + Array(repeating: "utf-8/vcdiff", count: 4)
+        let expectedMessagesEncoding: [String?] = if useBinaryProtocol {
+            // String data
+            [nil] as [String?] + Array(repeating: "utf-8/vcdiff", count: 2) +
+            // Binary data
+            Array(repeating: "vcdiff", count: 3) +
+            // JSON data
+            Array(repeating: "json/utf-8/vcdiff", count: 3) +
+            // nil data
+            [nil] as [String?]
+        } else {
+            // String data
+            [nil] as [String?] + Array(repeating: "utf-8/vcdiff/base64", count: 2) +
+            // Binary data
+            Array(repeating: "vcdiff/base64", count: 3) +
+            // JSON data
+            Array(repeating: "json/utf-8/vcdiff/base64", count: 3) +
+            // nil data
+            [nil] as [String?]
+        }
+
         expect(messagesEncoding).to(equal(expectedMessagesEncoding))
+    }
+
+    func test__001__withBinaryProtocol_DeltaCodec__decoding__should_decode_vcdiff_encoded_messages() throws {
+        try parameterizedTest__001__DeltaCodec__decoding__should_decode_vcdiff_encoded_messages(useBinaryProtocol: true)
+    }
+
+    func test__001__withoutBinaryProtocol_DeltaCodec__decoding__should_decode_vcdiff_encoded_messages() throws {
+        try parameterizedTest__001__DeltaCodec__decoding__should_decode_vcdiff_encoded_messages(useBinaryProtocol: false)
     }
 
     // RTL20
