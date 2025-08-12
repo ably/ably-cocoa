@@ -69,7 +69,12 @@ class DeltaCodecTests: XCTestCase {
         channel.unsubscribe()
 
         let protocolMessages = transport.protocolMessagesReceived.filter { $0.action == .message }
-        let messagesEncoding = (protocolMessages.reduce([]) { $0 + ($1.messages ?? []) }.compactMap { $0.encoding })
+        let messagesReceivedInProtocolMessages = protocolMessages.reduce([]) { $0 + ($1.messages ?? []) }
+
+        // Check that we did not receive more messages than we sent; this tells us that we successfully decoded the deltas and did not need to perform an RTL18 recovery.
+        expect(messagesReceivedInProtocolMessages.count).to(equal(testData.count))
+
+        let messagesEncoding = messagesReceivedInProtocolMessages.compactMap(\.encoding)
         expect(messagesEncoding).to(allPass(equal("utf-8/vcdiff")))
     }
 
