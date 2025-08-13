@@ -25,6 +25,13 @@ NS_ASSUME_NONNULL_BEGIN
 /// The plugin that channels should use to access LiveObjects functionality.
 @property (nullable, readonly) id<APLiveObjectsInternalPluginProtocol> liveObjectsPlugin;
 
+// MARK: - Options for plugins
+
+/// Provides the implementation for `-[APPluginAPI setPluginOptionsValue:forKey:options:]`. See documentation for that method.
+- (void)setPluginOptionsValue:(id)value forKey:(NSString *)key;
+/// Provides the implementation for `-[APPluginAPI pluginOptionsValueForKey:options:]`. See documentation for that method.
+- (nullable id)pluginOptionsValueForKey:(NSString *)key;
+
 @end
 
 NS_ASSUME_NONNULL_END

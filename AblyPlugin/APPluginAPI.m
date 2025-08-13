@@ -5,6 +5,7 @@
 #import "ARTRealtimeChannelInternal+APRealtimeChannel.h"
 #import "ARTRealtimeInternal+APRealtimeClient.h"
 #import "APDefaultPublicRealtimeChannelUnderlyingObjects.h"
+#import "ARTClientOptions+Private.h"
 
 static ARTRealtimeChannelInternal *_internalRealtimeChannel(id<APRealtimeChannel> pluginRealtimeChannel) {
     if (![pluginRealtimeChannel isKindOfClass:[ARTRealtimeChannelInternal class]]) {
@@ -51,6 +52,18 @@ static ARTRealtimeInternal *_internalRealtimeClient(id<APRealtimeClient> pluginR
 
 - (id<APLogger>)loggerForChannel:(id<APRealtimeChannel>)channel {
     return _internalRealtimeChannel(channel).logger;
+}
+
+- (void)setPluginOptionsValue:(id)value forKey:(NSString *)key clientOptions:(ARTClientOptions *)options {
+    [options setPluginOptionsValue:value forKey:key];
+}
+
+- (id)pluginOptionsValueForKey:(NSString *)key clientOptions:(ARTClientOptions *)options {
+    return [options pluginOptionsValueForKey:key];
+}
+
+- (ARTClientOptions *)optionsForClient:(id<APRealtimeClient>)client {
+    return [_internalRealtimeClient(client).options copy];
 }
 
 /// Provides plugins with the queue on which all user callbacks for a given client should be called.

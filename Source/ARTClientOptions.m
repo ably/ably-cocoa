@@ -17,6 +17,8 @@ NSString *ARTDefaultEnvironment = nil;
 
 @interface ARTClientOptions ()
 
+@property (nonatomic) NSMutableDictionary<NSString *, id> *pluginData;
+
 - (instancetype)initDefaults;
 
 @end
@@ -53,6 +55,7 @@ NSString *ARTDefaultEnvironment = nil;
     _addRequestIds = false;
     _pushRegistererDelegate = nil;
     _testOptions = [[ARTTestClientOptions alloc] init];
+    _pluginData = [[NSMutableDictionary alloc] init];
     return self;
 }
 
@@ -144,6 +147,7 @@ NSString *ARTDefaultEnvironment = nil;
     options.agents = self.agents;
     options.testOptions = self.testOptions;
     options.plugins = self.plugins;
+    options.pluginData = [self.pluginData mutableCopy];
 
     return options;
 }
@@ -238,6 +242,16 @@ NSString *ARTDefaultEnvironment = nil;
     }
 
     return [publicPlugin internalPlugin];
+}
+
+// MARK: - Options for plugins
+
+- (void)setPluginOptionsValue:(id)value forKey:(NSString *)key {
+    self.pluginData[key] = value;
+}
+
+- (id)pluginOptionsValueForKey:(NSString *)key {
+    return self.pluginData[key];
 }
 
 @end
