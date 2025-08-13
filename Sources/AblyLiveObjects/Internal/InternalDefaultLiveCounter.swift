@@ -89,12 +89,46 @@ internal final class InternalDefaultLiveCounter: Sendable {
         }
     }
 
-    internal func increment(amount _: Double) async throws(ARTErrorInfo) {
-        notYetImplemented()
+    internal func increment(amount: Double, coreSDK: CoreSDK) async throws(ARTErrorInfo) {
+        do throws(InternalError) {
+            // RTLC12c
+            do {
+                try coreSDK.validateChannelState(
+                    notIn: [.detached, .failed, .suspended],
+                    operationDescription: "LiveCounter.increment",
+                )
+            } catch {
+                throw error.toInternalError()
+            }
+
+            // RTLC12e1
+            if !amount.isFinite {
+                throw LiveObjectsError.counterIncrementAmountInvalid(amount: amount).toARTErrorInfo().toInternalError()
+            }
+
+            let objectMessage = OutboundObjectMessage(
+                operation: .init(
+                    // RTLC12e2
+                    action: .known(.counterInc),
+                    // RTLC12e3
+                    objectId: objectID,
+                    counterOp: .init(
+                        // RTLC12e4
+                        amount: .init(value: amount),
+                    ),
+                ),
+            )
+
+            // RTLC12f
+            try await coreSDK.publish(objectMessages: [objectMessage])
+        } catch {
+            throw error.toARTErrorInfo()
+        }
     }
 
-    internal func decrement(amount _: Double) async throws(ARTErrorInfo) {
-        notYetImplemented()
+    internal func decrement(amount: Double, coreSDK: CoreSDK) async throws(ARTErrorInfo) {
+        // RTLC13b
+        try await increment(amount: -amount, coreSDK: coreSDK)
     }
 
     @discardableResult

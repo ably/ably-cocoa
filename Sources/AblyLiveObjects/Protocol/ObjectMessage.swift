@@ -18,7 +18,7 @@ internal struct InboundObjectMessage {
 }
 
 /// An `ObjectMessage` to be sent in the `state` property of an `OBJECT` `ProtocolMessage`.
-internal struct OutboundObjectMessage {
+internal struct OutboundObjectMessage: Equatable {
     internal var id: String? // OM2a
     internal var clientId: String? // OM2b
     internal var connectionId: String?
@@ -31,11 +31,10 @@ internal struct OutboundObjectMessage {
     internal var serialTimestamp: Date? // OM2j
 }
 
-/// A partial version of `ObjectOperation` that excludes the `objectId` property. Used for encoding initial values where the `objectId` is not yet known.
+/// A partial version of `ObjectOperation` that excludes the `action` and `objectId` property. Used for encoding initial values which don't include the `action` and where the `objectId` is not yet known.
 ///
 /// `ObjectOperation` delegates its encoding and decoding to `PartialObjectOperation`.
 internal struct PartialObjectOperation {
-    internal var action: WireEnum<ObjectOperationAction> // OOP3a
     internal var mapOp: ObjectsMapOp? // OOP3c
     internal var counterOp: WireObjectsCounterOp? // OOP3d
     internal var map: ObjectsMap? // OOP3e
@@ -44,7 +43,7 @@ internal struct PartialObjectOperation {
     internal var initialValue: String? // OOP3h
 }
 
-internal struct ObjectOperation {
+internal struct ObjectOperation: Equatable {
     internal var action: WireEnum<ObjectOperationAction> // OOP3a
     internal var objectId: String // OOP3b
     internal var mapOp: ObjectsMapOp? // OOP3c
@@ -55,7 +54,7 @@ internal struct ObjectOperation {
     internal var initialValue: String? // OOP3h
 }
 
-internal struct ObjectData {
+internal struct ObjectData: Equatable {
     internal var objectId: String? // OD2a
     internal var boolean: Bool? // OD2c
     internal var bytes: Data? // OD2d
@@ -64,24 +63,24 @@ internal struct ObjectData {
     internal var json: JSONObjectOrArray? // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
 }
 
-internal struct ObjectsMapOp {
+internal struct ObjectsMapOp: Equatable {
     internal var key: String // OMO2a
     internal var data: ObjectData? // OMO2b
 }
 
-internal struct ObjectsMapEntry {
+internal struct ObjectsMapEntry: Equatable {
     internal var tombstone: Bool? // OME2a
     internal var timeserial: String? // OME2b
     internal var data: ObjectData // OME2c
     internal var serialTimestamp: Date? // OME2d
 }
 
-internal struct ObjectsMap {
+internal struct ObjectsMap: Equatable {
     internal var semantics: WireEnum<ObjectsMapSemantics> // OMP3a
     internal var entries: [String: ObjectsMapEntry]? // OMP3b
 }
 
-internal struct ObjectState {
+internal struct ObjectState: Equatable {
     internal var objectId: String // OST2a
     internal var siteTimeserials: [String: String] // OST2b
     internal var tombstone: Bool // OST2c
@@ -148,13 +147,13 @@ internal extension ObjectOperation {
         wireObjectOperation: WireObjectOperation,
         format: AblyPlugin.EncodingFormat
     ) throws(InternalError) {
-        // Decode the objectId first since it's not part of PartialObjectOperation
+        // Decode the action and objectId first they're not part of PartialObjectOperation
+        action = wireObjectOperation.action
         objectId = wireObjectOperation.objectId
 
         // Delegate to PartialObjectOperation for decoding
         let partialOperation = try PartialObjectOperation(
             partialWireObjectOperation: PartialWireObjectOperation(
-                action: wireObjectOperation.action,
                 mapOp: wireObjectOperation.mapOp,
                 counterOp: wireObjectOperation.counterOp,
                 map: wireObjectOperation.map,
@@ -166,7 +165,6 @@ internal extension ObjectOperation {
         )
 
         // Copy the decoded values
-        action = partialOperation.action
         mapOp = partialOperation.mapOp
         counterOp = partialOperation.counterOp
         map = partialOperation.map
@@ -181,7 +179,6 @@ internal extension ObjectOperation {
     ///   - format: The format to use when applying the encoding rules of OD4.
     func toWire(format: AblyPlugin.EncodingFormat) -> WireObjectOperation {
         let partialWireOperation = PartialObjectOperation(
-            action: action,
             mapOp: mapOp,
             counterOp: counterOp,
             map: map,
@@ -190,9 +187,9 @@ internal extension ObjectOperation {
             initialValue: initialValue,
         ).toWire(format: format)
 
-        // Create WireObjectOperation from PartialWireObjectOperation and add objectId
+        // Create WireObjectOperation from PartialWireObjectOperation and add action and objectId
         return WireObjectOperation(
-            action: partialWireOperation.action,
+            action: action,
             objectId: objectId,
             mapOp: partialWireOperation.mapOp,
             counterOp: partialWireOperation.counterOp,
@@ -214,7 +211,6 @@ internal extension PartialObjectOperation {
         partialWireObjectOperation: PartialWireObjectOperation,
         format: AblyPlugin.EncodingFormat
     ) throws(InternalError) {
-        action = partialWireObjectOperation.action
         mapOp = try partialWireObjectOperation.mapOp.map { wireObjectsMapOp throws(InternalError) in
             try .init(wireObjectsMapOp: wireObjectsMapOp, format: format)
         }
@@ -236,7 +232,6 @@ internal extension PartialObjectOperation {
     ///   - format: The format to use when applying the encoding rules of OD4.
     func toWire(format: AblyPlugin.EncodingFormat) -> PartialWireObjectOperation {
         .init(
-            action: action,
             mapOp: mapOp?.toWire(format: format),
             counterOp: counterOp,
             map: map?.toWire(format: format),

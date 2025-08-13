@@ -8,9 +8,9 @@ struct InternalDefaultRealtimeObjectsTests {
     // MARK: - Test Helpers
 
     /// Creates a InternalDefaultRealtimeObjects instance for testing
-    static func createDefaultRealtimeObjects() -> InternalDefaultRealtimeObjects {
+    static func createDefaultRealtimeObjects(clock: SimpleClock = MockSimpleClock()) -> InternalDefaultRealtimeObjects {
         let logger = TestLogger()
-        return InternalDefaultRealtimeObjects(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+        return InternalDefaultRealtimeObjects(logger: logger, userCallbackQueue: .main, clock: clock)
     }
 
     /// Tests for `InternalDefaultRealtimeObjects.handleObjectSyncProtocolMessage`, covering RTO5 specification points.
@@ -1037,6 +1037,263 @@ struct InternalDefaultRealtimeObjectsTests {
                 let counterValue = try counter.value(coreSDK: coreSDK)
                 #expect(counterValue == 15) // 5 (from sync) + 10 (from buffered operation)
                 #expect(counter.testsOnly_siteTimeserials["site1"] == "ts4")
+            }
+        }
+    }
+
+    /// Tests for `InternalDefaultRealtimeObjects.createMap`, covering RTO11 specification points (these are largely a smoke test, the rest being tested in ObjectCreationHelpers tests)
+    struct CreateMapTests {
+        // @spec RTO11d
+        @Test(arguments: [.detached, .failed, .suspended] as [ARTRealtimeChannelState])
+        func throwsIfChannelIsInInvalidState(channelState: ARTRealtimeChannelState) async throws {
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let coreSDK = MockCoreSDK(channelState: channelState)
+            let entries: [String: InternalLiveMapValue] = ["testKey": .primitive(.string("testValue"))]
+
+            await #expect {
+                _ = try await realtimeObjects.createMap(entries: entries, coreSDK: coreSDK)
+            } throws: { error in
+                guard let errorInfo = error as? ARTErrorInfo else {
+                    return false
+                }
+                return errorInfo.code == 90001 && errorInfo.statusCode == 400
+            }
+        }
+
+        // @spec RTO11g
+        // @spec RTO11h3a
+        // @spec RTO11h3b
+        @Test
+        func publishesObjectMessageAndCreatesMap() async throws {
+            let clock = MockSimpleClock(currentTime: .init(timeIntervalSince1970: 1_754_042_434))
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(clock: clock)
+            let coreSDK = MockCoreSDK(channelState: .attached)
+
+            // Track published messages
+            var publishedMessages: [OutboundObjectMessage] = []
+            coreSDK.setPublishHandler { messages in
+                publishedMessages.append(contentsOf: messages)
+            }
+
+            // Call createMap
+            let returnedMap = try await realtimeObjects.createMap(
+                entries: [
+                    "stringKey": .primitive(.string("stringValue")),
+                ],
+                coreSDK: coreSDK,
+            )
+
+            // Verify ObjectMessage was published (RTO11g)
+            #expect(publishedMessages.count == 1)
+            let publishedMessage = publishedMessages[0]
+
+            // Sense check of ObjectMessage structure per RTO11f9-13
+            #expect(publishedMessage.operation?.action == .known(.mapCreate))
+            let objectID = try #require(publishedMessage.operation?.objectId)
+            #expect(objectID.hasPrefix("map:"))
+            // TODO: This is a stopgap; change to use server time per RTO11f5 (https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/50)
+            #expect(objectID.contains("1754042434000")) // check contains the mock clock's timestamp in milliseconds
+            #expect(publishedMessage.operation?.map?.entries == [
+                "stringKey": .init(data: .init(string: "stringValue")),
+            ])
+
+            // Verify initial value was merged per RTO11h3a
+            #expect(returnedMap.testsOnly_data == ["stringKey": .init(data: .init(string: "stringValue"))])
+
+            // Verify object was added to pool per RTO11h3b
+            #expect(realtimeObjects.testsOnly_objectsPool.entries[objectID]?.mapValue === returnedMap)
+        }
+
+        // @spec RTO11f4b
+        @Test
+        func withNoEntriesArgumentCreatesEmptyMap() async throws {
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let coreSDK = MockCoreSDK(channelState: .attached)
+
+            // Track published messages
+            var publishedMessages: [OutboundObjectMessage] = []
+            coreSDK.setPublishHandler { messages in
+                publishedMessages.append(contentsOf: messages)
+            }
+
+            // Call createMap with no entries
+            let result = try await realtimeObjects.createMap(entries: [:], coreSDK: coreSDK)
+
+            // Verify ObjectMessage was published
+            #expect(publishedMessages.count == 1)
+            let publishedMessage = publishedMessages[0]
+
+            // Verify map operation has empty entries per RTO11f4b
+            let mapOperation = publishedMessage.operation?.map
+            #expect(mapOperation?.entries?.isEmpty == true)
+
+            // Verify LiveMap has expected entries
+            #expect(result.testsOnly_data.isEmpty)
+        }
+
+        // @spec RTO11h2
+        @Test
+        func returnsExistingObjectIfAlreadyInPool() async throws {
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let coreSDK = MockCoreSDK(channelState: .attached)
+
+            // Track published messages and the generated objectId
+            var publishedMessages: [OutboundObjectMessage] = []
+            var maybeGeneratedObjectID: String?
+            var maybeExistingObject: AnyObject?
+
+            coreSDK.setPublishHandler { messages in
+                publishedMessages.append(contentsOf: messages)
+
+                // Extract the generated objectId from the published message
+                if let objectID = messages.first?.operation?.objectId {
+                    maybeGeneratedObjectID = objectID
+
+                    // Create an object with this exact ID in the pool
+                    // This simulates the object already existing when createMap tries to get it, before the publish operation completes (e.g. because it has been populated by receipt of an OBJECT)
+                    maybeExistingObject = realtimeObjects.testsOnly_createZeroValueLiveObject(forObjectID: objectID)?.mapValue
+                }
+            }
+
+            // Call createMap - the publishHandler will create the object with the generated ID
+            let result = try await realtimeObjects.createMap(entries: ["testKey": .primitive(.string("testValue"))], coreSDK: coreSDK)
+
+            // Verify ObjectMessage was published
+            #expect(publishedMessages.count == 1)
+
+            // Extract the variables that we populated based on the generated object ID
+            let generatedObjectID = try #require(maybeGeneratedObjectID)
+            let existingObject = try #require(maybeExistingObject)
+
+            // Verify the returned object is the same as the existing one
+            #expect(result === existingObject)
+
+            // Check that the existing object has not been replaced in the pool
+            #expect(realtimeObjects.testsOnly_objectsPool.entries[generatedObjectID]?.mapValue === existingObject)
+        }
+
+        /// Tests for `InternalDefaultRealtimeObjects.createCounter`, covering RTO12 specification points (these are largely a smoke test, the rest being tested in ObjectCreationHelpers tests)
+        struct CreateCounterTests {
+            // @spec RTO12d
+            @Test(arguments: [.detached, .failed, .suspended] as [ARTRealtimeChannelState])
+            func throwsIfChannelIsInInvalidState(channelState: ARTRealtimeChannelState) async throws {
+                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+                let coreSDK = MockCoreSDK(channelState: channelState)
+
+                await #expect {
+                    _ = try await realtimeObjects.createCounter(count: 10.5, coreSDK: coreSDK)
+                } throws: { error in
+                    guard let errorInfo = error as? ARTErrorInfo else {
+                        return false
+                    }
+                    return errorInfo.code == 90001 && errorInfo.statusCode == 400
+                }
+            }
+
+            // @spec RTO12g
+            // @spec RTO12h3a
+            // @spec RTO12h3b
+            @Test
+            func publishesObjectMessageAndCreatesCounter() async throws {
+                let clock = MockSimpleClock(currentTime: .init(timeIntervalSince1970: 1_754_042_434))
+                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(clock: clock)
+                let coreSDK = MockCoreSDK(channelState: .attached)
+
+                // Track published messages
+                var publishedMessages: [OutboundObjectMessage] = []
+                coreSDK.setPublishHandler { messages in
+                    publishedMessages.append(contentsOf: messages)
+                }
+
+                // Call createCounter
+                let returnedCounter = try await realtimeObjects.createCounter(count: 10.5, coreSDK: coreSDK)
+
+                // Verify ObjectMessage was published (RTO12g)
+                #expect(publishedMessages.count == 1)
+                let publishedMessage = publishedMessages[0]
+
+                // Sense check of ObjectMessage structure per RTO12f7-11
+                #expect(publishedMessage.operation?.action == .known(.counterCreate))
+                let objectID = try #require(publishedMessage.operation?.objectId)
+                #expect(objectID.hasPrefix("counter:"))
+                // TODO: This is a stopgap; change to use server time per RTO11f5 (https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/50)
+                #expect(objectID.contains("1754042434000")) // check contains the mock clock's timestamp in milliseconds
+                #expect(publishedMessage.operation?.counter?.count == 10.5)
+
+                // Verify initial value was merged per RTO12h3a
+                #expect(try returnedCounter.value(coreSDK: coreSDK) == 10.5)
+
+                // Verify object was added to pool per RTO12h3b
+                #expect(realtimeObjects.testsOnly_objectsPool.entries[objectID]?.counterValue === returnedCounter)
+            }
+
+            // @spec RTO12f2a
+            @Test
+            func withNoEntriesArgumentCreatesWithZeroValue() async throws {
+                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+                let coreSDK = MockCoreSDK(channelState: .attached)
+
+                // Track published messages
+                var publishedMessages: [OutboundObjectMessage] = []
+                coreSDK.setPublishHandler { messages in
+                    publishedMessages.append(contentsOf: messages)
+                }
+
+                // Call createCounter with no count
+                let result = try await realtimeObjects.createCounter(coreSDK: coreSDK)
+
+                // Verify ObjectMessage was published
+                #expect(publishedMessages.count == 1)
+                let publishedMessage = publishedMessages[0]
+
+                // Verify counter operation has zero count per RTO12f2a
+                let counterOperation = publishedMessage.operation?.counter
+                // swiftlint:disable:next empty_count
+                #expect(counterOperation?.count == 0)
+
+                // Verify LiveCounter has zero value
+                #expect(try result.value(coreSDK: coreSDK) == 0)
+            }
+
+            // @spec RTO12h2
+            @Test
+            func returnsExistingObjectIfAlreadyInPool() async throws {
+                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+                let coreSDK = MockCoreSDK(channelState: .attached)
+
+                // Track published messages and the generated objectId
+                var publishedMessages: [OutboundObjectMessage] = []
+                var maybeGeneratedObjectID: String?
+                var maybeExistingObject: AnyObject?
+
+                coreSDK.setPublishHandler { messages in
+                    publishedMessages.append(contentsOf: messages)
+
+                    // Extract the generated objectId from the published message
+                    if let objectID = messages.first?.operation?.objectId {
+                        maybeGeneratedObjectID = objectID
+
+                        // Create an object with this exact ID in the pool
+                        // This simulates the object already existing when createMap tries to get it, before the publish operation completes (e.g. because it has been populated by receipt of an OBJECT)
+                        maybeExistingObject = realtimeObjects.testsOnly_createZeroValueLiveObject(forObjectID: objectID)?.counterValue
+                    }
+                }
+
+                // Call createCounter - the publishHandler will create the object with the generated ID
+                let result = try await realtimeObjects.createCounter(count: 10.5, coreSDK: coreSDK)
+
+                // Verify ObjectMessage was published
+                #expect(publishedMessages.count == 1)
+
+                // Extract the variables that we populated based on the generated object ID
+                let generatedObjectID = try #require(maybeGeneratedObjectID)
+                let existingObject = try #require(maybeExistingObject)
+
+                // Verify the returned object is the same as the existing one
+                #expect(result === existingObject)
+
+                // Check that the existing object has not been replaced in the pool
+                #expect(realtimeObjects.testsOnly_objectsPool.entries[generatedObjectID]?.counterValue === existingObject)
             }
         }
     }

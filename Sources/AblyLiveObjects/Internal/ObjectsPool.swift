@@ -306,6 +306,95 @@ internal struct ObjectsPool {
         logger.log("applySyncObjectsPool completed. Pool now contains \(entries.count) objects", level: .debug)
     }
 
+    /// Gets or creates a counter object in the pool, implementing the "find or create zero-value" behavior of RTO12h1.
+    ///
+    /// - Parameters:
+    ///   - creationOperation: The CounterCreationOperation containing the object ID and operation to merge
+    ///   - logger: The logger to use for any created LiveObject
+    ///   - userCallbackQueue: The callback queue to use for any created LiveObject
+    ///   - clock: The clock to use for any created LiveObject
+    /// - Returns: The existing or newly created counter object
+    internal mutating func getOrCreateCounter(
+        creationOperation: ObjectCreationHelpers.CounterCreationOperation,
+        logger: AblyPlugin.Logger,
+        userCallbackQueue: DispatchQueue,
+        clock: SimpleClock,
+    ) -> InternalDefaultLiveCounter {
+        // RTO12h2: If an object with the ObjectMessage.operation.objectId exists in the internal ObjectsPool, return it
+        if let existingEntry = entries[creationOperation.objectID] {
+            switch existingEntry {
+            case let .counter(counter):
+                return counter
+            case .map:
+                // TODO: Add the ability to statically reason about the type of pool entries in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/36
+                preconditionFailure("Expected counter object with ID \(creationOperation.objectID) but found map object")
+            }
+        }
+
+        // RTO12h3: Otherwise, if the object does not exist in the internal ObjectsPool:
+        // RTO12h3a: Create a zero-value LiveCounter, set its objectId to ObjectMessage.operation.objectId, and merge the initial value
+        let counter = InternalDefaultLiveCounter.createZeroValued(
+            objectID: creationOperation.objectID,
+            logger: logger,
+            userCallbackQueue: userCallbackQueue,
+            clock: clock,
+        )
+
+        // Merge the initial value from the creation operation
+        _ = counter.mergeInitialValue(from: creationOperation.operation)
+
+        // RTO12h3b: Add the created LiveCounter instance to the internal ObjectsPool
+        entries[creationOperation.objectID] = .counter(counter)
+
+        // RTO12h3c: Return the created LiveCounter instance
+        return counter
+    }
+
+    /// Gets or creates a map object in the pool, implementing the "find or create zero-value" behavior of RTO11h1.
+    ///
+    /// - Parameters:
+    ///   - creationOperation: The MapCreationOperation containing the object ID and operation to merge
+    ///   - logger: The logger to use for any created LiveObject
+    ///   - userCallbackQueue: The callback queue to use for any created LiveObject
+    ///   - clock: The clock to use for any created LiveObject
+    /// - Returns: The existing or newly created map object
+    internal mutating func getOrCreateMap(
+        creationOperation: ObjectCreationHelpers.MapCreationOperation,
+        logger: AblyPlugin.Logger,
+        userCallbackQueue: DispatchQueue,
+        clock: SimpleClock,
+    ) -> InternalDefaultLiveMap {
+        // RTO11h2: If an object with the ObjectMessage.operation.objectId exists in the internal ObjectsPool, return it
+        if let existingEntry = entries[creationOperation.objectID] {
+            switch existingEntry {
+            case let .map(map):
+                return map
+            case .counter:
+                // TODO: Add the ability to statically reason about the type of pool entries in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/36
+                preconditionFailure("Expected map object with ID \(creationOperation.objectID) but found counter object")
+            }
+        }
+
+        // RTO11h3: Otherwise, if the object does not exist in the internal ObjectsPool:
+        // RTO11h3a: Create a zero-value LiveMap, set its objectId to ObjectMessage.operation.objectId, set its semantics to ObjectMessage.operation.map.semantics, and merge the initial value
+        let map = InternalDefaultLiveMap.createZeroValued(
+            objectID: creationOperation.objectID,
+            semantics: .known(creationOperation.semantics),
+            logger: logger,
+            userCallbackQueue: userCallbackQueue,
+            clock: clock,
+        )
+
+        // Merge the initial value from the creation operation
+        _ = map.mergeInitialValue(from: creationOperation.operation, objectsPool: &self)
+
+        // RTO11h3b: Add the created LiveMap instance to the internal ObjectsPool
+        entries[creationOperation.objectID] = .map(map)
+
+        // RTO11h3c: Return the created LiveMap instance
+        return map
+    }
+
     /// Removes all entries except the root, and clears the root's data. This is to be used when an `ATTACHED` ProtocolMessage indicates that the only object in a channel is an empty root map, per RTO4b.
     internal mutating func reset() {
         let root = root

@@ -122,4 +122,67 @@ struct AblyLiveObjectsTests {
         #expect(invalidObjectThrownError.code == 92000)
         #expect(invalidObjectThrownError.message == "invalid object message: object operation required")
     }
+
+    /// A basic test of the public API of the LiveObjects plugin.
+    @Test(arguments: [true, false])
+    func smokeTest(useBinaryProtocol: Bool) async throws {
+        let client = try await ClientHelper.realtimeWithObjects(options: .init(useBinaryProtocol: useBinaryProtocol))
+        let channel = client.channels.get(UUID().uuidString, options: ClientHelper.channelOptionsWithObjects())
+        try await channel.attachAsync()
+
+        let root = try await channel.objects.getRoot()
+        let rootSubscription = try root.updates()
+
+        // Create a counter
+        let counter = try await channel.objects.createCounter(count: 52)
+        let counterSubscription = try counter.updates()
+
+        // Create a map and check its initial entries
+        let map = try await channel.objects.createMap(entries: [
+            "boolKey": .primitive(.bool(true)),
+            "numberKey": .primitive(.number(10)),
+        ])
+        #expect(
+            try Dictionary(uniqueKeysWithValues: map.entries) == [
+                "boolKey": .primitive(.bool(true)),
+                "numberKey": .primitive(.number(10)),
+            ],
+        )
+        let mapSubscription = try map.updates()
+
+        // Perform a `set` on the root and check it comes through on subscription
+        try await root.set(key: "mapKey", value: .liveMap(map))
+        let rootUpdate = try #require(await rootSubscription.first { _ in true })
+        #expect(rootUpdate.update == ["mapKey": .updated])
+        #expect(try Dictionary(uniqueKeysWithValues: root.entries) == ["mapKey": .liveMap(map)])
+
+        // Perform a `set` on the map and check it comes through on subscription and that the map is updated
+        try await map.set(key: "counterKey", value: .liveCounter(counter))
+        let mapUpdate = try #require(await mapSubscription.first { _ in true })
+        #expect(mapUpdate.update == ["counterKey": .updated])
+        #expect(
+            try Dictionary(uniqueKeysWithValues: map.entries) == [
+                "boolKey": .primitive(.bool(true)),
+                "numberKey": .primitive(.number(10)),
+                "counterKey": .liveCounter(counter),
+            ],
+        )
+
+        // Perform an `increment` on the counter and check it comes through on subscription and that the counter is updated
+        try await counter.increment(amount: 30)
+        let counterUpdate = try #require(await counterSubscription.first { _ in true })
+        #expect(counterUpdate.amount == 30)
+        #expect(try counter.value == 82)
+
+        // Perform a `remove` on the map and check it comes through on subscription and that the map is updated
+        try await map.remove(key: "boolKey")
+        let mapRemoveUpdate = try #require(await mapSubscription.first { _ in true })
+        #expect(mapRemoveUpdate.update == ["boolKey": .removed])
+        #expect(
+            try Dictionary(uniqueKeysWithValues: map.entries) == [
+                "numberKey": .primitive(.number(10)),
+                "counterKey": .liveCounter(counter),
+            ],
+        )
+    }
 }

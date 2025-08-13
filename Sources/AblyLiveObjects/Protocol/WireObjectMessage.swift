@@ -157,11 +157,10 @@ internal enum ObjectsMapSemantics: Int {
     case lww = 0
 }
 
-/// A partial version of `WireObjectOperation` that excludes the `objectId` property. Used for encoding initial values where the `objectId` is not yet known.
+/// A partial version of `WireObjectOperation` that excludes the `action` and `objectId` property. Used for encoding initial values which don't include the `action` and where the `objectId` is not yet known.
 ///
 /// `WireObjectOperation` delegates its encoding and decoding to `PartialWireObjectOperation`.
 internal struct PartialWireObjectOperation {
-    internal var action: WireEnum<ObjectOperationAction> // OOP3a
     internal var mapOp: WireObjectsMapOp? // OOP3c
     internal var counterOp: WireObjectsCounterOp? // OOP3d
     internal var map: WireObjectsMap? // OOP3e
@@ -172,7 +171,6 @@ internal struct PartialWireObjectOperation {
 
 extension PartialWireObjectOperation: WireObjectCodable {
     internal enum WireKey: String {
-        case action
         case mapOp
         case counterOp
         case map
@@ -182,7 +180,6 @@ extension PartialWireObjectOperation: WireObjectCodable {
     }
 
     internal init(wireObject: [String: WireValue]) throws(InternalError) {
-        action = try wireObject.wireEnumValueForKey(WireKey.action.rawValue)
         mapOp = try wireObject.optionalDecodableValueForKey(WireKey.mapOp.rawValue)
         counterOp = try wireObject.optionalDecodableValueForKey(WireKey.counterOp.rawValue)
         map = try wireObject.optionalDecodableValueForKey(WireKey.map.rawValue)
@@ -195,9 +192,7 @@ extension PartialWireObjectOperation: WireObjectCodable {
     }
 
     internal var toWireObject: [String: WireValue] {
-        var result: [String: WireValue] = [
-            WireKey.action.rawValue: .number(action.rawValue as NSNumber),
-        ]
+        var result: [String: WireValue] = [:]
 
         if let mapOp {
             result[WireKey.mapOp.rawValue] = .object(mapOp.toWireObject)
@@ -235,18 +230,19 @@ internal struct WireObjectOperation {
 
 extension WireObjectOperation: WireObjectCodable {
     internal enum WireKey: String {
+        case action
         case objectId
     }
 
     internal init(wireObject: [String: WireValue]) throws(InternalError) {
-        // Decode the objectId first since it's not part of PartialWireObjectOperation
+        // Decode the action and objectId first since they're not part of PartialWireObjectOperation
+        action = try wireObject.wireEnumValueForKey(WireKey.action.rawValue)
         objectId = try wireObject.stringValueForKey(WireKey.objectId.rawValue)
 
         // Delegate to PartialWireObjectOperation for decoding
         let partialOperation = try PartialWireObjectOperation(wireObject: wireObject)
 
         // Copy the decoded values
-        action = partialOperation.action
         mapOp = partialOperation.mapOp
         counterOp = partialOperation.counterOp
         map = partialOperation.map
@@ -257,7 +253,6 @@ extension WireObjectOperation: WireObjectCodable {
 
     internal var toWireObject: [String: WireValue] {
         var result = PartialWireObjectOperation(
-            action: action,
             mapOp: mapOp,
             counterOp: counterOp,
             map: map,
@@ -267,6 +262,7 @@ extension WireObjectOperation: WireObjectCodable {
         ).toWireObject
 
         // Add the objectId field
+        result[WireKey.action.rawValue] = .number(action.rawValue as NSNumber)
         result[WireKey.objectId.rawValue] = .string(objectId)
 
         return result
@@ -356,7 +352,7 @@ extension WireObjectsMapOp: WireObjectCodable {
     }
 }
 
-internal struct WireObjectsCounterOp {
+internal struct WireObjectsCounterOp: Equatable {
     internal var amount: NSNumber // OCO2a
 }
 
@@ -410,7 +406,7 @@ extension WireObjectsMap: WireObjectCodable {
     }
 }
 
-internal struct WireObjectsCounter {
+internal struct WireObjectsCounter: Equatable {
     internal var count: NSNumber? // OCN2a
 }
 

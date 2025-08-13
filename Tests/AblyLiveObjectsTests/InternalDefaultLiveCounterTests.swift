@@ -422,4 +422,120 @@ struct InternalDefaultLiveCounterTests {
             #expect(subscriberInvocations.isEmpty)
         }
     }
+
+    /// Tests for the `increment` method, covering RTLC12 specification points
+    struct IncrementTests {
+        // @spec RTLC12c
+        @Test(arguments: [.detached, .failed, .suspended] as [ARTRealtimeChannelState])
+        func throwsErrorForInvalidChannelState(channelState: ARTRealtimeChannelState) async throws {
+            let logger = TestLogger()
+            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: channelState)
+
+            await #expect {
+                try await counter.increment(amount: 10, coreSDK: coreSDK)
+            } throws: { error in
+                guard let errorInfo = error as? ARTErrorInfo else {
+                    return false
+                }
+
+                return errorInfo.code == 90001 && errorInfo.statusCode == 400
+            }
+        }
+
+        // @spec RTLC12e1 - The only part that is relevant in Swift's type system is the finiteness check
+        @Test(arguments: [
+            Double.nan,
+            Double.infinity,
+            -Double.infinity,
+        ] as [Double])
+        func throwsErrorForInvalidAmount(amount: Double) async throws {
+            let logger = TestLogger()
+            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attached)
+
+            await #expect {
+                try await counter.increment(amount: amount, coreSDK: coreSDK)
+            } throws: { error in
+                guard let errorInfo = error as? ARTErrorInfo else {
+                    return false
+                }
+
+                return errorInfo.code == 40003 && errorInfo.statusCode == 400
+            }
+        }
+
+        // @spec RTLC12e2
+        // @spec RTLC12e3
+        // @spec RTLC12e4
+        // @spec RTLC12f
+        func publishesCorrectObjectMessage() async throws {
+            let logger = TestLogger()
+            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "counter:test@123", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attached)
+
+            var publishedMessages: [OutboundObjectMessage] = []
+            coreSDK.setPublishHandler { messages in
+                publishedMessages.append(contentsOf: messages)
+            }
+
+            try await counter.increment(amount: 10.5, coreSDK: coreSDK)
+
+            let expectedMessage = OutboundObjectMessage(
+                operation: ObjectOperation(
+                    // RTLC12e2
+                    action: .known(.counterInc),
+                    // RTLC12e3
+                    objectId: "counter:test@123",
+                    // RTLC12e4
+                    counterOp: WireObjectsCounterOp(amount: NSNumber(value: 10.5)),
+                ),
+            )
+            // RTLC12f
+            #expect(publishedMessages.count == 1)
+            #expect(publishedMessages[0] == expectedMessage)
+        }
+
+        @Test
+        func throwsErrorWhenPublishFails() async throws {
+            let logger = TestLogger()
+            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "counter:test@123", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attached)
+
+            coreSDK.setPublishHandler { _ throws(InternalError) in
+                throw InternalError.other(.generic(NSError(domain: "test", code: 0, userInfo: [NSLocalizedDescriptionKey: "Publish failed"])))
+            }
+
+            await #expect {
+                try await counter.increment(amount: 10, coreSDK: coreSDK)
+            } throws: { error in
+                guard let errorInfo = error as? ARTErrorInfo else {
+                    return false
+                }
+                return errorInfo.message.contains("Publish failed")
+            }
+        }
+    }
+
+    /// Tests for the `decrement` method, covering RTLC13 specification points
+    struct DecrementTests {
+        // @spec RTLC13b
+        @Test
+        func isOppositeOfIncrement() async throws {
+            // This is just a smoke test; we assume that this just calls `increment`, which is tested elsewhere.
+            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "counter:test@123", logger: TestLogger(), userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attached)
+
+            var publishedMessages: [OutboundObjectMessage] = []
+            coreSDK.setPublishHandler { messages in
+                publishedMessages.append(contentsOf: messages)
+            }
+
+            try await counter.decrement(amount: 10.5, coreSDK: coreSDK)
+
+            // RTLC12f
+            #expect(publishedMessages.count == 1)
+            #expect(publishedMessages[0].operation?.counterOp?.amount == -10.5 /* i.e. assert the amount gets negated */ )
+        }
+    }
 }

@@ -173,12 +173,63 @@ internal final class InternalDefaultLiveMap: Sendable {
         try entries(coreSDK: coreSDK, delegate: delegate).map(\.value)
     }
 
-    internal func set(key _: String, value _: LiveMapValue) async throws(ARTErrorInfo) {
-        notYetImplemented()
+    internal func set(key: String, value: InternalLiveMapValue, coreSDK: CoreSDK) async throws(ARTErrorInfo) {
+        do throws(InternalError) {
+            // RTLM20c
+            do {
+                try coreSDK.validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: "LiveMap.set")
+            } catch {
+                throw error.toInternalError()
+            }
+
+            let objectMessage = OutboundObjectMessage(
+                operation: .init(
+                    // RTLM20e2
+                    action: .known(.mapSet),
+                    // RTLM20e3
+                    objectId: objectID,
+                    mapOp: .init(
+                        // RTLM20e4
+                        key: key,
+                        // RTLM20e5
+                        data: value.toObjectData,
+                    ),
+                ),
+            )
+
+            try await coreSDK.publish(objectMessages: [objectMessage])
+        } catch {
+            throw error.toARTErrorInfo()
+        }
     }
 
-    internal func remove(key _: String) async throws(ARTErrorInfo) {
-        notYetImplemented()
+    internal func remove(key: String, coreSDK: CoreSDK) async throws(ARTErrorInfo) {
+        do throws(InternalError) {
+            // RTLM21c
+            do {
+                try coreSDK.validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: "LiveMap.remove")
+            } catch {
+                throw error.toInternalError()
+            }
+
+            let objectMessage = OutboundObjectMessage(
+                operation: .init(
+                    // RTLM21e2
+                    action: .known(.mapRemove),
+                    // RTLM21e3
+                    objectId: objectID,
+                    mapOp: .init(
+                        // RTLM21e4
+                        key: key,
+                    ),
+                ),
+            )
+
+            // RTLM21f
+            try await coreSDK.publish(objectMessages: [objectMessage])
+        } catch {
+            throw error.toARTErrorInfo()
+        }
     }
 
     @discardableResult

@@ -6,6 +6,60 @@ internal enum InternalLiveMapValue: Sendable, Equatable {
     case liveMap(InternalDefaultLiveMap)
     case liveCounter(InternalDefaultLiveCounter)
 
+    // MARK: - Creating from a public LiveMapValue
+
+    /// Converts a public ``LiveMapValue`` into an ``InternalLiveMapValue``.
+    ///
+    /// Needed in order to access the internals of user-provided LiveObject-valued LiveMap entries to extract their object ID.
+    internal init(liveMapValue: LiveMapValue) {
+        switch liveMapValue {
+        case let .primitive(primitiveValue):
+            self = .primitive(primitiveValue)
+        case let .liveMap(publicLiveMap):
+            guard let publicDefaultLiveMap = publicLiveMap as? PublicDefaultLiveMap else {
+                // TODO: Try and remove this runtime check and know this type statically, see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/37
+                preconditionFailure("Expected PublicDefaultLiveMap, got \(publicLiveMap)")
+            }
+            self = .liveMap(publicDefaultLiveMap.proxied)
+        case let .liveCounter(publicLiveCounter):
+            guard let publicDefaultLiveCounter = publicLiveCounter as? PublicDefaultLiveCounter else {
+                // TODO: Try and remove this runtime check and know this type statically, see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/37
+                preconditionFailure("Expected PublicDefaultLiveCounter, got \(publicLiveCounter)")
+            }
+            self = .liveCounter(publicDefaultLiveCounter.proxied)
+        }
+    }
+
+    // MARK: - Representation in the Realtime protocol
+
+    /// Converts an `InternalLiveMapValue` to the value that should be used when creating or updating a map entry in the Realtime protocol, per the rules of RTO11f4 and RTLM20e4.
+    internal var toObjectData: ObjectData {
+        // RTO11f4c1: Create an ObjectsMapEntry for the current value
+        switch self {
+        case let .primitive(primitiveValue):
+            switch primitiveValue {
+            case let .bool(value):
+                .init(boolean: value)
+            case let .data(value):
+                .init(bytes: value)
+            case let .number(value):
+                .init(number: NSNumber(value: value))
+            case let .string(value):
+                .init(string: value)
+            case let .jsonArray(value):
+                .init(json: .array(value))
+            case let .jsonObject(value):
+                .init(json: .object(value))
+            }
+        case let .liveMap(liveMap):
+            // RTO11f4c1a: If the value is of type LiveMap, set ObjectsMapEntry.data.objectId to the objectId of that object
+            .init(objectId: liveMap.objectID)
+        case let .liveCounter(liveCounter):
+            // RTO11f4c1a: If the value is of type LiveCounter, set ObjectsMapEntry.data.objectId to the objectId of that object
+            .init(objectId: liveCounter.objectID)
+        }
+    }
+
     // MARK: - Convenience getters for associated values
 
     /// If this `InternalLiveMapValue` has case `primitive`, this returns the associated value. Else, it returns `nil`.
