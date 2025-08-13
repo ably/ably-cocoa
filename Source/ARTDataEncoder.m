@@ -1,6 +1,6 @@
 #import "ARTCrypto+Private.h"
 #import "ARTDataEncoder.h"
-#import "ARTDeltaCodec.h"
+#import <AblyDeltaCodec/AblyDeltaCodec.h>
 
 @implementation ARTDataEncoderOutput
 
@@ -49,6 +49,7 @@
         [_deltaCodec setBase:data withId:identifier];
     }
     else if ([data isKindOfClass:[NSString class]]) {
+        // PC3a
         [_deltaCodec setBase:[data dataUsingEncoding:NSUTF8StringEncoding] withId:identifier];
     }
 }
@@ -141,7 +142,12 @@
     ARTErrorInfo *errorInfo = nil;
     NSArray *encodings = [encoding componentsSeparatedByString:@"/"];
     NSString *outputEncoding = [NSString stringWithString:encoding];
-    
+
+    if (!([[encodings lastObject] isEqualToString: @"base64"] || [encodings containsObject:@"vcdiff"])) {
+        // RTL19d2: Non-Base64-encoded non-delta message
+        [self setDeltaCodecBase:data identifier:identifier];
+    }
+
     for (NSUInteger i = [encodings count]; i > 0; i--) {
         errorInfo = nil;
         NSString *encoding = [encodings objectAtIndex:i-1];
@@ -151,10 +157,16 @@
                 data = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
             }
             if ([data isKindOfClass:[NSString class]]) {
+                // Note that this, in combination with the vcdiff decoding step below, gives us RTL19e1 (deriving the base payload in the case of a Base64-encoded delta message)
                 data = [[NSData alloc] initWithBase64EncodedString:(NSString *)data options:0];
             } else {
                 errorInfo = [ARTErrorInfo createWithCode:ARTErrorInvalidMessageDataOrEncoding
                                                  message:[NSString stringWithFormat:@"invalid data type for 'base64' decoding: '%@'", [data class]]];
+            }
+
+            if (i == [encodings count] && ![encodings containsObject:@"vcdiff"]) {
+                // RTL19d1: Base64-encoded non-delta message
+                [self setDeltaCodecBase:data identifier:identifier];
             }
         } else if ([encoding isEqualToString:@""] || [encoding isEqualToString:@"utf-8"]) {
             if ([data isKindOfClass:[NSData class]]) { // E. g. when decrypted.
@@ -194,12 +206,15 @@
             else if (!data) {
                 errorInfo = [ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:@"Data is nil"];
             }
+
+            // RTL19e
+            if (data) {
+                [self setDeltaCodecBase:data identifier:identifier];
+            }
         } else {
             errorInfo = [ARTErrorInfo createWithCode:ARTErrorInvalidMessageDataOrEncoding
                                              message:[NSString stringWithFormat:@"unknown encoding: '%@'", encoding]];
         }
-
-        [self setDeltaCodecBase:data identifier:identifier];
 
         if (errorInfo == nil) {
             outputEncoding = [outputEncoding artRemoveLastEncoding];

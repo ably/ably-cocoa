@@ -114,8 +114,6 @@ module Ably {
         header "../PrivateHeaders/Ably/ARTWebSocketFactory.h"
         header "../PrivateHeaders/Ably/ARTAttachRetryState.h"
         header "../PrivateHeaders/Ably/ARTConnectRetryState.h"
-        header "../PrivateHeaders/Ably/ARTVCDiffDecoder.h"
-        header "../PrivateHeaders/Ably/ARTDeltaCodec.h"
         header "../PrivateHeaders/Ably/ARTWrapperSDKProxyRealtime+Private.h"
         header "../PrivateHeaders/Ably/ARTWrapperSDKProxyRealtimeChannels+Private.h"
         header "../PrivateHeaders/Ably/ARTWrapperSDKProxyRealtimeChannel+Private.h"

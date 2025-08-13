@@ -114,8 +114,6 @@ framework module Ably {
         header "ARTWebSocketFactory.h"
         header "ARTAttachRetryState.h"
         header "ARTConnectRetryState.h"
-        header "ARTVCDiffDecoder.h"
-        header "ARTDeltaCodec.h"
         header "ARTWrapperSDKProxyRealtime+Private.h"
         header "ARTWrapperSDKProxyRealtimeChannels+Private.h"
         header "ARTWrapperSDKProxyRealtimeChannel+Private.h"

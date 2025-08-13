@@ -3,12 +3,22 @@ import AblyDeltaCodec
 import Nimble
 import XCTest
 
-private let testData: [String] = [
-    "{ foo: \"bar\", count: 1, status: \"active\" }",
-    "{ foo: \"bar\", count: 2, status: \"active\" }",
-    "{ foo: \"bar\", count: 2, status: \"inactive\" }",
-    "{ foo: \"bar\", count: 3, status: \"inactive\" }",
-    "{ foo: \"bar\", count: 3, status: \"active\" }",
+// Test all RSL4 message data types
+private let testData: [NSObject?] = [
+    // String data
+    "{ foo: \"bar\", count: 1, status: \"active\" }" as NSString,
+    "{ foo: \"bar\", count: 2, status: \"active\" }" as NSString,
+    "{ foo: \"bar\", count: 2, status: \"inactive\" }" as NSString,
+    // Binary data
+    Data(Array(repeating: 0x01, count: 20) + [0x01]) as NSData,
+    Data(Array(repeating: 0x01, count: 20) + [0x02]) as NSData,
+    Data(Array(repeating: 0x01, count: 20) + [0x03]) as NSData,
+    // JSON data
+    Array(repeating: "bar", count: 20) + ["bar"] as NSArray,
+    Array(repeating: "bar", count: 20) + ["baz"] as NSArray,
+    Array(repeating: "bar", count: 20) + ["bar"] as NSArray,
+    // nil data
+    nil,
 ]
 
 class DeltaCodecTests: XCTestCase {
@@ -20,9 +30,10 @@ class DeltaCodecTests: XCTestCase {
     }
 
     // RTL19
-    func test__001__DeltaCodec__decoding__should_decode_vcdiff_encoded_messages() throws {
+    func parameterizedTest__001__DeltaCodec__decoding__should_decode_vcdiff_encoded_messages(useBinaryProtocol: Bool) throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
+        options.useBinaryProtocol = useBinaryProtocol
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
 
@@ -50,8 +61,24 @@ class DeltaCodecTests: XCTestCase {
             receivedMessages.append(message)
         }
 
-        for (i, data) in testData.enumerated() {
-            channel.publish(String(i), data: data)
+        // We publish the messages sequentially, waiting for one publish to complete before performing the next. This is to ensure that Realtime uses deltas when sending the message to the subscription (there is a limit of concurrent delta generations and we don't want to exceed it; see https://ably-real-time.slack.com/archives/C07D55B6NLQ/p1754995949137159?thread_ts=1754992828.228879&cid=C07D55B6NLQ)
+        func publishTestData(startingFromIndex index: Int, done: @escaping () -> Void) {
+            channel.publish(String(index), data: testData[index]) { error in
+                if let error {
+                    fail("Error publishing message: \(error)")
+                    return
+                }
+
+                if index + 1 < testData.endIndex {
+                    publishTestData(startingFromIndex: index + 1, done: done)
+                } else {
+                    done()
+                }
+            }
+
+        }
+        waitUntil(timeout: testTimeout) { done in
+            publishTestData(startingFromIndex: 0, done: done)
         }
 
         XCTAssertNil(channel.errorReason)
@@ -60,7 +87,7 @@ class DeltaCodecTests: XCTestCase {
         for (i, message) in receivedMessages.enumerated() {
             if let name = message.name, let expectedMessageIndex = Int(name) {
                 XCTAssertEqual(i, expectedMessageIndex)
-                XCTAssertEqual(message.data as? String, testData[expectedMessageIndex])
+                XCTAssertEqual(message.data as? NSObject, testData[expectedMessageIndex])
             } else {
                 fail("Received message has an unexpected 'id': \(message)")
             }
@@ -69,8 +96,42 @@ class DeltaCodecTests: XCTestCase {
         channel.unsubscribe()
 
         let protocolMessages = transport.protocolMessagesReceived.filter { $0.action == .message }
-        let messagesEncoding = (protocolMessages.reduce([]) { $0 + ($1.messages ?? []) }.compactMap { $0.encoding })
-        expect(messagesEncoding).to(allPass(equal("utf-8/vcdiff")))
+        let messagesReceivedInProtocolMessages = protocolMessages.reduce([]) { $0 + ($1.messages ?? []) }
+
+        // Check that we did not receive more messages than we sent; this tells us that we successfully decoded the deltas and did not need to perform an RTL18 recovery.
+        expect(messagesReceivedInProtocolMessages.count).to(equal(testData.count))
+
+        let messagesEncoding = messagesReceivedInProtocolMessages.map(\.encoding)
+
+        let expectedMessagesEncoding: [String?] = if useBinaryProtocol {
+            // String data
+            [nil] as [String?] + Array(repeating: "utf-8/vcdiff", count: 2) +
+            // Binary data
+            Array(repeating: "vcdiff", count: 3) +
+            // JSON data
+            Array(repeating: "json/utf-8/vcdiff", count: 3) +
+            // nil data
+            [nil] as [String?]
+        } else {
+            // String data
+            [nil] as [String?] + Array(repeating: "utf-8/vcdiff/base64", count: 2) +
+            // Binary data
+            Array(repeating: "vcdiff/base64", count: 3) +
+            // JSON data
+            Array(repeating: "json/utf-8/vcdiff/base64", count: 3) +
+            // nil data
+            [nil] as [String?]
+        }
+
+        expect(messagesEncoding).to(equal(expectedMessagesEncoding))
+    }
+
+    func test__001__withBinaryProtocol_DeltaCodec__decoding__should_decode_vcdiff_encoded_messages() throws {
+        try parameterizedTest__001__DeltaCodec__decoding__should_decode_vcdiff_encoded_messages(useBinaryProtocol: true)
+    }
+
+    func test__001__withoutBinaryProtocol_DeltaCodec__decoding__should_decode_vcdiff_encoded_messages() throws {
+        try parameterizedTest__001__DeltaCodec__decoding__should_decode_vcdiff_encoded_messages(useBinaryProtocol: false)
     }
 
     // RTL20
@@ -121,7 +182,7 @@ class DeltaCodecTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             channel.once(.attaching) { stateChange in
-                XCTAssertEqual(receivedMessages.count, testData.count - 3) // messages discarded
+                XCTAssertEqual(receivedMessages.count, 2) // third message and onward are discarded
                 XCTAssertEqual(stateChange.reason?.code, ARTErrorCode.unableToDecodeMessage.intValue)
                 partialDone()
             }
@@ -176,7 +237,7 @@ class DeltaCodecTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             channel.once(.attaching) { stateChange in
-                XCTAssertEqual(receivedMessages.count, testData.count - 3) // messages discarded
+                XCTAssertEqual(receivedMessages.count, 2) // third message and onward are discarded
                 guard let errorReason = stateChange.reason else {
                     fail("Reason should not be empty"); partialDone(); return
                 }
