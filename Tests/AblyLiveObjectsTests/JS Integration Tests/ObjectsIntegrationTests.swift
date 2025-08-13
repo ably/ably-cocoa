@@ -88,32 +88,12 @@ func waitFixtureChannelIsReady(_: ARTRealtime) async throws {
     try await Task.sleep(nanoseconds: 5 * NSEC_PER_SEC)
 }
 
-func waitForMapKeyUpdate(_ map: any LiveMap, _ key: String) async throws {
-    try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, _>) in
-        do {
-            try map.subscribe { update, subscription in
-                if update.update[key] != nil {
-                    subscription.unsubscribe()
-                    continuation.resume()
-                }
-            }
-        } catch {
-            continuation.resume(throwing: error)
-        }
-    }
+func waitForMapKeyUpdate(_ updates: AsyncStream<LiveMapUpdate>, _ key: String) async {
+    _ = await updates.first { $0.update[key] != nil }
 }
 
-func waitForCounterUpdate(_ counter: any LiveCounter) async throws {
-    try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, _>) in
-        do {
-            try counter.subscribe { _, subscription in
-                subscription.unsubscribe()
-                continuation.resume()
-            }
-        } catch {
-            continuation.resume(throwing: error)
-        }
-    }
+func waitForCounterUpdate(_ updates: AsyncStream<LiveCounterUpdate>) async {
+    _ = await updates.first { _ in true }
 }
 
 // I added this @MainActor as an "I don't understand what's going on there; let's try this" when observing that for some reason the setter of setListenerAfterProcessingIncomingMessage was hanging inside `-[ARTSRDelegateController dispatchQueue]`. This seems to avoid it and I have not investigated more deeply 🤷
@@ -177,17 +157,21 @@ private struct TestScenario<Context> {
 
 private func forScenarios<Context>(_ scenarios: [TestScenario<Context>]) -> [TestCase<Context>] {
     scenarios.map { scenario -> [TestCase<Context>] in
+        var clientOptions = ClientHelper.PartialClientOptions(logIdentifier: "client1")
+
         if scenario.allTransportsAndProtocols {
-            [true, false].map { useBinaryProtocol -> TestCase<Context> in
-                .init(
+            return [true, false].map { useBinaryProtocol -> TestCase<Context> in
+                clientOptions.useBinaryProtocol = useBinaryProtocol
+
+                return .init(
                     disabled: scenario.disabled,
                     scenario: scenario,
-                    options: .init(useBinaryProtocol: useBinaryProtocol),
+                    options: clientOptions,
                     channelName: "\(scenario.description) \(useBinaryProtocol ? "binary" : "text")",
                 )
             }
         } else {
-            [.init(disabled: scenario.disabled, scenario: scenario, options: .init(), channelName: scenario.description)]
+            return [.init(disabled: scenario.disabled, scenario: scenario, options: clientOptions, channelName: scenario.description)]
         }
     }
     .flatMap(\.self)
@@ -222,6 +206,7 @@ private actor ObjectsFixturesTrait: SuiteTrait, TestScoping {
                     try await helper.initForChannel(objectsFixturesChannel)
                 }
             }
+            self.setupTask = setupTask
 
             try await setupTask.value
         }
@@ -308,7 +293,7 @@ private struct ObjectsIntegrationTests {
                     },
                 ),
                 .init(
-                    disabled: true, // Uses LiveMap.set which we haven't implemented yet
+                    disabled: false,
                     allTransportsAndProtocols: true,
                     description: "OBJECT_SYNC sequence builds object tree with all operations applied",
                     action: { ctx in
@@ -316,12 +301,14 @@ private struct ObjectsIntegrationTests {
                         let objects = ctx.objects
 
                         // Create the promise first, before the operations that will trigger it
+                        let objectsCreatedPromiseUpdates1 = try root.updates()
+                        let objectsCreatedPromiseUpdates2 = try root.updates()
                         async let objectsCreatedPromise: Void = withThrowingTaskGroup(of: Void.self) { group in
                             group.addTask {
-                                try await waitForMapKeyUpdate(root, "counter")
+                                await waitForMapKeyUpdate(objectsCreatedPromiseUpdates1, "counter")
                             }
                             group.addTask {
-                                try await waitForMapKeyUpdate(root, "map")
+                                await waitForMapKeyUpdate(objectsCreatedPromiseUpdates2, "map")
                             }
                             while try await group.next() != nil {}
                         }
@@ -337,15 +324,18 @@ private struct ObjectsIntegrationTests {
                         _ = try await (setMapPromise, setCounterPromise, objectsCreatedPromise)
 
                         // Create the promise first, before the operations that will trigger it
+                        let operationsAppliedPromiseUpdates1 = try map.updates()
+                        let operationsAppliedPromiseUpdates2 = try map.updates()
+                        let operationsAppliedPromiseUpdates3 = try counter.updates()
                         async let operationsAppliedPromise: Void = withThrowingTaskGroup(of: Void.self) { group in
                             group.addTask {
-                                try await waitForMapKeyUpdate(map, "anotherKey")
+                                await waitForMapKeyUpdate(operationsAppliedPromiseUpdates1, "anotherKey")
                             }
                             group.addTask {
-                                try await waitForMapKeyUpdate(map, "shouldDelete")
+                                await waitForMapKeyUpdate(operationsAppliedPromiseUpdates2, "shouldDelete")
                             }
                             group.addTask {
-                                try await waitForCounterUpdate(counter)
+                                await waitForCounterUpdate(operationsAppliedPromiseUpdates3)
                             }
                             while try await group.next() != nil {}
                         }
@@ -378,7 +368,7 @@ private struct ObjectsIntegrationTests {
                     },
                 ),
                 .init(
-                    disabled: true, // Uses LiveMap.set which we haven't implemented yet
+                    disabled: false,
                     allTransportsAndProtocols: false,
                     description: "OBJECT_SYNC sequence does not change references to existing objects",
                     action: { ctx in
@@ -388,12 +378,14 @@ private struct ObjectsIntegrationTests {
                         let client = ctx.client
 
                         // Create the promise first, before the operations that will trigger it
+                        let objectsCreatedPromiseUpdates1 = try root.updates()
+                        let objectsCreatedPromiseUpdates2 = try root.updates()
                         async let objectsCreatedPromise: Void = withThrowingTaskGroup(of: Void.self) { group in
                             group.addTask {
-                                try await waitForMapKeyUpdate(root, "counter")
+                                await waitForMapKeyUpdate(objectsCreatedPromiseUpdates1, "counter")
                             }
                             group.addTask {
-                                try await waitForMapKeyUpdate(root, "map")
+                                await waitForMapKeyUpdate(objectsCreatedPromiseUpdates2, "map")
                             }
                             while try await group.next() != nil {}
                         }
@@ -518,7 +510,7 @@ private struct ObjectsIntegrationTests {
                     },
                 ),
                 .init(
-                    disabled: true, // This relies on the LiveMap.get returning `nil` when the referenced object's internal `tombstone` flag is true; this is not yet specified, have asked in https://ably-real-time.slack.com/archives/D067YAXGYQ5/p1751376526929339
+                    disabled: false,
                     allTransportsAndProtocols: false,
                     description: "OBJECT_SYNC sequence with object state \"tombstone\" property creates tombstoned object",
                     action: { ctx in
@@ -574,7 +566,7 @@ private struct ObjectsIntegrationTests {
                     },
                 ),
                 .init(
-                    disabled: true, // Uses LiveMap.subscribe (through waitForMapKeyUpdate) which we haven't implemented yet. It also seems to rely on the same internal `tombstone` flag as the previous test.
+                    disabled: false,
                     allTransportsAndProtocols: true,
                     description: "OBJECT_SYNC sequence with object state \"tombstone\" property deletes existing object",
                     action: { ctx in
@@ -583,14 +575,15 @@ private struct ObjectsIntegrationTests {
                         let channelName = ctx.channelName
                         let channel = ctx.channel
 
-                        async let counterCreatedPromise: Void = waitForMapKeyUpdate(root, "counter")
+                        let counterCreatedPromiseUpdates = try root.updates()
+                        async let counterCreatedPromise: Void = waitForMapKeyUpdate(counterCreatedPromiseUpdates, "counter")
                         let counterResult = try await objectsHelper.createAndSetOnMap(
                             channelName: channelName,
                             mapObjectId: "root",
                             key: "counter",
                             createOp: objectsHelper.counterCreateRestOp(number: 1),
                         )
-                        _ = try await counterCreatedPromise
+                        _ = await counterCreatedPromise
 
                         #expect(try root.get(key: "counter") != nil, "Check counter exists on root before OBJECT_SYNC sequence with \"tombstone=true\"")
 
@@ -628,7 +621,7 @@ private struct ObjectsIntegrationTests {
                     },
                 ),
                 .init(
-                    disabled: true, // Uses LiveMap.subscribe (through waitForMapKeyUpdate) which we haven't implemented yet
+                    disabled: false,
                     allTransportsAndProtocols: true,
                     description: "OBJECT_SYNC sequence with object state \"tombstone\" property triggers subscription callback for existing object",
                     action: { ctx in
@@ -637,25 +630,21 @@ private struct ObjectsIntegrationTests {
                         let channelName = ctx.channelName
                         let channel = ctx.channel
 
-                        async let counterCreatedPromise: Void = waitForMapKeyUpdate(root, "counter")
+                        let counterCreatedPromiseUpdates = try root.updates()
+                        async let counterCreatedPromise: Void = waitForMapKeyUpdate(counterCreatedPromiseUpdates, "counter")
                         let counterResult = try await objectsHelper.createAndSetOnMap(
                             channelName: channelName,
                             mapObjectId: "root",
                             key: "counter",
                             createOp: objectsHelper.counterCreateRestOp(number: 1),
                         )
-                        _ = try await counterCreatedPromise
+                        _ = await counterCreatedPromise
 
-                        async let counterSubPromise: Void = withCheckedThrowingContinuation { continuation in
-                            do {
-                                try #require(root.get(key: "counter")?.liveCounterValue).subscribe { update, _ in
-                                    #expect(update.amount == -1, "Check counter subscription callback is called with an expected update object after OBJECT_SYNC sequence with \"tombstone=true\"")
-                                    continuation.resume()
-                                }
-                            } catch {
-                                continuation.resume(throwing: error)
-                            }
-                        }
+                        let counterSubPromiseUpdates = try #require(root.get(key: "counter")?.liveCounterValue).updates()
+                        async let counterSubPromise: Void = {
+                            let update = try await #require(counterSubPromiseUpdates.first { _ in true })
+                            #expect(update.amount == -1, "Check counter subscription callback is called with an expected update object after OBJECT_SYNC sequence with \"tombstone=true\"")
+                        }()
 
                         // inject an OBJECT_SYNC message where a counter is now tombstoned
                         try await objectsHelper.processObjectStateMessageOnChannel(

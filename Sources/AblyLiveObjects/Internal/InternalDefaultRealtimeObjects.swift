@@ -389,7 +389,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
             clock: SimpleClock,
             receivedObjectSyncProtocolMessagesContinuation: AsyncStream<[InboundObjectMessage]>.Continuation,
         ) {
-            logger.log("handleObjectSyncProtocolMessage(objectMessages: \(objectMessages), protocolMessageChannelSerial: \(String(describing: protocolMessageChannelSerial)))", level: .debug)
+            logger.log("handleObjectSyncProtocolMessage(objectMessages: \(LoggingUtilities.formatObjectMessagesForLogging(objectMessages)), protocolMessageChannelSerial: \(String(describing: protocolMessageChannelSerial)))", level: .debug)
 
             receivedObjectSyncProtocolMessagesContinuation.yield(objectMessages)
 
@@ -489,7 +489,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
         ) {
             receivedObjectProtocolMessagesContinuation.yield(objectMessages)
 
-            logger.log("handleObjectProtocolMessage(objectMessages: \(objectMessages))", level: .debug)
+            logger.log("handleObjectProtocolMessage(objectMessages: \(LoggingUtilities.formatObjectMessagesForLogging(objectMessages)))", level: .debug)
 
             if let existingSyncSequence = syncSequence {
                 // RTO8a: Buffer the OBJECT message, to be handled once the sync completes

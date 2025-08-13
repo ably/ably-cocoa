@@ -431,7 +431,7 @@ extension WireObjectsCounter: WireObjectCodable {
 internal struct WireObjectsMapEntry {
     internal var tombstone: Bool? // OME2a
     internal var timeserial: String? // OME2b
-    internal var data: WireObjectData // OME2c
+    internal var data: WireObjectData? // OME2c
     internal var serialTimestamp: Date? // OME2d
 }
 
@@ -446,15 +446,16 @@ extension WireObjectsMapEntry: WireObjectCodable {
     internal init(wireObject: [String: WireValue]) throws(InternalError) {
         tombstone = try wireObject.optionalBoolValueForKey(WireKey.tombstone.rawValue)
         timeserial = try wireObject.optionalStringValueForKey(WireKey.timeserial.rawValue)
-        data = try wireObject.decodableValueForKey(WireKey.data.rawValue)
+        data = try wireObject.optionalDecodableValueForKey(WireKey.data.rawValue)
         serialTimestamp = try wireObject.optionalAblyProtocolDateValueForKey(WireKey.serialTimestamp.rawValue)
     }
 
     internal var toWireObject: [String: WireValue] {
-        var result: [String: WireValue] = [
-            WireKey.data.rawValue: .object(data.toWireObject),
-        ]
+        var result: [String: WireValue] = [:]
 
+        if let data {
+            result[WireKey.data.rawValue] = .object(data.toWireObject)
+        }
         if let tombstone {
             result[WireKey.tombstone.rawValue] = .bool(tombstone)
         }
@@ -553,5 +554,51 @@ internal enum StringOrData: WireCodable {
         case let .data(data):
             .data(data)
         }
+    }
+}
+
+// MARK: - CustomDebugStringConvertible
+
+extension WireObjectsCounter: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        if let count {
+            "{ count: \(count) }"
+        } else {
+            "{ count: nil }"
+        }
+    }
+}
+
+extension WireObjectsCounterOp: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        "{ amount: \(amount) }"
+    }
+}
+
+extension WireObjectsMapEntry: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        var parts: [String] = []
+
+        if let tombstone { parts.append("tombstone: \(tombstone)") }
+        if let timeserial { parts.append("timeserial: \(timeserial)") }
+        if let data { parts.append("data: \(data)") }
+        if let serialTimestamp { parts.append("serialTimestamp: \(serialTimestamp)") }
+
+        return "{ " + parts.joined(separator: ", ") + " }"
+    }
+}
+
+extension WireObjectData: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        var parts: [String] = []
+
+        if let objectId { parts.append("objectId: \(objectId)") }
+        if let boolean { parts.append("boolean: \(boolean)") }
+        if let bytes { parts.append("bytes: \(bytes)") }
+        if let number { parts.append("number: \(number)") }
+        if let string { parts.append("string: \(string)") }
+        if let json { parts.append("json: \(json)") }
+
+        return "{ " + parts.joined(separator: ", ") + " }"
     }
 }

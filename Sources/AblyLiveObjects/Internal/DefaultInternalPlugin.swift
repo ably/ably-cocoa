@@ -128,19 +128,24 @@ internal final class DefaultInternalPlugin: NSObject, AblyPlugin.LiveObjectsInte
     internal static func sendObject(
         objectMessages: [OutboundObjectMessage],
         channel: AblyPlugin.RealtimeChannel,
+        client: AblyPlugin.RealtimeClient,
         pluginAPI: PluginAPIProtocol,
     ) async throws(InternalError) {
         let objectMessageBoxes: [ObjectMessageBox<OutboundObjectMessage>] = objectMessages.map { .init(objectMessage: $0) }
 
         try await withCheckedContinuation { (continuation: CheckedContinuation<Result<Void, InternalError>, _>) in
-            pluginAPI.sendObject(
-                withObjectMessages: objectMessageBoxes,
-                channel: channel,
-            ) { error in
-                if let error {
-                    continuation.resume(returning: .failure(error.toInternalError()))
-                } else {
-                    continuation.resume(returning: .success(()))
+            let internalQueue = pluginAPI.internalQueue(for: client)
+
+            internalQueue.async {
+                pluginAPI.sendObject(
+                    withObjectMessages: objectMessageBoxes,
+                    channel: channel,
+                ) { error in
+                    if let error {
+                        continuation.resume(returning: .failure(error.toInternalError()))
+                    } else {
+                        continuation.resume(returning: .success(()))
+                    }
                 }
             }
         }.get()

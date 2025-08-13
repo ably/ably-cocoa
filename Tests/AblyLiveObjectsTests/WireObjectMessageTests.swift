@@ -180,7 +180,7 @@ enum WireObjectMessageTests {
             #expect(op.mapOp?.data?.string == "value1")
             #expect(op.counterOp?.amount == 42)
             #expect(op.map?.semantics == .known(.lww))
-            #expect(op.map?.entries?["key1"]?.data.string == "value1")
+            #expect(op.map?.entries?["key1"]?.data?.string == "value1")
             #expect(op.map?.entries?["key1"]?.tombstone == false)
             #expect(op.counter?.count == 42)
 
@@ -282,7 +282,7 @@ enum WireObjectMessageTests {
             #expect(state.createOp?.action == .known(.mapCreate))
             #expect(state.createOp?.objectId == "obj1")
             #expect(state.map?.semantics == .known(.lww))
-            #expect(state.map?.entries?["key1"]?.data.string == "value1")
+            #expect(state.map?.entries?["key1"]?.data?.string == "value1")
             #expect(state.map?.entries?["key1"]?.tombstone == false)
             #expect(state.counter?.count == 42)
         }
@@ -488,10 +488,10 @@ enum WireObjectMessageTests {
             ]
             let map = try WireObjectsMap(wireObject: json)
             #expect(map.semantics == .known(.lww))
-            #expect(map.entries?["key1"]?.data.string == "value1")
+            #expect(map.entries?["key1"]?.data?.string == "value1")
             #expect(map.entries?["key1"]?.tombstone == false)
             #expect(map.entries?["key1"]?.timeserial == "ts1")
-            #expect(map.entries?["key2"]?.data.string == "value2")
+            #expect(map.entries?["key2"]?.data?.string == "value2")
             #expect(map.entries?["key2"]?.tombstone == true)
             #expect(map.entries?["key2"]?.timeserial == nil)
         }
@@ -584,7 +584,7 @@ enum WireObjectMessageTests {
                 "timeserial": "ts1",
             ]
             let entry = try WireObjectsMapEntry(wireObject: json)
-            #expect(entry.data.string == "value1")
+            #expect(entry.data?.string == "value1")
             #expect(entry.tombstone == true)
             #expect(entry.timeserial == "ts1")
         }
@@ -593,7 +593,7 @@ enum WireObjectMessageTests {
         func decodesWithOptionalFieldsAbsent() throws {
             let json: [String: WireValue] = ["data": ["string": "value1"]]
             let entry = try WireObjectsMapEntry(wireObject: json)
-            #expect(entry.data.string == "value1")
+            #expect(entry.data?.string == "value1")
             #expect(entry.tombstone == nil)
             #expect(entry.timeserial == nil)
         }

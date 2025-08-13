@@ -534,8 +534,8 @@ struct InternalDefaultLiveMapTests {
                 }
 
                 // RTLM7a2a: Set ObjectsMapEntry.data to the ObjectData from the operation
-                #expect(map.testsOnly_data["key1"]?.data.number == operationData.number)
-                #expect(map.testsOnly_data["key1"]?.data.objectId == operationData.objectId)
+                #expect(map.testsOnly_data["key1"]?.data?.number == operationData.number)
+                #expect(map.testsOnly_data["key1"]?.data?.objectId == operationData.objectId)
 
                 // RTLM7a2b: Set ObjectsMapEntry.timeserial to the operation's serial
                 #expect(map.testsOnly_data["key1"]?.timeserial == "ts2")
@@ -717,12 +717,7 @@ struct InternalDefaultLiveMapTests {
                 #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate) == nil)
 
                 // RTLM8a2a: Set ObjectsMapEntry.data to undefined/null
-                let entry = map.testsOnly_data["key1"]
-                #expect(entry?.data.string == nil)
-                #expect(entry?.data.number == nil)
-                #expect(entry?.data.boolean == nil)
-                #expect(entry?.data.bytes == nil)
-                #expect(entry?.data.objectId == nil)
+                #expect(map.testsOnly_data["key1"]?.data == nil)
 
                 // RTLM8a2b: Set ObjectsMapEntry.timeserial to the operation's serial
                 #expect(map.testsOnly_data["key1"]?.timeserial == "ts2")
@@ -751,11 +746,7 @@ struct InternalDefaultLiveMapTests {
                 let entry = map.testsOnly_data["newKey"]
                 #expect(entry != nil)
                 #expect(entry?.timeserial == "ts1")
-                #expect(entry?.data.string == nil)
-                #expect(entry?.data.number == nil)
-                #expect(entry?.data.boolean == nil)
-                #expect(entry?.data.bytes == nil)
-                #expect(entry?.data.objectId == nil)
+                #expect(entry?.data == nil)
 
                 // RTLM8e: Check return value
                 #expect(try #require(update.update).update == ["newKey": .removed])
