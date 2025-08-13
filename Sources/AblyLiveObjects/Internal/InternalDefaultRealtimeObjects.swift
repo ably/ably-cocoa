@@ -26,7 +26,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
     private nonisolated(unsafe) var garbageCollectionTask: Task<Void, Never>!
 
     /// Parameters used to control the garbage collection of tombstoned objects and map entries, as described in RTO10.
-    internal struct GarbageCollectionOptions {
+    internal struct GarbageCollectionOptions: Encodable, Hashable {
         /// The RTO10a interval at which we will perform garbage collection.
         ///
         /// The default value comes from the suggestion in RTO10a.
