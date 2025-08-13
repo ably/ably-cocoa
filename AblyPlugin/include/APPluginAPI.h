@@ -32,6 +32,22 @@ NS_SWIFT_SENDABLE
 - (nullable id)pluginDataValueForKey:(NSString *)key
                              channel:(id<APRealtimeChannel>)channel;
 
+/// Allows a plugin to store arbitrary key-value data in an `ARTClientOptions`. This allows a plugin to define its own client options.
+///
+/// You would usually call this from within a plugin-defined extension of `ARTClientOptions`.
+- (void)setPluginOptionsValue:(id)value
+                       forKey:(NSString *)key
+                clientOptions:(ARTClientOptions *)options;
+
+/// Allows a plugin to retrieve arbitrary key-value data that was previously stored on an `ARTClientOptions` using `-setPluginOptionsValue:forKey:clientOptions:`.
+///
+/// You would usually call this from within a plugin-defined extension of `ARTClientOptions`.
+- (nullable id)pluginOptionsValueForKey:(NSString *)key
+                          clientOptions:(ARTClientOptions *)options;
+
+/// Retrieves a copy of the options for a client.
+- (ARTClientOptions *)optionsForClient:(id<APRealtimeClient>)client;
+
 /// Provides plugins with access to ably-cocoa's logging functionality.
 ///
 /// - Parameter channel: The channel whose logger the returned logger should wrap.
