@@ -96,6 +96,20 @@ func waitForCounterUpdate(_ updates: AsyncStream<LiveCounterUpdate>) async {
     _ = await updates.first { _ in true }
 }
 
+// Note that Cursor decided to implement this in a different way to the waitForObjectSync that I'd already implemented; TODO pick one of the two approaches (this one might be cleaner).
+func waitForObjectOperation(_ objects: any RealtimeObjects, _ action: ObjectOperationAction) async throws {
+    // Cast to access internal API for testing
+    let internallyTypedObjects = try #require(objects as? PublicDefaultRealtimeObjects)
+    let objectMessages = internallyTypedObjects.testsOnly_receivedObjectProtocolMessages
+
+    // Wait for an object protocol message containing the specified action
+    _ = await objectMessages.first { messages in
+        messages.contains { message in
+            message.operation?.action == .known(action)
+        }
+    }
+}
+
 // I added this @MainActor as an "I don't understand what's going on there; let's try this" when observing that for some reason the setter of setListenerAfterProcessingIncomingMessage was hanging inside `-[ARTSRDelegateController dispatchQueue]`. This seems to avoid it and I have not investigated more deeply 🤷
 @MainActor
 func waitForObjectSync(_ realtime: ARTRealtime) async throws {
@@ -3703,6 +3717,210 @@ private struct ObjectsIntegrationTests {
     }
 
     // TODO: Implement the remaining scenarios
+
+    // MARK: - Tombstones GC Scenarios
+
+    enum TombstonesGCScenarios: Scenarios {
+        struct Context {
+            var root: any LiveMap
+            var objectsHelper: ObjectsHelper
+            var channelName: String
+            var channel: ARTRealtimeChannel
+            var objects: any RealtimeObjects
+            var client: ARTRealtime
+            var waitForGCCycles: @Sendable (Int) async -> Void
+        }
+
+        static let scenarios: [TestScenario<Context>] = [
+            .init(
+                disabled: false,
+                allTransportsAndProtocols: false,
+                description: "tombstoned object is removed from the pool after the GC grace period",
+                action: { ctx in
+                    let objectsHelper = ctx.objectsHelper
+                    let channelName = ctx.channelName
+                    let channel = ctx.channel
+                    let objects = ctx.objects
+                    let waitForGCCycles = ctx.waitForGCCycles
+
+                    // Wait for counter creation
+                    async let counterCreatedPromise: Void = waitForObjectOperation(ctx.objects, .counterCreate)
+
+                    // Send a CREATE op, this adds an object to the pool
+                    let createResult = try await objectsHelper.operationRequest(
+                        channelName: channelName,
+                        opBody: objectsHelper.counterCreateRestOp(number: 1),
+                    )
+                    let objectId = createResult.objectId
+                    _ = try await counterCreatedPromise
+
+                    // Cast to access internal API for testing
+                    let internallyTypedObjects = try #require(objects as? PublicDefaultRealtimeObjects)
+
+                    #expect(internallyTypedObjects.testsOnly_proxied.testsOnly_objectsPool.entries[objectId] != nil, "Check object exists in the pool after creation")
+
+                    // Inject OBJECT_DELETE for the object. This should tombstone the object and make it
+                    // inaccessible to the end user, but still keep it in memory in the local pool
+                    await objectsHelper.processObjectOperationMessageOnChannel(
+                        channel: channel,
+                        serial: lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0),
+                        siteCode: "aaa",
+                        state: [objectsHelper.objectDeleteOp(objectId: objectId)],
+                    )
+
+                    #expect(
+                        internallyTypedObjects.testsOnly_proxied.testsOnly_objectsPool.entries[objectId] != nil,
+                        "Check object exists in the pool immediately after OBJECT_DELETE",
+                    )
+
+                    let poolEntry = try #require(internallyTypedObjects.testsOnly_proxied.testsOnly_objectsPool.entries[objectId])
+                    #expect(
+                        poolEntry.isTombstone == true,
+                        "Check object's \"tombstone\" flag is set to \"true\" after OBJECT_DELETE",
+                    )
+
+                    // We expect 2 cycles to guarantee that grace period has expired, which will always be
+                    // true based on the test config used
+                    await waitForGCCycles(2)
+
+                    // Object should be removed from the local pool entirely now, as the GC grace period has passed
+                    #expect(
+                        internallyTypedObjects.testsOnly_proxied.testsOnly_objectsPool.entries[objectId] == nil,
+                        "Check object does not exist in the pool after the GC grace period expiration",
+                    )
+                },
+            ),
+            .init(
+                disabled: false,
+                allTransportsAndProtocols: true,
+                description: "tombstoned map entry is removed from the LiveMap after the GC grace period",
+                action: { ctx in
+                    let root = ctx.root
+                    let objectsHelper = ctx.objectsHelper
+                    let channelName = ctx.channelName
+                    let waitForGCCycles = ctx.waitForGCCycles
+
+                    let keyUpdatedPromise = try root.updates()
+                    async let keyUpdatedWait: Void = {
+                        await waitForMapKeyUpdate(keyUpdatedPromise, "foo")
+                    }()
+
+                    // Set a key on root
+                    _ = try await objectsHelper.operationRequest(
+                        channelName: channelName,
+                        opBody: objectsHelper.mapSetRestOp(
+                            objectId: "root",
+                            key: "foo",
+                            value: ["string": .string("bar")],
+                        ),
+                    )
+                    await keyUpdatedWait
+
+                    #expect(
+                        try #require(root.get(key: "foo")?.stringValue) == "bar",
+                        "Check key \"foo\" exists on root after MAP_SET",
+                    )
+
+                    let keyUpdatedPromise2 = try root.updates()
+                    async let keyUpdatedWait2: Void = {
+                        await waitForMapKeyUpdate(keyUpdatedPromise2, "foo")
+                    }()
+
+                    // Remove the key from the root. This should tombstone the map entry and make it
+                    // inaccessible to the end user, but still keep it in memory in the underlying map
+                    _ = try await objectsHelper.operationRequest(
+                        channelName: channelName,
+                        opBody: objectsHelper.mapRemoveRestOp(objectId: "root", key: "foo"),
+                    )
+                    await keyUpdatedWait2
+
+                    #expect(
+                        try root.get(key: "foo") == nil,
+                        "Check key \"foo\" is inaccessible via public API on root after MAP_REMOVE",
+                    )
+
+                    // Cast to access internal API for testing
+                    let internallyTypedRoot = try #require(root as? PublicDefaultLiveMap)
+                    let internalRoot = internallyTypedRoot.proxied
+                    let underlyingData = internalRoot.testsOnly_data
+
+                    #expect(
+                        underlyingData["foo"] != nil,
+                        "Check map entry for \"foo\" exists on root in the underlying data immediately after MAP_REMOVE",
+                    )
+                    #expect(
+                        underlyingData["foo"]?.tombstone == true,
+                        "Check map entry for \"foo\" on root has \"tombstone\" flag set to \"true\" after MAP_REMOVE",
+                    )
+
+                    // We expect 2 cycles to guarantee that grace period has expired, which will always be
+                    // true based on the test config used
+                    await waitForGCCycles(2)
+
+                    // The entry should be removed from the underlying map now
+                    let underlyingDataAfterGC = internalRoot.testsOnly_data
+                    #expect(
+                        underlyingDataAfterGC["foo"] == nil,
+                        "Check map entry for \"foo\" does not exist on root in the underlying data after the GC grace period expiration",
+                    )
+                },
+            ),
+        ]
+    }
+
+    @Test(arguments: TombstonesGCScenarios.testCases)
+    func tombstonesGCScenarios(testCase: TestCase<TombstonesGCScenarios.Context>) async throws {
+        guard !testCase.disabled else {
+            withKnownIssue {
+                Issue.record("Test case is disabled")
+            }
+            return
+        }
+
+        // Configure GC options with shorter intervals for testing
+        var options = testCase.options
+        options.garbageCollectionOptions = .init(
+            interval: 2.0, // JS uses 0.5s but I've found that, at least testing locally, this was not enough to compensate for the clock skew between my local clock and whatever was used to generate the tombstonedAt timestamps server-side.
+            gracePeriod: 0.25,
+        )
+
+        let objectsHelper = try await ObjectsHelper()
+        let client = try await realtimeWithObjects(options: options)
+
+        try await monitorConnectionThenCloseAndFinishAsync(client) {
+            let channel = client.channels.get(testCase.channelName, options: channelOptionsWithObjects())
+            let objects = channel.objects
+
+            try await channel.attachAsync()
+            let root = try await objects.getRoot()
+
+            // Helper function to wait for a specific number of GC cycles
+            let internallyTypedObjects = try #require(objects as? PublicDefaultRealtimeObjects)
+            let waitForGCCycles: @Sendable (Int) async -> Void = { cycles in
+                let gcEvents = internallyTypedObjects.testsOnly_proxied.testsOnly_completedGarbageCollectionEvents
+
+                var gcCalledTimes = 0
+                for await _ in gcEvents {
+                    gcCalledTimes += 1
+                    if gcCalledTimes >= cycles {
+                        break
+                    }
+                }
+            }
+
+            try await testCase.scenario.action(
+                .init(
+                    root: root,
+                    objectsHelper: objectsHelper,
+                    channelName: testCase.channelName,
+                    channel: channel,
+                    objects: objects,
+                    client: client,
+                    waitForGCCycles: waitForGCCycles,
+                ),
+            )
+        }
+    }
 }
 
 // swiftlint:enable trailing_closure
