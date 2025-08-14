@@ -1,5 +1,15 @@
 # Change Log
 
+## [1.2.42](https://github.com/ably/ably-cocoa/tree/1.2.42)
+
+## What's Changed
+
+* Fix bugs with decoding of delta messages (https://github.com/ably/ably-cocoa/pull/2083) in the following scenarios:
+  * JSON-valued message data
+  * when the `useBinaryProtocol` client option is false
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.41...1.2.42
+
 ## [1.2.41](https://github.com/ably/ably-cocoa/tree/1.2.41)
 
 ## What's Changed
