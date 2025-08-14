@@ -1237,7 +1237,7 @@ struct InternalDefaultLiveMapTests {
             let coreSDK = MockCoreSDK(channelState: channelState)
 
             await #expect {
-                try await map.set(key: "test", value: .primitive(.string("value")), coreSDK: coreSDK)
+                try await map.set(key: "test", value: .string("value"), coreSDK: coreSDK)
             } throws: { error in
                 guard let errorInfo = error as? ARTErrorInfo else {
                     return false
@@ -1264,16 +1264,16 @@ struct InternalDefaultLiveMapTests {
             (value: .liveMap(.createZeroValued(objectID: "map:test@123", logger: TestLogger(), userCallbackQueue: .main, clock: MockSimpleClock())), expectedData: .init(objectId: "map:test@123")),
             (value: .liveCounter(.createZeroValued(objectID: "map:test@123", logger: TestLogger(), userCallbackQueue: .main, clock: MockSimpleClock())), expectedData: .init(objectId: "map:test@123")),
             // RTLM20e5b
-            (value: .primitive(.jsonArray(["test"])), expectedData: .init(json: .array(["test"]))),
-            (value: .primitive(.jsonObject(["foo": "bar"])), expectedData: .init(json: .object(["foo": "bar"]))),
+            (value: .jsonArray(["test"]), expectedData: .init(json: .array(["test"]))),
+            (value: .jsonObject(["foo": "bar"]), expectedData: .init(json: .object(["foo": "bar"]))),
             // RTLM20e5c
-            (value: .primitive(.string("test")), expectedData: .init(string: "test")),
+            (value: .string("test"), expectedData: .init(string: "test")),
             // RTLM20e5d
-            (value: .primitive(.number(42.5)), expectedData: .init(number: NSNumber(value: 42.5))),
+            (value: .number(42.5), expectedData: .init(number: NSNumber(value: 42.5))),
             // RTLM20e5e
-            (value: .primitive(.bool(true)), expectedData: .init(boolean: true)),
+            (value: .bool(true), expectedData: .init(boolean: true)),
             // RTLM20e5f
-            (value: .primitive(.data(Data([0x01, 0x02]))), expectedData: .init(bytes: Data([0x01, 0x02]))),
+            (value: .data(Data([0x01, 0x02])), expectedData: .init(bytes: Data([0x01, 0x02]))),
         ] as [(value: InternalLiveMapValue, expectedData: ObjectData)])
         func publishesCorrectObjectMessageForDifferentValueTypes(value: InternalLiveMapValue, expectedData: ObjectData) async throws {
             let logger = TestLogger()
@@ -1317,7 +1317,7 @@ struct InternalDefaultLiveMapTests {
             }
 
             await #expect {
-                try await map.set(key: "testKey", value: .primitive(.string("testValue")), coreSDK: coreSDK)
+                try await map.set(key: "testKey", value: .string("testValue"), coreSDK: coreSDK)
             } throws: { error in
                 guard let errorInfo = error as? ARTErrorInfo else {
                     return false

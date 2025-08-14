@@ -36,16 +36,16 @@ struct ObjectCreationHelpersTests {
                     // RTO11f4c1a
                     "counterRef": .liveCounter(referencedCounter),
                     // RTO11f4c1b
-                    "jsonArrayKey": .primitive(.jsonArray([.string("arrayItem1"), .string("arrayItem2")])),
-                    "jsonObjectKey": .primitive(.jsonObject(["nestedKey": .string("nestedValue")])),
+                    "jsonArrayKey": .jsonArray([.string("arrayItem1"), .string("arrayItem2")]),
+                    "jsonObjectKey": .jsonObject(["nestedKey": .string("nestedValue")]),
                     // RTO11f4c1c
-                    "stringKey": .primitive(.string("stringValue")),
+                    "stringKey": .string("stringValue"),
                     // RTO11f4c1d
-                    "numberKey": .primitive(.number(42.5)),
+                    "numberKey": .number(42.5),
                     // RTO11f4c1e
-                    "booleanKey": .primitive(.bool(true)),
+                    "booleanKey": .bool(true),
                     // RTO11f4c1f
-                    "dataKey": .primitive(.data(Data([0x01, 0x02, 0x03]))),
+                    "dataKey": .data(Data([0x01, 0x02, 0x03])),
                 ],
                 timestamp: timestamp,
             )

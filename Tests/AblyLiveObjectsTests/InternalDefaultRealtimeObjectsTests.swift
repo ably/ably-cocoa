@@ -1048,7 +1048,7 @@ struct InternalDefaultRealtimeObjectsTests {
         func throwsIfChannelIsInInvalidState(channelState: ARTRealtimeChannelState) async throws {
             let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
             let coreSDK = MockCoreSDK(channelState: channelState)
-            let entries: [String: InternalLiveMapValue] = ["testKey": .primitive(.string("testValue"))]
+            let entries: [String: InternalLiveMapValue] = ["testKey": .string("testValue")]
 
             await #expect {
                 _ = try await realtimeObjects.createMap(entries: entries, coreSDK: coreSDK)
@@ -1078,7 +1078,7 @@ struct InternalDefaultRealtimeObjectsTests {
             // Call createMap
             let returnedMap = try await realtimeObjects.createMap(
                 entries: [
-                    "stringKey": .primitive(.string("stringValue")),
+                    "stringKey": .string("stringValue"),
                 ],
                 coreSDK: coreSDK,
             )
@@ -1098,7 +1098,7 @@ struct InternalDefaultRealtimeObjectsTests {
             ])
 
             // Verify initial value was merged per RTO11h3a
-            #expect(returnedMap.testsOnly_data == ["stringKey": .init(data: .init(string: "stringValue"))])
+            #expect(returnedMap.testsOnly_data == ["stringKey": InternalObjectsMapEntry(data: ObjectData(string: "stringValue"))])
 
             // Verify object was added to pool per RTO11h3b
             #expect(realtimeObjects.testsOnly_objectsPool.entries[objectID]?.mapValue === returnedMap)
@@ -1156,7 +1156,7 @@ struct InternalDefaultRealtimeObjectsTests {
             }
 
             // Call createMap - the publishHandler will create the object with the generated ID
-            let result = try await realtimeObjects.createMap(entries: ["testKey": .primitive(.string("testValue"))], coreSDK: coreSDK)
+            let result = try await realtimeObjects.createMap(entries: ["testKey": .string("testValue")], coreSDK: coreSDK)
 
             // Verify ObjectMessage was published
             #expect(publishedMessages.count == 1)
