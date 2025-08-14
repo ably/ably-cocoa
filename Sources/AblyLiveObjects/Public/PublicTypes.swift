@@ -83,6 +83,27 @@ public protocol RealtimeObjects: Sendable {
 
 /// Represents the type of data stored for a given key in a ``LiveMap``.
 /// It may be a primitive value (string, number, boolean, binary data, JSON array, or JSON object), or another ``LiveObject``.
+///
+/// `LiveMapValue` implements Swift's `ExpressibleBy*Literal` protocols. This, in combination with `JSONValue`'s conformance to these protocols, allows you to write type-safe map values using familiar syntax. For example:
+///
+/// ```swift
+/// let map = try await channel.objects.createMap(entries: [
+///     "someStringKey": "someString",
+///     "someIntegerKey": 123,
+///     "someFloatKey": 123.456,
+///     "someTrueKey": true,
+///     "someFalseKey": false,
+///     "someJSONObjectKey": [
+///         "someNestedJSONObjectKey": [
+///             "someOtherKey": "someOtherValue",
+///         ],
+///     ],
+///     "someJSONArrayKey": [
+///         "foo",
+///         42,
+///     ],
+/// ])
+/// ```
 public enum LiveMapValue: Sendable, Equatable {
     case string(String)
     case number(Double)
@@ -182,6 +203,44 @@ public enum LiveMapValue: Sendable, Equatable {
         default:
             false
         }
+    }
+}
+
+// MARK: - ExpressibleBy*Literal conformances
+
+extension LiveMapValue: ExpressibleByDictionaryLiteral {
+    public init(dictionaryLiteral elements: (String, JSONValue)...) {
+        self = .jsonObject(.init(uniqueKeysWithValues: elements))
+    }
+}
+
+extension LiveMapValue: ExpressibleByArrayLiteral {
+    public init(arrayLiteral elements: JSONValue...) {
+        self = .jsonArray(elements)
+    }
+}
+
+extension LiveMapValue: ExpressibleByStringLiteral {
+    public init(stringLiteral value: String) {
+        self = .string(value)
+    }
+}
+
+extension LiveMapValue: ExpressibleByIntegerLiteral {
+    public init(integerLiteral value: Int) {
+        self = .number(Double(value))
+    }
+}
+
+extension LiveMapValue: ExpressibleByFloatLiteral {
+    public init(floatLiteral value: Double) {
+        self = .number(value)
+    }
+}
+
+extension LiveMapValue: ExpressibleByBooleanLiteral {
+    public init(booleanLiteral value: Bool) {
+        self = .bool(value)
     }
 }
 

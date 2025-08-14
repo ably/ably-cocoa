@@ -137,12 +137,12 @@ private let primitiveKeyData: [(key: String, data: [String: JSONValue], liveMapV
     (
         key: "stringKey",
         data: ["string": .string("stringValue")],
-        liveMapValue: .string("stringValue")
+        liveMapValue: "stringValue"
     ),
     (
         key: "emptyStringKey",
         data: ["string": .string("")],
-        liveMapValue: .string("")
+        liveMapValue: ""
     ),
     (
         key: "bytesKey",
@@ -167,22 +167,22 @@ private let primitiveKeyData: [(key: String, data: [String: JSONValue], liveMapV
     (
         key: "numberKey",
         data: ["number": .number(1)],
-        liveMapValue: .number(1)
+        liveMapValue: 1
     ),
     (
         key: "zeroKey",
         data: ["number": .number(0)],
-        liveMapValue: .number(0)
+        liveMapValue: 0
     ),
     (
         key: "trueKey",
         data: ["boolean": .bool(true)],
-        liveMapValue: .bool(true)
+        liveMapValue: true
     ),
     (
         key: "falseKey",
         data: ["boolean": .bool(false)],
-        liveMapValue: .bool(false)
+        liveMapValue: false
     ),
 ]
 
@@ -422,7 +422,7 @@ private struct ObjectsIntegrationTests {
                         }
 
                         // MAP_CREATE
-                        let map = try await objects.createMap(entries: ["shouldStay": .string("foo"), "shouldDelete": .string("bar")])
+                        let map = try await objects.createMap(entries: ["shouldStay": "foo", "shouldDelete": "bar"])
                         // COUNTER_CREATE
                         let counter = try await objects.createCounter(count: 1)
 
@@ -449,7 +449,7 @@ private struct ObjectsIntegrationTests {
                         }
 
                         // Perform the operations and await the promise
-                        async let setAnotherKeyPromise: Void = map.set(key: "anotherKey", value: .string("baz"))
+                        async let setAnotherKeyPromise: Void = map.set(key: "anotherKey", value: "baz")
                         async let removeKeyPromise: Void = map.remove(key: "shouldDelete")
                         async let incrementPromise: Void = counter.increment(amount: 10)
                         _ = try await (setAnotherKeyPromise, removeKeyPromise, incrementPromise, operationsAppliedPromise)
@@ -3032,7 +3032,7 @@ private struct ObjectsIntegrationTests {
                         async let mapCreatedPromise: Void = waitForMapKeyUpdate(mapCreatedPromiseUpdates, "map")
 
                         let counter = try await objects.createCounter()
-                        let map = try await objects.createMap(entries: ["foo": .string("bar"), "baz": .liveCounter(counter)])
+                        let map = try await objects.createMap(entries: ["foo": "bar", "baz": .liveCounter(counter)])
                         try await root.set(key: "map", value: .liveMap(map))
                         _ = await mapCreatedPromise
 
@@ -3058,7 +3058,7 @@ private struct ObjectsIntegrationTests {
                         internallyTypedObjects.testsOnly_overridePublish(with: { _ in })
 
                         // prevent publishing of ops to realtime so we guarantee that the initial value doesn't come from a CREATE op
-                        let map = try await objects.createMap(entries: ["foo": .string("bar")])
+                        let map = try await objects.createMap(entries: ["foo": "bar"])
                         #expect(try #require(map.get(key: "foo")?.stringValue) == "bar", "Check map has expected initial value")
                     },
                 ),
@@ -3103,7 +3103,7 @@ private struct ObjectsIntegrationTests {
                             }
                         })
 
-                        let map = try await objects.createMap(entries: ["foo": .string("bar")])
+                        let map = try await objects.createMap(entries: ["foo": "bar"])
 
                         // Map should be created with forged initial value instead of the actual one
                         #expect(try map.get(key: "foo") == nil, "Check key \"foo\" was not set on a map client-side")
@@ -3127,7 +3127,7 @@ private struct ObjectsIntegrationTests {
                         })
 
                         // Create map locally, should have an initial value set
-                        let map = try await objects.createMap(entries: ["foo": .string("bar")])
+                        let map = try await objects.createMap(entries: ["foo": "bar"])
                         let internalMap = try #require(map as? PublicDefaultLiveMap)
                         let mapId = internalMap.proxied.objectID
 

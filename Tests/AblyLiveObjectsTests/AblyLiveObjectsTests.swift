@@ -139,13 +139,13 @@ struct AblyLiveObjectsTests {
 
         // Create a map and check its initial entries
         let map = try await channel.objects.createMap(entries: [
-            "boolKey": .bool(true),
-            "numberKey": .number(10),
+            "boolKey": true,
+            "numberKey": 10,
         ])
         #expect(
             try Dictionary(uniqueKeysWithValues: map.entries) == [
-                "boolKey": .bool(true),
-                "numberKey": .number(10),
+                "boolKey": true,
+                "numberKey": 10,
             ],
         )
         let mapSubscription = try map.updates()
@@ -162,8 +162,8 @@ struct AblyLiveObjectsTests {
         #expect(mapUpdate.update == ["counterKey": .updated])
         #expect(
             try Dictionary(uniqueKeysWithValues: map.entries) == [
-                "boolKey": .bool(true),
-                "numberKey": .number(10),
+                "boolKey": true,
+                "numberKey": 10,
                 "counterKey": .liveCounter(counter),
             ],
         )
@@ -180,7 +180,7 @@ struct AblyLiveObjectsTests {
         #expect(mapRemoveUpdate.update == ["boolKey": .removed])
         #expect(
             try Dictionary(uniqueKeysWithValues: map.entries) == [
-                "numberKey": .number(10),
+                "numberKey": 10,
                 "counterKey": .liveCounter(counter),
             ],
         )
