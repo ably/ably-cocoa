@@ -8,6 +8,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /// :nodoc:
+NS_SWIFT_SENDABLE
 @protocol ARTTokenDetailsCompatible <NSObject>
 - (void)toTokenDetails:(ARTAuth *)auth callback:(ARTTokenDetailsCallback)callback;
 @end
@@ -39,6 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Called when a new token is required. The role of the callback is to obtain a fresh token, one of: an Ably Token string (in plain text format); a signed `ARTTokenRequest`; a `ARTTokenDetails` (in JSON format); an [Ably JWT](https://ably.com/docs/core-features/authentication#ably-jwt). See [the authentication documentation](https://ably.com/docs/realtime/authentication) for details of the Ably `ARTTokenRequest` format and associated API calls.
  */
+NS_SWIFT_SENDABLE
 @property (nonatomic, copy, nullable) ARTAuthCallback authCallback;
 
 /**
