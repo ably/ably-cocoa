@@ -143,6 +143,22 @@ public enum LiveMapValue: Sendable, Equatable {
         return nil
     }
 
+    /// If this `LiveMapValue` has case `jsonArray`, this returns the associated value. Else, it returns `nil`.
+    public var jsonArrayValue: [JSONValue]? {
+        if case let .jsonArray(value) = self {
+            return value
+        }
+        return nil
+    }
+
+    /// If this `LiveMapValue` has case `jsonObject`, this returns the associated value. Else, it returns `nil`.
+    public var jsonObjectValue: [String: JSONValue]? {
+        if case let .jsonObject(value) = self {
+            return value
+        }
+        return nil
+    }
+
     // MARK: - Equatable Implementation
 
     public static func == (lhs: LiveMapValue, rhs: LiveMapValue) -> Bool {
