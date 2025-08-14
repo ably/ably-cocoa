@@ -106,7 +106,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
             do {
                 while true {
                     logger.log("Will perform garbage collection in \(garbageCollectionInterval)s", level: .debug)
-                    try await Task.sleep(nanoseconds: UInt64(garbageCollectionInterval) * NSEC_PER_SEC)
+                    try await Task.sleep(nanoseconds: UInt64(garbageCollectionInterval * Double(NSEC_PER_SEC)))
 
                     guard let self else {
                         return
