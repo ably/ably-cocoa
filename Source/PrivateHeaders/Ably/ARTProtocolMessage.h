@@ -2,6 +2,7 @@
 
 #import <Ably/ARTMessage.h>
 #import <Ably/ARTPresenceMessage.h>
+#import <Ably/ARTRealtimeChannelOptions.h>
 
 @class ARTConnectionDetails;
 @class ARTAuthDetails;
@@ -60,6 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, readwrite, nonatomic) NSArray<ARTPresenceMessage *> *presence;
 @property (nullable, readwrite, nonatomic) NSArray<ARTAnnotation *> *annotations;
 @property (readwrite, nonatomic) int64_t flags;
+@property (readonly, nonatomic) ARTChannelMode channelModes;
 @property (nullable, readwrite, nonatomic) ARTConnectionDetails *connectionDetails;
 @property (nullable, nonatomic) ARTAuthDetails *auth;
 @property (nonatomic, nullable) NSStringDictionary *params;
