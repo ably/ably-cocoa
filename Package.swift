@@ -23,6 +23,10 @@ let package = Package(
             name: "_AblyPluginPrivate",
             targets: ["AblyPlugin"]
         ),
+        .library(
+            name: "_AblyPluginPrivateAnother",
+            targets: ["AblyPlugin"]
+        ),
         /*.library(*/
             /*name: "_AblyPlugin2",*/
             /*targets: ["AblyPlugin"]*/
