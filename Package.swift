@@ -16,7 +16,7 @@ let package = Package(
         ),
         // This library should only be used by Ably-authored plugins.
         .library(
-            name: "AblyPlugin",
+            name: "_AblyPlugin",
             targets: ["AblyPlugin"]
         ),
     ],
