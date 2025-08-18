@@ -20,13 +20,13 @@ let package = Package(
             targets: ["AblyPlugin"]
         ),
         .library(
-            name: "_AblyPlugin1",
+            name: "_AblyPluginPrivate",
             targets: ["AblyPlugin"]
         ),
-        .library(
-            name: "_AblyPlugin2",
-            targets: ["AblyPlugin"]
-        ),
+        /*.library(*/
+            /*name: "_AblyPlugin2",*/
+            /*targets: ["AblyPlugin"]*/
+        /*),*/
     ],
     dependencies: [
         .package(name: "msgpack", url: "https://github.com/rvi/msgpack-objective-C", from: "0.4.0"),
