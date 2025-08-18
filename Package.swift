@@ -16,15 +16,15 @@ let package = Package(
         ),
         // This library should only be used by Ably-authored plugins.
         .library(
-            name: "_AblyPlugin",
-            targets: ["AblyPlugin"]
-        ),
-        .library(
             name: "_AblyPluginPrivate",
             targets: ["AblyPlugin"]
         ),
         .library(
-            name: "_AblyPluginPrivateAnother",
+            name: "_AblyDummy1_Ignore",
+            targets: ["AblyPlugin"]
+        ),
+        .library(
+            name: "_AblyDummy2_Ignore",
             targets: ["AblyPlugin"]
         ),
         /*.library(*/
