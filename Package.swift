@@ -2,13 +2,6 @@
 
 import PackageDescription
 
-let otherProducts: [Product] = (1..<100).map { i in
-    Product.library(
-        name: "_AblyPlugin\(i)",
-        targets: ["AblyPlugin"]
-    )
-}
-
 let package = Package(
     name: "ably-cocoa",
     platforms: [
@@ -26,7 +19,7 @@ let package = Package(
             name: "_AblyPlugin",
             targets: ["AblyPlugin"]
         ),
-    ] + otherProducts,
+    ],
     dependencies: [
         .package(name: "msgpack", url: "https://github.com/rvi/msgpack-objective-C", from: "0.4.0"),
         .package(name: "AblyDeltaCodec", url: "https://github.com/ably/delta-codec-cocoa", from: "1.3.3")
