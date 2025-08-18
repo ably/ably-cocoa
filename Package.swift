@@ -2,7 +2,7 @@
 
 import PackageDescription
 
-let otherProducts: [Product] = (1..<5).map { i in
+let otherProducts: [Product] = (1..<4).map { i in
     Product.library(
         name: "_AblyPlugin\(i)",
         targets: ["AblyPlugin"]
