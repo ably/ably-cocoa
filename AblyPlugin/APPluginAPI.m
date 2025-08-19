@@ -75,19 +75,9 @@ static ARTRealtimeInternal *_internalRealtimeClient(id<APRealtimeClient> pluginR
     return _internalRealtimeClient(client).options.internalDispatchQueue;
 }
 
-- (BOOL)throwIfUnpublishableStateForChannel:(id<APRealtimeChannel>)channel error:(ARTErrorInfo * _Nullable __autoreleasing *)error {
-    [NSException raise:NSInternalInconsistencyException format:@"Not yet implemented"];
-}
-
 - (void)sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages channel:(id<APRealtimeChannel>)channel completion:(void (^)(ARTErrorInfo * _Nonnull))completion {
     [_internalRealtimeChannel(channel) sendStateWithObjectMessages:objectMessages
                                                         completion:completion];
-}
-
-- (void)fetchTimestampWithQueryTime:(BOOL)queryTime
-                           realtime:(id<APRealtimeClient>)realtime
-                         completion:(void (^ _Nullable)(ARTErrorInfo *_Nullable error, NSDate *_Nullable timestamp))completion {
-    [NSException raise:NSInternalInconsistencyException format:@"Not yet implemented"];
 }
 
 @end

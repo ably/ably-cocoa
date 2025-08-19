@@ -61,21 +61,12 @@ NS_SWIFT_SENDABLE
 /// Certain `APPluginAPIProtocol` methods must be called on this queue (the method will document when this is the case).
 - (dispatch_queue_t)internalQueueForClient:(id<APRealtimeClient>)client;
 
-/// Throws an error if the channel is in a state in which a message should not be published. Copied from ably-js, not yet implemented. Will document this method properly once exact meaning decided, or may replace it with something that makes more sense for ably-cocoa.
-- (BOOL)throwIfUnpublishableStateForChannel:(id<APRealtimeChannel>)channel
-                                      error:(ARTErrorInfo *_Nullable *_Nullable)error;
-
 /// Sends an `OBJECT` `ProtocolMessage` on a channel and indicates the result of waiting for an `ACK`. Copied from ably-js, not yet implemented. Will document this method properly once exact meaning decided, or may replace it with something that makes more sense for ably-cocoa.
 ///
 /// This method must be called on the client's internal queue (see `-internalQueueForClient:`).
 - (void)sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
                              channel:(id<APRealtimeChannel>)channel
                           completion:(void (^ _Nullable)(ARTErrorInfo *_Nullable error))completion;
-
-/// Returns the server time, as calculated from the `ARTRealtimeInstance`'s stored offset between the local clock and the server time. Copied from ably-js, not yet implemented. Will document this method once exact meaning decided, or may replace it with something that makes more sense for ably-cocoa.
-- (void)fetchTimestampWithQueryTime:(BOOL)queryTime
-                           realtime:(id<APRealtimeClient>)realtime
-                         completion:(void (^ _Nullable)(ARTErrorInfo *_Nullable error, NSDate *_Nullable timestamp))completion;
 
 @end
 
