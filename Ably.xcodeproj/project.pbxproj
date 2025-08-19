@@ -1915,6 +1915,15 @@
 			path = IOConsumer;
 			sourceTree = "<group>";
 		};
+		21A28E522E54CCC3007D0BFE /* Plugin Support */ = {
+			isa = PBXGroup;
+			children = (
+				2188F74A2DF773D3009C8A23 /* ARTPluginDecodingContext.h */,
+				2188F74E2DF773ED009C8A23 /* ARTPluginDecodingContext.m */,
+			);
+			name = "Plugin Support";
+			sourceTree = "<group>";
+		};
 		21BF06092758477700AE4C43 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
@@ -2056,6 +2065,7 @@
 				D746AE341BBC2B60003ECEF8 /* Utilities */,
 				96BF61341A35B2AB004CF2B3 /* Supporting Files */,
 				213AEA1D2D35A79B0067FD5F /* Wrapper SDK Proxy */,
+				21A28E522E54CCC3007D0BFE /* Plugin Support */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -2354,8 +2364,6 @@
 				2124B79A29DB14C000AD8361 /* ARTLogAdapter.m */,
 				21276CB929EF323100107B5F /* ARTContinuousClock.h */,
 				21276CBD29EF34AE00107B5F /* ARTContinuousClock.m */,
-				2188F74A2DF773D3009C8A23 /* ARTPluginDecodingContext.h */,
-				2188F74E2DF773ED009C8A23 /* ARTPluginDecodingContext.m */,
 			);
 			name = Utilities;
 			sourceTree = "<group>";
