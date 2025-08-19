@@ -67,7 +67,7 @@ NS_SWIFT_NAME(InternalLog)
  It is not directly used by the internals of the `Ably` library, but it is used by:
 
  - some of our Swift tests (which can’t access the variadic method below), which want to be able to call a logging method on an instance of `ARTInternalLog`
- - the `AblyPlugin` library, to implement `ARTInternalLog`'s conformance to its `APLogger` protocol
+ - the `_AblyPluginSupportPrivate` library, to implement `ARTInternalLog`'s conformance to its `APLogger` protocol
 */
 - (void)log:(NSString *)message withLevel:(ARTLogLevel)level file:(const char *)fileName line:(NSInteger)line;
 

@@ -4234,8 +4234,8 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/Source/Private",
-					"$(PROJECT_DIR)/AblyPlugin/include",
-					"$(PROJECT_DIR)/AblyPlugin/PrivateHeaders",
+					"$(PROJECT_DIR)/_AblyPluginSupportPrivate/include",
+					"$(PROJECT_DIR)/_AblyPluginSupportPrivate/PrivateHeaders",
 				);
 				INFOPLIST_FILE = "Source/Info-iOS.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
@@ -4265,8 +4265,8 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/Source/Private",
-					"$(PROJECT_DIR)/AblyPlugin/include",
-					"$(PROJECT_DIR)/AblyPlugin/PrivateHeaders",
+					"$(PROJECT_DIR)/_AblyPluginSupportPrivate/include",
+					"$(PROJECT_DIR)/_AblyPluginSupportPrivate/PrivateHeaders",
 				);
 				INFOPLIST_FILE = "Source/Info-iOS.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
@@ -4442,8 +4442,8 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/include",
-					"$(PROJECT_DIR)/AblyPlugin/include",
-					"$(PROJECT_DIR)/AblyPlugin/PrivateHeaders",
+					"$(PROJECT_DIR)/_AblyPluginSupportPrivate/include",
+					"$(PROJECT_DIR)/_AblyPluginSupportPrivate/PrivateHeaders",
 				);
 				INFOPLIST_FILE = "Source/Info-macOS.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -4486,8 +4486,8 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/include",
-					"$(PROJECT_DIR)/AblyPlugin/include",
-					"$(PROJECT_DIR)/AblyPlugin/PrivateHeaders",
+					"$(PROJECT_DIR)/_AblyPluginSupportPrivate/include",
+					"$(PROJECT_DIR)/_AblyPluginSupportPrivate/PrivateHeaders",
 				);
 				INFOPLIST_FILE = "Source/Info-macOS.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -4525,8 +4525,8 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/include",
-					"$(PROJECT_DIR)/AblyPlugin/include",
-					"$(PROJECT_DIR)/AblyPlugin/PrivateHeaders",
+					"$(PROJECT_DIR)/_AblyPluginSupportPrivate/include",
+					"$(PROJECT_DIR)/_AblyPluginSupportPrivate/PrivateHeaders",
 				);
 				INFOPLIST_FILE = "Source/Info-tvOS.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -4568,8 +4568,8 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/include",
-					"$(PROJECT_DIR)/AblyPlugin/include",
-					"$(PROJECT_DIR)/AblyPlugin/PrivateHeaders",
+					"$(PROJECT_DIR)/_AblyPluginSupportPrivate/include",
+					"$(PROJECT_DIR)/_AblyPluginSupportPrivate/PrivateHeaders",
 				);
 				INFOPLIST_FILE = "Source/Info-tvOS.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";

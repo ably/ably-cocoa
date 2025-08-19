@@ -16,8 +16,8 @@ let package = Package(
         ),
         // This library should only be used by Ably-authored plugins.
         .library(
-            name: "AblyPlugin",
-            targets: ["AblyPlugin"]
+            name: "_AblyPluginSupportPrivate",
+            targets: ["_AblyPluginSupportPrivate"]
         ),
     ],
     dependencies: [
@@ -51,16 +51,16 @@ let package = Package(
                 .headerSearchPath("SocketRocket/Internal/RunLoop"),
                 .headerSearchPath("SocketRocket/Internal/Delegate"),
                 .headerSearchPath("SocketRocket/Internal/IOConsumer"),
-                .headerSearchPath("../AblyPlugin/include"),
-                .headerSearchPath("../AblyPlugin/PrivateHeaders"),
+                .headerSearchPath("../_AblyPluginSupportPrivate/include"),
+                .headerSearchPath("../_AblyPluginSupportPrivate/PrivateHeaders"),
             ]
         ),
         .target(
-            name: "AblyPlugin",
+            name: "_AblyPluginSupportPrivate",
             dependencies: [
                 .byName(name: "Ably")
             ],
-            path: "AblyPlugin",
+            path: "_AblyPluginSupportPrivate",
             cSettings: [
                 .headerSearchPath("PrivateHeaders"),
                 .headerSearchPath("../Source/PrivateHeaders"),

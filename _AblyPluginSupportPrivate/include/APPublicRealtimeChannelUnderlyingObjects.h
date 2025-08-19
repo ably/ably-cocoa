@@ -7,7 +7,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 NS_SWIFT_NAME(PublicRealtimeChannelUnderlyingObjects)
 NS_SWIFT_SENDABLE
-/// The `AblyPlugin` objects that back an `ARTRealtimeChannel` instance.
+/// The `_AblyPluginSupportPrivate` objects that back an `ARTRealtimeChannel` instance.
 @protocol APPublicRealtimeChannelUnderlyingObjects <NSObject>
 
 @property (nonatomic, readonly) id<APRealtimeClient> client;
