@@ -1,9 +1,9 @@
+internal import _AblyPluginSupportPrivate
 import Ably
-internal import AblyPlugin
 
 /// The API that the internal components of the SDK (that is, `DefaultLiveObjects` and down) use to interact with our core SDK (i.e. ably-cocoa).
 ///
-/// This provides us with a mockable interface to ably-cocoa, and it also allows internal components and their tests not to need to worry about some of the boring details of how we bridge Swift types to AblyPlugin's Objective-C API (i.e. boxing).
+/// This provides us with a mockable interface to ably-cocoa, and it also allows internal components and their tests not to need to worry about some of the boring details of how we bridge Swift types to `_AblyPluginSupportPrivate`'s Objective-C API (i.e. boxing).
 internal protocol CoreSDK: AnyObject, Sendable {
     /// Implements the internal `#publish` method of RTO15.
     func publish(objectMessages: [OutboundObjectMessage]) async throws(InternalError)
@@ -21,10 +21,10 @@ internal final class DefaultCoreSDK: CoreSDK {
     /// Used to synchronize access to internal mutable state.
     private let mutex = NSLock()
 
-    private let channel: AblyPlugin.RealtimeChannel
-    private let client: AblyPlugin.RealtimeClient
+    private let channel: _AblyPluginSupportPrivate.RealtimeChannel
+    private let client: _AblyPluginSupportPrivate.RealtimeClient
     private let pluginAPI: PluginAPIProtocol
-    private let logger: AblyPlugin.Logger
+    private let logger: _AblyPluginSupportPrivate.Logger
 
     /// If set to true, ``publish(objectMessages:)`` will behave like a no-op.
     ///
@@ -34,10 +34,10 @@ internal final class DefaultCoreSDK: CoreSDK {
     private nonisolated(unsafe) var overriddenPublishImplementation: (([OutboundObjectMessage]) async throws -> Void)?
 
     internal init(
-        channel: AblyPlugin.RealtimeChannel,
-        client: AblyPlugin.RealtimeClient,
+        channel: _AblyPluginSupportPrivate.RealtimeChannel,
+        client: _AblyPluginSupportPrivate.RealtimeClient,
         pluginAPI: PluginAPIProtocol,
-        logger: AblyPlugin.Logger
+        logger: _AblyPluginSupportPrivate.Logger
     ) {
         self.channel = channel
         self.client = client

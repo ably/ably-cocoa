@@ -1,6 +1,6 @@
+import _AblyPluginSupportPrivate
 import Ably
 @testable import AblyLiveObjects
-import AblyPlugin
 import Testing
 
 struct AblyLiveObjectsTests {

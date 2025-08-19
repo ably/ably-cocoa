@@ -1,5 +1,5 @@
+internal import _AblyPluginSupportPrivate
 import Ably
-internal import AblyPlugin
 
 public extension ARTRealtimeChannel {
     /// A ``RealtimeObjects`` object.

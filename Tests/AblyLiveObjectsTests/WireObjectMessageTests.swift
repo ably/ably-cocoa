@@ -1,11 +1,11 @@
+import _AblyPluginSupportPrivate
 @testable import AblyLiveObjects
-import AblyPlugin
 import Foundation
 import Testing
 
 enum WireObjectMessageTests {
     // Helper: Fake decoding context
-    final class FakeDecodingContext: AblyPlugin.DecodingContextProtocol, @unchecked Sendable {
+    final class FakeDecodingContext: _AblyPluginSupportPrivate.DecodingContextProtocol, @unchecked Sendable {
         let parentID: String?
         let parentConnectionID: String?
         let parentTimestamp: Date?

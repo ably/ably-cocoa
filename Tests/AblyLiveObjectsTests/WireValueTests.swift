@@ -4,35 +4,35 @@ import Foundation
 import Testing
 
 struct WireValueTests {
-    // MARK: Conversion from AblyPlugin data
+    // MARK: Conversion from _AblyPluginSupportPrivate data
 
     @Test(arguments: [
         // object
-        (ablyPluginData: ["someKey": "someValue"], expectedResult: ["someKey": "someValue"]),
+        (pluginSupportData: ["someKey": "someValue"], expectedResult: ["someKey": "someValue"]),
         // array
-        (ablyPluginData: ["someElement"], expectedResult: ["someElement"]),
+        (pluginSupportData: ["someElement"], expectedResult: ["someElement"]),
         // string
-        (ablyPluginData: "someString", expectedResult: "someString"),
+        (pluginSupportData: "someString", expectedResult: "someString"),
         // number
-        (ablyPluginData: NSNumber(value: 0), expectedResult: 0),
-        (ablyPluginData: NSNumber(value: 1), expectedResult: 1),
-        (ablyPluginData: NSNumber(value: 123), expectedResult: 123),
-        (ablyPluginData: NSNumber(value: 123.456), expectedResult: 123.456),
+        (pluginSupportData: NSNumber(value: 0), expectedResult: 0),
+        (pluginSupportData: NSNumber(value: 1), expectedResult: 1),
+        (pluginSupportData: NSNumber(value: 123), expectedResult: 123),
+        (pluginSupportData: NSNumber(value: 123.456), expectedResult: 123.456),
         // bool
-        (ablyPluginData: NSNumber(value: true), expectedResult: true),
-        (ablyPluginData: NSNumber(value: false), expectedResult: false),
+        (pluginSupportData: NSNumber(value: true), expectedResult: true),
+        (pluginSupportData: NSNumber(value: false), expectedResult: false),
         // null
-        (ablyPluginData: NSNull(), expectedResult: .null),
+        (pluginSupportData: NSNull(), expectedResult: .null),
         // data
-        (ablyPluginData: Data([0x01, 0x02, 0x03]), expectedResult: .data(Data([0x01, 0x02, 0x03]))),
-    ] as[(ablyPluginData: Sendable, expectedResult: WireValue?)])
-    func initWithAblyPluginData(ablyPluginData: Sendable, expectedResult: WireValue?) {
-        #expect(WireValue(ablyPluginData: ablyPluginData) == expectedResult)
+        (pluginSupportData: Data([0x01, 0x02, 0x03]), expectedResult: .data(Data([0x01, 0x02, 0x03]))),
+    ] as[(pluginSupportData: Sendable, expectedResult: WireValue?)])
+    func initWithPluginSupportData(pluginSupportData: Sendable, expectedResult: WireValue?) {
+        #expect(WireValue(pluginSupportData: pluginSupportData) == expectedResult)
     }
 
     // Tests that it correctly handles an object deserialized by `JSONSerialization` (which is what ably-cocoa uses for JSON deserialization).
     @Test
-    func initWithAblyPluginData_endToEnd_json() throws {
+    func initWithPluginSupportData_endToEnd_json() throws {
         let jsonString = """
         {
           "someArray": [
@@ -54,7 +54,7 @@ struct WireValueTests {
         }
         """
 
-        let ablyPluginData = try JSONSerialization.jsonObject(with: #require(jsonString.data(using: .utf8)))
+        let pluginSupportData = try JSONSerialization.jsonObject(with: #require(jsonString.data(using: .utf8)))
 
         let expected: WireValue = [
             "someArray": [
@@ -75,12 +75,12 @@ struct WireValueTests {
             ],
         ]
 
-        #expect(WireValue(ablyPluginData: ablyPluginData) == expected)
+        #expect(WireValue(pluginSupportData: pluginSupportData) == expected)
     }
 
     // Tests that it correctly handles an object deserialized by `ARTMsgPackEncoder` (which is what ably-cocoa uses for MessagePack deserialization).
     @Test
-    func initWithAblyPluginData_endToEnd_msgpack() throws {
+    func initWithPluginSupportData_endToEnd_msgpack() throws {
         // MessagePack representation of the same data structure as in the JSON test above, plus binary data
         // This represents:
         // {
@@ -167,7 +167,7 @@ struct WireValueTests {
             0xAE, 0x73, 0x6F, 0x6D, 0x65, 0x4F, 0x74, 0x68, 0x65, 0x72, 0x56, 0x61, 0x6C, 0x75, 0x65, // value (14 chars)
         ])
 
-        let ablyPluginData = try ARTMsgPackEncoder().decode(msgpackData)
+        let pluginSupportData = try ARTMsgPackEncoder().decode(msgpackData)
 
         let expected: WireValue = [
             "someArray": [
@@ -189,10 +189,10 @@ struct WireValueTests {
             ],
         ]
 
-        #expect(WireValue(ablyPluginData: ablyPluginData) == expected)
+        #expect(WireValue(pluginSupportData: pluginSupportData) == expected)
     }
 
-    // MARK: Conversion to AblyPlugin data
+    // MARK: Conversion to _AblyPluginSupportPrivate data
 
     @Test(arguments: [
         // object
@@ -214,15 +214,15 @@ struct WireValueTests {
         // data
         (value: .data(Data([0x01, 0x02, 0x03])), expectedResult: Data([0x01, 0x02, 0x03])),
     ] as[(value: WireValue, expectedResult: Sendable)])
-    func toAblyPluginData(value: WireValue, expectedResult: Sendable) throws {
-        let resultAsNSObject = try #require(value.toAblyPluginData as? NSObject)
+    func toPluginSupportData(value: WireValue, expectedResult: Sendable) throws {
+        let resultAsNSObject = try #require(value.toPluginSupportData as? NSObject)
         let expectedResultAsNSObject = try #require(expectedResult as? NSObject)
         #expect(resultAsNSObject == expectedResultAsNSObject)
     }
 
     // Tests that it creates an object that can be serialized by `JSONSerialization` (which is what ably-cocoa uses for JSON serialization), and that the result of this serialization is what we’d expect.
     @Test
-    func toAblyPluginData_endToEnd_json() throws {
+    func toPluginSupportData_endToEnd_json() throws {
         let value: WireValue = [
             "someArray": [
                 [
@@ -265,7 +265,7 @@ struct WireValueTests {
 
         let jsonSerializationOptions: JSONSerialization.WritingOptions = [.sortedKeys]
 
-        let valueData = try JSONSerialization.data(withJSONObject: value.toAblyPluginData, options: jsonSerializationOptions)
+        let valueData = try JSONSerialization.data(withJSONObject: value.toPluginSupportData, options: jsonSerializationOptions)
         let expectedData = try {
             let serialized = try JSONSerialization.jsonObject(with: #require(expectedJSONString.data(using: .utf8)))
             return try JSONSerialization.data(withJSONObject: serialized, options: jsonSerializationOptions)
@@ -276,7 +276,7 @@ struct WireValueTests {
 
     // Tests that it creates an object that can be serialized by `ARTMsgPackEncoder` (which is what ably-cocoa uses for MessagePack serialization), and that the result of this serialization is what we’d expect.
     @Test
-    func toAblyPluginData_endToEnd_msgpack() throws {
+    func toPluginSupportData_endToEnd_msgpack() throws {
         let value: WireValue = [
             "someArray": [
                 [
@@ -365,7 +365,7 @@ struct WireValueTests {
             0xAE, 0x73, 0x6F, 0x6D, 0x65, 0x4F, 0x74, 0x68, 0x65, 0x72, 0x56, 0x61, 0x6C, 0x75, 0x65, // value (14 chars)
         ])
 
-        let actualMsgPackData = try ARTMsgPackEncoder().encode(value.toAblyPluginData)
+        let actualMsgPackData = try ARTMsgPackEncoder().encode(value.toPluginSupportData)
 
         // Verify that both decode to the same Foundation object structure
         let expectedDecoded = try ARTMsgPackEncoder().decode(expectedMsgPackData)

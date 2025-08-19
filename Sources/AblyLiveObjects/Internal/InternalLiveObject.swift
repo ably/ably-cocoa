@@ -1,4 +1,4 @@
-internal import AblyPlugin
+internal import _AblyPluginSupportPrivate
 
 /// Provides RTLO spec point functionality common to all LiveObjects.
 ///

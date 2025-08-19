@@ -1,4 +1,4 @@
-internal import AblyPlugin
+internal import _AblyPluginSupportPrivate
 import Foundation
 
 // This file contains the ObjectMessage types that we send and receive over the wire. We convert them to and from the corresponding non-wire types (e.g. `InboundObjectMessage`) for use within the codebase.
@@ -61,7 +61,7 @@ internal extension InboundWireObjectMessage {
     /// Decodes the `ObjectMessage` and then uses the containing `ProtocolMessage` to populate some absent fields per the rules of the specification.
     init(
         wireObject: [String: WireValue],
-        decodingContext: AblyPlugin.DecodingContextProtocol
+        decodingContext: _AblyPluginSupportPrivate.DecodingContextProtocol
     ) throws(InternalError) {
         // OM2a
         if let id = try wireObject.optionalStringValueForKey(WireObjectMessageWireKey.id.rawValue) {

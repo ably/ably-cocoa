@@ -1,6 +1,6 @@
+import _AblyPluginSupportPrivate
 import Ably
 @testable import AblyLiveObjects
-import AblyPlugin
 import Foundation
 
 // This file is copied from the file objects.test.js in ably-js.
@@ -330,7 +330,7 @@ final class ObjectsHelper: Sendable {
                     logger: channel.internal.logger,
                 )
 
-                let foundationObject = deserialized.toAblyPluginDataDictionary
+                let foundationObject = deserialized.toPluginSupportDataDictionary
                 let protocolMessage = withExtendedLifetime(jsonLikeEncoderDelegate) {
                     encoder.protocolMessage(from: foundationObject)!
                 }

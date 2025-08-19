@@ -14,7 +14,7 @@ When writing tests:
 - When you need to import the following modules in the tests, do so in the following way:
     - Ably: use `import Ably`
     - AblyLiveObjects: use `@testable import AblyLiveObjects`
-    - AblyPlugin: use `import AblyPlugin`; _do not_ do `internal import`
+    - `_AblyPluginSupportPrivate`: use `import _AblyPluginSupportPrivate`; _do not_ do `internal import`
 - When you need to pass a logger to internal components in the tests, pass `TestLogger()`.
 - When you need to unwrap an optional value in the tests, favour using `#require` instead of `guard let`.
 - When creating `testsOnly_` property declarations, do not write generic comments of the form "Test-only access to the private createOperationIsMerged property"; the meaning of these properties is already well understood.

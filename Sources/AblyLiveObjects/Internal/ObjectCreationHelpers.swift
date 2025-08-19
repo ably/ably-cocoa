@@ -1,4 +1,4 @@
-internal import AblyPlugin
+internal import _AblyPluginSupportPrivate
 import CryptoKit
 import Foundation
 

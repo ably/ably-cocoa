@@ -1,5 +1,5 @@
+import _AblyPluginSupportPrivate
 @testable import AblyLiveObjects
-import AblyPlugin
 import Foundation
 
 // Note that this file was created entirely by Cursor upon my giving it some guidelines — I have not checked its contents in any detail and it may well turn out that there are mistakes here which we need to fix in the future.

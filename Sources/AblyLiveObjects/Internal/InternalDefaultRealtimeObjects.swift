@@ -1,5 +1,5 @@
+internal import _AblyPluginSupportPrivate
 import Ably
-internal import AblyPlugin
 
 /// This provides the implementation behind ``PublicDefaultRealtimeObjects``, via internal versions of the ``RealtimeObjects`` API.
 internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPoolDelegate {
@@ -8,7 +8,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
 
     private nonisolated(unsafe) var mutableState: MutableState!
 
-    private let logger: AblyPlugin.Logger
+    private let logger: _AblyPluginSupportPrivate.Logger
     private let userCallbackQueue: DispatchQueue
     private let clock: SimpleClock
 
@@ -91,7 +91,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
         }
     }
 
-    internal init(logger: AblyPlugin.Logger, userCallbackQueue: DispatchQueue, clock: SimpleClock, garbageCollectionOptions: GarbageCollectionOptions = .init()) {
+    internal init(logger: _AblyPluginSupportPrivate.Logger, userCallbackQueue: DispatchQueue, clock: SimpleClock, garbageCollectionOptions: GarbageCollectionOptions = .init()) {
         self.logger = logger
         self.userCallbackQueue = userCallbackQueue
         self.clock = clock

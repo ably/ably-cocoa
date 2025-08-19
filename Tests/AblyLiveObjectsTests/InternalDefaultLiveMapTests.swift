@@ -1,5 +1,5 @@
+import _AblyPluginSupportPrivate
 @testable import AblyLiveObjects
-import AblyPlugin
 import Foundation
 import Testing
 

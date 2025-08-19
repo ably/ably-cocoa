@@ -1,5 +1,5 @@
+import _AblyPluginSupportPrivate
 @testable import AblyLiveObjects
-import AblyPlugin
 import Testing
 
 struct ObjectsPoolTests {

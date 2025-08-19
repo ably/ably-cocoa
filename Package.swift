@@ -47,7 +47,7 @@ let package = Package(
                     package: "ably-cocoa",
                 ),
                 .product(
-                    name: "AblyPlugin",
+                    name: "_AblyPluginSupportPrivate",
                     package: "ably-cocoa",
                 ),
             ],
@@ -61,7 +61,7 @@ let package = Package(
                     package: "ably-cocoa",
                 ),
                 .product(
-                    name: "AblyPlugin",
+                    name: "_AblyPluginSupportPrivate",
                     package: "ably-cocoa",
                 ),
             ],

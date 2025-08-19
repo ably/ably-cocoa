@@ -1,8 +1,8 @@
-import AblyPlugin
+import _AblyPluginSupportPrivate
 import os
 
-/// An implementation of `AblyPlugin.Logger` to use when testing internal components of the LiveObjects plugin.
-final class TestLogger: NSObject, AblyPlugin.Logger {
+/// An implementation of `_AblyPluginSupportPrivate.Logger` to use when testing internal components of the LiveObjects plugin.
+final class TestLogger: NSObject, _AblyPluginSupportPrivate.Logger {
     // By default, we don’t log in tests to keep the test logs easy to read. You can set this property to `true` to temporarily turn logging on if you want to debug a test.
     static let loggingEnabled = false
 

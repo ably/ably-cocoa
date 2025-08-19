@@ -1,4 +1,4 @@
-internal import AblyPlugin
+internal import _AblyPluginSupportPrivate
 import Foundation
 
 // This file contains the ObjectMessage types that we use within the codebase. We convert them to and from the corresponding wire types (e.g. `InboundWireObjectMessage`) for sending and receiving over the wire.
@@ -97,7 +97,7 @@ internal extension InboundObjectMessage {
     /// - Throws: `InternalError` if JSON or Base64 decoding fails.
     init(
         wireObjectMessage: InboundWireObjectMessage,
-        format: AblyPlugin.EncodingFormat
+        format: _AblyPluginSupportPrivate.EncodingFormat
     ) throws(InternalError) {
         id = wireObjectMessage.id
         clientId = wireObjectMessage.clientId
@@ -121,7 +121,7 @@ internal extension OutboundObjectMessage {
     ///
     /// - Parameters:
     ///   - format: The format to use when applying the encoding rules of OD4.
-    func toWire(format: AblyPlugin.EncodingFormat) -> OutboundWireObjectMessage {
+    func toWire(format: _AblyPluginSupportPrivate.EncodingFormat) -> OutboundWireObjectMessage {
         .init(
             id: id,
             clientId: clientId,
@@ -145,7 +145,7 @@ internal extension ObjectOperation {
     /// - Throws: `InternalError` if JSON or Base64 decoding fails.
     init(
         wireObjectOperation: WireObjectOperation,
-        format: AblyPlugin.EncodingFormat
+        format: _AblyPluginSupportPrivate.EncodingFormat
     ) throws(InternalError) {
         // Decode the action and objectId first they're not part of PartialObjectOperation
         action = wireObjectOperation.action
@@ -177,7 +177,7 @@ internal extension ObjectOperation {
     ///
     /// - Parameters:
     ///   - format: The format to use when applying the encoding rules of OD4.
-    func toWire(format: AblyPlugin.EncodingFormat) -> WireObjectOperation {
+    func toWire(format: _AblyPluginSupportPrivate.EncodingFormat) -> WireObjectOperation {
         let partialWireOperation = PartialObjectOperation(
             mapOp: mapOp,
             counterOp: counterOp,
@@ -209,7 +209,7 @@ internal extension PartialObjectOperation {
     /// - Throws: `InternalError` if JSON or Base64 decoding fails.
     init(
         partialWireObjectOperation: PartialWireObjectOperation,
-        format: AblyPlugin.EncodingFormat
+        format: _AblyPluginSupportPrivate.EncodingFormat
     ) throws(InternalError) {
         mapOp = try partialWireObjectOperation.mapOp.map { wireObjectsMapOp throws(InternalError) in
             try .init(wireObjectsMapOp: wireObjectsMapOp, format: format)
@@ -230,7 +230,7 @@ internal extension PartialObjectOperation {
     ///
     /// - Parameters:
     ///   - format: The format to use when applying the encoding rules of OD4.
-    func toWire(format: AblyPlugin.EncodingFormat) -> PartialWireObjectOperation {
+    func toWire(format: _AblyPluginSupportPrivate.EncodingFormat) -> PartialWireObjectOperation {
         .init(
             mapOp: mapOp?.toWire(format: format),
             counterOp: counterOp,
@@ -250,7 +250,7 @@ internal extension ObjectData {
     /// - Throws: `InternalError` if JSON or Base64 decoding fails.
     init(
         wireObjectData: WireObjectData,
-        format: AblyPlugin.EncodingFormat
+        format: _AblyPluginSupportPrivate.EncodingFormat
     ) throws(InternalError) {
         objectId = wireObjectData.objectId
         boolean = wireObjectData.boolean
@@ -302,7 +302,7 @@ internal extension ObjectData {
     ///
     /// - Parameters:
     ///   - format: The format to use when applying the encoding rules of OD4.
-    func toWire(format: AblyPlugin.EncodingFormat) -> WireObjectData {
+    func toWire(format: _AblyPluginSupportPrivate.EncodingFormat) -> WireObjectData {
         // OD4: Encode data based on format
         let wireBytes: StringOrData? = if let bytes {
             switch format {
@@ -354,7 +354,7 @@ internal extension ObjectsMapOp {
     /// - Throws: `InternalError` if JSON or Base64 decoding fails.
     init(
         wireObjectsMapOp: WireObjectsMapOp,
-        format: AblyPlugin.EncodingFormat
+        format: _AblyPluginSupportPrivate.EncodingFormat
     ) throws(InternalError) {
         key = wireObjectsMapOp.key
         data = try wireObjectsMapOp.data.map { wireObjectData throws(InternalError) in
@@ -366,7 +366,7 @@ internal extension ObjectsMapOp {
     ///
     /// - Parameters:
     ///   - format: The format to use when applying the encoding rules of OD4.
-    func toWire(format: AblyPlugin.EncodingFormat) -> WireObjectsMapOp {
+    func toWire(format: _AblyPluginSupportPrivate.EncodingFormat) -> WireObjectsMapOp {
         .init(
             key: key,
             data: data?.toWire(format: format),
@@ -382,7 +382,7 @@ internal extension ObjectsMapEntry {
     /// - Throws: `InternalError` if JSON or Base64 decoding fails.
     init(
         wireObjectsMapEntry: WireObjectsMapEntry,
-        format: AblyPlugin.EncodingFormat
+        format: _AblyPluginSupportPrivate.EncodingFormat
     ) throws(InternalError) {
         tombstone = wireObjectsMapEntry.tombstone
         timeserial = wireObjectsMapEntry.timeserial
@@ -398,7 +398,7 @@ internal extension ObjectsMapEntry {
     ///
     /// - Parameters:
     ///   - format: The format to use when applying the encoding rules of OD4.
-    func toWire(format: AblyPlugin.EncodingFormat) -> WireObjectsMapEntry {
+    func toWire(format: _AblyPluginSupportPrivate.EncodingFormat) -> WireObjectsMapEntry {
         .init(
             tombstone: tombstone,
             timeserial: timeserial,
@@ -415,7 +415,7 @@ internal extension ObjectsMap {
     /// - Throws: `InternalError` if JSON or Base64 decoding fails.
     init(
         wireObjectsMap: WireObjectsMap,
-        format: AblyPlugin.EncodingFormat
+        format: _AblyPluginSupportPrivate.EncodingFormat
     ) throws(InternalError) {
         semantics = wireObjectsMap.semantics
         entries = try wireObjectsMap.entries?.ablyLiveObjects_mapValuesWithTypedThrow { wireMapEntry throws(InternalError) in
@@ -427,7 +427,7 @@ internal extension ObjectsMap {
     ///
     /// - Parameters:
     ///   - format: The format to use when applying the encoding rules of OD4.
-    func toWire(format: AblyPlugin.EncodingFormat) -> WireObjectsMap {
+    func toWire(format: _AblyPluginSupportPrivate.EncodingFormat) -> WireObjectsMap {
         .init(
             semantics: semantics,
             entries: entries?.mapValues { $0.toWire(format: format) },
@@ -443,7 +443,7 @@ internal extension ObjectState {
     /// - Throws: `InternalError` if JSON or Base64 decoding fails.
     init(
         wireObjectState: WireObjectState,
-        format: AblyPlugin.EncodingFormat
+        format: _AblyPluginSupportPrivate.EncodingFormat
     ) throws(InternalError) {
         objectId = wireObjectState.objectId
         siteTimeserials = wireObjectState.siteTimeserials
@@ -461,7 +461,7 @@ internal extension ObjectState {
     ///
     /// - Parameters:
     ///   - format: The format to use when applying the encoding rules of OD4.
-    func toWire(format: AblyPlugin.EncodingFormat) -> WireObjectState {
+    func toWire(format: _AblyPluginSupportPrivate.EncodingFormat) -> WireObjectState {
         .init(
             objectId: objectId,
             siteTimeserials: siteTimeserials,
