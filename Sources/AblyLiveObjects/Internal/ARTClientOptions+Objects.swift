@@ -1,4 +1,5 @@
 internal import _AblyPluginSupportPrivate
+import Ably
 
 internal extension ARTClientOptions {
     private class Box<T> {
@@ -16,7 +17,7 @@ internal extension ARTClientOptions {
         get {
             let optionsValue = Plugin.defaultPluginAPI.pluginOptionsValue(
                 forKey: Self.garbageCollectionOptionsKey,
-                clientOptions: self,
+                clientOptions: asPluginPublicClientOptions,
             )
 
             guard let optionsValue else {
@@ -38,7 +39,7 @@ internal extension ARTClientOptions {
             Plugin.defaultPluginAPI.setPluginOptionsValue(
                 Box<InternalDefaultRealtimeObjects.GarbageCollectionOptions>(boxed: newValue),
                 forKey: Self.garbageCollectionOptionsKey,
-                clientOptions: self,
+                clientOptions: asPluginPublicClientOptions,
             )
         }
     }

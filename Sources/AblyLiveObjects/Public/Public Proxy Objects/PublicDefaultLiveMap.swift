@@ -11,9 +11,9 @@ internal final class PublicDefaultLiveMap: LiveMap {
 
     private let coreSDK: CoreSDK
     private let delegate: LiveMapObjectPoolDelegate
-    private let logger: _AblyPluginSupportPrivate.Logger
+    private let logger: Logger
 
-    internal init(proxied: InternalDefaultLiveMap, coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate, logger: _AblyPluginSupportPrivate.Logger) {
+    internal init(proxied: InternalDefaultLiveMap, coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate, logger: Logger) {
         self.proxied = proxied
         self.coreSDK = coreSDK
         self.delegate = delegate

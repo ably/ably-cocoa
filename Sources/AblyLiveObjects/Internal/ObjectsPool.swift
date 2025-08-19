@@ -137,7 +137,7 @@ internal struct ObjectsPool {
 
     /// Creates an `ObjectsPool` whose root is a zero-value `LiveMap`.
     internal init(
-        logger: _AblyPluginSupportPrivate.Logger,
+        logger: Logger,
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock,
         testsOnly_otherEntries otherEntries: [String: Entry]? = nil,
@@ -151,7 +151,7 @@ internal struct ObjectsPool {
     }
 
     private init(
-        logger: _AblyPluginSupportPrivate.Logger,
+        logger: Logger,
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock,
         otherEntries: [String: Entry]?
@@ -187,7 +187,7 @@ internal struct ObjectsPool {
     ///   - userCallbackQueue: The callback queue to use for any created LiveObject
     ///   - clock: The clock to use for any created LiveObject
     /// - Returns: The existing or newly created object
-    internal mutating func createZeroValueObject(forObjectID objectID: String, logger: _AblyPluginSupportPrivate.Logger, userCallbackQueue: DispatchQueue, clock: SimpleClock) -> Entry? {
+    internal mutating func createZeroValueObject(forObjectID objectID: String, logger: Logger, userCallbackQueue: DispatchQueue, clock: SimpleClock) -> Entry? {
         // RTO6a: If an object with objectId exists in ObjectsPool, do not create a new object
         if let existingEntry = entries[objectID] {
             return existingEntry
@@ -220,7 +220,7 @@ internal struct ObjectsPool {
     /// Applies the objects gathered during an `OBJECT_SYNC` to this `ObjectsPool`, per RTO5c1 and RTO5c2.
     internal mutating func applySyncObjectsPool(
         _ syncObjectsPool: [SyncObjectsPoolEntry],
-        logger: _AblyPluginSupportPrivate.Logger,
+        logger: Logger,
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock,
     ) {
@@ -316,7 +316,7 @@ internal struct ObjectsPool {
     /// - Returns: The existing or newly created counter object
     internal mutating func getOrCreateCounter(
         creationOperation: ObjectCreationHelpers.CounterCreationOperation,
-        logger: _AblyPluginSupportPrivate.Logger,
+        logger: Logger,
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock,
     ) -> InternalDefaultLiveCounter {
@@ -360,7 +360,7 @@ internal struct ObjectsPool {
     /// - Returns: The existing or newly created map object
     internal mutating func getOrCreateMap(
         creationOperation: ObjectCreationHelpers.MapCreationOperation,
-        logger: _AblyPluginSupportPrivate.Logger,
+        logger: Logger,
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock,
     ) -> InternalDefaultLiveMap {

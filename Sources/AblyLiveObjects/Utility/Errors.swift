@@ -1,3 +1,4 @@
+internal import _AblyPluginSupportPrivate
 import Ably
 
 /**
@@ -5,7 +6,7 @@ import Ably
  */
 internal enum LiveObjectsError {
     // operationDescription should be a description of a method like "LiveCounter.value"; it will be interpolated into an error message
-    case objectsOperationFailedInvalidChannelState(operationDescription: String, channelState: ARTRealtimeChannelState)
+    case objectsOperationFailedInvalidChannelState(operationDescription: String, channelState: _AblyPluginSupportPrivate.RealtimeChannelState)
     case counterInitialValueInvalid(value: Double)
     case counterIncrementAmountInvalid(amount: Double)
 

@@ -6,7 +6,7 @@ internal extension InternalLiveMapValue {
     struct PublicValueCreationArgs {
         internal var coreSDK: CoreSDK
         internal var mapDelegate: LiveMapObjectPoolDelegate
-        internal var logger: _AblyPluginSupportPrivate.Logger
+        internal var logger: Logger
 
         internal var toCounterCreationArgs: PublicObjectsStore.CounterCreationArgs {
             .init(coreSDK: coreSDK, logger: logger)

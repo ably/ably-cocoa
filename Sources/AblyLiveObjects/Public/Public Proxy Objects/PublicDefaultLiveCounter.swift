@@ -10,9 +10,9 @@ internal final class PublicDefaultLiveCounter: LiveCounter {
     // MARK: - Dependencies that hold a strong reference to `proxied`
 
     private let coreSDK: CoreSDK
-    private let logger: _AblyPluginSupportPrivate.Logger
+    private let logger: Logger
 
-    internal init(proxied: InternalDefaultLiveCounter, coreSDK: CoreSDK, logger: _AblyPluginSupportPrivate.Logger) {
+    internal init(proxied: InternalDefaultLiveCounter, coreSDK: CoreSDK, logger: Logger) {
         self.proxied = proxied
         self.coreSDK = coreSDK
         self.logger = logger

@@ -8,7 +8,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
 
     private nonisolated(unsafe) var mutableState: MutableState!
 
-    private let logger: _AblyPluginSupportPrivate.Logger
+    private let logger: Logger
     private let userCallbackQueue: DispatchQueue
     private let clock: SimpleClock
 
@@ -91,7 +91,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
         }
     }
 
-    internal init(logger: _AblyPluginSupportPrivate.Logger, userCallbackQueue: DispatchQueue, clock: SimpleClock, garbageCollectionOptions: GarbageCollectionOptions = .init()) {
+    internal init(logger: Logger, userCallbackQueue: DispatchQueue, clock: SimpleClock, garbageCollectionOptions: GarbageCollectionOptions = .init()) {
         self.logger = logger
         self.userCallbackQueue = userCallbackQueue
         self.clock = clock

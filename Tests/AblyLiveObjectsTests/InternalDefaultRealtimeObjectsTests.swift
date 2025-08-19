@@ -672,8 +672,8 @@ struct InternalDefaultRealtimeObjectsTests {
         // MARK: - RTO1b Tests
 
         // @spec RTO1b
-        @Test(arguments: [.detached, .failed] as [ARTRealtimeChannelState])
-        func getRootThrowsIfChannelIsDetachedOrFailed(channelState: ARTRealtimeChannelState) async throws {
+        @Test(arguments: [.detached, .failed] as [_AblyPluginSupportPrivate.RealtimeChannelState])
+        func getRootThrowsIfChannelIsDetachedOrFailed(channelState: _AblyPluginSupportPrivate.RealtimeChannelState) async throws {
             let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
             let coreSDK = MockCoreSDK(channelState: channelState)
 
@@ -1044,8 +1044,8 @@ struct InternalDefaultRealtimeObjectsTests {
     /// Tests for `InternalDefaultRealtimeObjects.createMap`, covering RTO11 specification points (these are largely a smoke test, the rest being tested in ObjectCreationHelpers tests)
     struct CreateMapTests {
         // @spec RTO11d
-        @Test(arguments: [.detached, .failed, .suspended] as [ARTRealtimeChannelState])
-        func throwsIfChannelIsInInvalidState(channelState: ARTRealtimeChannelState) async throws {
+        @Test(arguments: [.detached, .failed, .suspended] as [_AblyPluginSupportPrivate.RealtimeChannelState])
+        func throwsIfChannelIsInInvalidState(channelState: _AblyPluginSupportPrivate.RealtimeChannelState) async throws {
             let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
             let coreSDK = MockCoreSDK(channelState: channelState)
             let entries: [String: InternalLiveMapValue] = ["testKey": .string("testValue")]
@@ -1175,8 +1175,8 @@ struct InternalDefaultRealtimeObjectsTests {
         /// Tests for `InternalDefaultRealtimeObjects.createCounter`, covering RTO12 specification points (these are largely a smoke test, the rest being tested in ObjectCreationHelpers tests)
         struct CreateCounterTests {
             // @spec RTO12d
-            @Test(arguments: [.detached, .failed, .suspended] as [ARTRealtimeChannelState])
-            func throwsIfChannelIsInInvalidState(channelState: ARTRealtimeChannelState) async throws {
+            @Test(arguments: [.detached, .failed, .suspended] as [_AblyPluginSupportPrivate.RealtimeChannelState])
+            func throwsIfChannelIsInInvalidState(channelState: _AblyPluginSupportPrivate.RealtimeChannelState) async throws {
                 let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
                 let coreSDK = MockCoreSDK(channelState: channelState)
 

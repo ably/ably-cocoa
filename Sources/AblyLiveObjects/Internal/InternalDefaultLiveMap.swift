@@ -38,7 +38,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         }
     }
 
-    private let logger: _AblyPluginSupportPrivate.Logger
+    private let logger: Logger
     private let userCallbackQueue: DispatchQueue
     private let clock: SimpleClock
 
@@ -48,7 +48,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         testsOnly_data data: [String: InternalObjectsMapEntry],
         objectID: String,
         testsOnly_semantics semantics: WireEnum<ObjectsMapSemantics>? = nil,
-        logger: _AblyPluginSupportPrivate.Logger,
+        logger: Logger,
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock,
     ) {
@@ -66,7 +66,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         data: [String: InternalObjectsMapEntry],
         objectID: String,
         semantics: WireEnum<ObjectsMapSemantics>?,
-        logger: _AblyPluginSupportPrivate.Logger,
+        logger: Logger,
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock,
     ) {
@@ -84,7 +84,7 @@ internal final class InternalDefaultLiveMap: Sendable {
     internal static func createZeroValued(
         objectID: String,
         semantics: WireEnum<ObjectsMapSemantics>? = nil,
-        logger: _AblyPluginSupportPrivate.Logger,
+        logger: Logger,
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock,
     ) -> Self {
@@ -398,7 +398,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             using state: ObjectState,
             objectMessageSerialTimestamp: Date?,
             objectsPool: inout ObjectsPool,
-            logger: _AblyPluginSupportPrivate.Logger,
+            logger: Logger,
             clock: SimpleClock,
             userCallbackQueue: DispatchQueue,
         ) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
@@ -467,7 +467,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         internal mutating func mergeInitialValue(
             from operation: ObjectOperation,
             objectsPool: inout ObjectsPool,
-            logger: _AblyPluginSupportPrivate.Logger,
+            logger: Logger,
             userCallbackQueue: DispatchQueue,
             clock: SimpleClock,
         ) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
@@ -621,7 +621,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             operationTimeserial: String?,
             operationData: ObjectData?,
             objectsPool: inout ObjectsPool,
-            logger: _AblyPluginSupportPrivate.Logger,
+            logger: Logger,
             userCallbackQueue: DispatchQueue,
             clock: SimpleClock,
         ) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
@@ -744,7 +744,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         internal mutating func applyMapCreateOperation(
             _ operation: ObjectOperation,
             objectsPool: inout ObjectsPool,
-            logger: _AblyPluginSupportPrivate.Logger,
+            logger: Logger,
             userCallbackQueue: DispatchQueue,
             clock: SimpleClock,
         ) -> LiveObjectUpdate<DefaultLiveMapUpdate> {

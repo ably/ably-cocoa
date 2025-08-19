@@ -1,4 +1,5 @@
 internal import _AblyPluginSupportPrivate
+import Ably
 
 // We explicitly import the NSObject class, else it seems to get transitively imported from  `internal import _AblyPluginSupportPrivate`, leading to the error "Class cannot be declared public because its superclass is internal".
 import ObjectiveC.NSObject
@@ -34,10 +35,11 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
 
     // Populates the channel's `objects` property.
     internal func prepare(_ channel: _AblyPluginSupportPrivate.RealtimeChannel, client: _AblyPluginSupportPrivate.RealtimeClient) {
-        let logger = pluginAPI.logger(for: channel)
+        let pluginLogger = pluginAPI.logger(for: channel)
         let callbackQueue = pluginAPI.callbackQueue(for: client)
-        let options = pluginAPI.options(for: client)
+        let options = ARTClientOptions.castPluginPublicClientOptions(pluginAPI.options(for: client))
 
+        let logger = DefaultLogger(pluginLogger: pluginLogger, pluginAPI: pluginAPI)
         logger.log("LiveObjects.DefaultInternalPlugin received prepare(_:)", level: .debug)
         let liveObjects = InternalDefaultRealtimeObjects(
             logger: logger,
@@ -68,9 +70,9 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
         _ serialized: [String: Any],
         context: DecodingContextProtocol,
         format: EncodingFormat,
-        error errorPtr: AutoreleasingUnsafeMutablePointer<ARTErrorInfo?>?,
+        error errorPtr: AutoreleasingUnsafeMutablePointer<_AblyPluginSupportPrivate.PublicErrorInfo?>?,
     ) -> (any ObjectMessageProtocol)? {
-        let wireObject = WireValue.objectFrom_AblyPluginSupportPrivateData(serialized)
+        let wireObject = WireValue.objectFromPluginSupportData(serialized)
 
         do {
             let wireObjectMessage = try InboundWireObjectMessage(
@@ -83,7 +85,7 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
             )
             return ObjectMessageBox(objectMessage: objectMessage)
         } catch {
-            errorPtr?.pointee = error.toARTErrorInfo()
+            errorPtr?.pointee = error.toARTErrorInfo().asPluginPublicErrorInfo
             return nil
         }
     }

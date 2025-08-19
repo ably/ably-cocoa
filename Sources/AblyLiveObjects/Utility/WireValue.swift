@@ -137,7 +137,7 @@ internal extension WireValue {
     }
 
     /// Creates a `WireValue` from an `_AblyPluginSupportPrivate` deserialized wire object. Specifically, `pluginSupportData` can be a value that was passed to `LiveObjectsPlugin.decodeObjectMessage:…`.
-    static func objectFrom_AblyPluginSupportPrivateData(_ pluginSupportData: [String: Any]) -> [String: WireValue] {
+    static func objectFromPluginSupportData(_ pluginSupportData: [String: Any]) -> [String: WireValue] {
         let wireValue = WireValue(pluginSupportData: pluginSupportData)
         guard case let .object(wireObject) = wireValue else {
             preconditionFailure()

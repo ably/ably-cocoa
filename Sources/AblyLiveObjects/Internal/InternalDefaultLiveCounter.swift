@@ -21,7 +21,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
         }
     }
 
-    private let logger: _AblyPluginSupportPrivate.Logger
+    private let logger: Logger
     private let userCallbackQueue: DispatchQueue
     private let clock: SimpleClock
 
@@ -30,7 +30,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
     internal convenience init(
         testsOnly_data data: Double,
         objectID: String,
-        logger: _AblyPluginSupportPrivate.Logger,
+        logger: Logger,
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock
     ) {
@@ -40,7 +40,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
     private init(
         data: Double,
         objectID: String,
-        logger: _AblyPluginSupportPrivate.Logger,
+        logger: Logger,
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock
     ) {
@@ -56,7 +56,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
     ///   - objectID: The value for the "private objectId field" of RTO5c1b1a.
     internal static func createZeroValued(
         objectID: String,
-        logger: _AblyPluginSupportPrivate.Logger,
+        logger: Logger,
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock,
     ) -> Self {

@@ -1,3 +1,4 @@
+internal import _AblyPluginSupportPrivate
 import Ably
 
 /// An error thrown by the internals of the LiveObjects SDK.
@@ -33,5 +34,11 @@ internal extension Error {
 internal extension ARTErrorInfo {
     func toInternalError() -> InternalError {
         .errorInfo(self)
+    }
+}
+
+internal extension _AblyPluginSupportPrivate.PublicErrorInfo {
+    func toInternalError() -> InternalError {
+        ARTErrorInfo.castPluginPublicErrorInfo(self).toInternalError()
     }
 }
