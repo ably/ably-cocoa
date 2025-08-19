@@ -61,7 +61,7 @@ NS_SWIFT_SENDABLE
 /// Certain `APPluginAPIProtocol` methods must be called on this queue (the method will document when this is the case).
 - (dispatch_queue_t)internalQueueForClient:(id<APRealtimeClient>)client;
 
-/// Sends an `OBJECT` `ProtocolMessage` on a channel and indicates the result of waiting for an `ACK`. Copied from ably-js, not yet implemented. Will document this method properly once exact meaning decided, or may replace it with something that makes more sense for ably-cocoa.
+/// Sends an `OBJECT` `ProtocolMessage` on a channel and indicates the result of waiting for an `ACK`. TODO there is still some deciding to be done about the exact contract of this method.
 ///
 /// This method must be called on the client's internal queue (see `-internalQueueForClient:`).
 - (void)sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
