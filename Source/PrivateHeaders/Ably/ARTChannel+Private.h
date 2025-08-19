@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) ARTDataEncoder *dataEncoder;
 
-/// Exposed so that `APPluginAPI` can allow plugins to log via this channel.
+/// Exposed so that `ARTPluginAPI` can allow plugins to log via this channel.
 @property (nonatomic, readonly) ARTInternalLog *logger;
 
 - (void)internalPostMessages:(id)data callback:(nullable ARTCallback)callback;

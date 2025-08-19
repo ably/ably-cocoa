@@ -2,6 +2,15 @@
   "object": {
     "pins": [
       {
+        "package": "ably-cocoa-plugin-support",
+        "repositoryURL": "https://github.com/ably/ably-cocoa-plugin-support",
+        "state": {
+          "branch": null,
+          "revision": "cec94ed123d60e39e3f8df665c30a57482d37612",
+          "version": "0.1.0"
+        }
+      },
+      {
         "package": "AblyDeltaCodec",
         "repositoryURL": "https://github.com/ably/delta-codec-cocoa",
         "state": {

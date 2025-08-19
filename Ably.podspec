@@ -20,12 +20,6 @@ Pod::Spec.new do |s|
   s.resource_bundles        = {'Ably' => ['Source/PrivacyInfo.xcprivacy']}
   s.private_header_files    = 'Source/PrivateHeaders/**/*.h', 'Source/SocketRocket/**/*.h'
   s.module_map              = 'Source/Ably.modulemap'
-  # This is for the import of `APLiveObjectsPlugin.h` to resolve. Copied from:
-  # - https://stackoverflow.com/questions/28425765/add-a-user-header-search-path-to-a-podspec
-  # - https://stackoverflow.com/questions/58690010/including-a-directory-as-a-search-path-during-compilation-with-cocoapods
-  s.pod_target_xcconfig     = {
-    'HEADER_SEARCH_PATHS' => ['"${PODS_TARGET_SRCROOT}/_AblyPluginSupportPrivate/include"', '"${PODS_TARGET_SRCROOT}/_AblyPluginSupportPrivate/PrivateHeaders"']
-  }
   s.dependency 'msgpack', '0.4.0'
   s.dependency 'AblyDeltaCodec', '1.3.3'
 end

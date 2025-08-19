@@ -11,16 +11,28 @@
 #import "ARTQueuedDealloc.h"
 #import "ARTPushChannel+Private.h"
 
+#ifdef ABLY_SUPPORTS_PLUGINS
+@import _AblyPluginSupportPrivate;
+#endif
+
 @class ARTProtocolMessage;
 @class ARTRealtimePresenceInternal;
 @class ARTRealtimeAnnotationsInternal;
 @class ARTChannelStateChangeParams;
 @class ARTAttachRequestParams;
-@protocol APObjectMessageProtocol;
 
 NS_ASSUME_NONNULL_BEGIN
 
+#ifdef ABLY_SUPPORTS_PLUGINS
+@interface ARTRealtimeChannel () <APPublicRealtimeChannel>
+@end
+#endif
+
+#ifdef ABLY_SUPPORTS_PLUGINS
+@interface ARTRealtimeChannelInternal : ARTChannel <APRealtimeChannel>
+#else
 @interface ARTRealtimeChannelInternal : ARTChannel
+#endif
 
 @property (readonly) ARTRealtimePresenceInternal *presence;
 @property (readonly) ARTRealtimeAnnotationsInternal *annotations;
@@ -126,14 +138,16 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
 
 // MARK: - Plugins
 
-/// Provides the implementation for `-[APPluginAPI setPluginDataValue:forKey:channel]`. See documentation for that method.
+/// Provides the implementation for `-[ARTPluginAPI setPluginDataValue:forKey:channel]`. See documentation for that method in `APPluginAPIProtocol`.
 - (void)setPluginDataValue:(id)value forKey:(NSString *)key;
-/// Provides the implementation for `-[APPluginAPI pluginDataValueForKey:channel]`. See documentation for that method.
+/// Provides the implementation for `-[ARTPluginAPI pluginDataValueForKey:channel]`. See documentation for that method in `APPluginAPIProtocol`.
 - (nullable id)pluginDataValueForKey:(NSString *)key;
 
-/// Provides the implementation for `-[APPluginAPI sendObjectWithObjectMessages:completion:]`. See documentation for that method.
+#ifdef ABLY_SUPPORTS_PLUGINS
+/// Provides the implementation for `-[ARTPluginAPI sendObjectWithObjectMessages:completion:]`. See documentation for that method in `APPluginAPIProtocol`.
 - (void)sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
                           completion:(ARTCallback)completion;
+#endif
 
 @end
 
