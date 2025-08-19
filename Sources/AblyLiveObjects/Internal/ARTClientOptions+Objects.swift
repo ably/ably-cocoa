@@ -14,7 +14,7 @@ internal extension ARTClientOptions {
     /// Can be overriden for testing purposes.
     var garbageCollectionOptions: InternalDefaultRealtimeObjects.GarbageCollectionOptions? {
         get {
-            let optionsValue = PluginAPI.sharedInstance().pluginOptionsValue(
+            let optionsValue = Plugin.defaultPluginAPI.pluginOptionsValue(
                 forKey: Self.garbageCollectionOptionsKey,
                 clientOptions: self,
             )
@@ -35,7 +35,7 @@ internal extension ARTClientOptions {
                 preconditionFailure("Not implemented the ability to un-set GC options")
             }
 
-            PluginAPI.sharedInstance().setPluginOptionsValue(
+            Plugin.defaultPluginAPI.setPluginOptionsValue(
                 Box<InternalDefaultRealtimeObjects.GarbageCollectionOptions>(boxed: newValue),
                 forKey: Self.garbageCollectionOptionsKey,
                 clientOptions: self,
