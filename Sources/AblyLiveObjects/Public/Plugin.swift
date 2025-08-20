@@ -15,8 +15,23 @@ import ObjectiveC.NSObject
 ///
 /// let realtime = ARTRealtime(options: clientOptions)
 ///
-/// // You can now access LiveObjects functionality via a channel's `objects` property:
-/// let channel = realtime.channels.get("myChannel")
+/// // Fetch a channel, specifying the `.objectPublish` and `.objectSubscribe` modes
+/// let channelOptions = ARTRealtimeChannelOptions()
+/// channelOptions.modes = [.objectPublish, .objectSubscribe]
+/// let channel = realtime.channels.get("myChannel", options: channelOptions)
+///
+/// // Attach the channel
+/// try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+///     channel.attach { error in
+///         if let error {
+///             continuation.resume(throwing: error)
+///         } else {
+///             continuation.resume()
+///         }
+///     }
+/// }
+///
+/// // You can now access LiveObjects functionality via the channel's `objects` property:
 /// let rootObject = try await channel.objects.getRoot()
 /// // …and so on
 /// ```
