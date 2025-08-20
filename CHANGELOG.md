@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.2.43](https://github.com/ably/ably-cocoa/tree/1.2.43)
+
+## What's Changed
+
+* Fixes an issue in which missing Sendable annotations caused Swift 6 errors
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.42...1.2.43
+
 ## [1.2.42](https://github.com/ably/ably-cocoa/tree/1.2.42)
 
 ## What's Changed
