@@ -43,7 +43,7 @@ internal extension ExtendedJSONValue {
 
     /// Converts an `ExtendedJSONValue` to an object.
     ///
-    /// The contract for what this will return are the same as those of `JSONValue.toJSONSerializationInputElemtn`, with one addition: any values in the input of case `.extra` will be passed to the `serializeExtraValue` function, and the result of this function call will be inserted into the output object.
+    /// The contract for what this will return are the same as those of `JSONValue.toJSONSerializationInputElement`, with one addition: any values in the input of case `.extra` will be passed to the `serializeExtraValue` function, and the result of this function call will be inserted into the output object.
     func serialized(serializeExtraValue: (Extra) -> Any) -> Any {
         switch self {
         case let .object(underlying):

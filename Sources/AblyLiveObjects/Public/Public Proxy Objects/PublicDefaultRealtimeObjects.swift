@@ -117,4 +117,13 @@ internal final class PublicDefaultRealtimeObjects: RealtimeObjects {
     internal var testsOnly_receivedObjectSyncProtocolMessages: AsyncStream<[InboundObjectMessage]> {
         proxied.testsOnly_receivedObjectSyncProtocolMessages
     }
+
+    // These are used by the integration tests.
+
+    /// Replaces the method that this `RealtimeObjects` uses to send any outbound `ObjectMessage`s.
+    ///
+    /// Used by integration tests, for example to disable `ObjectMessage` publishing so that a test can verify that a behaviour is not a side effect of an `ObjectMessage` sent by the SDK.
+    internal func testsOnly_overridePublish(with newImplementation: @escaping ([OutboundObjectMessage]) async throws(InternalError) -> Void) {
+        coreSDK.testsOnly_overridePublish(with: newImplementation)
+    }
 }

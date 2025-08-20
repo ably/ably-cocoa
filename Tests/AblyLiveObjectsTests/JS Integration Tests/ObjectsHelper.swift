@@ -130,8 +130,8 @@ final class ObjectsHelper: Sendable {
     // MARK: - Wire Object Messages
 
     /// Creates a map create operation
-    func mapCreateOp(objectId: String? = nil, entries: [String: JSONValue]? = nil) -> [String: JSONValue] {
-        var operation: [String: JSONValue] = [
+    func mapCreateOp(objectId: String? = nil, entries: [String: WireValue]? = nil) -> [String: WireValue] {
+        var operation: [String: WireValue] = [
             "action": .number(NSNumber(value: Actions.mapCreate.rawValue)),
             "nonce": .string(nonce()),
             "map": .object(["semantics": .number(NSNumber(value: 0))]),
@@ -151,7 +151,7 @@ final class ObjectsHelper: Sendable {
     }
 
     /// Creates a map set operation
-    func mapSetOp(objectId: String, key: String, data: JSONValue) -> [String: JSONValue] {
+    func mapSetOp(objectId: String, key: String, data: WireValue) -> [String: WireValue] {
         [
             "operation": .object([
                 "action": .number(NSNumber(value: Actions.mapSet.rawValue)),
@@ -165,7 +165,7 @@ final class ObjectsHelper: Sendable {
     }
 
     /// Creates a map remove operation
-    func mapRemoveOp(objectId: String, key: String) -> [String: JSONValue] {
+    func mapRemoveOp(objectId: String, key: String) -> [String: WireValue] {
         [
             "operation": .object([
                 "action": .number(NSNumber(value: Actions.mapRemove.rawValue)),
@@ -178,8 +178,8 @@ final class ObjectsHelper: Sendable {
     }
 
     /// Creates a counter create operation
-    func counterCreateOp(objectId: String? = nil, count: Int? = nil) -> [String: JSONValue] {
-        var operation: [String: JSONValue] = [
+    func counterCreateOp(objectId: String? = nil, count: Int? = nil) -> [String: WireValue] {
+        var operation: [String: WireValue] = [
             "action": .number(NSNumber(value: Actions.counterCreate.rawValue)),
             "nonce": .string(nonce()),
         ]
@@ -196,7 +196,7 @@ final class ObjectsHelper: Sendable {
     }
 
     /// Creates a counter increment operation
-    func counterIncOp(objectId: String, amount: Int) -> [String: JSONValue] {
+    func counterIncOp(objectId: String, amount: Int) -> [String: WireValue] {
         [
             "operation": .object([
                 "action": .number(NSNumber(value: Actions.counterInc.rawValue)),
@@ -209,7 +209,7 @@ final class ObjectsHelper: Sendable {
     }
 
     /// Creates an object delete operation
-    func objectDeleteOp(objectId: String) -> [String: JSONValue] {
+    func objectDeleteOp(objectId: String) -> [String: WireValue] {
         [
             "operation": .object([
                 "action": .number(NSNumber(value: Actions.objectDelete.rawValue)),
@@ -222,11 +222,11 @@ final class ObjectsHelper: Sendable {
     func mapObject(
         objectId: String,
         siteTimeserials: [String: String],
-        initialEntries: [String: JSONValue]? = nil,
-        materialisedEntries: [String: JSONValue]? = nil,
+        initialEntries: [String: WireValue]? = nil,
+        materialisedEntries: [String: WireValue]? = nil,
         tombstone: Bool = false,
-    ) -> [String: JSONValue] {
-        var object: [String: JSONValue] = [
+    ) -> [String: WireValue] {
+        var object: [String: WireValue] = [
             "objectId": .string(objectId),
             "siteTimeserials": .object(siteTimeserials.mapValues { .string($0) }),
             "tombstone": .bool(tombstone),
@@ -251,14 +251,14 @@ final class ObjectsHelper: Sendable {
         initialCount: Int? = nil,
         materialisedCount: Int? = nil,
         tombstone: Bool = false,
-    ) -> [String: JSONValue] {
-        let materialisedCountValue: JSONValue = if let materialisedCount {
+    ) -> [String: WireValue] {
+        let materialisedCountValue: WireValue = if let materialisedCount {
             .number(NSNumber(value: materialisedCount))
         } else {
             .null
         }
 
-        var object: [String: JSONValue] = [
+        var object: [String: WireValue] = [
             "objectId": .string(objectId),
             "siteTimeserials": .object(siteTimeserials.mapValues { .string($0) }),
             "tombstone": .bool(tombstone),
@@ -280,8 +280,8 @@ final class ObjectsHelper: Sendable {
         channelName: String,
         serial: String,
         siteCode: String,
-        state: [[String: JSONValue]]? = nil,
-    ) -> [String: JSONValue] {
+        state: [[String: WireValue]]? = nil,
+    ) -> [String: WireValue] {
         let stateWithSerials = state?.map { objectMessage in
             var message = objectMessage
             message["serial"] = .string(serial)
@@ -289,7 +289,7 @@ final class ObjectsHelper: Sendable {
             return message
         }
 
-        let stateArray = stateWithSerials?.map { dict in JSONValue.object(dict) } ?? []
+        let stateArray = stateWithSerials?.map { dict in WireValue.object(dict) } ?? []
 
         return [
             "action": .number(NSNumber(value: 19)), // OBJECT
@@ -303,9 +303,9 @@ final class ObjectsHelper: Sendable {
     func objectStateMessage(
         channelName: String,
         syncSerial: String,
-        state: [[String: JSONValue]]? = nil,
-    ) -> [String: JSONValue] {
-        let stateArray = state?.map { dict in JSONValue.object(dict) } ?? []
+        state: [[String: WireValue]]? = nil,
+    ) -> [String: WireValue] {
+        let stateArray = state?.map { dict in WireValue.object(dict) } ?? []
         return [
             "action": .number(NSNumber(value: 20)), // OBJECT_SYNC
             "channel": .string(channelName),
@@ -316,22 +316,29 @@ final class ObjectsHelper: Sendable {
 
     /// This is the equivalent of the JS ObjectHelper's channel.processMessage(createPM(…)).
     private func processDeserializedProtocolMessage(
-        _ deserialized: [String: JSONValue],
+        _ deserialized: [String: WireValue],
         channel: ARTRealtimeChannel,
-    ) {
-        let jsonEncoder = ARTJsonEncoder()
-        let encoder = ARTJsonLikeEncoder(
-            rest: channel.internal.realtime!.rest,
-            delegate: jsonEncoder,
-            logger: channel.internal.logger,
-        )
+    ) async {
+        await withCheckedContinuation { continuation in
+            channel.internal.queue.async {
+                let useBinaryProtocol = channel.realtimeInternal.options.useBinaryProtocol
+                let jsonLikeEncoderDelegate: ARTJsonLikeEncoderDelegate = useBinaryProtocol ? ARTMsgPackEncoder() : ARTJsonEncoder()
 
-        let foundationObject = deserialized.toJSONSerializationInput
-        let protocolMessage = withExtendedLifetime(jsonEncoder) {
-            encoder.protocolMessage(from: foundationObject)!
+                let encoder = ARTJsonLikeEncoder(
+                    rest: channel.internal.realtime!.rest,
+                    delegate: jsonLikeEncoderDelegate,
+                    logger: channel.internal.logger,
+                )
+
+                let foundationObject = deserialized.toAblyPluginDataDictionary
+                let protocolMessage = withExtendedLifetime(jsonLikeEncoderDelegate) {
+                    encoder.protocolMessage(from: foundationObject)!
+                }
+
+                channel.internal.onChannelMessage(protocolMessage)
+                continuation.resume()
+            }
         }
-
-        channel.internal.onChannelMessage(protocolMessage)
     }
 
     /// Processes an object operation message on a channel
@@ -339,9 +346,9 @@ final class ObjectsHelper: Sendable {
         channel: ARTRealtimeChannel,
         serial: String,
         siteCode: String,
-        state: [[String: JSONValue]]? = nil,
-    ) async throws {
-        processDeserializedProtocolMessage(
+        state: [[String: WireValue]]? = nil,
+    ) async {
+        await processDeserializedProtocolMessage(
             objectOperationMessage(
                 channelName: channel.name,
                 serial: serial,
@@ -356,9 +363,9 @@ final class ObjectsHelper: Sendable {
     func processObjectStateMessageOnChannel(
         channel: ARTRealtimeChannel,
         syncSerial: String,
-        state: [[String: JSONValue]]? = nil,
-    ) async throws {
-        processDeserializedProtocolMessage(
+        state: [[String: WireValue]]? = nil,
+    ) async {
+        await processDeserializedProtocolMessage(
             objectStateMessage(
                 channelName: channel.name,
                 syncSerial: syncSerial,
@@ -438,7 +445,7 @@ final class ObjectsHelper: Sendable {
     }
 
     /// Creates a counter create REST operation
-    func counterCreateRestOp(objectId: String? = nil, nonce: String? = nil, number: Int? = nil) -> [String: JSONValue] {
+    func counterCreateRestOp(objectId: String? = nil, nonce: String? = nil, number: Double? = nil) -> [String: JSONValue] {
         var opBody: [String: JSONValue] = [
             "operation": .string(Actions.counterCreate.stringValue),
         ]
@@ -456,7 +463,7 @@ final class ObjectsHelper: Sendable {
     }
 
     /// Creates a counter increment REST operation
-    func counterIncRestOp(objectId: String, number: Int) -> [String: JSONValue] {
+    func counterIncRestOp(objectId: String, number: Double) -> [String: JSONValue] {
         [
             "operation": .string(Actions.counterInc.stringValue),
             "objectId": .string(objectId),
@@ -465,7 +472,7 @@ final class ObjectsHelper: Sendable {
     }
 
     /// Sends an operation request to the REST API
-    private func operationRequest(channelName: String, opBody: [String: JSONValue]) async throws -> OperationResult {
+    func operationRequest(channelName: String, opBody: [String: JSONValue]) async throws -> OperationResult {
         let path = "/channels/\(channelName)/objects"
 
         do {

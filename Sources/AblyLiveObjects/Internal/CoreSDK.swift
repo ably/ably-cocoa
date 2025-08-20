@@ -8,15 +8,30 @@ internal protocol CoreSDK: AnyObject, Sendable {
     /// Implements the internal `#publish` method of RTO15.
     func publish(objectMessages: [OutboundObjectMessage]) async throws(InternalError)
 
+    /// Replaces the implementation of ``publish(objectMessages:)``.
+    ///
+    /// Used by integration tests, for example to disable `ObjectMessage` publishing so that a test can verify that a behaviour is not a side effect of an `ObjectMessage` sent by the SDK.
+    func testsOnly_overridePublish(with newImplementation: @escaping ([OutboundObjectMessage]) async throws(InternalError) -> Void)
+
     /// Returns the current state of the Realtime channel that this wraps.
     var channelState: ARTRealtimeChannelState { get }
 }
 
 internal final class DefaultCoreSDK: CoreSDK {
+    /// Used to synchronize access to internal mutable state.
+    private let mutex = NSLock()
+
     private let channel: AblyPlugin.RealtimeChannel
     private let client: AblyPlugin.RealtimeClient
     private let pluginAPI: PluginAPIProtocol
     private let logger: AblyPlugin.Logger
+
+    /// If set to true, ``publish(objectMessages:)`` will behave like a no-op.
+    ///
+    /// This enables the `testsOnly_overridePublish(with:)` test hook.
+    ///
+    /// - Note: This should be `throws(InternalError)` but that causes a compilation error of "Runtime support for typed throws function types is only available in macOS 15.0.0 or newer".
+    private nonisolated(unsafe) var overriddenPublishImplementation: (([OutboundObjectMessage]) async throws -> Void)?
 
     internal init(
         channel: AblyPlugin.RealtimeChannel,
@@ -35,6 +50,22 @@ internal final class DefaultCoreSDK: CoreSDK {
     internal func publish(objectMessages: [OutboundObjectMessage]) async throws(InternalError) {
         logger.log("publish(objectMessages: \(LoggingUtilities.formatObjectMessagesForLogging(objectMessages)))", level: .debug)
 
+        // Use the overridden implementation if supplied
+        let overriddenImplementation = mutex.withLock {
+            overriddenPublishImplementation
+        }
+        if let overriddenImplementation {
+            do {
+                try await overriddenImplementation(objectMessages)
+            } catch {
+                guard let internalError = error as? InternalError else {
+                    preconditionFailure("Expected InternalError, got \(error)")
+                }
+                throw internalError
+            }
+            return
+        }
+
         // TODO: Implement the full spec of RTO15 (https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/47)
         try await DefaultInternalPlugin.sendObject(
             objectMessages: objectMessages,
@@ -42,6 +73,12 @@ internal final class DefaultCoreSDK: CoreSDK {
             client: client,
             pluginAPI: pluginAPI,
         )
+    }
+
+    internal func testsOnly_overridePublish(with newImplementation: @escaping ([OutboundObjectMessage]) async throws(InternalError) -> Void) {
+        mutex.withLock {
+            overriddenPublishImplementation = newImplementation
+        }
     }
 
     internal var channelState: ARTRealtimeChannelState {

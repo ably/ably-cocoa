@@ -1,5 +1,5 @@
 import Ably
-import AblyLiveObjects
+@testable import AblyLiveObjects
 
 /// Helper for creating ably-cocoa objects, for use in integration tests.
 enum ClientHelper {
@@ -25,6 +25,9 @@ enum ClientHelper {
         if let logIdentifier = options.logIdentifier {
             let logger = PrefixedLogger(prefix: "(\(logIdentifier)) ")
             clientOptions.logHandler = logger
+        }
+        if let garbageCollectionOptions = options.garbageCollectionOptions {
+            clientOptions.garbageCollectionOptions = garbageCollectionOptions
         }
 
         return ARTRealtime(options: clientOptions)
@@ -69,6 +72,7 @@ enum ClientHelper {
     struct PartialClientOptions: Encodable, Hashable {
         var useBinaryProtocol: Bool?
         var autoConnect: Bool?
+        var garbageCollectionOptions: InternalDefaultRealtimeObjects.GarbageCollectionOptions?
 
         /// A prefix for all log messages emitted by the client. Allows clients to be distinguished in log messages for tests which use multiple clients.
         var logIdentifier: String?

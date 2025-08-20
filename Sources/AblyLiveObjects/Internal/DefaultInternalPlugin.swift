@@ -36,9 +36,15 @@ internal final class DefaultInternalPlugin: NSObject, AblyPlugin.LiveObjectsInte
     internal func prepare(_ channel: AblyPlugin.RealtimeChannel, client: AblyPlugin.RealtimeClient) {
         let logger = pluginAPI.logger(for: channel)
         let callbackQueue = pluginAPI.callbackQueue(for: client)
+        let options = pluginAPI.options(for: client)
 
         logger.log("LiveObjects.DefaultInternalPlugin received prepare(_:)", level: .debug)
-        let liveObjects = InternalDefaultRealtimeObjects(logger: logger, userCallbackQueue: callbackQueue, clock: DefaultSimpleClock())
+        let liveObjects = InternalDefaultRealtimeObjects(
+            logger: logger,
+            userCallbackQueue: callbackQueue,
+            clock: DefaultSimpleClock(),
+            garbageCollectionOptions: options.garbageCollectionOptions ?? .init(),
+        )
         pluginAPI.setPluginDataValue(liveObjects, forKey: Self.pluginDataKey, channel: channel)
     }
 

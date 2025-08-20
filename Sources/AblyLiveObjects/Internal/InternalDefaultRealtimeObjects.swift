@@ -26,7 +26,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
     private nonisolated(unsafe) var garbageCollectionTask: Task<Void, Never>!
 
     /// Parameters used to control the garbage collection of tombstoned objects and map entries, as described in RTO10.
-    internal struct GarbageCollectionOptions {
+    internal struct GarbageCollectionOptions: Encodable, Hashable {
         /// The RTO10a interval at which we will perform garbage collection.
         ///
         /// The default value comes from the suggestion in RTO10a.
@@ -98,6 +98,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
         (receivedObjectProtocolMessages, receivedObjectProtocolMessagesContinuation) = AsyncStream.makeStream()
         (receivedObjectSyncProtocolMessages, receivedObjectSyncProtocolMessagesContinuation) = AsyncStream.makeStream()
         (waitingForSyncEvents, waitingForSyncEventsContinuation) = AsyncStream.makeStream()
+        (completedGarbageCollectionEvents, completedGarbageCollectionsEventsContinuation) = AsyncStream.makeStream()
         mutableState = .init(objectsPool: .init(logger: logger, userCallbackQueue: userCallbackQueue, clock: clock))
         garbageCollectionInterval = garbageCollectionOptions.interval
         garbageCollectionGracePeriod = garbageCollectionOptions.gracePeriod
@@ -331,8 +332,17 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
                 gracePeriod: garbageCollectionGracePeriod,
                 clock: clock,
                 logger: logger,
+                eventsContinuation: completedGarbageCollectionsEventsContinuation,
             )
         }
+    }
+
+    // These drive the testsOnly_completedGarbageCollectionEvents property that informs the test suite when a garbage collection cycle has completed.
+    private let completedGarbageCollectionEvents: AsyncStream<Void>
+    private let completedGarbageCollectionsEventsContinuation: AsyncStream<Void>.Continuation
+    /// Emits an element whenever a garbage collection cycle has completed.
+    internal var testsOnly_completedGarbageCollectionEvents: AsyncStream<Void> {
+        completedGarbageCollectionEvents
     }
 
     // MARK: - Testing
@@ -342,10 +352,12 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
     /// - testsOnly_receivedObjectProtocolMessages
     /// - testsOnly_receivedObjectStateProtocolMessages
     /// - testsOnly_waitingForSyncEvents
+    /// - testsOnly_completedGarbageCollectionEvents
     internal func testsOnly_finishAllTestHelperStreams() {
         receivedObjectProtocolMessagesContinuation.finish()
         receivedObjectSyncProtocolMessagesContinuation.finish()
         waitingForSyncEventsContinuation.finish()
+        completedGarbageCollectionsEventsContinuation.finish()
     }
 
     // MARK: - Mutable state and the operations that affect it

@@ -408,7 +408,12 @@ internal struct ObjectsPool {
     }
 
     /// Performs garbage collection of tombstoned objects and map entries, per RTO10c.
-    internal mutating func performGarbageCollection(gracePeriod: TimeInterval, clock: SimpleClock, logger: Logger) {
+    internal mutating func performGarbageCollection(
+        gracePeriod: TimeInterval,
+        clock: SimpleClock,
+        logger: Logger,
+        eventsContinuation: AsyncStream<Void>.Continuation,
+    ) {
         logger.log("Performing garbage collection, grace period \(gracePeriod)s", level: .debug)
 
         let now = clock.now
@@ -433,5 +438,7 @@ internal struct ObjectsPool {
             }
             return !shouldRelease
         }
+
+        eventsContinuation.yield()
     }
 }
