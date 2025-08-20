@@ -131,9 +131,9 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
 /// Provides the implementation for `-[APPluginAPI pluginDataValueForKey:channel]`. See documentation for that method.
 - (nullable id)pluginDataValueForKey:(NSString *)key;
 
-/// Provides the implementation for `-[APPluginAPI sendStateWithObjectMessages:completion:]`. See documentation for that method.
-- (void)sendStateWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
-                         completion:(ARTCallback)completion;
+/// Provides the implementation for `-[APPluginAPI sendObjectWithObjectMessages:completion:]`. See documentation for that method.
+- (void)sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
+                          completion:(ARTCallback)completion;
 
 @end
 

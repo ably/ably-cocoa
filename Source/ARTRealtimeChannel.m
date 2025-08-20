@@ -412,8 +412,8 @@ dispatch_sync(_queue, ^{
 });
 }
 
-- (void)sendStateWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
-                         completion:(ARTCallback)completion {
+- (void)sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
+                          completion:(ARTCallback)completion {
     dispatch_assert_queue(_queue);
 
     ARTProtocolMessage *pm = [[ARTProtocolMessage alloc] init];

@@ -51,7 +51,7 @@ NS_SWIFT_SENDABLE
 /// Encodes an `ObjectMessage` to be sent over the wire.
 ///
 /// Parameters:
-/// - objectMessage: An `ObjectMessage` that this plugin earlier passed to `APPluginAPI`'s `-sendStateWithObjectMessages:channel:completion:`.
+/// - objectMessage: An `ObjectMessage` that this plugin earlier passed to `APPluginAPI`'s `-sendObjectWithObjectMessages:channel:completion:`.
 /// - format: The format whose rules should be used when encoding the `ObjectMessage`.
 ///
 /// Returns: See the encoding rules described in `APEncodingFormat`.

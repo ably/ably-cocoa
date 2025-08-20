@@ -76,8 +76,8 @@ static ARTRealtimeInternal *_internalRealtimeClient(id<APRealtimeClient> pluginR
 }
 
 - (void)sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages channel:(id<APRealtimeChannel>)channel completion:(void (^)(ARTErrorInfo * _Nonnull))completion {
-    [_internalRealtimeChannel(channel) sendStateWithObjectMessages:objectMessages
-                                                        completion:completion];
+    [_internalRealtimeChannel(channel) sendObjectWithObjectMessages:objectMessages
+                                                         completion:completion];
 }
 
 @end
