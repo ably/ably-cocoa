@@ -6,7 +6,7 @@ ably-cocoa and its plugins depend on a separate library called `_AblyPluginSuppo
 
 I will expand on this documentation once this mechanism is more mature; currently [ADR-128: Plugins for ably-cocoa SDK](https://ably.atlassian.net/wiki/spaces/ENG/pages/3838574593/ADR-128+Plugins+for+ably-cocoa+SDK) provides a decent description of our approach. The key divergence between ADR-128 and our current approach is that `_AblyPluginSupportPrivate` (called `AblyPlugin` in the ADR) is no longer part of ably-cocoa and instead lives in a separate repository. I will update that ADR or create a new one later on as part of clearing technical debt caused by this last-minute change of approach.
 
-Currently, our only plugin is for adding LiveObjects functionality. This plugin can be found at https://github.com/ably/ably-cocoa-liveobjects-plugin.
+Currently, our only plugin is for adding LiveObjects functionality. This plugin can be found at https://github.com/ably/ably-liveobjects-swift-plugin.
 
 ## Notes on `_AblyPluginSupportPrivate`
 
