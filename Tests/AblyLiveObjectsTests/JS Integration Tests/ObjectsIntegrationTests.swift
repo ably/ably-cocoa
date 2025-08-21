@@ -2916,22 +2916,23 @@ private struct ObjectsIntegrationTests {
                     action: { ctx in
                         let objects = ctx.objects
 
-                        let maps = try await withThrowingTaskGroup(of: (any LiveMap).self, returning: [any LiveMap].self) { group in
-                            for mapFixture in primitiveMapsFixtures {
+                        let maps = try await withThrowingTaskGroup(of: (index: Int, map: any LiveMap).self, returning: [any LiveMap].self) { group in
+                            for (index, mapFixture) in primitiveMapsFixtures.enumerated() {
                                 group.addTask {
-                                    if let entries = mapFixture.liveMapEntries {
+                                    let map = if let entries = mapFixture.liveMapEntries {
                                         try await objects.createMap(entries: entries)
                                     } else {
                                         try await objects.createMap()
                                     }
+                                    return (index: index, map: map)
                                 }
                             }
 
-                            var results: [any LiveMap] = []
-                            while let map = try await group.next() {
-                                results.append(map)
+                            var results: [(index: Int, map: any LiveMap)] = []
+                            while let result = try await group.next() {
+                                results.append(result)
                             }
-                            return results
+                            return results.sorted { $0.index < $1.index }.map(\.map)
                         }
 
                         for (i, map) in maps.enumerated() {
