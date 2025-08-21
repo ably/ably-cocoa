@@ -86,10 +86,6 @@ internal final class PublicDefaultRealtimeObjects: RealtimeObjects {
         )
     }
 
-    internal func batch(callback: sending BatchCallback) async throws {
-        try await proxied.batch(callback: callback)
-    }
-
     internal func on(event: ObjectsEvent, callback: @escaping ObjectsEventCallback) -> any OnObjectsEventResponse {
         proxied.on(event: event, callback: callback)
     }

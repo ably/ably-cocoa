@@ -16,11 +16,6 @@ public typealias ObjectsEventCallback = @Sendable (_ subscription: OnObjectsEven
 /// - Parameter subscription: A ``OnLiveObjectLifecycleEventResponse`` object that allows the provided listener to deregister itself from future updates.
 public typealias LiveObjectLifecycleEventCallback = @Sendable (_ subscription: OnLiveObjectLifecycleEventResponse) -> Void
 
-/// A function passed to ``RealtimeObjects/batch(callback:)`` to group multiple Objects operations into a single channel message.
-///
-/// - Parameter batchContext: A ``BatchContext`` object that allows grouping Objects operations for this batch.
-public typealias BatchCallback = (_ batchContext: sending BatchContext) -> Void
-
 /// Describes the events emitted by an ``RealtimeObjects`` object.
 public enum ObjectsEvent: Sendable {
     /// The local copy of Objects on a channel is currently being synchronized with the Ably service.
@@ -55,18 +50,6 @@ public protocol RealtimeObjects: Sendable {
 
     /// Creates a new ``LiveCounter`` object instance with a value of zero.
     func createCounter() async throws(ARTErrorInfo) -> any LiveCounter
-
-    /// Allows you to group multiple operations together and send them to the Ably service in a single channel message.
-    /// As a result, other clients will receive the changes as a single channel message after the batch function has completed.
-    ///
-    /// This method accepts a synchronous callback, which is provided with a ``BatchContext`` object.
-    /// Use the context object to access Objects on a channel and batch operations for them.
-    ///
-    /// The objects' data is not modified inside the callback function. Instead, the objects will be updated
-    /// when the batched operations are applied by the Ably service and echoed back to the client.
-    ///
-    /// - Parameter callback: A batch callback function used to group operations together.
-    func batch(callback: sending BatchCallback) async throws
 
     /// Registers the provided listener for the specified event. If `on()` is called more than once with the same listener and event, the listener is added multiple times to its listener registry. Therefore, as an example, assuming the same listener is registered twice using `on()`, and an event is emitted once, the listener would be invoked twice.
     ///
@@ -248,66 +231,6 @@ extension LiveMapValue: ExpressibleByBooleanLiteral {
 public protocol OnObjectsEventResponse: Sendable {
     /// Deregisters the listener passed to the `on` call.
     func off()
-}
-
-/// Enables grouping multiple Objects operations together by providing `BatchContext*` wrapper objects.
-public protocol BatchContext: Sendable {
-    /// Mirrors the ``RealtimeObjects/getRoot()`` method and returns a ``BatchContextLiveMap`` wrapper for the root object on a channel.
-    ///
-    /// - Returns: A ``BatchContextLiveMap`` object.
-    func getRoot() -> BatchContextLiveMap
-}
-
-/// A wrapper around the ``LiveMap`` object that enables batching operations inside a ``BatchCallback``.
-public protocol BatchContextLiveMap: AnyObject, Sendable {
-    /// Mirrors the ``LiveMap/get(key:)`` method and returns the value associated with a key in the map.
-    ///
-    /// - Parameter key: The key to retrieve the value for.
-    /// - Returns: A ``LiveObject``, a primitive type (string, number, boolean, JSON-serializable object or array ,or binary data) or `nil` if the key doesn't exist in a map or the associated ``LiveObject`` has been deleted. Always `nil` if this map object is deleted.
-    func get(key: String) -> LiveMapValue?
-
-    /// Returns the number of key-value pairs in the map.
-    var size: Int { get }
-
-    /// Similar to the ``LiveMap/set(key:value:)`` method, but instead, it adds an operation to set a key in the map with the provided value to the current batch, to be sent in a single message to the Ably service.
-    ///
-    /// This does not modify the underlying data of this object. Instead, the change is applied when
-    /// the published operation is echoed back to the client and applied to the object.
-    /// To get notified when object gets updated, use the ``LiveObject/subscribe(listener:)`` method.
-    ///
-    /// - Parameters:
-    ///   - key: The key to set the value for.
-    ///   - value: The value to assign to the key.
-    func set(key: String, value: LiveMapValue?)
-
-    /// Similar to the ``LiveMap/remove(key:)`` method, but instead, it adds an operation to remove a key from the map to the current batch, to be sent in a single message to the Ably service.
-    ///
-    /// This does not modify the underlying data of this object. Instead, the change is applied when
-    /// the published operation is echoed back to the client and applied to the object.
-    /// To get notified when object gets updated, use the ``LiveObject/subscribe(listener:)`` method.
-    ///
-    /// - Parameter key: The key to set the value for.
-    func remove(key: String)
-}
-
-/// A wrapper around the ``LiveCounter`` object that enables batching operations inside a ``BatchCallback``.
-public protocol BatchContextLiveCounter: AnyObject, Sendable {
-    /// Returns the current value of the counter.
-    var value: Double { get }
-
-    /// Similar to the ``LiveCounter/increment(amount:)`` method, but instead, it adds an operation to increment the counter value to the current batch, to be sent in a single message to the Ably service.
-    ///
-    /// This does not modify the underlying data of this object. Instead, the change is applied when
-    /// the published operation is echoed back to the client and applied to the object.
-    /// To get notified when object gets updated, use the ``LiveObject/subscribe(listener:)`` method.
-    ///
-    /// - Parameter amount: The amount by which to increase the counter value.
-    func increment(amount: Double)
-
-    /// An alias for calling [`increment(-amount)`](doc:BatchContextLiveCounter/increment(amount:)).
-    ///
-    /// - Parameter amount: The amount by which to decrease the counter value.
-    func decrement(amount: Double)
 }
 
 /// The `LiveMap` class represents a key-value map data structure, similar to a Swift `Dictionary`, where all changes are synchronized across clients in realtime.
