@@ -1,5 +1,7 @@
+#ifdef ABLY_SUPPORTS_PLUGINS
+
 #import <Foundation/Foundation.h>
-#import "APDecodingContext.h"
+@import _AblyPluginSupportPrivate;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -15,3 +17,5 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 NS_ASSUME_NONNULL_END
+
+#endif

@@ -135,5 +135,9 @@ framework module Ably {
         header "ARTPendingMessage.h"
         header "ARTEncoder.h"
         header "ARTDeviceStorage.h"
+        header "ARTPluginDecodingContext.h"
+        header "ARTPluginAPI.h"
+        header "ARTPublicRealtimeChannelUnderlyingObjects.h"
+        header "ARTErrorInfo+Private.h"
     }
 }
