@@ -137,52 +137,52 @@ private let primitiveKeyData: [(key: String, data: [String: JSONValue], liveMapV
     (
         key: "stringKey",
         data: ["string": .string("stringValue")],
-        liveMapValue: .primitive(.string("stringValue"))
+        liveMapValue: "stringValue"
     ),
     (
         key: "emptyStringKey",
         data: ["string": .string("")],
-        liveMapValue: .primitive(.string(""))
+        liveMapValue: ""
     ),
     (
         key: "bytesKey",
         data: ["bytes": .string("eyJwcm9kdWN0SWQiOiAiMDAxIiwgInByb2R1Y3ROYW1lIjogImNhciJ9")],
-        liveMapValue: .primitive(.data(Data(base64Encoded: "eyJwcm9kdWN0SWQiOiAiMDAxIiwgInByb2R1Y3ROYW1lIjogImNhciJ9")!))
+        liveMapValue: .data(Data(base64Encoded: "eyJwcm9kdWN0SWQiOiAiMDAxIiwgInByb2R1Y3ROYW1lIjogImNhciJ9")!)
     ),
     (
         key: "emptyBytesKey",
         data: ["bytes": .string("")],
-        liveMapValue: .primitive(.data(Data(base64Encoded: "")!))
+        liveMapValue: .data(Data(base64Encoded: "")!)
     ),
     (
         key: "maxSafeIntegerKey",
         data: ["number": .number(.init(value: Int.max))],
-        liveMapValue: .primitive(.number(Double(Int.max)))
+        liveMapValue: .number(Double(Int.max))
     ),
     (
         key: "negativeMaxSafeIntegerKey",
         data: ["number": .number(.init(value: -Int.max))],
-        liveMapValue: .primitive(.number(-Double(Int.max)))
+        liveMapValue: .number(-Double(Int.max))
     ),
     (
         key: "numberKey",
         data: ["number": .number(1)],
-        liveMapValue: .primitive(.number(1))
+        liveMapValue: 1
     ),
     (
         key: "zeroKey",
         data: ["number": .number(0)],
-        liveMapValue: .primitive(.number(0))
+        liveMapValue: 0
     ),
     (
         key: "trueKey",
         data: ["boolean": .bool(true)],
-        liveMapValue: .primitive(.bool(true))
+        liveMapValue: true
     ),
     (
         key: "falseKey",
         data: ["boolean": .bool(false)],
-        liveMapValue: .primitive(.bool(false))
+        liveMapValue: false
     ),
 ]
 
@@ -422,7 +422,7 @@ private struct ObjectsIntegrationTests {
                         }
 
                         // MAP_CREATE
-                        let map = try await objects.createMap(entries: ["shouldStay": .primitive(.string("foo")), "shouldDelete": .primitive(.string("bar"))])
+                        let map = try await objects.createMap(entries: ["shouldStay": "foo", "shouldDelete": "bar"])
                         // COUNTER_CREATE
                         let counter = try await objects.createCounter(count: 1)
 
@@ -449,7 +449,7 @@ private struct ObjectsIntegrationTests {
                         }
 
                         // Perform the operations and await the promise
-                        async let setAnotherKeyPromise: Void = map.set(key: "anotherKey", value: .primitive(.string("baz")))
+                        async let setAnotherKeyPromise: Void = map.set(key: "anotherKey", value: "baz")
                         async let removeKeyPromise: Void = map.remove(key: "shouldDelete")
                         async let incrementPromise: Void = counter.increment(amount: 10)
                         _ = try await (setAnotherKeyPromise, removeKeyPromise, incrementPromise, operationsAppliedPromise)
@@ -2555,16 +2555,16 @@ private struct ObjectsIntegrationTests {
                             let actualValue = try #require(try root.get(key: keyData.key))
 
                             switch keyData.liveMapValue {
-                            case let .primitive(.data(expectedData)):
+                            case let .data(expectedData):
                                 let actualData = try #require(actualValue.dataValue)
                                 #expect(actualData == expectedData, "Check root has correct value for \"\(keyData.key)\" key after LiveMap.set call")
-                            case let .primitive(.string(expectedString)):
+                            case let .string(expectedString):
                                 let actualString = try #require(actualValue.stringValue)
                                 #expect(actualString == expectedString, "Check root has correct value for \"\(keyData.key)\" key after LiveMap.set call")
-                            case let .primitive(.number(expectedNumber)):
+                            case let .number(expectedNumber):
                                 let actualNumber = try #require(actualValue.numberValue)
                                 #expect(actualNumber == expectedNumber, "Check root has correct value for \"\(keyData.key)\" key after LiveMap.set call")
-                            case let .primitive(.bool(expectedBool)):
+                            case let .bool(expectedBool):
                                 let actualBool = try #require(actualValue.boolValue as Bool?)
                                 #expect(actualBool == expectedBool, "Check root has correct value for \"\(keyData.key)\" key after LiveMap.set call")
                             default:
@@ -2947,19 +2947,19 @@ private struct ObjectsIntegrationTests {
                                     let actualValue = try map.get(key: key)
 
                                     switch expectedValue {
-                                    case let .primitive(.data(expectedData)):
+                                    case let .data(expectedData):
                                         let actualData = try #require(actualValue?.dataValue)
                                         #expect(actualData == expectedData, "Check map #\(i + 1) has correct value for \"\(key)\" key")
-                                    case let .primitive(.string(expectedString)):
+                                    case let .string(expectedString):
                                         let actualString = try #require(actualValue?.stringValue)
                                         #expect(actualString == expectedString, "Check map #\(i + 1) has correct value for \"\(key)\" key")
-                                    case let .primitive(.number(expectedNumber)):
+                                    case let .number(expectedNumber):
                                         let actualNumber = try #require(actualValue?.numberValue)
                                         #expect(actualNumber == expectedNumber, "Check map #\(i + 1) has correct value for \"\(key)\" key")
-                                    case let .primitive(.bool(expectedBool)):
+                                    case let .bool(expectedBool):
                                         let actualBool = try #require(actualValue?.boolValue as Bool?)
                                         #expect(actualBool == expectedBool, "Check map #\(i + 1) has correct value for \"\(key)\" key")
-                                    case .primitive(.jsonArray), .primitive(.jsonObject):
+                                    case .jsonArray, .jsonObject:
                                         Issue.record("JSON array/object primitives not expected in test data")
                                     case .liveCounter, .liveMap:
                                         Issue.record("Nested objects not expected in primitive test data")
@@ -3032,7 +3032,7 @@ private struct ObjectsIntegrationTests {
                         async let mapCreatedPromise: Void = waitForMapKeyUpdate(mapCreatedPromiseUpdates, "map")
 
                         let counter = try await objects.createCounter()
-                        let map = try await objects.createMap(entries: ["foo": .primitive(.string("bar")), "baz": .liveCounter(counter)])
+                        let map = try await objects.createMap(entries: ["foo": "bar", "baz": .liveCounter(counter)])
                         try await root.set(key: "map", value: .liveMap(map))
                         _ = await mapCreatedPromise
 
@@ -3058,7 +3058,7 @@ private struct ObjectsIntegrationTests {
                         internallyTypedObjects.testsOnly_overridePublish(with: { _ in })
 
                         // prevent publishing of ops to realtime so we guarantee that the initial value doesn't come from a CREATE op
-                        let map = try await objects.createMap(entries: ["foo": .primitive(.string("bar"))])
+                        let map = try await objects.createMap(entries: ["foo": "bar"])
                         #expect(try #require(map.get(key: "foo")?.stringValue) == "bar", "Check map has expected initial value")
                     },
                 ),
@@ -3103,7 +3103,7 @@ private struct ObjectsIntegrationTests {
                             }
                         })
 
-                        let map = try await objects.createMap(entries: ["foo": .primitive(.string("bar"))])
+                        let map = try await objects.createMap(entries: ["foo": "bar"])
 
                         // Map should be created with forged initial value instead of the actual one
                         #expect(try map.get(key: "foo") == nil, "Check key \"foo\" was not set on a map client-side")
@@ -3127,7 +3127,7 @@ private struct ObjectsIntegrationTests {
                         })
 
                         // Create map locally, should have an initial value set
-                        let map = try await objects.createMap(entries: ["foo": .primitive(.string("bar"))])
+                        let map = try await objects.createMap(entries: ["foo": "bar"])
                         let internalMap = try #require(map as? PublicDefaultLiveMap)
                         let mapId = internalMap.proxied.objectID
 

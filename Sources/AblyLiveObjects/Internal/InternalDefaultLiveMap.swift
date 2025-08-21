@@ -887,31 +887,31 @@ internal final class InternalDefaultLiveMap: Sendable {
 
             // RTLM5d2b: If ObjectsMapEntry.data.boolean exists, return it
             if let boolean = entry.data?.boolean {
-                return .primitive(.bool(boolean))
+                return .bool(boolean)
             }
 
             // RTLM5d2c: If ObjectsMapEntry.data.bytes exists, return it
             if let bytes = entry.data?.bytes {
-                return .primitive(.data(bytes))
+                return .data(bytes)
             }
 
             // RTLM5d2d: If ObjectsMapEntry.data.number exists, return it
             if let number = entry.data?.number {
-                return .primitive(.number(number.doubleValue))
+                return .number(number.doubleValue)
             }
 
             // RTLM5d2e: If ObjectsMapEntry.data.string exists, return it
             if let string = entry.data?.string {
-                return .primitive(.string(string))
+                return .string(string)
             }
 
             // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
             if let json = entry.data?.json {
                 switch json {
                 case let .array(array):
-                    return .primitive(.jsonArray(array))
+                    return .jsonArray(array)
                 case let .object(object):
-                    return .primitive(.jsonObject(object))
+                    return .jsonObject(object)
                 }
             }
 

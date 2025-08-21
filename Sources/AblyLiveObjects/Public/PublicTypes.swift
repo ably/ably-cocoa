@@ -82,21 +82,39 @@ public protocol RealtimeObjects: Sendable {
 }
 
 /// Represents the type of data stored for a given key in a ``LiveMap``.
-/// It may be a primitive value (``PrimitiveObjectValue``), or another ``LiveObject``.
+/// It may be a primitive value (string, number, boolean, binary data, JSON array, or JSON object), or another ``LiveObject``.
+///
+/// `LiveMapValue` implements Swift's `ExpressibleBy*Literal` protocols. This, in combination with `JSONValue`'s conformance to these protocols, allows you to write type-safe map values using familiar syntax. For example:
+///
+/// ```swift
+/// let map = try await channel.objects.createMap(entries: [
+///     "someStringKey": "someString",
+///     "someIntegerKey": 123,
+///     "someFloatKey": 123.456,
+///     "someTrueKey": true,
+///     "someFalseKey": false,
+///     "someJSONObjectKey": [
+///         "someNestedJSONObjectKey": [
+///             "someOtherKey": "someOtherValue",
+///         ],
+///     ],
+///     "someJSONArrayKey": [
+///         "foo",
+///         42,
+///     ],
+/// ])
+/// ```
 public enum LiveMapValue: Sendable, Equatable {
-    case primitive(PrimitiveObjectValue)
+    case string(String)
+    case number(Double)
+    case bool(Bool)
+    case data(Data)
+    case jsonArray([JSONValue])
+    case jsonObject([String: JSONValue])
     case liveMap(any LiveMap)
     case liveCounter(any LiveCounter)
 
     // MARK: - Convenience getters for associated values
-
-    /// If this `LiveMapValue` has case `primitive`, this returns the associated value. Else, it returns `nil`.
-    public var primitiveValue: PrimitiveObjectValue? {
-        if case let .primitive(value) = self {
-            return value
-        }
-        return nil
-    }
 
     /// If this `LiveMapValue` has case `liveMap`, this returns the associated value. Else, it returns `nil`.
     public var liveMapValue: (any LiveMap)? {
@@ -114,45 +132,115 @@ public enum LiveMapValue: Sendable, Equatable {
         return nil
     }
 
-    /// If this `LiveMapValue` has case `primitive` with a string value, this returns that value. Else, it returns `nil`.
+    /// If this `LiveMapValue` has case `string`, this returns the associated value. Else, it returns `nil`.
     public var stringValue: String? {
-        primitiveValue?.stringValue
+        if case let .string(value) = self {
+            return value
+        }
+        return nil
     }
 
-    /// If this `LiveMapValue` has case `primitive` with a number value, this returns that value. Else, it returns `nil`.
+    /// If this `LiveMapValue` has case `number`, this returns the associated value. Else, it returns `nil`.
     public var numberValue: Double? {
-        primitiveValue?.numberValue
+        if case let .number(value) = self {
+            return value
+        }
+        return nil
     }
 
-    /// If this `LiveMapValue` has case `primitive` with a boolean value, this returns that value. Else, it returns `nil`.
+    /// If this `LiveMapValue` has case `bool`, this returns the associated value. Else, it returns `nil`.
     public var boolValue: Bool? {
-        primitiveValue?.boolValue
+        if case let .bool(value) = self {
+            return value
+        }
+        return nil
     }
 
-    /// If this `LiveMapValue` has case `primitive` with a data value, this returns that value. Else, it returns `nil`.
+    /// If this `LiveMapValue` has case `data`, this returns the associated value. Else, it returns `nil`.
     public var dataValue: Data? {
-        primitiveValue?.dataValue
+        if case let .data(value) = self {
+            return value
+        }
+        return nil
+    }
+
+    /// If this `LiveMapValue` has case `jsonArray`, this returns the associated value. Else, it returns `nil`.
+    public var jsonArrayValue: [JSONValue]? {
+        if case let .jsonArray(value) = self {
+            return value
+        }
+        return nil
+    }
+
+    /// If this `LiveMapValue` has case `jsonObject`, this returns the associated value. Else, it returns `nil`.
+    public var jsonObjectValue: [String: JSONValue]? {
+        if case let .jsonObject(value) = self {
+            return value
+        }
+        return nil
     }
 
     // MARK: - Equatable Implementation
 
     public static func == (lhs: LiveMapValue, rhs: LiveMapValue) -> Bool {
-        switch lhs {
-        case let .primitive(lhsValue):
-            if case let .primitive(rhsValue) = rhs, lhsValue == rhsValue {
-                return true
-            }
-        case let .liveMap(lhsMap):
-            if case let .liveMap(rhsMap) = rhs, lhsMap === rhsMap {
-                return true
-            }
-        case let .liveCounter(lhsCounter):
-            if case let .liveCounter(rhsCounter) = rhs, lhsCounter === rhsCounter {
-                return true
-            }
+        switch (lhs, rhs) {
+        case let (.string(lhsValue), .string(rhsValue)):
+            lhsValue == rhsValue
+        case let (.number(lhsValue), .number(rhsValue)):
+            lhsValue == rhsValue
+        case let (.bool(lhsValue), .bool(rhsValue)):
+            lhsValue == rhsValue
+        case let (.data(lhsValue), .data(rhsValue)):
+            lhsValue == rhsValue
+        case let (.jsonArray(lhsValue), .jsonArray(rhsValue)):
+            lhsValue == rhsValue
+        case let (.jsonObject(lhsValue), .jsonObject(rhsValue)):
+            lhsValue == rhsValue
+        case let (.liveMap(lhsMap), .liveMap(rhsMap)):
+            lhsMap === rhsMap
+        case let (.liveCounter(lhsCounter), .liveCounter(rhsCounter)):
+            lhsCounter === rhsCounter
+        default:
+            false
         }
+    }
+}
 
-        return false
+// MARK: - ExpressibleBy*Literal conformances
+
+extension LiveMapValue: ExpressibleByDictionaryLiteral {
+    public init(dictionaryLiteral elements: (String, JSONValue)...) {
+        self = .jsonObject(.init(uniqueKeysWithValues: elements))
+    }
+}
+
+extension LiveMapValue: ExpressibleByArrayLiteral {
+    public init(arrayLiteral elements: JSONValue...) {
+        self = .jsonArray(elements)
+    }
+}
+
+extension LiveMapValue: ExpressibleByStringLiteral {
+    public init(stringLiteral value: String) {
+        self = .string(value)
+    }
+}
+
+extension LiveMapValue: ExpressibleByIntegerLiteral {
+    public init(integerLiteral value: Int) {
+        self = .number(Double(value))
+    }
+}
+
+extension LiveMapValue: ExpressibleByFloatLiteral {
+    public init(floatLiteral value: Double) {
+        self = .number(value)
+    }
+}
+
+extension LiveMapValue: ExpressibleByBooleanLiteral {
+    public init(booleanLiteral value: Bool) {
+        self = .bool(value)
     }
 }
 
@@ -226,7 +314,7 @@ public protocol BatchContextLiveCounter: AnyObject, Sendable {
 /// Conflicts in a LiveMap are automatically resolved with last-write-wins (LWW) semantics,
 /// meaning that if two clients update the same key in the map, the update with the most recent timestamp wins.
 ///
-/// Keys must be strings. Values can be another ``LiveObject``, or a primitive type, such as a string, number, boolean, JSON-serializable object or array, or binary data (see ``PrimitiveObjectValue``).
+/// Keys must be strings. Values can be another ``LiveObject``, or a primitive type, such as a string, number, boolean, JSON-serializable object or array, or binary data.
 public protocol LiveMap: LiveObject where Update == LiveMapUpdate {
     /// Returns the value associated with a given key. Returns `nil` if the key doesn't exist in a map or if the associated ``LiveObject`` has been deleted.
     ///
@@ -283,66 +371,6 @@ public protocol LiveMapUpdate: Sendable {
     /// - ``LiveMapUpdateAction/updated`` - the value of a key in the map was updated.
     /// - ``LiveMapUpdateAction/removed`` - the key was removed from the map.
     var update: [String: LiveMapUpdateAction] { get }
-}
-
-/// Represents a primitive value that can be stored in a ``LiveMap``.
-public enum PrimitiveObjectValue: Sendable, Equatable {
-    case string(String)
-    case number(Double)
-    case bool(Bool)
-    case data(Data)
-    case jsonArray([JSONValue])
-    case jsonObject([String: JSONValue])
-
-    // MARK: - Convenience getters for associated values
-
-    /// If this `PrimitiveObjectValue` has case `string`, this returns the associated value. Else, it returns `nil`.
-    public var stringValue: String? {
-        if case let .string(value) = self {
-            return value
-        }
-        return nil
-    }
-
-    /// If this `PrimitiveObjectValue` has case `number`, this returns the associated value. Else, it returns `nil`.
-    public var numberValue: Double? {
-        if case let .number(value) = self {
-            return value
-        }
-        return nil
-    }
-
-    /// If this `PrimitiveObjectValue` has case `bool`, this returns the associated value. Else, it returns `nil`.
-    public var boolValue: Bool? {
-        if case let .bool(value) = self {
-            return value
-        }
-        return nil
-    }
-
-    /// If this `PrimitiveObjectValue` has case `data`, this returns the associated value. Else, it returns `nil`.
-    public var dataValue: Data? {
-        if case let .data(value) = self {
-            return value
-        }
-        return nil
-    }
-
-    /// If this `PrimitiveObjectValue` has case `jsonArray`, this returns the associated value. Else, it returns `nil`.
-    public var jsonArrayValue: [JSONValue]? {
-        if case let .jsonArray(value) = self {
-            return value
-        }
-        return nil
-    }
-
-    /// If this `PrimitiveObjectValue` has case `jsonObject`, this returns the associated value. Else, it returns `nil`.
-    public var jsonObjectValue: [String: JSONValue]? {
-        if case let .jsonObject(value) = self {
-            return value
-        }
-        return nil
-    }
 }
 
 /// The `LiveCounter` class represents a counter that can be incremented or decremented and is synchronized across clients in realtime.
