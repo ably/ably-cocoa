@@ -32,13 +32,13 @@ internal enum InternalLiveMapValue: Sendable, Equatable {
             self = .jsonObject(value)
         case let .liveMap(publicLiveMap):
             guard let publicDefaultLiveMap = publicLiveMap as? PublicDefaultLiveMap else {
-                // TODO: Try and remove this runtime check and know this type statically, see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/37
+                // TODO: Try and remove this runtime check and know this type statically, see https://github.com/ably/ably-liveobjects-swift-plugin/issues/37
                 preconditionFailure("Expected PublicDefaultLiveMap, got \(publicLiveMap)")
             }
             self = .liveMap(publicDefaultLiveMap.proxied)
         case let .liveCounter(publicLiveCounter):
             guard let publicDefaultLiveCounter = publicLiveCounter as? PublicDefaultLiveCounter else {
-                // TODO: Try and remove this runtime check and know this type statically, see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/37
+                // TODO: Try and remove this runtime check and know this type statically, see https://github.com/ably/ably-liveobjects-swift-plugin/issues/37
                 preconditionFailure("Expected PublicDefaultLiveCounter, got \(publicLiveCounter)")
             }
             self = .liveCounter(publicDefaultLiveCounter.proxied)

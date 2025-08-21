@@ -127,7 +127,7 @@ Example:
 
 For the initial stage of development of this plugin, where we need to also iterate heavily on ably-cocoa, I've added ably-cocoa as a Git submodule, which can be found in [`ably-cocoa`](./ably-cocoa). This allows you to edit ably-cocoa from within this repo's Xcode workspace.
 
-Nearer launch, we'll remove this submodule in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/7.
+Nearer launch, we'll remove this submodule in https://github.com/ably/ably-liveobjects-swift-plugin/issues/7.
 
 ## Release process
 
@@ -137,7 +137,7 @@ For each release, the following needs to be done:
 - Update the following (we have https://github.com/ably/ably-chat-swift/issues/277 for adding a script to do this):
   - the `version` constant in [`Sources/AblyLiveObjects/Version.swift`](Sources/AblyLiveObjects/Version.swift)
   - the `from: "…"` in the SPM installation instructions in [`README.md`](README.md)
-- Go to [Github releases](https://github.com/ably/ably-cocoa-liveobjects-plugin/releases) and press the `Draft a new release` button. Choose your new branch as a target
+- Go to [Github releases](https://github.com/ably/ably-liveobjects-swift-plugin/releases) and press the `Draft a new release` button. Choose your new branch as a target
 - Press the `Choose a tag` dropdown and start typing a new tag, Github will suggest the `Create new tag x.x.x on publish` option. After you select it Github will unveil the `Generate release notes` button
 - From the newly generated changes remove everything that don't make much sense to the library user
 - Copy the final list of changes to the top of the `CHANGELOG.md` file. Modify as necessary to fit the existing format of this file

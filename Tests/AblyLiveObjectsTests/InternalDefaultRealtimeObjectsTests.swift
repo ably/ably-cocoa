@@ -1091,7 +1091,7 @@ struct InternalDefaultRealtimeObjectsTests {
             #expect(publishedMessage.operation?.action == .known(.mapCreate))
             let objectID = try #require(publishedMessage.operation?.objectId)
             #expect(objectID.hasPrefix("map:"))
-            // TODO: This is a stopgap; change to use server time per RTO11f5 (https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/50)
+            // TODO: This is a stopgap; change to use server time per RTO11f5 (https://github.com/ably/ably-liveobjects-swift-plugin/issues/50)
             #expect(objectID.contains("1754042434000")) // check contains the mock clock's timestamp in milliseconds
             #expect(publishedMessage.operation?.map?.entries == [
                 "stringKey": .init(data: .init(string: "stringValue")),
@@ -1216,7 +1216,7 @@ struct InternalDefaultRealtimeObjectsTests {
                 #expect(publishedMessage.operation?.action == .known(.counterCreate))
                 let objectID = try #require(publishedMessage.operation?.objectId)
                 #expect(objectID.hasPrefix("counter:"))
-                // TODO: This is a stopgap; change to use server time per RTO11f5 (https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/50)
+                // TODO: This is a stopgap; change to use server time per RTO11f5 (https://github.com/ably/ably-liveobjects-swift-plugin/issues/50)
                 #expect(objectID.contains("1754042434000")) // check contains the mock clock's timestamp in milliseconds
                 #expect(publishedMessage.operation?.counter?.count == 10.5)
 

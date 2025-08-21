@@ -60,7 +60,7 @@ internal struct ObjectData: Equatable {
     internal var bytes: Data? // OD2d
     internal var number: NSNumber? // OD2e
     internal var string: String? // OD2f
-    internal var json: JSONObjectOrArray? // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
+    internal var json: JSONObjectOrArray? // TODO: Needs specification (see https://github.com/ably/ably-liveobjects-swift-plugin/issues/46)
 }
 
 internal struct ObjectsMapOp: Equatable {
@@ -289,7 +289,7 @@ internal extension ObjectData {
             }
         }
 
-        // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
+        // TODO: Needs specification (see https://github.com/ably/ably-liveobjects-swift-plugin/issues/46)
         if let wireJson = wireObjectData.json {
             let jsonValue = try JSONObjectOrArray(jsonString: wireJson)
             json = jsonValue
@@ -340,7 +340,7 @@ internal extension ObjectData {
             // OD4c4: A string payload is encoded as a MessagePack string type, and the result is set on the ObjectData.string attribute
             // OD4d4: A string payload is represented as a JSON string and set on the ObjectData.string attribute
             string: string,
-            // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
+            // TODO: Needs specification (see https://github.com/ably/ably-liveobjects-swift-plugin/issues/46)
             json: json?.toJSONString,
         )
     }

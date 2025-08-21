@@ -4,7 +4,7 @@ import Foundation
 
 /// This provides the implementation behind ``PublicDefaultLiveCounter``, via internal versions of the ``LiveCounter`` API.
 internal final class InternalDefaultLiveCounter: Sendable {
-    // Used for synchronizing access to all of this instance's mutable state. This is a temporary solution just to allow us to implement `Sendable`, and we'll revisit it in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/3.
+    // Used for synchronizing access to all of this instance's mutable state. This is a temporary solution just to allow us to implement `Sendable`, and we'll revisit it in https://github.com/ably/ably-liveobjects-swift-plugin/issues/3.
     private let mutex = NSLock()
 
     private nonisolated(unsafe) var mutableState: MutableState

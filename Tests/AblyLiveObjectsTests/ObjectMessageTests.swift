@@ -76,7 +76,7 @@ struct ObjectMessageTests {
                     #expect(wireData.json == nil)
                 }
 
-                // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
+                // TODO: Needs specification (see https://github.com/ably/ably-liveobjects-swift-plugin/issues/46)
                 @Test(arguments: [
                     // We intentionally use a single-element object so that we get a stable encoding to JSON
                     (jsonObjectOrArray: ["key": "value"] as JSONObjectOrArray, expectedJSONString: #"{"key":"value"}"#),
@@ -159,7 +159,7 @@ struct ObjectMessageTests {
                     #expect(wireData.json == nil)
                 }
 
-                // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
+                // TODO: Needs specification (see https://github.com/ably/ably-liveobjects-swift-plugin/issues/46)
                 @Test(arguments: [
                     // We intentionally use a single-element object so that we get a stable encoding to JSON
                     (jsonObjectOrArray: ["key": "value"] as JSONObjectOrArray, expectedJSONString: #"{"key":"value"}"#),
@@ -255,14 +255,14 @@ struct ObjectMessageTests {
                     #expect(objectData.json == nil)
                 }
 
-                // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
+                // TODO: Needs specification (see https://github.com/ably/ably-liveobjects-swift-plugin/issues/46)
                 @Test
                 func json() throws {
                     let jsonString = "{\"key\":\"value\",\"number\":123}"
                     let wireData = WireObjectData(json: jsonString)
                     let objectData = try ObjectData(wireObjectData: wireData, format: .messagePack)
 
-                    // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
+                    // TODO: Needs specification (see https://github.com/ably/ably-liveobjects-swift-plugin/issues/46)
                     #expect(objectData.boolean == nil)
                     #expect(objectData.bytes == nil)
                     #expect(objectData.number == nil)
@@ -270,7 +270,7 @@ struct ObjectMessageTests {
                     #expect(objectData.json == ["key": "value", "number": 123])
                 }
 
-                // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
+                // TODO: Needs specification (see https://github.com/ably/ably-liveobjects-swift-plugin/issues/46)
                 // The spec doesn't say what to do if JSON parsing fails; I'm choosing to treat it as an error
                 @Test
                 func json_invalidJson() {
@@ -283,7 +283,7 @@ struct ObjectMessageTests {
                     }
                 }
 
-                // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
+                // TODO: Needs specification (see https://github.com/ably/ably-liveobjects-swift-plugin/issues/46)
                 // The spec doesn't say what to do if given serialized JSON that contains a non-object-or-array value; I'm choosing to treat it as an error
                 @Test(arguments: [
                     // string
@@ -380,7 +380,7 @@ struct ObjectMessageTests {
                     }
                 }
 
-                // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
+                // TODO: Needs specification (see https://github.com/ably/ably-liveobjects-swift-plugin/issues/46)
                 @Test
                 func json() throws {
                     let jsonString = "{\"key\":\"value\",\"number\":123}"
@@ -394,7 +394,7 @@ struct ObjectMessageTests {
                     #expect(objectData.json == ["key": "value", "number": 123])
                 }
 
-                // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
+                // TODO: Needs specification (see https://github.com/ably/ably-liveobjects-swift-plugin/issues/46)
                 // The spec doesn't say what to do if JSON parsing fails; I'm choosing to treat it as an error
                 @Test
                 func json_invalidJson() {
@@ -407,7 +407,7 @@ struct ObjectMessageTests {
                     }
                 }
 
-                // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
+                // TODO: Needs specification (see https://github.com/ably/ably-liveobjects-swift-plugin/issues/46)
                 // The spec doesn't say what to do if given serialized JSON that contains a non-object-or-array value; I'm choosing to treat it as an error
                 @Test(arguments: [
                     // string
