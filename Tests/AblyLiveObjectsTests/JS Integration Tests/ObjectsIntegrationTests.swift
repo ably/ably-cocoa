@@ -334,7 +334,15 @@ class MainActorStorage<T> {
 
 // MARK: - Test suite
 
-@Suite(.objectsFixtures)
+@Suite(
+    .objectsFixtures,
+    // These tests exhibit flakiness (hanging, timeouts, occasional Realtime
+    // connection limits) when run concurrently, where I think that we had up to
+    // 100 ARTRealtime instances active at the same time. So we're running them in
+    // serial to unblock CI builds until we can understand the issue better. See
+    // https://github.com/ably/ably-liveobjects-swift-plugin/issues/72.
+    .serialized,
+)
 private struct ObjectsIntegrationTests {
     // TODO: Add the non-parameterised tests
 
