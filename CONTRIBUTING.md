@@ -125,9 +125,9 @@ Example:
 
 ## Developing ably-cocoa alongside this plugin
 
-For the initial stage of development of this plugin, where we need to also iterate heavily on ably-cocoa, I've added ably-cocoa as a Git submodule, which can be found in [`ably-cocoa`](./ably-cocoa). This allows you to edit ably-cocoa from within this repo's Xcode workspace.
+The quickest way to edit ably-cocoa is to use `swift package edit ably-cocoa --path ably-cocoa`, which will give you a Git checkout of ably-cocoa at `ably-cocoa`. To edit ably-cocoa using Xcode, you will then need to open `ably-cocoa/Package.swift` _separately_ (making sure to close any other LiveObjects Xcode windows, else Xcode will not let you edit it).
 
-Nearer launch, we'll remove this submodule in https://github.com/ably/ably-liveobjects-swift-plugin/issues/7.
+If you use edit mode, Xcode will not let you edit ably-cocoa from _within_ `./Package.swift` or `AblyLiveObjects.xcworkspace` (it does not let you edit SPM dependencies even if they're in edit mode). If you wish to edit ably-cocoa in one of these environments, consider temporarily instead pulling ably-cocoa in as a submodule. See commit [`29c6aa8`](https://github.com/ably/ably-liveobjects-swift-plugin/commit/29c6aa8) as an example.
 
 ## Release process
 
