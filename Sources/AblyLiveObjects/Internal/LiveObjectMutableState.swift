@@ -20,8 +20,12 @@ internal struct LiveObjectMutableState<Update: Sendable> {
     // RTLO3e
     internal var tombstonedAt: Date?
 
+    private enum EventName {
+        case update
+    }
+
     /// Internal subscription storage.
-    private var subscriptionStorage = SubscriptionStorage<Update>()
+    private var subscriptionStorage = SubscriptionStorage<EventName, Update>()
 
     internal init(
         objectID: String,
@@ -79,13 +83,17 @@ internal struct LiveObjectMutableState<Update: Sendable> {
         // RTLO4b2
         try coreSDK.validateChannelState(notIn: [.detached, .failed], operationDescription: "subscribe")
 
-        let updateSubscriptionStorage: SubscriptionStorage<Update>.UpdateSubscriptionStorage = { action in
+        let updateSubscriptionStorage: SubscriptionStorage<EventName, Update>.UpdateSubscriptionStorage = { action in
             updateSelfLater { liveObject in
                 action(&liveObject.subscriptionStorage)
             }
         }
 
-        return subscriptionStorage.subscribe(listener: listener, updateSelfLater: updateSubscriptionStorage)
+        return subscriptionStorage.subscribe(
+            listener: listener,
+            eventName: .update,
+            updateSelfLater: updateSubscriptionStorage,
+        )
     }
 
     internal mutating func unsubscribeAll() {
@@ -99,7 +107,7 @@ internal struct LiveObjectMutableState<Update: Sendable> {
             return
         case let .update(update):
             // RTLO4b4c2
-            subscriptionStorage.emit(update, on: queue)
+            subscriptionStorage.emit(update, eventName: .update, on: queue)
         }
     }
 }

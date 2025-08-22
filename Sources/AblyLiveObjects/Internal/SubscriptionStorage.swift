@@ -1,9 +1,10 @@
 import Foundation
 
 /// Handles subscription bookkeeping, providing methods for subscribing and emitting events.
-internal struct SubscriptionStorage<Update: Sendable> {
-    /// Internal bookkeeping for subscriptions.
-    private var subscriptionsByID: [Subscription.ID: Subscription] = [:]
+internal struct SubscriptionStorage<EventName: Hashable & Sendable, Update: Sendable> {
+    /// Internal bookkeeping for subscriptions, organized by event name.
+    /// Each event name maps to a dictionary of subscriptions keyed by their ID for O(1) operations.
+    private var subscriptionsByEventName: [EventName: [Subscription.ID: Subscription]] = [:]
 
     // MARK: - Subscriptions
 
@@ -22,34 +23,58 @@ internal struct SubscriptionStorage<Update: Sendable> {
 
     private struct SubscribeResponse: AblyLiveObjects.SubscribeResponse {
         var subscriptionID: Subscription.ID
+        var eventName: EventName
         var updateSubscriptionStorage: UpdateSubscriptionStorage
 
         func unsubscribe() {
             updateSubscriptionStorage { subscriptionStorage in
-                subscriptionStorage.unsubscribe(subscriptionID: subscriptionID)
+                subscriptionStorage.unsubscribe(subscriptionID: subscriptionID, eventName: eventName)
             }
         }
     }
 
     @discardableResult
-    internal mutating func subscribe(listener: @escaping LiveObjectUpdateCallback<Update>, updateSelfLater: @escaping UpdateSubscriptionStorage) -> any AblyLiveObjects.SubscribeResponse {
+    internal mutating func subscribe(
+        listener: @escaping LiveObjectUpdateCallback<Update>,
+        eventName: EventName,
+        updateSelfLater: @escaping UpdateSubscriptionStorage,
+    ) -> any AblyLiveObjects.SubscribeResponse {
         let subscription = Subscription(listener: listener, updateSubscriptionStorage: updateSelfLater)
-        subscriptionsByID[subscription.id] = subscription
-        return SubscribeResponse(subscriptionID: subscription.id, updateSubscriptionStorage: updateSelfLater)
+
+        // Initialize the dictionary for this event name if it doesn't exist
+        if subscriptionsByEventName[eventName] == nil {
+            subscriptionsByEventName[eventName] = [:]
+        }
+
+        // Add the subscription to the appropriate event name dictionary
+        subscriptionsByEventName[eventName]?[subscription.id] = subscription
+
+        return SubscribeResponse(subscriptionID: subscription.id, eventName: eventName, updateSubscriptionStorage: updateSelfLater)
     }
 
     internal mutating func unsubscribeAll() {
-        subscriptionsByID.removeAll()
+        subscriptionsByEventName.removeAll()
     }
 
-    private mutating func unsubscribe(subscriptionID: Subscription.ID) {
-        subscriptionsByID.removeValue(forKey: subscriptionID)
+    private mutating func unsubscribe(subscriptionID: Subscription.ID, eventName: EventName) {
+        // O(1) removal using dictionary key
+        subscriptionsByEventName[eventName]?.removeValue(forKey: subscriptionID)
+
+        // Clean up empty event name dictionaries
+        if subscriptionsByEventName[eventName]?.isEmpty == true {
+            subscriptionsByEventName.removeValue(forKey: eventName)
+        }
     }
 
-    internal func emit(_ update: Update, on queue: DispatchQueue) {
-        for subscription in subscriptionsByID.values {
+    internal func emit(_ update: Update, eventName: EventName, on queue: DispatchQueue) {
+        // Only emit to subscribers who subscribed to this specific event name
+        guard let subscriptions = subscriptionsByEventName[eventName] else {
+            return
+        }
+
+        for subscription in subscriptions.values {
             queue.async {
-                let response = SubscribeResponse(subscriptionID: subscription.id, updateSubscriptionStorage: subscription.updateSubscriptionStorage)
+                let response = SubscribeResponse(subscriptionID: subscription.id, eventName: eventName, updateSubscriptionStorage: subscription.updateSubscriptionStorage)
                 subscription.listener(update, response)
             }
         }
