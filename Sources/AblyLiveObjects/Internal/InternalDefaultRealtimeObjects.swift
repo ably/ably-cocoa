@@ -3,7 +3,7 @@ import Ably
 
 /// This provides the implementation behind ``PublicDefaultRealtimeObjects``, via internal versions of the ``RealtimeObjects`` API.
 internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPoolDelegate {
-    // Used for synchronizing access to all of this instance's mutable state. This is a temporary solution just to allow us to implement `Sendable`, and we'll revisit it in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/3.
+    // Used for synchronizing access to all of this instance's mutable state. This is a temporary solution just to allow us to implement `Sendable`, and we'll revisit it in https://github.com/ably/ably-liveobjects-swift-plugin/issues/3.
     private let mutex = NSLock()
 
     private nonisolated(unsafe) var mutableState: MutableState!
@@ -168,7 +168,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
             }
 
             // RTO11f
-            // TODO: This is a stopgap; change to use server time per RTO11f5 (https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/50)
+            // TODO: This is a stopgap; change to use server time per RTO11f5 (https://github.com/ably/ably-liveobjects-swift-plugin/issues/50)
             let timestamp = clock.now
             let creationOperation = ObjectCreationHelpers.creationOperationForLiveMap(
                 entries: entries,
@@ -213,7 +213,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
 
             // RTO12f
 
-            // TODO: This is a stopgap; change to use server time per RTO12f5 (https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/50)
+            // TODO: This is a stopgap; change to use server time per RTO12f5 (https://github.com/ably/ably-liveobjects-swift-plugin/issues/50)
             let timestamp = clock.now
             let creationOperation = ObjectCreationHelpers.creationOperationForLiveCounter(
                 count: count,

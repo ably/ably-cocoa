@@ -1,7 +1,7 @@
 {
-  "name": "ably-cocoa-liveobjects-plugin-dev-tooling",
+  "name": "ably-liveobjects-swift-plugin-dev-tooling",
   "version": "0.1.0",
-  "description": "Development tooling for the ably-cocoa-liveobjects-plugin repo",
+  "description": "Development tooling for the ably-liveobjects-swift-plugin repo",
   "devDependencies": {
     "prettier": "^3.3.3"
   },

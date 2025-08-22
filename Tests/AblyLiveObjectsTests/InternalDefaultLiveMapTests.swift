@@ -93,7 +93,7 @@ struct InternalDefaultLiveMapTests {
             #expect(result?.stringValue == "test")
         }
 
-        // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
+        // TODO: Needs specification (see https://github.com/ably/ably-liveobjects-swift-plugin/issues/46)
         // Tests when `json` is a JSON array
         @Test
         func returnsJSONArrayValue() throws {
@@ -105,7 +105,7 @@ struct InternalDefaultLiveMapTests {
             #expect(result?.jsonArrayValue == ["foo"])
         }
 
-        // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
+        // TODO: Needs specification (see https://github.com/ably/ably-liveobjects-swift-plugin/issues/46)
         // Tests when `json` is a JSON object
         @Test
         func returnsJSONObjectValue() throws {
@@ -412,8 +412,8 @@ struct InternalDefaultLiveMapTests {
                     "bytes": TestFactories.internalMapEntry(data: ObjectData(bytes: Data([0x01, 0x02, 0x03]))), // RTLM5d2c
                     "number": TestFactories.internalMapEntry(data: ObjectData(number: NSNumber(value: 42))), // RTLM5d2d
                     "string": TestFactories.internalMapEntry(data: ObjectData(string: "hello")), // RTLM5d2e
-                    "jsonArray": TestFactories.internalMapEntry(data: ObjectData(json: .array(["foo"]))), // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
-                    "jsonObject": TestFactories.internalMapEntry(data: ObjectData(json: .object(["foo": "bar"]))), // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
+                    "jsonArray": TestFactories.internalMapEntry(data: ObjectData(json: .array(["foo"]))), // TODO: Needs specification (see https://github.com/ably/ably-liveobjects-swift-plugin/issues/46)
+                    "jsonObject": TestFactories.internalMapEntry(data: ObjectData(json: .object(["foo": "bar"]))), // TODO: Needs specification (see https://github.com/ably/ably-liveobjects-swift-plugin/issues/46)
                     "mapRef": TestFactories.internalMapEntry(data: ObjectData(objectId: "map:ref@123")), // RTLM5d2f2
                     "counterRef": TestFactories.internalMapEntry(data: ObjectData(objectId: "counter:ref@456")), // RTLM5d2f2
                 ],

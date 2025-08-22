@@ -68,7 +68,7 @@ struct ObjectLifetimesTests {
             #expect(createdObjects.weakInternalChannel != nil)
             #expect(createdObjects.weakInternalRealtimeObjects != nil)
 
-            // TODO: test that we can receive events on a LiveObject (https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/30)
+            // TODO: test that we can receive events on a LiveObject (https://github.com/ably/ably-liveobjects-swift-plugin/issues/30)
 
             // Note that after this return we no longer have a reference to createdObjects and thus no longer have a strong reference to our public RealtimeObjects instance
             return .init(
@@ -185,7 +185,7 @@ struct ObjectLifetimesTests {
             #expect(createdObjects.weakInternalRealtimeObjects != nil)
             #expect(createdObjects.weakInternalLiveObject != nil)
 
-            // TODO: test that we can receive events on a LiveObject (https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/30)
+            // TODO: test that we can receive events on a LiveObject (https://github.com/ably/ably-liveobjects-swift-plugin/issues/30)
 
             // Note that after this return we no longer have a reference to createdObjects and thus no longer have a strong reference to our public LiveObject instance
             return .init(
@@ -232,6 +232,6 @@ struct ObjectLifetimesTests {
 
         #expect(objects as AnyObject === objectsAgain as AnyObject)
         #expect(root === rootAgain)
-        // TODO: when we have an easy way of populating the ObjectsPool (i.e. once we have a write API) then also test with a non-root LiveMap and a counter (https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/30)
+        // TODO: when we have an easy way of populating the ObjectsPool (i.e. once we have a write API) then also test with a non-root LiveMap and a counter (https://github.com/ably/ably-liveobjects-swift-plugin/issues/30)
     }
 }

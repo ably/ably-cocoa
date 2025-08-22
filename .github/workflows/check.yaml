@@ -40,7 +40,7 @@ jobs:
 
       - run: swift run BuildTool lint
 
-  # TODO: Restore in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/2 once we've seen what form the LiveObjects spec takes
+  # TODO: Restore in https://github.com/ably/ably-liveobjects-swift-plugin/issues/2 once we've seen what form the LiveObjects spec takes
   #
   #  spec-coverage:
   #    runs-on: macos-15
@@ -254,7 +254,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: eu-west-2
-          role-to-assume: arn:aws:iam::${{ secrets.ABLY_AWS_ACCOUNT_ID_SDK }}:role/ably-sdk-builds-ably-cocoa-liveobjects-plugin
+          role-to-assume: arn:aws:iam::${{ secrets.ABLY_AWS_ACCOUNT_ID_SDK }}:role/ably-sdk-builds-ably-liveobjects-swift-plugin
           role-session-name: "${{ github.run_id }}-${{ github.run_number }}"
 
       # Upload the generated documentation

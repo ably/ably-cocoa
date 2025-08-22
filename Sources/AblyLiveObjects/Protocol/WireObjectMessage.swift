@@ -476,7 +476,7 @@ internal struct WireObjectData {
     internal var bytes: StringOrData? // OD2d
     internal var number: NSNumber? // OD2e
     internal var string: String? // OD2f
-    internal var json: String? // TODO: Needs specification (see https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/46)
+    internal var json: String? // TODO: Needs specification (see https://github.com/ably/ably-liveobjects-swift-plugin/issues/46)
 }
 
 extension WireObjectData: WireObjectCodable {

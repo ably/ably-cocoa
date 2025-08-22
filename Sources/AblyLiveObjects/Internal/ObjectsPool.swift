@@ -326,7 +326,7 @@ internal struct ObjectsPool {
             case let .counter(counter):
                 return counter
             case .map:
-                // TODO: Add the ability to statically reason about the type of pool entries in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/36
+                // TODO: Add the ability to statically reason about the type of pool entries in https://github.com/ably/ably-liveobjects-swift-plugin/issues/36
                 preconditionFailure("Expected counter object with ID \(creationOperation.objectID) but found map object")
             }
         }
@@ -370,7 +370,7 @@ internal struct ObjectsPool {
             case let .map(map):
                 return map
             case .counter:
-                // TODO: Add the ability to statically reason about the type of pool entries in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/36
+                // TODO: Add the ability to statically reason about the type of pool entries in https://github.com/ably/ably-liveobjects-swift-plugin/issues/36
                 preconditionFailure("Expected map object with ID \(creationOperation.objectID) but found counter object")
             }
         }
