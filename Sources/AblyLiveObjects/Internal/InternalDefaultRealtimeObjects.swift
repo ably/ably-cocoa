@@ -242,10 +242,6 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
         try await createCounter(count: 0, coreSDK: coreSDK)
     }
 
-    internal func batch(callback _: sending BatchCallback) async throws {
-        notYetImplemented()
-    }
-
     @discardableResult
     internal func on(event _: ObjectsEvent, callback _: ObjectsEventCallback) -> any OnObjectsEventResponse {
         notYetImplemented()
