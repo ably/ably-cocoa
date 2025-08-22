@@ -334,7 +334,15 @@ class MainActorStorage<T> {
 
 // MARK: - Test suite
 
-@Suite(.objectsFixtures)
+@Suite(
+    .objectsFixtures,
+    // These tests exhibit flakiness (hanging, timeouts, occasional Realtime
+    // connection limits) when run concurrently, where I think that we had up to
+    // 100 ARTRealtime instances active at the same time. So we're running them in
+    // serial to unblock CI builds until we can understand the issue better. See
+    // https://github.com/ably/ably-liveobjects-swift-plugin/issues/72.
+    .serialized,
+)
 private struct ObjectsIntegrationTests {
     // TODO: Add the non-parameterised tests
 
@@ -2916,22 +2924,23 @@ private struct ObjectsIntegrationTests {
                     action: { ctx in
                         let objects = ctx.objects
 
-                        let maps = try await withThrowingTaskGroup(of: (any LiveMap).self, returning: [any LiveMap].self) { group in
-                            for mapFixture in primitiveMapsFixtures {
+                        let maps = try await withThrowingTaskGroup(of: (index: Int, map: any LiveMap).self, returning: [any LiveMap].self) { group in
+                            for (index, mapFixture) in primitiveMapsFixtures.enumerated() {
                                 group.addTask {
-                                    if let entries = mapFixture.liveMapEntries {
+                                    let map = if let entries = mapFixture.liveMapEntries {
                                         try await objects.createMap(entries: entries)
                                     } else {
                                         try await objects.createMap()
                                     }
+                                    return (index: index, map: map)
                                 }
                             }
 
-                            var results: [any LiveMap] = []
-                            while let map = try await group.next() {
-                                results.append(map)
+                            var results: [(index: Int, map: any LiveMap)] = []
+                            while let result = try await group.next() {
+                                results.append(result)
                             }
-                            return results
+                            return results.sorted { $0.index < $1.index }.map(\.map)
                         }
 
                         for (i, map) in maps.enumerated() {
@@ -3728,7 +3737,7 @@ private struct ObjectsIntegrationTests {
             var channel: ARTRealtimeChannel
             var objects: any RealtimeObjects
             var client: ARTRealtime
-            var waitForGCCycles: @Sendable (Int) async -> Void
+            var waitForTombstonedObjectsToBeCollected: @Sendable (Date) async throws -> Void
         }
 
         static let scenarios: [TestScenario<Context>] = [
@@ -3741,7 +3750,7 @@ private struct ObjectsIntegrationTests {
                     let channelName = ctx.channelName
                     let channel = ctx.channel
                     let objects = ctx.objects
-                    let waitForGCCycles = ctx.waitForGCCycles
+                    let waitForTombstonedObjectsToBeCollected = ctx.waitForTombstonedObjectsToBeCollected
 
                     // Wait for counter creation
                     async let counterCreatedPromise: Void = waitForObjectOperation(ctx.objects, .counterCreate)
@@ -3779,9 +3788,10 @@ private struct ObjectsIntegrationTests {
                         "Check object's \"tombstone\" flag is set to \"true\" after OBJECT_DELETE",
                     )
 
-                    // We expect 2 cycles to guarantee that grace period has expired, which will always be
-                    // true based on the test config used
-                    await waitForGCCycles(2)
+                    let tombstonedAt = try #require(poolEntry.tombstonedAt)
+
+                    // Wait for objects tombstoned at this time to be garbage collected
+                    try await waitForTombstonedObjectsToBeCollected(tombstonedAt)
 
                     // Object should be removed from the local pool entirely now, as the GC grace period has passed
                     #expect(
@@ -3798,7 +3808,7 @@ private struct ObjectsIntegrationTests {
                     let root = ctx.root
                     let objectsHelper = ctx.objectsHelper
                     let channelName = ctx.channelName
-                    let waitForGCCycles = ctx.waitForGCCycles
+                    let waitForTombstonedObjectsToBeCollected = ctx.waitForTombstonedObjectsToBeCollected
 
                     let keyUpdatedPromise = try root.updates()
                     async let keyUpdatedWait: Void = {
@@ -3853,9 +3863,10 @@ private struct ObjectsIntegrationTests {
                         "Check map entry for \"foo\" on root has \"tombstone\" flag set to \"true\" after MAP_REMOVE",
                     )
 
-                    // We expect 2 cycles to guarantee that grace period has expired, which will always be
-                    // true based on the test config used
-                    await waitForGCCycles(2)
+                    let tombstonedAt = try #require(underlyingData["foo"]?.tombstonedAt)
+
+                    // Wait for objects tombstoned at this time to be garbage collected
+                    try await waitForTombstonedObjectsToBeCollected(tombstonedAt)
 
                     // The entry should be removed from the underlying map now
                     let underlyingDataAfterGC = internalRoot.testsOnly_data
@@ -3879,10 +3890,11 @@ private struct ObjectsIntegrationTests {
 
         // Configure GC options with shorter intervals for testing
         var options = testCase.options
-        options.garbageCollectionOptions = .init(
-            interval: 2.0, // JS uses 0.5s but I've found that, at least testing locally, this was not enough to compensate for the clock skew between my local clock and whatever was used to generate the tombstonedAt timestamps server-side.
+        let garbageCollectionOptions = InternalDefaultRealtimeObjects.GarbageCollectionOptions(
+            interval: 0.5,
             gracePeriod: 0.25,
         )
+        options.garbageCollectionOptions = garbageCollectionOptions
 
         let objectsHelper = try await ObjectsHelper()
         let client = try await realtimeWithObjects(options: options)
@@ -3894,18 +3906,17 @@ private struct ObjectsIntegrationTests {
             try await channel.attachAsync()
             let root = try await objects.getRoot()
 
-            // Helper function to wait for a specific number of GC cycles
+            // Helper function to wait for enough GC cycles to occur such that objects tombstoned at a specific time should have been garbage collected. This is a slightly different approach to the JS tests, which wait for a certain number of GC cycles to occur, but I think that this is a bit more robust in the face of clock skew between the local clock and whatever was used to generate the tombstonedAt timestamps server-side.
             let internallyTypedObjects = try #require(objects as? PublicDefaultRealtimeObjects)
-            let waitForGCCycles: @Sendable (Int) async -> Void = { cycles in
-                let gcEvents = internallyTypedObjects.testsOnly_proxied.testsOnly_completedGarbageCollectionEvents
-
-                var gcCalledTimes = 0
-                for await _ in gcEvents {
-                    gcCalledTimes += 1
-                    if gcCalledTimes >= cycles {
-                        break
-                    }
+            let waitForTombstonedObjectsToBeCollected: @Sendable (Date) async throws -> Void = { (tombstonedAt: Date) in
+                // Sleep until we're sure we're past tombstonedAt + gracePeriod
+                let timeUntilGracePeriodExpires = (tombstonedAt + garbageCollectionOptions.gracePeriod).timeIntervalSince(.init())
+                if timeUntilGracePeriodExpires > 0 {
+                    try await Task.sleep(nanoseconds: UInt64(timeUntilGracePeriodExpires * Double(NSEC_PER_SEC)))
                 }
+
+                // Wait for the next GC event
+                await internallyTypedObjects.testsOnly_proxied.testsOnly_completedGarbageCollectionEventsWithoutBuffering.first { _ in true }
             }
 
             try await testCase.scenario.action(
@@ -3916,7 +3927,7 @@ private struct ObjectsIntegrationTests {
                     channel: channel,
                     objects: objects,
                     client: client,
-                    waitForGCCycles: waitForGCCycles,
+                    waitForTombstonedObjectsToBeCollected: waitForTombstonedObjectsToBeCollected,
                 ),
             )
         }
