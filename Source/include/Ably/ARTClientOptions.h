@@ -9,9 +9,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// A key for the `-[ARTClientOptions plugins]` property.
+/// A key for the `ARTClientOptions.plugins` property.
 typedef NSString *ARTPluginName NS_TYPED_EXTENSIBLE_ENUM;
-/// Set this key in `-[ARTClientOptions plugins]` to `AblyLiveObjects.Plugin.self` after importing `AblyLiveObjects` from the  [ably/ably-liveobjects-swift-plugin](https://github.com/ably/ably-liveobjects-swift-plugin) repository in order to enable LiveObjects functionality.
+/// Set this key in `ARTClientOptions.plugins` to `AblyLiveObjects.Plugin.self` after importing `AblyLiveObjects` from the  [ably/ably-liveobjects-swift-plugin](https://github.com/ably/ably-liveobjects-swift-plugin) repository in order to enable LiveObjects functionality.
 extern const ARTPluginName ARTPluginNameLiveObjects;
 
 /**
