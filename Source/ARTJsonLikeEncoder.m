@@ -27,6 +27,12 @@
 #import "ARTJsonEncoder.h"
 #import "ARTPushChannelSubscription.h"
 #import "ARTMessageOperation+Private.h"
+#import "ARTClientOptions+Private.h"
+
+#ifdef ABLY_SUPPORTS_PLUGINS
+#import "ARTPluginDecodingContext.h"
+@import _AblyPluginSupportPrivate;
+#endif
 
 @implementation ARTJsonLikeEncoder {
     __weak ARTRestInternal *_rest; // weak because rest owns self
@@ -572,6 +578,12 @@
         output[@"params"] = message.params;
     }
 
+#ifdef ABLY_SUPPORTS_PLUGINS
+    if (message.state) {
+        output[@"state"] = [self objectMessagesToArray:message.state];
+    }
+#endif
+
     ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: protocolMessageToDictionary %@", _rest, [_delegate formatAsString], output);
     return output;
 }
@@ -816,6 +828,9 @@
     message.messages = [self messagesFromArray:messages protocolMessage:message];
     message.presence = [self presenceMessagesFromArray:[input objectForKey:@"presence"]];
     message.annotations = [self annotationsFromArray:[input objectForKey:@"annotations"]];
+#ifdef ABLY_SUPPORTS_PLUGINS
+    message.state = [self objectMessagesFromArray:[input objectForKey:@"state"] protocolMessage:message];
+#endif
 
     return message;
 }
@@ -840,7 +855,9 @@
                                               subscribers:[input artInteger:@"subscribers"]
                                       presenceConnections:[input artInteger:@"presenceConnections"]
                                           presenceMembers:[input artInteger:@"presenceMembers"]
-                                      presenceSubscribers:[input artInteger:@"presenceSubscribers"]];;
+                                      presenceSubscribers:[input artInteger:@"presenceSubscribers"]
+                                         objectPublishers:[input artInteger:@"objectPublishers"]
+                                        objectSubscribers:[input artInteger:@"objectSubscribers"]];
 }
 
 - (ARTChannelOccupancy *)channelOccupancyFromDictionary:(NSDictionary *)input {
@@ -1091,6 +1108,96 @@
     ARTLogDebug(_logger, @"RS:%p ARTJsonLikeEncoder<%@> encoding '%@'; got: %@", _rest, [_delegate formatAsString], obj, encoded);
     return encoded;
 }
+
+#ifdef ABLY_SUPPORTS_PLUGINS
+/// Converts an `ARTEncoderFormat` to an `APEncodingFormat`.
+- (APEncodingFormat)apEncodingFormatFromARTEncoderFormat:(ARTEncoderFormat)format {
+    switch (format) {
+        case ARTEncoderFormatJson:
+            return APEncodingFormatJSON;
+        case ARTEncoderFormatMsgPack:
+            return APEncodingFormatMessagePack;
+    }
+}
+#endif
+
+#ifdef ABLY_SUPPORTS_PLUGINS
+/// Uses the LiveObjects plugin to decode an array of `ObjectMessage`s.
+///
+/// Returns `nil` if the LiveObjects plugin has not been supplied, or if we fail to decode any of the `ObjectMessage`s.
+- (nullable NSArray<id<APObjectMessageProtocol>> *)objectMessagesFromArray:(nullable id)input
+                                                           protocolMessage:(ARTProtocolMessage *)protocolMessage {
+    if (![input isKindOfClass:[NSArray class]]) {
+        return nil;
+    }
+
+    NSArray *inputArray = input;
+
+    id<APLiveObjectsInternalPluginProtocol> liveObjectsPlugin = _rest.options.liveObjectsPlugin;
+
+    if (!liveObjectsPlugin) {
+        return nil;
+    }
+
+    NSMutableArray<id<APObjectMessageProtocol>> *output = [NSMutableArray array];
+
+    for (NSInteger i = 0; i < inputArray.count; i++) {
+        id item = inputArray[i];
+
+        if (![item isKindOfClass:[NSDictionary class]]) {
+            return nil;
+        }
+
+        ARTPluginDecodingContext *decodingContext = [[ARTPluginDecodingContext alloc] initWithParentID:protocolMessage.id
+                                                                                    parentConnectionID:protocolMessage.connectionId
+                                                                                       parentTimestamp:protocolMessage.timestamp
+                                                                                         indexInParent:i];
+
+        id<APPublicErrorInfo> error;
+        APEncodingFormat format = [self apEncodingFormatFromARTEncoderFormat:[self format]];
+
+        id<APObjectMessageProtocol> objectMessage = [liveObjectsPlugin decodeObjectMessage:item
+                                                                                   context:decodingContext
+                                                                                    format:format
+                                                                                     error:&error];
+
+        if (!objectMessage) {
+            ARTLogWarn(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: LiveObjects plugin failed to decode ObjectMessage %@, error %@", _rest, [_delegate formatAsString], item, error);
+            return nil;
+        }
+
+        [output addObject:objectMessage];
+    }
+
+    return output;
+}
+
+/// Uses the LiveObjects plugin to encode an array of `ObjectMessage`s.
+///
+/// Returns `nil` if the input is `nil`.
+- (NSArray<NSDictionary *> *)objectMessagesToArray:(nullable NSArray<id<APObjectMessageProtocol>> *)objectMessages {
+    if (!objectMessages) {
+        return nil;
+    }
+
+    id<APLiveObjectsInternalPluginProtocol> liveObjectsPlugin = _rest.options.liveObjectsPlugin;
+
+    if (!liveObjectsPlugin) {
+        // The only thing that sends ObjectMessage is the LiveObjects plugin, so if we have some to encode then the plugin must be present
+        [NSException raise:NSInternalInconsistencyException format:@"Attempted to encode ObjectMessages without a LiveObjects plugin; this should not be possible."];
+        return nil;
+    }
+
+    NSMutableArray<NSDictionary *> *result = [NSMutableArray array];
+    APEncodingFormat format = [self apEncodingFormatFromARTEncoderFormat:[self format]];
+
+    for (id objectMessage in objectMessages) {
+        [result addObject:[liveObjectsPlugin encodeObjectMessage:objectMessage format:format]];
+    }
+
+    return result;
+}
+#endif
 
 @end
 

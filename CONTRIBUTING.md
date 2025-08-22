@@ -57,6 +57,10 @@ These are the header files that form the internal interface of the SDK.
 
 To run tests use `make test_[iOS|tvOS|macOS]`. These tests expect you to have a simulator device of a specific model and OS version. See [`Fastfile`](./fastlane/Fastfile) for these values. If you don’t have a matching simulator, you can create one using `simctl`. For example, `xcrun simctl create "iPhone 12 (14.4)" "iPhone 12" "com.apple.CoreSimulator.SimRuntime.iOS-14-4"`.
 
+## Plugins
+
+ably-cocoa allows users to pass in Ably-authored plugins via the `ARTClientOptions.plugins` property. These plugins extend the functionality of the SDK. For more information on the implementation of the plugins mechanism, see [`Docs/plugins.md`](Docs/plugins.md).
+
 ## Release Process
 
 For each release, the following needs to be done:

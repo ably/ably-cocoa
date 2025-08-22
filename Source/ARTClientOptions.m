@@ -9,9 +9,18 @@
 #import "ARTNSString+ARTUtil.h"
 #import "ARTTestClientOptions.h"
 
+#ifdef ABLY_SUPPORTS_PLUGINS
+@import _AblyPluginSupportPrivate;
+#import "ARTPluginAPI.h"
+#endif
+
+const ARTPluginName ARTPluginNameLiveObjects = @"LiveObjects";
+
 NSString *ARTDefaultEnvironment = nil;
 
 @interface ARTClientOptions ()
+
+@property (nonatomic) NSMutableDictionary<NSString *, id> *pluginData;
 
 - (instancetype)initDefaults;
 
@@ -21,6 +30,12 @@ NSString *ARTDefaultEnvironment = nil;
 
 - (instancetype)initDefaults {
     self = [super initDefaults];
+
+#ifdef ABLY_SUPPORTS_PLUGINS
+    // The LiveObjects repository provides an extension to `ARTClientOptions` so we need to ensure that we register the pluginAPI before that extension is used.
+    [ARTPluginAPI registerSelf];
+#endif
+
     _port = [ARTDefault port];
     _tlsPort = [ARTDefault tlsPort];
     _environment = ARTDefaultEnvironment;
@@ -49,6 +64,7 @@ NSString *ARTDefaultEnvironment = nil;
     _addRequestIds = false;
     _pushRegistererDelegate = nil;
     _testOptions = [[ARTTestClientOptions alloc] init];
+    _pluginData = [[NSMutableDictionary alloc] init];
     return self;
 }
 
@@ -139,6 +155,8 @@ NSString *ARTDefaultEnvironment = nil;
     options.transportParams = self.transportParams;
     options.agents = self.agents;
     options.testOptions = self.testOptions;
+    options.plugins = self.plugins;
+    options.pluginData = [self.pluginData mutableCopy];
 
     return options;
 }
@@ -221,6 +239,30 @@ NSString *ARTDefaultEnvironment = nil;
 
 - (NSString *)host:(NSString *)host forEnvironment:(NSString *)environment {
     return [NSString stringWithFormat:@"%@-%@", environment, host];
+}
+
+// MARK: - Plugins
+
+#ifdef ABLY_SUPPORTS_PLUGINS
+- (nullable id<APLiveObjectsInternalPluginProtocol>)liveObjectsPlugin {
+    Class<APLiveObjectsPluginProtocol> publicPlugin = self.plugins[ARTPluginNameLiveObjects];
+
+    if (!publicPlugin) {
+        return nil;
+    }
+
+    return [publicPlugin internalPlugin];
+}
+#endif
+
+// MARK: - Options for plugins
+
+- (void)setPluginOptionsValue:(id)value forKey:(NSString *)key {
+    self.pluginData[key] = value;
+}
+
+- (id)pluginOptionsValueForKey:(NSString *)key {
+    return self.pluginData[key];
 }
 
 @end

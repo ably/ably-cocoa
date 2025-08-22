@@ -354,13 +354,25 @@ NS_SWIFT_SENDABLE
  */
 @property (nonatomic, readonly) NSInteger presenceSubscribers;
 
+/**
+ * The number of realtime attachments permitted to publish object messages to the channel. This requires the `object-publish` capability and for a client to have specified an `ARTChannelMode` flag that includes `ARTChannelMode.ARTChannelModeObjectPublish`.
+ */
+@property (nonatomic, readonly) NSInteger objectPublishers;
+
+/**
+ * The number of realtime attachments receiving object messages on the channel. This requires the `object-subscribe` capability and for a client to have specified an `ARTChannelMode` flag that includes `ARTChannelMode.ARTChannelModeObjectSubscribe`.
+ */
+@property (nonatomic, readonly) NSInteger objectSubscribers;
+
 /// :nodoc:
 - (instancetype)initWithConnections:(NSInteger)connections
                          publishers:(NSInteger)publishers
                         subscribers:(NSInteger)subscribers
                 presenceConnections:(NSInteger)presenceConnections
                     presenceMembers:(NSInteger)presenceMembers
-                presenceSubscribers:(NSInteger)presenceSubscribers;
+                presenceSubscribers:(NSInteger)presenceSubscribers
+                   objectPublishers:(NSInteger)objectPublishers
+                  objectSubscribers:(NSInteger)objectSubscribers;
 
 @end
 

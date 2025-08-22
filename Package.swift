@@ -17,14 +17,16 @@ let package = Package(
     ],
     dependencies: [
         .package(name: "msgpack", url: "https://github.com/rvi/msgpack-objective-C", from: "0.4.0"),
-        .package(name: "AblyDeltaCodec", url: "https://github.com/ably/delta-codec-cocoa", from: "1.3.3")
+        .package(name: "AblyDeltaCodec", url: "https://github.com/ably/delta-codec-cocoa", from: "1.3.3"),
+        .package(name: "ably-cocoa-plugin-support", url: "https://github.com/ably/ably-cocoa-plugin-support", from: "0.1.0"),
     ],
     targets: [
         .target(
             name: "Ably",
             dependencies: [
                 .byName(name: "msgpack"),
-                .byName(name: "AblyDeltaCodec")
+                .byName(name: "AblyDeltaCodec"),
+                .product(name: "_AblyPluginSupportPrivate", package: "ably-cocoa-plugin-support")
             ],
             path: "Source",
             exclude: [
@@ -35,6 +37,7 @@ let package = Package(
             resources: [.copy("PrivacyInfo.xcprivacy")],
             publicHeadersPath: "include",
             cSettings: [
+                .define("ABLY_SUPPORTS_PLUGINS"),
                 .headerSearchPath("PrivateHeaders"),
                 .headerSearchPath("PrivateHeaders/Ably"),
                 .headerSearchPath("include/Ably"),
@@ -47,7 +50,7 @@ let package = Package(
                 .headerSearchPath("SocketRocket/Internal/Delegate"),
                 .headerSearchPath("SocketRocket/Internal/IOConsumer"),
             ]
-        )
+        ),
     ]
 )
 

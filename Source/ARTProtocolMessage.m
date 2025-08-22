@@ -49,6 +49,7 @@
     [description appendFormat:@" timestamp: %@,\n", self.timestamp];
     [description appendFormat:@" flags: %lld,\n", self.flags];
     [description appendFormat:@" flags.hasPresence: %@,\n", NSStringFromBOOL(self.hasPresence)];
+    [description appendFormat:@" flags.hasObjects: %@,\n", NSStringFromBOOL(self.hasObjects)];
     [description appendFormat:@" flags.hasBacklog: %@,\n", NSStringFromBOOL(self.hasBacklog)];
     [description appendFormat:@" flags.resumed: %@,\n", NSStringFromBOOL(self.resumed)];
     [description appendFormat:@" messages: %@\n", self.messages];
@@ -165,11 +166,19 @@
 }
 
 - (BOOL)ackRequired {
-    return self.action == ARTProtocolMessageMessage || self.action == ARTProtocolMessagePresence || self.action == ARTProtocolMessageAnnotation;
+    // RTN7a
+    return self.action == ARTProtocolMessageMessage
+    || self.action == ARTProtocolMessagePresence
+    || self.action == ARTProtocolMessageAnnotation
+    || self.action == ARTProtocolMessageObject;
 }
 
 - (BOOL)hasPresence {
     return self.flags & ARTProtocolMessageFlagHasPresence;
+}
+
+- (BOOL)hasObjects {
+    return self.flags & ARTProtocolMessageFlagHasObjects;
 }
 
 - (BOOL)hasBacklog {
@@ -224,6 +233,10 @@ NSString* ARTProtocolMessageActionToStr(ARTProtocolMessageAction action) {
             return @"Sync"; //16
         case ARTProtocolMessageAuth:
             return @"Auth"; //17
+        case ARTProtocolMessageObject:
+            return @"Object"; //19
+        case ARTProtocolMessageObjectSync:
+            return @"ObjectSync"; //20
         case ARTProtocolMessageAnnotation:
             return @"Annotation"; //21
     }

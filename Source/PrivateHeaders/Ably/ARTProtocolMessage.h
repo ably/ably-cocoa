@@ -1,5 +1,9 @@
 #import <Foundation/Foundation.h>
 
+#ifdef ABLY_SUPPORTS_PLUGINS
+@import _AblyPluginSupportPrivate;
+#endif
+
 #import <Ably/ARTMessage.h>
 #import <Ably/ARTPresenceMessage.h>
 
@@ -30,6 +34,8 @@ typedef NS_ENUM(NSUInteger, ARTProtocolMessageAction) {
     ARTProtocolMessageMessage = 15,
     ARTProtocolMessageSync = 16,
     ARTProtocolMessageAuth = 17,
+    ARTProtocolMessageObject = 19,
+    ARTProtocolMessageObjectSync = 20,
     ARTProtocolMessageAnnotation = 21,
 };
 
@@ -63,6 +69,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, readwrite, nonatomic) ARTConnectionDetails *connectionDetails;
 @property (nullable, nonatomic) ARTAuthDetails *auth;
 @property (nonatomic, nullable) NSStringDictionary *params;
+
+#ifdef ABLY_SUPPORTS_PLUGINS
+@property (nullable, readwrite, nonatomic) NSArray<id<APObjectMessageProtocol>> *state;
+#endif
 
 @end
 

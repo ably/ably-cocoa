@@ -1,0 +1,25 @@
+# This workflow checks that the SPM version of the library (which includes additional code for plugin support compared to the Xcode version) compiles and does not have any warnings.
+
+name: "Check SPM build"
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: macos-15
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: 16.3
+
+      # https://forums.swift.org/t/warnings-as-errors-for-libraries-frameworks/58393/2
+      - run: swift build -Xswiftc -warnings-as-errors

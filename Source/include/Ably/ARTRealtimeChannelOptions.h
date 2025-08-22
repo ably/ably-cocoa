@@ -30,7 +30,15 @@ typedef NS_OPTIONS(NSUInteger, ARTChannelMode) {
     /**
      * The client can receive annotations for messages.
      */
-    ARTChannelModeAnnotationSubscribe = 1 << 22
+    ARTChannelModeAnnotationSubscribe = 1 << 22,
+    /**
+     * The client can receive object messages.
+     */
+    ARTChannelModeObjectSubscribe = 1 << 24,
+    /**
+     * The client can publish object messages.
+     */
+    ARTChannelModeObjectPublish = 1 << 25
 };
 
 NS_ASSUME_NONNULL_BEGIN

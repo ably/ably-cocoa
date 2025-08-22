@@ -1,6 +1,5 @@
 #import "ARTRealtimeChannel+Private.h"
 #import "ARTChannel+Private.h"
-#import "ARTChannel+Subclass.h"
 #import "ARTDataQuery+Private.h"
 
 #import "ARTRealtime+Private.h"
@@ -20,6 +19,7 @@
 #import "ARTRest.h"
 #import "ARTClientOptions.h"
 #import "ARTClientOptions+TestConfiguration.h"
+#import "ARTClientOptions+Private.h"
 #import "ARTTestClientOptions.h"
 #import "ARTTypes.h"
 #import "ARTTypes+Private.h"
@@ -35,6 +35,11 @@
 #import "ARTAttachRetryState.h"
 #if TARGET_OS_IPHONE
 #import "ARTPushChannel+Private.h"
+#endif
+
+#ifdef ABLY_SUPPORTS_PLUGINS
+@import _AblyPluginSupportPrivate;
+#import "ARTPluginAPI.h"
 #endif
 
 @implementation ARTRealtimeChannel {
@@ -53,11 +58,23 @@
     });
 }
 
-- (instancetype)initWithInternal:(ARTRealtimeChannelInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc {
+- (instancetype)initWithInternal:(ARTRealtimeChannelInternal *)internal realtimeInternal:(ARTRealtimeInternal *)realtimeInternal queuedDealloc:(ARTQueuedDealloc *)dealloc {
     self = [super init];
     if (self) {
         _internal = internal;
+        _realtimeInternal = realtimeInternal;
         _dealloc = dealloc;
+
+#ifdef ABLY_SUPPORTS_PLUGINS
+        // The LiveObjects repository provides an extension to `ARTRealtimeChannel` so we need to ensure that we register the pluginAPI before that extension is used.
+        [ARTPluginAPI registerSelf];
+
+        // If the LiveObjects plugin has been provided, set up LiveObjects functionality for this channel.
+        id<APLiveObjectsInternalPluginProtocol> liveObjectsPlugin = internal.realtime.options.liveObjectsPlugin;
+        if (liveObjectsPlugin) {
+            [liveObjectsPlugin prepareChannel:internal client:realtimeInternal];
+        }
+#endif
     }
     return self;
 }
@@ -249,6 +266,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTRealtimeChannelInternal ()
 
 @property (nonatomic, readonly) ARTAttachRetryState *attachRetryState;
+@property (nonatomic, readonly) NSMutableDictionary<NSString *, id> *pluginData;
 
 @end
 
@@ -281,6 +299,7 @@ NS_ASSUME_NONNULL_END
         _attachRetryState = [[ARTAttachRetryState alloc] initWithRetryDelayCalculator:attachRetryDelayCalculator
                                                                                logger:logger
                                                                      logMessagePrefix:[NSString stringWithFormat:@"RT: %p C:%p ", _realtime, self]];
+        _pluginData = [[NSMutableDictionary alloc] init];
     }
     return self;
 }
@@ -399,6 +418,24 @@ dispatch_sync(_queue, ^{
     }];
 });
 }
+
+#ifdef ABLY_SUPPORTS_PLUGINS
+- (void)sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
+                          completion:(ARTCallback)completion {
+    dispatch_assert_queue(_queue);
+
+    ARTProtocolMessage *pm = [[ARTProtocolMessage alloc] init];
+    pm.action = ARTProtocolMessageObject;
+    pm.channel = self.name;
+    pm.state = objectMessages;
+
+    [self publishProtocolMessage:pm callback:^(ARTStatus *status) {
+        if (completion) {
+            completion(status.errorInfo);
+        }
+    }];
+ }
+#endif
 
 - (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(ARTStatusCallback)cb {
     switch (self.state_nosync) {
@@ -638,6 +675,12 @@ dispatch_sync(_queue, ^{
         case ARTProtocolMessageSync:
             [self onSync:message];
             break;
+        case ARTProtocolMessageObject:
+            [self onObject:message];
+            break;
+        case ARTProtocolMessageObjectSync:
+            [self onObjectSync:message];
+            break;
         default:
             ARTLogWarn(self.logger, @"R:%p C:%p (%@) unknown ARTProtocolMessage action: %tu", _realtime, self, self.name, message.action);
             break;
@@ -664,6 +707,11 @@ dispatch_sync(_queue, ^{
     if (message.channelSerial) {
         self.channelSerial = message.channelSerial;
     }
+
+#ifdef ABLY_SUPPORTS_PLUGINS
+    [self.realtime.options.liveObjectsPlugin onChannelAttached:self
+                                                    hasObjects:message.hasObjects];
+#endif
 
     if (state == ARTRealtimeChannelAttached) {
         if (!message.resumed) { // RTL12
@@ -839,6 +887,36 @@ dispatch_sync(_queue, ^{
                                                                                                errorInfo:msg.error];
     [self performTransitionToState:ARTRealtimeChannelFailed withParams:params];
     [self failPendingPresenceWithState:ARTStateError info:msg.error];
+}
+
+- (void)onObject:(ARTProtocolMessage *)pm {
+    // RTL15b
+    if (pm.channelSerial) {
+        self.channelSerial = pm.channelSerial;
+    }
+
+#ifdef ABLY_SUPPORTS_PLUGINS
+    if (!pm.state) {
+        // Because the plugin isn't set up or because decoding failed
+        return;
+    }
+
+    [self.realtime.options.liveObjectsPlugin handleObjectProtocolMessageWithObjectMessages:pm.state
+                                                                                   channel:self];
+#endif
+}
+
+- (void)onObjectSync:(ARTProtocolMessage *)pm {
+#ifdef ABLY_SUPPORTS_PLUGINS
+    if (!pm.state) {
+        // Because the plugin isn't set up or because decoding failed
+        return;
+    }
+
+    [self.realtime.options.liveObjectsPlugin handleObjectSyncProtocolMessageWithObjectMessages:pm.state
+                                                                  protocolMessageChannelSerial:pm.channelSerial
+                                                                                       channel:self];
+#endif
 }
 
 - (void)attach {
@@ -1159,6 +1237,14 @@ dispatch_sync(_queue, ^{
                 callback(nil);
             break;
     }
+}
+
+- (void)setPluginDataValue:(id)value forKey:(NSString *)key {
+    [self.pluginData setValue:value forKey:key];
+}
+
+- (id)pluginDataValueForKey:(NSString *)key {
+    return self.pluginData[key];
 }
 
 @end

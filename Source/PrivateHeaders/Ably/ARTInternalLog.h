@@ -1,6 +1,10 @@
 @import Foundation;
 #import <Ably/ARTLog.h>
 
+#ifdef ABLY_SUPPORTS_PLUGINS
+@import _AblyPluginSupportPrivate;
+#endif
+
 @protocol ARTInternalLogCore;
 @protocol ARTVersion2Log;
 @class ARTClientOptions;
@@ -33,7 +37,11 @@ NS_SWIFT_NAME(InternalLog)
 
  - Note: It would be great if we could make `ARTInternalLog` a protocol (with a default implementation) instead of a class, since this would make it easier to test the logging behaviour of the SDK. However, since its interface currently makes heavy use of variadic Objective-C methods, which cannot be represented in Swift, we would be unable to write mocks for this protocol in our Swift test suite. As the `ARTInternalLog` interface evolves we may end up removing these variadic methods, in which case we can reconsider.
  */
+#ifdef ABLY_SUPPORTS_PLUGINS
+@interface ARTInternalLog: NSObject <APLogger>
+#else
 @interface ARTInternalLog: NSObject
+#endif
 
 /**
  Provides a shared logger to be used by all public class methods meeting the following criteria:
@@ -50,6 +58,7 @@ NS_SWIFT_NAME(InternalLog)
  Creates a logger which forwards its generated messages to the given core object.
  */
 - (instancetype)initWithCore:(id<ARTInternalLogCore>)core NS_DESIGNATED_INITIALIZER;
+
 /**
  A convenience initializer which creates a logger whose core is an instance of `ARTDefaultInternalLogCore` wrapping the given logger.
  */
@@ -60,7 +69,14 @@ NS_SWIFT_NAME(InternalLog)
 - (instancetype)initWithClientOptions:(ARTClientOptions *)clientOptions;
 - (instancetype)init NS_UNAVAILABLE;
 
-// This method passes the arguments through to the logger’s core object. It is not directly used by the internals of the SDK, but we need it because some of our Swift tests (which can’t access the variadic method below) want to be able to call a logging method on an instance of `ARTInternalLog`.
+/**
+ Passes the arguments through to the logger’s core object.
+
+ It is not directly used by the internals of the `Ably` library, but it is used by:
+
+ - some of our Swift tests (which can’t access the variadic method below), which want to be able to call a logging method on an instance of `ARTInternalLog`
+ - `ARTPluginAPI`, to implement its conformance to the `APPluginAPIProtocol` protocol, which is used by plugins written in Swift
+*/
 - (void)log:(NSString *)message withLevel:(ARTLogLevel)level file:(const char *)fileName line:(NSInteger)line;
 
 // This method should not be called directly — it is for use by the ARTLog* macros. It is tested via the tests of the macros.

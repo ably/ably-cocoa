@@ -4336,7 +4336,35 @@ class RealtimeClientChannelTests: XCTestCase {
             }
         }
     }
-    
+
+    // RTL15b
+    func test_channelSerial_isUpdatedByObjectProtocolMessage() throws {
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        let client = AblyTests.newRealtime(options).client
+        defer { client.dispose(); client.close() }
+        let channel = client.channels.get(test.uniqueChannelName())
+
+        waitUntil(timeout: testTimeout) { done in
+            channel.attach { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+
+        // Am injecting a fake OBJECT message so that I don't have to deal with the LiveObjects plugin
+
+        let protocolMessage = ARTProtocolMessage()
+        protocolMessage.channel = channel.name
+        protocolMessage.action = .object
+        protocolMessage.channelSerial = "foo"
+
+        let transport = try XCTUnwrap(client.internal.transport as? TestProxyTransport)
+        transport.receive(protocolMessage)
+
+        XCTAssertEqual(channel.properties.channelSerial, "foo")
+    }
+
     // RTP5a1
     func test__201__channel_serial_is_cleared_whenever_a_channel_entered_into_detached_suspended_or_failed_state() throws {
         let test = Test()
@@ -4886,5 +4914,59 @@ class RealtimeClientChannelTests: XCTestCase {
         }
         XCTAssertNotNil(exception4)
         XCTAssertEqual(exception4!.name, NSExceptionName.objectInaccessibleException)
+    }
+
+    func test_Channel_should_ignore_protocol_messages_with_Object_and_ObjectSync_actions_when_LiveObjects_plugin_not_provided() throws {
+        // Given: A realtime client that has been created without the LiveObjects plugin
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        options.autoConnect = false
+        options.testOptions.transportFactory = TestProxyTransportFactory()
+        let client = ARTRealtime(options: options)
+        defer { client.dispose(); client.close() }
+
+        // Connect and attach a channel
+        client.connect()
+        let transport = client.internal.transport as! TestProxyTransport
+
+        let channel = client.channels.get(test.uniqueChannelName())
+
+        waitUntil(timeout: testTimeout) { done in
+            channel.attach { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+
+        // When: A channel receives a ProtocolMessage with action of OBJECT or OBJECT_SYNC
+
+        let objectMessage = ARTProtocolMessage()
+        objectMessage.action = .object
+        objectMessage.channel = channel.name
+        transport.receive(objectMessage)
+
+        let objectSyncMessage = ARTProtocolMessage()
+        objectSyncMessage.action = .objectSync
+        objectSyncMessage.channel = channel.name
+        transport.receive(objectSyncMessage)
+
+        // Then: It does not crash, and is not prevented from receiving subsequent messages on the channel
+
+        // Publish a message and wait for it to be received
+        let receivedMessageDataGatherer = DataGatherer<ARTMessage>(description: "Subscribe for message") { submit in
+            channel.subscribe { message in
+                submit(message)
+            }
+        }
+
+        waitUntil(timeout: testTimeout) { done in
+            channel.publish("foo", data: nil) { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+
+        let receivedMessage = try receivedMessageDataGatherer.waitForData(timeout: testTimeout)
+        XCTAssertEqual(receivedMessage.name, "foo")
     }
 }

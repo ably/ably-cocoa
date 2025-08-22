@@ -1635,9 +1635,20 @@ class RestClientChannelTests: XCTestCase {
         let rest = ARTRest(options: options)
         let realtime = ARTRealtime(options: options)
         let channelName = test.uniqueChannelName()
-        let realtimeChannel = realtime.channels.get(channelName)
+        let channelOptions = ARTRealtimeChannelOptions()
+        channelOptions.modes = [
+            /* the default modes… */
+            .subscribe,
+            .publish,
+            .presenceSubscribe,
+            .presence,
+            /* … plus those for LiveObjects (needed for objectPublishers and objectSubscribers) */
+            .objectPublish,
+            .objectSubscribe
+        ]
+        let realtimeChannel = realtime.channels.get(channelName, options: channelOptions)
         let restChannel = rest.channels.get(channelName)
-        
+
         waitUntil(timeout: testTimeout) { done in
             realtimeChannel.presence.enter(nil) { error in
                 XCTAssertNil(error)
@@ -1672,6 +1683,8 @@ class RestClientChannelTests: XCTestCase {
                 XCTAssertEqual(details.status.occupancy.metrics.presenceMembers, 1) // CHM2c
                 XCTAssertEqual(details.status.occupancy.metrics.presenceConnections, 1) // CHM2b
                 XCTAssertEqual(details.status.occupancy.metrics.presenceSubscribers, 1) // CHM2d
+                XCTAssertEqual(details.status.occupancy.metrics.objectPublishers, 1) // CHM2g
+                XCTAssertEqual(details.status.occupancy.metrics.objectSubscribers, 1) // CHM2h
                 done()
             }
         }

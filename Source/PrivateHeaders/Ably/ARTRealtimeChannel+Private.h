@@ -11,6 +11,10 @@
 #import "ARTQueuedDealloc.h"
 #import "ARTPushChannel+Private.h"
 
+#ifdef ABLY_SUPPORTS_PLUGINS
+@import _AblyPluginSupportPrivate;
+#endif
+
 @class ARTProtocolMessage;
 @class ARTRealtimePresenceInternal;
 @class ARTRealtimeAnnotationsInternal;
@@ -19,7 +23,16 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+#ifdef ABLY_SUPPORTS_PLUGINS
+@interface ARTRealtimeChannel () <APPublicRealtimeChannel>
+@end
+#endif
+
+#ifdef ABLY_SUPPORTS_PLUGINS
+@interface ARTRealtimeChannelInternal : ARTChannel <APRealtimeChannel>
+#else
 @interface ARTRealtimeChannelInternal : ARTChannel
+#endif
 
 @property (readonly) ARTRealtimePresenceInternal *presence;
 @property (readonly) ARTRealtimeAnnotationsInternal *annotations;
@@ -123,16 +136,30 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
 
 - (void)emit:(ARTChannelEvent)event with:(ARTChannelStateChange *)data;
 
+// MARK: - Plugins
+
+/// Provides the implementation for `-[ARTPluginAPI setPluginDataValue:forKey:channel]`. See documentation for that method in `APPluginAPIProtocol`.
+- (void)setPluginDataValue:(id)value forKey:(NSString *)key;
+/// Provides the implementation for `-[ARTPluginAPI pluginDataValueForKey:channel]`. See documentation for that method in `APPluginAPIProtocol`.
+- (nullable id)pluginDataValueForKey:(NSString *)key;
+
+#ifdef ABLY_SUPPORTS_PLUGINS
+/// Provides the implementation for `-[ARTPluginAPI sendObjectWithObjectMessages:completion:]`. See documentation for that method in `APPluginAPIProtocol`.
+- (void)sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
+                          completion:(ARTCallback)completion;
+#endif
+
 @end
 
 @interface ARTRealtimeChannel ()
 
 @property (nonatomic, readonly) ARTRealtimeChannelInternal *internal;
+@property (nonatomic, readonly) ARTRealtimeInternal *realtimeInternal;
 
 - (void)internalAsync:(void (^)(ARTRealtimeChannelInternal *))use;
 - (void)internalSync:(void (^)(ARTRealtimeChannelInternal *))use;
 
-- (instancetype)initWithInternal:(ARTRealtimeChannelInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
+- (instancetype)initWithInternal:(ARTRealtimeChannelInternal *)internal realtimeInternal:(ARTRealtimeInternal *)realtimeInternal queuedDealloc:(ARTQueuedDealloc *)dealloc;
 
 @end
 
