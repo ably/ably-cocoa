@@ -1,7 +1,7 @@
 import Ably
 import Foundation
 
-/// A wire value that can be represents the kinds of data that we expect to find inside a deserialized wire object received from AblyPlugin, or which we may put inside a serialized wire object that we send to AblyPlugin.
+/// A wire value that can be represents the kinds of data that we expect to find inside a deserialized wire object received from `_AblyPluginSupportPrivate`, or which we may put inside a serialized wire object that we send to `_AblyPluginSupportPrivate`.
 ///
 /// Its cases are a superset of those of ``JSONValue``, adding a further `data` case for binary data (we expect to be able to send and receive binary data in the case where ably-cocoa is using the MessagePack format).
 internal indirect enum WireValue: Sendable, Equatable {
@@ -118,27 +118,27 @@ extension WireValue: ExpressibleByBooleanLiteral {
 // MARK: - Bridging with ably-cocoa
 
 internal extension WireValue {
-    /// Creates a `WireValue` from an AblyPlugin deserialized wire object.
+    /// Creates a `WireValue` from an `_AblyPluginSupportPrivate` deserialized wire object.
     ///
-    /// Specifically, `ablyPluginData` can be a value that was passed to `LiveObjectsPlugin.decodeObjectMessage:…`.
-    init(ablyPluginData: Any) {
+    /// Specifically, `pluginSupportData` can be a value that was passed to `LiveObjectsPlugin.decodeObjectMessage:…`.
+    init(pluginSupportData: Any) {
         // swiftlint:disable:next trailing_closure
-        let extendedJSONValue = ExtendedJSONValue<ExtraValue>(deserialized: ablyPluginData, createExtraValue: { deserializedExtraValue in
+        let extendedJSONValue = ExtendedJSONValue<ExtraValue>(deserialized: pluginSupportData, createExtraValue: { deserializedExtraValue in
             // We support binary data (used for MessagePack format) in addition to JSON values
             if let data = deserializedExtraValue as? Data {
                 return .data(data)
             }
 
             // ably-cocoa is not conforming to our assumptions; our assumptions are probably wrong. Either way, bring this loudly to our attention instead of trying to carry on
-            preconditionFailure("WireValue(ablyPluginData:) was given unsupported value \(deserializedExtraValue)")
+            preconditionFailure("WireValue(pluginSupportData:) was given unsupported value \(deserializedExtraValue)")
         })
 
         self.init(extendedJSONValue: extendedJSONValue)
     }
 
-    /// Creates a `WireValue` from an AblyPlugin deserialized wire object. Specifically, `ablyPluginData` can be a value that was passed to `LiveObjectsPlugin.decodeObjectMessage:…`.
-    static func objectFromAblyPluginData(_ ablyPluginData: [String: Any]) -> [String: WireValue] {
-        let wireValue = WireValue(ablyPluginData: ablyPluginData)
+    /// Creates a `WireValue` from an `_AblyPluginSupportPrivate` deserialized wire object. Specifically, `pluginSupportData` can be a value that was passed to `LiveObjectsPlugin.decodeObjectMessage:…`.
+    static func objectFromPluginSupportData(_ pluginSupportData: [String: Any]) -> [String: WireValue] {
+        let wireValue = WireValue(pluginSupportData: pluginSupportData)
         guard case let .object(wireObject) = wireValue else {
             preconditionFailure()
         }
@@ -146,10 +146,10 @@ internal extension WireValue {
         return wireObject
     }
 
-    /// Creates an AblyPlugin deserialized wire object from a `WireValue`.
+    /// Creates an `_AblyPluginSupportPrivate` deserialized wire object from a `WireValue`.
     ///
-    /// Used by `[String: WireValue].toAblyPluginDataDictionary`.
-    var toAblyPluginData: Any {
+    /// Used by `[String: WireValue].toPluginSupportDataDictionary`.
+    var toPluginSupportData: Any {
         // swiftlint:disable:next trailing_closure
         toExtendedJSONValue.serialized(serializeExtraValue: { extendedValue in
             switch extendedValue {
@@ -161,11 +161,11 @@ internal extension WireValue {
 }
 
 internal extension [String: WireValue] {
-    /// Creates an AblyPlugin deserialized wire object from a dictionary that has string keys and `WireValue` values.
+    /// Creates an `_AblyPluginSupportPrivate` deserialized wire object from a dictionary that has string keys and `WireValue` values.
     ///
     /// Specifically, the value of this property can be returned from `APLiveObjectsPlugin.encodeObjectMessage:`.
-    var toAblyPluginDataDictionary: [String: Any] {
-        mapValues(\.toAblyPluginData)
+    var toPluginSupportDataDictionary: [String: Any] {
+        mapValues(\.toPluginSupportData)
     }
 }
 

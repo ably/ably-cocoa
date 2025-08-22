@@ -1,5 +1,5 @@
+internal import _AblyPluginSupportPrivate
 import Ably
-internal import AblyPlugin
 
 public extension ARTRealtimeChannel {
     /// A ``RealtimeObjects`` object.
@@ -9,10 +9,11 @@ public extension ARTRealtimeChannel {
 
     private var nonTypeErasedObjects: PublicDefaultRealtimeObjects {
         let pluginAPI = Plugin.defaultPluginAPI
-        let underlyingObjects = pluginAPI.underlyingObjects(forPublicRealtimeChannel: self)
+        let underlyingObjects = pluginAPI.underlyingObjects(for: asPluginPublicRealtimeChannel)
         let internalObjects = DefaultInternalPlugin.realtimeObjects(for: underlyingObjects.channel, pluginAPI: pluginAPI)
 
-        let logger = pluginAPI.logger(for: underlyingObjects.channel)
+        let pluginLogger = pluginAPI.logger(for: underlyingObjects.channel)
+        let logger = DefaultLogger(pluginLogger: pluginLogger, pluginAPI: pluginAPI)
 
         let coreSDK = DefaultCoreSDK(
             channel: underlyingObjects.channel,

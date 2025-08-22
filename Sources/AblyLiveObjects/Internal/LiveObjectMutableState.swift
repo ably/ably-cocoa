@@ -1,4 +1,5 @@
-internal import AblyPlugin
+internal import _AblyPluginSupportPrivate
+import Ably
 
 /// This is the equivalent of the `LiveObject` abstract class described in RTLO.
 ///

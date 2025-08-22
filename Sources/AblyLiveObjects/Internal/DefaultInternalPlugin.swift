@@ -1,14 +1,15 @@
-internal import AblyPlugin
+internal import _AblyPluginSupportPrivate
+import Ably
 
-// We explicitly import the NSObject class, else it seems to get transitively imported from  `internal import AblyPlugin`, leading to the error "Class cannot be declared public because its superclass is internal".
+// We explicitly import the NSObject class, else it seems to get transitively imported from  `internal import _AblyPluginSupportPrivate`, leading to the error "Class cannot be declared public because its superclass is internal".
 import ObjectiveC.NSObject
 
-/// The default implementation of `AblyPlugin`'s `LiveObjectsInternalPluginProtocol`. Implements the interface that ably-cocoa uses to access the functionality provided by the LiveObjects plugin.
+/// The default implementation of `_AblyPluginSupportPrivate`'s `LiveObjectsInternalPluginProtocol`. Implements the interface that ably-cocoa uses to access the functionality provided by the LiveObjects plugin.
 @objc
-internal final class DefaultInternalPlugin: NSObject, AblyPlugin.LiveObjectsInternalPluginProtocol {
-    private let pluginAPI: AblyPlugin.PluginAPIProtocol
+internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.LiveObjectsInternalPluginProtocol {
+    private let pluginAPI: _AblyPluginSupportPrivate.PluginAPIProtocol
 
-    internal init(pluginAPI: AblyPlugin.PluginAPIProtocol) {
+    internal init(pluginAPI: _AblyPluginSupportPrivate.PluginAPIProtocol) {
         self.pluginAPI = pluginAPI
     }
 
@@ -20,7 +21,7 @@ internal final class DefaultInternalPlugin: NSObject, AblyPlugin.LiveObjectsInte
     /// Retrieves the `RealtimeObjects` for this channel.
     ///
     /// We expect this value to have been previously set by ``prepare(_:)``.
-    internal static func realtimeObjects(for channel: AblyPlugin.RealtimeChannel, pluginAPI: AblyPlugin.PluginAPIProtocol) -> InternalDefaultRealtimeObjects {
+    internal static func realtimeObjects(for channel: _AblyPluginSupportPrivate.RealtimeChannel, pluginAPI: _AblyPluginSupportPrivate.PluginAPIProtocol) -> InternalDefaultRealtimeObjects {
         guard let pluginData = pluginAPI.pluginDataValue(forKey: pluginDataKey, channel: channel) else {
             // InternalPlugin.prepare was not called
             fatalError("To access LiveObjects functionality, you must pass the LiveObjects plugin in the client options when creating the ARTRealtime instance: `clientOptions.plugins = [.liveObjects: AblyLiveObjects.Plugin.self]`")
@@ -33,11 +34,12 @@ internal final class DefaultInternalPlugin: NSObject, AblyPlugin.LiveObjectsInte
     // MARK: - LiveObjectsInternalPluginProtocol
 
     // Populates the channel's `objects` property.
-    internal func prepare(_ channel: AblyPlugin.RealtimeChannel, client: AblyPlugin.RealtimeClient) {
-        let logger = pluginAPI.logger(for: channel)
+    internal func prepare(_ channel: _AblyPluginSupportPrivate.RealtimeChannel, client: _AblyPluginSupportPrivate.RealtimeClient) {
+        let pluginLogger = pluginAPI.logger(for: channel)
         let callbackQueue = pluginAPI.callbackQueue(for: client)
-        let options = pluginAPI.options(for: client)
+        let options = ARTClientOptions.castPluginPublicClientOptions(pluginAPI.options(for: client))
 
+        let logger = DefaultLogger(pluginLogger: pluginLogger, pluginAPI: pluginAPI)
         logger.log("LiveObjects.DefaultInternalPlugin received prepare(_:)", level: .debug)
         let liveObjects = InternalDefaultRealtimeObjects(
             logger: logger,
@@ -49,14 +51,14 @@ internal final class DefaultInternalPlugin: NSObject, AblyPlugin.LiveObjectsInte
     }
 
     /// Retrieves the internally-typed `objects` property for the channel.
-    private func realtimeObjects(for channel: AblyPlugin.RealtimeChannel) -> InternalDefaultRealtimeObjects {
+    private func realtimeObjects(for channel: _AblyPluginSupportPrivate.RealtimeChannel) -> InternalDefaultRealtimeObjects {
         Self.realtimeObjects(for: channel, pluginAPI: pluginAPI)
     }
 
     /// A class that wraps an object message.
     ///
-    /// We need this intermediate type because we want object messages to be structs — because they're nicer to work with internally — but a struct can't conform to the class-bound `AblyPlugin.ObjectMessageProtocol`.
-    private final class ObjectMessageBox<T>: AblyPlugin.ObjectMessageProtocol where T: Sendable {
+    /// We need this intermediate type because we want object messages to be structs — because they're nicer to work with internally — but a struct can't conform to the class-bound `_AblyPluginSupportPrivate.ObjectMessageProtocol`.
+    private final class ObjectMessageBox<T>: _AblyPluginSupportPrivate.ObjectMessageProtocol where T: Sendable {
         internal let objectMessage: T
 
         init(objectMessage: T) {
@@ -68,9 +70,9 @@ internal final class DefaultInternalPlugin: NSObject, AblyPlugin.LiveObjectsInte
         _ serialized: [String: Any],
         context: DecodingContextProtocol,
         format: EncodingFormat,
-        error errorPtr: AutoreleasingUnsafeMutablePointer<ARTErrorInfo?>?,
+        error errorPtr: AutoreleasingUnsafeMutablePointer<_AblyPluginSupportPrivate.PublicErrorInfo?>?,
     ) -> (any ObjectMessageProtocol)? {
-        let wireObject = WireValue.objectFromAblyPluginData(serialized)
+        let wireObject = WireValue.objectFromPluginSupportData(serialized)
 
         do {
             let wireObjectMessage = try InboundWireObjectMessage(
@@ -83,13 +85,13 @@ internal final class DefaultInternalPlugin: NSObject, AblyPlugin.LiveObjectsInte
             )
             return ObjectMessageBox(objectMessage: objectMessage)
         } catch {
-            errorPtr?.pointee = error.toARTErrorInfo()
+            errorPtr?.pointee = error.toARTErrorInfo().asPluginPublicErrorInfo
             return nil
         }
     }
 
     internal func encodeObjectMessage(
-        _ publicObjectMessage: any AblyPlugin.ObjectMessageProtocol,
+        _ publicObjectMessage: any _AblyPluginSupportPrivate.ObjectMessageProtocol,
         format: EncodingFormat,
     ) -> [String: Any] {
         guard let outboundObjectMessageBox = publicObjectMessage as? ObjectMessageBox<OutboundObjectMessage> else {
@@ -97,14 +99,14 @@ internal final class DefaultInternalPlugin: NSObject, AblyPlugin.LiveObjectsInte
         }
 
         let wireObjectMessage = outboundObjectMessageBox.objectMessage.toWire(format: format)
-        return wireObjectMessage.toWireObject.toAblyPluginDataDictionary
+        return wireObjectMessage.toWireObject.toPluginSupportDataDictionary
     }
 
-    internal func onChannelAttached(_ channel: AblyPlugin.RealtimeChannel, hasObjects: Bool) {
+    internal func onChannelAttached(_ channel: _AblyPluginSupportPrivate.RealtimeChannel, hasObjects: Bool) {
         realtimeObjects(for: channel).onChannelAttached(hasObjects: hasObjects)
     }
 
-    internal func handleObjectProtocolMessage(withObjectMessages publicObjectMessages: [any AblyPlugin.ObjectMessageProtocol], channel: AblyPlugin.RealtimeChannel) {
+    internal func handleObjectProtocolMessage(withObjectMessages publicObjectMessages: [any _AblyPluginSupportPrivate.ObjectMessageProtocol], channel: _AblyPluginSupportPrivate.RealtimeChannel) {
         guard let inboundObjectMessageBoxes = publicObjectMessages as? [ObjectMessageBox<InboundObjectMessage>] else {
             preconditionFailure("Expected to receive the same InboundObjectMessage type as we emit")
         }
@@ -116,7 +118,7 @@ internal final class DefaultInternalPlugin: NSObject, AblyPlugin.LiveObjectsInte
         )
     }
 
-    internal func handleObjectSyncProtocolMessage(withObjectMessages publicObjectMessages: [any AblyPlugin.ObjectMessageProtocol], protocolMessageChannelSerial: String?, channel: AblyPlugin.RealtimeChannel) {
+    internal func handleObjectSyncProtocolMessage(withObjectMessages publicObjectMessages: [any _AblyPluginSupportPrivate.ObjectMessageProtocol], protocolMessageChannelSerial: String?, channel: _AblyPluginSupportPrivate.RealtimeChannel) {
         guard let inboundObjectMessageBoxes = publicObjectMessages as? [ObjectMessageBox<InboundObjectMessage>] else {
             preconditionFailure("Expected to receive the same InboundObjectMessage type as we emit")
         }
@@ -133,8 +135,8 @@ internal final class DefaultInternalPlugin: NSObject, AblyPlugin.LiveObjectsInte
 
     internal static func sendObject(
         objectMessages: [OutboundObjectMessage],
-        channel: AblyPlugin.RealtimeChannel,
-        client: AblyPlugin.RealtimeClient,
+        channel: _AblyPluginSupportPrivate.RealtimeChannel,
+        client: _AblyPluginSupportPrivate.RealtimeClient,
         pluginAPI: PluginAPIProtocol,
     ) async throws(InternalError) {
         let objectMessageBoxes: [ObjectMessageBox<OutboundObjectMessage>] = objectMessages.map { .init(objectMessage: $0) }

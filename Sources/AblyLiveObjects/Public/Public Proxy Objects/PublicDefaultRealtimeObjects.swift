@@ -1,5 +1,5 @@
+internal import _AblyPluginSupportPrivate
 import Ably
-internal import AblyPlugin
 
 /// The class that provides the public API for interacting with LiveObjects, via the ``ARTRealtimeChannel/objects`` property.
 ///
@@ -13,9 +13,9 @@ internal final class PublicDefaultRealtimeObjects: RealtimeObjects {
     // MARK: - Dependencies that hold a strong reference to `proxied`
 
     private let coreSDK: CoreSDK
-    private let logger: AblyPlugin.Logger
+    private let logger: Logger
 
-    internal init(proxied: InternalDefaultRealtimeObjects, coreSDK: CoreSDK, logger: AblyPlugin.Logger) {
+    internal init(proxied: InternalDefaultRealtimeObjects, coreSDK: CoreSDK, logger: Logger) {
         self.proxied = proxied
         self.coreSDK = coreSDK
         self.logger = logger

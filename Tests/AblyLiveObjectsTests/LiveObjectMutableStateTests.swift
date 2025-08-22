@@ -1,6 +1,6 @@
+import _AblyPluginSupportPrivate
 import Ably
 @testable import AblyLiveObjects
-import AblyPlugin
 import Testing
 
 /// Tests for `LiveObjectMutableState`.
@@ -119,8 +119,8 @@ struct LiveObjectMutableStateTests {
 
         // @spec RTLO4b2
         @available(iOS 17.0.0, tvOS 17.0.0, *)
-        @Test(arguments: [.detached, .failed] as [ARTRealtimeChannelState])
-        func subscribeThrowsIfChannelIsDetachedOrFailed(channelState: ARTRealtimeChannelState) async throws {
+        @Test(arguments: [.detached, .failed] as [_AblyPluginSupportPrivate.RealtimeChannelState])
+        func subscribeThrowsIfChannelIsDetachedOrFailed(channelState: _AblyPluginSupportPrivate.RealtimeChannelState) async throws {
             var mutableState = LiveObjectMutableState<String>(objectID: "foo")
             let queue = DispatchQueue.main
             let subscriber = Subscriber<String, SubscribeResponse>(callbackQueue: queue)

@@ -1,5 +1,6 @@
+import _AblyPluginSupportPrivate
+import Ably
 @testable import AblyLiveObjects
-import AblyPlugin
 import Foundation
 import Testing
 
@@ -7,8 +8,8 @@ struct InternalDefaultLiveMapTests {
     /// Tests for the `get` method, covering RTLM5 specification points
     struct GetTests {
         // @spec RTLM5c
-        @Test(arguments: [.detached, .failed] as [ARTRealtimeChannelState])
-        func getThrowsIfChannelIsDetachedOrFailed(channelState: ARTRealtimeChannelState) async throws {
+        @Test(arguments: [.detached, .failed] as [_AblyPluginSupportPrivate.RealtimeChannelState])
+        func getThrowsIfChannelIsDetachedOrFailed(channelState: _AblyPluginSupportPrivate.RealtimeChannelState) async throws {
             let logger = TestLogger()
             let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
 
@@ -275,8 +276,8 @@ struct InternalDefaultLiveMapTests {
         // @spec RTLM11c
         // @spec RTLM12b
         // @spec RTLM13b
-        @Test(arguments: [.detached, .failed] as [ARTRealtimeChannelState])
-        func allPropertiesThrowIfChannelIsDetachedOrFailed(channelState: ARTRealtimeChannelState) async throws {
+        @Test(arguments: [.detached, .failed] as [_AblyPluginSupportPrivate.RealtimeChannelState])
+        func allPropertiesThrowIfChannelIsDetachedOrFailed(channelState: _AblyPluginSupportPrivate.RealtimeChannelState) async throws {
             let logger = TestLogger()
             let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
             let coreSDK = MockCoreSDK(channelState: channelState)
@@ -1230,8 +1231,8 @@ struct InternalDefaultLiveMapTests {
     /// Tests for the `set` method, covering RTLM20 specification points
     struct SetTests {
         // @spec RTLM20c
-        @Test(arguments: [.detached, .failed, .suspended] as [ARTRealtimeChannelState])
-        func throwsErrorForInvalidChannelState(channelState: ARTRealtimeChannelState) async throws {
+        @Test(arguments: [.detached, .failed, .suspended] as [_AblyPluginSupportPrivate.RealtimeChannelState])
+        func throwsErrorForInvalidChannelState(channelState: _AblyPluginSupportPrivate.RealtimeChannelState) async throws {
             let logger = TestLogger()
             let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
             let coreSDK = MockCoreSDK(channelState: channelState)
@@ -1330,8 +1331,8 @@ struct InternalDefaultLiveMapTests {
     /// Tests for the `remove` method, covering RTLM21 specification points
     struct RemoveTests {
         // @spec RTLM21c
-        @Test(arguments: [.detached, .failed, .suspended] as [ARTRealtimeChannelState])
-        func throwsErrorForInvalidChannelState(channelState: ARTRealtimeChannelState) async throws {
+        @Test(arguments: [.detached, .failed, .suspended] as [_AblyPluginSupportPrivate.RealtimeChannelState])
+        func throwsErrorForInvalidChannelState(channelState: _AblyPluginSupportPrivate.RealtimeChannelState) async throws {
             let logger = TestLogger()
             let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
             let coreSDK = MockCoreSDK(channelState: channelState)

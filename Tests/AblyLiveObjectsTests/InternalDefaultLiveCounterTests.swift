@@ -1,5 +1,6 @@
+import _AblyPluginSupportPrivate
+import Ably
 @testable import AblyLiveObjects
-import AblyPlugin
 import Foundation
 import Testing
 
@@ -7,8 +8,8 @@ struct InternalDefaultLiveCounterTests {
     /// Tests for the `value` property, covering RTLC5 specification points
     struct ValueTests {
         // @spec RTLC5b
-        @Test(arguments: [.detached, .failed] as [ARTRealtimeChannelState])
-        func valueThrowsIfChannelIsDetachedOrFailed(channelState: ARTRealtimeChannelState) async throws {
+        @Test(arguments: [.detached, .failed] as [_AblyPluginSupportPrivate.RealtimeChannelState])
+        func valueThrowsIfChannelIsDetachedOrFailed(channelState: _AblyPluginSupportPrivate.RealtimeChannelState) async throws {
             let logger = TestLogger()
             let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
             let coreSDK = MockCoreSDK(channelState: channelState)
@@ -426,8 +427,8 @@ struct InternalDefaultLiveCounterTests {
     /// Tests for the `increment` method, covering RTLC12 specification points
     struct IncrementTests {
         // @spec RTLC12c
-        @Test(arguments: [.detached, .failed, .suspended] as [ARTRealtimeChannelState])
-        func throwsErrorForInvalidChannelState(channelState: ARTRealtimeChannelState) async throws {
+        @Test(arguments: [.detached, .failed, .suspended] as [_AblyPluginSupportPrivate.RealtimeChannelState])
+        func throwsErrorForInvalidChannelState(channelState: _AblyPluginSupportPrivate.RealtimeChannelState) async throws {
             let logger = TestLogger()
             let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
             let coreSDK = MockCoreSDK(channelState: channelState)

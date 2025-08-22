@@ -14,7 +14,7 @@ When writing Swift:
 - When writing a JSON string, favour using Swift raw string literals instead of escaping double quotes.
 - When you need to import the following modules inside the AblyLiveObjects library code (that is, in non-test code), do so in the following way:
     - Ably: use `import Ably`
-    - AblyPlugin: use `internal import AblyPlugin`
+    - `_AblyPluginSupportPrivate`: use `internal import _AblyPluginSupportPrivate`
 - When writing an array literal that starts with an initializer expression, start the initializer expression on the line after the opening square bracket of the array literal. That is, instead of writing:
   ```swift
   objectMessages: [InboundObjectMessage(

@@ -22,6 +22,10 @@ let package = Package(
             path: "ably-cocoa",
         ),
         .package(
+            url: "https://github.com/ably/ably-cocoa-plugin-support",
+            from: "0.1.0",
+        ),
+        .package(
             url: "https://github.com/apple/swift-argument-parser",
             from: "1.5.0",
         ),
@@ -47,8 +51,8 @@ let package = Package(
                     package: "ably-cocoa",
                 ),
                 .product(
-                    name: "AblyPlugin",
-                    package: "ably-cocoa",
+                    name: "_AblyPluginSupportPrivate",
+                    package: "ably-cocoa-plugin-support",
                 ),
             ],
         ),
@@ -61,8 +65,8 @@ let package = Package(
                     package: "ably-cocoa",
                 ),
                 .product(
-                    name: "AblyPlugin",
-                    package: "ably-cocoa",
+                    name: "_AblyPluginSupportPrivate",
+                    package: "ably-cocoa-plugin-support",
                 ),
             ],
             resources: [

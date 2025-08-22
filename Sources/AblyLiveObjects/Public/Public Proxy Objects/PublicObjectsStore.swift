@@ -1,4 +1,4 @@
-internal import AblyPlugin
+internal import _AblyPluginSupportPrivate
 import Foundation
 
 /// Stores the public objects that wrap the SDK's internal components.
@@ -21,7 +21,7 @@ internal final class PublicObjectsStore: Sendable {
 
     internal struct RealtimeObjectsCreationArgs {
         internal var coreSDK: CoreSDK
-        internal var logger: AblyPlugin.Logger
+        internal var logger: Logger
     }
 
     /// Fetches the cached `PublicDefaultRealtimeObjects` that wraps a given `InternalDefaultRealtimeObjects`, creating a new public object if there isn't already one.
@@ -33,7 +33,7 @@ internal final class PublicObjectsStore: Sendable {
 
     internal struct CounterCreationArgs {
         internal var coreSDK: CoreSDK
-        internal var logger: AblyPlugin.Logger
+        internal var logger: Logger
     }
 
     /// Fetches the cached `PublicDefaultLiveCounter` that wraps a given `InternalDefaultLiveCounter`, creating a new public object if there isn't already one.
@@ -46,7 +46,7 @@ internal final class PublicObjectsStore: Sendable {
     internal struct MapCreationArgs {
         internal var coreSDK: CoreSDK
         internal var delegate: LiveMapObjectPoolDelegate
-        internal var logger: AblyPlugin.Logger
+        internal var logger: Logger
     }
 
     /// Fetches the cached `PublicDefaultLiveMap` that wraps a given `InternalDefaultLiveMap`, creating a new public object if there isn't already one.
@@ -68,7 +68,7 @@ internal final class PublicObjectsStore: Sendable {
             /// Fetches the proxy that wraps `proxied`, creating a new proxy if there isn't already one. Stores a weak reference to the proxy.
             mutating func getOrCreate(
                 proxying proxied: some AnyObject,
-                logger: AblyPlugin.Logger,
+                logger: Logger,
                 logObjectType: String,
                 createProxy: () -> Proxy,
             ) -> Proxy {
@@ -90,7 +90,7 @@ internal final class PublicObjectsStore: Sendable {
                 return created
             }
 
-            private mutating func removeDeallocatedEntries(logger: AblyPlugin.Logger, logObjectType: String) {
+            private mutating func removeDeallocatedEntries(logger: Logger, logObjectType: String) {
                 var keysToRemove: Set<ObjectIdentifier> = []
                 for (proxiedObjectIdentifier, weakProxyRef) in proxiesByProxiedObjectIdentifier where weakProxyRef.referenced == nil {
                     logger.log("Clearing unused \(logObjectType) proxy from cache (proxied: \(proxiedObjectIdentifier))", level: .debug)
