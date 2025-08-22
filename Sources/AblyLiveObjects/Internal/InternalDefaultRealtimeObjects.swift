@@ -243,12 +243,24 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
     }
 
     @discardableResult
-    internal func on(event _: ObjectsEvent, callback _: ObjectsEventCallback) -> any OnObjectsEventResponse {
-        notYetImplemented()
+    internal func on(event: ObjectsEvent, callback: @escaping ObjectsEventCallback) -> any OnObjectsEventResponse {
+        mutex.withLock {
+            mutableState.on(event: event, callback: callback) { [weak self] action in
+                guard let self else {
+                    return
+                }
+
+                mutex.withLock {
+                    action(&mutableState)
+                }
+            }
+        }
     }
 
     internal func offAll() {
-        notYetImplemented()
+        mutex.withLock {
+            mutableState.offAll()
+        }
     }
 
     // MARK: Handling channel events
@@ -264,6 +276,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
             mutableState.onChannelAttached(
                 hasObjects: hasObjects,
                 logger: logger,
+                userCallbackQueue: userCallbackQueue,
             )
         }
     }
@@ -364,14 +377,60 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
         internal var syncSequence: SyncSequence?
         internal var syncStatus = SyncStatus()
         internal var onChannelAttachedHasObjects: Bool?
+        internal var objectsEventSubscriptionStorage = SubscriptionStorage<ObjectsEvent, Void>()
+
+        /// The state that drives the emission of the `syncing` and `synced` events.
+        ///
+        /// This manipulation of this value is based on https://github.com/ably/ably-js/blob/0c5baa9273ca87aec6ca594833d59c4c4d2dddbb/src/plugins/objects/objects.ts.
+        /// TODO: Bring in line with spec once it exists (https://github.com/ably/ably-liveobjects-swift-plugin/issues/80) and reconcile it with the existing state that we have
+        internal var state = State.initialized
+
+        /// The state that drives the emission of the `syncing` and `synced` events.
+        ///
+        /// This type is copied from https://github.com/ably/ably-js/blob/0c5baa9273ca87aec6ca594833d59c4c4d2dddbb/src/plugins/objects/objects.ts.
+        /// TODO: Bring in line with spec once it exists (https://github.com/ably/ably-liveobjects-swift-plugin/issues/80)
+        internal enum State {
+            case initialized
+            case syncing
+            case synced
+
+            var toEvent: ObjectsEvent? {
+                switch self {
+                case .initialized:
+                    nil
+                case .syncing:
+                    .syncing
+                case .synced:
+                    .synced
+                }
+            }
+        }
+
+        mutating func transition(
+            to newState: State,
+            userCallbackQueue: DispatchQueue,
+        ) {
+            guard newState != state else {
+                return
+            }
+            state = newState
+            guard let event = newState.toEvent else {
+                return
+            }
+            emitObjectsEvent(event, on: userCallbackQueue)
+        }
 
         internal mutating func onChannelAttached(
             hasObjects: Bool,
             logger: Logger,
+            userCallbackQueue: DispatchQueue,
         ) {
             logger.log("onChannelAttached(hasObjects: \(hasObjects)", level: .debug)
 
             onChannelAttachedHasObjects = hasObjects
+
+            // We will subsequently transition to .synced either by the completion of the RTO4a OBJECT_SYNC, or by the RTO4b no-HAS_OBJECTS case below
+            transition(to: .syncing, userCallbackQueue: userCallbackQueue)
 
             // We only care about the case where HAS_OBJECTS is not set (RTO4b); if it is set then we're going to shortly receive an OBJECT_SYNC instead (RTO4a)
             guard !hasObjects else {
@@ -386,6 +445,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
             // RTO4b3, RTO4b4, RTO4b5, RTO5c3, RTO5c4, RTO5c5
             syncSequence = nil
             syncStatus.signalSyncComplete()
+            transition(to: .synced, userCallbackQueue: userCallbackQueue)
         }
 
         /// Implements the `OBJECT_SYNC` handling of RTO5.
@@ -484,6 +544,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
                 syncSequence = nil
 
                 syncStatus.signalSyncComplete()
+                transition(to: .synced, userCallbackQueue: userCallbackQueue)
             }
         }
 
@@ -567,6 +628,44 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
                 logger.log("Unsupported OBJECT operation action \(rawValue) received", level: .warn)
                 return
             }
+        }
+
+        internal typealias UpdateMutableState = @Sendable (_ action: (inout Self) -> Void) -> Void
+
+        @discardableResult
+        internal mutating func on(event: ObjectsEvent, callback: @escaping ObjectsEventCallback, updateSelfLater: @escaping UpdateMutableState) -> any OnObjectsEventResponse {
+            let updateSubscriptionStorage: SubscriptionStorage<ObjectsEvent, Void>.UpdateSubscriptionStorage = { action in
+                updateSelfLater { mutableState in
+                    action(&mutableState.objectsEventSubscriptionStorage)
+                }
+            }
+
+            let subscription = objectsEventSubscriptionStorage.subscribe(
+                listener: { _, subscriptionInCallback in
+                    let response = ObjectsEventResponse(subscription: subscriptionInCallback)
+                    callback(response)
+                },
+                eventName: event,
+                updateSelfLater: updateSubscriptionStorage,
+            )
+
+            return ObjectsEventResponse(subscription: subscription)
+        }
+
+        private struct ObjectsEventResponse: OnObjectsEventResponse {
+            let subscription: any SubscribeResponse
+
+            func off() {
+                subscription.unsubscribe()
+            }
+        }
+
+        internal mutating func offAll() {
+            objectsEventSubscriptionStorage.unsubscribeAll()
+        }
+
+        internal func emitObjectsEvent(_ event: ObjectsEvent, on queue: DispatchQueue) {
+            objectsEventSubscriptionStorage.emit(eventName: event, on: queue)
         }
     }
 }
