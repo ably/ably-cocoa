@@ -83,7 +83,7 @@ internal struct LiveObjectMutableState<Update: Sendable> {
     /// Accepts an action, which, if called, should be called with an `inout` reference to the externally-held copy. The function is not required to call this action (for example, if the function holds a weak reference which is now `nil`).
     ///
     /// Note that the `LiveObjectMutableState` will store a copy of this function and thus this function should be careful not to introduce a strong reference cycle.
-    internal typealias UpdateLiveObject = @Sendable (_ action: (inout LiveObjectMutableState<Update>) -> Void) -> Void
+    internal typealias UpdateLiveObject = @Sendable (_ action: (inout Self) -> Void) -> Void
 
     private struct SubscribeResponse: AblyLiveObjects.SubscribeResponse {
         var subscriptionID: Subscription.ID
