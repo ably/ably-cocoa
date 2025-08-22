@@ -27,6 +27,9 @@ internal struct LiveObjectMutableState<Update: Sendable> {
     /// Internal subscription storage.
     private var subscriptionStorage = SubscriptionStorage<EventName, Update>()
 
+    /// Internal lifecycle event subscription storage.
+    private var lifecycleEventSubscriptionStorage = SubscriptionStorage<LiveObjectLifecycleEvent, Void>()
+
     internal init(
         objectID: String,
         testsOnly_siteTimeserials siteTimeserials: [String: String]? = nil,
@@ -96,8 +99,40 @@ internal struct LiveObjectMutableState<Update: Sendable> {
         )
     }
 
+    @discardableResult
+    internal mutating func on(event: LiveObjectLifecycleEvent, callback: @escaping LiveObjectLifecycleEventCallback, updateSelfLater: @escaping UpdateLiveObject) -> any OnLiveObjectLifecycleEventResponse {
+        let updateSubscriptionStorage: SubscriptionStorage<LiveObjectLifecycleEvent, Void>.UpdateSubscriptionStorage = { action in
+            updateSelfLater { liveObject in
+                action(&liveObject.lifecycleEventSubscriptionStorage)
+            }
+        }
+
+        let subscription = lifecycleEventSubscriptionStorage.subscribe(
+            listener: { _, subscriptionInCallback in
+                let response = LifecycleEventResponse(subscription: subscriptionInCallback)
+                callback(response)
+            },
+            eventName: event,
+            updateSelfLater: updateSubscriptionStorage,
+        )
+
+        return LifecycleEventResponse(subscription: subscription)
+    }
+
+    private struct LifecycleEventResponse: OnLiveObjectLifecycleEventResponse {
+        let subscription: any SubscribeResponse
+
+        func off() {
+            subscription.unsubscribe()
+        }
+    }
+
     internal mutating func unsubscribeAll() {
         subscriptionStorage.unsubscribeAll()
+    }
+
+    internal mutating func offAll() {
+        lifecycleEventSubscriptionStorage.unsubscribeAll()
     }
 
     internal func emit(_ update: LiveObjectUpdate<Update>, on queue: DispatchQueue) {
@@ -109,5 +144,9 @@ internal struct LiveObjectMutableState<Update: Sendable> {
             // RTLO4b4c2
             subscriptionStorage.emit(update, eventName: .update, on: queue)
         }
+    }
+
+    internal func emitLifecycleEvent(_ event: LiveObjectLifecycleEvent, on queue: DispatchQueue) {
+        lifecycleEventSubscriptionStorage.emit(eventName: event, on: queue)
     }
 }

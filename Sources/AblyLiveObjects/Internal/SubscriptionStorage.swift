@@ -80,3 +80,12 @@ internal struct SubscriptionStorage<EventName: Hashable & Sendable, Update: Send
         }
     }
 }
+
+// MARK: - Convenience extension for Void updates
+
+internal extension SubscriptionStorage where Update == Void {
+    /// Convenience method for emitting events when there's no update data to pass.
+    func emit(eventName: EventName, on queue: DispatchQueue) {
+        emit((), eventName: eventName, on: queue)
+    }
+}
