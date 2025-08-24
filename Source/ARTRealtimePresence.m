@@ -233,7 +233,8 @@ dispatch_async(_queue, ^{
                 if (callback) callback(self->_members.allValues, nil);
                 return;
             }
-            if (callback) callback(nil, [ARTErrorInfo createWithCode:ARTErrorPresenceStateIsOutOfSync message:@"presence state is out of sync due to the channel being SUSPENDED"]);
+            // ably-os:inline-error-update:91005:2025-08-22:e8u Original: "presence state is out of sync due to the channel being SUSPENDED"
+            if (callback) callback(nil, [ARTErrorInfo createWithCode:ARTErrorPresenceStateIsOutOfSync message:@"Presence data unavailable while channel is SUSPENDED. Wait for channel to reconnect or call channel.attach()"]);
             return;
         default:
             break;
@@ -769,7 +770,8 @@ dispatch_sync(_queue, ^{
     for (ARTPresenceMessage *member in [self.internalMembers allValues]) {
         [self enterWithPresenceMessageId:member.id clientId:member.clientId data:member.data callback:^(ARTErrorInfo *error) { // RTP17g
             if (error != nil) {
-                NSString *message = [NSString stringWithFormat:@"Re-entering member \"%@\" is failed with code %ld (%@)", member.memberKey, (long)error.code, error.message];
+                // ably-os:inline-error-update:91004:2025-08-22:e8u Original: "Re-entering member \"%@\" is failed with code %ld (%@)"
+                NSString *message = [NSString stringWithFormat:@"Unable to automatically re-enter presence member \"%@\" after reconnection (error %ld: %@). Call presence.enter() manually", member.memberKey, (long)error.code, error.message];
                 ARTErrorInfo *reenterError = [ARTErrorInfo createWithCode:ARTErrorUnableToAutomaticallyReEnterPresenceChannel message:message];
                 ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:self->_channel.state_nosync previous:self->_channel.state_nosync event:ARTChannelEventUpdate reason:reenterError resumed:true]; // RTP17e
                 

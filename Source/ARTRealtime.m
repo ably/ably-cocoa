@@ -725,7 +725,8 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
             _fallbacks = nil;
             self.rest.prioritizedHost = nil;
             [self.auth cancelAuthorization:stateChange.reason];
-            [self failPendingMessages:[ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:ARTErrorConnectionFailed message:@"connection broken before receiving publishing acknowledgment"]]];
+            // ably-os:inline-error-update:80000:2025-08-22:e8u Original: "connection broken before receiving publishing acknowledgment"
+            [self failPendingMessages:[ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:ARTErrorConnectionFailed message:@"Connection failed while waiting for message publishing acknowledgment"]]];
             break;
         }
         case ARTRealtimeDisconnected: {
@@ -1073,7 +1074,8 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     
     ARTErrorInfo *error;
     if (self.auth.authorizing_nosync && (self.options.authUrl || self.options.authCallback)) {
-        error = [ARTErrorInfo createWithCode:ARTErrorAuthConfiguredProviderFailure status:ARTStateConnectionFailed message:@"timed out"];
+        // ably-os:inline-error-update:80019:2025-08-22:e8u Original: "timed out"
+        error = [ARTErrorInfo createWithCode:ARTErrorAuthConfiguredProviderFailure status:ARTStateConnectionFailed message:@"authentication provider timed out"];
     }
     else {
         error = [ARTErrorInfo createWithCode:ARTErrorConnectionTimedOut status:ARTStateConnectionFailed message:@"timed out"];
@@ -1563,7 +1565,8 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     _idleTimer = artDispatchScheduled(self.options.testOptions.realtimeRequestTimeout + self.maxIdleInterval, _rest.queue, ^{
         ARTLogError(self.logger, @"R:%p No activity seen from realtime in %f seconds; assuming connection has dropped", self, [[NSDate date] timeIntervalSinceDate:self->_lastActivity]);
         
-        ARTErrorInfo *idleTimerExpired = [ARTErrorInfo createWithCode:ARTErrorDisconnected status:408 message:@"Idle timer expired"];
+        // ably-os:inline-error-update:80003:2025-08-22:e8u Original: "Idle timer expired"
+        ARTErrorInfo *idleTimerExpired = [ARTErrorInfo createWithCode:ARTErrorDisconnected status:408 message:@"Connection disconnected due to inactivity timeout"];
         ARTConnectionStateChangeParams *const params = [[ARTConnectionStateChangeParams alloc] initWithErrorInfo:idleTimerExpired];
         [self performTransitionToDisconnectedOrSuspendedWithParams:params];
     });

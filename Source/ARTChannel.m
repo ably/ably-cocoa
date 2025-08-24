@@ -110,8 +110,11 @@
     
     // Checked after encoding, so that the client can receive callback with encoding errors
     if ([self exceedMaxSize:@[message]]) {
+        // ably-os:inline-error-update:40009:2025-08-22:e8u Original: "Maximum message length exceeded."
+        NSInteger messageSize = [message messageSize];
+        NSInteger maxSize = [ARTDefault maxMessageSize];
         ARTErrorInfo *sizeError = [ARTErrorInfo createWithCode:ARTErrorMaxMessageLengthExceeded
-                                                       message:@"Maximum message length exceeded."];
+                                                       message:[NSString stringWithFormat:@"Max message length of %ld bytes exceeded (was %ld bytes)", (long)maxSize, (long)messageSize]];
         if (callback) {
             callback(sizeError);
         }
@@ -142,8 +145,12 @@
     
     // Checked after encoding, so that the client can receive callback with encoding errors
     if ([self exceedMaxSize:messages]) {
+        // ably-os:inline-error-update:40009:2025-08-22:e8u Original: "Maximum message length exceeded."
+        NSInteger totalSize = 0;
+        for (ARTMessage *msg in messages) { totalSize += [msg messageSize]; }
+        NSInteger maxSize = [ARTDefault maxMessageSize];
         ARTErrorInfo *sizeError = [ARTErrorInfo createWithCode:ARTErrorMaxMessageLengthExceeded
-                                                       message:@"Maximum message length exceeded."];
+                                                       message:[NSString stringWithFormat:@"Max message length of %ld bytes exceeded (was %ld bytes)", (long)maxSize, (long)totalSize]];
         if (callback) {
             callback(sizeError);
         }
