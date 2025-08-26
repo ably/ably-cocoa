@@ -219,12 +219,24 @@ internal final class InternalDefaultLiveMap: Sendable {
     }
 
     @discardableResult
-    internal func on(event _: LiveObjectLifecycleEvent, callback _: @escaping LiveObjectLifecycleEventCallback) -> any OnLiveObjectLifecycleEventResponse {
-        notYetImplemented()
+    internal func on(event: LiveObjectLifecycleEvent, callback: @escaping LiveObjectLifecycleEventCallback) -> any OnLiveObjectLifecycleEventResponse {
+        mutex.withLock {
+            mutableState.liveObjectMutableState.on(event: event, callback: callback) { [weak self] action in
+                guard let self else {
+                    return
+                }
+
+                mutex.withLock {
+                    action(&mutableState.liveObjectMutableState)
+                }
+            }
+        }
     }
 
     internal func offAll() {
-        notYetImplemented()
+        mutex.withLock {
+            mutableState.liveObjectMutableState.offAll()
+        }
     }
 
     // MARK: - Emitting update from external sources
@@ -418,6 +430,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                     objectMessageSerialTimestamp: objectMessageSerialTimestamp,
                     logger: logger,
                     clock: clock,
+                    userCallbackQueue: userCallbackQueue,
                 )
 
                 // RTLM6f1
@@ -605,6 +618,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                     objectMessageSerialTimestamp: objectMessageSerialTimestamp,
                     logger: logger,
                     clock: clock,
+                    userCallbackQueue: userCallbackQueue,
                 )
 
                 // RTLM15d5a

@@ -18,6 +18,7 @@ internal extension InternalLiveObject {
         objectMessageSerialTimestamp: Date?,
         logger: Logger,
         clock: SimpleClock,
+        userCallbackQueue: DispatchQueue,
     ) {
         // RTLO4e2, RTLO4e3
         if let objectMessageSerialTimestamp {
@@ -32,6 +33,11 @@ internal extension InternalLiveObject {
 
         // RTLO4e4
         resetDataToZeroValued()
+
+        // Emit the deleted lifecycle event
+        // Taken from https://github.com/ably/ably-js/blob/0c5baa9273ca87aec6ca594833d59c4c4d2dddbb/src/plugins/objects/liveobject.ts#L168
+        // TODO: Bring in line with spec once it exists (https://github.com/ably/ably-liveobjects-swift-plugin/issues/77)
+        liveObjectMutableState.emitLifecycleEvent(.deleted, on: userCallbackQueue)
     }
 
     /// Applies an `OBJECT_DELETE` operation, per RTLO5.
@@ -39,12 +45,14 @@ internal extension InternalLiveObject {
         objectMessageSerialTimestamp: Date?,
         logger: Logger,
         clock: SimpleClock,
+        userCallbackQueue: DispatchQueue,
     ) {
         // RTLO5b
         tombstone(
             objectMessageSerialTimestamp: objectMessageSerialTimestamp,
             logger: logger,
             clock: clock,
+            userCallbackQueue: userCallbackQueue,
         )
     }
 }

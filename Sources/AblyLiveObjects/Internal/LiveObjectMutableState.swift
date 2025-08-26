@@ -20,8 +20,15 @@ internal struct LiveObjectMutableState<Update: Sendable> {
     // RTLO3e
     internal var tombstonedAt: Date?
 
-    /// Internal bookkeeping for subscriptions.
-    private var subscriptionsByID: [Subscription.ID: Subscription] = [:]
+    private enum EventName {
+        case update
+    }
+
+    /// Internal subscription storage.
+    private var subscriptionStorage = SubscriptionStorage<EventName, Update>()
+
+    /// Internal lifecycle event subscription storage.
+    private var lifecycleEventSubscriptionStorage = SubscriptionStorage<LiveObjectLifecycleEvent, Void>()
 
     internal init(
         objectID: String,
@@ -72,47 +79,60 @@ internal struct LiveObjectMutableState<Update: Sendable> {
 
     // MARK: - Subscriptions
 
-    private struct Subscription: Identifiable {
-        var id = UUID()
-        var listener: LiveObjectUpdateCallback<Update>
-        var updateLiveObject: UpdateLiveObject
-    }
-
-    /// A function that allows a `LiveObjectMutableState` to later perform mutations to an externally-held copy of itself. This is used to allow a `SubscribeResponse` to unsubscribe.
-    ///
-    /// Accepts an action, which, if called, should be called with an `inout` reference to the externally-held copy. The function is not required to call this action (for example, if the function holds a weak reference which is now `nil`).
-    ///
-    /// Note that the `LiveObjectMutableState` will store a copy of this function and thus this function should be careful not to introduce a strong reference cycle.
-    internal typealias UpdateLiveObject = @Sendable (_ action: (inout LiveObjectMutableState<Update>) -> Void) -> Void
-
-    private struct SubscribeResponse: AblyLiveObjects.SubscribeResponse {
-        var subscriptionID: Subscription.ID
-        var updateLiveObject: UpdateLiveObject
-
-        func unsubscribe() {
-            updateLiveObject { liveObject in
-                liveObject.unsubscribe(subscriptionID: subscriptionID)
-            }
-        }
-    }
+    internal typealias UpdateLiveObject = @Sendable (_ action: (inout Self) -> Void) -> Void
 
     @discardableResult
     internal mutating func subscribe(listener: @escaping LiveObjectUpdateCallback<Update>, coreSDK: CoreSDK, updateSelfLater: @escaping UpdateLiveObject) throws(ARTErrorInfo) -> any AblyLiveObjects.SubscribeResponse {
         // RTLO4b2
         try coreSDK.validateChannelState(notIn: [.detached, .failed], operationDescription: "subscribe")
 
-        let subscription = Subscription(listener: listener, updateLiveObject: updateSelfLater)
-        subscriptionsByID[subscription.id] = subscription
-        return SubscribeResponse(subscriptionID: subscription.id, updateLiveObject: updateSelfLater)
+        let updateSubscriptionStorage: SubscriptionStorage<EventName, Update>.UpdateSubscriptionStorage = { action in
+            updateSelfLater { liveObject in
+                action(&liveObject.subscriptionStorage)
+            }
+        }
+
+        return subscriptionStorage.subscribe(
+            listener: listener,
+            eventName: .update,
+            updateSelfLater: updateSubscriptionStorage,
+        )
+    }
+
+    @discardableResult
+    internal mutating func on(event: LiveObjectLifecycleEvent, callback: @escaping LiveObjectLifecycleEventCallback, updateSelfLater: @escaping UpdateLiveObject) -> any OnLiveObjectLifecycleEventResponse {
+        let updateSubscriptionStorage: SubscriptionStorage<LiveObjectLifecycleEvent, Void>.UpdateSubscriptionStorage = { action in
+            updateSelfLater { liveObject in
+                action(&liveObject.lifecycleEventSubscriptionStorage)
+            }
+        }
+
+        let subscription = lifecycleEventSubscriptionStorage.subscribe(
+            listener: { _, subscriptionInCallback in
+                let response = LifecycleEventResponse(subscription: subscriptionInCallback)
+                callback(response)
+            },
+            eventName: event,
+            updateSelfLater: updateSubscriptionStorage,
+        )
+
+        return LifecycleEventResponse(subscription: subscription)
+    }
+
+    private struct LifecycleEventResponse: OnLiveObjectLifecycleEventResponse {
+        let subscription: any SubscribeResponse
+
+        func off() {
+            subscription.unsubscribe()
+        }
     }
 
     internal mutating func unsubscribeAll() {
-        subscriptionsByID.removeAll()
+        subscriptionStorage.unsubscribeAll()
     }
 
-    private mutating func unsubscribe(subscriptionID: Subscription.ID) {
-        // RTLO4d
-        subscriptionsByID.removeValue(forKey: subscriptionID)
+    internal mutating func offAll() {
+        lifecycleEventSubscriptionStorage.unsubscribeAll()
     }
 
     internal func emit(_ update: LiveObjectUpdate<Update>, on queue: DispatchQueue) {
@@ -122,12 +142,11 @@ internal struct LiveObjectMutableState<Update: Sendable> {
             return
         case let .update(update):
             // RTLO4b4c2
-            for subscription in subscriptionsByID.values {
-                queue.async {
-                    let response = SubscribeResponse(subscriptionID: subscription.id, updateLiveObject: subscription.updateLiveObject)
-                    subscription.listener(update, response)
-                }
-            }
+            subscriptionStorage.emit(update, eventName: .update, on: queue)
         }
+    }
+
+    internal func emitLifecycleEvent(_ event: LiveObjectLifecycleEvent, on queue: DispatchQueue) {
+        lifecycleEventSubscriptionStorage.emit(eventName: event, on: queue)
     }
 }

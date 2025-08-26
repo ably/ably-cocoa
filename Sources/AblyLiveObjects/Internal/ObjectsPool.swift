@@ -83,6 +83,7 @@ internal struct ObjectsPool {
             using state: ObjectState,
             objectMessageSerialTimestamp: Date?,
             objectsPool: inout ObjectsPool,
+            userCallbackQueue: DispatchQueue,
         ) -> DeferredUpdate {
             switch self {
             case let .map(map):
@@ -245,6 +246,7 @@ internal struct ObjectsPool {
                     using: syncObjectsPoolEntry.state,
                     objectMessageSerialTimestamp: syncObjectsPoolEntry.objectMessageSerialTimestamp,
                     objectsPool: &self,
+                    userCallbackQueue: userCallbackQueue,
                 )
                 // RTO5c1a2: Store this update to emit at end
                 updatesToExistingObjects.append(deferredUpdate)
