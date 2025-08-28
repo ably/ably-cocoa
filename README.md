@@ -1,54 +1,47 @@
-# Ably LiveObjects plugin for ably-cocoa SDK
++[![SPM Swift Compatibility](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fably%2Fably-liveobjects-swift-plugin%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/ably/ably-liveobjects-swift-plugin)
+[![License](https://badgen.net/github/license/ably/ably-liveobjects-swift-plugin)](https://github.com/ably/ably-liveobjects-swift-plugin/blob/main/LICENSE)
 
-This is a work in progress plugin that enables LiveObjects functionality in the [ably-cocoa](https://github.com/ably/ably-cocoa/) SDK. It is not yet ready to be used.
+---
 
-## Supported Platforms
+# Ably LiveObjects Swift Plugin
 
-- macOS 11 and above
-- iOS 14 and above
-- tvOS 14 and above
+The Ably LiveObjects plugin enables real-time collaborative data synchronization for the [ably-cocoa](https://github.com/ably/ably-cocoa/) SDK. LiveObjects provides a simple way to build collaborative applications with synchronized state across multiple clients in real-time. Built on [Ably's](https://ably.com/) core service, it abstracts complex details to enable efficient collaborative architectures.
 
-## Requirements
+> [!WARNING]
+> This plugin is currently experimental and the public API may change.
 
-Xcode 16.3 or later.
+---
 
-## Installation
+## Getting started
 
-For now, here is a code snippet demonstrating how, after installing this package and ably-cocoa using Swift Package Manager, you can set up the LiveObjects plugin and access its functionality.
+Everything you need to get started with Ably LiveObjects:
 
-```swift
-import Ably
-import AblyLiveObjects
+- [Learn about Ably LiveObjects.](https://ably.com/docs/liveobjects)
+- [Getting started with LiveObjects in Swift.](https://ably.com/docs/liveobjects/quickstart/swift)
+- Explore the [example app](Example) to see LiveObjects in action.
 
-let clientOptions = ARTClientOptions(key: /* <insert your Ably API key here> */)
-clientOptions.plugins = [.liveObjects: AblyLiveObjects.Plugin.self]
+---
 
-let realtime = ARTRealtime(options: clientOptions)
+## Supported platforms
 
-// Fetch a channel, specifying the `.objectPublish` and `.objectSubscribe` modes
-let channelOptions = ARTRealtimeChannelOptions()
-channelOptions.modes = [.objectPublish, .objectSubscribe]
-let channel = realtime.channels.get("myChannel", options: channelOptions)
+Ably aims to support a wide range of platforms. If you experience any compatibility issues, open an issue in the repository or contact [Ably support](https://ably.com/support).
 
-// Attach the channel
-try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-    channel.attach { error in
-        if let error {
-            continuation.resume(throwing: error)
-        } else {
-            continuation.resume()
-        }
-    }
-}
+This plugin supports the following platforms:
 
-// You can now access LiveObjects functionality via the channel's `objects` property:
-let rootObject = try await channel.objects.getRoot()
-// …and so on
-```
+| Platform | Support |
+| -------- | ------- |
+| iOS      | >= 14.0 |
+| macOS    | >= 11.0 |
+| tvOS     | >= 14.0 |
+
+> [!NOTE]
+> Xcode 16.3 or later is required.
+
+---
 
 ## Example app
 
-This repository contains an example app, written using SwiftUI, which demonstrates how to use the SDK. The code for this app is in the [`Example`](Example) directory.
+This repository contains an example app, written using SwiftUI, which demonstrates how to use the plugin. The code for this app is in the [`Example`](Example) directory.
 
 In order to allow the app to use modern SwiftUI features, it supports the following OS versions:
 
@@ -60,8 +53,20 @@ To run the app:
 
 1. Open the `AblyLiveObjects.xcworkspace` workspace in Xcode.
 2. Follow the instructions inside the `Secrets.example.swift` file to add your Ably API key to the example app.
-3. Run the `AblyLiveObjectsExample` target. If you wish to run it on an iOS or tvOS device, you’ll need to set up code signing.
+3. Run the `AblyLiveObjectsExample` target. If you wish to run it on an iOS or tvOS device, you'll need to set up code signing.
 
-## Contributing
+---
 
-For guidance on how to contribute to this project, see the [contributing guidelines](CONTRIBUTING.md).
+## Releases
+
+The [CHANGELOG.md](./CHANGELOG.md) contains details of the latest releases for this plugin. You can also view all Ably releases on [changelog.ably.com](https://changelog.ably.com).
+
+---
+
+## Contribute
+
+Read the [CONTRIBUTING.md](./CONTRIBUTING.md) guidelines to contribute to Ably or [share feedback or request a new feature](https://forms.gle/mBw9M53NYuCBLFpMA).
+
+## Support, feedback and troubleshooting
+
+For help or technical support, visit Ably's [support page](https://ably.com/support). You can also view the [community reported GitHub issues](https://github.com/ably/ably-liveobjects-swift-plugin/issues) or raise one yourself.
