@@ -1,5 +1,19 @@
 # Change Log
 
+## [1.2.44](https://github.com/ably/ably-cocoa/tree/1.2.44)
+
+## What's Changed
+
+* Introduces support for our new LiveObjects Swift Plugin. LiveObjects provides a simple way to build collaborative applications with synchronized state across multiple clients in real-time.
+
+Learn [about Ably LiveObjects.](https://ably.com/docs/liveobjects)
+
+[Getting started with LiveObjects in Swift.](https://ably.com/docs/liveobjects/quickstart/swift)
+
+[Ably LiveObjects Swift Plugin Repo](https://github.com/ably/ably-liveobjects-swift-plugin) 
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.43...1.2.44
+
 ## [1.2.43](https://github.com/ably/ably-cocoa/tree/1.2.43)
 
 ## What's Changed
