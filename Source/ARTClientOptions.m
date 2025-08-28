@@ -36,6 +36,7 @@ NSString *ARTDefaultEnvironment = nil;
     [ARTPluginAPI registerSelf];
 #endif
 
+    _endpoint = nil;
     _port = [ARTDefault port];
     _tlsPort = [ARTDefault tlsPort];
     _environment = ARTDefaultEnvironment;
@@ -72,10 +73,87 @@ NSString *ARTDefaultEnvironment = nil;
     return [NSString stringWithFormat:@"%@\n\t clientId: %@;", [super description], self.clientId];
 }
 
+// MARK: - Endpoint Support
+
+- (NSString *)effectiveEndpoint {
+    return self.endpoint ?: @"main";
+}
+
+- (BOOL)isEndpointFQDN:(NSString *)endpoint {
+    return [endpoint containsString:@"."] || [endpoint containsString:@"::"] || [endpoint isEqualToString:@"localhost"];
+}
+
+- (NSString *)primaryDomainFromEndpoint:(NSString *)endpoint {
+    if ([self isEndpointFQDN:endpoint]) {
+        return endpoint; // REC1b2: endpoint is a valid hostname
+    }
+    
+    if ([endpoint hasPrefix:@"nonprod:"]) {
+        // REC1b3: endpoint in form "nonprod:[id]"
+        NSString *routingPolicyId = [endpoint substringFromIndex:8]; // Remove "nonprod:" prefix
+        return [NSString stringWithFormat:@"%@.realtime.ably-nonprod.net", routingPolicyId];
+    }
+    
+    // REC1b4: endpoint in form "[id]"
+    return [NSString stringWithFormat:@"%@.realtime.ably.net", endpoint];
+}
+
+- (NSArray<NSString *> *)endpointFallbackHosts:(NSString *)endpoint {
+    if ([self isEndpointFQDN:endpoint]) {
+        return @[]; // REC2c2: No fallbacks for FQDN/IP/localhost
+    }
+    
+    if ([endpoint hasPrefix:@"nonprod:"]) {
+        // REC2c3: nonprod routing policy
+        NSString *routingPolicyId = [endpoint substringFromIndex:8]; // Remove "nonprod:" prefix
+        return [self endpointFallbacks:routingPolicyId domain:@"ably-realtime-nonprod.com"];
+    }
+    
+    // REC2c1: production routing policy
+    return [self endpointFallbacks:endpoint domain:@"ably-realtime.com"];
+}
+
+- (NSArray<NSString *> *)endpointFallbacks:(NSString *)routingPolicyId domain:(NSString *)domain {
+    NSArray<NSString *> *fallbackIds = @[@"a", @"b", @"c", @"d", @"e"];
+    NSMutableArray<NSString *> *fallbacks = [[NSMutableArray alloc] init];
+    
+    for (NSString *fallbackId in fallbackIds) {
+        NSString *fallbackHost = [NSString stringWithFormat:@"%@.%@.fallback.%@", routingPolicyId, fallbackId, domain];
+        [fallbacks addObject:fallbackHost];
+    }
+    
+    return [fallbacks copy];
+}
+
+- (void)validateOptions {
+    // REC1b1: endpoint cannot be used with deprecated options
+    if (self.endpoint && [self.endpoint isNotEmptyString] && 
+        ((self.environment && [self.environment isNotEmptyString]) || 
+         self.restHost || self.realtimeHost)) {
+        [NSException raise:NSInvalidArgumentException 
+                    format:@"The `endpoint` option cannot be used in conjunction with the `environment`, `restHost`, or `realtimeHost` options."];
+    }
+    
+    // REC1c1: environment cannot be used with host options
+    if (self.environment && [self.environment isNotEmptyString] && 
+        (self.restHost || self.realtimeHost)) {
+        [NSException raise:NSInvalidArgumentException 
+                    format:@"The `environment` option cannot be used in conjunction with the `restHost`, or `realtimeHost` options."];
+    }
+}
+
 - (NSString*)restHost {
+    // Check for endpoint first (new approach)
+    if (self.endpoint && [self.endpoint isNotEmptyString]) {
+        return [self primaryDomainFromEndpoint:self.endpoint];
+    }
+    
+    // Legacy host override
     if (_restHost != nil) {
         return _restHost;
     }
+    
+    // Legacy environment handling
     if ([_environment isEqualToString:ARTDefaultProduction]) {
         return [ARTDefault restHost];
     }
@@ -83,9 +161,17 @@ NSString *ARTDefaultEnvironment = nil;
 }
 
 - (NSString*)realtimeHost {
+    // Check for endpoint first (new approach)
+    if (self.endpoint && [self.endpoint isNotEmptyString]) {
+        return [self primaryDomainFromEndpoint:self.endpoint];
+    }
+    
+    // Legacy host override
     if (_realtimeHost != nil) {
         return _realtimeHost;
     }
+    
+    // Legacy environment handling
     if ([_environment isEqualToString:ARTDefaultProduction]) {
         return [ARTDefault realtimeHost];
     }
@@ -117,6 +203,7 @@ NSString *ARTDefaultEnvironment = nil;
     ARTClientOptions *options = [super copyWithZone:zone];
 
     options.clientId = self.clientId;
+    options.endpoint = self.endpoint;
     options.port = self.port;
     options.tlsPort = self.tlsPort;
     if (self->_restHost) options.restHost = self.restHost;
@@ -171,6 +258,11 @@ NSString *ARTDefaultEnvironment = nil;
 }
 
 - (BOOL)hasCustomRestHost {
+    // If using endpoint, consider it custom if it's not the default
+    if (self.endpoint && [self.endpoint isNotEmptyString]) {
+        return ![self.endpoint isEqualToString:@"main"];
+    }
+    
     return (_restHost && ![_restHost isEqualToString:[ARTDefault restHost]]) || (self.hasEnvironment && !self.isProductionEnvironment);
 }
 
@@ -179,6 +271,11 @@ NSString *ARTDefaultEnvironment = nil;
 }
 
 - (BOOL)hasCustomRealtimeHost {
+    // If using endpoint, consider it custom if it's not the default
+    if (self.endpoint && [self.endpoint isNotEmptyString]) {
+        return ![self.endpoint isEqualToString:@"main"];
+    }
+    
     return (_realtimeHost && ![_realtimeHost isEqualToString:[ARTDefault realtimeHost]]) || (self.hasEnvironment && !self.isProductionEnvironment);
 }
 

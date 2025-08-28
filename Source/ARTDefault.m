@@ -7,8 +7,8 @@ static NSString *const ARTDefault_apiVersion = @"2"; // CSV2
 
 NSString *const ARTDefaultProduction = @"production";
 
-static NSString *const ARTDefault_restHost = @"rest.ably.io";
-static NSString *const ARTDefault_realtimeHost = @"realtime.ably.io";
+static NSString *const ARTDefault_restHost = @"main.realtime.ably.net";
+static NSString *const ARTDefault_realtimeHost = @"main.realtime.ably.net";
 
 static NSTimeInterval _connectionStateTtl = 60.0;
 static NSInteger _maxProductionMessageSize = 65536;
@@ -28,13 +28,21 @@ static NSInteger _maxSandboxMessageSize = 16384;
     NSArray<NSString *> * fallbacks = @[@"a", @"b", @"c", @"d", @"e"];
     NSString *prefix = @"";
     NSString *suffix = @"";
+    NSString *domain = @"ably-realtime.com";
+    
     if (environment && ![environment isEqualToString:@""] && ![environment isEqualToString:ARTDefaultProduction]) {
-        prefix = [NSString stringWithFormat:@"%@-", environment];
-        suffix = @"-fallback";
+        prefix = [NSString stringWithFormat:@"%@.", environment];
+        suffix = @".fallback";
+        domain = @"ably-realtime.com";
+    } else {
+        // Default/production environment uses main routing policy
+        prefix = @"main.";
+        suffix = @".fallback";
+        domain = @"ably-realtime.com";
     }
     
     return [fallbacks artMap:^NSString *(NSString * fallback) {
-        return [NSString stringWithFormat:@"%@%@%@.ably-realtime.com", prefix, fallback, suffix];
+        return [NSString stringWithFormat:@"%@%@%@.%@", prefix, fallback, suffix, domain];
     }];
 }
 

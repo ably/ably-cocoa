@@ -178,6 +178,13 @@ NS_ASSUME_NONNULL_END
     self = [super init];
     if (self) {
         NSAssert(options, @"ARTRest: No options provided");
+        
+        // Validate endpoint and legacy option combinations
+        @try {
+            [options validateOptions];
+        } @catch (NSException *exception) {
+            [NSException raise:exception.name format:@"%@", exception.reason];
+        }
 
         _realtime = realtime;
         _options = [options copy];

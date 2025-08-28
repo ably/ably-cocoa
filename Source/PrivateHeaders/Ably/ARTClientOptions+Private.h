@@ -27,6 +27,26 @@ NS_ASSUME_NONNULL_BEGIN
 + (BOOL)getDefaultIdempotentRestPublishingForVersion:(NSString *)version;
 - (NSURLComponents *)restUrlComponents;
 
+// MARK: - Endpoint Support
+
+/// Returns the effective endpoint, defaulting to "main" if not set
+- (NSString *)effectiveEndpoint;
+
+/// Checks if the given endpoint is a FQDN, IP address, or localhost
+- (BOOL)isEndpointFQDN:(NSString *)endpoint;
+
+/// Converts an endpoint to a primary domain name according to REC1b
+- (NSString *)primaryDomainFromEndpoint:(NSString *)endpoint;
+
+/// Gets fallback hosts for the given endpoint according to REC2c
+- (NSArray<NSString *> *)endpointFallbackHosts:(NSString *)endpoint;
+
+/// Generates fallback hostnames for a routing policy and domain
+- (NSArray<NSString *> *)endpointFallbacks:(NSString *)routingPolicyId domain:(NSString *)domain;
+
+/// Validates that endpoint and legacy options are not used together
+- (void)validateOptions;
+
 // MARK: - Plugins
 
 #ifdef ABLY_SUPPORTS_PLUGINS
