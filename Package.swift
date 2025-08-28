@@ -20,8 +20,7 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/ably/ably-cocoa",
-            // TODO: Unpin before launch (https://github.com/ably/ably-liveobjects-swift-plugin/issues/75)
-            revision: "b0c2ecf9da993736297b6986be5610b375440a3f",
+            from: "1.2.44",
         ),
         .package(
             url: "https://github.com/ably/ably-cocoa-plugin-support",
