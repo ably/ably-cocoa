@@ -1819,6 +1819,28 @@ class RealtimeClientChannelTests: XCTestCase {
         
         // Should have the attach resume flag when using default behavior (since channel was previously attached)
         expect(attachMessageDefault.flags & Int64(ARTProtocolMessageFlag.attachResume.rawValue)).to(beGreaterThan(0))
+        
+        /*
+         * Note: To differentiate between messages received during normal operation vs. after resume,
+         * developers can listen to channel state changes and check the `resumed` property:
+         *
+         * channel.on(.attached) { stateChange in
+         *     if stateChange.resumed {
+         *         // Messages received shortly after this are likely from resume
+         *         isResumedState = true
+         *     } else {
+         *         isResumedState = false
+         *     }
+         * }
+         *
+         * channel.subscribe { message in
+         *     if isResumedState {
+         *         // This message was likely received as part of resume
+         *     } else {
+         *         // This message was received during normal operation
+         *     }
+         * }
+         */
     }
 
     // RTL5a
