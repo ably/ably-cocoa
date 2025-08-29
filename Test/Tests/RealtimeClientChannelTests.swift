@@ -1707,6 +1707,120 @@ class RealtimeClientChannelTests: XCTestCase {
         }
     }
 
+    // RTL4j3
+    func test__048a__Channel__attach__attach_resume__should_respect_channel_options_attachResume_property() throws {
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+
+        let channelName = test.uniqueChannelName()
+        let client = ARTRealtime(options: options)
+        defer { client.dispose(); client.close() }
+        
+        guard let transport = client.internal.transport as? TestProxyTransport else {
+            fail("Expecting TestProxyTransport"); return
+        }
+
+        // Test with attachResume explicitly set to false
+        let channelOptionsDisabled = ARTRealtimeChannelOptions()
+        channelOptionsDisabled.attachResume = NSNumber(value: false)
+        
+        let channelWithDisabledResume = client.channels.get(channelName, options: channelOptionsDisabled)
+        
+        waitUntil(timeout: testTimeout) { done in
+            channelWithDisabledResume.attach { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+
+        let attachMessagesDisabled = transport.protocolMessagesSent.filter { $0.action == .attach }
+        XCTAssertEqual(attachMessagesDisabled.count, 1)
+        
+        guard let attachMessageDisabled = attachMessagesDisabled.first else {
+            fail("ATTACH message is missing"); return
+        }
+        
+        // Should NOT have the attach resume flag when explicitly disabled
+        XCTAssertEqual(attachMessageDisabled.flags & Int64(ARTProtocolMessageFlag.attachResume.rawValue), 0)
+        
+        // Reset transport for next test
+        transport.protocolMessagesSent.removeAll()
+        
+        // Test with attachResume explicitly set to true
+        let channelOptionsEnabled = ARTRealtimeChannelOptions()
+        channelOptionsEnabled.attachResume = NSNumber(value: true)
+        
+        let channelNameEnabled = test.uniqueChannelName()
+        let channelWithEnabledResume = client.channels.get(channelNameEnabled, options: channelOptionsEnabled)
+        
+        waitUntil(timeout: testTimeout) { done in
+            channelWithEnabledResume.attach { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+
+        let attachMessagesEnabled = transport.protocolMessagesSent.filter { $0.action == .attach }
+        XCTAssertEqual(attachMessagesEnabled.count, 1)
+        
+        guard let attachMessageEnabled = attachMessagesEnabled.first else {
+            fail("ATTACH message is missing"); return
+        }
+        
+        // Should have the attach resume flag when explicitly enabled
+        expect(attachMessageEnabled.flags & Int64(ARTProtocolMessageFlag.attachResume.rawValue)).to(beGreaterThan(0))
+        
+        // Reset transport for next test
+        transport.protocolMessagesSent.removeAll()
+        
+        // Test with attachResume set to nil (default behavior)
+        let channelOptionsDefault = ARTRealtimeChannelOptions()
+        // Don't set attachResume, should be nil by default
+        
+        let channelNameDefault = test.uniqueChannelName()
+        let channelWithDefaultResume = client.channels.get(channelNameDefault, options: channelOptionsDefault)
+        
+        // First attach to set internal attachResume to true
+        waitUntil(timeout: testTimeout) { done in
+            channelWithDefaultResume.attach { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+        
+        // Verify it's attached and attachResume is true internally
+        XCTAssertEqual(channelWithDefaultResume.state, .attached)
+        XCTAssertTrue(channelWithDefaultResume.internal.attachResume)
+        
+        // Now detach and reattach to test the default behavior
+        waitUntil(timeout: testTimeout) { done in
+            channelWithDefaultResume.detach { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+        
+        // Clear messages and reattach
+        transport.protocolMessagesSent.removeAll()
+        
+        waitUntil(timeout: testTimeout) { done in
+            channelWithDefaultResume.attach { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+        
+        let attachMessagesDefault = transport.protocolMessagesSent.filter { $0.action == .attach }
+        XCTAssertEqual(attachMessagesDefault.count, 1)
+        
+        guard let attachMessageDefault = attachMessagesDefault.first else {
+            fail("ATTACH message is missing"); return
+        }
+        
+        // Should have the attach resume flag when using default behavior (since channel was previously attached)
+        expect(attachMessageDefault.flags & Int64(ARTProtocolMessageFlag.attachResume.rawValue)).to(beGreaterThan(0))
+    }
+
     // RTL5a
     func test__049__Channel__detach__if_state_is_INITIALIZED_or_DETACHED_nothing_is_done() throws {
         let test = Test()

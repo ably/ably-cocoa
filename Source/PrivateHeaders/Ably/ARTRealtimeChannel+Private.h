@@ -136,6 +136,8 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
 
 - (void)emit:(ARTChannelEvent)event with:(ARTChannelStateChange *)data;
 
+- (BOOL)shouldUseAttachResume;
+
 // MARK: - Plugins
 
 /// Provides the implementation for `-[ARTPluginAPI setPluginDataValue:forKey:channel]`. See documentation for that method in `APPluginAPIProtocol`.
