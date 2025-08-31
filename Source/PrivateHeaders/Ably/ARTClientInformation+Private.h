@@ -2,7 +2,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-extern NSString *const ARTClientInformation_libraryVersion;
+extern NSString *const ARTClientInformationLibraryVersion;
 
 @interface ARTClientInformation (Private)
 

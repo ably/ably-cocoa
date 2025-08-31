@@ -47,7 +47,6 @@ framework module Ably {
         header "ARTAnnotation+Private.h"
         header "ARTRealtimeAnnotations+Private.h"
         header "ARTFallback+Private.h"
-        header "ARTFallbackHosts.h"
         header "ARTLocalDevice+Private.h"
         header "ARTDeviceDetails+Private.h"
         header "ARTDevicePushDetails+Private.h"

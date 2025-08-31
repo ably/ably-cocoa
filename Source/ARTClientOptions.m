@@ -2,12 +2,14 @@
 #import "ARTClientOptions+TestConfiguration.h"
 #import "ARTAuthOptions+Private.h"
 
+#import "ARTDefault.h"
 #import "ARTDefault+Private.h"
 #import "ARTStatus.h"
 #import "ARTTokenParams.h"
 #import "ARTStringifiable.h"
 #import "ARTNSString+ARTUtil.h"
 #import "ARTTestClientOptions.h"
+#import "ARTNSArray+ARTFunctional.h"
 
 #ifdef ABLY_SUPPORTS_PLUGINS
 @import _AblyPluginSupportPrivate;
@@ -26,7 +28,12 @@ NSString *ARTDefaultEnvironment = nil;
 
 @end
 
-@implementation ARTClientOptions
+@implementation ARTClientOptions {
+    NSString *_endpoint;
+    NSString *_restHost;
+    NSString *_realtimeHost;
+    NSString *_environment;
+}
 
 - (instancetype)initDefaults {
     self = [super initDefaults];
@@ -36,6 +43,7 @@ NSString *ARTDefaultEnvironment = nil;
     [ARTPluginAPI registerSelf];
 #endif
 
+    _endpoint = nil;
     _port = [ARTDefault port];
     _tlsPort = [ARTDefault tlsPort];
     _environment = ARTDefaultEnvironment;
@@ -72,31 +80,176 @@ NSString *ARTDefaultEnvironment = nil;
     return [NSString stringWithFormat:@"%@\n\t clientId: %@;", [super description], self.clientId];
 }
 
-- (NSString*)restHost {
+// MARK: - Endpoint support
+
+- (void)setEndpoint:(NSString *)endpoint {
+    // REC1b1: endpoint cannot be used with deprecated options
+    if (self.hasEnvironment || self.hasCustomRestHost || self.hasCustomRealtimeHost) {
+        [NSException raise:NSInvalidArgumentException
+                    format:@"The `endpoint` option cannot be used in conjunction with the `environment`, `restHost`, or `realtimeHost` options."];
+    }
+    _endpoint = endpoint;
+}
+
+- (NSString *)endpoint {
+    return _endpoint;
+}
+
+- (BOOL)isEndpointFQDN {
+    return [self.endpoint containsString:@"."] || [self.endpoint containsString:@"::"] || [self.endpoint isEqualToString:@"localhost"];
+}
+
+- (NSString *)primaryDomain {
+    // Check for endpoint first (REC1b)
+    if (self.endpoint && self.endpoint.isNotEmptyString) {
+        if (self.isEndpointFQDN) {
+            return self.endpoint; // REC1b2: endpoint is a valid hostname
+        }
+        
+        if ([self.endpoint hasPrefix:@"nonprod:"]) {
+            // REC1b3: endpoint in form "nonprod:[name]"
+            NSString *routingPolicy = [self.endpoint substringFromIndex:8]; // Remove "nonprod:" prefix
+            return [ARTDefault nonprodPrimaryDomainForRoutingPolicy:routingPolicy];
+        }
+        
+        // REC1b4: endpoint in form "[name]"
+        return [ARTDefault primaryDomainForRoutingPolicy:self.endpoint];
+    }
+    
+    // Legacy environment handling (REC1c)
+    if (self.hasEnvironment) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        return [ARTDefault primaryDomainForRoutingPolicy:self.environment];
+#pragma clang diagnostic pop
+    }
+    
+    // Legacy host override
     if (_restHost != nil) {
-        return _restHost;
+        return _restHost; // REC1d1
     }
-    if ([_environment isEqualToString:ARTDefaultProduction]) {
-        return [ARTDefault restHost];
+    
+    if (_realtimeHost != nil) {
+        return _realtimeHost; // REC1d2
     }
-    return self.hasEnvironment ? [self host:[ARTDefault restHost] forEnvironment:_environment] : [ARTDefault restHost];
+    
+    return ARTDefault.primaryDomain; // REC1a
+}
+
+- (NSArray<NSString *> *)fallbackDomains {
+    // First check if explicit fallback hosts are provided
+    if (self.fallbackHosts) { // REC2a2
+        return self.fallbackHosts;
+    }
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    if (self.fallbackHostsUseDefault) { // REC2b
+        return ARTDefault.fallbackDomains; // REC2c1
+    }
+#pragma clang diagnostic pop
+    
+    // If the primary domain is default (REC2c1)
+    if (self.hasDefaultPrimaryDomain) {
+        return ARTDefault.fallbackDomains;
+    }
+    
+    // If using endpoint, generate fallbacks based on the endpoint
+    if (self.endpoint && [self.endpoint isNotEmptyString]) {
+        if (self.isEndpointFQDN) {
+            return @[]; // REC2c2: No fallbacks for FQDN/IP/localhost
+        }
+        
+        if ([self.endpoint hasPrefix:@"nonprod:"]) {
+            // REC2c3: nonprod routing policy
+            NSString *routingPolicy = [self.endpoint substringFromIndex:8]; // Remove "nonprod:" prefix
+            return [ARTDefault fallbackNonprodDomainsForRoutingPolicy:routingPolicy];
+        }
+        
+        // REC2c4: production routing policy
+        return [ARTDefault fallbackDomainsForRoutingPolicy:self.endpoint];
+    }
+
+    // REC2c5: legacy environment handling
+    if (self.hasEnvironment) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        return [ARTDefault fallbackDomainsForRoutingPolicy:self.environment];
+#pragma clang diagnostic pop
+    }
+    
+    // REC2c6: legacy hosts handling
+    if (self.hasCustomRestHost || self.hasCustomRealtimeHost) {
+        return @[];
+    }
+    
+    // Fallback to default value if nothing above triggered
+    return ARTDefault.fallbackDomains;
+}
+
+// MARK: - Legacy hosts support
+
+- (void)setEnvironment:(NSString *)environment {
+    // REC1b1: endpoint cannot be used with deprecated options
+    if (self.endpoint && [self.endpoint isNotEmptyString]) {
+        [NSException raise:NSInvalidArgumentException
+                    format:@"The `endpoint` option cannot be used in conjunction with the `environment`, `restHost`, or `realtimeHost` options."];
+    }
+    
+    // REC1c1: environment cannot be used with host options
+    if (self.hasCustomRestHost || self.hasCustomRealtimeHost) {
+        [NSException raise:NSInvalidArgumentException
+                    format:@"The `environment` option cannot be used in conjunction with the `restHost`, or `realtimeHost` options."];
+    }
+    _environment = environment;
+}
+
+- (NSString *)environment {
+    return _environment;
+}
+
+- (void)setRestHost:(NSString *)host {
+    // REC1b1: endpoint cannot be used with deprecated options
+    if (self.endpoint && [self.endpoint isNotEmptyString]) {
+        [NSException raise:NSInvalidArgumentException
+                    format:@"The `endpoint` option cannot be used in conjunction with the `environment`, `restHost`, or `realtimeHost` options."];
+    }
+    
+    // REC1c1: environment cannot be used with host options
+    if (self.hasEnvironment) {
+        [NSException raise:NSInvalidArgumentException
+                    format:@"The `environment` option cannot be used in conjunction with the `restHost`, or `realtimeHost` options."];
+    }
+    _restHost = host;
+}
+
+- (NSString*)restHost {
+    return _restHost;
+}
+
+- (void)setRealtimeHost:(NSString *)host {
+    // REC1b1: endpoint cannot be used with deprecated options
+    if (self.endpoint && [self.endpoint isNotEmptyString]) {
+        [NSException raise:NSInvalidArgumentException
+                    format:@"The `endpoint` option cannot be used in conjunction with the `environment`, `restHost`, or `realtimeHost` options."];
+    }
+    
+    // REC1c1: environment cannot be used with host options
+    if (self.hasEnvironment) {
+        [NSException raise:NSInvalidArgumentException
+                    format:@"The `environment` option cannot be used in conjunction with the `restHost`, or `realtimeHost` options."];
+    }
+    _realtimeHost = host;
 }
 
 - (NSString*)realtimeHost {
-    if (_realtimeHost != nil) {
-        return _realtimeHost;
-    }
-    if ([_environment isEqualToString:ARTDefaultProduction]) {
-        return [ARTDefault realtimeHost];
-    }
-    
-    return self.hasEnvironment ? [self host:[ARTDefault realtimeHost] forEnvironment:_environment] : [ARTDefault realtimeHost];
+    return _realtimeHost;
 }
 
 - (NSURLComponents *)restUrlComponents {
     NSURLComponents *components = [[NSURLComponents alloc] init];
     components.scheme = self.tls ? @"https" : @"http";
-    components.host = self.restHost;
+    components.host = self.primaryDomain;
     components.port = [NSNumber numberWithInteger:(self.tls ? self.tlsPort : self.port)];
     return components;
 }
@@ -108,7 +261,7 @@ NSString *ARTDefaultEnvironment = nil;
 - (NSURL*)realtimeUrl {
     NSURLComponents *components = [[NSURLComponents alloc] init];
     components.scheme = self.tls ? @"wss" : @"ws";
-    components.host = self.realtimeHost;
+    components.host = self.primaryDomain;
     components.port = [NSNumber numberWithInteger:(self.tls ? self.tlsPort : self.port)];
     return components.URL;
 }
@@ -117,16 +270,14 @@ NSString *ARTDefaultEnvironment = nil;
     ARTClientOptions *options = [super copyWithZone:zone];
 
     options.clientId = self.clientId;
+    options.endpoint = self.endpoint;
     options.port = self.port;
     options.tlsPort = self.tlsPort;
-    if (self->_restHost) options.restHost = self.restHost;
-    if (self->_realtimeHost) options.realtimeHost = self.realtimeHost;
     options.queueMessages = self.queueMessages;
     options.echoMessages = self.echoMessages;
     options.recover = self.recover;
     options.useBinaryProtocol = self.useBinaryProtocol;
     options.autoConnect = self.autoConnect;
-    options.environment = self.environment;
     options.tls = self.tls;
     options.logLevel = self.logLevel;
     options.logHandler = self.logHandler;
@@ -142,6 +293,9 @@ NSString *ARTDefaultEnvironment = nil;
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     options->_fallbackHostsUseDefault = self.fallbackHostsUseDefault; //ignore setter
+    if (self->_restHost) options.restHost = self.restHost;
+    if (self->_realtimeHost) options.realtimeHost = self.realtimeHost;
+    options.environment = self.environment;
 #pragma clang diagnostic pop
 
     options.httpRequestTimeout = self.httpRequestTimeout;
@@ -170,8 +324,16 @@ NSString *ARTDefaultEnvironment = nil;
         self.authCallback == nil;
 }
 
+- (BOOL)hasCustomPrimaryDomain {
+    return self.endpoint != nil && ![self.endpoint isEqualToString:ARTDefault.primaryDomain];
+}
+
+- (BOOL)hasDefaultPrimaryDomain {
+    return ![self hasCustomPrimaryDomain];
+}
+
 - (BOOL)hasCustomRestHost {
-    return (_restHost && ![_restHost isEqualToString:[ARTDefault restHost]]) || (self.hasEnvironment && !self.isProductionEnvironment);
+    return _restHost != nil;
 }
 
 - (BOOL)hasDefaultRestHost {
@@ -179,7 +341,7 @@ NSString *ARTDefaultEnvironment = nil;
 }
 
 - (BOOL)hasCustomRealtimeHost {
-    return (_realtimeHost && ![_realtimeHost isEqualToString:[ARTDefault realtimeHost]]) || (self.hasEnvironment && !self.isProductionEnvironment);
+    return _realtimeHost != nil;
 }
 
 - (BOOL)hasDefaultRealtimeHost {
@@ -226,19 +388,21 @@ NSString *ARTDefaultEnvironment = nil;
 }
 
 - (BOOL)isProductionEnvironment {
-    return [[self.environment lowercaseString] isEqualToString:[ARTDefaultProduction lowercaseString]];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    return [[self.environment lowercaseString] isEqualToString:[ARTDefaultProductionEnvironment lowercaseString]];
+#pragma clang diagnostic pop
 }
 
 - (BOOL)hasEnvironment {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     return self.environment != nil && [self.environment isNotEmptyString];
+#pragma clang diagnostic pop
 }
 
 - (BOOL)hasEnvironmentDifferentThanProduction {
     return self.hasEnvironment && !self.isProductionEnvironment;
-}
-
-- (NSString *)host:(NSString *)host forEnvironment:(NSString *)environment {
-    return [NSString stringWithFormat:@"%@-%@", environment, host];
 }
 
 // MARK: - Plugins

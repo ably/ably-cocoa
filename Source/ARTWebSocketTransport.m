@@ -227,11 +227,11 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)setHost:(NSString *)host {
-    self.options.realtimeHost = host;
+    self.options.endpoint = host;
 }
 
 - (NSString *)host {
-    return self.options.realtimeHost;
+    return self.options.endpoint;
 }
 
 - (ARTRealtimeTransportState)state {

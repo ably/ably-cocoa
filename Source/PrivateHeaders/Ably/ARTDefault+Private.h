@@ -1,6 +1,6 @@
 #import <Ably/ARTDefault.h>
 
-extern NSString *const ARTDefaultProduction;
+extern NSString *const ARTDefaultProductionEnvironment;
 
 @interface ARTDefault (Private)
 
@@ -9,5 +9,12 @@ extern NSString *const ARTDefaultProduction;
 
 + (NSInteger)maxSandboxMessageSize;
 + (NSInteger)maxProductionMessageSize;
+
++ (NSString *)primaryDomainForRoutingPolicy:(NSString *)routingPolicy;
++ (NSString *)nonprodPrimaryDomainForRoutingPolicy:(NSString *)routingPolicy;
++ (NSArray<NSString *> *)fallbackDomainsForRoutingPolicy:(NSString *)routingPolicy;
++ (NSArray<NSString *> *)fallbackNonprodDomainsForRoutingPolicy:(NSString *)routingPolicy;
+
++ (NSString *)connectivityCheckUrl;
 
 @end

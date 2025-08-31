@@ -20,14 +20,27 @@ extern const ARTPluginName ARTPluginNameLiveObjects;
 @interface ARTClientOptions : ARTAuthOptions
 
 /**
- * Enables a non-default Ably host to be specified. For development environments only. The default value is `rest.ably.io`.
+ * Enables a custom endpoint for connecting to the Ably service (see [Platform Customization](https://ably.com/docs/platform-customization) for more information).
+ * This may be a routing policy name (such as `main`), a nonprod routing policy name (such as `nonprod:sandbox`) or a FQDN such as `foo.example.com`.
  */
-@property (readwrite, nonatomic) NSString *restHost;
+@property (readwrite, nonatomic, nullable) NSString *endpoint;
+
+/**
+ * Enables a non-default Ably primary domain to be specified. The default value is `main.realtime.ably.net`.
+ */
+@property (readonly, nonatomic) NSString *primaryDomain;
+
+/**
+ * Enables a non-default Ably host to be specified. For development environments only. The default value is `rest.ably.io`.
+ * @deprecated This property is deprecated and will be removed in a future version. Use the `endpoint` client option instead.
+ */
+@property (readwrite, nonatomic) NSString *restHost DEPRECATED_MSG_ATTRIBUTE("Use the endpoint client option instead.");
 
 /**
  * Enables a non-default Ably host to be specified for realtime connections. For development environments only. The default value is `realtime.ably.io`.
+ * @deprecated This property is deprecated and will be removed in a future version. Use the `endpoint` client option instead.
  */
-@property (readwrite, nonatomic) NSString *realtimeHost;
+@property (readwrite, nonatomic) NSString *realtimeHost DEPRECATED_MSG_ATTRIBUTE("Use the endpoint client option instead.");
 
 /**
  * Enables a non-default Ably port to be specified. For development environments only. The default value is 80.
@@ -41,13 +54,19 @@ extern const ARTPluginName ARTPluginNameLiveObjects;
 
 /**
  * Enables a [custom environment](https://ably.com/docs/platform-customization) to be used with the Ably service.
+ * @deprecated This property is deprecated and will be removed in a future version. Use the `endpoint` client option instead.
  */
-@property (readwrite, nonatomic, nullable) NSString *environment;
+@property (readwrite, nonatomic, nullable) NSString *environment DEPRECATED_MSG_ATTRIBUTE("Use the endpoint client option instead.");
 
 /**
  * When `false`, the client will use an insecure connection. The default is `true`, meaning a TLS connection will be used to connect to Ably.
  */
 @property (nonatomic) BOOL tls;
+
+/**
+ * The URL to check if internet is available on the device. Defaults to`ARTDefault.connectivityCheckUrl`.
+ */
+@property (readwrite, nonatomic, nullable) NSString *connectivityCheckUrl;
 
 /**
  * Controls the log output of the library. This is an object to handle each line of log output.

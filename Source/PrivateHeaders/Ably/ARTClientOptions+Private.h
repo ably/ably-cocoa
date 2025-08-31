@@ -13,6 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTClientOptions ()
 
+@property (readonly) BOOL hasCustomPrimaryDomain;
+@property (readonly) BOOL hasDefaultPrimaryDomain;
 @property (readonly) BOOL isProductionEnvironment;
 @property (readonly) BOOL hasEnvironment;
 @property (readonly) BOOL hasEnvironmentDifferentThanProduction;
@@ -22,6 +24,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) BOOL hasDefaultRealtimeHost;
 @property (readonly) BOOL hasCustomPort;
 @property (readonly) BOOL hasCustomTlsPort;
+
+- (NSArray<NSString *> *)fallbackDomains;
 
 + (void)setDefaultEnvironment:(nullable NSString *)environment;
 + (BOOL)getDefaultIdempotentRestPublishingForVersion:(NSString *)version;

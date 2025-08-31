@@ -6,8 +6,8 @@
 #import <sys/utsname.h>
 
 NSString *const ARTClientInformationAgentNotVersioned = @"ARTClientInformationAgentNotVersioned";
-NSString *const ARTClientInformation_libraryVersion = @"1.2.44";
-static NSString *const _libraryName = @"ably-cocoa";
+NSString *const ARTClientInformationLibraryVersion = @"1.2.44";
+NSString *const ARTLibraryName = @"ably-cocoa";
 
 // NSOperatingSystemVersion has NSInteger as version components for some reason, so mitigate it here.
 static inline UInt32 conformVersionComponent(const NSInteger component) {
@@ -53,7 +53,7 @@ static inline UInt32 conformVersionComponent(const NSInteger component) {
 }
 
 + (NSDictionary<NSString *, NSString *> *)libraryAgent {
-    return @{ _libraryName: ARTClientInformation_libraryVersion };
+    return @{ ARTLibraryName: ARTClientInformationLibraryVersion };
 }
 
 + (NSString *)libraryAgentIdentifier {
