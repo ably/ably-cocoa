@@ -1,9 +1,10 @@
+![Ably LiveObjects Swift Header](images/SwiftSDK-LiveObjects-github.png)
 +[![SPM Swift Compatibility](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fably%2Fably-liveobjects-swift-plugin%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/ably/ably-liveobjects-swift-plugin)
 [![License](https://badgen.net/github/license/ably/ably-liveobjects-swift-plugin)](https://github.com/ably/ably-liveobjects-swift-plugin/blob/main/LICENSE)
 
 ---
 
-# Ably LiveObjects Swift Plugin
+# LiveObjects Swift plugin
 
 The Ably LiveObjects plugin enables real-time collaborative data synchronization for the [ably-cocoa](https://github.com/ably/ably-cocoa/) SDK. LiveObjects provides a simple way to build collaborative applications with synchronized state across multiple clients in real-time. Built on [Ably's](https://ably.com/) core service, it abstracts complex details to enable efficient collaborative architectures.
 
