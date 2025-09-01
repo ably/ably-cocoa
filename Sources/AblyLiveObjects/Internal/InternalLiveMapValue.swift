@@ -48,7 +48,7 @@ internal enum InternalLiveMapValue: Sendable, Equatable {
     // MARK: - Representation in the Realtime protocol
 
     /// Converts an `InternalLiveMapValue` to the value that should be used when creating or updating a map entry in the Realtime protocol, per the rules of RTO11f4 and RTLM20e4.
-    internal var toObjectData: ObjectData {
+    internal var nosync_toObjectData: ObjectData {
         // RTO11f4c1: Create an ObjectsMapEntry for the current value
         switch self {
         case let .bool(value):
@@ -65,10 +65,10 @@ internal enum InternalLiveMapValue: Sendable, Equatable {
             .init(json: .object(value))
         case let .liveMap(liveMap):
             // RTO11f4c1a: If the value is of type LiveMap, set ObjectsMapEntry.data.objectId to the objectId of that object
-            .init(objectId: liveMap.objectID)
+            .init(objectId: liveMap.nosync_objectID)
         case let .liveCounter(liveCounter):
             // RTO11f4c1a: If the value is of type LiveCounter, set ObjectsMapEntry.data.objectId to the objectId of that object
-            .init(objectId: liveCounter.objectID)
+            .init(objectId: liveCounter.nosync_objectID)
         }
     }
 

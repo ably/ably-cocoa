@@ -680,4 +680,13 @@ struct TestFactories {
         }
         return rootObjectMessage(entries: mapEntries)
     }
+
+    // MARK: - Test Queue Helpers
+
+    /// Creates a unique internal queue for testing purposes.
+    /// This ensures that internalQueue is separate from userCallbackQueue (which is typically .main).
+    static func createInternalQueue(label: String? = nil) -> DispatchQueue {
+        let queueLabel = label ?? "test.internal.\(UUID().uuidString)"
+        return DispatchQueue(label: queueLabel, qos: .userInitiated)
+    }
 }

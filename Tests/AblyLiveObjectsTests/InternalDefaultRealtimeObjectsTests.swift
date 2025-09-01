@@ -8,9 +8,17 @@ struct InternalDefaultRealtimeObjectsTests {
     // MARK: - Test Helpers
 
     /// Creates a InternalDefaultRealtimeObjects instance for testing
-    static func createDefaultRealtimeObjects(clock: SimpleClock = MockSimpleClock()) -> InternalDefaultRealtimeObjects {
+    static func createDefaultRealtimeObjects(
+        clock: SimpleClock = MockSimpleClock(),
+        internalQueue: DispatchQueue = TestFactories.createInternalQueue(),
+    ) -> InternalDefaultRealtimeObjects {
         let logger = TestLogger()
-        return InternalDefaultRealtimeObjects(logger: logger, userCallbackQueue: .main, clock: clock)
+        return InternalDefaultRealtimeObjects(
+            logger: logger,
+            internalQueue: internalQueue,
+            userCallbackQueue: .main,
+            clock: clock,
+        )
     }
 
     /// Tests for `InternalDefaultRealtimeObjects.handleObjectSyncProtocolMessage`, covering RTO5 specification points.
@@ -20,7 +28,8 @@ struct InternalDefaultRealtimeObjectsTests {
         // @spec RTO5a5
         @Test
         func handlesSingleProtocolMessageSync() async throws {
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
             let objectMessages = [
                 TestFactories.simpleMapMessage(objectId: "map:1@123"),
                 TestFactories.simpleMapMessage(objectId: "map:2@456"),
@@ -30,10 +39,12 @@ struct InternalDefaultRealtimeObjectsTests {
             #expect(!realtimeObjects.testsOnly_hasSyncSequence)
 
             // Call with no channelSerial (RTO5a5 case)
-            realtimeObjects.handleObjectSyncProtocolMessage(
-                objectMessages: objectMessages,
-                protocolMessageChannelSerial: nil,
-            )
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: objectMessages,
+                    protocolMessageChannelSerial: nil,
+                )
+            }
 
             // Verify sync was applied immediately and sequence was cleared (RTO5c3)
             #expect(!realtimeObjects.testsOnly_hasSyncSequence)
@@ -55,15 +66,18 @@ struct InternalDefaultRealtimeObjectsTests {
         // @spec RTO5c5
         @Test
         func handlesMultiProtocolMessageSync() async throws {
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
             let sequenceId = "seq123"
 
             // First message in sequence
             let firstMessages = [TestFactories.simpleMapMessage(objectId: "map:1@123")]
-            realtimeObjects.handleObjectSyncProtocolMessage(
-                objectMessages: firstMessages,
-                protocolMessageChannelSerial: "\(sequenceId):cursor1",
-            )
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: firstMessages,
+                    protocolMessageChannelSerial: "\(sequenceId):cursor1",
+                )
+            }
 
             // Verify sync sequence is active (RTO5a1, RTO5a3)
             #expect(realtimeObjects.testsOnly_hasSyncSequence)
@@ -74,10 +88,12 @@ struct InternalDefaultRealtimeObjectsTests {
 
             // Second message in sequence
             let secondMessages = [TestFactories.simpleMapMessage(objectId: "map:2@456")]
-            realtimeObjects.handleObjectSyncProtocolMessage(
-                objectMessages: secondMessages,
-                protocolMessageChannelSerial: "\(sequenceId):cursor2",
-            )
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: secondMessages,
+                    protocolMessageChannelSerial: "\(sequenceId):cursor2",
+                )
+            }
 
             // Verify sync sequence still active
             #expect(realtimeObjects.testsOnly_hasSyncSequence)
@@ -89,10 +105,12 @@ struct InternalDefaultRealtimeObjectsTests {
 
             // Final message in sequence (end of sequence per RTO5a4)
             let finalMessages = [TestFactories.simpleMapMessage(objectId: "map:3@789")]
-            realtimeObjects.handleObjectSyncProtocolMessage(
-                objectMessages: finalMessages,
-                protocolMessageChannelSerial: "\(sequenceId):", // Empty cursor indicates end
-            )
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: finalMessages,
+                    protocolMessageChannelSerial: "\(sequenceId):", // Empty cursor indicates end
+                )
+            }
 
             // Verify sync sequence is cleared and there is no SyncObjectsPool or BufferedObjectOperations (RTO5c3, RTO5c4, RTO5c5)
             #expect(!realtimeObjects.testsOnly_hasSyncSequence)
@@ -111,39 +129,48 @@ struct InternalDefaultRealtimeObjectsTests {
         // @spec RTO5a2b
         @Test
         func newSequenceIdDiscardsInFlightSync() async throws {
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
             let firstSequenceId = "seq1"
             let secondSequenceId = "seq2"
 
             // Start first sequence
             let firstMessages = [TestFactories.simpleMapMessage(objectId: "map:1@123")]
-            realtimeObjects.handleObjectSyncProtocolMessage(
-                objectMessages: firstMessages,
-                protocolMessageChannelSerial: "\(firstSequenceId):cursor1",
-            )
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: firstMessages,
+                    protocolMessageChannelSerial: "\(firstSequenceId):cursor1",
+                )
+            }
 
             #expect(realtimeObjects.testsOnly_hasSyncSequence)
 
             // Inject an OBJECT; it will get buffered per RTO8a and subsequently discarded per RTO5a2b
-            realtimeObjects.handleObjectProtocolMessage(objectMessages: [
-                TestFactories.mapCreateOperationMessage(objectId: "map:3@789"),
-            ])
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectProtocolMessage(objectMessages: [
+                    TestFactories.mapCreateOperationMessage(objectId: "map:3@789"),
+                ])
+            }
 
             // Start new sequence with different ID (RTO5a2)
             let secondMessages = [TestFactories.simpleMapMessage(objectId: "map:2@456")]
-            realtimeObjects.handleObjectSyncProtocolMessage(
-                objectMessages: secondMessages,
-                protocolMessageChannelSerial: "\(secondSequenceId):cursor1",
-            )
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: secondMessages,
+                    protocolMessageChannelSerial: "\(secondSequenceId):cursor1",
+                )
+            }
 
             // Verify sync sequence is still active but with new ID
             #expect(realtimeObjects.testsOnly_hasSyncSequence)
 
             // Complete the new sequence
-            realtimeObjects.handleObjectSyncProtocolMessage(
-                objectMessages: [],
-                protocolMessageChannelSerial: "\(secondSequenceId):",
-            )
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: [],
+                    protocolMessageChannelSerial: "\(secondSequenceId):",
+                )
+            }
 
             // Verify only the second sequence's objects were applied (RTO5a2a - previous cleared)
             let pool = realtimeObjects.testsOnly_objectsPool
@@ -158,14 +185,17 @@ struct InternalDefaultRealtimeObjectsTests {
         // A smoke test that the RTO5c post-sync behaviours get performed. They are tested in more detail in the ObjectsPool.applySyncObjectsPool tests.
         @Test
         func performsPostSyncSteps() async throws {
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
 
             // Perform sync with only one object (RTO5a5 case)
             let syncMessages = [TestFactories.mapObjectMessage(objectId: "map:synced@1")]
-            realtimeObjects.handleObjectSyncProtocolMessage(
-                objectMessages: syncMessages,
-                protocolMessageChannelSerial: nil,
-            )
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: syncMessages,
+                    protocolMessageChannelSerial: nil,
+                )
+            }
 
             // Verify root is preserved (RTO5c2a) and sync completed (RTO5c3)
             #expect(!realtimeObjects.testsOnly_hasSyncSequence)
@@ -179,14 +209,17 @@ struct InternalDefaultRealtimeObjectsTests {
         /// Test handling of invalid channelSerial format
         @Test
         func handlesInvalidChannelSerialFormat() async throws {
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
             let objectMessages = [TestFactories.mapObjectMessage(objectId: "map:1@123")]
 
             // Call with invalid channelSerial (missing colon)
-            realtimeObjects.handleObjectSyncProtocolMessage(
-                objectMessages: objectMessages,
-                protocolMessageChannelSerial: "invalid_format_no_colon",
-            )
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: objectMessages,
+                    protocolMessageChannelSerial: "invalid_format_no_colon",
+                )
+            }
 
             // Verify no sync sequence was created due to parsing error
             #expect(!realtimeObjects.testsOnly_hasSyncSequence)
@@ -201,22 +234,27 @@ struct InternalDefaultRealtimeObjectsTests {
         /// Test with empty sequence ID
         @Test
         func handlesEmptySequenceId() async throws {
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
             let objectMessages = [TestFactories.mapObjectMessage(objectId: "map:1@123")]
 
             // Start sequence with empty sequence ID
-            realtimeObjects.handleObjectSyncProtocolMessage(
-                objectMessages: objectMessages,
-                protocolMessageChannelSerial: ":cursor1",
-            )
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: objectMessages,
+                    protocolMessageChannelSerial: ":cursor1",
+                )
+            }
 
             #expect(realtimeObjects.testsOnly_hasSyncSequence)
 
             // End sequence with empty sequence ID
-            realtimeObjects.handleObjectSyncProtocolMessage(
-                objectMessages: [],
-                protocolMessageChannelSerial: ":",
-            )
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: [],
+                    protocolMessageChannelSerial: ":",
+                )
+            }
 
             // Verify sequence completed successfully
             #expect(!realtimeObjects.testsOnly_hasSyncSequence)
@@ -227,7 +265,8 @@ struct InternalDefaultRealtimeObjectsTests {
         /// Test mixed object types in single sync
         @Test
         func handlesMixedObjectTypesInSync() async throws {
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
 
             let mixedMessages = [
                 TestFactories.mapObjectMessage(objectId: "map:1@123"),
@@ -235,10 +274,12 @@ struct InternalDefaultRealtimeObjectsTests {
                 TestFactories.mapObjectMessage(objectId: "map:2@789"),
             ]
 
-            realtimeObjects.handleObjectSyncProtocolMessage(
-                objectMessages: mixedMessages,
-                protocolMessageChannelSerial: nil, // Single message sync
-            )
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: mixedMessages,
+                    protocolMessageChannelSerial: nil, // Single message sync
+                )
+            }
 
             // Verify all object types were processed
             let pool = realtimeObjects.testsOnly_objectsPool
@@ -251,35 +292,44 @@ struct InternalDefaultRealtimeObjectsTests {
         /// Test continuation of sync after interruption by new sequence
         @Test
         func handlesSequenceInterruptionCorrectly() async throws {
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
 
             // Start first sequence
-            realtimeObjects.handleObjectSyncProtocolMessage(
-                objectMessages: [TestFactories.mapObjectMessage(objectId: "map:old@1")],
-                protocolMessageChannelSerial: "oldSeq:cursor1",
-            )
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: [TestFactories.mapObjectMessage(objectId: "map:old@1")],
+                    protocolMessageChannelSerial: "oldSeq:cursor1",
+                )
+            }
 
             #expect(realtimeObjects.testsOnly_hasSyncSequence)
 
             // Interrupt with new sequence
-            realtimeObjects.handleObjectSyncProtocolMessage(
-                objectMessages: [TestFactories.mapObjectMessage(objectId: "map:new@1")],
-                protocolMessageChannelSerial: "newSeq:cursor1",
-            )
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: [TestFactories.mapObjectMessage(objectId: "map:new@1")],
+                    protocolMessageChannelSerial: "newSeq:cursor1",
+                )
+            }
 
             #expect(realtimeObjects.testsOnly_hasSyncSequence)
 
             // Continue new sequence
-            realtimeObjects.handleObjectSyncProtocolMessage(
-                objectMessages: [TestFactories.mapObjectMessage(objectId: "map:new@2")],
-                protocolMessageChannelSerial: "newSeq:cursor2",
-            )
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: [TestFactories.mapObjectMessage(objectId: "map:new@2")],
+                    protocolMessageChannelSerial: "newSeq:cursor2",
+                )
+            }
 
             // Complete new sequence
-            realtimeObjects.handleObjectSyncProtocolMessage(
-                objectMessages: [],
-                protocolMessageChannelSerial: "newSeq:",
-            )
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: [],
+                    protocolMessageChannelSerial: "newSeq:",
+                )
+            }
 
             // Verify only new sequence objects were applied
             let pool = realtimeObjects.testsOnly_objectsPool
@@ -301,7 +351,8 @@ struct InternalDefaultRealtimeObjectsTests {
         // @spec RTO4a - Checks that when the `HAS_OBJECTS` flag is 1 (i.e. the server will shortly perform an `OBJECT_SYNC` sequence) we don't modify any internal state
         @Test
         func doesNotModifyStateWhenHasObjectsIsTrue() {
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
 
             // Set up initial state with additional objects by using the createZeroValueObject method
             let originalPool = realtimeObjects.testsOnly_objectsPool
@@ -309,17 +360,21 @@ struct InternalDefaultRealtimeObjectsTests {
             _ = realtimeObjects.testsOnly_createZeroValueLiveObject(forObjectID: "map:test@123")
 
             // Set up an in-progress sync sequence
-            realtimeObjects.handleObjectSyncProtocolMessage(
-                objectMessages: [
-                    TestFactories.mapObjectMessage(objectId: "map:sync@456"),
-                ],
-                protocolMessageChannelSerial: "seq1:cursor1",
-            )
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: [
+                        TestFactories.mapObjectMessage(objectId: "map:sync@456"),
+                    ],
+                    protocolMessageChannelSerial: "seq1:cursor1",
+                )
+            }
 
             #expect(realtimeObjects.testsOnly_hasSyncSequence)
 
             // When: onChannelAttached is called with hasObjects = true
-            realtimeObjects.onChannelAttached(hasObjects: true)
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelAttached(hasObjects: true)
+            }
 
             // Then: Nothing should be modified
             #expect(realtimeObjects.testsOnly_onChannelAttachedHasObjects == true)
@@ -345,41 +400,48 @@ struct InternalDefaultRealtimeObjectsTests {
         @available(iOS 17.0.0, tvOS 17.0.0, *)
         @Test
         func handlesHasObjectsFalse() async throws {
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
 
             // Set up initial state with additional objects in the pool using sync
-            realtimeObjects.handleObjectSyncProtocolMessage(
-                objectMessages: [
-                    TestFactories.mapObjectMessage(objectId: "root", entries: [
-                        "existingMap": TestFactories.objectReferenceMapEntry(key: "existingMap", objectId: "map:existing@123").entry,
-                        "existingCounter": TestFactories.objectReferenceMapEntry(key: "existingCounter", objectId: "counter:existing@456").entry,
-                    ]),
-                    TestFactories.mapObjectMessage(objectId: "map:existing@123"),
-                    TestFactories.counterObjectMessage(objectId: "counter:existing@456"),
-                ],
-                protocolMessageChannelSerial: nil, // Complete sync immediately
-            )
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: [
+                        TestFactories.mapObjectMessage(objectId: "root", entries: [
+                            "existingMap": TestFactories.objectReferenceMapEntry(key: "existingMap", objectId: "map:existing@123").entry,
+                            "existingCounter": TestFactories.objectReferenceMapEntry(key: "existingCounter", objectId: "counter:existing@456").entry,
+                        ]),
+                        TestFactories.mapObjectMessage(objectId: "map:existing@123"),
+                        TestFactories.counterObjectMessage(objectId: "counter:existing@456"),
+                    ],
+                    protocolMessageChannelSerial: nil, // Complete sync immediately
+                )
+            }
 
             let originalPool = realtimeObjects.testsOnly_objectsPool
             #expect(Set(originalPool.root.testsOnly_data.keys) == ["existingMap", "existingCounter"])
 
             let rootSubscriber = Subscriber<DefaultLiveMapUpdate, SubscribeResponse>(callbackQueue: .main)
-            let coreSDK = MockCoreSDK(channelState: .attached)
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
             try originalPool.root.subscribe(listener: rootSubscriber.createListener(), coreSDK: coreSDK)
 
             // Set up an in-progress sync sequence
-            realtimeObjects.handleObjectSyncProtocolMessage(
-                objectMessages: [
-                    TestFactories.mapObjectMessage(objectId: "map:sync@789"),
-                ],
-                protocolMessageChannelSerial: "seq1:cursor1",
-            )
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: [
+                        TestFactories.mapObjectMessage(objectId: "map:sync@789"),
+                    ],
+                    protocolMessageChannelSerial: "seq1:cursor1",
+                )
+            }
 
             #expect(realtimeObjects.testsOnly_hasSyncSequence)
             #expect(originalPool.entries.count == 3) // root + 2 additional objects
 
             // When: onChannelAttached is called with hasObjects = false
-            realtimeObjects.onChannelAttached(hasObjects: false)
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelAttached(hasObjects: false)
+            }
 
             // Then: Verify the expected behavior per RTO4b
             #expect(realtimeObjects.testsOnly_onChannelAttachedHasObjects == false)
@@ -409,23 +471,30 @@ struct InternalDefaultRealtimeObjectsTests {
         /// Test that multiple calls to onChannelAttached work correctly
         @Test
         func handlesMultipleCallsCorrectly() {
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
 
             // First call with hasObjects = true (should do nothing)
-            realtimeObjects.onChannelAttached(hasObjects: true)
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelAttached(hasObjects: true)
+            }
             #expect(realtimeObjects.testsOnly_onChannelAttachedHasObjects == true)
             let originalPool = realtimeObjects.testsOnly_objectsPool
             let originalRoot = originalPool.root
 
             // Second call with hasObjects = false (should reset)
-            realtimeObjects.onChannelAttached(hasObjects: false)
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelAttached(hasObjects: false)
+            }
             #expect(realtimeObjects.testsOnly_onChannelAttachedHasObjects == false)
             let newPool = realtimeObjects.testsOnly_objectsPool
             #expect(newPool.root as AnyObject === originalRoot as AnyObject)
             #expect(newPool.entries.count == 1)
 
             // Third call with hasObjects = true again (should do nothing)
-            realtimeObjects.onChannelAttached(hasObjects: true)
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelAttached(hasObjects: true)
+            }
             #expect(realtimeObjects.testsOnly_onChannelAttachedHasObjects == true)
             let finalPool = realtimeObjects.testsOnly_objectsPool
             #expect(finalPool.root as AnyObject === originalRoot as AnyObject) // Should be unchanged
@@ -434,28 +503,35 @@ struct InternalDefaultRealtimeObjectsTests {
         /// Test that sync sequence is properly discarded even with complex sync state
         @Test
         func discardsComplexSyncSequence() {
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
 
             // Create a complex sync sequence using OBJECT_SYNC messages
             // (This simulates realistic multi-message sync scenarios)
-            realtimeObjects.handleObjectSyncProtocolMessage(
-                objectMessages: [
-                    TestFactories.mapObjectMessage(objectId: "map:sync1@123"),
-                ],
-                protocolMessageChannelSerial: "seq1:cursor1",
-            )
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: [
+                        TestFactories.mapObjectMessage(objectId: "map:sync1@123"),
+                    ],
+                    protocolMessageChannelSerial: "seq1:cursor1",
+                )
+            }
 
-            realtimeObjects.handleObjectSyncProtocolMessage(
-                objectMessages: [
-                    TestFactories.counterObjectMessage(objectId: "counter:sync1@456"),
-                ],
-                protocolMessageChannelSerial: "seq1:cursor2",
-            )
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: [
+                        TestFactories.counterObjectMessage(objectId: "counter:sync1@456"),
+                    ],
+                    protocolMessageChannelSerial: "seq1:cursor2",
+                )
+            }
 
             #expect(realtimeObjects.testsOnly_hasSyncSequence)
 
             // When: onChannelAttached is called with hasObjects = false
-            realtimeObjects.onChannelAttached(hasObjects: false)
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelAttached(hasObjects: false)
+            }
 
             // Then: All sync data should be discarded
             #expect(!realtimeObjects.testsOnly_hasSyncSequence)
@@ -468,16 +544,19 @@ struct InternalDefaultRealtimeObjectsTests {
         /// Test behavior when there's no sync sequence in progress
         @Test
         func handlesNoSyncSequenceCorrectly() {
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
 
             // Add some objects to the pool using OBJECT_SYNC messages
             // (This is the realistic way objects enter the pool, not through direct manipulation)
-            realtimeObjects.handleObjectSyncProtocolMessage(
-                objectMessages: [
-                    TestFactories.mapObjectMessage(objectId: "map:test@123"),
-                ],
-                protocolMessageChannelSerial: nil, // Complete sync immediately
-            )
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: [
+                        TestFactories.mapObjectMessage(objectId: "map:test@123"),
+                    ],
+                    protocolMessageChannelSerial: nil, // Complete sync immediately
+                )
+            }
 
             let pool = realtimeObjects.testsOnly_objectsPool
 
@@ -485,7 +564,9 @@ struct InternalDefaultRealtimeObjectsTests {
             #expect(pool.entries.count == 2) // root + additional map
 
             // When: onChannelAttached is called with hasObjects = false
-            realtimeObjects.onChannelAttached(hasObjects: false)
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelAttached(hasObjects: false)
+            }
 
             // Then: Should still reset the pool correctly
             let newPool = realtimeObjects.testsOnly_objectsPool
@@ -497,10 +578,13 @@ struct InternalDefaultRealtimeObjectsTests {
         /// Test that the root object's delegate is correctly set after reset
         @Test
         func setsCorrectDelegateOnNewRoot() {
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
 
             // When: onChannelAttached is called with hasObjects = false
-            realtimeObjects.onChannelAttached(hasObjects: false)
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelAttached(hasObjects: false)
+            }
 
             // Then: The new root should be properly initialized
             let newRoot = realtimeObjects.testsOnly_objectsPool.root
@@ -515,8 +599,9 @@ struct InternalDefaultRealtimeObjectsTests {
         // @specOneOf(1/4) RTO1c - getRoot waits for sync completion when sync completes via ATTACHED with `HAS_OBJECTS` false (RTO4b)
         @Test
         func waitsForSyncCompletionViaAttachedHasObjectsFalse() async throws {
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
-            let coreSDK = MockCoreSDK(channelState: .attached)
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
 
             // Start getRoot call - it should wait for sync completion
             async let getRootTask = realtimeObjects.getRoot(coreSDK: coreSDK)
@@ -525,7 +610,9 @@ struct InternalDefaultRealtimeObjectsTests {
             _ = try #require(await realtimeObjects.testsOnly_waitingForSyncEvents.first { _ in true })
 
             // Complete sync via ATTACHED with HAS_OBJECTS false (RTO4b)
-            realtimeObjects.onChannelAttached(hasObjects: false)
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelAttached(hasObjects: false)
+            }
 
             // getRoot should now complete
             _ = try await getRootTask
@@ -534,8 +621,9 @@ struct InternalDefaultRealtimeObjectsTests {
         // @specOneOf(2/4) RTO1c - getRoot waits for sync completion when sync completes via single `OBJECT_SYNC` with no channelSerial (RTO5a5)
         @Test
         func waitsForSyncCompletionViaSingleObjectSync() async throws {
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
-            let coreSDK = MockCoreSDK(channelState: .attached)
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
 
             // Start getRoot call - it should wait for sync completion
             async let getRootTask = realtimeObjects.getRoot(coreSDK: coreSDK)
@@ -546,16 +634,18 @@ struct InternalDefaultRealtimeObjectsTests {
             // Complete sync via single OBJECT_SYNC with no channelSerial (RTO5a5)
             let (testKey, testEntry) = TestFactories.stringMapEntry(key: "testKey", value: "testValue")
             let (referencedKey, referencedEntry) = TestFactories.objectReferenceMapEntry(key: "referencedObject", objectId: "map:test@123")
-            realtimeObjects.handleObjectSyncProtocolMessage(
-                objectMessages: [
-                    TestFactories.rootObjectMessage(entries: [
-                        testKey: testEntry,
-                        referencedKey: referencedEntry,
-                    ]),
-                    TestFactories.mapObjectMessage(objectId: "map:test@123"),
-                ],
-                protocolMessageChannelSerial: nil, // RTO5a5 case
-            )
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: [
+                        TestFactories.rootObjectMessage(entries: [
+                            testKey: testEntry,
+                            referencedKey: referencedEntry,
+                        ]),
+                        TestFactories.mapObjectMessage(objectId: "map:test@123"),
+                    ],
+                    protocolMessageChannelSerial: nil, // RTO5a5 case
+                )
+            }
 
             // getRoot should now complete
             let root = try await getRootTask
@@ -572,8 +662,9 @@ struct InternalDefaultRealtimeObjectsTests {
         // @specOneOf(3/4) RTO1c - getRoot waits for sync completion when sync completes via multiple `OBJECT_SYNC` messages (RTO5a4)
         @Test
         func waitsForSyncCompletionViaMultipleObjectSync() async throws {
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
-            let coreSDK = MockCoreSDK(channelState: .attached)
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
             let sequenceId = "seq123"
 
             // Start getRoot call - it should wait for sync completion
@@ -587,34 +678,40 @@ struct InternalDefaultRealtimeObjectsTests {
             let (firstObjectKey, firstObjectEntry) = TestFactories.objectReferenceMapEntry(key: "firstObject", objectId: "map:first@123")
             let (secondObjectKey, secondObjectEntry) = TestFactories.objectReferenceMapEntry(key: "secondObject", objectId: "map:second@456")
             let (finalObjectKey, finalObjectEntry) = TestFactories.objectReferenceMapEntry(key: "finalObject", objectId: "map:final@789")
-            realtimeObjects.handleObjectSyncProtocolMessage(
-                objectMessages: [
-                    TestFactories.rootObjectMessage(entries: [
-                        firstKey: firstEntry,
-                        firstObjectKey: firstObjectEntry,
-                        secondObjectKey: secondObjectEntry,
-                        finalObjectKey: finalObjectEntry,
-                    ]),
-                    TestFactories.mapObjectMessage(objectId: "map:first@123"),
-                ],
-                protocolMessageChannelSerial: "\(sequenceId):cursor1",
-            )
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: [
+                        TestFactories.rootObjectMessage(entries: [
+                            firstKey: firstEntry,
+                            firstObjectKey: firstObjectEntry,
+                            secondObjectKey: secondObjectEntry,
+                            finalObjectKey: finalObjectEntry,
+                        ]),
+                        TestFactories.mapObjectMessage(objectId: "map:first@123"),
+                    ],
+                    protocolMessageChannelSerial: "\(sequenceId):cursor1",
+                )
+            }
 
             // Continue sync sequence - add more objects but don't redefine root
-            realtimeObjects.handleObjectSyncProtocolMessage(
-                objectMessages: [
-                    TestFactories.mapObjectMessage(objectId: "map:second@456"),
-                ],
-                protocolMessageChannelSerial: "\(sequenceId):cursor2",
-            )
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: [
+                        TestFactories.mapObjectMessage(objectId: "map:second@456"),
+                    ],
+                    protocolMessageChannelSerial: "\(sequenceId):cursor2",
+                )
+            }
 
             // Complete sync sequence (RTO5a4) - add final object
-            realtimeObjects.handleObjectSyncProtocolMessage(
-                objectMessages: [
-                    TestFactories.mapObjectMessage(objectId: "map:final@789"),
-                ],
-                protocolMessageChannelSerial: "\(sequenceId):", // Empty cursor indicates end
-            )
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: [
+                        TestFactories.mapObjectMessage(objectId: "map:final@789"),
+                    ],
+                    protocolMessageChannelSerial: "\(sequenceId):", // Empty cursor indicates end
+                )
+            }
 
             // getRoot should now complete
             let root = try await getRootTask
@@ -633,11 +730,14 @@ struct InternalDefaultRealtimeObjectsTests {
         // @specOneOf(4/4) RTO1c - getRoot returns immediately when sync is already complete
         @Test
         func returnsImmediatelyWhenSyncAlreadyComplete() async throws {
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
-            let coreSDK = MockCoreSDK(channelState: .attached)
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
 
             // Complete sync first
-            realtimeObjects.onChannelAttached(hasObjects: false)
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelAttached(hasObjects: false)
+            }
 
             // getRoot should return
             _ = try await realtimeObjects.getRoot(coreSDK: coreSDK)
@@ -655,11 +755,14 @@ struct InternalDefaultRealtimeObjectsTests {
         // @spec RTO1d
         @Test
         func returnsRootObjectFromObjectsPool() async throws {
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
-            let coreSDK = MockCoreSDK(channelState: .attached)
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
 
             // Complete sync first
-            realtimeObjects.onChannelAttached(hasObjects: false)
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelAttached(hasObjects: false)
+            }
 
             // Call getRoot
             let root = try await realtimeObjects.getRoot(coreSDK: coreSDK)
@@ -674,8 +777,9 @@ struct InternalDefaultRealtimeObjectsTests {
         // @spec RTO1b
         @Test(arguments: [.detached, .failed] as [_AblyPluginSupportPrivate.RealtimeChannelState])
         func getRootThrowsIfChannelIsDetachedOrFailed(channelState: _AblyPluginSupportPrivate.RealtimeChannelState) async throws {
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
-            let coreSDK = MockCoreSDK(channelState: channelState)
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: channelState, internalQueue: internalQueue)
 
             await #expect {
                 _ = try await realtimeObjects.getRoot(coreSDK: coreSDK)
@@ -701,7 +805,8 @@ struct InternalDefaultRealtimeObjectsTests {
             // @spec RTO9a2a1 - Tests that if necessary it creates an object in the ObjectsPool
             @Test
             func createsObjectInObjectsPoolWhenNecessary() {
-                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+                let internalQueue = TestFactories.createInternalQueue()
+                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
                 let objectId = "map:new@123"
 
                 // Verify the object doesn't exist in the pool initially
@@ -716,7 +821,9 @@ struct InternalDefaultRealtimeObjectsTests {
                 )
 
                 // Handle the object protocol message
-                realtimeObjects.handleObjectProtocolMessage(objectMessages: [operationMessage])
+                internalQueue.ably_syncNoDeadlock {
+                    realtimeObjects.nosync_handleObjectProtocolMessage(objectMessages: [operationMessage])
+                }
 
                 // Verify the object was created in the ObjectsPool (RTO9a2a1)
                 let finalPool = realtimeObjects.testsOnly_objectsPool
@@ -730,25 +837,28 @@ struct InternalDefaultRealtimeObjectsTests {
             // @specOneOf(1/5) RTO9a2a3 - Tests MAP_CREATE operation application
             @Test
             func appliesMapCreateOperation() throws {
-                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+                let internalQueue = TestFactories.createInternalQueue()
+                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
                 let objectId = "map:test@123"
 
                 // Create a map object in the pool first
                 let (entryKey, entry) = TestFactories.stringMapEntry(key: "existingKey", value: "existingValue")
-                realtimeObjects.handleObjectSyncProtocolMessage(
-                    objectMessages: [
-                        TestFactories.mapObjectMessage(
-                            objectId: objectId,
-                            siteTimeserials: ["site1": "ts1"],
-                            entries: [entryKey: entry],
-                        ),
-                    ],
-                    protocolMessageChannelSerial: nil,
-                )
+                internalQueue.ably_syncNoDeadlock {
+                    realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                        objectMessages: [
+                            TestFactories.mapObjectMessage(
+                                objectId: objectId,
+                                siteTimeserials: ["site1": "ts1"],
+                                entries: [entryKey: entry],
+                            ),
+                        ],
+                        protocolMessageChannelSerial: nil,
+                    )
+                }
 
                 // Verify the object exists and has initial data
                 let map = try #require(realtimeObjects.testsOnly_objectsPool.entries[objectId]?.mapValue)
-                let coreSDK = MockCoreSDK(channelState: .attached)
+                let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
                 let initialValue = try #require(map.get(key: "existingKey", coreSDK: coreSDK, delegate: realtimeObjects)?.stringValue)
                 #expect(initialValue == "existingValue")
 
@@ -762,7 +872,9 @@ struct InternalDefaultRealtimeObjectsTests {
                 )
 
                 // Handle the object protocol message
-                realtimeObjects.handleObjectProtocolMessage(objectMessages: [operationMessage])
+                internalQueue.ably_syncNoDeadlock {
+                    realtimeObjects.nosync_handleObjectProtocolMessage(objectMessages: [operationMessage])
+                }
 
                 // Verify the operation was applied by checking for side effects
                 // The full logic of applying the operation is tested in RTLM15; we just check for some of its side effects here
@@ -777,25 +889,28 @@ struct InternalDefaultRealtimeObjectsTests {
             // @specOneOf(2/5) RTO9a2a3 - Tests MAP_SET operation application
             @Test
             func appliesMapSetOperation() throws {
-                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+                let internalQueue = TestFactories.createInternalQueue()
+                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
                 let objectId = "map:test@123"
 
                 // Create a map object in the pool first
                 let (entryKey, entry) = TestFactories.stringMapEntry(key: "existingKey", value: "existingValue")
-                realtimeObjects.handleObjectSyncProtocolMessage(
-                    objectMessages: [
-                        TestFactories.mapObjectMessage(
-                            objectId: objectId,
-                            siteTimeserials: ["site1": "ts1"],
-                            entries: [entryKey: entry],
-                        ),
-                    ],
-                    protocolMessageChannelSerial: nil,
-                )
+                internalQueue.ably_syncNoDeadlock {
+                    realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                        objectMessages: [
+                            TestFactories.mapObjectMessage(
+                                objectId: objectId,
+                                siteTimeserials: ["site1": "ts1"],
+                                entries: [entryKey: entry],
+                            ),
+                        ],
+                        protocolMessageChannelSerial: nil,
+                    )
+                }
 
                 // Verify the object exists and has initial data
                 let map = try #require(realtimeObjects.testsOnly_objectsPool.entries[objectId]?.mapValue)
-                let coreSDK = MockCoreSDK(channelState: .attached)
+                let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
                 let initialValue = try #require(map.get(key: "existingKey", coreSDK: coreSDK, delegate: realtimeObjects)?.stringValue)
                 #expect(initialValue == "existingValue")
 
@@ -809,7 +924,9 @@ struct InternalDefaultRealtimeObjectsTests {
                 )
 
                 // Handle the object protocol message
-                realtimeObjects.handleObjectProtocolMessage(objectMessages: [operationMessage])
+                internalQueue.ably_syncNoDeadlock {
+                    realtimeObjects.nosync_handleObjectProtocolMessage(objectMessages: [operationMessage])
+                }
 
                 // Verify the operation was applied by checking for side effects
                 // The full logic of applying the operation is tested in RTLM15; we just check for some of its side effects here
@@ -823,25 +940,28 @@ struct InternalDefaultRealtimeObjectsTests {
             // @specOneOf(3/5) RTO9a2a3 - Tests MAP_REMOVE operation application
             @Test
             func appliesMapRemoveOperation() throws {
-                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+                let internalQueue = TestFactories.createInternalQueue()
+                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
                 let objectId = "map:test@123"
 
                 // Create a map object in the pool first
                 let (entryKey, entry) = TestFactories.stringMapEntry(key: "existingKey", value: "existingValue")
-                realtimeObjects.handleObjectSyncProtocolMessage(
-                    objectMessages: [
-                        TestFactories.mapObjectMessage(
-                            objectId: objectId,
-                            siteTimeserials: ["site1": "ts1"],
-                            entries: [entryKey: entry],
-                        ),
-                    ],
-                    protocolMessageChannelSerial: nil,
-                )
+                internalQueue.ably_syncNoDeadlock {
+                    realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                        objectMessages: [
+                            TestFactories.mapObjectMessage(
+                                objectId: objectId,
+                                siteTimeserials: ["site1": "ts1"],
+                                entries: [entryKey: entry],
+                            ),
+                        ],
+                        protocolMessageChannelSerial: nil,
+                    )
+                }
 
                 // Verify the object exists and has initial data
                 let map = try #require(realtimeObjects.testsOnly_objectsPool.entries[objectId]?.mapValue)
-                let coreSDK = MockCoreSDK(channelState: .attached)
+                let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
                 let initialValue = try #require(map.get(key: "existingKey", coreSDK: coreSDK, delegate: realtimeObjects)?.stringValue)
                 #expect(initialValue == "existingValue")
 
@@ -854,7 +974,9 @@ struct InternalDefaultRealtimeObjectsTests {
                 )
 
                 // Handle the object protocol message
-                realtimeObjects.handleObjectProtocolMessage(objectMessages: [operationMessage])
+                internalQueue.ably_syncNoDeadlock {
+                    realtimeObjects.nosync_handleObjectProtocolMessage(objectMessages: [operationMessage])
+                }
 
                 // Verify the operation was applied by checking for side effects
                 // The full logic of applying the operation is tested in RTLM15; we just check for some of its side effects here
@@ -868,24 +990,27 @@ struct InternalDefaultRealtimeObjectsTests {
             // @specOneOf(4/5) RTO9a2a3 - Tests COUNTER_CREATE operation application
             @Test
             func appliesCounterCreateOperation() throws {
-                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+                let internalQueue = TestFactories.createInternalQueue()
+                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
                 let objectId = "counter:test@123"
 
                 // Create a counter object in the pool first
-                realtimeObjects.handleObjectSyncProtocolMessage(
-                    objectMessages: [
-                        TestFactories.counterObjectMessage(
-                            objectId: objectId,
-                            siteTimeserials: ["site1": "ts1"],
-                            count: 5,
-                        ),
-                    ],
-                    protocolMessageChannelSerial: nil,
-                )
+                internalQueue.ably_syncNoDeadlock {
+                    realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                        objectMessages: [
+                            TestFactories.counterObjectMessage(
+                                objectId: objectId,
+                                siteTimeserials: ["site1": "ts1"],
+                                count: 5,
+                            ),
+                        ],
+                        protocolMessageChannelSerial: nil,
+                    )
+                }
 
                 // Verify the object exists and has initial data
                 let counter = try #require(realtimeObjects.testsOnly_objectsPool.entries[objectId]?.counterValue)
-                let coreSDK = MockCoreSDK(channelState: .attached)
+                let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
                 let initialValue = try counter.value(coreSDK: coreSDK)
                 #expect(initialValue == 5)
 
@@ -898,7 +1023,9 @@ struct InternalDefaultRealtimeObjectsTests {
                 )
 
                 // Handle the object protocol message
-                realtimeObjects.handleObjectProtocolMessage(objectMessages: [operationMessage])
+                internalQueue.ably_syncNoDeadlock {
+                    realtimeObjects.nosync_handleObjectProtocolMessage(objectMessages: [operationMessage])
+                }
 
                 // Verify the operation was applied by checking for side effects
                 // The full logic of applying the operation is tested in RTLC7; we just check for some of its side effects here
@@ -912,24 +1039,27 @@ struct InternalDefaultRealtimeObjectsTests {
             // @specOneOf(5/5) RTO9a2a3 - Tests COUNTER_INC operation application
             @Test
             func appliesCounterIncOperation() throws {
-                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+                let internalQueue = TestFactories.createInternalQueue()
+                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
                 let objectId = "counter:test@123"
 
                 // Create a counter object in the pool first
-                realtimeObjects.handleObjectSyncProtocolMessage(
-                    objectMessages: [
-                        TestFactories.counterObjectMessage(
-                            objectId: objectId,
-                            siteTimeserials: ["site1": "ts1"],
-                            count: 5,
-                        ),
-                    ],
-                    protocolMessageChannelSerial: nil,
-                )
+                internalQueue.ably_syncNoDeadlock {
+                    realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                        objectMessages: [
+                            TestFactories.counterObjectMessage(
+                                objectId: objectId,
+                                siteTimeserials: ["site1": "ts1"],
+                                count: 5,
+                            ),
+                        ],
+                        protocolMessageChannelSerial: nil,
+                    )
+                }
 
                 // Verify the object exists and has initial data
                 let counter = try #require(realtimeObjects.testsOnly_objectsPool.entries[objectId]?.counterValue)
-                let coreSDK = MockCoreSDK(channelState: .attached)
+                let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
                 let initialValue = try counter.value(coreSDK: coreSDK)
                 #expect(initialValue == 5)
 
@@ -942,7 +1072,9 @@ struct InternalDefaultRealtimeObjectsTests {
                 )
 
                 // Handle the object protocol message
-                realtimeObjects.handleObjectProtocolMessage(objectMessages: [operationMessage])
+                internalQueue.ably_syncNoDeadlock {
+                    realtimeObjects.nosync_handleObjectProtocolMessage(objectMessages: [operationMessage])
+                }
 
                 // Verify the operation was applied by checking for side effects
                 // The full logic of applying the operation is tested in RTLC7; we just check for some of its side effects here
@@ -958,7 +1090,8 @@ struct InternalDefaultRealtimeObjectsTests {
             // @spec RTO5c6
             @Test
             func buffersObjectOperationsDuringSyncAndAppliesAfterCompletion() async throws {
-                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
+                let internalQueue = TestFactories.createInternalQueue()
+                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
                 let sequenceId = "seq123"
 
                 // Start sync sequence with first OBJECT_SYNC message
@@ -970,10 +1103,12 @@ struct InternalDefaultRealtimeObjectsTests {
                         entries: [entryKey: entry],
                     ),
                 ]
-                realtimeObjects.handleObjectSyncProtocolMessage(
-                    objectMessages: firstSyncMessages,
-                    protocolMessageChannelSerial: "\(sequenceId):cursor1",
-                )
+                internalQueue.ably_syncNoDeadlock {
+                    realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                        objectMessages: firstSyncMessages,
+                        protocolMessageChannelSerial: "\(sequenceId):cursor1",
+                    )
+                }
 
                 // Verify sync sequence is active
                 #expect(realtimeObjects.testsOnly_hasSyncSequence)
@@ -986,7 +1121,9 @@ struct InternalDefaultRealtimeObjectsTests {
                     serial: "ts3", // Higher than sync data "ts1"
                     siteCode: "site1",
                 )
-                realtimeObjects.handleObjectProtocolMessage(objectMessages: [firstObjectMessage])
+                internalQueue.ably_syncNoDeadlock {
+                    realtimeObjects.nosync_handleObjectProtocolMessage(objectMessages: [firstObjectMessage])
+                }
 
                 // Verify the operation was buffered and not applied yet
                 let poolAfterFirstObject = realtimeObjects.testsOnly_objectsPool
@@ -999,7 +1136,9 @@ struct InternalDefaultRealtimeObjectsTests {
                     serial: "ts4", // Higher than sync data "ts2"
                     siteCode: "site1",
                 )
-                realtimeObjects.handleObjectProtocolMessage(objectMessages: [secondObjectMessage])
+                internalQueue.ably_syncNoDeadlock {
+                    realtimeObjects.nosync_handleObjectProtocolMessage(objectMessages: [secondObjectMessage])
+                }
 
                 // Verify the second operation was also buffered and not applied yet
                 let poolAfterSecondObject = realtimeObjects.testsOnly_objectsPool
@@ -1013,10 +1152,12 @@ struct InternalDefaultRealtimeObjectsTests {
                         count: 5,
                     ),
                 ]
-                realtimeObjects.handleObjectSyncProtocolMessage(
-                    objectMessages: finalSyncMessages,
-                    protocolMessageChannelSerial: "\(sequenceId):", // Empty cursor indicates end
-                )
+                internalQueue.ably_syncNoDeadlock {
+                    realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                        objectMessages: finalSyncMessages,
+                        protocolMessageChannelSerial: "\(sequenceId):", // Empty cursor indicates end
+                    )
+                }
 
                 // Verify sync sequence is cleared
                 #expect(!realtimeObjects.testsOnly_hasSyncSequence)
@@ -1028,7 +1169,7 @@ struct InternalDefaultRealtimeObjectsTests {
 
                 // Verify the buffered operations were applied after sync completion (RTO5c6)
                 // Check that MAP_SET operation was applied to the map
-                let coreSDK = MockCoreSDK(channelState: .attached)
+                let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
                 let mapValue = try #require(map.get(key: "key1", coreSDK: coreSDK, delegate: realtimeObjects)?.stringValue)
                 #expect(mapValue == "value1")
                 #expect(map.testsOnly_siteTimeserials["site1"] == "ts3")
@@ -1046,8 +1187,9 @@ struct InternalDefaultRealtimeObjectsTests {
         // @spec RTO11d
         @Test(arguments: [.detached, .failed, .suspended] as [_AblyPluginSupportPrivate.RealtimeChannelState])
         func throwsIfChannelIsInInvalidState(channelState: _AblyPluginSupportPrivate.RealtimeChannelState) async throws {
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
-            let coreSDK = MockCoreSDK(channelState: channelState)
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: channelState, internalQueue: internalQueue)
             let entries: [String: InternalLiveMapValue] = ["testKey": .string("testValue")]
 
             await #expect {
@@ -1065,9 +1207,10 @@ struct InternalDefaultRealtimeObjectsTests {
         // @spec RTO11h3b
         @Test
         func publishesObjectMessageAndCreatesMap() async throws {
+            let internalQueue = TestFactories.createInternalQueue()
             let clock = MockSimpleClock(currentTime: .init(timeIntervalSince1970: 1_754_042_434))
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(clock: clock)
-            let coreSDK = MockCoreSDK(channelState: .attached)
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(clock: clock, internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
 
             // Track published messages
             var publishedMessages: [OutboundObjectMessage] = []
@@ -1107,8 +1250,9 @@ struct InternalDefaultRealtimeObjectsTests {
         // @spec RTO11f4b
         @Test
         func withNoEntriesArgumentCreatesEmptyMap() async throws {
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
-            let coreSDK = MockCoreSDK(channelState: .attached)
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
 
             // Track published messages
             var publishedMessages: [OutboundObjectMessage] = []
@@ -1134,8 +1278,9 @@ struct InternalDefaultRealtimeObjectsTests {
         // @spec RTO11h2
         @Test
         func returnsExistingObjectIfAlreadyInPool() async throws {
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
-            let coreSDK = MockCoreSDK(channelState: .attached)
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
 
             // Track published messages and the generated objectId
             var publishedMessages: [OutboundObjectMessage] = []
@@ -1177,8 +1322,9 @@ struct InternalDefaultRealtimeObjectsTests {
             // @spec RTO12d
             @Test(arguments: [.detached, .failed, .suspended] as [_AblyPluginSupportPrivate.RealtimeChannelState])
             func throwsIfChannelIsInInvalidState(channelState: _AblyPluginSupportPrivate.RealtimeChannelState) async throws {
-                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
-                let coreSDK = MockCoreSDK(channelState: channelState)
+                let internalQueue = TestFactories.createInternalQueue()
+                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+                let coreSDK = MockCoreSDK(channelState: channelState, internalQueue: internalQueue)
 
                 await #expect {
                     _ = try await realtimeObjects.createCounter(count: 10.5, coreSDK: coreSDK)
@@ -1195,9 +1341,10 @@ struct InternalDefaultRealtimeObjectsTests {
             // @spec RTO12h3b
             @Test
             func publishesObjectMessageAndCreatesCounter() async throws {
+                let internalQueue = TestFactories.createInternalQueue()
                 let clock = MockSimpleClock(currentTime: .init(timeIntervalSince1970: 1_754_042_434))
-                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(clock: clock)
-                let coreSDK = MockCoreSDK(channelState: .attached)
+                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(clock: clock, internalQueue: internalQueue)
+                let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
 
                 // Track published messages
                 var publishedMessages: [OutboundObjectMessage] = []
@@ -1230,8 +1377,9 @@ struct InternalDefaultRealtimeObjectsTests {
             // @spec RTO12f2a
             @Test
             func withNoEntriesArgumentCreatesWithZeroValue() async throws {
-                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
-                let coreSDK = MockCoreSDK(channelState: .attached)
+                let internalQueue = TestFactories.createInternalQueue()
+                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+                let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
 
                 // Track published messages
                 var publishedMessages: [OutboundObjectMessage] = []
@@ -1258,8 +1406,9 @@ struct InternalDefaultRealtimeObjectsTests {
             // @spec RTO12h2
             @Test
             func returnsExistingObjectIfAlreadyInPool() async throws {
-                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects()
-                let coreSDK = MockCoreSDK(channelState: .attached)
+                let internalQueue = TestFactories.createInternalQueue()
+                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+                let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
 
                 // Track published messages and the generated objectId
                 var publishedMessages: [OutboundObjectMessage] = []

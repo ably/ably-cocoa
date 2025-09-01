@@ -3,10 +3,7 @@ import Ably
 
 /// This provides the implementation behind ``PublicDefaultRealtimeObjects``, via internal versions of the ``RealtimeObjects`` API.
 internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPoolDelegate {
-    // Used for synchronizing access to all of this instance's mutable state. This is a temporary solution just to allow us to implement `Sendable`, and we'll revisit it in https://github.com/ably/ably-liveobjects-swift-plugin/issues/3.
-    private let mutex = NSLock()
-
-    private nonisolated(unsafe) var mutableState: MutableState!
+    private let mutableStateMutex: DispatchQueueMutex<MutableState>
 
     private let logger: Logger
     private let userCallbackQueue: DispatchQueue
@@ -39,14 +36,14 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
     }
 
     internal var testsOnly_objectsPool: ObjectsPool {
-        mutex.withLock {
+        mutableStateMutex.withSync { mutableState in
             mutableState.objectsPool
         }
     }
 
     /// If this returns false, it means that there is currently no stored sync sequence ID, SyncObjectsPool, or BufferedObjectOperations.
     internal var testsOnly_hasSyncSequence: Bool {
-        mutex.withLock {
+        mutableStateMutex.withSync { mutableState in
             mutableState.syncSequence != nil
         }
     }
@@ -91,7 +88,13 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
         }
     }
 
-    internal init(logger: Logger, userCallbackQueue: DispatchQueue, clock: SimpleClock, garbageCollectionOptions: GarbageCollectionOptions = .init()) {
+    internal init(
+        logger: Logger,
+        internalQueue: DispatchQueue,
+        userCallbackQueue: DispatchQueue,
+        clock: SimpleClock,
+        garbageCollectionOptions: GarbageCollectionOptions = .init()
+    ) {
         self.logger = logger
         self.userCallbackQueue = userCallbackQueue
         self.clock = clock
@@ -99,7 +102,17 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
         (receivedObjectSyncProtocolMessages, receivedObjectSyncProtocolMessagesContinuation) = AsyncStream.makeStream()
         (waitingForSyncEvents, waitingForSyncEventsContinuation) = AsyncStream.makeStream()
         (completedGarbageCollectionEventsWithoutBuffering, completedGarbageCollectionEventsWithoutBufferingContinuation) = AsyncStream.makeStream(bufferingPolicy: .bufferingNewest(0))
-        mutableState = .init(objectsPool: .init(logger: logger, userCallbackQueue: userCallbackQueue, clock: clock))
+        mutableStateMutex = .init(
+            dispatchQueue: internalQueue,
+            initialValue: .init(
+                objectsPool: .init(
+                    logger: logger,
+                    internalQueue: internalQueue,
+                    userCallbackQueue: userCallbackQueue,
+                    clock: clock,
+                ),
+            ),
+        )
         garbageCollectionInterval = garbageCollectionOptions.interval
         garbageCollectionGracePeriod = garbageCollectionOptions.gracePeriod
 
@@ -128,8 +141,8 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
 
     // MARK: - LiveMapObjectPoolDelegate
 
-    internal func getObjectFromPool(id: String) -> ObjectsPool.Entry? {
-        mutex.withLock {
+    internal func nosync_getObjectFromPool(id: String) -> ObjectsPool.Entry? {
+        mutableStateMutex.withoutSync { mutableState in
             mutableState.objectsPool.entries[id]
         }
     }
@@ -137,11 +150,11 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
     // MARK: - Internal methods that power RealtimeObjects conformance
 
     internal func getRoot(coreSDK: CoreSDK) async throws(ARTErrorInfo) -> InternalDefaultLiveMap {
-        // RTO1b: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
-        try coreSDK.validateChannelState(notIn: [.detached, .failed], operationDescription: "getRoot")
+        let syncStatus = try mutableStateMutex.withSync { mutableState throws(ARTErrorInfo) in
+            // RTO1b: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
+            try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed], operationDescription: "getRoot")
 
-        let syncStatus = mutex.withLock {
-            mutableState.syncStatus
+            return mutableState.syncStatus
         }
 
         if !syncStatus.isSyncComplete {
@@ -152,7 +165,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
             logger.log("getRoot completed waiting for sync sequence to complete", level: .debug)
         }
 
-        return mutex.withLock {
+        return mutableStateMutex.withSync { mutableState in
             // RTO1d
             mutableState.objectsPool.root
         }
@@ -160,29 +173,32 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
 
     internal func createMap(entries: [String: InternalLiveMapValue], coreSDK: CoreSDK) async throws(ARTErrorInfo) -> InternalDefaultLiveMap {
         do throws(InternalError) {
-            // RTO11d
-            do {
-                try coreSDK.validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: "RealtimeObjects.createMap")
-            } catch {
-                throw error.toInternalError()
-            }
+            let creationOperation = try mutableStateMutex.withSync { _ throws(InternalError) in
+                // RTO11d
+                do throws(ARTErrorInfo) {
+                    try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: "RealtimeObjects.createMap")
+                } catch {
+                    throw error.toInternalError()
+                }
 
-            // RTO11f
-            // TODO: This is a stopgap; change to use server time per RTO11f5 (https://github.com/ably/ably-liveobjects-swift-plugin/issues/50)
-            let timestamp = clock.now
-            let creationOperation = ObjectCreationHelpers.creationOperationForLiveMap(
-                entries: entries,
-                timestamp: timestamp,
-            )
+                // RTO11f
+                // TODO: This is a stopgap; change to use server time per RTO11f5 (https://github.com/ably/ably-liveobjects-swift-plugin/issues/50)
+                let timestamp = clock.now
+                return ObjectCreationHelpers.nosync_creationOperationForLiveMap(
+                    entries: entries,
+                    timestamp: timestamp,
+                )
+            }
 
             // RTO11g
             try await coreSDK.publish(objectMessages: [creationOperation.objectMessage])
 
             // RTO11h
-            return mutex.withLock {
-                mutableState.objectsPool.getOrCreateMap(
+            return mutableStateMutex.withSync { mutableState in
+                mutableState.objectsPool.nosync_getOrCreateMap(
                     creationOperation: creationOperation,
                     logger: logger,
+                    internalQueue: mutableStateMutex.dispatchQueue,
                     userCallbackQueue: userCallbackQueue,
                     clock: clock,
                 )
@@ -200,8 +216,10 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
     internal func createCounter(count: Double, coreSDK: CoreSDK) async throws(ARTErrorInfo) -> InternalDefaultLiveCounter {
         do throws(InternalError) {
             // RTO12d
-            do {
-                try coreSDK.validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: "RealtimeObjects.createCounter")
+            do throws(ARTErrorInfo) {
+                try mutableStateMutex.withSync { _ throws(ARTErrorInfo) in
+                    try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: "RealtimeObjects.createCounter")
+                }
             } catch {
                 throw error.toInternalError()
             }
@@ -224,10 +242,11 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
             try await coreSDK.publish(objectMessages: [creationOperation.objectMessage])
 
             // RTO12h
-            return mutex.withLock {
-                mutableState.objectsPool.getOrCreateCounter(
+            return mutableStateMutex.withSync { mutableState in
+                mutableState.objectsPool.nosync_getOrCreateCounter(
                     creationOperation: creationOperation,
                     logger: logger,
+                    internalQueue: mutableStateMutex.dispatchQueue,
                     userCallbackQueue: userCallbackQueue,
                     clock: clock,
                 )
@@ -244,14 +263,14 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
 
     @discardableResult
     internal func on(event: ObjectsEvent, callback: @escaping ObjectsEventCallback) -> any OnObjectsEventResponse {
-        mutex.withLock {
+        mutableStateMutex.withSync { mutableState in
             // swiftlint:disable:next trailing_closure
             mutableState.on(event: event, callback: callback, updateSelfLater: { [weak self] action in
                 guard let self else {
                     return
                 }
 
-                mutex.withLock {
+                mutableStateMutex.withSync { mutableState in
                     action(&mutableState)
                 }
             })
@@ -259,7 +278,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
     }
 
     internal func offAll() {
-        mutex.withLock {
+        mutableStateMutex.withSync { mutableState in
             mutableState.offAll()
         }
     }
@@ -267,14 +286,14 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
     // MARK: Handling channel events
 
     internal var testsOnly_onChannelAttachedHasObjects: Bool? {
-        mutex.withLock {
+        mutableStateMutex.withSync { mutableState in
             mutableState.onChannelAttachedHasObjects
         }
     }
 
-    internal func onChannelAttached(hasObjects: Bool) {
-        mutex.withLock {
-            mutableState.onChannelAttached(
+    internal func nosync_onChannelAttached(hasObjects: Bool) {
+        mutableStateMutex.withoutSync { mutableState in
+            mutableState.nosync_onChannelAttached(
                 hasObjects: hasObjects,
                 logger: logger,
                 userCallbackQueue: userCallbackQueue,
@@ -287,11 +306,12 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
     }
 
     /// Implements the `OBJECT` handling of RTO8.
-    internal func handleObjectProtocolMessage(objectMessages: [InboundObjectMessage]) {
-        mutex.withLock {
-            mutableState.handleObjectProtocolMessage(
+    internal func nosync_handleObjectProtocolMessage(objectMessages: [InboundObjectMessage]) {
+        mutableStateMutex.withoutSync { mutableState in
+            mutableState.nosync_handleObjectProtocolMessage(
                 objectMessages: objectMessages,
                 logger: logger,
+                internalQueue: mutableStateMutex.dispatchQueue,
                 userCallbackQueue: userCallbackQueue,
                 clock: clock,
                 receivedObjectProtocolMessagesContinuation: receivedObjectProtocolMessagesContinuation,
@@ -304,12 +324,13 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
     }
 
     /// Implements the `OBJECT_SYNC` handling of RTO5.
-    internal func handleObjectSyncProtocolMessage(objectMessages: [InboundObjectMessage], protocolMessageChannelSerial: String?) {
-        mutex.withLock {
-            mutableState.handleObjectSyncProtocolMessage(
+    internal func nosync_handleObjectSyncProtocolMessage(objectMessages: [InboundObjectMessage], protocolMessageChannelSerial: String?) {
+        mutableStateMutex.withoutSync { mutableState in
+            mutableState.nosync_handleObjectSyncProtocolMessage(
                 objectMessages: objectMessages,
                 protocolMessageChannelSerial: protocolMessageChannelSerial,
                 logger: logger,
+                internalQueue: mutableStateMutex.dispatchQueue,
                 userCallbackQueue: userCallbackQueue,
                 clock: clock,
                 receivedObjectSyncProtocolMessagesContinuation: receivedObjectSyncProtocolMessagesContinuation,
@@ -321,8 +342,14 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
     ///
     /// Intended as a way for tests to populate the object pool.
     internal func testsOnly_createZeroValueLiveObject(forObjectID objectID: String) -> ObjectsPool.Entry? {
-        mutex.withLock {
-            mutableState.objectsPool.createZeroValueObject(forObjectID: objectID, logger: logger, userCallbackQueue: userCallbackQueue, clock: clock)
+        mutableStateMutex.withSync { mutableState in
+            mutableState.objectsPool.createZeroValueObject(
+                forObjectID: objectID,
+                logger: logger,
+                internalQueue: mutableStateMutex.dispatchQueue,
+                userCallbackQueue: userCallbackQueue,
+                clock: clock,
+            )
         }
     }
 
@@ -337,8 +364,8 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
 
     /// Performs garbage collection of tombstoned objects and map entries, per RTO10c.
     internal func performGarbageCollection() {
-        mutex.withLock {
-            mutableState.objectsPool.performGarbageCollection(
+        mutableStateMutex.withSync { mutableState in
+            mutableState.objectsPool.nosync_performGarbageCollection(
                 gracePeriod: garbageCollectionGracePeriod,
                 clock: clock,
                 logger: logger,
@@ -421,7 +448,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
             emitObjectsEvent(event, on: userCallbackQueue)
         }
 
-        internal mutating func onChannelAttached(
+        internal mutating func nosync_onChannelAttached(
             hasObjects: Bool,
             logger: Logger,
             userCallbackQueue: DispatchQueue,
@@ -439,7 +466,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
             }
 
             // RTO4b1, RTO4b2: Reset the ObjectsPool to have a single empty root object
-            objectsPool.reset()
+            objectsPool.nosync_reset()
 
             // I have, for now, not directly implemented the "perform the actions for object sync completion" of RTO4b4 since my implementation doesn't quite match the model given there; here you only have a SyncObjectsPool if you have an OBJECT_SYNC in progress, which you might not have upon receiving an ATTACHED. Instead I've just implemented what seem like the relevant side effects. Can revisit this if "the actions for object sync completion" get more complex.
 
@@ -450,10 +477,11 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
         }
 
         /// Implements the `OBJECT_SYNC` handling of RTO5.
-        internal mutating func handleObjectSyncProtocolMessage(
+        internal mutating func nosync_handleObjectSyncProtocolMessage(
             objectMessages: [InboundObjectMessage],
             protocolMessageChannelSerial: String?,
             logger: Logger,
+            internalQueue: DispatchQueue,
             userCallbackQueue: DispatchQueue,
             clock: SimpleClock,
             receivedObjectSyncProtocolMessagesContinuation: AsyncStream<[InboundObjectMessage]>.Continuation,
@@ -521,9 +549,10 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
 
             if let completedSyncObjectsPool {
                 // RTO5c
-                objectsPool.applySyncObjectsPool(
+                objectsPool.nosync_applySyncObjectsPool(
                     completedSyncObjectsPool,
                     logger: logger,
+                    internalQueue: internalQueue,
                     userCallbackQueue: userCallbackQueue,
                     clock: clock,
                 )
@@ -532,9 +561,10 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
                 if let completedSyncBufferedObjectOperations, !completedSyncBufferedObjectOperations.isEmpty {
                     logger.log("Applying \(completedSyncBufferedObjectOperations.count) buffered OBJECT ObjectMessages", level: .debug)
                     for objectMessage in completedSyncBufferedObjectOperations {
-                        applyObjectProtocolMessageObjectMessage(
+                        nosync_applyObjectProtocolMessageObjectMessage(
                             objectMessage,
                             logger: logger,
+                            internalQueue: internalQueue,
                             userCallbackQueue: userCallbackQueue,
                             clock: clock,
                         )
@@ -550,9 +580,10 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
         }
 
         /// Implements the `OBJECT` handling of RTO8.
-        internal mutating func handleObjectProtocolMessage(
+        internal mutating func nosync_handleObjectProtocolMessage(
             objectMessages: [InboundObjectMessage],
             logger: Logger,
+            internalQueue: DispatchQueue,
             userCallbackQueue: DispatchQueue,
             clock: SimpleClock,
             receivedObjectProtocolMessagesContinuation: AsyncStream<[InboundObjectMessage]>.Continuation,
@@ -570,9 +601,10 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
             } else {
                 // RTO8b: Handle the OBJECT message immediately
                 for objectMessage in objectMessages {
-                    applyObjectProtocolMessageObjectMessage(
+                    nosync_applyObjectProtocolMessageObjectMessage(
                         objectMessage,
                         logger: logger,
+                        internalQueue: internalQueue,
                         userCallbackQueue: userCallbackQueue,
                         clock: clock,
                     )
@@ -581,9 +613,10 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
         }
 
         /// Implements the `OBJECT` application of RTO9.
-        private mutating func applyObjectProtocolMessageObjectMessage(
+        private mutating func nosync_applyObjectProtocolMessageObjectMessage(
             _ objectMessage: InboundObjectMessage,
             logger: Logger,
+            internalQueue: DispatchQueue,
             userCallbackQueue: DispatchQueue,
             clock: SimpleClock,
         ) {
@@ -601,6 +634,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
                 guard let newEntry = objectsPool.createZeroValueObject(
                     forObjectID: operation.objectId,
                     logger: logger,
+                    internalQueue: internalQueue,
                     userCallbackQueue: userCallbackQueue,
                     clock: clock,
                 ) else {
@@ -616,7 +650,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
                 switch action {
                 case .mapCreate, .mapSet, .mapRemove, .counterCreate, .counterInc, .objectDelete:
                     // RTO9a2a3
-                    entry.apply(
+                    entry.nosync_apply(
                         operation,
                         objectMessageSerial: objectMessage.serial,
                         objectMessageSiteCode: objectMessage.siteCode,

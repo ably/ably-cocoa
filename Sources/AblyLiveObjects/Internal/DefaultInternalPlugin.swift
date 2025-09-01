@@ -21,8 +21,8 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
     /// Retrieves the `RealtimeObjects` for this channel.
     ///
     /// We expect this value to have been previously set by ``prepare(_:)``.
-    internal static func realtimeObjects(for channel: _AblyPluginSupportPrivate.RealtimeChannel, pluginAPI: _AblyPluginSupportPrivate.PluginAPIProtocol) -> InternalDefaultRealtimeObjects {
-        guard let pluginData = pluginAPI.pluginDataValue(forKey: pluginDataKey, channel: channel) else {
+    internal static func nosync_realtimeObjects(for channel: _AblyPluginSupportPrivate.RealtimeChannel, pluginAPI: _AblyPluginSupportPrivate.PluginAPIProtocol) -> InternalDefaultRealtimeObjects {
+        guard let pluginData = pluginAPI.nosync_pluginDataValue(forKey: pluginDataKey, channel: channel) else {
             // InternalPlugin.prepare was not called
             fatalError("To access LiveObjects functionality, you must pass the LiveObjects plugin in the client options when creating the ARTRealtime instance: `clientOptions.plugins = [.liveObjects: AblyLiveObjects.Plugin.self]`")
         }
@@ -34,8 +34,9 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
     // MARK: - LiveObjectsInternalPluginProtocol
 
     // Populates the channel's `objects` property.
-    internal func prepare(_ channel: _AblyPluginSupportPrivate.RealtimeChannel, client: _AblyPluginSupportPrivate.RealtimeClient) {
+    internal func nosync_prepare(_ channel: _AblyPluginSupportPrivate.RealtimeChannel, client: _AblyPluginSupportPrivate.RealtimeClient) {
         let pluginLogger = pluginAPI.logger(for: channel)
+        let internalQueue = pluginAPI.internalQueue(for: client)
         let callbackQueue = pluginAPI.callbackQueue(for: client)
         let options = ARTClientOptions.castPluginPublicClientOptions(pluginAPI.options(for: client))
 
@@ -43,16 +44,17 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
         logger.log("LiveObjects.DefaultInternalPlugin received prepare(_:)", level: .debug)
         let liveObjects = InternalDefaultRealtimeObjects(
             logger: logger,
+            internalQueue: internalQueue,
             userCallbackQueue: callbackQueue,
             clock: DefaultSimpleClock(),
             garbageCollectionOptions: options.garbageCollectionOptions ?? .init(),
         )
-        pluginAPI.setPluginDataValue(liveObjects, forKey: Self.pluginDataKey, channel: channel)
+        pluginAPI.nosync_setPluginDataValue(liveObjects, forKey: Self.pluginDataKey, channel: channel)
     }
 
     /// Retrieves the internally-typed `objects` property for the channel.
-    private func realtimeObjects(for channel: _AblyPluginSupportPrivate.RealtimeChannel) -> InternalDefaultRealtimeObjects {
-        Self.realtimeObjects(for: channel, pluginAPI: pluginAPI)
+    private func nosync_realtimeObjects(for channel: _AblyPluginSupportPrivate.RealtimeChannel) -> InternalDefaultRealtimeObjects {
+        Self.nosync_realtimeObjects(for: channel, pluginAPI: pluginAPI)
     }
 
     /// A class that wraps an object message.
@@ -102,30 +104,30 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
         return wireObjectMessage.toWireObject.toPluginSupportDataDictionary
     }
 
-    internal func onChannelAttached(_ channel: _AblyPluginSupportPrivate.RealtimeChannel, hasObjects: Bool) {
-        realtimeObjects(for: channel).onChannelAttached(hasObjects: hasObjects)
+    internal func nosync_onChannelAttached(_ channel: _AblyPluginSupportPrivate.RealtimeChannel, hasObjects: Bool) {
+        nosync_realtimeObjects(for: channel).nosync_onChannelAttached(hasObjects: hasObjects)
     }
 
-    internal func handleObjectProtocolMessage(withObjectMessages publicObjectMessages: [any _AblyPluginSupportPrivate.ObjectMessageProtocol], channel: _AblyPluginSupportPrivate.RealtimeChannel) {
+    internal func nosync_handleObjectProtocolMessage(withObjectMessages publicObjectMessages: [any _AblyPluginSupportPrivate.ObjectMessageProtocol], channel: _AblyPluginSupportPrivate.RealtimeChannel) {
         guard let inboundObjectMessageBoxes = publicObjectMessages as? [ObjectMessageBox<InboundObjectMessage>] else {
             preconditionFailure("Expected to receive the same InboundObjectMessage type as we emit")
         }
 
         let objectMessages = inboundObjectMessageBoxes.map(\.objectMessage)
 
-        realtimeObjects(for: channel).handleObjectProtocolMessage(
+        nosync_realtimeObjects(for: channel).nosync_handleObjectProtocolMessage(
             objectMessages: objectMessages,
         )
     }
 
-    internal func handleObjectSyncProtocolMessage(withObjectMessages publicObjectMessages: [any _AblyPluginSupportPrivate.ObjectMessageProtocol], protocolMessageChannelSerial: String?, channel: _AblyPluginSupportPrivate.RealtimeChannel) {
+    internal func nosync_handleObjectSyncProtocolMessage(withObjectMessages publicObjectMessages: [any _AblyPluginSupportPrivate.ObjectMessageProtocol], protocolMessageChannelSerial: String?, channel: _AblyPluginSupportPrivate.RealtimeChannel) {
         guard let inboundObjectMessageBoxes = publicObjectMessages as? [ObjectMessageBox<InboundObjectMessage>] else {
             preconditionFailure("Expected to receive the same InboundObjectMessage type as we emit")
         }
 
         let objectMessages = inboundObjectMessageBoxes.map(\.objectMessage)
 
-        realtimeObjects(for: channel).handleObjectSyncProtocolMessage(
+        nosync_realtimeObjects(for: channel).nosync_handleObjectSyncProtocolMessage(
             objectMessages: objectMessages,
             protocolMessageChannelSerial: protocolMessageChannelSerial,
         )
@@ -145,10 +147,13 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
             let internalQueue = pluginAPI.internalQueue(for: client)
 
             internalQueue.async {
-                pluginAPI.sendObject(
+                pluginAPI.nosync_sendObject(
                     withObjectMessages: objectMessageBoxes,
                     channel: channel,
                 ) { error in
+                    // We don't currently rely on this documented behaviour of `nosync_sendObject` but we may do later, so assert it to be sure it's happening.
+                    dispatchPrecondition(condition: .onQueue(internalQueue))
+
                     if let error {
                         continuation.resume(returning: .failure(error.toInternalError()))
                     } else {

@@ -70,6 +70,18 @@ The `Public…` classes all follow the same pattern and are not very interesting
 
 `ObjectLifetimesTests.swift` contains tests of the behaviour described in this section.
 
+### Threading
+
+Since this is an extension of ably-cocoa, we follow the same threading approach:
+
+1. The public API can be interacted with from any thread, including synchronous methods such as getters
+2. Callbacks passed to the public API are invoked on the same queue as used by the `ARTRealtime` instance (the `dispatchQueue` client option)
+3. Synchronisation of mutable state is performed using the same internal serial dispatch queue as is used by the `ARTRealtime` instance (the `internalDispatchQueue` client option)
+
+We follow the same naming convention as in ably-cocoa whereby if a method's name contains `nosync` then it must be called on the internal dispatch queue. This allows us to avoid deadlocks that would result from attempting to call `DispatchQueue.sync { … }` when already on the internal queue.
+
+We have an extension on `DispatchQueue`, `ably_syncNoDeadlock(execute:)`, which behaves the same as `sync(execute:)` but with a runtime precondition that we are not already on the queue; favour our extension in order to avoid deadlock.
+
 ### Testing guidelines
 
 #### Attributing tests to a spec point

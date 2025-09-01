@@ -10,7 +10,10 @@ public extension ARTRealtimeChannel {
     private var nonTypeErasedObjects: PublicDefaultRealtimeObjects {
         let pluginAPI = Plugin.defaultPluginAPI
         let underlyingObjects = pluginAPI.underlyingObjects(for: asPluginPublicRealtimeChannel)
-        let internalObjects = DefaultInternalPlugin.realtimeObjects(for: underlyingObjects.channel, pluginAPI: pluginAPI)
+        let internalQueue = pluginAPI.internalQueue(for: underlyingObjects.client)
+        let internalObjects = internalQueue.ably_syncNoDeadlock {
+            DefaultInternalPlugin.nosync_realtimeObjects(for: underlyingObjects.channel, pluginAPI: pluginAPI)
+        }
 
         let pluginLogger = pluginAPI.logger(for: underlyingObjects.channel)
         let logger = DefaultLogger(pluginLogger: pluginLogger, pluginAPI: pluginAPI)

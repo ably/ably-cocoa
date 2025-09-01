@@ -2881,7 +2881,7 @@ private struct ObjectsIntegrationTests {
                         // Create counter locally, should have an initial value set
                         let counter = try await objects.createCounter(count: 1)
                         let internalCounter = try #require(counter as? PublicDefaultLiveCounter)
-                        let counterId = internalCounter.proxied.objectID
+                        let counterId = internalCounter.proxied.testsOnly_objectID
 
                         // Now inject CREATE op for a counter with a forged value. it should not be applied
                         await objectsHelper.processObjectOperationMessageOnChannel(
@@ -3138,7 +3138,7 @@ private struct ObjectsIntegrationTests {
                         // Create map locally, should have an initial value set
                         let map = try await objects.createMap(entries: ["foo": "bar"])
                         let internalMap = try #require(map as? PublicDefaultLiveMap)
-                        let mapId = internalMap.proxied.objectID
+                        let mapId = internalMap.proxied.testsOnly_objectID
 
                         // Now inject CREATE op for a map with a forged value. it should not be applied
                         await objectsHelper.processObjectOperationMessageOnChannel(
@@ -3784,11 +3784,11 @@ private struct ObjectsIntegrationTests {
 
                     let poolEntry = try #require(internallyTypedObjects.testsOnly_proxied.testsOnly_objectsPool.entries[objectId])
                     #expect(
-                        poolEntry.isTombstone == true,
+                        poolEntry.testsOnly_isTombstone == true,
                         "Check object's \"tombstone\" flag is set to \"true\" after OBJECT_DELETE",
                     )
 
-                    let tombstonedAt = try #require(poolEntry.tombstonedAt)
+                    let tombstonedAt = try #require(poolEntry.testsOnly_tombstonedAt)
 
                     // Wait for objects tombstoned at this time to be garbage collected
                     try await waitForTombstonedObjectsToBeCollected(tombstonedAt)

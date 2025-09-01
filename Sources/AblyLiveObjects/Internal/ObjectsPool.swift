@@ -30,7 +30,7 @@ internal struct ObjectsPool {
         }
 
         /// Applies an operation to a LiveObject, per RTO9a2a3.
-        internal func apply(
+        internal func nosync_apply(
             _ operation: ObjectOperation,
             objectMessageSerial: String?,
             objectMessageSiteCode: String?,
@@ -39,7 +39,7 @@ internal struct ObjectsPool {
         ) {
             switch self {
             case let .map(map):
-                map.apply(
+                map.nosync_apply(
                     operation,
                     objectMessageSerial: objectMessageSerial,
                     objectMessageSiteCode: objectMessageSiteCode,
@@ -47,7 +47,7 @@ internal struct ObjectsPool {
                     objectsPool: &objectsPool,
                 )
             case let .counter(counter):
-                counter.apply(
+                counter.nosync_apply(
                     operation,
                     objectMessageSerial: objectMessageSerial,
                     objectMessageSiteCode: objectMessageSiteCode,
@@ -63,12 +63,12 @@ internal struct ObjectsPool {
             case counter(InternalDefaultLiveCounter, LiveObjectUpdate<DefaultLiveCounterUpdate>)
 
             /// Causes the referenced `LiveObject` to emit the stored event to its subscribers.
-            internal func emit() {
+            internal func nosync_emit() {
                 switch self {
                 case let .map(map, update):
-                    map.emit(update)
+                    map.nosync_emit(update)
                 case let .counter(counter, update):
-                    counter.emit(update)
+                    counter.nosync_emit(update)
                 }
             }
         }
@@ -79,7 +79,7 @@ internal struct ObjectsPool {
         ///
         /// - Parameters:
         ///   - objectMessageSerialTimestamp: The `serialTimestamp` of the containing `ObjectMessage`. Used if we need to tombstone the object.
-        fileprivate func replaceData(
+        fileprivate func nosync_replaceData(
             using state: ObjectState,
             objectMessageSerialTimestamp: Date?,
             objectsPool: inout ObjectsPool,
@@ -89,7 +89,7 @@ internal struct ObjectsPool {
             case let .map(map):
                 .map(
                     map,
-                    map.replaceData(
+                    map.nosync_replaceData(
                         using: state,
                         objectMessageSerialTimestamp: objectMessageSerialTimestamp,
                         objectsPool: &objectsPool,
@@ -98,7 +98,7 @@ internal struct ObjectsPool {
             case let .counter(counter):
                 .counter(
                     counter,
-                    counter.replaceData(
+                    counter.nosync_replaceData(
                         using: state,
                         objectMessageSerialTimestamp: objectMessageSerialTimestamp,
                     ),
@@ -107,21 +107,41 @@ internal struct ObjectsPool {
         }
 
         /// Returns the object's RTLO3d `isTombstone` property.
-        internal var isTombstone: Bool {
+        internal var nosync_isTombstone: Bool {
             switch self {
             case let .counter(counter):
-                counter.isTombstone
+                counter.nosync_isTombstone
             case let .map(map):
-                map.isTombstone
+                map.nosync_isTombstone
             }
         }
 
-        internal var tombstonedAt: Date? {
+        internal var nosync_tombstonedAt: Date? {
             switch self {
             case let .counter(counter):
-                counter.tombstonedAt
+                counter.nosync_tombstonedAt
             case let .map(map):
-                map.tombstonedAt
+                map.nosync_tombstonedAt
+            }
+        }
+
+        /// Test-only accessor for isTombstone that handles locking internally.
+        internal var testsOnly_isTombstone: Bool {
+            switch self {
+            case let .counter(counter):
+                counter.testsOnly_isTombstone
+            case let .map(map):
+                map.testsOnly_isTombstone
+            }
+        }
+
+        /// Test-only accessor for tombstonedAt that handles locking internally.
+        internal var testsOnly_tombstonedAt: Date? {
+            switch self {
+            case let .counter(counter):
+                counter.testsOnly_tombstonedAt
+            case let .map(map):
+                map.testsOnly_tombstonedAt
             }
         }
     }
@@ -139,12 +159,14 @@ internal struct ObjectsPool {
     /// Creates an `ObjectsPool` whose root is a zero-value `LiveMap`.
     internal init(
         logger: Logger,
+        internalQueue: DispatchQueue,
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock,
         testsOnly_otherEntries otherEntries: [String: Entry]? = nil,
     ) {
         self.init(
             logger: logger,
+            internalQueue: internalQueue,
             userCallbackQueue: userCallbackQueue,
             clock: clock,
             otherEntries: otherEntries,
@@ -153,13 +175,22 @@ internal struct ObjectsPool {
 
     private init(
         logger: Logger,
+        internalQueue: DispatchQueue,
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock,
         otherEntries: [String: Entry]?
     ) {
         entries = otherEntries ?? [:]
         // TODO: What initial root entry to use? https://github.com/ably/specification/pull/333/files#r2152312933
-        entries[Self.rootKey] = .map(.createZeroValued(objectID: Self.rootKey, logger: logger, userCallbackQueue: userCallbackQueue, clock: clock))
+        entries[Self.rootKey] = .map(
+            .createZeroValued(
+                objectID: Self.rootKey,
+                logger: logger,
+                internalQueue: internalQueue,
+                userCallbackQueue: userCallbackQueue,
+                clock: clock,
+            ),
+        )
     }
 
     // MARK: - Typed root
@@ -188,7 +219,13 @@ internal struct ObjectsPool {
     ///   - userCallbackQueue: The callback queue to use for any created LiveObject
     ///   - clock: The clock to use for any created LiveObject
     /// - Returns: The existing or newly created object
-    internal mutating func createZeroValueObject(forObjectID objectID: String, logger: Logger, userCallbackQueue: DispatchQueue, clock: SimpleClock) -> Entry? {
+    internal mutating func createZeroValueObject(
+        forObjectID objectID: String,
+        logger: Logger,
+        internalQueue: DispatchQueue,
+        userCallbackQueue: DispatchQueue,
+        clock: SimpleClock,
+    ) -> Entry? {
         // RTO6a: If an object with objectId exists in ObjectsPool, do not create a new object
         if let existingEntry = entries[objectID] {
             return existingEntry
@@ -206,9 +243,25 @@ internal struct ObjectsPool {
         let entry: Entry
         switch typeString {
         case "map":
-            entry = .map(.createZeroValued(objectID: objectID, logger: logger, userCallbackQueue: userCallbackQueue, clock: clock))
+            entry = .map(
+                .createZeroValued(
+                    objectID: objectID,
+                    logger: logger,
+                    internalQueue: internalQueue,
+                    userCallbackQueue: userCallbackQueue,
+                    clock: clock,
+                ),
+            )
         case "counter":
-            entry = .counter(.createZeroValued(objectID: objectID, logger: logger, userCallbackQueue: userCallbackQueue, clock: clock))
+            entry = .counter(
+                .createZeroValued(
+                    objectID: objectID,
+                    logger: logger,
+                    internalQueue: internalQueue,
+                    userCallbackQueue: userCallbackQueue,
+                    clock: clock,
+                ),
+            )
         default:
             return nil
         }
@@ -219,9 +272,10 @@ internal struct ObjectsPool {
     }
 
     /// Applies the objects gathered during an `OBJECT_SYNC` to this `ObjectsPool`, per RTO5c1 and RTO5c2.
-    internal mutating func applySyncObjectsPool(
+    internal mutating func nosync_applySyncObjectsPool(
         _ syncObjectsPool: [SyncObjectsPoolEntry],
         logger: Logger,
+        internalQueue: DispatchQueue,
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock,
     ) {
@@ -242,7 +296,7 @@ internal struct ObjectsPool {
                 logger.log("Updating existing object with ID: \(syncObjectsPoolEntry.state.objectId)", level: .debug)
 
                 // RTO5c1a1: Override the internal data for the object as per RTLC6, RTLM6
-                let deferredUpdate = existingEntry.replaceData(
+                let deferredUpdate = existingEntry.nosync_replaceData(
                     using: syncObjectsPoolEntry.state,
                     objectMessageSerialTimestamp: syncObjectsPoolEntry.objectMessageSerialTimestamp,
                     objectsPool: &self,
@@ -260,8 +314,14 @@ internal struct ObjectsPool {
                 if syncObjectsPoolEntry.state.counter != nil {
                     // RTO5c1b1a: If ObjectState.counter is present, create a zero-value LiveCounter,
                     // set its private objectId equal to ObjectState.objectId and override its internal data per RTLC6
-                    let counter = InternalDefaultLiveCounter.createZeroValued(objectID: syncObjectsPoolEntry.state.objectId, logger: logger, userCallbackQueue: userCallbackQueue, clock: clock)
-                    _ = counter.replaceData(
+                    let counter = InternalDefaultLiveCounter.createZeroValued(
+                        objectID: syncObjectsPoolEntry.state.objectId,
+                        logger: logger,
+                        internalQueue: internalQueue,
+                        userCallbackQueue: userCallbackQueue,
+                        clock: clock,
+                    )
+                    _ = counter.nosync_replaceData(
                         using: syncObjectsPoolEntry.state,
                         objectMessageSerialTimestamp: syncObjectsPoolEntry.objectMessageSerialTimestamp,
                     )
@@ -270,8 +330,15 @@ internal struct ObjectsPool {
                     // RTO5c1b1b: If ObjectState.map is present, create a zero-value LiveMap,
                     // set its private objectId equal to ObjectState.objectId, set its private semantics
                     // equal to ObjectState.map.semantics and override its internal data per RTLM6
-                    let map = InternalDefaultLiveMap.createZeroValued(objectID: syncObjectsPoolEntry.state.objectId, semantics: objectsMap.semantics, logger: logger, userCallbackQueue: userCallbackQueue, clock: clock)
-                    _ = map.replaceData(
+                    let map = InternalDefaultLiveMap.createZeroValued(
+                        objectID: syncObjectsPoolEntry.state.objectId,
+                        semantics: objectsMap.semantics,
+                        logger: logger,
+                        internalQueue: internalQueue,
+                        userCallbackQueue: userCallbackQueue,
+                        clock: clock,
+                    )
+                    _ = map.nosync_replaceData(
                         using: syncObjectsPoolEntry.state,
                         objectMessageSerialTimestamp: syncObjectsPoolEntry.objectMessageSerialTimestamp,
                         objectsPool: &self,
@@ -302,7 +369,7 @@ internal struct ObjectsPool {
 
         // RTO5c7: Emit the updates to existing objects
         for deferredUpdate in updatesToExistingObjects {
-            deferredUpdate.emit()
+            deferredUpdate.nosync_emit()
         }
 
         logger.log("applySyncObjectsPool completed. Pool now contains \(entries.count) objects", level: .debug)
@@ -313,12 +380,14 @@ internal struct ObjectsPool {
     /// - Parameters:
     ///   - creationOperation: The CounterCreationOperation containing the object ID and operation to merge
     ///   - logger: The logger to use for any created LiveObject
+    ///   - internalQueue: The internal queue to use for any created LiveObject
     ///   - userCallbackQueue: The callback queue to use for any created LiveObject
     ///   - clock: The clock to use for any created LiveObject
     /// - Returns: The existing or newly created counter object
-    internal mutating func getOrCreateCounter(
+    internal mutating func nosync_getOrCreateCounter(
         creationOperation: ObjectCreationHelpers.CounterCreationOperation,
         logger: Logger,
+        internalQueue: DispatchQueue,
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock,
     ) -> InternalDefaultLiveCounter {
@@ -338,12 +407,13 @@ internal struct ObjectsPool {
         let counter = InternalDefaultLiveCounter.createZeroValued(
             objectID: creationOperation.objectID,
             logger: logger,
+            internalQueue: internalQueue,
             userCallbackQueue: userCallbackQueue,
             clock: clock,
         )
 
         // Merge the initial value from the creation operation
-        _ = counter.mergeInitialValue(from: creationOperation.operation)
+        _ = counter.nosync_mergeInitialValue(from: creationOperation.operation)
 
         // RTO12h3b: Add the created LiveCounter instance to the internal ObjectsPool
         entries[creationOperation.objectID] = .counter(counter)
@@ -357,12 +427,14 @@ internal struct ObjectsPool {
     /// - Parameters:
     ///   - creationOperation: The MapCreationOperation containing the object ID and operation to merge
     ///   - logger: The logger to use for any created LiveObject
+    ///   - internalQueue: The internal queue to use for any created LiveObject
     ///   - userCallbackQueue: The callback queue to use for any created LiveObject
     ///   - clock: The clock to use for any created LiveObject
     /// - Returns: The existing or newly created map object
-    internal mutating func getOrCreateMap(
+    internal mutating func nosync_getOrCreateMap(
         creationOperation: ObjectCreationHelpers.MapCreationOperation,
         logger: Logger,
+        internalQueue: DispatchQueue,
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock,
     ) -> InternalDefaultLiveMap {
@@ -383,12 +455,13 @@ internal struct ObjectsPool {
             objectID: creationOperation.objectID,
             semantics: .known(creationOperation.semantics),
             logger: logger,
+            internalQueue: internalQueue,
             userCallbackQueue: userCallbackQueue,
             clock: clock,
         )
 
         // Merge the initial value from the creation operation
-        _ = map.mergeInitialValue(from: creationOperation.operation, objectsPool: &self)
+        _ = map.nosync_mergeInitialValue(from: creationOperation.operation, objectsPool: &self)
 
         // RTO11h3b: Add the created LiveMap instance to the internal ObjectsPool
         entries[creationOperation.objectID] = .map(map)
@@ -398,7 +471,7 @@ internal struct ObjectsPool {
     }
 
     /// Removes all entries except the root, and clears the root's data. This is to be used when an `ATTACHED` ProtocolMessage indicates that the only object in a channel is an empty root map, per RTO4b.
-    internal mutating func reset() {
+    internal mutating func nosync_reset() {
         let root = root
 
         // RTO4b1
@@ -406,11 +479,11 @@ internal struct ObjectsPool {
 
         // RTO4b2
         // TODO: this one is unclear (are we meant to replace the root or just clear its data?) https://github.com/ably/specification/pull/333/files#r2183493458. I believe that the answer is that we should just clear its data but the spec point needs to be clearer, see https://github.com/ably/specification/pull/346/files#r2201434895.
-        root.resetData()
+        root.nosync_resetData()
     }
 
     /// Performs garbage collection of tombstoned objects and map entries, per RTO10c.
-    internal mutating func performGarbageCollection(
+    internal mutating func nosync_performGarbageCollection(
         gracePeriod: TimeInterval,
         clock: SimpleClock,
         logger: Logger,
@@ -423,12 +496,12 @@ internal struct ObjectsPool {
         entries = entries.filter { key, entry in
             if case let .map(map) = entry {
                 // RTO10c1a
-                map.releaseTombstonedEntries(gracePeriod: gracePeriod, clock: clock)
+                map.nosync_releaseTombstonedEntries(gracePeriod: gracePeriod, clock: clock)
             }
 
             // RTO10c1b
             let shouldRelease = {
-                guard let tombstonedAt = entry.tombstonedAt else {
+                guard let tombstonedAt = entry.nosync_tombstonedAt else {
                     return false
                 }
 

@@ -11,10 +11,11 @@ struct InternalDefaultLiveMapTests {
         @Test(arguments: [.detached, .failed] as [_AblyPluginSupportPrivate.RealtimeChannelState])
         func getThrowsIfChannelIsDetachedOrFailed(channelState: _AblyPluginSupportPrivate.RealtimeChannelState) async throws {
             let logger = TestLogger()
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let internalQueue = TestFactories.createInternalQueue()
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             #expect {
-                _ = try map.get(key: "test", coreSDK: MockCoreSDK(channelState: channelState), delegate: MockLiveMapObjectPoolDelegate())
+                _ = try map.get(key: "test", coreSDK: MockCoreSDK(channelState: channelState, internalQueue: internalQueue), delegate: MockLiveMapObjectPoolDelegate(internalQueue: internalQueue))
             } throws: { error in
                 guard let errorInfo = error as? ARTErrorInfo else {
                     return false
@@ -30,9 +31,10 @@ struct InternalDefaultLiveMapTests {
         @Test
         func returnsNilWhenNoEntryExists() throws {
             let logger = TestLogger()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            #expect(try map.get(key: "nonexistent", coreSDK: coreSDK, delegate: MockLiveMapObjectPoolDelegate()) == nil)
+            let internalQueue = TestFactories.createInternalQueue()
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            #expect(try map.get(key: "nonexistent", coreSDK: coreSDK, delegate: MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)) == nil)
         }
 
         // @spec RTLM5d2a
@@ -43,19 +45,21 @@ struct InternalDefaultLiveMapTests {
                 tombstonedAt: Date(),
                 data: ObjectData(boolean: true), // Value doesn't matter as it's tombstoned
             )
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            #expect(try map.get(key: "key", coreSDK: coreSDK, delegate: MockLiveMapObjectPoolDelegate()) == nil)
+            let internalQueue = TestFactories.createInternalQueue()
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            #expect(try map.get(key: "key", coreSDK: coreSDK, delegate: MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)) == nil)
         }
 
         // @spec RTLM5d2b
         @Test
         func returnsBooleanValue() throws {
             let logger = TestLogger()
+            let internalQueue = TestFactories.createInternalQueue()
             let entry = TestFactories.internalMapEntry(data: ObjectData(boolean: true))
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let result = try map.get(key: "key", coreSDK: coreSDK, delegate: MockLiveMapObjectPoolDelegate())
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let result = try map.get(key: "key", coreSDK: coreSDK, delegate: MockLiveMapObjectPoolDelegate(internalQueue: internalQueue))
             #expect(result?.boolValue == true)
         }
 
@@ -63,11 +67,12 @@ struct InternalDefaultLiveMapTests {
         @Test
         func returnsBytesValue() throws {
             let logger = TestLogger()
+            let internalQueue = TestFactories.createInternalQueue()
             let bytes = Data([0x01, 0x02, 0x03])
             let entry = TestFactories.internalMapEntry(data: ObjectData(bytes: bytes))
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let result = try map.get(key: "key", coreSDK: coreSDK, delegate: MockLiveMapObjectPoolDelegate())
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let result = try map.get(key: "key", coreSDK: coreSDK, delegate: MockLiveMapObjectPoolDelegate(internalQueue: internalQueue))
             #expect(result?.dataValue == bytes)
         }
 
@@ -75,10 +80,11 @@ struct InternalDefaultLiveMapTests {
         @Test
         func returnsNumberValue() throws {
             let logger = TestLogger()
+            let internalQueue = TestFactories.createInternalQueue()
             let entry = TestFactories.internalMapEntry(data: ObjectData(number: NSNumber(value: 123.456)))
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let result = try map.get(key: "key", coreSDK: coreSDK, delegate: MockLiveMapObjectPoolDelegate())
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let result = try map.get(key: "key", coreSDK: coreSDK, delegate: MockLiveMapObjectPoolDelegate(internalQueue: internalQueue))
             #expect(result?.numberValue == 123.456)
         }
 
@@ -86,10 +92,11 @@ struct InternalDefaultLiveMapTests {
         @Test
         func returnsStringValue() throws {
             let logger = TestLogger()
+            let internalQueue = TestFactories.createInternalQueue()
             let entry = TestFactories.internalMapEntry(data: ObjectData(string: "test"))
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let result = try map.get(key: "key", coreSDK: coreSDK, delegate: MockLiveMapObjectPoolDelegate())
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let result = try map.get(key: "key", coreSDK: coreSDK, delegate: MockLiveMapObjectPoolDelegate(internalQueue: internalQueue))
             #expect(result?.stringValue == "test")
         }
 
@@ -98,10 +105,11 @@ struct InternalDefaultLiveMapTests {
         @Test
         func returnsJSONArrayValue() throws {
             let logger = TestLogger()
+            let internalQueue = TestFactories.createInternalQueue()
             let entry = TestFactories.internalMapEntry(data: ObjectData(json: .array(["foo"])))
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let result = try map.get(key: "key", coreSDK: coreSDK, delegate: MockLiveMapObjectPoolDelegate())
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let result = try map.get(key: "key", coreSDK: coreSDK, delegate: MockLiveMapObjectPoolDelegate(internalQueue: internalQueue))
             #expect(result?.jsonArrayValue == ["foo"])
         }
 
@@ -110,10 +118,11 @@ struct InternalDefaultLiveMapTests {
         @Test
         func returnsJSONObjectValue() throws {
             let logger = TestLogger()
+            let internalQueue = TestFactories.createInternalQueue()
             let entry = TestFactories.internalMapEntry(data: ObjectData(json: .object(["foo": "bar"])))
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let result = try map.get(key: "key", coreSDK: coreSDK, delegate: MockLiveMapObjectPoolDelegate())
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let result = try map.get(key: "key", coreSDK: coreSDK, delegate: MockLiveMapObjectPoolDelegate(internalQueue: internalQueue))
             #expect(result?.jsonObjectValue == ["foo": "bar"])
         }
 
@@ -122,9 +131,10 @@ struct InternalDefaultLiveMapTests {
         func returnsNilWhenReferencedObjectDoesNotExist() throws {
             let logger = TestLogger()
             let entry = TestFactories.internalMapEntry(data: ObjectData(objectId: "missing"))
-            let delegate = MockLiveMapObjectPoolDelegate()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let internalQueue = TestFactories.createInternalQueue()
+            let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             #expect(try map.get(key: "key", coreSDK: coreSDK, delegate: delegate) == nil)
         }
 
@@ -132,13 +142,14 @@ struct InternalDefaultLiveMapTests {
         @Test
         func returnsReferencedMap() throws {
             let logger = TestLogger()
+            let internalQueue = TestFactories.createInternalQueue()
             let objectId = "map1"
             let entry = TestFactories.internalMapEntry(data: ObjectData(objectId: objectId))
-            let delegate = MockLiveMapObjectPoolDelegate()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let referencedMap = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let referencedMap = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             delegate.objects[objectId] = .map(referencedMap)
-            let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             let result = try map.get(key: "key", coreSDK: coreSDK, delegate: delegate)
             let returnedMap = result?.liveMapValue
             #expect(returnedMap as AnyObject === referencedMap as AnyObject)
@@ -148,13 +159,14 @@ struct InternalDefaultLiveMapTests {
         @Test
         func returnsReferencedCounter() throws {
             let logger = TestLogger()
+            let internalQueue = TestFactories.createInternalQueue()
             let objectId = "counter1"
             let entry = TestFactories.internalMapEntry(data: ObjectData(objectId: objectId))
-            let delegate = MockLiveMapObjectPoolDelegate()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let referencedCounter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let referencedCounter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             delegate.objects[objectId] = .counter(referencedCounter)
-            let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             let result = try map.get(key: "key", coreSDK: coreSDK, delegate: delegate)
             let returnedCounter = result?.liveCounterValue
             #expect(returnedCounter as AnyObject === referencedCounter as AnyObject)
@@ -164,10 +176,11 @@ struct InternalDefaultLiveMapTests {
         @Test
         func returnsNullOtherwise() throws {
             let logger = TestLogger()
+            let internalQueue = TestFactories.createInternalQueue()
             let entry = TestFactories.internalMapEntry(data: ObjectData())
-            let delegate = MockLiveMapObjectPoolDelegate()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let map = InternalDefaultLiveMap(testsOnly_data: ["key": entry], objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             #expect(try map.get(key: "key", coreSDK: coreSDK, delegate: delegate) == nil)
         }
     }
@@ -178,13 +191,16 @@ struct InternalDefaultLiveMapTests {
         @Test
         func replacesSiteTimeserials() {
             let logger = TestLogger()
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let internalQueue = TestFactories.createInternalQueue()
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             let state = TestFactories.objectState(
                 objectId: "arbitrary-id",
                 siteTimeserials: ["site1": "ts1", "site2": "ts2"],
             )
-            var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            _ = map.replaceData(using: state, objectMessageSerialTimestamp: nil, objectsPool: &pool)
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            internalQueue.ably_syncNoDeadlock {
+                _ = map.nosync_replaceData(using: state, objectMessageSerialTimestamp: nil, objectsPool: &pool)
+            }
             #expect(map.testsOnly_siteTimeserials == ["site1": "ts1", "site2": "ts2"])
         }
 
@@ -193,15 +209,18 @@ struct InternalDefaultLiveMapTests {
         func setsCreateOperationIsMergedToFalseWhenCreateOpAbsent() {
             // Given:
             let logger = TestLogger()
-            var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let internalQueue = TestFactories.createInternalQueue()
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             let map = {
-                let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+                let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
                 // Test setup: Manipulate map so that its createOperationIsMerged gets set to true (we need to do this since we want to later assert that it gets set to false, but the default is false).
                 let state = TestFactories.objectState(
                     createOp: TestFactories.mapCreateOperation(objectId: "arbitrary-id"),
                 )
-                _ = map.replaceData(using: state, objectMessageSerialTimestamp: nil, objectsPool: &pool)
+                internalQueue.ably_syncNoDeadlock {
+                    _ = map.nosync_replaceData(using: state, objectMessageSerialTimestamp: nil, objectsPool: &pool)
+                }
                 #expect(map.testsOnly_createOperationIsMerged)
 
                 return map
@@ -209,7 +228,9 @@ struct InternalDefaultLiveMapTests {
 
             // When:
             let state = TestFactories.objectState(objectId: "arbitrary-id", createOp: nil)
-            _ = map.replaceData(using: state, objectMessageSerialTimestamp: nil, objectsPool: &pool)
+            internalQueue.ably_syncNoDeadlock {
+                _ = map.nosync_replaceData(using: state, objectMessageSerialTimestamp: nil, objectsPool: &pool)
+            }
 
             // Then:
             #expect(!map.testsOnly_createOperationIsMerged)
@@ -219,16 +240,19 @@ struct InternalDefaultLiveMapTests {
         @Test
         func setsDataToMapEntries() throws {
             let logger = TestLogger()
-            let delegate = MockLiveMapObjectPoolDelegate()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let internalQueue = TestFactories.createInternalQueue()
+            let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             let (key, entry) = TestFactories.stringMapEntry(key: "key1", value: "test")
             let state = TestFactories.mapObjectState(
                 objectId: "arbitrary-id",
                 entries: [key: entry],
             )
-            var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            _ = map.replaceData(using: state, objectMessageSerialTimestamp: nil, objectsPool: &pool)
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            internalQueue.ably_syncNoDeadlock {
+                _ = map.nosync_replaceData(using: state, objectMessageSerialTimestamp: nil, objectsPool: &pool)
+            }
             let newData = map.testsOnly_data
             #expect(newData.count == 1)
             #expect(Set(newData.keys) == ["key1"])
@@ -240,9 +264,10 @@ struct InternalDefaultLiveMapTests {
         @Test
         func mergesInitialValueWhenCreateOpPresent() throws {
             let logger = TestLogger()
-            let delegate = MockLiveMapObjectPoolDelegate()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let internalQueue = TestFactories.createInternalQueue()
+            let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             let state = TestFactories.objectState(
                 objectId: "arbitrary-id",
                 createOp: TestFactories.mapCreateOperation(
@@ -258,8 +283,10 @@ struct InternalDefaultLiveMapTests {
                     ],
                 ),
             )
-            var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            _ = map.replaceData(using: state, objectMessageSerialTimestamp: nil, objectsPool: &pool)
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            internalQueue.ably_syncNoDeadlock {
+                _ = map.nosync_replaceData(using: state, objectMessageSerialTimestamp: nil, objectsPool: &pool)
+            }
             // Note that we just check for some basic expected side effects of merging the initial value; RTLM17 is tested in more detail elsewhere
             // Check that it contains the data from the entries (per RTLM6c) and also the createOp (per RTLM6d)
             #expect(try map.get(key: "keyFromMapEntries", coreSDK: coreSDK, delegate: delegate)?.stringValue == "valueFromMapEntries")
@@ -279,9 +306,10 @@ struct InternalDefaultLiveMapTests {
         @Test(arguments: [.detached, .failed] as [_AblyPluginSupportPrivate.RealtimeChannelState])
         func allPropertiesThrowIfChannelIsDetachedOrFailed(channelState: _AblyPluginSupportPrivate.RealtimeChannelState) async throws {
             let logger = TestLogger()
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: channelState)
-            let delegate = MockLiveMapObjectPoolDelegate()
+            let internalQueue = TestFactories.createInternalQueue()
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: channelState, internalQueue: internalQueue)
+            let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
 
             // Define actions to test
             let actions: [(String, () throws -> Any)] = [
@@ -314,8 +342,9 @@ struct InternalDefaultLiveMapTests {
         @Test
         func allPropertiesFilterOutTombstonedEntries() throws {
             let logger = TestLogger()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let delegate = MockLiveMapObjectPoolDelegate()
+            let internalQueue = TestFactories.createInternalQueue()
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
             let map = InternalDefaultLiveMap(
                 testsOnly_data: [
                     // tombstonedAt is nil, so not considered tombstoned
@@ -326,6 +355,7 @@ struct InternalDefaultLiveMapTests {
                 ],
                 objectID: "arbitrary",
                 logger: logger,
+                internalQueue: internalQueue,
                 userCallbackQueue: .main,
                 clock: MockSimpleClock(),
             )
@@ -359,8 +389,9 @@ struct InternalDefaultLiveMapTests {
         @Test
         func allAccessPropertiesReturnExpectedValuesAndAreConsistentWithEachOther() throws {
             let logger = TestLogger()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let delegate = MockLiveMapObjectPoolDelegate()
+            let internalQueue = TestFactories.createInternalQueue()
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
             let map = InternalDefaultLiveMap(
                 testsOnly_data: [
                     "key1": TestFactories.internalMapEntry(data: ObjectData(string: "value1")),
@@ -369,6 +400,7 @@ struct InternalDefaultLiveMapTests {
                 ],
                 objectID: "arbitrary",
                 logger: logger,
+                internalQueue: internalQueue,
                 userCallbackQueue: .main,
                 clock: MockSimpleClock(),
             )
@@ -397,12 +429,13 @@ struct InternalDefaultLiveMapTests {
         @Test
         func entriesHandlesAllValueTypes() throws {
             let logger = TestLogger()
-            let delegate = MockLiveMapObjectPoolDelegate()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
+            let internalQueue = TestFactories.createInternalQueue()
+            let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
 
             // Create referenced objects for testing
-            let referencedMap = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let referencedCounter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let referencedMap = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let referencedCounter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             delegate.objects["map:ref@123"] = .map(referencedMap)
             delegate.objects["counter:ref@456"] = .counter(referencedCounter)
 
@@ -419,6 +452,7 @@ struct InternalDefaultLiveMapTests {
                 ],
                 objectID: "arbitrary",
                 logger: logger,
+                internalQueue: internalQueue,
                 userCallbackQueue: .main,
                 clock: MockSimpleClock(),
             )
@@ -463,16 +497,18 @@ struct InternalDefaultLiveMapTests {
             @Test
             func discardsOperationWhenCannotBeApplied() throws {
                 let logger = TestLogger()
-                let delegate = MockLiveMapObjectPoolDelegate()
-                let coreSDK = MockCoreSDK(channelState: .attaching)
+                let internalQueue = TestFactories.createInternalQueue()
+                let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
+                let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
                 let map = InternalDefaultLiveMap(
                     testsOnly_data: ["key1": TestFactories.internalMapEntry(timeserial: "ts2", data: ObjectData(string: "existing"))],
                     objectID: "arbitrary",
                     logger: logger,
+                    internalQueue: internalQueue,
                     userCallbackQueue: .main,
                     clock: MockSimpleClock(),
                 )
-                var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+                var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
                 // Try to apply operation with lower timeserial (ts1 < ts2)
                 let update = map.testsOnly_applyMapSetOperation(
@@ -503,16 +539,18 @@ struct InternalDefaultLiveMapTests {
             ] as [(operationData: ObjectData, expectedCreatedObjectID: String?)])
             func appliesOperationWhenCanBeApplied(operationData: ObjectData, expectedCreatedObjectID: String?) throws {
                 let logger = TestLogger()
-                let delegate = MockLiveMapObjectPoolDelegate()
-                let coreSDK = MockCoreSDK(channelState: .attaching)
+                let internalQueue = TestFactories.createInternalQueue()
+                let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
+                let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
                 let map = InternalDefaultLiveMap(
                     testsOnly_data: ["key1": TestFactories.internalMapEntry(tombstonedAt: Date(), timeserial: "ts1", data: ObjectData(string: "existing"))],
                     objectID: "arbitrary",
                     logger: logger,
+                    internalQueue: internalQueue,
                     userCallbackQueue: .main,
                     clock: MockSimpleClock(),
                 )
-                var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+                var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
                 let update = map.testsOnly_applyMapSetOperation(
                     key: "key1",
@@ -576,10 +614,11 @@ struct InternalDefaultLiveMapTests {
             ] as [(operationData: ObjectData, expectedCreatedObjectID: String?)])
             func createsNewEntryWhenNoExistingEntry(operationData: ObjectData, expectedCreatedObjectID: String?) throws {
                 let logger = TestLogger()
-                let delegate = MockLiveMapObjectPoolDelegate()
-                let coreSDK = MockCoreSDK(channelState: .attaching)
-                let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-                var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+                let internalQueue = TestFactories.createInternalQueue()
+                let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
+                let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+                let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+                var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
                 let update = map.testsOnly_applyMapSetOperation(
                     key: "newKey",
@@ -626,9 +665,10 @@ struct InternalDefaultLiveMapTests {
         @Test
         func doesNotReplaceExistingObjectWhenReferencedByMapSet() throws {
             let logger = TestLogger()
-            let delegate = MockLiveMapObjectPoolDelegate()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let internalQueue = TestFactories.createInternalQueue()
+            let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Create an existing object in the pool with some data
             let existingObjectId = "map:existing@123"
@@ -636,11 +676,13 @@ struct InternalDefaultLiveMapTests {
                 testsOnly_data: [:],
                 objectID: "arbitrary",
                 logger: logger,
+                internalQueue: internalQueue,
                 userCallbackQueue: .main,
                 clock: MockSimpleClock(),
             )
             var pool = ObjectsPool(
                 logger: logger,
+                internalQueue: internalQueue,
                 userCallbackQueue: .main,
                 clock: MockSimpleClock(),
                 testsOnly_otherEntries: [existingObjectId: .map(existingObject)],
@@ -675,12 +717,14 @@ struct InternalDefaultLiveMapTests {
             @Test
             func discardsOperationWhenCannotBeApplied() throws {
                 let logger = TestLogger()
-                let delegate = MockLiveMapObjectPoolDelegate()
-                let coreSDK = MockCoreSDK(channelState: .attaching)
+                let internalQueue = TestFactories.createInternalQueue()
+                let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
+                let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
                 let map = InternalDefaultLiveMap(
                     testsOnly_data: ["key1": TestFactories.internalMapEntry(timeserial: "ts2", data: ObjectData(string: "existing"))],
                     objectID: "arbitrary",
                     logger: logger,
+                    internalQueue: internalQueue,
                     userCallbackQueue: .main,
                     clock: MockSimpleClock(),
                 )
@@ -701,12 +745,14 @@ struct InternalDefaultLiveMapTests {
             @Test
             func appliesOperationWhenCanBeApplied() throws {
                 let logger = TestLogger()
-                let delegate = MockLiveMapObjectPoolDelegate()
-                let coreSDK = MockCoreSDK(channelState: .attaching)
+                let internalQueue = TestFactories.createInternalQueue()
+                let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
+                let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
                 let map = InternalDefaultLiveMap(
                     testsOnly_data: ["key1": TestFactories.internalMapEntry(tombstonedAt: nil, timeserial: "ts1", data: ObjectData(string: "existing"))],
                     objectID: "arbitrary",
                     logger: logger,
+                    internalQueue: internalQueue,
                     userCallbackQueue: .main,
                     clock: MockSimpleClock(),
                 )
@@ -739,7 +785,8 @@ struct InternalDefaultLiveMapTests {
             @Test
             func createsNewEntryWhenNoExistingEntry() throws {
                 let logger = TestLogger()
-                let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+                let internalQueue = TestFactories.createInternalQueue()
+                let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
                 let update = map.testsOnly_applyMapRemoveOperation(key: "newKey", operationTimeserial: "ts1", operationSerialTimestamp: nil)
 
@@ -757,7 +804,8 @@ struct InternalDefaultLiveMapTests {
             @Test
             func setsNewEntryTombstoneToTrue() throws {
                 let logger = TestLogger()
-                let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+                let internalQueue = TestFactories.createInternalQueue()
+                let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
                 _ = map.testsOnly_applyMapRemoveOperation(key: "newKey", operationTimeserial: "ts1", operationSerialTimestamp: nil)
 
@@ -817,16 +865,18 @@ struct InternalDefaultLiveMapTests {
         ] as [(entrySerial: String?, operationSerial: String?, shouldApply: Bool)])
         func mapOperationApplicability(entrySerial: String?, operationSerial: String?, shouldApply: Bool) throws {
             let logger = TestLogger()
-            let delegate = MockLiveMapObjectPoolDelegate()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
+            let internalQueue = TestFactories.createInternalQueue()
+            let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
             let map = InternalDefaultLiveMap(
                 testsOnly_data: ["key1": TestFactories.internalMapEntry(timeserial: entrySerial, data: ObjectData(string: "existing"))],
                 objectID: "arbitrary",
                 logger: logger,
+                internalQueue: internalQueue,
                 userCallbackQueue: .main,
                 clock: MockSimpleClock(),
             )
-            var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             _ = map.testsOnly_applyMapSetOperation(
                 key: "key1",
@@ -853,10 +903,11 @@ struct InternalDefaultLiveMapTests {
         @Test
         func appliesMapSetOperationsFromOperation() throws {
             let logger = TestLogger()
-            let delegate = MockLiveMapObjectPoolDelegate()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let internalQueue = TestFactories.createInternalQueue()
+            let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Apply merge operation with MAP_SET entries
             let operation = TestFactories.mapCreateOperation(
@@ -865,7 +916,9 @@ struct InternalDefaultLiveMapTests {
                     "keyFromCreateOp": TestFactories.stringMapEntry(key: "keyFromCreateOp", value: "valueFromCreateOp").entry,
                 ],
             )
-            _ = map.mergeInitialValue(from: operation, objectsPool: &pool)
+            internalQueue.ably_syncNoDeadlock {
+                _ = map.nosync_mergeInitialValue(from: operation, objectsPool: &pool)
+            }
 
             // Note that we just check for some basic expected side effects of applying MAP_SET; RTLM7 is tested in more detail elsewhere
             // Check that it contains the data from the operation (per RTLM17a1)
@@ -876,16 +929,18 @@ struct InternalDefaultLiveMapTests {
         @Test
         func appliesMapRemoveOperationsFromOperation() throws {
             let logger = TestLogger()
-            let delegate = MockLiveMapObjectPoolDelegate()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
+            let internalQueue = TestFactories.createInternalQueue()
+            let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
             let map = InternalDefaultLiveMap(
                 testsOnly_data: ["key1": TestFactories.internalStringMapEntry().entry],
                 objectID: "arbitrary",
                 logger: logger,
+                internalQueue: internalQueue,
                 userCallbackQueue: .main,
                 clock: MockSimpleClock(),
             )
-            var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Confirm that the initial data is there
             #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate) != nil)
@@ -900,7 +955,9 @@ struct InternalDefaultLiveMapTests {
                 objectId: "arbitrary-id",
                 entries: ["key1": entry],
             )
-            _ = map.mergeInitialValue(from: operation, objectsPool: &pool)
+            internalQueue.ably_syncNoDeadlock {
+                _ = map.nosync_mergeInitialValue(from: operation, objectsPool: &pool)
+            }
 
             // Verify the MAP_REMOVE operation was applied
             #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate) == nil)
@@ -910,6 +967,7 @@ struct InternalDefaultLiveMapTests {
         @Test
         func returnedUpdateMergesOperationUpdates() throws {
             let logger = TestLogger()
+            let internalQueue = TestFactories.createInternalQueue()
             let map = InternalDefaultLiveMap(
                 testsOnly_data: [
                     "keyThatWillBeRemoved": TestFactories.internalStringMapEntry(timeserial: "ts1").entry,
@@ -917,10 +975,11 @@ struct InternalDefaultLiveMapTests {
                 ],
                 objectID: "arbitrary",
                 logger: logger,
+                internalQueue: internalQueue,
                 userCallbackQueue: .main,
                 clock: MockSimpleClock(),
             )
-            var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Apply merge operation with MAP_CREATE and MAP_REMOVE entries (copied from RTLM17a1 and RTLM17a2 test cases)
             let operation = TestFactories.mapCreateOperation(
@@ -939,7 +998,9 @@ struct InternalDefaultLiveMapTests {
                     "keyFromCreateOp": TestFactories.stringMapEntry(key: "keyFromCreateOp", value: "valueFromCreateOp").entry,
                 ],
             )
-            let update = map.mergeInitialValue(from: operation, objectsPool: &pool)
+            let update = internalQueue.ably_syncNoDeadlock {
+                map.nosync_mergeInitialValue(from: operation, objectsPool: &pool)
+            }
 
             // Verify merged return value per RTLM17c
             #expect(try #require(update.update).update == ["keyThatWillBeRemoved": .removed, "keyFromCreateOp": .updated])
@@ -949,12 +1010,15 @@ struct InternalDefaultLiveMapTests {
         @Test
         func setsCreateOperationIsMergedToTrue() {
             let logger = TestLogger()
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let internalQueue = TestFactories.createInternalQueue()
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Apply merge operation
             let operation = TestFactories.mapCreateOperation(objectId: "arbitrary-id")
-            _ = map.mergeInitialValue(from: operation, objectsPool: &pool)
+            internalQueue.ably_syncNoDeadlock {
+                _ = map.nosync_mergeInitialValue(from: operation, objectsPool: &pool)
+            }
 
             #expect(map.testsOnly_createOperationIsMerged)
         }
@@ -966,14 +1030,19 @@ struct InternalDefaultLiveMapTests {
         @Test
         func discardsOperationWhenCreateOperationIsMerged() throws {
             let logger = TestLogger()
-            let delegate = MockLiveMapObjectPoolDelegate()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let internalQueue = TestFactories.createInternalQueue()
+            let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Set initial data and mark create operation as merged
-            _ = map.replaceData(using: TestFactories.mapObjectState(entries: ["key1": TestFactories.stringMapEntry().entry]), objectMessageSerialTimestamp: nil, objectsPool: &pool)
-            _ = map.mergeInitialValue(from: TestFactories.mapCreateOperation(entries: ["key2": TestFactories.stringMapEntry(key: "key2", value: "value2").entry]), objectsPool: &pool)
+            internalQueue.ably_syncNoDeadlock {
+                _ = map.nosync_replaceData(using: TestFactories.mapObjectState(entries: ["key1": TestFactories.stringMapEntry().entry]), objectMessageSerialTimestamp: nil, objectsPool: &pool)
+            }
+            internalQueue.ably_syncNoDeadlock {
+                _ = map.nosync_mergeInitialValue(from: TestFactories.mapCreateOperation(entries: ["key2": TestFactories.stringMapEntry(key: "key2", value: "value2").entry]), objectsPool: &pool)
+            }
             #expect(map.testsOnly_createOperationIsMerged)
 
             // Try to apply another MAP_CREATE operation
@@ -994,13 +1063,16 @@ struct InternalDefaultLiveMapTests {
         @Test
         func mergesInitialValue() throws {
             let logger = TestLogger()
-            let delegate = MockLiveMapObjectPoolDelegate()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let internalQueue = TestFactories.createInternalQueue()
+            let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Set initial data but don't mark create operation as merged
-            _ = map.replaceData(using: TestFactories.mapObjectState(entries: ["key1": TestFactories.stringMapEntry().entry]), objectMessageSerialTimestamp: nil, objectsPool: &pool)
+            internalQueue.ably_syncNoDeadlock {
+                _ = map.nosync_replaceData(using: TestFactories.mapObjectState(entries: ["key1": TestFactories.stringMapEntry().entry]), objectMessageSerialTimestamp: nil, objectsPool: &pool)
+            }
             #expect(!map.testsOnly_createOperationIsMerged)
 
             // Apply MAP_CREATE operation
@@ -1023,21 +1095,24 @@ struct InternalDefaultLiveMapTests {
         @Test
         func discardsOperationWhenCannotBeApplied() throws {
             let logger = TestLogger()
-            let delegate = MockLiveMapObjectPoolDelegate()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let internalQueue = TestFactories.createInternalQueue()
+            let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Set up the map with an existing site timeserial that will cause the operation to be discarded
-            var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             let (key1, entry1) = TestFactories.stringMapEntry(key: "key1", value: "existing", timeserial: nil)
-            _ = map.replaceData(
-                using: TestFactories.mapObjectState(
-                    siteTimeserials: ["site1": "ts2"], // Existing serial "ts2"
-                    entries: [key1: entry1],
-                ),
-                objectMessageSerialTimestamp: nil,
-                objectsPool: &pool,
-            )
+            internalQueue.ably_syncNoDeadlock {
+                _ = map.nosync_replaceData(
+                    using: TestFactories.mapObjectState(
+                        siteTimeserials: ["site1": "ts2"], // Existing serial "ts2"
+                        entries: [key1: entry1],
+                    ),
+                    objectMessageSerialTimestamp: nil,
+                    objectsPool: &pool,
+                )
+            }
 
             let operation = TestFactories.objectOperation(
                 action: .known(.mapSet),
@@ -1045,13 +1120,15 @@ struct InternalDefaultLiveMapTests {
             )
 
             // Apply operation with serial "ts1" which is lexicographically less than existing "ts2" and thus will be applied per RTLO4a (this is a non-pathological case of RTOL4a, that spec point being fully tested elsewhere)
-            map.apply(
-                operation,
-                objectMessageSerial: "ts1", // Less than existing "ts2"
-                objectMessageSiteCode: "site1",
-                objectMessageSerialTimestamp: nil,
-                objectsPool: &pool,
-            )
+            internalQueue.ably_syncNoDeadlock {
+                map.nosync_apply(
+                    operation,
+                    objectMessageSerial: "ts1", // Less than existing "ts2"
+                    objectMessageSiteCode: "site1",
+                    objectMessageSerialTimestamp: nil,
+                    objectsPool: &pool,
+                )
+            }
 
             // Check that the MAP_SET side-effects didn't happen:
             // Verify the operation was discarded - data unchanged (should still be "existing" from creation)
@@ -1067,9 +1144,10 @@ struct InternalDefaultLiveMapTests {
         @Test
         func appliesMapCreateOperation() async throws {
             let logger = TestLogger()
-            let delegate = MockLiveMapObjectPoolDelegate()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let internalQueue = TestFactories.createInternalQueue()
+            let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             let subscriber = Subscriber<DefaultLiveMapUpdate, SubscribeResponse>(callbackQueue: .main)
             try map.subscribe(listener: subscriber.createListener(), coreSDK: coreSDK)
@@ -1077,16 +1155,18 @@ struct InternalDefaultLiveMapTests {
             let operation = TestFactories.mapCreateOperation(
                 entries: ["key1": TestFactories.stringMapEntry(key: "key1", value: "value1").entry],
             )
-            var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Apply MAP_CREATE operation
-            map.apply(
-                operation,
-                objectMessageSerial: "ts1",
-                objectMessageSiteCode: "site1",
-                objectMessageSerialTimestamp: nil,
-                objectsPool: &pool,
-            )
+            internalQueue.ably_syncNoDeadlock {
+                map.nosync_apply(
+                    operation,
+                    objectMessageSerial: "ts1",
+                    objectMessageSiteCode: "site1",
+                    objectMessageSerialTimestamp: nil,
+                    objectsPool: &pool,
+                )
+            }
 
             // Verify the operation was applied - initial value merged (the full logic of RTLM16 is tested elsewhere; we just check for some of its side effects here)
             #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate)?.stringValue == "value1")
@@ -1106,24 +1186,27 @@ struct InternalDefaultLiveMapTests {
         @Test
         func appliesMapSetOperation() async throws {
             let logger = TestLogger()
-            let delegate = MockLiveMapObjectPoolDelegate()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let internalQueue = TestFactories.createInternalQueue()
+            let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             let subscriber = Subscriber<DefaultLiveMapUpdate, SubscribeResponse>(callbackQueue: .main)
             try map.subscribe(listener: subscriber.createListener(), coreSDK: coreSDK)
 
             // Set initial data
-            var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             let (key1, entry1) = TestFactories.stringMapEntry(key: "key1", value: "existing", timeserial: nil)
-            _ = map.replaceData(
-                using: TestFactories.mapObjectState(
-                    siteTimeserials: [:],
-                    entries: [key1: entry1],
-                ),
-                objectMessageSerialTimestamp: nil,
-                objectsPool: &pool,
-            )
+            internalQueue.ably_syncNoDeadlock {
+                _ = map.nosync_replaceData(
+                    using: TestFactories.mapObjectState(
+                        siteTimeserials: [:],
+                        entries: [key1: entry1],
+                    ),
+                    objectMessageSerialTimestamp: nil,
+                    objectsPool: &pool,
+                )
+            }
             #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate)?.stringValue == "existing")
 
             let operation = TestFactories.objectOperation(
@@ -1132,13 +1215,15 @@ struct InternalDefaultLiveMapTests {
             )
 
             // Apply MAP_SET operation
-            map.apply(
-                operation,
-                objectMessageSerial: "ts1",
-                objectMessageSiteCode: "site1",
-                objectMessageSerialTimestamp: nil,
-                objectsPool: &pool,
-            )
+            internalQueue.ably_syncNoDeadlock {
+                map.nosync_apply(
+                    operation,
+                    objectMessageSerial: "ts1",
+                    objectMessageSiteCode: "site1",
+                    objectMessageSerialTimestamp: nil,
+                    objectsPool: &pool,
+                )
+            }
 
             // Verify the operation was applied - value updated (the full logic of RTLM7 is tested elsewhere; we just check for some of its side effects here)
             #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate)?.stringValue == "new")
@@ -1157,24 +1242,27 @@ struct InternalDefaultLiveMapTests {
         @Test
         func appliesMapRemoveOperation() async throws {
             let logger = TestLogger()
-            let delegate = MockLiveMapObjectPoolDelegate()
-            let coreSDK = MockCoreSDK(channelState: .attaching)
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let internalQueue = TestFactories.createInternalQueue()
+            let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             let subscriber = Subscriber<DefaultLiveMapUpdate, SubscribeResponse>(callbackQueue: .main)
             try map.subscribe(listener: subscriber.createListener(), coreSDK: coreSDK)
 
             // Set initial data
-            var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             let (key1, entry1) = TestFactories.stringMapEntry(key: "key1", value: "existing", timeserial: nil)
-            _ = map.replaceData(
-                using: TestFactories.mapObjectState(
-                    siteTimeserials: [:],
-                    entries: [key1: entry1],
-                ),
-                objectMessageSerialTimestamp: nil,
-                objectsPool: &pool,
-            )
+            internalQueue.ably_syncNoDeadlock {
+                _ = map.nosync_replaceData(
+                    using: TestFactories.mapObjectState(
+                        siteTimeserials: [:],
+                        entries: [key1: entry1],
+                    ),
+                    objectMessageSerialTimestamp: nil,
+                    objectsPool: &pool,
+                )
+            }
             #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate)?.stringValue == "existing")
 
             let operation = TestFactories.objectOperation(
@@ -1183,13 +1271,15 @@ struct InternalDefaultLiveMapTests {
             )
 
             // Apply MAP_REMOVE operation
-            map.apply(
-                operation,
-                objectMessageSerial: "ts1",
-                objectMessageSiteCode: "site1",
-                objectMessageSerialTimestamp: nil,
-                objectsPool: &pool,
-            )
+            internalQueue.ably_syncNoDeadlock {
+                map.nosync_apply(
+                    operation,
+                    objectMessageSerial: "ts1",
+                    objectMessageSiteCode: "site1",
+                    objectMessageSerialTimestamp: nil,
+                    objectsPool: &pool,
+                )
+            }
 
             // Verify the operation was applied - key removed (the full logic of RTLM8 is tested elsewhere; we just check for some of its side effects here)
             #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate) == nil)
@@ -1206,21 +1296,24 @@ struct InternalDefaultLiveMapTests {
         @Test
         func noOpForOtherOperation() async throws {
             let logger = TestLogger()
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: .attaching)
+            let internalQueue = TestFactories.createInternalQueue()
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
 
             let subscriber = Subscriber<DefaultLiveMapUpdate, SubscribeResponse>(callbackQueue: .main)
             try map.subscribe(listener: subscriber.createListener(), coreSDK: coreSDK)
 
             // Try to apply a COUNTER_CREATE to the map (not supported)
-            var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            map.apply(
-                TestFactories.counterCreateOperation(),
-                objectMessageSerial: "ts1",
-                objectMessageSiteCode: "site1",
-                objectMessageSerialTimestamp: nil,
-                objectsPool: &pool,
-            )
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            internalQueue.ably_syncNoDeadlock {
+                map.nosync_apply(
+                    TestFactories.counterCreateOperation(),
+                    objectMessageSerial: "ts1",
+                    objectMessageSiteCode: "site1",
+                    objectMessageSerialTimestamp: nil,
+                    objectsPool: &pool,
+                )
+            }
 
             // Check no update was emitted
             let subscriberInvocations = await subscriber.getInvocations()
@@ -1234,8 +1327,9 @@ struct InternalDefaultLiveMapTests {
         @Test(arguments: [.detached, .failed, .suspended] as [_AblyPluginSupportPrivate.RealtimeChannelState])
         func throwsErrorForInvalidChannelState(channelState: _AblyPluginSupportPrivate.RealtimeChannelState) async throws {
             let logger = TestLogger()
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: channelState)
+            let internalQueue = TestFactories.createInternalQueue()
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: channelState, internalQueue: internalQueue)
 
             await #expect {
                 try await map.set(key: "test", value: .string("value"), coreSDK: coreSDK)
@@ -1262,31 +1356,32 @@ struct InternalDefaultLiveMapTests {
         // @spec RTLM20f
         @Test(arguments: [
             // RTLM20e5a
-            (value: .liveMap(.createZeroValued(objectID: "map:test@123", logger: TestLogger(), userCallbackQueue: .main, clock: MockSimpleClock())), expectedData: .init(objectId: "map:test@123")),
-            (value: .liveCounter(.createZeroValued(objectID: "map:test@123", logger: TestLogger(), userCallbackQueue: .main, clock: MockSimpleClock())), expectedData: .init(objectId: "map:test@123")),
+            (value: { @Sendable internalQueue in .liveMap(.createZeroValued(objectID: "map:test@123", logger: TestLogger(), internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())) }, expectedData: .init(objectId: "map:test@123")),
+            (value: { @Sendable internalQueue in .liveCounter(.createZeroValued(objectID: "counter:test@123", logger: TestLogger(), internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())) }, expectedData: .init(objectId: "counter:test@123")),
             // RTLM20e5b
-            (value: .jsonArray(["test"]), expectedData: .init(json: .array(["test"]))),
-            (value: .jsonObject(["foo": "bar"]), expectedData: .init(json: .object(["foo": "bar"]))),
+            (value: { @Sendable _ in .jsonArray(["test"]) }, expectedData: .init(json: .array(["test"]))),
+            (value: { @Sendable _ in .jsonObject(["foo": "bar"]) }, expectedData: .init(json: .object(["foo": "bar"]))),
             // RTLM20e5c
-            (value: .string("test"), expectedData: .init(string: "test")),
+            (value: { @Sendable _ in .string("test") }, expectedData: .init(string: "test")),
             // RTLM20e5d
-            (value: .number(42.5), expectedData: .init(number: NSNumber(value: 42.5))),
+            (value: { @Sendable _ in .number(42.5) }, expectedData: .init(number: NSNumber(value: 42.5))),
             // RTLM20e5e
-            (value: .bool(true), expectedData: .init(boolean: true)),
+            (value: { @Sendable _ in .bool(true) }, expectedData: .init(boolean: true)),
             // RTLM20e5f
-            (value: .data(Data([0x01, 0x02])), expectedData: .init(bytes: Data([0x01, 0x02]))),
-        ] as [(value: InternalLiveMapValue, expectedData: ObjectData)])
-        func publishesCorrectObjectMessageForDifferentValueTypes(value: InternalLiveMapValue, expectedData: ObjectData) async throws {
+            (value: { @Sendable _ in .data(Data([0x01, 0x02])) }, expectedData: .init(bytes: Data([0x01, 0x02]))),
+        ] as [(value: @Sendable (DispatchQueue) -> InternalLiveMapValue, expectedData: ObjectData)])
+        func publishesCorrectObjectMessageForDifferentValueTypes(value: @escaping @Sendable (DispatchQueue) -> InternalLiveMapValue, expectedData: ObjectData) async throws {
             let logger = TestLogger()
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "map:test@123", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: .attached)
+            let internalQueue = TestFactories.createInternalQueue()
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "map:test@123", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
 
             var publishedMessage: OutboundObjectMessage?
             coreSDK.setPublishHandler { messages in
                 publishedMessage = messages.first
             }
 
-            try await map.set(key: "testKey", value: value, coreSDK: coreSDK)
+            try await map.set(key: "testKey", value: value(internalQueue), coreSDK: coreSDK)
 
             let expectedMessage = OutboundObjectMessage(
                 operation: ObjectOperation(
@@ -1310,8 +1405,9 @@ struct InternalDefaultLiveMapTests {
         @Test
         func throwsErrorWhenPublishFails() async throws {
             let logger = TestLogger()
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "map:test@123", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: .attached)
+            let internalQueue = TestFactories.createInternalQueue()
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "map:test@123", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
 
             coreSDK.setPublishHandler { _ throws(InternalError) in
                 throw NSError(domain: "test", code: 0, userInfo: [NSLocalizedDescriptionKey: "Publish failed"]).toInternalError()
@@ -1334,8 +1430,9 @@ struct InternalDefaultLiveMapTests {
         @Test(arguments: [.detached, .failed, .suspended] as [_AblyPluginSupportPrivate.RealtimeChannelState])
         func throwsErrorForInvalidChannelState(channelState: _AblyPluginSupportPrivate.RealtimeChannelState) async throws {
             let logger = TestLogger()
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: channelState)
+            let internalQueue = TestFactories.createInternalQueue()
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: channelState, internalQueue: internalQueue)
 
             await #expect {
                 try await map.remove(key: "test", coreSDK: coreSDK)
@@ -1357,8 +1454,9 @@ struct InternalDefaultLiveMapTests {
         @Test
         func publishesCorrectObjectMessage() async throws {
             let logger = TestLogger()
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "map:test@123", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: .attached)
+            let internalQueue = TestFactories.createInternalQueue()
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "map:test@123", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
 
             var publishedMessages: [OutboundObjectMessage] = []
             coreSDK.setPublishHandler { messages in
@@ -1388,8 +1486,9 @@ struct InternalDefaultLiveMapTests {
         @Test
         func throwsErrorWhenPublishFails() async throws {
             let logger = TestLogger()
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "map:test@123", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: .attached)
+            let internalQueue = TestFactories.createInternalQueue()
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "map:test@123", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
 
             coreSDK.setPublishHandler { _ throws(InternalError) in
                 throw NSError(domain: "test", code: 0, userInfo: [NSLocalizedDescriptionKey: "Publish failed"]).toInternalError()
