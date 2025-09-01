@@ -338,6 +338,16 @@ typedef NS_ENUM(NSUInteger, ARTNetworkState) {
         case ARTRealtimeConnected: {
             // Update (send AUTH message)
             ARTLogDebug(self.logger, @"RS:%p AUTH message using %@", self.rest, tokenDetails);
+            
+            // Store previous clientId for comparison
+            NSString *previousClientId = self.auth.clientId_nosync;
+            
+            // Check if clientId will change
+            if (tokenDetails.clientId && ![tokenDetails.clientId isEqualToString:previousClientId]) {
+                ARTLogDebug(self.logger, @"[AUTH_DIAG] RS:%p ClientID changing from '%@' to '%@' via AUTH message",
+                           self, previousClientId, tokenDetails.clientId);
+            }
+            
             ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
             msg.action = ARTProtocolMessageAuth;
             msg.auth = [[ARTAuthDetails alloc] initWithToken:tokenDetails.token];
@@ -1616,7 +1626,22 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         case ARTProtocolMessageConnected:
             // Set Auth#clientId
             if (message.connectionDetails) {
+                NSString *previousClientId = self.auth.clientId_nosync;
                 [self.auth setProtocolClientId:message.connectionDetails.clientId];
+                
+                // Check if clientId changed after AUTH message
+                if (previousClientId && message.connectionDetails.clientId &&
+                    ![previousClientId isEqualToString:message.connectionDetails.clientId]) {
+                    ARTLogDebug(self.logger, @"[AUTH_DIAG] RS:%p ClientID updated from '%@' to '%@' in CONNECTED message",
+                               self, previousClientId, message.connectionDetails.clientId);
+                    
+                    // Force channels to reauthorize with new identity
+                    for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
+                        if (channel.state_nosync == ARTRealtimeChannelAttached) {
+                            [channel reauthorizeWithReason:@"ClientID changed in CONNECTED message"];
+                        }
+                    }
+                }
             }
             // Event
             [self onConnected:message];

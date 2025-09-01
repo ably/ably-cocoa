@@ -5,6 +5,9 @@
 #endif
 
 #import "ARTRest+Private.h"
+#import "ARTRealtime+Private.h"
+#import "ARTRealtimeChannel+Private.h"
+#import "ARTRealtimeChannels+Private.h"
 #import "ARTHttp.h"
 #import "ARTClientOptions.h"
 #import "ARTAuthOptions.h"
@@ -559,6 +562,10 @@ dispatch_async(_queue, ^{
 - (nullable NSObject<ARTCancellable> *)_authorize:(ARTTokenParams *)tokenParams
                                           options:(ARTAuthOptions *)authOptions
                                          callback:(ARTTokenDetailsCallback)callback {
+    // Store previous clientId for comparison
+    NSString *previousClientId = self.clientId_nosync;
+    ARTLogDebug(self.logger, @"[AUTH_DIAG] RS:%p Starting authorization, current clientId: %@", _rest, previousClientId);
+
     ARTAuthOptions *replacedOptions = [authOptions copy] ? : [self.options copy];
     [self storeOptions:replacedOptions];
 
@@ -612,6 +619,36 @@ dispatch_async(_queue, ^{
 
         [self setTokenDetails:tokenDetails];
         self->_method = ARTAuthMethodToken;
+
+        // Check if clientId changed
+        NSString *newClientId = tokenDetails.clientId;
+        BOOL clientIdChanged = (previousClientId != nil && newClientId != nil &&
+                                ![previousClientId isEqualToString:newClientId]) ||
+                               (previousClientId == nil && newClientId != nil) ||
+                               (previousClientId != nil && newClientId == nil);
+
+        if (clientIdChanged) {
+            ARTLogDebug(self.logger, @"[AUTH_DIAG] RS:%p ClientID changed from '%@' to '%@' during authorization",
+                       self->_rest, previousClientId, newClientId);
+
+            // Notify delegate if it's a realtime connection
+            if (lastDelegate && [lastDelegate isKindOfClass:[ARTRealtimeInternal class]]) {
+                ARTRealtimeInternal *realtime = (ARTRealtimeInternal *)lastDelegate;
+                dispatch_async(realtime.queue, ^{
+                    ARTLogDebug(self.logger, @"[AUTH_DIAG] RS:%p Notifying channels of auth change", self->_rest);
+
+                    // Force all attached channels to reauthorize with new credentials
+                    for (ARTRealtimeChannelInternal *channel in realtime.channels.nosyncIterable) {
+                        if (channel.state_nosync == ARTRealtimeChannelAttached ||
+                            channel.state_nosync == ARTRealtimeChannelAttaching) {
+                            ARTLogDebug(self.logger, @"[AUTH_DIAG] RS:%p Channel %@ will reauthorize due to clientId change",
+                                      self->_rest, channel.name);
+                            [channel reauthorizeWithReason:@"ClientID changed during authorization"];
+                        }
+                    }
+                });
+            }
+        }
 
         if (!tokenDetails) {
             failureCallbackBlock([ARTErrorInfo createWithCode:0 message:@"Token details are empty"]);

@@ -972,6 +972,35 @@ dispatch_sync(_queue, ^{
     }
 }
 
+- (void)reauthorizeWithReason:(NSString *)reason {
+    ARTLogDebug(self.logger, @"[CHANNEL_DIAG] RT:%p C:%p (%@) reauthorizing due to: %@",
+               _realtime, self, self.name, reason);
+
+    switch (self.state_nosync) {
+        case ARTRealtimeChannelAttached:
+        case ARTRealtimeChannelAttaching: {
+            // Send detach to clear server-side state
+            ARTProtocolMessage *detachMessage = [[ARTProtocolMessage alloc] init];
+            detachMessage.action = ARTProtocolMessageDetach;
+            detachMessage.channel = self.name;
+
+            [self.realtime send:detachMessage sentCallback:^(ARTErrorInfo *error) {
+                if (!error) {
+                    // Immediately reattach with new auth
+                    ARTProtocolMessage *attachMessage = [[ARTProtocolMessage alloc] init];
+                    attachMessage.action = ARTProtocolMessageAttach;
+                    attachMessage.channel = self.name;
+                    attachMessage.channelSerial = nil; // Force fresh attach
+                    [self.realtime send:attachMessage sentCallback:nil ackCallback:nil];
+                }
+            } ackCallback:nil];
+            break;
+        }
+        default:
+            break;
+    }
+}
+
 - (void)internalAttach:(ARTCallback)callback withParams:(ARTAttachRequestParams *)params {
     switch (self.state_nosync) {
         case ARTRealtimeChannelDetaching: {

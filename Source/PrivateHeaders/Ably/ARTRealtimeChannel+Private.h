@@ -71,6 +71,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)_attach:(nullable ARTCallback)callback;
 - (void)_detach:(nullable ARTCallback)callback;
 
+- (void)reauthorizeWithReason:(NSString *)reason;
+
 - (void)_unsubscribe;
 - (void)off_nosync;
 
