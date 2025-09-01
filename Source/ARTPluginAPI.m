@@ -107,15 +107,21 @@ static ARTLogLevel _convertPluginLogLevel(APLogLevel pluginLogLevel) {
 
 }
 
-- (void)setPluginDataValue:(nonnull id)value
-                    forKey:(nonnull NSString *)key
-                   channel:(nonnull id<APRealtimeChannel>)channel {
-    [_internalRealtimeChannel(channel) setPluginDataValue:value forKey:key];
+- (void)nosync_setPluginDataValue:(nonnull id)value
+                           forKey:(nonnull NSString *)key
+                          channel:(nonnull id<APRealtimeChannel>)channel {
+    ARTRealtimeChannelInternal *internalChannel = _internalRealtimeChannel(channel);
+    dispatch_assert_queue(internalChannel.queue);
+
+    [internalChannel setPluginDataValue:value forKey:key];
 }
 
-- (nullable id)pluginDataValueForKey:(nonnull NSString *)key
-                             channel:(nonnull id<APRealtimeChannel>)channel {
-    return [_internalRealtimeChannel(channel) pluginDataValueForKey:key];
+- (nullable id)nosync_pluginDataValueForKey:(nonnull NSString *)key
+                                    channel:(nonnull id<APRealtimeChannel>)channel {
+    ARTRealtimeChannelInternal *internalChannel = _internalRealtimeChannel(channel);
+    dispatch_assert_queue(internalChannel.queue);
+
+    return [internalChannel pluginDataValueForKey:key];
 }
 
 - (id<APLogger>)loggerForChannel:(id<APRealtimeChannel>)channel {
@@ -142,13 +148,21 @@ static ARTLogLevel _convertPluginLogLevel(APLogLevel pluginLogLevel) {
     return _internalRealtimeClient(client).options.internalDispatchQueue;
 }
 
-- (void)sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages channel:(id<APRealtimeChannel>)channel completion:(void (^)(id<APPublicErrorInfo> _Nullable))completion {
+- (void)nosync_sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
+                                    channel:(id<APRealtimeChannel>)channel
+                                 completion:(void (^)(id<APPublicErrorInfo> _Nullable))completion {
+    ARTRealtimeChannelInternal *internalChannel = _internalRealtimeChannel(channel);
+    dispatch_assert_queue(internalChannel.queue);
+
     [_internalRealtimeChannel(channel) sendObjectWithObjectMessages:objectMessages
                                                          completion:completion];
 }
 
-- (APRealtimeChannelState)stateForChannel:(id<APRealtimeChannel>)channel {
-    return _convertOurRealtimeChannelState(_internalRealtimeChannel(channel).state);
+- (APRealtimeChannelState)nosync_stateForChannel:(id<APRealtimeChannel>)channel {
+    ARTRealtimeChannelInternal *internalChannel = _internalRealtimeChannel(channel);
+    dispatch_assert_queue(internalChannel.queue);
+
+    return _convertOurRealtimeChannelState(internalChannel.state_nosync);
 }
 
 - (void)log:(NSString *)message
