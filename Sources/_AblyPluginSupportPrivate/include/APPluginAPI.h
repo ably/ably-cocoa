@@ -25,13 +25,13 @@ NS_SWIFT_SENDABLE
 /// Allows a plugin to store arbitrary key-value data on a channel.
 ///
 /// The channel stores a strong reference to `value`.
-- (void)setPluginDataValue:(id)value
-                    forKey:(NSString *)key
-                   channel:(id<APRealtimeChannel>)channel;
+- (void)nosync_setPluginDataValue:(id)value
+                           forKey:(NSString *)key
+                          channel:(id<APRealtimeChannel>)channel;
 
 /// Allows a plugin to retrieve arbitrary key-value data that was previously stored on a channel using `-setPluginDataValue:forKey:channel:`.
-- (nullable id)pluginDataValueForKey:(NSString *)key
-                             channel:(id<APRealtimeChannel>)channel;
+- (nullable id)nosync_pluginDataValueForKey:(NSString *)key
+                                    channel:(id<APRealtimeChannel>)channel;
 
 /// Allows a plugin to store arbitrary key-value data in an `ARTClientOptions`. This allows a plugin to define its own client options.
 ///
@@ -59,18 +59,18 @@ NS_SWIFT_SENDABLE
 
 /// Provides plugins with the queue which a given client uses to synchronize its internal state.
 ///
-/// Certain `APPluginAPIProtocol` methods must be called on this queue (the method will document when this is the case).
+/// All `_AblyPluginSupportPrivate` methods whose names begin with `nosync_` must be called on this queue.
 - (dispatch_queue_t)internalQueueForClient:(id<APRealtimeClient>)client;
 
 /// Sends an `OBJECT` `ProtocolMessage` on a channel and indicates the result of waiting for an `ACK`. TODO there is still some deciding to be done about the exact contract of this method.
 ///
-/// This method must be called on the client's internal queue (see `-internalQueueForClient:`).
-- (void)sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
-                             channel:(id<APRealtimeChannel>)channel
-                          completion:(void (^ _Nullable)(_Nullable id<APPublicErrorInfo> error))completion;
+/// The completion handler will be called on the client's internal queue (see `-internalQueueForClient:`).
+- (void)nosync_sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
+                                    channel:(id<APRealtimeChannel>)channel
+                                 completion:(void (^ _Nullable)(_Nullable id<APPublicErrorInfo> error))completion;
 
 /// Returns a realtime channel's current state.
-- (APRealtimeChannelState)stateForChannel:(id<APRealtimeChannel>)channel;
+- (APRealtimeChannelState)nosync_stateForChannel:(id<APRealtimeChannel>)channel;
 
 /// Logs a message to a logger.
 - (void)log:(NSString *)message

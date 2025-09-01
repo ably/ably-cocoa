@@ -32,7 +32,7 @@ NS_SWIFT_SENDABLE
 /// ably-cocoa will call this method when initializing an `ARTRealtimeChannel` instance.
 ///
 /// The plugin can use this as an opportunity to perform any initial setup of LiveObjects functionality for this channel.
-- (void)prepareChannel:(id<APRealtimeChannel>)channel client:(id<APRealtimeClient>)client;
+- (void)nosync_prepareChannel:(id<APRealtimeChannel>)channel client:(id<APRealtimeClient>)client;
 
 /// Decodes an `ObjectMessage` received over the wire.
 ///
@@ -59,34 +59,29 @@ NS_SWIFT_SENDABLE
 
 /// Called when a channel received an `ATTACHED` `ProtocolMessage`. (This is copied from ably-js, will document this method properly once exact meaning decided.)
 ///
-/// TODO: what thread is this called on, and does it matter? Decide in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/3
-///
 /// Parameters:
 /// - channel: The channel that received the `ProtocolMessage`.
 /// - hasObjects: Whether the `ProtocolMessage` has the `HAS_OBJECTS` flag set.
-- (void)onChannelAttached:(id<APRealtimeChannel>)channel
-               hasObjects:(BOOL)hasObjects;
+- (void)nosync_onChannelAttached:(id<APRealtimeChannel>)channel
+                      hasObjects:(BOOL)hasObjects
+  NS_SWIFT_NAME(nosync_onChannelAttached(_:hasObjects:));
 
 /// Processes a received `OBJECT` `ProtocolMessage`.
 ///
-/// TODO: what thread is this called on, and does it matter? Decide in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/3
-///
 /// Parameters:
 /// - objectMessages: The contents of the `ProtocolMessage`'s `state` property.
 /// - channel: The channel on which the `ProtocolMessage` was received.
-- (void)handleObjectProtocolMessageWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
-                                              channel:(id<APRealtimeChannel>)channel;
+- (void)nosync_handleObjectProtocolMessageWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
+                                                     channel:(id<APRealtimeChannel>)channel;
 
 /// Processes a received `OBJECT_SYNC` `ProtocolMessage`.
 ///
-/// TODO: what thread is this called on, and does it matter? Decide in https://github.com/ably/ably-cocoa-liveobjects-plugin/issues/3
-///
 /// Parameters:
 /// - objectMessages: The contents of the `ProtocolMessage`'s `state` property.
 /// - channel: The channel on which the `ProtocolMessage` was received.
-- (void)handleObjectSyncProtocolMessageWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
-                             protocolMessageChannelSerial:(nullable NSString *)protocolMessageChannelSerial
-                                                  channel:(id<APRealtimeChannel>)channel;
+- (void)nosync_handleObjectSyncProtocolMessageWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
+                                    protocolMessageChannelSerial:(nullable NSString *)protocolMessageChannelSerial
+                                                         channel:(id<APRealtimeChannel>)channel;
 
 @end
 
