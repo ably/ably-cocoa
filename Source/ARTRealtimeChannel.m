@@ -68,12 +68,6 @@
 #ifdef ABLY_SUPPORTS_PLUGINS
         // The LiveObjects repository provides an extension to `ARTRealtimeChannel` so we need to ensure that we register the pluginAPI before that extension is used.
         [ARTPluginAPI registerSelf];
-
-        // If the LiveObjects plugin has been provided, set up LiveObjects functionality for this channel.
-        id<APLiveObjectsInternalPluginProtocol> liveObjectsPlugin = internal.realtime.options.liveObjectsPlugin;
-        if (liveObjectsPlugin) {
-            [liveObjectsPlugin prepareChannel:internal client:realtimeInternal];
-        }
 #endif
     }
     return self;
@@ -300,6 +294,14 @@ NS_ASSUME_NONNULL_END
                                                                                logger:logger
                                                                      logMessagePrefix:[NSString stringWithFormat:@"RT: %p C:%p ", _realtime, self]];
         _pluginData = [[NSMutableDictionary alloc] init];
+
+#ifdef ABLY_SUPPORTS_PLUGINS
+        // If the LiveObjects plugin has been provided, set up LiveObjects functionality for this channel.
+        id<APLiveObjectsInternalPluginProtocol> liveObjectsPlugin = realtime.options.liveObjectsPlugin;
+        if (liveObjectsPlugin) {
+            [liveObjectsPlugin prepareChannel:self client:realtime];
+        }
+#endif
     }
     return self;
 }
