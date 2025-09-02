@@ -32,15 +32,15 @@ extern const ARTPluginName ARTPluginNameLiveObjects;
 
 /**
  * Enables a non-default Ably host to be specified. For development environments only. The default value is `rest.ably.io`.
- * @deprecated This property is deprecated and will be removed in a future version. Use the `endpoint` client option instead.
+ * @ deprecated This property is deprecated and will be removed in a future version. Use the `endpoint` client option instead.
  */
-@property (readwrite, nonatomic) NSString *restHost DEPRECATED_MSG_ATTRIBUTE("Use the endpoint client option instead.");
+@property (readwrite, nonatomic) NSString *restHost; // DEPRECATED_MSG_ATTRIBUTE("Use the endpoint client option instead.");
 
 /**
  * Enables a non-default Ably host to be specified for realtime connections. For development environments only. The default value is `realtime.ably.io`.
- * @deprecated This property is deprecated and will be removed in a future version. Use the `endpoint` client option instead.
+ * @ deprecated This property is deprecated and will be removed in a future version. Use the `endpoint` client option instead.
  */
-@property (readwrite, nonatomic) NSString *realtimeHost DEPRECATED_MSG_ATTRIBUTE("Use the endpoint client option instead.");
+@property (readwrite, nonatomic) NSString *realtimeHost; // DEPRECATED_MSG_ATTRIBUTE("Use the endpoint client option instead.");
 
 /**
  * Enables a non-default Ably port to be specified. For development environments only. The default value is 80.
@@ -54,9 +54,9 @@ extern const ARTPluginName ARTPluginNameLiveObjects;
 
 /**
  * Enables a [custom environment](https://ably.com/docs/platform-customization) to be used with the Ably service.
- * @deprecated This property is deprecated and will be removed in a future version. Use the `endpoint` client option instead.
+ * @ deprecated This property is deprecated and will be removed in a future version. Use the `endpoint` client option instead.
  */
-@property (readwrite, nonatomic, nullable) NSString *environment DEPRECATED_MSG_ATTRIBUTE("Use the endpoint client option instead.");
+@property (readwrite, nonatomic, nullable) NSString *environment; // DEPRECATED_MSG_ATTRIBUTE("Use the endpoint client option instead.");
 
 /**
  * When `false`, the client will use an insecure connection. The default is `true`, meaning a TLS connection will be used to connect to Ably.
