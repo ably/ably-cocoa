@@ -116,7 +116,7 @@ class AblyTests {
         if let testApplication {
             app = testApplication
         } else {
-            let request = NSMutableURLRequest(url: URL(string: "https://\(options.restHost):\(options.tlsPort)/apps")!)
+            let request = NSMutableURLRequest(url: URL(string: "https://\(options.primaryDomain):\(options.tlsPort)/apps")!)
             request.httpMethod = "POST"
             request.httpBody = try JSONUtility.encode(appSetupModel.postApps)
 
@@ -143,7 +143,7 @@ class AblyTests {
 
     class func clientOptions(for test: Test, debug: Bool = false, key: String? = nil, requestToken: Bool = false) throws -> ARTClientOptions {
         let options = ARTClientOptions()
-        options.environment = getEnvironment()
+        options.endpoint = getEnvironment()
         if debug {
             options.logLevel = .verbose
         }
@@ -625,9 +625,9 @@ public func delay(_ seconds: TimeInterval, closure: @escaping () -> Void) {
 }
 
 public func getEnvironment() -> String {
-    let b = Bundle(for: AblyTests.self)    
+    let b = Bundle(for: AblyTests.self)
     guard let env = b.infoDictionary!["ABLY_ENV"] as? String, env.count > 0 else {
-        return "sandbox"
+        return "nonprod:sandbox"
     }
     return env
 }

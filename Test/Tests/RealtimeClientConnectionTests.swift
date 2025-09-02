@@ -4243,14 +4243,12 @@ class RealtimeClientConnectionTests: XCTestCase {
         _test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_realtime_ably_io(env: "sandbox", test: test)
     }
 
-    // RTN17c
+    // RTN17c TODO: spec?
     func _test__092__Connection__Host_Fallback__should_retry_hosts_in_random_order_after_checkin_if_an_internet_connection_is_available(env: String?, test: Test) {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
         options.disconnectedRetryTimeout = 1.0
-        if let env {
-            options.environment = env
-        }
+        options.endpoint = env
         options.testOptions.realtimeRequestTimeout = 5.0
         options.testOptions.shuffleArray = shuffleArrayInExpectedHostOrder
         let transportFactory = TestProxyTransportFactory()
@@ -4267,15 +4265,19 @@ class RealtimeClientConnectionTests: XCTestCase {
         let hostPrefixes = Array("abcde")
         
         let extractHostname = { (url: URL) in
-            if options.hasEnvironmentDifferentThanProduction {
-                NSRegularExpression.extract(url.absoluteString, pattern: "\(options.environment!)-[\(hostPrefixes.first!)-\(hostPrefixes.last!)]-fallback.ably-realtime.com")
+            if let env {
+                if env.hasPrefix("nonprod:") {
+                    NSRegularExpression.extract(url.absoluteString, pattern: "\(env.dropFirst(8)).[\(hostPrefixes.first!)-\(hostPrefixes.last!)].fallback.ably-realtime-nonprod.com")
+                } else {
+                    NSRegularExpression.extract(url.absoluteString, pattern: "\(env).[\(hostPrefixes.first!)-\(hostPrefixes.last!)].fallback.ably-realtime.com")
+                }
             } else {
                 NSRegularExpression.extract(url.absoluteString, pattern: "[\(hostPrefixes.first!)-\(hostPrefixes.last!)].ably-realtime.com")
             }
         }
         
         var urls = [URL]()
-        let expectedFallbackHosts = Array(expectedHostOrder.map { ARTDefault.fallbackHosts(withEnvironment: options.environment)[$0] })
+        let expectedFallbackHosts = Array(expectedHostOrder.map { options.fallbackDomains()[$0] })
         
         transportFactory.networkConnectEvent = { transport, url in
             if client.internal.transport !== transport {

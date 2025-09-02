@@ -176,7 +176,7 @@ class RestClientTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
 
         let client = ARTRest(key: options.key!)
-        client.internal.prioritizedHost = options.restHost
+        client.internal.prioritizedHost = options.primaryDomain
 
         let publishTask = publishTestMessage(client, channelName: test.uniqueChannelName())
 
@@ -317,11 +317,12 @@ class RestClientTests: XCTestCase {
         expect(testHTTPExecutor.requests.first?.url?.host).toEventually(equal("fake.ably.io"), timeout: testTimeout)
     }
 
-    func test__026__RestClient__endpoint__should_ignore_an_environment_when_restHost_is_customized() {
+    // REC1c1
+    func test__026__RestClient__endpoint__should_raise_an_exception_setting_environment_when_restHost_is_customized() {
         let test = Test()
         let options = ARTClientOptions(key: "fake:key")
-        options.environment = "test"
         options.restHost = "fake.ably.io"
+        options.environment = "test"
         let client = ARTRest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
@@ -370,13 +371,11 @@ class RestClientTests: XCTestCase {
         expect(testHTTPExecutor.requests.first?.url?.scheme).toEventually(equal("http"), timeout: testTimeout)
     }
 
-    // RSC11b
-    func test__030__RestClient__endpoint__should_not_prepend_the_environment_if_environment_is_configured_as__production_() {
+    // RSC25
+    func test__030__RestClient__endpoint__requests_are_sent_to_primary_domain() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
-        options.environment = "production"
         let client = ARTRest(options: options)
-        XCTAssertEqual(client.internal.options.restHost, ARTDefault.restHost())
-        XCTAssertEqual(client.internal.options.realtimeHost, ARTDefault.realtimeHost())
+        XCTAssertEqual(client.internal.options.primaryDomain, ARTDefault.primaryDomain())
     }
 
     // RSC13
@@ -834,11 +833,11 @@ class RestClientTests: XCTestCase {
         XCTAssertNotNil(client.internal.options.environment)
         XCTAssertNotEqual(client.internal.options.environment, "production")
 
-        let hosts = ARTFallbackHosts.hosts(from: client.internal.options)
+        let hosts = client.internal.options.fallbackDomains()
         let fallback = ARTFallback(fallbackHosts: hosts, shuffleArray: ARTFallback_shuffleArray)
-        XCTAssertEqual(fallback.hosts.count, ARTDefault.fallbackHosts().count)
+        XCTAssertEqual(fallback.hosts.count, ARTDefault.fallbackDomains().count)
 
-        ARTDefault.fallbackHosts().forEach {
+        ARTDefault.fallbackDomains().forEach {
             expect(fallback.hosts).to(contain($0))
         }
     }
@@ -853,14 +852,14 @@ class RestClientTests: XCTestCase {
         let client = ARTRest(options: options)
         XCTAssertTrue(client.internal.options.fallbackHostsUseDefault)
         // Custom
-        XCTAssertNotEqual(client.internal.options.restHost, ARTDefault.restHost())
-        XCTAssertNotEqual(client.internal.options.realtimeHost, ARTDefault.realtimeHost())
+        XCTAssertNotEqual(client.internal.options.restHost, ARTDefault.primaryDomain())
+        XCTAssertNotEqual(client.internal.options.realtimeHost, ARTDefault.primaryDomain())
 
-        let hosts = ARTFallbackHosts.hosts(from: client.internal.options)
+        let hosts = client.internal.options.fallbackDomains()
         let fallback = ARTFallback(fallbackHosts: hosts, shuffleArray: ARTFallback_shuffleArray)
-        XCTAssertEqual(fallback.hosts.count, ARTDefault.fallbackHosts().count)
+        XCTAssertEqual(fallback.hosts.count, ARTDefault.fallbackDomains().count)
 
-        ARTDefault.fallbackHosts().forEach {
+        ARTDefault.fallbackDomains().forEach {
             expect(fallback.hosts).to(contain($0))
         }
     }
@@ -1262,8 +1261,8 @@ class RestClientTests: XCTestCase {
         XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-e].ably-realtime.com"))
     }
 
-    // RSC15e
-    func test__049__RestClient__Host_Fallback__every_new_HTTP_request_is_first_attempted_to_the_default_primary_host_rest_ably_io() {
+    // RSC25
+    func test__049__RestClient__Host_Fallback__every_new_HTTP_request_is_first_attempted_to_the_default_primary_domain() {
         let test = Test()
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.httpMaxRetryCount = 1
@@ -1292,27 +1291,29 @@ class RestClientTests: XCTestCase {
         }
 
         XCTAssertEqual(testHTTPExecutor.requests.count, 3)
-        XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests.at(0)?.url?.absoluteString, pattern: "//\(ARTDefault.restHost())"))
+        XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests.at(0)?.url?.absoluteString, pattern: "//\(ARTDefault.primaryDomain())"))
         XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests.at(1)?.url?.absoluteString, pattern: "//[a-e].ably-realtime.com"))
-        XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests.at(2)?.url?.absoluteString, pattern: "//\(ARTDefault.restHost())"))
+        XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests.at(2)?.url?.absoluteString, pattern: "//\(ARTDefault.primaryDomain())"))
     }
 
     // RSC15a
 
     // RSC15h
     func test__065__RestClient__Host_Fallback__retry_hosts_in_random_order__default_fallback_hosts_should_match__a_e__ably_realtime_com() {
-        let defaultFallbackHosts = ARTDefault.fallbackHosts()
+        let defaultFallbackHosts = ARTDefault.fallbackDomains()
         defaultFallbackHosts.forEach { host in
             expect(host).to(match("[a-e].ably-realtime.com"))
         }
         XCTAssertEqual(defaultFallbackHosts.count, 5)
     }
 
-    // RSC15i
-    func test__066__RestClient__Host_Fallback__retry_hosts_in_random_order__environment_fallback_hosts_have_the_format__environment___a_e__fallback_ably_realtime_com() {
-        let environmentFallbackHosts = ARTDefault.fallbackHosts(withEnvironment: "sandbox")
+    // REC2c5
+    func test__066__RestClient__Host_Fallback__retry_hosts_in_random_order__environment_fallback_hosts_have_the_format__environment_a_e_fallback_ably_realtime_com() {
+        let options = ARTClientOptions(key: "fake:key")
+        options.environment = "sandbox"
+        let environmentFallbackHosts = options.fallbackDomains()
         environmentFallbackHosts.forEach { host in
-            expect(host).to(match("sandbox-[a-e]-fallback.ably-realtime.com"))
+            expect(host).to(match("sandbox.[a-e].fallback.ably-realtime.com"))
         }
         XCTAssertEqual(environmentFallbackHosts.count, 5)
     }
@@ -1342,7 +1343,7 @@ class RestClientTests: XCTestCase {
             NSRegularExpression.extract(request.url!.absoluteString, pattern: "[a-e].ably-realtime.com")
         }
         let resultFallbackHosts = testHTTPExecutor.requests.compactMap(extractHostname)
-        let expectedFallbackHosts = Array(expectedHostOrder.map { ARTDefault.fallbackHosts()[$0] }[0 ..< Int(options.httpMaxRetryCount)])
+        let expectedFallbackHosts = Array(expectedHostOrder.map { options.fallbackDomains()[$0] }[0 ..< Int(options.httpMaxRetryCount)])
 
         XCTAssertEqual(resultFallbackHosts, expectedFallbackHosts)
     }
@@ -1402,13 +1403,13 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        XCTAssertEqual(testHTTPExecutor.requests.count, ARTDefault.fallbackHosts().count + 1)
+        XCTAssertEqual(testHTTPExecutor.requests.count, options.fallbackDomains().count + 1)
 
         let extractHostname = { (request: URLRequest) in
             NSRegularExpression.extract(request.url!.absoluteString, pattern: "[a-e].ably-realtime.com")
         }
         let resultFallbackHosts = testHTTPExecutor.requests.compactMap(extractHostname)
-        let expectedFallbackHosts = expectedHostOrder.map { ARTDefault.fallbackHosts()[$0] }
+        let expectedFallbackHosts = expectedHostOrder.map { options.fallbackDomains()[$0] }
 
         XCTAssertEqual(resultFallbackHosts, expectedFallbackHosts)
     }
@@ -1467,7 +1468,7 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        XCTAssertEqual(testHTTPExecutor.requests.count, ARTDefault.fallbackHosts().count + 1)
+        XCTAssertEqual(testHTTPExecutor.requests.count, options.fallbackDomains().count + 1)
 
         let extractHostname = { (request: URLRequest) in
             NSRegularExpression.extract(request.url!.absoluteString, pattern: "[f-j].ably-realtime.com")
@@ -1499,7 +1500,7 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        XCTAssertEqual(testHTTPExecutor.requests.count, ARTDefault.fallbackHosts().count + 1)
+        XCTAssertEqual(testHTTPExecutor.requests.count, options.fallbackDomains().count + 1)
 
         let fallbackRequests = testHTTPExecutor.requests.filter {
             NSRegularExpression.match($0.url!.absoluteString, pattern: "[f-j].ably-realtime.com")
