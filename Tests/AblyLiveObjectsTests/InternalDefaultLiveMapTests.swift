@@ -1354,6 +1354,7 @@ struct InternalDefaultLiveMapTests {
         // @spec RTLM21e3
         // @spec RTLM21e4
         // @spec RTLM21f
+        @Test
         func publishesCorrectObjectMessage() async throws {
             let logger = TestLogger()
             let map = InternalDefaultLiveMap.createZeroValued(objectID: "map:test@123", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
