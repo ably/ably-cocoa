@@ -6,12 +6,12 @@ import Ably
 /// This provides us with a mockable interface to ably-cocoa, and it also allows internal components and their tests not to need to worry about some of the boring details of how we bridge Swift types to `_AblyPluginSupportPrivate`'s Objective-C API (i.e. boxing).
 internal protocol CoreSDK: AnyObject, Sendable {
     /// Implements the internal `#publish` method of RTO15.
-    func publish(objectMessages: [OutboundObjectMessage]) async throws(InternalError)
+    func publish(objectMessages: [OutboundObjectMessage]) async throws(ARTErrorInfo)
 
     /// Replaces the implementation of ``publish(objectMessages:)``.
     ///
     /// Used by integration tests, for example to disable `ObjectMessage` publishing so that a test can verify that a behaviour is not a side effect of an `ObjectMessage` sent by the SDK.
-    func testsOnly_overridePublish(with newImplementation: @escaping ([OutboundObjectMessage]) async throws(InternalError) -> Void)
+    func testsOnly_overridePublish(with newImplementation: @escaping ([OutboundObjectMessage]) async throws(ARTErrorInfo) -> Void)
 
     /// Returns the current state of the Realtime channel that this wraps.
     var nosync_channelState: _AblyPluginSupportPrivate.RealtimeChannelState { get }
@@ -30,7 +30,7 @@ internal final class DefaultCoreSDK: CoreSDK {
     ///
     /// This enables the `testsOnly_overridePublish(with:)` test hook.
     ///
-    /// - Note: This should be `throws(InternalError)` but that causes a compilation error of "Runtime support for typed throws function types is only available in macOS 15.0.0 or newer".
+    /// - Note: This should be `throws(ARTErrorInfo)` but that causes a compilation error of "Runtime support for typed throws function types is only available in macOS 15.0.0 or newer".
     private nonisolated(unsafe) var overriddenPublishImplementation: (([OutboundObjectMessage]) async throws -> Void)?
 
     internal init(
@@ -47,7 +47,7 @@ internal final class DefaultCoreSDK: CoreSDK {
 
     // MARK: - CoreSDK conformance
 
-    internal func publish(objectMessages: [OutboundObjectMessage]) async throws(InternalError) {
+    internal func publish(objectMessages: [OutboundObjectMessage]) async throws(ARTErrorInfo) {
         logger.log("publish(objectMessages: \(LoggingUtilities.formatObjectMessagesForLogging(objectMessages)))", level: .debug)
 
         // Use the overridden implementation if supplied
@@ -58,10 +58,10 @@ internal final class DefaultCoreSDK: CoreSDK {
             do {
                 try await overriddenImplementation(objectMessages)
             } catch {
-                guard let internalError = error as? InternalError else {
-                    preconditionFailure("Expected InternalError, got \(error)")
+                guard let artErrorInfo = error as? ARTErrorInfo else {
+                    preconditionFailure("Expected ARTErrorInfo, got \(error)")
                 }
-                throw internalError
+                throw artErrorInfo
             }
             return
         }
@@ -75,7 +75,7 @@ internal final class DefaultCoreSDK: CoreSDK {
         )
     }
 
-    internal func testsOnly_overridePublish(with newImplementation: @escaping ([OutboundObjectMessage]) async throws(InternalError) -> Void) {
+    internal func testsOnly_overridePublish(with newImplementation: @escaping ([OutboundObjectMessage]) async throws(ARTErrorInfo) -> Void) {
         mutex.withLock {
             overriddenPublishImplementation = newImplementation
         }

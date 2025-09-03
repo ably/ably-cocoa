@@ -109,13 +109,9 @@ struct AblyLiveObjectsTests {
 
         // 7. Now, send an invalid OBJECT ProtocolMessage to check that ably-cocoa correctly reports on its NACK.
         let invalidObjectThrownError = try await #require(throws: ARTErrorInfo.self) {
-            do throws(InternalError) {
-                try await channel.testsOnly_nonTypeErasedObjects.testsOnly_publish(objectMessages: [
-                    .init(),
-                ])
-            } catch {
-                throw error.toARTErrorInfo()
-            }
+            try await channel.testsOnly_nonTypeErasedObjects.testsOnly_publish(objectMessages: [
+                .init(),
+            ])
         }
 
         // (These are just based on what I observed in the NACK)

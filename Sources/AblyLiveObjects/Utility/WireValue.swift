@@ -235,11 +235,11 @@ internal extension WireValue {
     ///
     /// - Throws: `ConversionError.dataCannotBeConvertedToJSONValue` if `WireValue` represents binary data.
     var toJSONValue: JSONValue {
-        get throws(InternalError) {
-            let neverExtended = try toExtendedJSONValue.map { extra throws(InternalError) -> Never in
+        get throws(ARTErrorInfo) {
+            let neverExtended = try toExtendedJSONValue.map { extra throws(ARTErrorInfo) -> Never in
                 switch extra {
                 case .data:
-                    throw ConversionError.dataCannotBeConvertedToJSONValue.toInternalError()
+                    throw ConversionError.dataCannotBeConvertedToJSONValue.toARTErrorInfo()
                 }
             }
 

@@ -1,4 +1,5 @@
 internal import _AblyPluginSupportPrivate
+import Ably
 import Foundation
 
 // This file contains the ObjectMessage types that we use within the codebase. We convert them to and from the corresponding wire types (e.g. `InboundWireObjectMessage`) for sending and receiving over the wire.
@@ -94,20 +95,20 @@ internal extension InboundObjectMessage {
     ///
     /// - Parameters:
     ///   - format: The format to use when applying the decoding rules of OD5.
-    /// - Throws: `InternalError` if JSON or Base64 decoding fails.
+    /// - Throws: `ARTErrorInfo` if JSON or Base64 decoding fails.
     init(
         wireObjectMessage: InboundWireObjectMessage,
         format: _AblyPluginSupportPrivate.EncodingFormat
-    ) throws(InternalError) {
+    ) throws(ARTErrorInfo) {
         id = wireObjectMessage.id
         clientId = wireObjectMessage.clientId
         connectionId = wireObjectMessage.connectionId
         extras = wireObjectMessage.extras
         timestamp = wireObjectMessage.timestamp
-        operation = try wireObjectMessage.operation.map { wireObjectOperation throws(InternalError) in
+        operation = try wireObjectMessage.operation.map { wireObjectOperation throws(ARTErrorInfo) in
             try .init(wireObjectOperation: wireObjectOperation, format: format)
         }
-        object = try wireObjectMessage.object.map { wireObjectState throws(InternalError) in
+        object = try wireObjectMessage.object.map { wireObjectState throws(ARTErrorInfo) in
             try .init(wireObjectState: wireObjectState, format: format)
         }
         serial = wireObjectMessage.serial
@@ -142,11 +143,11 @@ internal extension ObjectOperation {
     ///
     /// - Parameters:
     ///   - format: The format to use when applying the decoding rules of OD5.
-    /// - Throws: `InternalError` if JSON or Base64 decoding fails.
+    /// - Throws: `ARTErrorInfo` if JSON or Base64 decoding fails.
     init(
         wireObjectOperation: WireObjectOperation,
         format: _AblyPluginSupportPrivate.EncodingFormat
-    ) throws(InternalError) {
+    ) throws(ARTErrorInfo) {
         // Decode the action and objectId first they're not part of PartialObjectOperation
         action = wireObjectOperation.action
         objectId = wireObjectOperation.objectId
@@ -206,16 +207,16 @@ internal extension PartialObjectOperation {
     ///
     /// - Parameters:
     ///   - format: The format to use when applying the decoding rules of OD5.
-    /// - Throws: `InternalError` if JSON or Base64 decoding fails.
+    /// - Throws: `ARTErrorInfo` if JSON or Base64 decoding fails.
     init(
         partialWireObjectOperation: PartialWireObjectOperation,
         format: _AblyPluginSupportPrivate.EncodingFormat
-    ) throws(InternalError) {
-        mapOp = try partialWireObjectOperation.mapOp.map { wireObjectsMapOp throws(InternalError) in
+    ) throws(ARTErrorInfo) {
+        mapOp = try partialWireObjectOperation.mapOp.map { wireObjectsMapOp throws(ARTErrorInfo) in
             try .init(wireObjectsMapOp: wireObjectsMapOp, format: format)
         }
         counterOp = partialWireObjectOperation.counterOp
-        map = try partialWireObjectOperation.map.map { wireMap throws(InternalError) in
+        map = try partialWireObjectOperation.map.map { wireMap throws(ARTErrorInfo) in
             try .init(wireObjectsMap: wireMap, format: format)
         }
         counter = partialWireObjectOperation.counter
@@ -247,11 +248,11 @@ internal extension ObjectData {
     ///
     /// - Parameters:
     ///   - format: The format to use when applying the decoding rules of OD5.
-    /// - Throws: `InternalError` if JSON or Base64 decoding fails.
+    /// - Throws: `ARTErrorInfo` if JSON or Base64 decoding fails.
     init(
         wireObjectData: WireObjectData,
         format: _AblyPluginSupportPrivate.EncodingFormat
-    ) throws(InternalError) {
+    ) throws(ARTErrorInfo) {
         objectId = wireObjectData.objectId
         boolean = wireObjectData.boolean
         number = wireObjectData.number
@@ -351,13 +352,13 @@ internal extension ObjectsMapOp {
     ///
     /// - Parameters:
     ///   - format: The format to use when applying the decoding rules of OD5.
-    /// - Throws: `InternalError` if JSON or Base64 decoding fails.
+    /// - Throws: `ARTErrorInfo` if JSON or Base64 decoding fails.
     init(
         wireObjectsMapOp: WireObjectsMapOp,
         format: _AblyPluginSupportPrivate.EncodingFormat
-    ) throws(InternalError) {
+    ) throws(ARTErrorInfo) {
         key = wireObjectsMapOp.key
-        data = try wireObjectsMapOp.data.map { wireObjectData throws(InternalError) in
+        data = try wireObjectsMapOp.data.map { wireObjectData throws(ARTErrorInfo) in
             try .init(wireObjectData: wireObjectData, format: format)
         }
     }
@@ -379,11 +380,11 @@ internal extension ObjectsMapEntry {
     ///
     /// - Parameters:
     ///   - format: The format to use when applying the decoding rules of OD5.
-    /// - Throws: `InternalError` if JSON or Base64 decoding fails.
+    /// - Throws: `ARTErrorInfo` if JSON or Base64 decoding fails.
     init(
         wireObjectsMapEntry: WireObjectsMapEntry,
         format: _AblyPluginSupportPrivate.EncodingFormat
-    ) throws(InternalError) {
+    ) throws(ARTErrorInfo) {
         tombstone = wireObjectsMapEntry.tombstone
         timeserial = wireObjectsMapEntry.timeserial
         data = if let wireObjectData = wireObjectsMapEntry.data {
@@ -412,13 +413,13 @@ internal extension ObjectsMap {
     ///
     /// - Parameters:
     ///   - format: The format to use when applying the decoding rules of OD5.
-    /// - Throws: `InternalError` if JSON or Base64 decoding fails.
+    /// - Throws: `ARTErrorInfo` if JSON or Base64 decoding fails.
     init(
         wireObjectsMap: WireObjectsMap,
         format: _AblyPluginSupportPrivate.EncodingFormat
-    ) throws(InternalError) {
+    ) throws(ARTErrorInfo) {
         semantics = wireObjectsMap.semantics
-        entries = try wireObjectsMap.entries?.ablyLiveObjects_mapValuesWithTypedThrow { wireMapEntry throws(InternalError) in
+        entries = try wireObjectsMap.entries?.ablyLiveObjects_mapValuesWithTypedThrow { wireMapEntry throws(ARTErrorInfo) in
             try .init(wireObjectsMapEntry: wireMapEntry, format: format)
         }
     }
@@ -440,18 +441,18 @@ internal extension ObjectState {
     ///
     /// - Parameters:
     ///   - format: The format to use when applying the decoding rules of OD5.
-    /// - Throws: `InternalError` if JSON or Base64 decoding fails.
+    /// - Throws: `ARTErrorInfo` if JSON or Base64 decoding fails.
     init(
         wireObjectState: WireObjectState,
         format: _AblyPluginSupportPrivate.EncodingFormat
-    ) throws(InternalError) {
+    ) throws(ARTErrorInfo) {
         objectId = wireObjectState.objectId
         siteTimeserials = wireObjectState.siteTimeserials
         tombstone = wireObjectState.tombstone
-        createOp = try wireObjectState.createOp.map { wireObjectOperation throws(InternalError) in
+        createOp = try wireObjectState.createOp.map { wireObjectOperation throws(ARTErrorInfo) in
             try .init(wireObjectOperation: wireObjectOperation, format: format)
         }
-        map = try wireObjectState.map.map { wireObjectsMap throws(InternalError) in
+        map = try wireObjectState.map.map { wireObjectsMap throws(ARTErrorInfo) in
             try .init(wireObjectsMap: wireObjectsMap, format: format)
         }
         counter = wireObjectState.counter

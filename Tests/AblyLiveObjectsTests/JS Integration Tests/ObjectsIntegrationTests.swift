@@ -2839,7 +2839,7 @@ private struct ObjectsIntegrationTests {
                         let internallyTypedObjects = try #require(objects as? PublicDefaultRealtimeObjects)
                         var capturedCounterId: String?
 
-                        internallyTypedObjects.testsOnly_overridePublish(with: { objectMessages throws(InternalError) in
+                        internallyTypedObjects.testsOnly_overridePublish(with: { objectMessages throws(ARTErrorInfo) in
                             do {
                                 let counterId = try #require(objectMessages[0].operation?.objectId)
                                 capturedCounterId = counterId
@@ -2852,7 +2852,7 @@ private struct ObjectsIntegrationTests {
                                     state: [objectsHelper.counterCreateOp(objectId: counterId, count: 10)],
                                 )
                             } catch {
-                                throw error.toInternalError()
+                                throw LiveObjectsError.other(error).toARTErrorInfo()
                             }
                         })
 
@@ -3085,7 +3085,7 @@ private struct ObjectsIntegrationTests {
                         let internallyTypedObjects = try #require(objects as? PublicDefaultRealtimeObjects)
                         var capturedMapId: String?
 
-                        internallyTypedObjects.testsOnly_overridePublish(with: { objectMessages throws(InternalError) in
+                        internallyTypedObjects.testsOnly_overridePublish(with: { objectMessages throws(ARTErrorInfo) in
                             do {
                                 let mapId = try #require(objectMessages[0].operation?.objectId)
                                 capturedMapId = mapId
@@ -3108,7 +3108,7 @@ private struct ObjectsIntegrationTests {
                                     ],
                                 )
                             } catch {
-                                throw error.toInternalError()
+                                throw LiveObjectsError.other(error).toARTErrorInfo()
                             }
                         })
 

@@ -567,8 +567,8 @@ struct InternalDefaultLiveCounterTests {
             let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "counter:test@123", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
 
-            coreSDK.setPublishHandler { _ throws(InternalError) in
-                throw InternalError.other(.generic(NSError(domain: "test", code: 0, userInfo: [NSLocalizedDescriptionKey: "Publish failed"])))
+            coreSDK.setPublishHandler { _ throws(ARTErrorInfo) in
+                throw LiveObjectsError.other(NSError(domain: "test", code: 0, userInfo: [NSLocalizedDescriptionKey: "Publish failed"])).toARTErrorInfo()
             }
 
             await #expect {
