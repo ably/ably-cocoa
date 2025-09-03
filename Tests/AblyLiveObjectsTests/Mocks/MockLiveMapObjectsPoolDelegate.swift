@@ -2,7 +2,7 @@
 import Foundation
 
 /// A mock delegate that can return predefined objects
-final class MockLiveMapObjectPoolDelegate: LiveMapObjectPoolDelegate {
+final class MockLiveMapObjectsPoolDelegate: LiveMapObjectsPoolDelegate {
     private let poolMutex: DispatchQueueMutex<ObjectsPool>
 
     init(internalQueue: DispatchQueue) {

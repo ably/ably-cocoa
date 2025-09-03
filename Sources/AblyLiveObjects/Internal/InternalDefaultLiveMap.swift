@@ -2,7 +2,7 @@ internal import _AblyPluginSupportPrivate
 import Ably
 
 /// Protocol for accessing objects from the ObjectsPool. This is used by a LiveMap when it needs to return an object given an object ID.
-internal protocol LiveMapObjectPoolDelegate: AnyObject, Sendable {
+internal protocol LiveMapObjectsPoolDelegate: AnyObject, Sendable {
     /// A snapshot of the objects pool.
     var nosync_objectsPool: ObjectsPool { get }
 }
@@ -121,7 +121,7 @@ internal final class InternalDefaultLiveMap: Sendable {
     // MARK: - Internal methods that back LiveMap conformance
 
     /// Returns the value associated with a given key, following RTLM5d specification.
-    internal func get(key: String, coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> InternalLiveMapValue? {
+    internal func get(key: String, coreSDK: CoreSDK, delegate: LiveMapObjectsPoolDelegate) throws(ARTErrorInfo) -> InternalLiveMapValue? {
         try mutableStateMutex.withSync { mutableState throws(ARTErrorInfo) in
             try mutableState.nosync_get(
                 key: key,
@@ -131,7 +131,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         }
     }
 
-    internal func size(coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> Int {
+    internal func size(coreSDK: CoreSDK, delegate: LiveMapObjectsPoolDelegate) throws(ARTErrorInfo) -> Int {
         try mutableStateMutex.withSync { mutableState throws(ARTErrorInfo) in
             try mutableState.nosync_size(
                 coreSDK: coreSDK,
@@ -140,7 +140,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         }
     }
 
-    internal func entries(coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> [(key: String, value: InternalLiveMapValue)] {
+    internal func entries(coreSDK: CoreSDK, delegate: LiveMapObjectsPoolDelegate) throws(ARTErrorInfo) -> [(key: String, value: InternalLiveMapValue)] {
         try mutableStateMutex.withSync { mutableState throws(ARTErrorInfo) in
             try mutableState.nosync_entries(
                 coreSDK: coreSDK,
@@ -149,12 +149,12 @@ internal final class InternalDefaultLiveMap: Sendable {
         }
     }
 
-    internal func keys(coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> [String] {
+    internal func keys(coreSDK: CoreSDK, delegate: LiveMapObjectsPoolDelegate) throws(ARTErrorInfo) -> [String] {
         // RTLM12b: Identical to LiveMap#entries, except that it returns only the keys from the internal data map
         try entries(coreSDK: coreSDK, delegate: delegate).map(\.key)
     }
 
-    internal func values(coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> [InternalLiveMapValue] {
+    internal func values(coreSDK: CoreSDK, delegate: LiveMapObjectsPoolDelegate) throws(ARTErrorInfo) -> [InternalLiveMapValue] {
         // RTLM13b: Identical to LiveMap#entries, except that it returns only the values from the internal data map
         try entries(coreSDK: coreSDK, delegate: delegate).map(\.value)
     }

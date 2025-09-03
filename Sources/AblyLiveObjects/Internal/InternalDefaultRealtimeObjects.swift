@@ -2,7 +2,7 @@ internal import _AblyPluginSupportPrivate
 import Ably
 
 /// This provides the implementation behind ``PublicDefaultRealtimeObjects``, via internal versions of the ``RealtimeObjects`` API.
-internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPoolDelegate {
+internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoolDelegate {
     private let mutableStateMutex: DispatchQueueMutex<MutableState>
 
     private let logger: Logger
@@ -139,7 +139,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
         garbageCollectionTask.cancel()
     }
 
-    // MARK: - LiveMapObjectPoolDelegate
+    // MARK: - LiveMapObjectsPoolDelegate
 
     internal var nosync_objectsPool: ObjectsPool {
         mutableStateMutex.withoutSync { mutableState in

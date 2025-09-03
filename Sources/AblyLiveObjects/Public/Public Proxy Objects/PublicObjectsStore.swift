@@ -45,7 +45,7 @@ internal final class PublicObjectsStore: Sendable {
 
     internal struct MapCreationArgs {
         internal var coreSDK: CoreSDK
-        internal var delegate: LiveMapObjectPoolDelegate
+        internal var delegate: LiveMapObjectsPoolDelegate
         internal var logger: Logger
     }
 

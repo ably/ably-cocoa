@@ -89,7 +89,7 @@ struct ObjectsPoolTests {
         func updatesExistingMapObject() async throws {
             let logger = TestLogger()
             let internalQueue = TestFactories.createInternalQueue()
-            let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
+            let delegate = MockLiveMapObjectsPoolDelegate(internalQueue: internalQueue)
             let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
             let existingMap = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             let existingMapSubscriber = Subscriber<DefaultLiveMapUpdate, SubscribeResponse>(callbackQueue: .main)
@@ -194,7 +194,7 @@ struct ObjectsPoolTests {
         func createsNewMapObject() throws {
             let logger = TestLogger()
             let internalQueue = TestFactories.createInternalQueue()
-            let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
+            let delegate = MockLiveMapObjectsPoolDelegate(internalQueue: internalQueue)
             let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
 
             var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
@@ -301,7 +301,7 @@ struct ObjectsPoolTests {
         func handlesComplexSyncScenario() async throws {
             let logger = TestLogger()
             let internalQueue = TestFactories.createInternalQueue()
-            let delegate = MockLiveMapObjectPoolDelegate(internalQueue: internalQueue)
+            let delegate = MockLiveMapObjectsPoolDelegate(internalQueue: internalQueue)
             let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
 
             let existingMap = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
