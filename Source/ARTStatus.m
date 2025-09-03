@@ -25,16 +25,37 @@ NSInteger getStatusFromCode(NSInteger code) {
     return [ARTErrorInfo createWithCode:code status:getStatusFromCode(code) message:message requestId:requestId];
 }
 
++ (ARTErrorInfo *)createWithCode:(NSInteger)code message:(NSString *)message requestId:(nullable NSString *)requestId additionalUserInfo:(nullable NSDictionary<NSString *, id> *)additionalUserInfo {
+    return [ARTErrorInfo createWithCode:code status:getStatusFromCode(code) message:message requestId:requestId additionalUserInfo:additionalUserInfo];
+}
+
 + (ARTErrorInfo *)createWithCode:(NSInteger)code message:(NSString *)message {
     return [ARTErrorInfo createWithCode:code status:getStatusFromCode(code) message:message requestId:nil];
 }
 
++ (ARTErrorInfo *)createWithCode:(NSInteger)code message:(NSString *)message additionalUserInfo:(nullable NSDictionary<NSString *, id> *)additionalUserInfo {
+    return [ARTErrorInfo createWithCode:code status:getStatusFromCode(code) message:message requestId:nil additionalUserInfo:additionalUserInfo];
+}
+
++ (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message additionalUserInfo:(nullable NSDictionary<NSString *, id> *)additionalUserInfo {
+    return [ARTErrorInfo createWithCode:code status:status message:message requestId:nil additionalUserInfo:additionalUserInfo];
+}
+
 + (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message requestId:(nullable NSString *)requestId {
+    return [ARTErrorInfo createWithCode:code status:status message:message requestId:requestId additionalUserInfo:nil];
+}
+
++ (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message requestId:(nullable NSString *)requestId additionalUserInfo:(nullable NSDictionary<NSString *, id> *)additionalUserInfo {
     NSMutableDictionary *userInfo = [NSMutableDictionary new];
     userInfo[ARTErrorInfoStatusCodeKey] = [NSNumber numberWithInteger:status];
     userInfo[NSLocalizedDescriptionKey] = message;
     userInfo[ARTErrorInfoRequestIdKey] = requestId;
-    
+
+    // Add any additional userInfo values
+    if (additionalUserInfo) {
+        [userInfo addEntriesFromDictionary:additionalUserInfo];
+    }
+
     return [[ARTErrorInfo alloc] initWithDomain:ARTAblyErrorDomain code:code userInfo:userInfo];
 }
 
