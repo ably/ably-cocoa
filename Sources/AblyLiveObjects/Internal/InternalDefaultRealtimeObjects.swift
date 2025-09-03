@@ -245,7 +245,8 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
     @discardableResult
     internal func on(event: ObjectsEvent, callback: @escaping ObjectsEventCallback) -> any OnObjectsEventResponse {
         mutex.withLock {
-            mutableState.on(event: event, callback: callback) { [weak self] action in
+            // swiftlint:disable:next trailing_closure
+            mutableState.on(event: event, callback: callback, updateSelfLater: { [weak self] action in
                 guard let self else {
                     return
                 }
@@ -253,7 +254,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
                 mutex.withLock {
                     action(&mutableState)
                 }
-            }
+            })
         }
     }
 

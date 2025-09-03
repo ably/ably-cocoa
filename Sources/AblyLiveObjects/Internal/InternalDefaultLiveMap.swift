@@ -221,7 +221,8 @@ internal final class InternalDefaultLiveMap: Sendable {
     @discardableResult
     internal func on(event: LiveObjectLifecycleEvent, callback: @escaping LiveObjectLifecycleEventCallback) -> any OnLiveObjectLifecycleEventResponse {
         mutex.withLock {
-            mutableState.liveObjectMutableState.on(event: event, callback: callback) { [weak self] action in
+            // swiftlint:disable:next trailing_closure
+            mutableState.liveObjectMutableState.on(event: event, callback: callback, updateSelfLater: { [weak self] action in
                 guard let self else {
                     return
                 }
@@ -229,7 +230,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                 mutex.withLock {
                     action(&mutableState.liveObjectMutableState)
                 }
-            }
+            })
         }
     }
 
