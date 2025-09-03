@@ -64,17 +64,6 @@
         _internal = internal;
         _realtimeInternal = realtimeInternal;
         _dealloc = dealloc;
-
-#ifdef ABLY_SUPPORTS_PLUGINS
-        // The LiveObjects repository provides an extension to `ARTRealtimeChannel` so we need to ensure that we register the pluginAPI before that extension is used.
-        [ARTPluginAPI registerSelf];
-
-        // If the LiveObjects plugin has been provided, set up LiveObjects functionality for this channel.
-        id<APLiveObjectsInternalPluginProtocol> liveObjectsPlugin = internal.realtime.options.liveObjectsPlugin;
-        if (liveObjectsPlugin) {
-            [liveObjectsPlugin prepareChannel:internal client:realtimeInternal];
-        }
-#endif
     }
     return self;
 }
@@ -300,6 +289,17 @@ NS_ASSUME_NONNULL_END
                                                                                logger:logger
                                                                      logMessagePrefix:[NSString stringWithFormat:@"RT: %p C:%p ", _realtime, self]];
         _pluginData = [[NSMutableDictionary alloc] init];
+
+#ifdef ABLY_SUPPORTS_PLUGINS
+        // We need to register the pluginAPI before the LiveObjects plugin tries to fetch it in the call to prepareChannel below (and also before the LiveObjects plugin later tries to use it in its extension of ARTRealtimeChannel).
+        [ARTPluginAPI registerSelf];
+
+        // If the LiveObjects plugin has been provided, set up LiveObjects functionality for this channel.
+        id<APLiveObjectsInternalPluginProtocol> liveObjectsPlugin = realtime.options.liveObjectsPlugin;
+        if (liveObjectsPlugin) {
+            [liveObjectsPlugin nosync_prepareChannel:self client:realtime];
+        }
+#endif
     }
     return self;
 }
@@ -422,8 +422,6 @@ dispatch_sync(_queue, ^{
 #ifdef ABLY_SUPPORTS_PLUGINS
 - (void)sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
                           completion:(ARTCallback)completion {
-    dispatch_assert_queue(_queue);
-
     ARTProtocolMessage *pm = [[ARTProtocolMessage alloc] init];
     pm.action = ARTProtocolMessageObject;
     pm.channel = self.name;
@@ -709,8 +707,8 @@ dispatch_sync(_queue, ^{
     }
 
 #ifdef ABLY_SUPPORTS_PLUGINS
-    [self.realtime.options.liveObjectsPlugin onChannelAttached:self
-                                                    hasObjects:message.hasObjects];
+    [self.realtime.options.liveObjectsPlugin nosync_onChannelAttached:self
+                                                           hasObjects:message.hasObjects];
 #endif
 
     if (state == ARTRealtimeChannelAttached) {
@@ -901,8 +899,8 @@ dispatch_sync(_queue, ^{
         return;
     }
 
-    [self.realtime.options.liveObjectsPlugin handleObjectProtocolMessageWithObjectMessages:pm.state
-                                                                                   channel:self];
+    [self.realtime.options.liveObjectsPlugin nosync_handleObjectProtocolMessageWithObjectMessages:pm.state
+                                                                                          channel:self];
 #endif
 }
 
@@ -913,9 +911,9 @@ dispatch_sync(_queue, ^{
         return;
     }
 
-    [self.realtime.options.liveObjectsPlugin handleObjectSyncProtocolMessageWithObjectMessages:pm.state
-                                                                  protocolMessageChannelSerial:pm.channelSerial
-                                                                                       channel:self];
+    [self.realtime.options.liveObjectsPlugin nosync_handleObjectSyncProtocolMessageWithObjectMessages:pm.state
+                                                                         protocolMessageChannelSerial:pm.channelSerial
+                                                                                              channel:self];
 #endif
 }
 

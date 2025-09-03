@@ -18,7 +18,7 @@ let package = Package(
     dependencies: [
         .package(name: "msgpack", url: "https://github.com/rvi/msgpack-objective-C", from: "0.4.0"),
         .package(name: "AblyDeltaCodec", url: "https://github.com/ably/delta-codec-cocoa", from: "1.3.3"),
-        .package(name: "ably-cocoa-plugin-support", url: "https://github.com/ably/ably-cocoa-plugin-support", from: "0.1.0"),
+        .package(name: "ably-cocoa-plugin-support", url: "https://github.com/ably/ably-cocoa-plugin-support", .revision("2ce1058ed4430cc3563dcead0299e92a81d2774b")),
     ],
     targets: [
         .target(
