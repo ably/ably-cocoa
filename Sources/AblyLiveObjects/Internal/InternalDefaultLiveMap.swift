@@ -3,8 +3,8 @@ import Ably
 
 /// Protocol for accessing objects from the ObjectsPool. This is used by a LiveMap when it needs to return an object given an object ID.
 internal protocol LiveMapObjectPoolDelegate: AnyObject, Sendable {
-    /// Fetches an object from the pool by its ID
-    func nosync_getObjectFromPool(id: String) -> ObjectsPool.Entry?
+    /// A snapshot of the objects pool.
+    var nosync_objectsPool: ObjectsPool { get }
 }
 
 /// This provides the implementation behind ``PublicDefaultLiveMap``, via internal versions of the ``LiveMap`` API.
@@ -916,7 +916,7 @@ internal final class InternalDefaultLiveMap: Sendable {
 
             // RTLM14c
             if let objectId = entry.data?.objectId {
-                if let poolEntry = delegate.nosync_getObjectFromPool(id: objectId), poolEntry.nosync_isTombstone {
+                if let poolEntry = delegate.nosync_objectsPool.entries[objectId], poolEntry.nosync_isTombstone {
                     return true
                 }
             }
@@ -968,7 +968,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             // RTLM5d2f: If ObjectsMapEntry.data.objectId exists, get the object stored at that objectId from the internal ObjectsPool
             if let objectId = entry.data?.objectId {
                 // RTLM5d2f1: If an object with id objectId does not exist, return undefined/null
-                guard let poolEntry = delegate.nosync_getObjectFromPool(id: objectId) else {
+                guard let poolEntry = delegate.nosync_objectsPool.entries[objectId] else {
                     return nil
                 }
 

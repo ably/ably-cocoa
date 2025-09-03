@@ -141,9 +141,9 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
 
     // MARK: - LiveMapObjectPoolDelegate
 
-    internal func nosync_getObjectFromPool(id: String) -> ObjectsPool.Entry? {
+    internal var nosync_objectsPool: ObjectsPool {
         mutableStateMutex.withoutSync { mutableState in
-            mutableState.objectsPool.entries[id]
+            mutableState.objectsPool
         }
     }
 
