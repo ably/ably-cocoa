@@ -359,7 +359,8 @@ dispatch_async(_queue, ^{
             return;
         }
         if (self.clientId_nosync && tokenDetails.clientId && ![tokenDetails.clientId isEqualToString:@"*"] && ![self.clientId_nosync isEqual:tokenDetails.clientId]) {
-            if (callback) callback(nil, [ARTErrorInfo createWithCode:ARTErrorIncompatibleCredentials message:@"incompatible credentials"]);
+            // ably-os:inline-error-update:40102:2025-08-22:e8u Original: "incompatible credentials"
+            if (callback) callback(nil, [ARTErrorInfo createWithCode:ARTErrorIncompatibleCredentials message:[NSString stringWithFormat:@"Client ID in token (%@) does not match configured client ID (%@)", tokenDetails.clientId, self.clientId_nosync]]);
             return;
         }
         callback(tokenDetails, nil);
