@@ -11,6 +11,24 @@
         }
       },
       {
+        "package": "CwlCatchException",
+        "repositoryURL": "https://github.com/mattgallagher/CwlCatchException.git",
+        "state": {
+          "branch": null,
+          "revision": "07b2ba21d361c223e25e3c1e924288742923f08c",
+          "version": "2.2.1"
+        }
+      },
+      {
+        "package": "CwlPreconditionTesting",
+        "repositoryURL": "https://github.com/mattgallagher/CwlPreconditionTesting.git",
+        "state": {
+          "branch": null,
+          "revision": "0139c665ebb45e6a9fbdb68aabfd7c39f3fe0071",
+          "version": "2.2.2"
+        }
+      },
+      {
         "package": "AblyDeltaCodec",
         "repositoryURL": "https://github.com/ably/delta-codec-cocoa",
         "state": {
@@ -26,6 +44,15 @@
           "branch": null,
           "revision": "3e36b48e04ecd756cb927bd5f5b9bf6d45e475f9",
           "version": "0.4.0"
+        }
+      },
+      {
+        "package": "Nimble",
+        "repositoryURL": "https://github.com/quick/nimble",
+        "state": {
+          "branch": null,
+          "revision": "eb5e3d717224fa0d1f6aff3fc2c5e8e81fa1f728",
+          "version": "11.2.2"
         }
       }
     ]
