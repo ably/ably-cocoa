@@ -189,7 +189,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         defer { client.dispose(); client.close() }
 
         if let transport = client.internal.transport as? TestProxyTransport, let url = transport.lastUrl {
-            XCTAssertEqual(url.host, "realtime.ably.io")
+            XCTAssertEqual(url.host, "main.realtime.ably.net")
         } else {
             XCTFail("MockTransport isn't working")
         }
@@ -2266,6 +2266,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         ARTDefault.setConnectionStateTtl(connectionStateTtl)
 
         let client = ARTRealtime(options: options)
+        client.internal.setReachabilityClass(TestReachability.self) // Reachability callback interferes with test utilities connection failure simulation, so disabling it.
         defer {
             client.connection.off()
             client.close()
@@ -4185,11 +4186,10 @@ class RealtimeClientConnectionTests: XCTestCase {
 
     // RTN17a
     // RTN17b1
-    private func _test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_realtime_ably_io(env: String?, test: Test) {
+    private func _test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_main_realtime_ably_net(env: String?, test: Test) {
         let options = ARTClientOptions(key: "xxxx:xxxx")
-        if let env {
-            options.environment = env
-        }
+        options.logLevel = .debug
+        options.endpoint = env
         options.autoConnect = false
         options.disconnectedRetryTimeout = 1.0
         options.testOptions.realtimeRequestTimeout = 1.0
@@ -4198,7 +4198,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
         client.channels.get(test.uniqueChannelName())
-
+        client.internal.setReachabilityClass(TestReachability.self)
         transportFactory.fakeNetworkResponse = .hostUnreachable
 
         var urlConnections = [URL]()
@@ -4229,18 +4229,28 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
 
         XCTAssertTrue(urlConnections.count >= 2) // amount depends on how soon fallback receives `.failed` above, it's often `.disconnected` instead
-        XCTAssertTrue(NSRegularExpression.match(urlConnections.at(0)?.absoluteString, pattern: "//[sandbox-]*realtime.ably.io"))
-        XCTAssertTrue(NSRegularExpression.match(urlConnections.at(1)?.absoluteString, pattern: "//[sandbox-]*[a-e][-fallback]*.ably-realtime.com"))
+        if let env {
+            if env.hasPrefix("nonprod:") {
+                XCTAssertTrue(NSRegularExpression.match(urlConnections.at(0)?.absoluteString, pattern: "//\(env.dropFirst(8)).realtime.ably-nonprod.net"))
+                XCTAssertTrue(NSRegularExpression.match(urlConnections.at(1)?.absoluteString, pattern: "//\(env.dropFirst(8)).[a-e].fallback.ably-realtime-nonprod.com"))
+            } else {
+                XCTAssertTrue(NSRegularExpression.match(urlConnections.at(0)?.absoluteString, pattern: "//\(env).realtime.ably.net"))
+                XCTAssertTrue(NSRegularExpression.match(urlConnections.at(1)?.absoluteString, pattern: "//\(env).[a-e].fallback.ably-realtime.com"))
+            }
+        } else {
+            XCTAssertTrue(NSRegularExpression.match(urlConnections.at(0)?.absoluteString, pattern: "//main.realtime.ably.net"))
+            XCTAssertTrue(NSRegularExpression.match(urlConnections.at(1)?.absoluteString, pattern: "//[a-e].ably-realtime.com"))
+        }
     }
 
-    func test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_realtime_ably_io_prod() {
+    func test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_main_realtime_ably_net() {
         let test = Test()
-        _test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_realtime_ably_io(env: nil, test: test)
+        _test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_main_realtime_ably_net(env: nil, test: test)
     }
 
-    func test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_realtime_ably_io_sandbox() {
+    func test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_sandbox_realtime_ably_nonprod_net() {
         let test = Test()
-        _test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_realtime_ably_io(env: "sandbox", test: test)
+        _test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_main_realtime_ably_net(env: "nonprod:sandbox", test: test)
     }
 
     // RTN17c TODO: spec?
