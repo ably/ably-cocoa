@@ -1,6 +1,6 @@
 default_platform(:ios)
 
-class LaneConfig < Struct.new(:name, :scheme, :devices)
+class LaneConfig < Struct.new(:name, :devices)
   def args_for_run_tests
     ably_env = ENV['ABLY_ENV']
 
@@ -8,23 +8,35 @@ class LaneConfig < Struct.new(:name, :scheme, :devices)
       raise 'You must provide ABLY_ENV as an environment variable.'
     end
 
-    {
-      scheme: scheme,
+    args = {
+      workspace: "Ably.xcworkspace",
+      scheme: "ably-cocoa",
       derived_data_path: "derived_data",
-      devices: devices,
       test_without_building: false,
       xcargs: { ABLY_ENV: ably_env, CLANG_ANALYZER_OUTPUT: 'plist-html' },
       output_directory: "fastlane/test_output/sdk/#{name}"
     }
+
+    if devices.nil?
+      # macOS case - use destination instead of devices; from trial and error this seems to be the necessary incantation
+      #
+      # Note that, when trying to build a scheme inside a workspace, where the scheme comes from an SPM package, Fastlane gives a warning of "Could not read the "SUPPORTED_PLATFORMS" build setting, assuming that the project supports iOS only", but it doesn't seem to matter — our `destination` argument gets through to xcodebuild and the tests get run on Mac, as wanted.
+      args[:destination] = "platform=macOS"
+    else
+      # iOS/tvOS case - use devices
+      args[:devices] = devices
+    end
+
+    args
   end
 end
 
 platform :ios do
 
   LANE_CONFIGS = [
-    LaneConfig.new(:test_iOS18_4, "Ably-iOS", ["iPhone 16 (18.4)"]),
-    LaneConfig.new(:test_tvOS18_4, "Ably-tvOS", ["Apple TV (18.4)"]),
-    LaneConfig.new(:test_macOS, "Ably-macOS")
+    LaneConfig.new(:test_iOS18_4, ["iPhone 16 (18.4)"]),
+    LaneConfig.new(:test_tvOS18_4, ["Apple TV (18.4)"]),
+    LaneConfig.new(:test_macOS)
   ]
 
   LANE_CONFIGS.each do |lane_config|

@@ -19,7 +19,7 @@ Releases of the Ably SDK built by the sources in this repository are tagged with
 When you first clone the repository then you will need to run `make update` in order to
 bring in Git submodules and Carthage dependencies.
 
-Code can then be modified, built and tested by loading [Ably.xcodeproj](Ably.xcodeproj) in your Xcode IDE.
+Code can then be modified, built and tested by loading [Ably.xcworkspace](Ably.xcworkspace) in your Xcode IDE.
 
 The Xcode project relies upon dependencies resolved by Carthage.
 If you make changes to the [Cartfile](Cartfile) then you will need to run `make update_carthage_dependencies`
@@ -55,7 +55,13 @@ These are the header files that form the internal interface of the SDK.
 
 ## Running tests
 
-To run tests use `make test_[iOS|tvOS|macOS]`. These tests expect you to have a simulator device of a specific model and OS version. See [`Fastfile`](./fastlane/Fastfile) for these values. If you don’t have a matching simulator, you can create one using `simctl`. For example, `xcrun simctl create "iPhone 12 (14.4)" "iPhone 12" "com.apple.CoreSimulator.SimRuntime.iOS-14-4"`.
+To run tests, do any of the following:
+
+- use the Xcode UI to run on any platform
+- run `swift test` to run on your Mac
+- run `make test_[iOS|tvOS|macOS]` to run on any platform
+
+The `make test_*` commands are used by CI and expect you to have a simulator device of a specific model and OS version. See [`Fastfile`](./fastlane/Fastfile) for these values. If you don’t have a matching simulator, you can create one using `simctl`. For example, `xcrun simctl create "iPhone 12 (14.4)" "iPhone 12" "com.apple.CoreSimulator.SimRuntime.iOS-14-4"`.
 
 ## Plugins
 
