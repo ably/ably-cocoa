@@ -40,39 +40,18 @@
 		21088DC72A5355510033C722 /* ARTConnectRetryState.m in Sources */ = {isa = PBXBuildFile; fileRef = 21088DC62A5355510033C722 /* ARTConnectRetryState.m */; };
 		21088DC82A5355510033C722 /* ARTConnectRetryState.m in Sources */ = {isa = PBXBuildFile; fileRef = 21088DC62A5355510033C722 /* ARTConnectRetryState.m */; };
 		21088DC92A5355510033C722 /* ARTConnectRetryState.m in Sources */ = {isa = PBXBuildFile; fileRef = 21088DC62A5355510033C722 /* ARTConnectRetryState.m */; };
-		21088DCB2A53560C0033C722 /* ConnectRetryStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21088DCA2A53560C0033C722 /* ConnectRetryStateTests.swift */; };
-		21088DCC2A53560C0033C722 /* ConnectRetryStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21088DCA2A53560C0033C722 /* ConnectRetryStateTests.swift */; };
-		21088DCD2A53560C0033C722 /* ConnectRetryStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21088DCA2A53560C0033C722 /* ConnectRetryStateTests.swift */; };
 		210F67A229E9D718007B9345 /* ARTRealtimeTransportFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 210F67A129E9D718007B9345 /* ARTRealtimeTransportFactory.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		210F67A329E9D718007B9345 /* ARTRealtimeTransportFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 210F67A129E9D718007B9345 /* ARTRealtimeTransportFactory.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		210F67A429E9D718007B9345 /* ARTRealtimeTransportFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 210F67A129E9D718007B9345 /* ARTRealtimeTransportFactory.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		210F67A629E9D93D007B9345 /* ARTRealtimeTransportFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 210F67A529E9D93D007B9345 /* ARTRealtimeTransportFactory.m */; };
 		210F67A729E9D93D007B9345 /* ARTRealtimeTransportFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 210F67A529E9D93D007B9345 /* ARTRealtimeTransportFactory.m */; };
 		210F67A829E9D93D007B9345 /* ARTRealtimeTransportFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 210F67A529E9D93D007B9345 /* ARTRealtimeTransportFactory.m */; };
-		210F67B129E9DB62007B9345 /* TestProxyTransportFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210F67B029E9DB62007B9345 /* TestProxyTransportFactory.swift */; };
-		210F67B229E9DB62007B9345 /* TestProxyTransportFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210F67B029E9DB62007B9345 /* TestProxyTransportFactory.swift */; };
-		210F67B329E9DB62007B9345 /* TestProxyTransportFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210F67B029E9DB62007B9345 /* TestProxyTransportFactory.swift */; };
-		2110CC3A2A530D42007310D4 /* AttachRetryStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2110CC392A530D42007310D4 /* AttachRetryStateTests.swift */; };
-		2110CC3B2A530D42007310D4 /* AttachRetryStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2110CC392A530D42007310D4 /* AttachRetryStateTests.swift */; };
-		2110CC3C2A530D42007310D4 /* AttachRetryStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2110CC392A530D42007310D4 /* AttachRetryStateTests.swift */; };
-		21113B4929DB60F800652C86 /* MockRetryDelayCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21113B4829DB60F800652C86 /* MockRetryDelayCalculator.swift */; };
-		21113B4A29DB60F800652C86 /* MockRetryDelayCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21113B4829DB60F800652C86 /* MockRetryDelayCalculator.swift */; };
-		21113B4B29DB60F800652C86 /* MockRetryDelayCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21113B4829DB60F800652C86 /* MockRetryDelayCalculator.swift */; };
 		21113B5129DC6AAF00652C86 /* ARTTestClientOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = 21113B5029DC6AAF00652C86 /* ARTTestClientOptions.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		21113B5229DC6AAF00652C86 /* ARTTestClientOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = 21113B5029DC6AAF00652C86 /* ARTTestClientOptions.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		21113B5329DC6AAF00652C86 /* ARTTestClientOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = 21113B5029DC6AAF00652C86 /* ARTTestClientOptions.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		21113B5529DC6ACD00652C86 /* ARTTestClientOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 21113B5429DC6ACD00652C86 /* ARTTestClientOptions.m */; };
 		21113B5629DC6ACD00652C86 /* ARTTestClientOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 21113B5429DC6ACD00652C86 /* ARTTestClientOptions.m */; };
 		21113B5729DC6ACD00652C86 /* ARTTestClientOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 21113B5429DC6ACD00652C86 /* ARTTestClientOptions.m */; };
-		21113B5929DCA4C700652C86 /* DataGatherer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21113B5829DCA4C700652C86 /* DataGatherer.swift */; };
-		21113B5A29DCA4C700652C86 /* DataGatherer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21113B5829DCA4C700652C86 /* DataGatherer.swift */; };
-		21113B5B29DCA4C700652C86 /* DataGatherer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21113B5829DCA4C700652C86 /* DataGatherer.swift */; };
-		21113B5F29DDDDD000652C86 /* LogAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21113B5E29DDDDD000652C86 /* LogAdapterTests.swift */; };
-		21113B6029DDDDD000652C86 /* LogAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21113B5E29DDDDD000652C86 /* LogAdapterTests.swift */; };
-		21113B6129DDDDD000652C86 /* LogAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21113B5E29DDDDD000652C86 /* LogAdapterTests.swift */; };
-		21113B6329DDF7E800652C86 /* ARTInternalLogTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 21113B6229DDF7E800652C86 /* ARTInternalLogTests.m */; };
-		21113B6429DDF7ED00652C86 /* ARTInternalLogTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 21113B6229DDF7E800652C86 /* ARTInternalLogTests.m */; };
-		21113B6529DDF7EF00652C86 /* ARTInternalLogTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 21113B6229DDF7E800652C86 /* ARTInternalLogTests.m */; };
 		2114D4282D4BC5470032839A /* AblyInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = 2114D4262D4BC5470032839A /* AblyInternal.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2114D4292D4BC5470032839A /* AblyPublic.h in Headers */ = {isa = PBXBuildFile; fileRef = 2114D4272D4BC5470032839A /* AblyPublic.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2114D42A2D4BC5470032839A /* AblyInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = 2114D4262D4BC5470032839A /* AblyInternal.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -82,9 +61,6 @@
 		2114D42F2D4BCAE20032839A /* ARTRealtime+WrapperSDKProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 2114D42E2D4BCAE20032839A /* ARTRealtime+WrapperSDKProxy.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2114D4302D4BCAE20032839A /* ARTRealtime+WrapperSDKProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 2114D42E2D4BCAE20032839A /* ARTRealtime+WrapperSDKProxy.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2114D4312D4BCAE20032839A /* ARTRealtime+WrapperSDKProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 2114D42E2D4BCAE20032839A /* ARTRealtime+WrapperSDKProxy.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		211A60D729D6D2C300D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */; };
-		211A60D829D6D2C400D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */; };
-		211A60D929D6D2C500D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */; };
 		211A60DB29D726F800D169C5 /* ARTConnectionStateChangeParams.h in Headers */ = {isa = PBXBuildFile; fileRef = 211A60DA29D726F800D169C5 /* ARTConnectionStateChangeParams.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		211A60DC29D726F800D169C5 /* ARTConnectionStateChangeParams.h in Headers */ = {isa = PBXBuildFile; fileRef = 211A60DA29D726F800D169C5 /* ARTConnectionStateChangeParams.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		211A60DD29D726F800D169C5 /* ARTConnectionStateChangeParams.h in Headers */ = {isa = PBXBuildFile; fileRef = 211A60DA29D726F800D169C5 /* ARTConnectionStateChangeParams.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -103,12 +79,6 @@
 		211A610729DA05D700D169C5 /* ARTAttachRequestParams.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A610629DA05D700D169C5 /* ARTAttachRequestParams.m */; };
 		211A610829DA05D700D169C5 /* ARTAttachRequestParams.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A610629DA05D700D169C5 /* ARTAttachRequestParams.m */; };
 		211A610929DA05D700D169C5 /* ARTAttachRequestParams.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A610629DA05D700D169C5 /* ARTAttachRequestParams.m */; };
-		212374672D41598A005427E0 /* ChannelOptionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 212374662D415983005427E0 /* ChannelOptionsTests.swift */; };
-		212374682D41598A005427E0 /* ChannelOptionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 212374662D415983005427E0 /* ChannelOptionsTests.swift */; };
-		212374692D41598A005427E0 /* ChannelOptionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 212374662D415983005427E0 /* ChannelOptionsTests.swift */; };
-		2124B78729DB127900AD8361 /* MockVersion2Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2124B78629DB127900AD8361 /* MockVersion2Log.swift */; };
-		2124B78829DB127900AD8361 /* MockVersion2Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2124B78629DB127900AD8361 /* MockVersion2Log.swift */; };
-		2124B78929DB127900AD8361 /* MockVersion2Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2124B78629DB127900AD8361 /* MockVersion2Log.swift */; };
 		2124B78B29DB12A900AD8361 /* ARTVersion2Log.h in Headers */ = {isa = PBXBuildFile; fileRef = 2124B78A29DB12A900AD8361 /* ARTVersion2Log.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2124B78C29DB12A900AD8361 /* ARTVersion2Log.h in Headers */ = {isa = PBXBuildFile; fileRef = 2124B78A29DB12A900AD8361 /* ARTVersion2Log.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2124B78D29DB12A900AD8361 /* ARTVersion2Log.h in Headers */ = {isa = PBXBuildFile; fileRef = 2124B78A29DB12A900AD8361 /* ARTVersion2Log.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -118,9 +88,6 @@
 		2124B79329DB13C400AD8361 /* ARTInternalLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 2124B79229DB13C400AD8361 /* ARTInternalLog.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2124B79429DB13C400AD8361 /* ARTInternalLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 2124B79229DB13C400AD8361 /* ARTInternalLog.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2124B79529DB13C400AD8361 /* ARTInternalLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 2124B79229DB13C400AD8361 /* ARTInternalLog.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		2124B79729DB144600AD8361 /* DefaultInternalLogCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2124B79629DB144600AD8361 /* DefaultInternalLogCoreTests.swift */; };
-		2124B79829DB144600AD8361 /* DefaultInternalLogCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2124B79629DB144600AD8361 /* DefaultInternalLogCoreTests.swift */; };
-		2124B79929DB144600AD8361 /* DefaultInternalLogCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2124B79629DB144600AD8361 /* DefaultInternalLogCoreTests.swift */; };
 		2124B79B29DB14C000AD8361 /* ARTLogAdapter.m in Sources */ = {isa = PBXBuildFile; fileRef = 2124B79A29DB14C000AD8361 /* ARTLogAdapter.m */; };
 		2124B79C29DB14C000AD8361 /* ARTLogAdapter.m in Sources */ = {isa = PBXBuildFile; fileRef = 2124B79A29DB14C000AD8361 /* ARTLogAdapter.m */; };
 		2124B79D29DB14C000AD8361 /* ARTLogAdapter.m in Sources */ = {isa = PBXBuildFile; fileRef = 2124B79A29DB14C000AD8361 /* ARTLogAdapter.m */; };
@@ -136,27 +103,15 @@
 		21276CBE29EF34AE00107B5F /* ARTContinuousClock.m in Sources */ = {isa = PBXBuildFile; fileRef = 21276CBD29EF34AE00107B5F /* ARTContinuousClock.m */; };
 		21276CBF29EF34AE00107B5F /* ARTContinuousClock.m in Sources */ = {isa = PBXBuildFile; fileRef = 21276CBD29EF34AE00107B5F /* ARTContinuousClock.m */; };
 		21276CC029EF34AE00107B5F /* ARTContinuousClock.m in Sources */ = {isa = PBXBuildFile; fileRef = 21276CBD29EF34AE00107B5F /* ARTContinuousClock.m */; };
-		21276CC229F00BAA00107B5F /* ContinuousClockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21276CC129F00BAA00107B5F /* ContinuousClockTests.swift */; };
-		21276CC329F00BAA00107B5F /* ContinuousClockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21276CC129F00BAA00107B5F /* ContinuousClockTests.swift */; };
-		21276CC429F00BAA00107B5F /* ContinuousClockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21276CC129F00BAA00107B5F /* ContinuousClockTests.swift */; };
 		2132C21A29D230CE000C4355 /* ARTErrorChecker.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C21929D230AE000C4355 /* ARTErrorChecker.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2132C21B29D230CF000C4355 /* ARTErrorChecker.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C21929D230AE000C4355 /* ARTErrorChecker.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2132C21C29D230D0000C4355 /* ARTErrorChecker.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C21929D230AE000C4355 /* ARTErrorChecker.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2132C21E29D23196000C4355 /* ARTErrorChecker.m in Sources */ = {isa = PBXBuildFile; fileRef = 2132C21D29D23196000C4355 /* ARTErrorChecker.m */; };
 		2132C21F29D23196000C4355 /* ARTErrorChecker.m in Sources */ = {isa = PBXBuildFile; fileRef = 2132C21D29D23196000C4355 /* ARTErrorChecker.m */; };
 		2132C22029D23196000C4355 /* ARTErrorChecker.m in Sources */ = {isa = PBXBuildFile; fileRef = 2132C21D29D23196000C4355 /* ARTErrorChecker.m */; };
-		2132C22229D233EB000C4355 /* DefaultErrorCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C22129D233EB000C4355 /* DefaultErrorCheckerTests.swift */; };
-		2132C22329D233EB000C4355 /* DefaultErrorCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C22129D233EB000C4355 /* DefaultErrorCheckerTests.swift */; };
-		2132C22429D233EB000C4355 /* DefaultErrorCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C22129D233EB000C4355 /* DefaultErrorCheckerTests.swift */; };
-		2132C22929D23484000C4355 /* MockErrorChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C22529D2347F000C4355 /* MockErrorChecker.swift */; };
-		2132C22A29D23484000C4355 /* MockErrorChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C22529D2347F000C4355 /* MockErrorChecker.swift */; };
-		2132C22B29D23485000C4355 /* MockErrorChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C22529D2347F000C4355 /* MockErrorChecker.swift */; };
 		2132C2BD29D482E8000C4355 /* ARTClientOptions+TestConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C2BC29D482E8000C4355 /* ARTClientOptions+TestConfiguration.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2132C2BE29D482E8000C4355 /* ARTClientOptions+TestConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C2BC29D482E8000C4355 /* ARTClientOptions+TestConfiguration.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2132C2BF29D482E8000C4355 /* ARTClientOptions+TestConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C2BC29D482E8000C4355 /* ARTClientOptions+TestConfiguration.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		2132C2E929D4B91B000C4355 /* BackoffCoefficients.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C2E829D4B91B000C4355 /* BackoffCoefficients.swift */; };
-		2132C2EA29D4B91B000C4355 /* BackoffCoefficients.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C2E829D4B91B000C4355 /* BackoffCoefficients.swift */; };
-		2132C2EB29D4B91B000C4355 /* BackoffCoefficients.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C2E829D4B91B000C4355 /* BackoffCoefficients.swift */; };
 		2132C2F529D5BE05000C4355 /* ARTRetrySequence.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C2F429D5BE05000C4355 /* ARTRetrySequence.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2132C2F629D5BE05000C4355 /* ARTRetrySequence.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C2F429D5BE05000C4355 /* ARTRetrySequence.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2132C2F729D5BE05000C4355 /* ARTRetrySequence.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C2F429D5BE05000C4355 /* ARTRetrySequence.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -184,9 +139,6 @@
 		213AEA272D35A7FC0067FD5F /* ARTWrapperSDKProxyRealtime.h in Headers */ = {isa = PBXBuildFile; fileRef = 213AEA262D35A7FC0067FD5F /* ARTWrapperSDKProxyRealtime.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		213AEA282D35A7FC0067FD5F /* ARTWrapperSDKProxyRealtime.h in Headers */ = {isa = PBXBuildFile; fileRef = 213AEA262D35A7FC0067FD5F /* ARTWrapperSDKProxyRealtime.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		213AEA292D35A7FC0067FD5F /* ARTWrapperSDKProxyRealtime.h in Headers */ = {isa = PBXBuildFile; fileRef = 213AEA262D35A7FC0067FD5F /* ARTWrapperSDKProxyRealtime.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		213AEA2B2D36C4CD0067FD5F /* WrapperSDKProxyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 213AEA2A2D36C4C70067FD5F /* WrapperSDKProxyTests.swift */; };
-		213AEA2C2D36C4CD0067FD5F /* WrapperSDKProxyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 213AEA2A2D36C4C70067FD5F /* WrapperSDKProxyTests.swift */; };
-		213AEA2D2D36C4CD0067FD5F /* WrapperSDKProxyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 213AEA2A2D36C4C70067FD5F /* WrapperSDKProxyTests.swift */; };
 		213AEA2F2D36E9D30067FD5F /* ARTWrapperSDKProxyRealtime+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 213AEA2E2D36E9D30067FD5F /* ARTWrapperSDKProxyRealtime+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		213AEA302D36E9D30067FD5F /* ARTWrapperSDKProxyRealtime+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 213AEA2E2D36E9D30067FD5F /* ARTWrapperSDKProxyRealtime+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		213AEA312D36E9D30067FD5F /* ARTWrapperSDKProxyRealtime+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 213AEA2E2D36E9D30067FD5F /* ARTWrapperSDKProxyRealtime+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -202,9 +154,6 @@
 		2147F03129E583CE0071CB94 /* ARTInternalLogCore.m in Sources */ = {isa = PBXBuildFile; fileRef = 2147F03029E583CE0071CB94 /* ARTInternalLogCore.m */; };
 		2147F03229E583CE0071CB94 /* ARTInternalLogCore.m in Sources */ = {isa = PBXBuildFile; fileRef = 2147F03029E583CE0071CB94 /* ARTInternalLogCore.m */; };
 		2147F03329E583CE0071CB94 /* ARTInternalLogCore.m in Sources */ = {isa = PBXBuildFile; fileRef = 2147F03029E583CE0071CB94 /* ARTInternalLogCore.m */; };
-		2147F03529E5872C0071CB94 /* MockInternalLogCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2147F03429E5872C0071CB94 /* MockInternalLogCore.swift */; };
-		2147F03629E5872C0071CB94 /* MockInternalLogCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2147F03429E5872C0071CB94 /* MockInternalLogCore.swift */; };
-		2147F03729E5872C0071CB94 /* MockInternalLogCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2147F03429E5872C0071CB94 /* MockInternalLogCore.swift */; };
 		2159248B2D636826004A235C /* ARTWrapperSDKProxyPush.h in Headers */ = {isa = PBXBuildFile; fileRef = 2159248A2D636826004A235C /* ARTWrapperSDKProxyPush.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2159248C2D636826004A235C /* ARTWrapperSDKProxyPush.h in Headers */ = {isa = PBXBuildFile; fileRef = 2159248A2D636826004A235C /* ARTWrapperSDKProxyPush.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		2159248D2D636826004A235C /* ARTWrapperSDKProxyPush.h in Headers */ = {isa = PBXBuildFile; fileRef = 2159248A2D636826004A235C /* ARTWrapperSDKProxyPush.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -265,9 +214,6 @@
 		215F75FB2922B1DB009E0E76 /* ARTClientInformation.m in Sources */ = {isa = PBXBuildFile; fileRef = 215F75F72922B1DB009E0E76 /* ARTClientInformation.m */; };
 		215F75FC2922B1DB009E0E76 /* ARTClientInformation.m in Sources */ = {isa = PBXBuildFile; fileRef = 215F75F72922B1DB009E0E76 /* ARTClientInformation.m */; };
 		215F75FD2922B1DB009E0E76 /* ARTClientInformation.m in Sources */ = {isa = PBXBuildFile; fileRef = 215F75F72922B1DB009E0E76 /* ARTClientInformation.m */; };
-		215F75FF2922B30F009E0E76 /* ClientInformationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 215F75FE2922B30F009E0E76 /* ClientInformationTests.swift */; };
-		215F76002922B30F009E0E76 /* ClientInformationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 215F75FE2922B30F009E0E76 /* ClientInformationTests.swift */; };
-		215F76012922B30F009E0E76 /* ClientInformationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 215F75FE2922B30F009E0E76 /* ClientInformationTests.swift */; };
 		215F76032922C76C009E0E76 /* ARTClientInformation+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 215F76022922C76C009E0E76 /* ARTClientInformation+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		215F76042922C76C009E0E76 /* ARTClientInformation+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 215F76022922C76C009E0E76 /* ARTClientInformation+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		215F76052922C76C009E0E76 /* ARTClientInformation+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 215F76022922C76C009E0E76 /* ARTClientInformation+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -325,28 +271,12 @@
 		217D1867254222FA00DFF07E /* ARTSRHTTPConnectMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180D25421FED00DFF07E /* ARTSRHTTPConnectMessage.m */; };
 		217D1868254222FA00DFF07E /* NSURLRequest+ARTSRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181725421FED00DFF07E /* NSURLRequest+ARTSRWebSocket.m */; };
 		217D1869254222FA00DFF07E /* ARTSRDelegateController.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D17FC25421FED00DFF07E /* ARTSRDelegateController.m */; };
-		217FCF3229D62460006E5F2D /* RetrySequenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 217FCF3129D62460006E5F2D /* RetrySequenceTests.swift */; };
-		217FCF3329D62460006E5F2D /* RetrySequenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 217FCF3129D62460006E5F2D /* RetrySequenceTests.swift */; };
-		217FCF3429D62460006E5F2D /* RetrySequenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 217FCF3129D62460006E5F2D /* RetrySequenceTests.swift */; };
 		217FCF3629D6269D006E5F2D /* ARTJitterCoefficientGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = 217FCF3529D6269D006E5F2D /* ARTJitterCoefficientGenerator.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		217FCF3729D6269D006E5F2D /* ARTJitterCoefficientGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = 217FCF3529D6269D006E5F2D /* ARTJitterCoefficientGenerator.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		217FCF3829D6269D006E5F2D /* ARTJitterCoefficientGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = 217FCF3529D6269D006E5F2D /* ARTJitterCoefficientGenerator.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		217FCF3A29D626C1006E5F2D /* ARTJitterCoefficientGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 217FCF3929D626C1006E5F2D /* ARTJitterCoefficientGenerator.m */; };
 		217FCF3B29D626C1006E5F2D /* ARTJitterCoefficientGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 217FCF3929D626C1006E5F2D /* ARTJitterCoefficientGenerator.m */; };
 		217FCF3C29D626C1006E5F2D /* ARTJitterCoefficientGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 217FCF3929D626C1006E5F2D /* ARTJitterCoefficientGenerator.m */; };
-		217FCF3F29D626E4006E5F2D /* StaticJitterCoefficients.swift in Sources */ = {isa = PBXBuildFile; fileRef = 217FCF3D29D626E4006E5F2D /* StaticJitterCoefficients.swift */; };
-		217FCF4029D626E4006E5F2D /* StaticJitterCoefficients.swift in Sources */ = {isa = PBXBuildFile; fileRef = 217FCF3D29D626E4006E5F2D /* StaticJitterCoefficients.swift */; };
-		217FCF4129D626E4006E5F2D /* StaticJitterCoefficients.swift in Sources */ = {isa = PBXBuildFile; fileRef = 217FCF3D29D626E4006E5F2D /* StaticJitterCoefficients.swift */; };
-		217FCF4229D626E4006E5F2D /* MockJitterCoefficientGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 217FCF3E29D626E4006E5F2D /* MockJitterCoefficientGenerator.swift */; };
-		217FCF4329D626E4006E5F2D /* MockJitterCoefficientGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 217FCF3E29D626E4006E5F2D /* MockJitterCoefficientGenerator.swift */; };
-		217FCF4429D626E4006E5F2D /* MockJitterCoefficientGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 217FCF3E29D626E4006E5F2D /* MockJitterCoefficientGenerator.swift */; };
-		217FCF4629D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 217FCF4529D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift */; };
-		217FCF4729D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 217FCF4529D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift */; };
-		217FCF4829D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 217FCF4529D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift */; };
-		21881E79283BD08200CFD9E2 /* GCDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A22171266F526600C87C42 /* GCDTests.swift */; };
-		21881E7A283BD08300CFD9E2 /* GCDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A22171266F526600C87C42 /* GCDTests.swift */; };
-		21881E7B283BD0DF00CFD9E2 /* StringifiableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D520C4DD2680A1E3000012B2 /* StringifiableTests.swift */; };
-		21881E7C283BD0E100CFD9E2 /* StringifiableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D520C4DD2680A1E3000012B2 /* StringifiableTests.swift */; };
 		2188F74B2DF773D3009C8A23 /* ARTPluginDecodingContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 2188F74A2DF773D3009C8A23 /* ARTPluginDecodingContext.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2188F74C2DF773D3009C8A23 /* ARTPluginDecodingContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 2188F74A2DF773D3009C8A23 /* ARTPluginDecodingContext.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2188F74D2DF773D3009C8A23 /* ARTPluginDecodingContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 2188F74A2DF773D3009C8A23 /* ARTPluginDecodingContext.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -395,15 +325,6 @@
 		21E5D87F2D5E3EC300526C4C /* ARTChannelProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 21E5D87E2D5E3EC300526C4C /* ARTChannelProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		21E5D8802D5E3EC300526C4C /* ARTChannelProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 21E5D87E2D5E3EC300526C4C /* ARTChannelProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		21E5D8812D5E3EC300526C4C /* ARTChannelProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 21E5D87E2D5E3EC300526C4C /* ARTChannelProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		21FD9F272A015BE400216482 /* Test.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21FD9F262A015BE400216482 /* Test.swift */; };
-		21FD9F282A015BE400216482 /* Test.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21FD9F262A015BE400216482 /* Test.swift */; };
-		21FD9F292A015BE400216482 /* Test.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21FD9F262A015BE400216482 /* Test.swift */; };
-		560579D924AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */; };
-		560579DA24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */; };
-		560579DB24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */; };
-		56190954238C3D3200A862A6 /* CryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 56190953238C3D3200A862A6 /* CryptoTest.m */; };
-		56190955238C3D3200A862A6 /* CryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 56190953238C3D3200A862A6 /* CryptoTest.m */; };
-		56190956238C3D3200A862A6 /* CryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 56190953238C3D3200A862A6 /* CryptoTest.m */; };
 		80350CE32D6E11DA002A0732 /* ARTMessageOperation+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 80350CE22D6E11DA002A0732 /* ARTMessageOperation+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		80350CE42D6E11DA002A0732 /* ARTMessageOperation+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 80350CE22D6E11DA002A0732 /* ARTMessageOperation+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		80350CE52D6E11DA002A0732 /* ARTMessageOperation+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 80350CE22D6E11DA002A0732 /* ARTMessageOperation+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -422,12 +343,8 @@
 		840FCE532C875B8A001163E1 /* ARTDevicePushDetails+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 840FCE522C875B8A001163E1 /* ARTDevicePushDetails+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		840FCE542C875B8A001163E1 /* ARTDevicePushDetails+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 840FCE522C875B8A001163E1 /* ARTDevicePushDetails+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		840FCE552C875B8A001163E1 /* ARTDevicePushDetails+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 840FCE522C875B8A001163E1 /* ARTDevicePushDetails+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		841134782722205400CFA837 /* ARTArchiveTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 841134772722205400CFA837 /* ARTArchiveTests.m */; };
 		8412FDE72661AC37001FE9E6 /* AblyDeltaCodec.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE12661AC37001FE9E6 /* AblyDeltaCodec.xcframework */; };
 		8412FDED2661AC37001FE9E6 /* msgpack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE32661AC37001FE9E6 /* msgpack.xcframework */; };
-		8412FDFE2661AC7B001FE9E6 /* Nimble.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF42661AC7B001FE9E6 /* Nimble.xcframework */; };
-		8412FDFF2661AC7B001FE9E6 /* Nimble.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF42661AC7B001FE9E6 /* Nimble.xcframework */; };
-		8412FE002661AC7B001FE9E6 /* Nimble.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF42661AC7B001FE9E6 /* Nimble.xcframework */; };
 		844B9CCF2C807BC400A260E8 /* ARTDeviceDetails+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 844B9CCE2C807BC400A260E8 /* ARTDeviceDetails+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		844B9CD02C807BC400A260E8 /* ARTDeviceDetails+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 844B9CCE2C807BC400A260E8 /* ARTDeviceDetails+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		844B9CD12C807BC400A260E8 /* ARTDeviceDetails+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 844B9CCE2C807BC400A260E8 /* ARTDeviceDetails+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -440,9 +357,6 @@
 		848B1D542DF0947600A1AE5B /* ARTWrapperSDKProxyRealtimeAnnotations.h in Headers */ = {isa = PBXBuildFile; fileRef = 848B1D532DF0947600A1AE5B /* ARTWrapperSDKProxyRealtimeAnnotations.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		848B1D552DF0947600A1AE5B /* ARTWrapperSDKProxyRealtimeAnnotations.h in Headers */ = {isa = PBXBuildFile; fileRef = 848B1D532DF0947600A1AE5B /* ARTWrapperSDKProxyRealtimeAnnotations.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		848B1D562DF0947600A1AE5B /* ARTWrapperSDKProxyRealtimeAnnotations.h in Headers */ = {isa = PBXBuildFile; fileRef = 848B1D532DF0947600A1AE5B /* ARTWrapperSDKProxyRealtimeAnnotations.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		848ED97326E50D0F0087E800 /* ObjcppTest.mm in Sources */ = {isa = PBXBuildFile; fileRef = 848ED97226E50D0F0087E800 /* ObjcppTest.mm */; settings = {COMPILER_FLAGS = "-fmodules"; }; };
-		848ED97426E50D0F0087E800 /* ObjcppTest.mm in Sources */ = {isa = PBXBuildFile; fileRef = 848ED97226E50D0F0087E800 /* ObjcppTest.mm */; settings = {COMPILER_FLAGS = "-fmodules"; }; };
-		848ED97526E50D0F0087E800 /* ObjcppTest.mm in Sources */ = {isa = PBXBuildFile; fileRef = 848ED97226E50D0F0087E800 /* ObjcppTest.mm */; settings = {COMPILER_FLAGS = "-fmodules"; }; };
 		84CFE1932E07641F00610BAD /* ARTAnnotation+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CFE1922E07641F00610BAD /* ARTAnnotation+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		84CFE1942E07641F00610BAD /* ARTAnnotation+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CFE1922E07641F00610BAD /* ARTAnnotation+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		84CFE1952E07641F00610BAD /* ARTAnnotation+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CFE1922E07641F00610BAD /* ARTAnnotation+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -463,11 +377,6 @@
 		84D04C482DE902C5000E8AE2 /* ARTAnnotation.m in Sources */ = {isa = PBXBuildFile; fileRef = 84D04C452DE902C5000E8AE2 /* ARTAnnotation.m */; };
 		850BFB4C1B79323C009D0ADD /* ARTPaginatedResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 850BFB4A1B79323C009D0ADD /* ARTPaginatedResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		850BFB4D1B79323C009D0ADD /* ARTPaginatedResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 850BFB4B1B79323C009D0ADD /* ARTPaginatedResult.m */; };
-		851674EF1B7BA5CD00D35169 /* StatsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 851674EE1B7BA5CD00D35169 /* StatsTests.swift */; };
-		853ED7C41B7A1A3C006F1C6F /* RestClientStatsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 853ED7C31B7A1A3C006F1C6F /* RestClientStatsTests.swift */; };
-		856AAC971B6E30C800B07119 /* TestUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856AAC961B6E30C800B07119 /* TestUtilities.swift */; };
-		856AAC991B6E312F00B07119 /* RestClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856AAC981B6E312F00B07119 /* RestClientTests.swift */; };
-		856AAC9B1B6E326E00B07119 /* ably-common in Resources */ = {isa = PBXBuildFile; fileRef = 856AAC9A1B6E326E00B07119 /* ably-common */; };
 		960D07931A45F1D800ED8C8C /* ARTCrypto.h in Headers */ = {isa = PBXBuildFile; fileRef = 960D07911A45F1D800ED8C8C /* ARTCrypto.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		960D07941A45F1D800ED8C8C /* ARTCrypto.m in Sources */ = {isa = PBXBuildFile; fileRef = 960D07921A45F1D800ED8C8C /* ARTCrypto.m */; };
 		960D07971A46FFC300ED8C8C /* ARTRest+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 960D07951A46FFC300ED8C8C /* ARTRest+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -505,15 +414,8 @@
 		96E408481A3895E800087F77 /* ARTWebSocketTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = 96E408461A3895E800087F77 /* ARTWebSocketTransport.m */; };
 		D3AD0EBD215E2FB000312105 /* ARTNSString+ARTUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = D3AD0EBB215E2FB000312105 /* ARTNSString+ARTUtil.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D3AD0EBE215E2FB000312105 /* ARTNSString+ARTUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = D3AD0EBC215E2FB000312105 /* ARTNSString+ARTUtil.m */; };
-		D50D86E929E9444600EA72EA /* JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = D50D86E829E9444600EA72EA /* JSON.swift */; };
-		D50D86EA29E9444600EA72EA /* JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = D50D86E829E9444600EA72EA /* JSON.swift */; };
-		D50D86EB29E9444600EA72EA /* JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = D50D86E829E9444600EA72EA /* JSON.swift */; };
-		D510E4AB29F1659F00F77F43 /* Aspects.m in Sources */ = {isa = PBXBuildFile; fileRef = D510E4AA29F1659F00F77F43 /* Aspects.m */; };
-		D510E4AC29F1659F00F77F43 /* Aspects.m in Sources */ = {isa = PBXBuildFile; fileRef = D510E4AA29F1659F00F77F43 /* Aspects.m */; };
-		D510E4AD29F1659F00F77F43 /* Aspects.m in Sources */ = {isa = PBXBuildFile; fileRef = D510E4AA29F1659F00F77F43 /* Aspects.m */; };
 		D520C4D626809BB5000012B2 /* ARTStringifiable.h in Headers */ = {isa = PBXBuildFile; fileRef = D520C4D426809BB5000012B2 /* ARTStringifiable.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D520C4DB26809BB5000012B2 /* ARTStringifiable.m in Sources */ = {isa = PBXBuildFile; fileRef = D520C4D526809BB5000012B2 /* ARTStringifiable.m */; };
-		D520C4E32680A1FC000012B2 /* StringifiableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D520C4DD2680A1E3000012B2 /* StringifiableTests.swift */; };
 		D520C4E62680A882000012B2 /* ARTStringifiable+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D520C4DC26809D49000012B2 /* ARTStringifiable+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D54C551C268AF2BD00729EC4 /* AblyDeltaCodec.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE12661AC37001FE9E6 /* AblyDeltaCodec.xcframework */; };
 		D54C551E268AF2BD00729EC4 /* msgpack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE32661AC37001FE9E6 /* msgpack.xcframework */; };
@@ -523,7 +425,6 @@
 		D54C554D268B31E500729EC4 /* ARTNSMutableDictionary+ARTDictionaryUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = D54C5547268B31E500729EC4 /* ARTNSMutableDictionary+ARTDictionaryUtil.m */; };
 		D54C55A926957FDE00729EC4 /* ARTNSURL+ARTUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = D54C55A526957FDD00729EC4 /* ARTNSURL+ARTUtils.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D54C55AC26957FDE00729EC4 /* ARTNSURL+ARTUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = D54C55A626957FDE00729EC4 /* ARTNSURL+ARTUtils.m */; };
-		D5A22174266F526600C87C42 /* GCDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A22171266F526600C87C42 /* GCDTests.swift */; };
 		D5BB20FB26A7F3C800AA5F3E /* NSRunLoop+ARTSRWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217D181625421FED00DFF07E /* NSRunLoop+ARTSRWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D5BB20FC26A7F3FF00AA5F3E /* NSURLRequest+ARTSRWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217D181C25421FED00DFF07E /* NSURLRequest+ARTSRWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D5BB20FD26A7F4F600AA5F3E /* ARTSRSecurityPolicy.h in Headers */ = {isa = PBXBuildFile; fileRef = 217D182025421FED00DFF07E /* ARTSRSecurityPolicy.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -567,53 +468,6 @@
 		D5D83C0826AAED1A00AADC8E /* ARTStringifiable+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D520C4DC26809D49000012B2 /* ARTStringifiable+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D5D83C0926AAEFEA00AADC8E /* NSURLQueryItem+Stringifiable.m in Sources */ = {isa = PBXBuildFile; fileRef = D5C0CB3C268317B500C06521 /* NSURLQueryItem+Stringifiable.m */; };
 		D5D83C0A26AAEFEB00AADC8E /* NSURLQueryItem+Stringifiable.m in Sources */ = {isa = PBXBuildFile; fileRef = D5C0CB3C268317B500C06521 /* NSURLQueryItem+Stringifiable.m */; };
-		D5FFA6A429E96C960082DB4B /* TestAppSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5FFA6A329E96C960082DB4B /* TestAppSetup.swift */; };
-		D5FFA6A529E96C960082DB4B /* TestAppSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5FFA6A329E96C960082DB4B /* TestAppSetup.swift */; };
-		D5FFA6A629E96C960082DB4B /* TestAppSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5FFA6A329E96C960082DB4B /* TestAppSetup.swift */; };
-		D5FFA6A829E97EF30082DB4B /* CryptoData.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5FFA6A729E97EF30082DB4B /* CryptoData.swift */; };
-		D5FFA6A929E97EF30082DB4B /* CryptoData.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5FFA6A729E97EF30082DB4B /* CryptoData.swift */; };
-		D5FFA6AA29E97EF30082DB4B /* CryptoData.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5FFA6A729E97EF30082DB4B /* CryptoData.swift */; };
-		D7093C0F219E2DB200723F17 /* Ably.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D45B219495E2008F54AD /* Ably.framework */; };
-		D7093C19219E465300723F17 /* TestUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856AAC961B6E30C800B07119 /* TestUtilities.swift */; };
-		D7093C1A219E465C00723F17 /* NSObject+TestSuite.m in Sources */ = {isa = PBXBuildFile; fileRef = D780846D1C68B3E50083009D /* NSObject+TestSuite.m */; };
-		D7093C1B219E465F00723F17 /* NSObject+TestSuite.swift in Sources */ = {isa = PBXBuildFile; fileRef = D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */; };
-		D7093C1D219E466600723F17 /* AuthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C1B8761BBEA81A0087B55F /* AuthTests.swift */; };
-		D7093C1E219E466900723F17 /* RestClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856AAC981B6E312F00B07119 /* RestClientTests.swift */; };
-		D7093C1F219E466E00723F17 /* RestClientStatsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 853ED7C31B7A1A3C006F1C6F /* RestClientStatsTests.swift */; };
-		D7093C20219E466E00723F17 /* RestClientChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D746AE2A1BBB625E003ECEF8 /* RestClientChannelTests.swift */; };
-		D7093C21219E466E00723F17 /* RestClientChannelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D746AE2B1BBB625E003ECEF8 /* RestClientChannelsTests.swift */; };
-		D7093C22219E466E00723F17 /* RestClientPresenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D72768201C9C19040022F8B2 /* RestClientPresenceTests.swift */; };
-		D7093C23219E466E00723F17 /* RestPaginatedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74CBC09212EC02C00D090E4 /* RestPaginatedTests.swift */; };
-		D7093C24219E466E00723F17 /* RealtimeClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D723046F1BB72CED00F1ABDA /* RealtimeClientTests.swift */; };
-		D7093C25219E466E00723F17 /* RealtimeClientConnectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7EBE5A21BE8391E0086E675 /* RealtimeClientConnectionTests.swift */; };
-		D7093C26219E466E00723F17 /* RealtimeClientChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74EFAEA1C4D09B500CFF98E /* RealtimeClientChannelTests.swift */; };
-		D7093C27219E466E00723F17 /* RealtimeClientChannelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D71D30031C5F7B2F002115B0 /* RealtimeClientChannelsTests.swift */; };
-		D7093C28219E466E00723F17 /* RealtimeClientPresenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7CEF1311C8DD3BC004FB242 /* RealtimeClientPresenceTests.swift */; };
-		D7093C29219E466E00723F17 /* StatsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 851674EE1B7BA5CD00D35169 /* StatsTests.swift */; };
-		D7093C2A219E466E00723F17 /* UtilitiesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1AE0CD1C5C3A4900D62250 /* UtilitiesTests.swift */; };
-		D7093C2B219E466E00723F17 /* CryptoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB7913A71C6E54C3000ABF9B /* CryptoTests.swift */; };
-		D7093C5B219EDE3200723F17 /* ably-common in Resources */ = {isa = PBXBuildFile; fileRef = 856AAC9A1B6E326E00B07119 /* ably-common */; };
-		D7093C65219EE1AE00723F17 /* Ably.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D475219495FC008F54AD /* Ably.framework */; };
-		D7093C70219EE25400723F17 /* TestUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856AAC961B6E30C800B07119 /* TestUtilities.swift */; };
-		D7093C71219EE25800723F17 /* NSObject+TestSuite.m in Sources */ = {isa = PBXBuildFile; fileRef = D780846D1C68B3E50083009D /* NSObject+TestSuite.m */; };
-		D7093C72219EE25B00723F17 /* NSObject+TestSuite.swift in Sources */ = {isa = PBXBuildFile; fileRef = D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */; };
-		D7093C74219EE26400723F17 /* AuthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C1B8761BBEA81A0087B55F /* AuthTests.swift */; };
-		D7093C75219EE26400723F17 /* RestClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856AAC981B6E312F00B07119 /* RestClientTests.swift */; };
-		D7093C76219EE26400723F17 /* RestClientStatsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 853ED7C31B7A1A3C006F1C6F /* RestClientStatsTests.swift */; };
-		D7093C77219EE26400723F17 /* RestClientChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D746AE2A1BBB625E003ECEF8 /* RestClientChannelTests.swift */; };
-		D7093C78219EE26400723F17 /* RestClientChannelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D746AE2B1BBB625E003ECEF8 /* RestClientChannelsTests.swift */; };
-		D7093C79219EE26400723F17 /* RestClientPresenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D72768201C9C19040022F8B2 /* RestClientPresenceTests.swift */; };
-		D7093C7A219EE26400723F17 /* RestPaginatedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74CBC09212EC02C00D090E4 /* RestPaginatedTests.swift */; };
-		D7093C7B219EE26400723F17 /* RealtimeClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D723046F1BB72CED00F1ABDA /* RealtimeClientTests.swift */; };
-		D7093C7C219EE26400723F17 /* RealtimeClientConnectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7EBE5A21BE8391E0086E675 /* RealtimeClientConnectionTests.swift */; };
-		D7093C7D219EE26400723F17 /* RealtimeClientChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74EFAEA1C4D09B500CFF98E /* RealtimeClientChannelTests.swift */; };
-		D7093C7E219EE26400723F17 /* RealtimeClientChannelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D71D30031C5F7B2F002115B0 /* RealtimeClientChannelsTests.swift */; };
-		D7093C7F219EE26400723F17 /* RealtimeClientPresenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7CEF1311C8DD3BC004FB242 /* RealtimeClientPresenceTests.swift */; };
-		D7093C80219EE26400723F17 /* StatsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 851674EE1B7BA5CD00D35169 /* StatsTests.swift */; };
-		D7093C81219EE26400723F17 /* UtilitiesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1AE0CD1C5C3A4900D62250 /* UtilitiesTests.swift */; };
-		D7093C82219EE26400723F17 /* CryptoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB7913A71C6E54C3000ABF9B /* CryptoTests.swift */; };
-		D7093C87219EE28100723F17 /* ably-common in Resources */ = {isa = PBXBuildFile; fileRef = 856AAC9A1B6E326E00B07119 /* ably-common */; };
-		D7093CA9219EFA8A00723F17 /* MockDeviceStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7093CA8219EFA8A00723F17 /* MockDeviceStorage.swift */; };
 		D70C36C3233E6831002FD6E3 /* ARTFormEncode.h in Headers */ = {isa = PBXBuildFile; fileRef = D70C36C1233E6831002FD6E3 /* ARTFormEncode.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D70C36C4233E6831002FD6E3 /* ARTFormEncode.h in Headers */ = {isa = PBXBuildFile; fileRef = D70C36C1233E6831002FD6E3 /* ARTFormEncode.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D70C36C5233E6831002FD6E3 /* ARTFormEncode.h in Headers */ = {isa = PBXBuildFile; fileRef = D70C36C1233E6831002FD6E3 /* ARTFormEncode.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -624,7 +478,6 @@
 		D70EAAEE1BC3376200CD8B9E /* ARTRestChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = D70EAAEC1BC3376200CD8B9E /* ARTRestChannel.m */; };
 		D70EECAC1FEAF331008A50CD /* ARTPendingMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = D70EECAA1FEAF331008A50CD /* ARTPendingMessage.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D70EECAD1FEAF331008A50CD /* ARTPendingMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = D70EECAB1FEAF331008A50CD /* ARTPendingMessage.m */; };
-		D70F277D2261046A00956251 /* Ably.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BF61311A35B2AB004CF2B3 /* Ably.framework */; };
 		D710D47D21949A27008F54AD /* Ably.h in Headers */ = {isa = PBXBuildFile; fileRef = D7534C311D79E5C20054C182 /* Ably.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D710D47F21949A28008F54AD /* Ably.h in Headers */ = {isa = PBXBuildFile; fileRef = D7534C311D79E5C20054C182 /* Ably.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D710D48021949A42008F54AD /* ARTDefault.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -983,16 +836,12 @@
 		D710D69E21949F00008F54AD /* ARTLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C6C18A11ADFDAB100AB79E4 /* ARTLog.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D710D69F21949F0D008F54AD /* ARTJsonLikeEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = EB9C530A1CD7BEB100.8.557 /* ARTJsonLikeEncoder.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D710D6A121949F0E008F54AD /* ARTJsonLikeEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = EB9C530A1CD7BEB100.8.557 /* ARTJsonLikeEncoder.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		D714A63E1C74D4B2002F2CA0 /* NSObject+TestSuite.swift in Sources */ = {isa = PBXBuildFile; fileRef = D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */; };
 		D71966E41E5DF360000974DD /* ARTPushActivationStateMachine.h in Headers */ = {isa = PBXBuildFile; fileRef = D71966E21E5DF360000974DD /* ARTPushActivationStateMachine.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D71966E51E5DF360000974DD /* ARTPushActivationStateMachine.m in Sources */ = {isa = PBXBuildFile; fileRef = D71966E31E5DF360000974DD /* ARTPushActivationStateMachine.m */; };
 		D71966EA1E5E006E000974DD /* ARTPushActivationState.h in Headers */ = {isa = PBXBuildFile; fileRef = D71966E81E5E006E000974DD /* ARTPushActivationState.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D71966EB1E5E006E000974DD /* ARTPushActivationState.m in Sources */ = {isa = PBXBuildFile; fileRef = D71966E91E5E006E000974DD /* ARTPushActivationState.m */; };
 		D71966EE1E5E0081000974DD /* ARTPushActivationEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = D71966EC1E5E0081000974DD /* ARTPushActivationEvent.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D71966EF1E5E0081000974DD /* ARTPushActivationEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = D71966ED1E5E0081000974DD /* ARTPushActivationEvent.m */; };
-		D71D30041C5F7B2F002115B0 /* RealtimeClientChannelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D71D30031C5F7B2F002115B0 /* RealtimeClientChannelsTests.swift */; };
-		D72304701BB72CED00F1ABDA /* RealtimeClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D723046F1BB72CED00F1ABDA /* RealtimeClientTests.swift */; };
-		D72768211C9C19040022F8B2 /* RestClientPresenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D72768201C9C19040022F8B2 /* RestClientPresenceTests.swift */; };
 		D72C67DF201AB74000978EBB /* ARTPushActivationStateMachine+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D72C67DE201AB74000978EBB /* ARTPushActivationStateMachine+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D73691FF1DB788C40062C150 /* ARTAuthDetails.h in Headers */ = {isa = PBXBuildFile; fileRef = D73691FD1DB788C40062C150 /* ARTAuthDetails.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D73692001DB788C40062C150 /* ARTAuthDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = D73691FE1DB788C40062C150 /* ARTAuthDetails.m */; };
@@ -1010,8 +859,6 @@
 		D746AE251BBB611C003ECEF8 /* ARTChannel+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE241BBB611C003ECEF8 /* ARTChannel+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D746AE281BBB61C9003ECEF8 /* ARTPresence.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE261BBB61C9003ECEF8 /* ARTPresence.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D746AE291BBB61C9003ECEF8 /* ARTPresence.m in Sources */ = {isa = PBXBuildFile; fileRef = D746AE271BBB61C9003ECEF8 /* ARTPresence.m */; };
-		D746AE2C1BBB625E003ECEF8 /* RestClientChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D746AE2A1BBB625E003ECEF8 /* RestClientChannelTests.swift */; };
-		D746AE2D1BBB625E003ECEF8 /* RestClientChannelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D746AE2B1BBB625E003ECEF8 /* RestClientChannelsTests.swift */; };
 		D746AE2F1BBBE7D7003ECEF8 /* ARTPaginatedResult+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE2E1BBBE7D7003ECEF8 /* ARTPaginatedResult+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D746AE381BBC3201003ECEF8 /* ARTMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE361BBC3201003ECEF8 /* ARTMessage.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D746AE391BBC3201003ECEF8 /* ARTMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = D746AE371BBC3201003ECEF8 /* ARTMessage.m */; };
@@ -1026,15 +873,12 @@
 		D746AE501BBD84E7003ECEF8 /* ARTChannelOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = D746AE4E1BBD84E7003ECEF8 /* ARTChannelOptions.m */; };
 		D746AE531BBD85C5003ECEF8 /* ARTChannels.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE511BBD85C5003ECEF8 /* ARTChannels.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D746AE541BBD85C5003ECEF8 /* ARTChannels.m in Sources */ = {isa = PBXBuildFile; fileRef = D746AE521BBD85C5003ECEF8 /* ARTChannels.m */; };
-		D74A17B81FA0D9A3006D27B5 /* PushAdminTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74A17B61FA0D81A006D27B5 /* PushAdminTests.swift */; };
 		D74CBC03212EB58700D090E4 /* ARTNSHTTPURLResponse+ARTPaginated.h in Headers */ = {isa = PBXBuildFile; fileRef = D74CBC01212EB58700D090E4 /* ARTNSHTTPURLResponse+ARTPaginated.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D74CBC04212EB58700D090E4 /* ARTNSHTTPURLResponse+ARTPaginated.m in Sources */ = {isa = PBXBuildFile; fileRef = D74CBC02212EB58700D090E4 /* ARTNSHTTPURLResponse+ARTPaginated.m */; };
 		D74CBC07212EB5B900D090E4 /* ARTNSMutableURLRequest+ARTPaginated.h in Headers */ = {isa = PBXBuildFile; fileRef = D74CBC05212EB5B900D090E4 /* ARTNSMutableURLRequest+ARTPaginated.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D74CBC08212EB5B900D090E4 /* ARTNSMutableURLRequest+ARTPaginated.m in Sources */ = {isa = PBXBuildFile; fileRef = D74CBC06212EB5B900D090E4 /* ARTNSMutableURLRequest+ARTPaginated.m */; };
-		D74CBC0B212EC22800D090E4 /* RestPaginatedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74CBC09212EC02C00D090E4 /* RestPaginatedTests.swift */; };
 		D74CBC0E212F076000D090E4 /* ARTConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = D74CBC0C212F076000D090E4 /* ARTConstants.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D74CBC0F212F076000D090E4 /* ARTConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = D74CBC0D212F076000D090E4 /* ARTConstants.m */; };
-		D74EFAEB1C4D09B500CFF98E /* RealtimeClientChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74EFAEA1C4D09B500CFF98E /* RealtimeClientChannelTests.swift */; };
 		D7534C321D79E5C20054C182 /* Ably.h in Headers */ = {isa = PBXBuildFile; fileRef = D7534C311D79E5C20054C182 /* Ably.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7588AF31BFF91B800BB8279 /* ARTURLSessionServerTrust.h in Headers */ = {isa = PBXBuildFile; fileRef = D7588AF11BFF91B800BB8279 /* ARTURLSessionServerTrust.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D7588AF41BFF91B800BB8279 /* ARTURLSessionServerTrust.m in Sources */ = {isa = PBXBuildFile; fileRef = D7588AF21BFF91B800BB8279 /* ARTURLSessionServerTrust.m */; };
@@ -1056,15 +900,10 @@
 		D777EEE1206285CF002EBA03 /* ARTDeviceIdentityTokenDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = D777EEDF206285CF002EBA03 /* ARTDeviceIdentityTokenDetails.m */; };
 		D777EEE42063A64E002EBA03 /* ARTNSMutableRequest+ARTPush.h in Headers */ = {isa = PBXBuildFile; fileRef = D777EEE22063A64E002EBA03 /* ARTNSMutableRequest+ARTPush.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D777EEE52063A64E002EBA03 /* ARTNSMutableRequest+ARTPush.m in Sources */ = {isa = PBXBuildFile; fileRef = D777EEE32063A64E002EBA03 /* ARTNSMutableRequest+ARTPush.m */; };
-		D777EEE820650ADF002EBA03 /* PushChannelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D777EEE620650A85002EBA03 /* PushChannelTests.swift */; };
 		D77F02A81DAF8099001B3FF9 /* ARTFallback+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D77F02A71DAF8099001B3FF9 /* ARTFallback+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		D780846E1C68B3E50083009D /* NSObject+TestSuite.m in Sources */ = {isa = PBXBuildFile; fileRef = D780846D1C68B3E50083009D /* NSObject+TestSuite.m */; };
 		D785C4291E549E33008FEC05 /* ARTPushChannelSubscription.h in Headers */ = {isa = PBXBuildFile; fileRef = D785C4271E549E33008FEC05 /* ARTPushChannelSubscription.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D785C42A1E549E33008FEC05 /* ARTPushChannelSubscription.m in Sources */ = {isa = PBXBuildFile; fileRef = D785C4281E549E33008FEC05 /* ARTPushChannelSubscription.m */; };
 		D78D780921271FB10016808B /* ARTHTTPPaginatedResponse+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D78D780821271FB10016808B /* ARTHTTPPaginatedResponse+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		D798554823EB96C000946BE2 /* DeltaCodecTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D798554723EB96C000946BE2 /* DeltaCodecTests.swift */; };
-		D798554923EB96C000946BE2 /* DeltaCodecTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D798554723EB96C000946BE2 /* DeltaCodecTests.swift */; };
-		D798554A23EB96C000946BE2 /* DeltaCodecTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D798554723EB96C000946BE2 /* DeltaCodecTests.swift */; };
 		D7AE18C91E5B40C900478D82 /* ARTPushAdmin.h in Headers */ = {isa = PBXBuildFile; fileRef = D7AE18C71E5B40C900478D82 /* ARTPushAdmin.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7AE18CA1E5B40C900478D82 /* ARTPushAdmin.m in Sources */ = {isa = PBXBuildFile; fileRef = D7AE18C81E5B40C900478D82 /* ARTPushAdmin.m */; };
 		D7AE18CE1E5B40FE00478D82 /* ARTPushDeviceRegistrations.h in Headers */ = {isa = PBXBuildFile; fileRef = D7AE18CC1E5B40FE00478D82 /* ARTPushDeviceRegistrations.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1079,10 +918,8 @@
 		D7B621951E4A6FE600684474 /* ARTDeviceDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = D7B621931E4A6FE600684474 /* ARTDeviceDetails.m */; };
 		D7B621981E4A762A00684474 /* ARTPushChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B621961E4A762A00684474 /* ARTPushChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7B621991E4A762A00684474 /* ARTPushChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = D7B621971E4A762A00684474 /* ARTPushChannel.m */; };
-		D7C1B8771BBEA81A0087B55F /* AuthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C1B8761BBEA81A0087B55F /* AuthTests.swift */; };
 		D7C1B8791BBF5F810087B55F /* ARTAuth+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C1B8781BBF5F460087B55F /* ARTAuth+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D7CEF12D1C8D821D004FB242 /* ARTRealtimeChannels+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D7CEF12C1C8D821D004FB242 /* ARTRealtimeChannels+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		D7CEF1321C8DD3BC004FB242 /* RealtimeClientPresenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7CEF1311C8DD3BC004FB242 /* RealtimeClientPresenceTests.swift */; };
 		D7D06F0826330E2800DEBDAD /* ARTHttp+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D7D06F0726330E1B00DEBDAD /* ARTHttp+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D7D06F1026330E2800DEBDAD /* ARTHttp+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D7D06F0726330E1B00DEBDAD /* ARTHttp+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D7D06F1126330E2900DEBDAD /* ARTHttp+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D7D06F0726330E1B00DEBDAD /* ARTHttp+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -1100,12 +937,10 @@
 		D7DC8AF11C6AA0C8005AF165 /* ARTDefault+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D7DC8AF01C6A9FFC005AF165 /* ARTDefault+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D7DEAFD11E65926D00D23F24 /* ARTLocalDevice.h in Headers */ = {isa = PBXBuildFile; fileRef = D7DEAFCF1E65926D00D23F24 /* ARTLocalDevice.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7DEAFD21E65926D00D23F24 /* ARTLocalDevice.m in Sources */ = {isa = PBXBuildFile; fileRef = D7DEAFD01E65926D00D23F24 /* ARTLocalDevice.m */; };
-		D7DF73851EA600240013CD36 /* PushActivationStateMachineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7DF73831EA5FE620013CD36 /* PushActivationStateMachineTests.swift */; };
 		D7DF738A1EA645300013CD36 /* ARTLocalDeviceStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = D7DF73881EA645300013CD36 /* ARTLocalDeviceStorage.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D7DF738B1EA645300013CD36 /* ARTLocalDeviceStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = D7DF73891EA645300013CD36 /* ARTLocalDeviceStorage.m */; };
 		D7E0FEB8211DE94700659FAA /* ARTNSMutableRequest+ARTRest.h in Headers */ = {isa = PBXBuildFile; fileRef = D7E0FEB6211DE94700659FAA /* ARTNSMutableRequest+ARTRest.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D7E0FEB9211DE94700659FAA /* ARTNSMutableRequest+ARTRest.m in Sources */ = {isa = PBXBuildFile; fileRef = D7E0FEB7211DE94700659FAA /* ARTNSMutableRequest+ARTRest.m */; };
-		D7EBE5A31BE8391E0086E675 /* RealtimeClientConnectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7EBE5A21BE8391E0086E675 /* RealtimeClientConnectionTests.swift */; };
 		D7EBE5A41BE9F6900086E675 /* ARTConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = D7D29B401BE3DD0600374295 /* ARTConnection.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7F1D3731BF4DE07001A4B5E /* ARTRestPresence.h in Headers */ = {isa = PBXBuildFile; fileRef = D7F1D3711BF4DE07001A4B5E /* ARTRestPresence.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7F1D3741BF4DE07001A4B5E /* ARTRestPresence.m in Sources */ = {isa = PBXBuildFile; fileRef = D7F1D3721BF4DE07001A4B5E /* ARTRestPresence.m */; };
@@ -1113,13 +948,8 @@
 		D7F1D3781BF4DE72001A4B5E /* ARTRealtimePresence.m in Sources */ = {isa = PBXBuildFile; fileRef = D7F1D3761BF4DE72001A4B5E /* ARTRealtimePresence.m */; };
 		D7F1D37A1BF4E33A001A4B5E /* ARTRestChannel+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D7F1D3791BF4E33A001A4B5E /* ARTRestChannel+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D7F2B8B21E42410D00B65151 /* ARTPresenceMessage+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D7F2B8B11E42410D00B65151 /* ARTPresenceMessage+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		D7FC1ECB209CEA2E001E4153 /* PushTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7FC1ECA209CEA2E001E4153 /* PushTests.swift */; };
 		EB0505FC1C5BD7C4006BA7E2 /* ARTBaseMessage+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB0505FB1C5BD7C4006BA7E2 /* ARTBaseMessage+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EB1AE0CC1C5C1EB200D62250 /* ARTEventEmitter+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB1AE0CB1C5C1EB200D62250 /* ARTEventEmitter+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		EB1AE0CE1C5C3A4900D62250 /* UtilitiesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1AE0CD1C5C3A4900D62250 /* UtilitiesTests.swift */; };
-		EB1B53F922F85CE4006A59AC /* ObjectLifetimesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1B53F822F85CE4006A59AC /* ObjectLifetimesTests.swift */; };
-		EB1B53FA22F85CE4006A59AC /* ObjectLifetimesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1B53F822F85CE4006A59AC /* ObjectLifetimesTests.swift */; };
-		EB1B53FB22F85CE4006A59AC /* ObjectLifetimesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1B53F822F85CE4006A59AC /* ObjectLifetimesTests.swift */; };
 		EB1B53FD22F8D91C006A59AC /* ARTQueuedDealloc.h in Headers */ = {isa = PBXBuildFile; fileRef = EB1B53FC22F8D91C006A59AC /* ARTQueuedDealloc.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EB1B53FE22F8D91C006A59AC /* ARTQueuedDealloc.h in Headers */ = {isa = PBXBuildFile; fileRef = EB1B53FC22F8D91C006A59AC /* ARTQueuedDealloc.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EB1B53FF22F8D91C006A59AC /* ARTQueuedDealloc.h in Headers */ = {isa = PBXBuildFile; fileRef = EB1B53FC22F8D91C006A59AC /* ARTQueuedDealloc.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -1146,7 +976,6 @@
 		EB503C8A1C7F1FE40053AF00 /* ARTLog+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB503C891C7F1FE40053AF00 /* ARTLog+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EB5E058D1C77027600A48B39 /* ARTCrypto+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB5E058C1C77027600A48B39 /* ARTCrypto+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EB7617721CB6CBFF00D0981E /* ARTRealtimePresence+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB7617711CB6CBFE00D0981E /* ARTRealtimePresence+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		EB7913A81C6E54C3000ABF9B /* CryptoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB7913A71C6E54C3000ABF9B /* CryptoTests.swift */; };
 		EB82F8511C59D29B00661917 /* ARTDataEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = EB3239461C59AB2C00892664 /* ARTDataEncoder.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EB82F8521C59D30500661917 /* ARTDataEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB3239421C59AB0400892664 /* ARTDataEncoder.m */; };
 		EB89D4011C61C10E007FA5B7 /* ARTChannels+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE551BBD8622003ECEF8 /* ARTChannels+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -1184,27 +1013,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		D7093C10219E2DB200723F17 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 96BF61281A35B2AB004CF2B3 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D710D45A219495E2008F54AD;
-			remoteInfo = "Ably-macOS";
-		};
-		D7093C66219EE1AE00723F17 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 96BF61281A35B2AB004CF2B3 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D710D474219495FC008F54AD;
-			remoteInfo = "Ably-tvOS";
-		};
-		D73BF7162260E7BD00579773 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 96BF61281A35B2AB004CF2B3 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 96BF61301A35B2AB004CF2B3;
-			remoteInfo = "Ably-iOS";
-		};
 		EB36309F23804F7C00B83598 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 96BF61281A35B2AB004CF2B3 /* Project object */;
@@ -1222,36 +1030,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		D7093C36219EDB4400723F17 /* Copy Carthage Frameworks to Test bundle */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-			);
-			name = "Copy Carthage Frameworks to Test bundle";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		D7093C6F219EE23700723F17 /* Copy Carthage Frameworks to Test bundle */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-			);
-			name = "Copy Carthage Frameworks to Test bundle";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		D736A1221F917830005ABE81 /* Copy Carthage Frameworks to Test bundle */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-			);
-			name = "Copy Carthage Frameworks to Test bundle";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		EB3630C8238055F100B83598 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1282,17 +1060,10 @@
 		2105ED2529E830D600DE6D67 /* ARTInternalLog+Testing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTInternalLog+Testing.h"; path = "PrivateHeaders/Ably/ARTInternalLog+Testing.h"; sourceTree = "<group>"; };
 		21088DC22A5354F10033C722 /* ARTConnectRetryState.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTConnectRetryState.h; path = PrivateHeaders/Ably/ARTConnectRetryState.h; sourceTree = "<group>"; };
 		21088DC62A5355510033C722 /* ARTConnectRetryState.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTConnectRetryState.m; sourceTree = "<group>"; };
-		21088DCA2A53560C0033C722 /* ConnectRetryStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectRetryStateTests.swift; sourceTree = "<group>"; };
 		210F67A129E9D718007B9345 /* ARTRealtimeTransportFactory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTRealtimeTransportFactory.h; path = PrivateHeaders/Ably/ARTRealtimeTransportFactory.h; sourceTree = "<group>"; };
 		210F67A529E9D93D007B9345 /* ARTRealtimeTransportFactory.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTRealtimeTransportFactory.m; sourceTree = "<group>"; };
-		210F67B029E9DB62007B9345 /* TestProxyTransportFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestProxyTransportFactory.swift; sourceTree = "<group>"; };
-		2110CC392A530D42007310D4 /* AttachRetryStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachRetryStateTests.swift; sourceTree = "<group>"; };
-		21113B4829DB60F800652C86 /* MockRetryDelayCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockRetryDelayCalculator.swift; sourceTree = "<group>"; };
 		21113B5029DC6AAF00652C86 /* ARTTestClientOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTTestClientOptions.h; path = PrivateHeaders/Ably/ARTTestClientOptions.h; sourceTree = "<group>"; };
 		21113B5429DC6ACD00652C86 /* ARTTestClientOptions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTTestClientOptions.m; sourceTree = "<group>"; };
-		21113B5829DCA4C700652C86 /* DataGatherer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataGatherer.swift; sourceTree = "<group>"; };
-		21113B5E29DDDDD000652C86 /* LogAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogAdapterTests.swift; sourceTree = "<group>"; };
-		21113B6229DDF7E800652C86 /* ARTInternalLogTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTInternalLogTests.m; sourceTree = "<group>"; };
 		2114D4262D4BC5470032839A /* AblyInternal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AblyInternal.h; path = include/Ably/AblyInternal.h; sourceTree = "<group>"; };
 		2114D4272D4BC5470032839A /* AblyPublic.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AblyPublic.h; path = include/Ably/AblyPublic.h; sourceTree = "<group>"; };
 		2114D42E2D4BCAE20032839A /* ARTRealtime+WrapperSDKProxy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTRealtime+WrapperSDKProxy.h"; path = "include/Ably/ARTRealtime+WrapperSDKProxy.h"; sourceTree = "<group>"; };
@@ -1302,40 +1073,30 @@
 		211A60FE29D8ABF100D169C5 /* ARTChannelStateChangeParams.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTChannelStateChangeParams.m; sourceTree = "<group>"; };
 		211A610229DA05C700D169C5 /* ARTAttachRequestParams.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTAttachRequestParams.h; path = PrivateHeaders/Ably/ARTAttachRequestParams.h; sourceTree = "<group>"; };
 		211A610629DA05D700D169C5 /* ARTAttachRequestParams.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTAttachRequestParams.m; sourceTree = "<group>"; };
-		212374662D415983005427E0 /* ChannelOptionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelOptionsTests.swift; sourceTree = "<group>"; };
-		2124B78629DB127900AD8361 /* MockVersion2Log.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockVersion2Log.swift; sourceTree = "<group>"; };
 		2124B78A29DB12A900AD8361 /* ARTVersion2Log.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTVersion2Log.h; path = PrivateHeaders/Ably/ARTVersion2Log.h; sourceTree = "<group>"; };
 		2124B78E29DB13BD00AD8361 /* ARTInternalLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTInternalLog.m; sourceTree = "<group>"; };
 		2124B79229DB13C400AD8361 /* ARTInternalLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTInternalLog.h; path = PrivateHeaders/Ably/ARTInternalLog.h; sourceTree = "<group>"; };
-		2124B79629DB144600AD8361 /* DefaultInternalLogCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultInternalLogCoreTests.swift; sourceTree = "<group>"; };
 		2124B79A29DB14C000AD8361 /* ARTLogAdapter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTLogAdapter.m; sourceTree = "<group>"; };
 		2124B79E29DB14D000AD8361 /* ARTLogAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTLogAdapter.h; path = PrivateHeaders/Ably/ARTLogAdapter.h; sourceTree = "<group>"; };
 		2124B7A229DB153500AD8361 /* ARTDeviceIdentityTokenDetails+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ARTDeviceIdentityTokenDetails+Private.h"; path = "PrivateHeaders/Ably/ARTDeviceIdentityTokenDetails+Private.h"; sourceTree = "<group>"; };
 		21276CB929EF323100107B5F /* ARTContinuousClock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTContinuousClock.h; path = PrivateHeaders/Ably/ARTContinuousClock.h; sourceTree = "<group>"; };
 		21276CBD29EF34AE00107B5F /* ARTContinuousClock.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTContinuousClock.m; sourceTree = "<group>"; };
-		21276CC129F00BAA00107B5F /* ContinuousClockTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinuousClockTests.swift; sourceTree = "<group>"; };
 		2132C21929D230AE000C4355 /* ARTErrorChecker.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTErrorChecker.h; path = PrivateHeaders/Ably/ARTErrorChecker.h; sourceTree = "<group>"; };
 		2132C21D29D23196000C4355 /* ARTErrorChecker.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTErrorChecker.m; sourceTree = "<group>"; };
-		2132C22129D233EB000C4355 /* DefaultErrorCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultErrorCheckerTests.swift; sourceTree = "<group>"; };
-		2132C22529D2347F000C4355 /* MockErrorChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockErrorChecker.swift; sourceTree = "<group>"; };
 		2132C2BC29D482E8000C4355 /* ARTClientOptions+TestConfiguration.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTClientOptions+TestConfiguration.h"; path = "PrivateHeaders/Ably/ARTClientOptions+TestConfiguration.h"; sourceTree = "<group>"; };
-		2132C2E829D4B91B000C4355 /* BackoffCoefficients.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackoffCoefficients.swift; sourceTree = "<group>"; };
 		2132C2F429D5BE05000C4355 /* ARTRetrySequence.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTRetrySequence.h; path = PrivateHeaders/Ably/ARTRetrySequence.h; sourceTree = "<group>"; };
 		2132C2F829D5BE3D000C4355 /* ARTRetrySequence.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTRetrySequence.m; sourceTree = "<group>"; };
 		2132C30029D5D154000C4355 /* ARTRetryDelayCalculator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTRetryDelayCalculator.h; path = PrivateHeaders/Ably/ARTRetryDelayCalculator.h; sourceTree = "<group>"; };
 		2132C31029D5E4C6000C4355 /* ARTBackoffRetryDelayCalculator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTBackoffRetryDelayCalculator.h; path = PrivateHeaders/Ably/ARTBackoffRetryDelayCalculator.h; sourceTree = "<group>"; };
 		2132C31429D5E50A000C4355 /* ARTBackoffRetryDelayCalculator.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTBackoffRetryDelayCalculator.m; sourceTree = "<group>"; };
-		2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackoffRetryDelayCalculatorTests.swift; sourceTree = "<group>"; };
 		2132C31F29D5FE74000C4355 /* ARTTypes+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTTypes+Private.h"; path = "PrivateHeaders/Ably/ARTTypes+Private.h"; sourceTree = "<group>"; };
 		213AEA192D35A6120067FD5F /* ARTWrapperSDKProxyOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTWrapperSDKProxyOptions.h; path = include/Ably/ARTWrapperSDKProxyOptions.h; sourceTree = "<group>"; };
 		213AEA1E2D35A7CD0067FD5F /* ARTWrapperSDKProxyRealtime.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTWrapperSDKProxyRealtime.m; sourceTree = "<group>"; };
 		213AEA262D35A7FC0067FD5F /* ARTWrapperSDKProxyRealtime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTWrapperSDKProxyRealtime.h; path = include/Ably/ARTWrapperSDKProxyRealtime.h; sourceTree = "<group>"; };
-		213AEA2A2D36C4C70067FD5F /* WrapperSDKProxyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WrapperSDKProxyTests.swift; sourceTree = "<group>"; };
 		213AEA2E2D36E9D30067FD5F /* ARTWrapperSDKProxyRealtime+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTWrapperSDKProxyRealtime+Private.h"; path = "PrivateHeaders/Ably/ARTWrapperSDKProxyRealtime+Private.h"; sourceTree = "<group>"; };
 		213AEA332D37F6890067FD5F /* ARTWrapperSDKProxyOptions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTWrapperSDKProxyOptions.m; sourceTree = "<group>"; };
 		2147F02C29E583AD0071CB94 /* ARTInternalLogCore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTInternalLogCore.h; path = PrivateHeaders/Ably/ARTInternalLogCore.h; sourceTree = "<group>"; };
 		2147F03029E583CE0071CB94 /* ARTInternalLogCore.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTInternalLogCore.m; sourceTree = "<group>"; };
-		2147F03429E5872C0071CB94 /* MockInternalLogCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockInternalLogCore.swift; sourceTree = "<group>"; };
 		2159248A2D636826004A235C /* ARTWrapperSDKProxyPush.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTWrapperSDKProxyPush.h; path = include/Ably/ARTWrapperSDKProxyPush.h; sourceTree = "<group>"; };
 		2159248E2D636839004A235C /* ARTWrapperSDKProxyPush+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTWrapperSDKProxyPush+Private.h"; path = "PrivateHeaders/Ably/ARTWrapperSDKProxyPush+Private.h"; sourceTree = "<group>"; };
 		215924922D636A6E004A235C /* ARTWrapperSDKProxyPush.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTWrapperSDKProxyPush.m; sourceTree = "<group>"; };
@@ -1356,7 +1117,6 @@
 		215924D62D636E04004A235C /* ARTWrapperSDKProxyRealtimePresence+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTWrapperSDKProxyRealtimePresence+Private.h"; path = "PrivateHeaders/Ably/ARTWrapperSDKProxyRealtimePresence+Private.h"; sourceTree = "<group>"; };
 		215F75F62922B1DB009E0E76 /* ARTClientInformation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTClientInformation.h; path = include/Ably/ARTClientInformation.h; sourceTree = "<group>"; };
 		215F75F72922B1DB009E0E76 /* ARTClientInformation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTClientInformation.m; sourceTree = "<group>"; };
-		215F75FE2922B30F009E0E76 /* ClientInformationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientInformationTests.swift; sourceTree = "<group>"; };
 		215F76022922C76C009E0E76 /* ARTClientInformation+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTClientInformation+Private.h"; path = "PrivateHeaders/Ably/ARTClientInformation+Private.h"; sourceTree = "<group>"; };
 		217D17F125421FED00DFF07E /* ARTSRProxyConnect.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRProxyConnect.h; sourceTree = "<group>"; };
 		217D17F225421FED00DFF07E /* ARTSRProxyConnect.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRProxyConnect.m; sourceTree = "<group>"; };
@@ -1397,12 +1157,8 @@
 		217D181E25421FED00DFF07E /* ARTSRSecurityPolicy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRSecurityPolicy.m; sourceTree = "<group>"; };
 		217D181F25421FED00DFF07E /* ARTSRWebSocket.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRWebSocket.m; sourceTree = "<group>"; };
 		217D182025421FED00DFF07E /* ARTSRSecurityPolicy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRSecurityPolicy.h; sourceTree = "<group>"; };
-		217FCF3129D62460006E5F2D /* RetrySequenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetrySequenceTests.swift; sourceTree = "<group>"; };
 		217FCF3529D6269D006E5F2D /* ARTJitterCoefficientGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTJitterCoefficientGenerator.h; path = PrivateHeaders/Ably/ARTJitterCoefficientGenerator.h; sourceTree = "<group>"; };
 		217FCF3929D626C1006E5F2D /* ARTJitterCoefficientGenerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTJitterCoefficientGenerator.m; sourceTree = "<group>"; };
-		217FCF3D29D626E4006E5F2D /* StaticJitterCoefficients.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StaticJitterCoefficients.swift; sourceTree = "<group>"; };
-		217FCF3E29D626E4006E5F2D /* MockJitterCoefficientGenerator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockJitterCoefficientGenerator.swift; sourceTree = "<group>"; };
-		217FCF4529D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultJitterCoefficientGeneratorTests.swift; sourceTree = "<group>"; };
 		2188F74A2DF773D3009C8A23 /* ARTPluginDecodingContext.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTPluginDecodingContext.h; path = PrivateHeaders/Ably/ARTPluginDecodingContext.h; sourceTree = "<group>"; };
 		2188F74E2DF773ED009C8A23 /* ARTPluginDecodingContext.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTPluginDecodingContext.m; sourceTree = "<group>"; };
 		21A28E582E54CFA7007D0BFE /* ARTPluginAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTPluginAPI.m; sourceTree = "<group>"; };
@@ -1416,22 +1172,15 @@
 		21AC0CD02D4AA3200030BD23 /* ARTWrapperSDKProxyRealtimeChannel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTWrapperSDKProxyRealtimeChannel.m; sourceTree = "<group>"; };
 		21AC0CD12D4AA3200030BD23 /* ARTWrapperSDKProxyRealtimeChannels.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTWrapperSDKProxyRealtimeChannels.m; sourceTree = "<group>"; };
 		21B4A7BB2E560F8000687F68 /* ARTErrorInfo+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTErrorInfo+Private.h"; path = "PrivateHeaders/Ably/ARTErrorInfo+Private.h"; sourceTree = "<group>"; };
-		21DCDA8229F818630073A211 /* Ably-iOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Ably-iOS.xctestplan"; path = "Test/Ably-iOS.xctestplan"; sourceTree = SOURCE_ROOT; };
-		21DCDA8329F81B350073A211 /* Ably-macOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Ably-macOS.xctestplan"; sourceTree = "<group>"; };
-		21DCDA8429F81B550073A211 /* Ably-tvOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Ably-tvOS.xctestplan"; sourceTree = "<group>"; };
 		21E1C0E42A0DC47400A5DB65 /* ARTWebSocketFactory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTWebSocketFactory.h; path = PrivateHeaders/Ably/ARTWebSocketFactory.h; sourceTree = "<group>"; };
 		21E1C0E82A0DC5E600A5DB65 /* ARTWebSocketFactory.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTWebSocketFactory.m; sourceTree = "<group>"; };
 		21E5D87E2D5E3EC300526C4C /* ARTChannelProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTChannelProtocol.h; path = include/Ably/ARTChannelProtocol.h; sourceTree = "<group>"; };
-		21FD9F262A015BE400216482 /* Test.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test.swift; sourceTree = "<group>"; };
-		560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARTDefaultTests.swift; sourceTree = "<group>"; };
-		56190953238C3D3200A862A6 /* CryptoTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CryptoTest.m; sourceTree = "<group>"; };
 		80350CE22D6E11DA002A0732 /* ARTMessageOperation+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTMessageOperation+Private.h"; path = "PrivateHeaders/Ably/ARTMessageOperation+Private.h"; sourceTree = "<group>"; };
 		808B24292D62D58C008547C1 /* ARTMessageOperation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTMessageOperation.m; sourceTree = "<group>"; };
 		808B245F2D62D9D7008547C1 /* ARTMessageOperation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTMessageOperation.h; path = include/Ably/ARTMessageOperation.h; sourceTree = "<group>"; };
 		80E519C62BBCBE20006545B4 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		84039A4B2C811F49001C053E /* ARTChannelOptions+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ARTChannelOptions+Private.h"; path = "PrivateHeaders/Ably/ARTChannelOptions+Private.h"; sourceTree = "<group>"; };
 		840FCE522C875B8A001163E1 /* ARTDevicePushDetails+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ARTDevicePushDetails+Private.h"; path = "PrivateHeaders/Ably/ARTDevicePushDetails+Private.h"; sourceTree = "<group>"; };
-		841134772722205400CFA837 /* ARTArchiveTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTArchiveTests.m; sourceTree = "<group>"; };
 		8412FDE12661AC37001FE9E6 /* AblyDeltaCodec.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = AblyDeltaCodec.xcframework; path = Carthage/Build/AblyDeltaCodec.xcframework; sourceTree = "<group>"; };
 		8412FDE32661AC37001FE9E6 /* msgpack.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = msgpack.xcframework; path = Carthage/Build/msgpack.xcframework; sourceTree = "<group>"; };
 		8412FDF42661AC7B001FE9E6 /* Nimble.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Nimble.xcframework; path = Carthage/Build/Nimble.xcframework; sourceTree = "<group>"; };
@@ -1439,7 +1188,6 @@
 		848B1D4B2DF093BD00A1AE5B /* ARTWrapperSDKProxyRealtimeAnnotations+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTWrapperSDKProxyRealtimeAnnotations+Private.h"; path = "PrivateHeaders/Ably/ARTWrapperSDKProxyRealtimeAnnotations+Private.h"; sourceTree = "<group>"; };
 		848B1D4F2DF0943100A1AE5B /* ARTWrapperSDKProxyRealtimeAnnotations.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTWrapperSDKProxyRealtimeAnnotations.m; sourceTree = "<group>"; };
 		848B1D532DF0947600A1AE5B /* ARTWrapperSDKProxyRealtimeAnnotations.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTWrapperSDKProxyRealtimeAnnotations.h; path = include/Ably/ARTWrapperSDKProxyRealtimeAnnotations.h; sourceTree = "<group>"; };
-		848ED97226E50D0F0087E800 /* ObjcppTest.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ObjcppTest.mm; sourceTree = "<group>"; };
 		84CFE1922E07641F00610BAD /* ARTAnnotation+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTAnnotation+Private.h"; path = "PrivateHeaders/Ably/ARTAnnotation+Private.h"; sourceTree = "<group>"; };
 		84D04C312DE8A4F4000E8AE2 /* ARTRealtimeAnnotations.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTRealtimeAnnotations.h; path = include/Ably/ARTRealtimeAnnotations.h; sourceTree = "<group>"; };
 		84D04C352DE8A5DE000E8AE2 /* ARTRealtimeAnnotations+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTRealtimeAnnotations+Private.h"; path = "PrivateHeaders/Ably/ARTRealtimeAnnotations+Private.h"; sourceTree = "<group>"; };
@@ -1448,14 +1196,6 @@
 		84D04C452DE902C5000E8AE2 /* ARTAnnotation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTAnnotation.m; sourceTree = "<group>"; };
 		850BFB4A1B79323C009D0ADD /* ARTPaginatedResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTPaginatedResult.h; path = include/Ably/ARTPaginatedResult.h; sourceTree = "<group>"; };
 		850BFB4B1B79323C009D0ADD /* ARTPaginatedResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPaginatedResult.m; sourceTree = "<group>"; };
-		851674EE1B7BA5CD00D35169 /* StatsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StatsTests.swift; sourceTree = "<group>"; };
-		853ED7C31B7A1A3C006F1C6F /* RestClientStatsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClientStatsTests.swift; sourceTree = "<group>"; };
-		856AAC8A1B6E304B00B07119 /* Ably-iOS-Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Ably-iOS-Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		856AAC8E1B6E304B00B07119 /* Info-iOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-iOS.plist"; sourceTree = "<group>"; };
-		856AAC951B6E30C800B07119 /* AblyTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AblyTests-Bridging-Header.h"; sourceTree = "<group>"; };
-		856AAC961B6E30C800B07119 /* TestUtilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestUtilities.swift; sourceTree = "<group>"; };
-		856AAC981B6E312F00B07119 /* RestClientTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClientTests.swift; sourceTree = "<group>"; };
-		856AAC9A1B6E326E00B07119 /* ably-common */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "ably-common"; sourceTree = SOURCE_ROOT; };
 		85F0A60C1B6D03B700EFF45A /* Ably.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = Ably.modulemap; sourceTree = "<group>"; };
 		960D07911A45F1D800ED8C8C /* ARTCrypto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTCrypto.h; path = include/Ably/ARTCrypto.h; sourceTree = "<group>"; };
 		960D07921A45F1D800ED8C8C /* ARTCrypto.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTCrypto.m; sourceTree = "<group>"; };
@@ -1496,32 +1236,20 @@
 		96E408461A3895E800087F77 /* ARTWebSocketTransport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTWebSocketTransport.m; sourceTree = "<group>"; };
 		D3AD0EBB215E2FB000312105 /* ARTNSString+ARTUtil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTNSString+ARTUtil.h"; path = "PrivateHeaders/Ably/ARTNSString+ARTUtil.h"; sourceTree = "<group>"; };
 		D3AD0EBC215E2FB000312105 /* ARTNSString+ARTUtil.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "ARTNSString+ARTUtil.m"; sourceTree = "<group>"; };
-		D50D86E829E9444600EA72EA /* JSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSON.swift; sourceTree = "<group>"; };
-		D510E4A929F1659F00F77F43 /* Aspects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Aspects.h; sourceTree = "<group>"; };
-		D510E4AA29F1659F00F77F43 /* Aspects.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Aspects.m; sourceTree = "<group>"; };
 		D520C4D426809BB5000012B2 /* ARTStringifiable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTStringifiable.h; path = include/Ably/ARTStringifiable.h; sourceTree = "<group>"; };
 		D520C4D526809BB5000012B2 /* ARTStringifiable.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTStringifiable.m; sourceTree = "<group>"; };
 		D520C4DC26809D49000012B2 /* ARTStringifiable+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTStringifiable+Private.h"; path = "PrivateHeaders/Ably/ARTStringifiable+Private.h"; sourceTree = "<group>"; };
-		D520C4DD2680A1E3000012B2 /* StringifiableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringifiableTests.swift; sourceTree = "<group>"; };
 		D54C5546268B31E500729EC4 /* ARTNSMutableDictionary+ARTDictionaryUtil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTNSMutableDictionary+ARTDictionaryUtil.h"; path = "PrivateHeaders/Ably/ARTNSMutableDictionary+ARTDictionaryUtil.h"; sourceTree = "<group>"; };
 		D54C5547268B31E500729EC4 /* ARTNSMutableDictionary+ARTDictionaryUtil.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "ARTNSMutableDictionary+ARTDictionaryUtil.m"; sourceTree = "<group>"; };
 		D54C55A526957FDD00729EC4 /* ARTNSURL+ARTUtils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTNSURL+ARTUtils.h"; path = "PrivateHeaders/Ably/ARTNSURL+ARTUtils.h"; sourceTree = "<group>"; };
 		D54C55A626957FDE00729EC4 /* ARTNSURL+ARTUtils.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "ARTNSURL+ARTUtils.m"; sourceTree = "<group>"; };
 		D5A22170266F3CB700C87C42 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
-		D5A22171266F526600C87C42 /* GCDTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GCDTests.swift; sourceTree = "<group>"; };
 		D5BB212C26AAA55C00AA5F3E /* ARTNSMutableURLRequest+ARTUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ARTNSMutableURLRequest+ARTUtils.h"; path = "PrivateHeaders/Ably/ARTNSMutableURLRequest+ARTUtils.h"; sourceTree = "<group>"; };
 		D5BB212D26AAA55C00AA5F3E /* ARTNSMutableURLRequest+ARTUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ARTNSMutableURLRequest+ARTUtils.m"; sourceTree = "<group>"; };
 		D5BB213426AAA60500AA5F3E /* ARTNSError+ARTUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ARTNSError+ARTUtils.m"; sourceTree = "<group>"; };
 		D5BB213526AAA60500AA5F3E /* ARTNSError+ARTUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ARTNSError+ARTUtils.h"; path = "PrivateHeaders/Ably/ARTNSError+ARTUtils.h"; sourceTree = "<group>"; };
 		D5C0CB3B268317B500C06521 /* NSURLQueryItem+Stringifiable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "NSURLQueryItem+Stringifiable.h"; path = "PrivateHeaders/Ably/NSURLQueryItem+Stringifiable.h"; sourceTree = "<group>"; };
 		D5C0CB3C268317B500C06521 /* NSURLQueryItem+Stringifiable.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSURLQueryItem+Stringifiable.m"; sourceTree = "<group>"; };
-		D5FFA6A329E96C960082DB4B /* TestAppSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestAppSetup.swift; sourceTree = "<group>"; };
-		D5FFA6A729E97EF30082DB4B /* CryptoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoData.swift; sourceTree = "<group>"; };
-		D7093C0A219E2DB200723F17 /* Ably-macOS-Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Ably-macOS-Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		D7093C0E219E2DB200723F17 /* Info-macOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-macOS.plist"; sourceTree = "<group>"; };
-		D7093C60219EE1AE00723F17 /* Ably-tvOS-Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Ably-tvOS-Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		D7093C64219EE1AE00723F17 /* Info-tvOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-tvOS.plist"; sourceTree = "<group>"; };
-		D7093CA8219EFA8A00723F17 /* MockDeviceStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDeviceStorage.swift; sourceTree = "<group>"; };
 		D70C36C1233E6831002FD6E3 /* ARTFormEncode.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTFormEncode.h; path = PrivateHeaders/Ably/ARTFormEncode.h; sourceTree = "<group>"; };
 		D70C36C2233E6831002FD6E3 /* ARTFormEncode.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTFormEncode.m; sourceTree = "<group>"; };
 		D70EAAEB1BC3376200CD8B9E /* ARTRestChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTRestChannel.h; path = include/Ably/ARTRestChannel.h; sourceTree = "<group>"; };
@@ -1532,7 +1260,6 @@
 		D710D45E219495E2008F54AD /* Info-macOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-macOS.plist"; sourceTree = "<group>"; };
 		D710D475219495FC008F54AD /* Ably.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Ably.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D710D478219495FC008F54AD /* Info-tvOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-tvOS.plist"; sourceTree = "<group>"; };
-		D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSObject+TestSuite.swift"; sourceTree = "<group>"; };
 		D714A63F1C75F0C5002F2CA0 /* ARTWebSocketTransport+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ARTWebSocketTransport+Private.h"; path = "PrivateHeaders/Ably/ARTWebSocketTransport+Private.h"; sourceTree = "<group>"; };
 		D71966E21E5DF360000974DD /* ARTPushActivationStateMachine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTPushActivationStateMachine.h; path = PrivateHeaders/Ably/ARTPushActivationStateMachine.h; sourceTree = "<group>"; };
 		D71966E31E5DF360000974DD /* ARTPushActivationStateMachine.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPushActivationStateMachine.m; sourceTree = "<group>"; };
@@ -1540,9 +1267,6 @@
 		D71966E91E5E006E000974DD /* ARTPushActivationState.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPushActivationState.m; sourceTree = "<group>"; };
 		D71966EC1E5E0081000974DD /* ARTPushActivationEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTPushActivationEvent.h; path = PrivateHeaders/Ably/ARTPushActivationEvent.h; sourceTree = "<group>"; };
 		D71966ED1E5E0081000974DD /* ARTPushActivationEvent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPushActivationEvent.m; sourceTree = "<group>"; };
-		D71D30031C5F7B2F002115B0 /* RealtimeClientChannelsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClientChannelsTests.swift; sourceTree = "<group>"; };
-		D723046F1BB72CED00F1ABDA /* RealtimeClientTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClientTests.swift; sourceTree = "<group>"; };
-		D72768201C9C19040022F8B2 /* RestClientPresenceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClientPresenceTests.swift; sourceTree = "<group>"; };
 		D72C67DE201AB74000978EBB /* ARTPushActivationStateMachine+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ARTPushActivationStateMachine+Private.h"; path = "PrivateHeaders/Ably/ARTPushActivationStateMachine+Private.h"; sourceTree = "<group>"; };
 		D73691FD1DB788C40062C150 /* ARTAuthDetails.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTAuthDetails.h; path = include/Ably/ARTAuthDetails.h; sourceTree = "<group>"; };
 		D73691FE1DB788C40062C150 /* ARTAuthDetails.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTAuthDetails.m; sourceTree = "<group>"; };
@@ -1556,8 +1280,6 @@
 		D746AE241BBB611C003ECEF8 /* ARTChannel+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ARTChannel+Private.h"; path = "PrivateHeaders/Ably/ARTChannel+Private.h"; sourceTree = "<group>"; };
 		D746AE261BBB61C9003ECEF8 /* ARTPresence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTPresence.h; path = include/Ably/ARTPresence.h; sourceTree = "<group>"; };
 		D746AE271BBB61C9003ECEF8 /* ARTPresence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPresence.m; sourceTree = "<group>"; };
-		D746AE2A1BBB625E003ECEF8 /* RestClientChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClientChannelTests.swift; sourceTree = "<group>"; };
-		D746AE2B1BBB625E003ECEF8 /* RestClientChannelsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClientChannelsTests.swift; sourceTree = "<group>"; };
 		D746AE2E1BBBE7D7003ECEF8 /* ARTPaginatedResult+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ARTPaginatedResult+Private.h"; path = "PrivateHeaders/Ably/ARTPaginatedResult+Private.h"; sourceTree = "<group>"; };
 		D746AE361BBC3201003ECEF8 /* ARTMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTMessage.h; path = include/Ably/ARTMessage.h; sourceTree = "<group>"; };
 		D746AE371BBC3201003ECEF8 /* ARTMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTMessage.m; sourceTree = "<group>"; };
@@ -1573,15 +1295,12 @@
 		D746AE511BBD85C5003ECEF8 /* ARTChannels.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTChannels.h; path = include/Ably/ARTChannels.h; sourceTree = "<group>"; };
 		D746AE521BBD85C5003ECEF8 /* ARTChannels.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTChannels.m; sourceTree = "<group>"; };
 		D746AE551BBD8622003ECEF8 /* ARTChannels+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTChannels+Private.h"; path = "PrivateHeaders/Ably/ARTChannels+Private.h"; sourceTree = "<group>"; };
-		D74A17B61FA0D81A006D27B5 /* PushAdminTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PushAdminTests.swift; sourceTree = "<group>"; };
 		D74CBC01212EB58700D090E4 /* ARTNSHTTPURLResponse+ARTPaginated.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTNSHTTPURLResponse+ARTPaginated.h"; path = "PrivateHeaders/Ably/ARTNSHTTPURLResponse+ARTPaginated.h"; sourceTree = "<group>"; };
 		D74CBC02212EB58700D090E4 /* ARTNSHTTPURLResponse+ARTPaginated.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "ARTNSHTTPURLResponse+ARTPaginated.m"; sourceTree = "<group>"; };
 		D74CBC05212EB5B900D090E4 /* ARTNSMutableURLRequest+ARTPaginated.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTNSMutableURLRequest+ARTPaginated.h"; path = "PrivateHeaders/Ably/ARTNSMutableURLRequest+ARTPaginated.h"; sourceTree = "<group>"; };
 		D74CBC06212EB5B900D090E4 /* ARTNSMutableURLRequest+ARTPaginated.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "ARTNSMutableURLRequest+ARTPaginated.m"; sourceTree = "<group>"; };
-		D74CBC09212EC02C00D090E4 /* RestPaginatedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestPaginatedTests.swift; sourceTree = "<group>"; };
 		D74CBC0C212F076000D090E4 /* ARTConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTConstants.h; path = PrivateHeaders/Ably/ARTConstants.h; sourceTree = "<group>"; };
 		D74CBC0D212F076000D090E4 /* ARTConstants.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTConstants.m; sourceTree = "<group>"; };
-		D74EFAEA1C4D09B500CFF98E /* RealtimeClientChannelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClientChannelTests.swift; sourceTree = "<group>"; };
 		D7534C311D79E5C20054C182 /* Ably.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Ably.h; path = include/Ably/Ably.h; sourceTree = "<group>"; };
 		D7588AF11BFF91B800BB8279 /* ARTURLSessionServerTrust.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTURLSessionServerTrust.h; path = PrivateHeaders/Ably/ARTURLSessionServerTrust.h; sourceTree = "<group>"; };
 		D7588AF21BFF91B800BB8279 /* ARTURLSessionServerTrust.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTURLSessionServerTrust.m; sourceTree = "<group>"; };
@@ -1600,14 +1319,10 @@
 		D777EEDF206285CF002EBA03 /* ARTDeviceIdentityTokenDetails.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTDeviceIdentityTokenDetails.m; sourceTree = "<group>"; };
 		D777EEE22063A64E002EBA03 /* ARTNSMutableRequest+ARTPush.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTNSMutableRequest+ARTPush.h"; path = "PrivateHeaders/Ably/ARTNSMutableRequest+ARTPush.h"; sourceTree = "<group>"; };
 		D777EEE32063A64E002EBA03 /* ARTNSMutableRequest+ARTPush.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "ARTNSMutableRequest+ARTPush.m"; sourceTree = "<group>"; };
-		D777EEE620650A85002EBA03 /* PushChannelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushChannelTests.swift; sourceTree = "<group>"; };
 		D77F02A71DAF8099001B3FF9 /* ARTFallback+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ARTFallback+Private.h"; path = "PrivateHeaders/Ably/ARTFallback+Private.h"; sourceTree = "<group>"; };
-		D780846C1C68B3E50083009D /* NSObject+TestSuite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+TestSuite.h"; sourceTree = "<group>"; };
-		D780846D1C68B3E50083009D /* NSObject+TestSuite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+TestSuite.m"; sourceTree = "<group>"; };
 		D785C4271E549E33008FEC05 /* ARTPushChannelSubscription.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTPushChannelSubscription.h; path = include/Ably/ARTPushChannelSubscription.h; sourceTree = "<group>"; };
 		D785C4281E549E33008FEC05 /* ARTPushChannelSubscription.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPushChannelSubscription.m; sourceTree = "<group>"; };
 		D78D780821271FB10016808B /* ARTHTTPPaginatedResponse+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ARTHTTPPaginatedResponse+Private.h"; path = "PrivateHeaders/Ably/ARTHTTPPaginatedResponse+Private.h"; sourceTree = "<group>"; };
-		D798554723EB96C000946BE2 /* DeltaCodecTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeltaCodecTests.swift; sourceTree = "<group>"; };
 		D7AE18C71E5B40C900478D82 /* ARTPushAdmin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTPushAdmin.h; path = include/Ably/ARTPushAdmin.h; sourceTree = "<group>"; };
 		D7AE18C81E5B40C900478D82 /* ARTPushAdmin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPushAdmin.m; sourceTree = "<group>"; };
 		D7AE18CC1E5B40FE00478D82 /* ARTPushDeviceRegistrations.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTPushDeviceRegistrations.h; path = include/Ably/ARTPushDeviceRegistrations.h; sourceTree = "<group>"; };
@@ -1622,10 +1337,8 @@
 		D7B621931E4A6FE600684474 /* ARTDeviceDetails.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDeviceDetails.m; sourceTree = "<group>"; };
 		D7B621961E4A762A00684474 /* ARTPushChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTPushChannel.h; path = include/Ably/ARTPushChannel.h; sourceTree = "<group>"; };
 		D7B621971E4A762A00684474 /* ARTPushChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPushChannel.m; sourceTree = "<group>"; };
-		D7C1B8761BBEA81A0087B55F /* AuthTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AuthTests.swift; sourceTree = "<group>"; };
 		D7C1B8781BBF5F460087B55F /* ARTAuth+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTAuth+Private.h"; path = "PrivateHeaders/Ably/ARTAuth+Private.h"; sourceTree = "<group>"; };
 		D7CEF12C1C8D821D004FB242 /* ARTRealtimeChannels+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ARTRealtimeChannels+Private.h"; path = "PrivateHeaders/Ably/ARTRealtimeChannels+Private.h"; sourceTree = "<group>"; };
-		D7CEF1311C8DD3BC004FB242 /* RealtimeClientPresenceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClientPresenceTests.swift; sourceTree = "<group>"; };
 		D7D06F0726330E1B00DEBDAD /* ARTHttp+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTHttp+Private.h"; path = "PrivateHeaders/Ably/ARTHttp+Private.h"; sourceTree = "<group>"; };
 		D7D29B401BE3DD0600374295 /* ARTConnection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTConnection.h; path = include/Ably/ARTConnection.h; sourceTree = "<group>"; };
 		D7D29B411BE3DEB300374295 /* ARTConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTConnection.m; sourceTree = "<group>"; };
@@ -1642,12 +1355,10 @@
 		D7DC8AF01C6A9FFC005AF165 /* ARTDefault+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTDefault+Private.h"; path = "PrivateHeaders/Ably/ARTDefault+Private.h"; sourceTree = "<group>"; };
 		D7DEAFCF1E65926D00D23F24 /* ARTLocalDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTLocalDevice.h; path = include/Ably/ARTLocalDevice.h; sourceTree = "<group>"; };
 		D7DEAFD01E65926D00D23F24 /* ARTLocalDevice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTLocalDevice.m; sourceTree = "<group>"; };
-		D7DF73831EA5FE620013CD36 /* PushActivationStateMachineTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PushActivationStateMachineTests.swift; sourceTree = "<group>"; };
 		D7DF73881EA645300013CD36 /* ARTLocalDeviceStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTLocalDeviceStorage.h; path = PrivateHeaders/Ably/ARTLocalDeviceStorage.h; sourceTree = "<group>"; };
 		D7DF73891EA645300013CD36 /* ARTLocalDeviceStorage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTLocalDeviceStorage.m; sourceTree = "<group>"; };
 		D7E0FEB6211DE94700659FAA /* ARTNSMutableRequest+ARTRest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ARTNSMutableRequest+ARTRest.h"; path = "PrivateHeaders/Ably/ARTNSMutableRequest+ARTRest.h"; sourceTree = "<group>"; };
 		D7E0FEB7211DE94700659FAA /* ARTNSMutableRequest+ARTRest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ARTNSMutableRequest+ARTRest.m"; sourceTree = "<group>"; };
-		D7EBE5A21BE8391E0086E675 /* RealtimeClientConnectionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClientConnectionTests.swift; sourceTree = "<group>"; };
 		D7EE14F51F07964500C178D5 /* Version.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Version.xcconfig; sourceTree = "<group>"; };
 		D7F1D3711BF4DE07001A4B5E /* ARTRestPresence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTRestPresence.h; path = include/Ably/ARTRestPresence.h; sourceTree = "<group>"; };
 		D7F1D3721BF4DE07001A4B5E /* ARTRestPresence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRestPresence.m; sourceTree = "<group>"; };
@@ -1655,11 +1366,8 @@
 		D7F1D3761BF4DE72001A4B5E /* ARTRealtimePresence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRealtimePresence.m; sourceTree = "<group>"; };
 		D7F1D3791BF4E33A001A4B5E /* ARTRestChannel+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ARTRestChannel+Private.h"; path = "PrivateHeaders/Ably/ARTRestChannel+Private.h"; sourceTree = "<group>"; };
 		D7F2B8B11E42410D00B65151 /* ARTPresenceMessage+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ARTPresenceMessage+Private.h"; path = "PrivateHeaders/Ably/ARTPresenceMessage+Private.h"; sourceTree = "<group>"; };
-		D7FC1ECA209CEA2E001E4153 /* PushTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushTests.swift; sourceTree = "<group>"; };
 		EB0505FB1C5BD7C4006BA7E2 /* ARTBaseMessage+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ARTBaseMessage+Private.h"; path = "PrivateHeaders/Ably/ARTBaseMessage+Private.h"; sourceTree = "<group>"; };
 		EB1AE0CB1C5C1EB200D62250 /* ARTEventEmitter+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ARTEventEmitter+Private.h"; path = "PrivateHeaders/Ably/ARTEventEmitter+Private.h"; sourceTree = "<group>"; };
-		EB1AE0CD1C5C3A4900D62250 /* UtilitiesTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilitiesTests.swift; sourceTree = "<group>"; };
-		EB1B53F822F85CE4006A59AC /* ObjectLifetimesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectLifetimesTests.swift; sourceTree = "<group>"; };
 		EB1B53FC22F8D91C006A59AC /* ARTQueuedDealloc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTQueuedDealloc.h; path = PrivateHeaders/Ably/ARTQueuedDealloc.h; sourceTree = "<group>"; };
 		EB1B540422F8DA05006A59AC /* ARTQueuedDealloc.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTQueuedDealloc.m; sourceTree = "<group>"; };
 		EB1B541022FB1AB4006A59AC /* ARTPushChannel+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTPushChannel+Private.h"; path = "PrivateHeaders/Ably/ARTPushChannel+Private.h"; sourceTree = "<group>"; };
@@ -1681,7 +1389,6 @@
 		EB5E058C1C77027600A48B39 /* ARTCrypto+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ARTCrypto+Private.h"; path = "PrivateHeaders/Ably/ARTCrypto+Private.h"; sourceTree = "<group>"; };
 		EB7617701CB6C18C00D0981E /* ARTRestPresence+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTRestPresence+Private.h"; path = "PrivateHeaders/Ably/ARTRestPresence+Private.h"; sourceTree = "<group>"; };
 		EB7617711CB6CBFE00D0981E /* ARTRealtimePresence+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ARTRealtimePresence+Private.h"; path = "PrivateHeaders/Ably/ARTRealtimePresence+Private.h"; sourceTree = "<group>"; };
-		EB7913A71C6E54C3000ABF9B /* CryptoTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CryptoTests.swift; sourceTree = "<group>"; };
 		EB89D4021C61C1A4007FA5B7 /* ARTRestChannels.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTRestChannels.h; path = include/Ably/ARTRestChannels.h; sourceTree = "<group>"; };
 		EB89D4031C61C1A4007FA5B7 /* ARTRestChannels.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRestChannels.m; sourceTree = "<group>"; };
 		EB89D4081C61C5ED007FA5B7 /* ARTRealtimeChannels.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTRealtimeChannels.h; path = include/Ably/ARTRealtimeChannels.h; sourceTree = "<group>"; };
@@ -1710,39 +1417,12 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		856AAC871B6E304B00B07119 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				8412FDFE2661AC7B001FE9E6 /* Nimble.xcframework in Frameworks */,
-				D70F277D2261046A00956251 /* Ably.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		96BF612D1A35B2AB004CF2B3 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				D54C5523268B041200729EC4 /* msgpack.xcframework in Frameworks */,
 				D54C5521268B041200729EC4 /* AblyDeltaCodec.xcframework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		D7093C07219E2DB200723F17 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				8412FDFF2661AC7B001FE9E6 /* Nimble.xcframework in Frameworks */,
-				D7093C0F219E2DB200723F17 /* Ably.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		D7093C5D219EE1AE00723F17 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				8412FE002661AC7B001FE9E6 /* Nimble.xcframework in Frameworks */,
-				D7093C65219EE1AE00723F17 /* Ably.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1936,95 +1616,6 @@
 			name = "Plugin Support";
 			sourceTree = "<group>";
 		};
-		21BF06092758477700AE4C43 /* Tests */ = {
-			isa = PBXGroup;
-			children = (
-				841134772722205400CFA837 /* ARTArchiveTests.m */,
-				560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */,
-				D7C1B8761BBEA81A0087B55F /* AuthTests.swift */,
-				215F75FE2922B30F009E0E76 /* ClientInformationTests.swift */,
-				21276CC129F00BAA00107B5F /* ContinuousClockTests.swift */,
-				EB7913A71C6E54C3000ABF9B /* CryptoTests.swift */,
-				56190953238C3D3200A862A6 /* CryptoTest.m */,
-				2132C22129D233EB000C4355 /* DefaultErrorCheckerTests.swift */,
-				217FCF4529D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift */,
-				D798554723EB96C000946BE2 /* DeltaCodecTests.swift */,
-				D5A22171266F526600C87C42 /* GCDTests.swift */,
-				2124B79629DB144600AD8361 /* DefaultInternalLogCoreTests.swift */,
-				21113B6229DDF7E800652C86 /* ARTInternalLogTests.m */,
-				21113B5E29DDDDD000652C86 /* LogAdapterTests.swift */,
-				2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */,
-				848ED97226E50D0F0087E800 /* ObjcppTest.mm */,
-				EB1B53F822F85CE4006A59AC /* ObjectLifetimesTests.swift */,
-				D7FC1ECA209CEA2E001E4153 /* PushTests.swift */,
-				D7DF73831EA5FE620013CD36 /* PushActivationStateMachineTests.swift */,
-				D74A17B61FA0D81A006D27B5 /* PushAdminTests.swift */,
-				D777EEE620650A85002EBA03 /* PushChannelTests.swift */,
-				D723046F1BB72CED00F1ABDA /* RealtimeClientTests.swift */,
-				D74EFAEA1C4D09B500CFF98E /* RealtimeClientChannelTests.swift */,
-				D71D30031C5F7B2F002115B0 /* RealtimeClientChannelsTests.swift */,
-				D7EBE5A21BE8391E0086E675 /* RealtimeClientConnectionTests.swift */,
-				D7CEF1311C8DD3BC004FB242 /* RealtimeClientPresenceTests.swift */,
-				856AAC981B6E312F00B07119 /* RestClientTests.swift */,
-				D746AE2A1BBB625E003ECEF8 /* RestClientChannelTests.swift */,
-				D746AE2B1BBB625E003ECEF8 /* RestClientChannelsTests.swift */,
-				D72768201C9C19040022F8B2 /* RestClientPresenceTests.swift */,
-				853ED7C31B7A1A3C006F1C6F /* RestClientStatsTests.swift */,
-				D74CBC09212EC02C00D090E4 /* RestPaginatedTests.swift */,
-				217FCF3129D62460006E5F2D /* RetrySequenceTests.swift */,
-				851674EE1B7BA5CD00D35169 /* StatsTests.swift */,
-				D520C4DD2680A1E3000012B2 /* StringifiableTests.swift */,
-				EB1AE0CD1C5C3A4900D62250 /* UtilitiesTests.swift */,
-				2110CC392A530D42007310D4 /* AttachRetryStateTests.swift */,
-				21088DCA2A53560C0033C722 /* ConnectRetryStateTests.swift */,
-				212374662D415983005427E0 /* ChannelOptionsTests.swift */,
-				213AEA2A2D36C4C70067FD5F /* WrapperSDKProxyTests.swift */,
-			);
-			path = Tests;
-			sourceTree = "<group>";
-		};
-		21BF060A2758477E00AE4C43 /* Test Utilities */ = {
-			isa = PBXGroup;
-			children = (
-				D7093CA8219EFA8A00723F17 /* MockDeviceStorage.swift */,
-				D780846C1C68B3E50083009D /* NSObject+TestSuite.h */,
-				D780846D1C68B3E50083009D /* NSObject+TestSuite.m */,
-				D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */,
-				856AAC961B6E30C800B07119 /* TestUtilities.swift */,
-				2132C22529D2347F000C4355 /* MockErrorChecker.swift */,
-				217FCF3E29D626E4006E5F2D /* MockJitterCoefficientGenerator.swift */,
-				217FCF3D29D626E4006E5F2D /* StaticJitterCoefficients.swift */,
-				2132C2E829D4B91B000C4355 /* BackoffCoefficients.swift */,
-				21113B4829DB60F800652C86 /* MockRetryDelayCalculator.swift */,
-				2124B78629DB127900AD8361 /* MockVersion2Log.swift */,
-				2147F03429E5872C0071CB94 /* MockInternalLogCore.swift */,
-				D50D86E829E9444600EA72EA /* JSON.swift */,
-				210F67B029E9DB62007B9345 /* TestProxyTransportFactory.swift */,
-				21FD9F262A015BE400216482 /* Test.swift */,
-				21113B5829DCA4C700652C86 /* DataGatherer.swift */,
-			);
-			path = "Test Utilities";
-			sourceTree = "<group>";
-		};
-		856AAC8B1B6E304B00B07119 /* Test */ = {
-			isa = PBXGroup;
-			children = (
-				D510E4A729F1656000F77F43 /* Dependencies */,
-				D5FFA6A229E96C790082DB4B /* Codables */,
-				21BF06092758477700AE4C43 /* Tests */,
-				21BF060A2758477E00AE4C43 /* Test Utilities */,
-				856AAC9A1B6E326E00B07119 /* ably-common */,
-				856AAC951B6E30C800B07119 /* AblyTests-Bridging-Header.h */,
-				856AAC8E1B6E304B00B07119 /* Info-iOS.plist */,
-				D7093C0E219E2DB200723F17 /* Info-macOS.plist */,
-				D7093C64219EE1AE00723F17 /* Info-tvOS.plist */,
-				21DCDA8229F818630073A211 /* Ably-iOS.xctestplan */,
-				21DCDA8329F81B350073A211 /* Ably-macOS.xctestplan */,
-				21DCDA8429F81B550073A211 /* Ably-tvOS.xctestplan */,
-			);
-			path = Test;
-			sourceTree = "<group>";
-		};
 		96BF61271A35B2AB004CF2B3 = {
 			isa = PBXGroup;
 			children = (
@@ -2033,7 +1624,6 @@
 				D7EE14F51F07964500C178D5 /* Version.xcconfig */,
 				96BF61331A35B2AB004CF2B3 /* Source */,
 				217D17EE25421FC100DFF07E /* SocketRocket */,
-				856AAC8B1B6E304B00B07119 /* Test */,
 				EB36308A23804F7A00B83598 /* Ably-SoakTest-App */,
 				EB3630A123804F7C00B83598 /* Ably-SoakTest-AppUITests */,
 				96BF61321A35B2AB004CF2B3 /* Products */,
@@ -2047,11 +1637,8 @@
 			isa = PBXGroup;
 			children = (
 				96BF61311A35B2AB004CF2B3 /* Ably.framework */,
-				856AAC8A1B6E304B00B07119 /* Ably-iOS-Tests.xctest */,
 				D710D45B219495E2008F54AD /* Ably.framework */,
 				D710D475219495FC008F54AD /* Ably.framework */,
-				D7093C0A219E2DB200723F17 /* Ably-macOS-Tests.xctest */,
-				D7093C60219EE1AE00723F17 /* Ably-tvOS-Tests.xctest */,
 				EB36308923804F7A00B83598 /* Ably-SoakTest-App.app */,
 				EB36309E23804F7C00B83598 /* Ably-SoakTest-AppUITests.xctest */,
 			);
@@ -2092,32 +1679,6 @@
 				D710D478219495FC008F54AD /* Info-tvOS.plist */,
 			);
 			name = "Supporting Files";
-			sourceTree = "<group>";
-		};
-		D510E4A729F1656000F77F43 /* Dependencies */ = {
-			isa = PBXGroup;
-			children = (
-				D510E4A829F1656000F77F43 /* steipete */,
-			);
-			path = Dependencies;
-			sourceTree = "<group>";
-		};
-		D510E4A829F1656000F77F43 /* steipete */ = {
-			isa = PBXGroup;
-			children = (
-				D510E4A929F1659F00F77F43 /* Aspects.h */,
-				D510E4AA29F1659F00F77F43 /* Aspects.m */,
-			);
-			path = steipete;
-			sourceTree = "<group>";
-		};
-		D5FFA6A229E96C790082DB4B /* Codables */ = {
-			isa = PBXGroup;
-			children = (
-				D5FFA6A329E96C960082DB4B /* TestAppSetup.swift */,
-				D5FFA6A729E97EF30082DB4B /* CryptoData.swift */,
-			);
-			path = Codables;
 			sourceTree = "<group>";
 		};
 		D71966E61E5DFFB2000974DD /* Admin */ = {
@@ -3092,25 +2653,6 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		856AAC891B6E304B00B07119 /* Ably-iOS-Tests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 856AAC921B6E304B00B07119 /* Build configuration list for PBXNativeTarget "Ably-iOS-Tests" */;
-			buildPhases = (
-				856AAC861B6E304B00B07119 /* Sources */,
-				856AAC871B6E304B00B07119 /* Frameworks */,
-				856AAC881B6E304B00B07119 /* Resources */,
-				D736A1221F917830005ABE81 /* Copy Carthage Frameworks to Test bundle */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				D73BF7172260E7BD00579773 /* PBXTargetDependency */,
-			);
-			name = "Ably-iOS-Tests";
-			productName = AblySpec;
-			productReference = 856AAC8A1B6E304B00B07119 /* Ably-iOS-Tests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 		96BF61301A35B2AB004CF2B3 /* Ably-iOS */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 96BF61471A35B2AB004CF2B3 /* Build configuration list for PBXNativeTarget "Ably-iOS" */;
@@ -3128,44 +2670,6 @@
 			productName = Ably;
 			productReference = 96BF61311A35B2AB004CF2B3 /* Ably.framework */;
 			productType = "com.apple.product-type.framework";
-		};
-		D7093C09219E2DB200723F17 /* Ably-macOS-Tests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = D7093C12219E2DB200723F17 /* Build configuration list for PBXNativeTarget "Ably-macOS-Tests" */;
-			buildPhases = (
-				D7093C06219E2DB200723F17 /* Sources */,
-				D7093C07219E2DB200723F17 /* Frameworks */,
-				D7093C08219E2DB200723F17 /* Resources */,
-				D7093C36219EDB4400723F17 /* Copy Carthage Frameworks to Test bundle */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				D7093C11219E2DB200723F17 /* PBXTargetDependency */,
-			);
-			name = "Ably-macOS-Tests";
-			productName = "Ably-macOS-Tests";
-			productReference = D7093C0A219E2DB200723F17 /* Ably-macOS-Tests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		D7093C5F219EE1AE00723F17 /* Ably-tvOS-Tests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = D7093C68219EE1AE00723F17 /* Build configuration list for PBXNativeTarget "Ably-tvOS-Tests" */;
-			buildPhases = (
-				D7093C5C219EE1AE00723F17 /* Sources */,
-				D7093C5D219EE1AE00723F17 /* Frameworks */,
-				D7093C5E219EE1AE00723F17 /* Resources */,
-				D7093C6F219EE23700723F17 /* Copy Carthage Frameworks to Test bundle */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				D7093C67219EE1AE00723F17 /* PBXTargetDependency */,
-			);
-			name = "Ably-tvOS-Tests";
-			productName = "Ably-tvOS-Tests";
-			productReference = D7093C60219EE1AE00723F17 /* Ably-tvOS-Tests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		D710D45A219495E2008F54AD /* Ably-macOS */ = {
 			isa = PBXNativeTarget;
@@ -3252,23 +2756,9 @@
 				LastUpgradeCheck = 1310;
 				ORGANIZATIONNAME = Ably;
 				TargetAttributes = {
-					856AAC891B6E304B00B07119 = {
-						CreatedOnToolsVersion = 7.0;
-						LastSwiftMigration = 1020;
-					};
 					96BF61301A35B2AB004CF2B3 = {
 						CreatedOnToolsVersion = 6.1.1;
 						LastSwiftMigration = 1250;
-					};
-					D7093C09219E2DB200723F17 = {
-						CreatedOnToolsVersion = 10.1;
-						LastSwiftMigration = 1010;
-						ProvisioningStyle = Automatic;
-					};
-					D7093C5F219EE1AE00723F17 = {
-						CreatedOnToolsVersion = 10.1;
-						LastSwiftMigration = 1010;
-						ProvisioningStyle = Automatic;
 					};
 					D710D45A219495E2008F54AD = {
 						CreatedOnToolsVersion = 10.1;
@@ -3305,11 +2795,8 @@
 			projectRoot = "";
 			targets = (
 				96BF61301A35B2AB004CF2B3 /* Ably-iOS */,
-				856AAC891B6E304B00B07119 /* Ably-iOS-Tests */,
 				D710D45A219495E2008F54AD /* Ably-macOS */,
-				D7093C09219E2DB200723F17 /* Ably-macOS-Tests */,
 				D710D474219495FC008F54AD /* Ably-tvOS */,
-				D7093C5F219EE1AE00723F17 /* Ably-tvOS-Tests */,
 				EB36308823804F7A00B83598 /* Ably-SoakTest-App */,
 				EB36309D23804F7C00B83598 /* Ably-SoakTest-AppUITests */,
 			);
@@ -3317,35 +2804,11 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		856AAC881B6E304B00B07119 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				856AAC9B1B6E326E00B07119 /* ably-common in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		96BF612F1A35B2AB004CF2B3 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				80E519C72BBCBE21006545B4 /* PrivacyInfo.xcprivacy in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		D7093C08219E2DB200723F17 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				D7093C5B219EDE3200723F17 /* ably-common in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		D7093C5E219EE1AE00723F17 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				D7093C87219EE28100723F17 /* ably-common in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3385,71 +2848,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		856AAC861B6E304B00B07119 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				856AAC991B6E312F00B07119 /* RestClientTests.swift in Sources */,
-				217FCF4229D626E4006E5F2D /* MockJitterCoefficientGenerator.swift in Sources */,
-				D746AE2C1BBB625E003ECEF8 /* RestClientChannelTests.swift in Sources */,
-				D71D30041C5F7B2F002115B0 /* RealtimeClientChannelsTests.swift in Sources */,
-				EB1B53F922F85CE4006A59AC /* ObjectLifetimesTests.swift in Sources */,
-				210F67B129E9DB62007B9345 /* TestProxyTransportFactory.swift in Sources */,
-				D7DF73851EA600240013CD36 /* PushActivationStateMachineTests.swift in Sources */,
-				211A60D729D6D2C300D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */,
-				217FCF3229D62460006E5F2D /* RetrySequenceTests.swift in Sources */,
-				D7FC1ECB209CEA2E001E4153 /* PushTests.swift in Sources */,
-				2132C22929D23484000C4355 /* MockErrorChecker.swift in Sources */,
-				D714A63E1C74D4B2002F2CA0 /* NSObject+TestSuite.swift in Sources */,
-				21276CC229F00BAA00107B5F /* ContinuousClockTests.swift in Sources */,
-				21881E7C283BD0E100CFD9E2 /* StringifiableTests.swift in Sources */,
-				212374692D41598A005427E0 /* ChannelOptionsTests.swift in Sources */,
-				856AAC971B6E30C800B07119 /* TestUtilities.swift in Sources */,
-				D72768211C9C19040022F8B2 /* RestClientPresenceTests.swift in Sources */,
-				D5FFA6A829E97EF30082DB4B /* CryptoData.swift in Sources */,
-				D780846E1C68B3E50083009D /* NSObject+TestSuite.m in Sources */,
-				21881E7A283BD08300CFD9E2 /* GCDTests.swift in Sources */,
-				2124B79729DB144600AD8361 /* DefaultInternalLogCoreTests.swift in Sources */,
-				21113B5929DCA4C700652C86 /* DataGatherer.swift in Sources */,
-				D7093CA9219EFA8A00723F17 /* MockDeviceStorage.swift in Sources */,
-				D7CEF1321C8DD3BC004FB242 /* RealtimeClientPresenceTests.swift in Sources */,
-				213AEA2C2D36C4CD0067FD5F /* WrapperSDKProxyTests.swift in Sources */,
-				853ED7C41B7A1A3C006F1C6F /* RestClientStatsTests.swift in Sources */,
-				217FCF4629D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift in Sources */,
-				D74EFAEB1C4D09B500CFF98E /* RealtimeClientChannelTests.swift in Sources */,
-				2147F03529E5872C0071CB94 /* MockInternalLogCore.swift in Sources */,
-				851674EF1B7BA5CD00D35169 /* StatsTests.swift in Sources */,
-				EB1AE0CE1C5C3A4900D62250 /* UtilitiesTests.swift in Sources */,
-				848ED97326E50D0F0087E800 /* ObjcppTest.mm in Sources */,
-				2132C2E929D4B91B000C4355 /* BackoffCoefficients.swift in Sources */,
-				215F75FF2922B30F009E0E76 /* ClientInformationTests.swift in Sources */,
-				D798554823EB96C000946BE2 /* DeltaCodecTests.swift in Sources */,
-				21113B5F29DDDDD000652C86 /* LogAdapterTests.swift in Sources */,
-				D50D86E929E9444600EA72EA /* JSON.swift in Sources */,
-				2124B78729DB127900AD8361 /* MockVersion2Log.swift in Sources */,
-				D74CBC0B212EC22800D090E4 /* RestPaginatedTests.swift in Sources */,
-				D72304701BB72CED00F1ABDA /* RealtimeClientTests.swift in Sources */,
-				841134782722205400CFA837 /* ARTArchiveTests.m in Sources */,
-				D5FFA6A429E96C960082DB4B /* TestAppSetup.swift in Sources */,
-				D510E4AB29F1659F00F77F43 /* Aspects.m in Sources */,
-				D74A17B81FA0D9A3006D27B5 /* PushAdminTests.swift in Sources */,
-				2110CC3A2A530D42007310D4 /* AttachRetryStateTests.swift in Sources */,
-				EB7913A81C6E54C3000ABF9B /* CryptoTests.swift in Sources */,
-				2132C22229D233EB000C4355 /* DefaultErrorCheckerTests.swift in Sources */,
-				21FD9F272A015BE400216482 /* Test.swift in Sources */,
-				D777EEE820650ADF002EBA03 /* PushChannelTests.swift in Sources */,
-				217FCF3F29D626E4006E5F2D /* StaticJitterCoefficients.swift in Sources */,
-				D746AE2D1BBB625E003ECEF8 /* RestClientChannelsTests.swift in Sources */,
-				56190954238C3D3200A862A6 /* CryptoTest.m in Sources */,
-				21088DCB2A53560C0033C722 /* ConnectRetryStateTests.swift in Sources */,
-				21113B6329DDF7E800652C86 /* ARTInternalLogTests.m in Sources */,
-				D7C1B8771BBEA81A0087B55F /* AuthTests.swift in Sources */,
-				D7EBE5A31BE8391E0086E675 /* RealtimeClientConnectionTests.swift in Sources */,
-				21113B4929DB60F800652C86 /* MockRetryDelayCalculator.swift in Sources */,
-				560579D924AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		96BF612C1A35B2AB004CF2B3 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -3587,124 +2985,6 @@
 				217D182D254222F500DFF07E /* ARTSRSIMDHelpers.m in Sources */,
 				D5BB210D26AA98A500AA5F3E /* ARTStringifiable.m in Sources */,
 				215924C52D636D2F004A235C /* ARTWrapperSDKProxyPushChannel.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		D7093C06219E2DB200723F17 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				21881E79283BD08200CFD9E2 /* GCDTests.swift in Sources */,
-				2110CC3B2A530D42007310D4 /* AttachRetryStateTests.swift in Sources */,
-				D7093C1B219E465F00723F17 /* NSObject+TestSuite.swift in Sources */,
-				D7093C29219E466E00723F17 /* StatsTests.swift in Sources */,
-				D7093C23219E466E00723F17 /* RestPaginatedTests.swift in Sources */,
-				21113B6029DDDDD000652C86 /* LogAdapterTests.swift in Sources */,
-				D7093C19219E465300723F17 /* TestUtilities.swift in Sources */,
-				217FCF4729D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift in Sources */,
-				560579DA24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */,
-				21113B5A29DCA4C700652C86 /* DataGatherer.swift in Sources */,
-				2132C2EA29D4B91B000C4355 /* BackoffCoefficients.swift in Sources */,
-				2132C22329D233EB000C4355 /* DefaultErrorCheckerTests.swift in Sources */,
-				D5FFA6A929E97EF30082DB4B /* CryptoData.swift in Sources */,
-				21881E7B283BD0DF00CFD9E2 /* StringifiableTests.swift in Sources */,
-				D7093C27219E466E00723F17 /* RealtimeClientChannelsTests.swift in Sources */,
-				848ED97426E50D0F0087E800 /* ObjcppTest.mm in Sources */,
-				D7093C28219E466E00723F17 /* RealtimeClientPresenceTests.swift in Sources */,
-				D7093C24219E466E00723F17 /* RealtimeClientTests.swift in Sources */,
-				210F67B229E9DB62007B9345 /* TestProxyTransportFactory.swift in Sources */,
-				D7093C1F219E466E00723F17 /* RestClientStatsTests.swift in Sources */,
-				D7093C1A219E465C00723F17 /* NSObject+TestSuite.m in Sources */,
-				211A60D829D6D2C400D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */,
-				215F76002922B30F009E0E76 /* ClientInformationTests.swift in Sources */,
-				212374682D41598A005427E0 /* ChannelOptionsTests.swift in Sources */,
-				D7093C1E219E466900723F17 /* RestClientTests.swift in Sources */,
-				21088DCC2A53560C0033C722 /* ConnectRetryStateTests.swift in Sources */,
-				2124B79829DB144600AD8361 /* DefaultInternalLogCoreTests.swift in Sources */,
-				D50D86EA29E9444600EA72EA /* JSON.swift in Sources */,
-				D7093C2B219E466E00723F17 /* CryptoTests.swift in Sources */,
-				D7093C20219E466E00723F17 /* RestClientChannelTests.swift in Sources */,
-				EB1B53FA22F85CE4006A59AC /* ObjectLifetimesTests.swift in Sources */,
-				D5FFA6A529E96C960082DB4B /* TestAppSetup.swift in Sources */,
-				217FCF3329D62460006E5F2D /* RetrySequenceTests.swift in Sources */,
-				2147F03629E5872C0071CB94 /* MockInternalLogCore.swift in Sources */,
-				21113B6429DDF7ED00652C86 /* ARTInternalLogTests.m in Sources */,
-				D7093C2A219E466E00723F17 /* UtilitiesTests.swift in Sources */,
-				D798554923EB96C000946BE2 /* DeltaCodecTests.swift in Sources */,
-				2124B78829DB127900AD8361 /* MockVersion2Log.swift in Sources */,
-				D510E4AC29F1659F00F77F43 /* Aspects.m in Sources */,
-				21113B4A29DB60F800652C86 /* MockRetryDelayCalculator.swift in Sources */,
-				217FCF4329D626E4006E5F2D /* MockJitterCoefficientGenerator.swift in Sources */,
-				D7093C21219E466E00723F17 /* RestClientChannelsTests.swift in Sources */,
-				2132C22A29D23484000C4355 /* MockErrorChecker.swift in Sources */,
-				D7093C26219E466E00723F17 /* RealtimeClientChannelTests.swift in Sources */,
-				D7093C22219E466E00723F17 /* RestClientPresenceTests.swift in Sources */,
-				213AEA2D2D36C4CD0067FD5F /* WrapperSDKProxyTests.swift in Sources */,
-				56190955238C3D3200A862A6 /* CryptoTest.m in Sources */,
-				D7093C1D219E466600723F17 /* AuthTests.swift in Sources */,
-				21276CC329F00BAA00107B5F /* ContinuousClockTests.swift in Sources */,
-				21FD9F282A015BE400216482 /* Test.swift in Sources */,
-				D7093C25219E466E00723F17 /* RealtimeClientConnectionTests.swift in Sources */,
-				217FCF4029D626E4006E5F2D /* StaticJitterCoefficients.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		D7093C5C219EE1AE00723F17 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				D7093C75219EE26400723F17 /* RestClientTests.swift in Sources */,
-				2110CC3C2A530D42007310D4 /* AttachRetryStateTests.swift in Sources */,
-				D7093C7D219EE26400723F17 /* RealtimeClientChannelTests.swift in Sources */,
-				848ED97526E50D0F0087E800 /* ObjcppTest.mm in Sources */,
-				D7093C7F219EE26400723F17 /* RealtimeClientPresenceTests.swift in Sources */,
-				21113B6129DDDDD000652C86 /* LogAdapterTests.swift in Sources */,
-				217FCF4829D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift in Sources */,
-				560579DB24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */,
-				21113B5B29DCA4C700652C86 /* DataGatherer.swift in Sources */,
-				2132C2EB29D4B91B000C4355 /* BackoffCoefficients.swift in Sources */,
-				2132C22429D233EB000C4355 /* DefaultErrorCheckerTests.swift in Sources */,
-				D5FFA6AA29E97EF30082DB4B /* CryptoData.swift in Sources */,
-				D7093C71219EE25800723F17 /* NSObject+TestSuite.m in Sources */,
-				D7093C70219EE25400723F17 /* TestUtilities.swift in Sources */,
-				D7093C80219EE26400723F17 /* StatsTests.swift in Sources */,
-				D7093C77219EE26400723F17 /* RestClientChannelTests.swift in Sources */,
-				D520C4E32680A1FC000012B2 /* StringifiableTests.swift in Sources */,
-				D7093C7E219EE26400723F17 /* RealtimeClientChannelsTests.swift in Sources */,
-				210F67B329E9DB62007B9345 /* TestProxyTransportFactory.swift in Sources */,
-				D7093C79219EE26400723F17 /* RestClientPresenceTests.swift in Sources */,
-				215F76012922B30F009E0E76 /* ClientInformationTests.swift in Sources */,
-				211A60D929D6D2C500D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */,
-				D7093C78219EE26400723F17 /* RestClientChannelsTests.swift in Sources */,
-				212374672D41598A005427E0 /* ChannelOptionsTests.swift in Sources */,
-				D7093C76219EE26400723F17 /* RestClientStatsTests.swift in Sources */,
-				21088DCD2A53560C0033C722 /* ConnectRetryStateTests.swift in Sources */,
-				2124B79929DB144600AD8361 /* DefaultInternalLogCoreTests.swift in Sources */,
-				D50D86EB29E9444600EA72EA /* JSON.swift in Sources */,
-				D7093C82219EE26400723F17 /* CryptoTests.swift in Sources */,
-				D5A22174266F526600C87C42 /* GCDTests.swift in Sources */,
-				EB1B53FB22F85CE4006A59AC /* ObjectLifetimesTests.swift in Sources */,
-				D5FFA6A629E96C960082DB4B /* TestAppSetup.swift in Sources */,
-				217FCF3429D62460006E5F2D /* RetrySequenceTests.swift in Sources */,
-				2147F03729E5872C0071CB94 /* MockInternalLogCore.swift in Sources */,
-				21113B6529DDF7EF00652C86 /* ARTInternalLogTests.m in Sources */,
-				D7093C7C219EE26400723F17 /* RealtimeClientConnectionTests.swift in Sources */,
-				D798554A23EB96C000946BE2 /* DeltaCodecTests.swift in Sources */,
-				2124B78929DB127900AD8361 /* MockVersion2Log.swift in Sources */,
-				D510E4AD29F1659F00F77F43 /* Aspects.m in Sources */,
-				21113B4B29DB60F800652C86 /* MockRetryDelayCalculator.swift in Sources */,
-				217FCF4429D626E4006E5F2D /* MockJitterCoefficientGenerator.swift in Sources */,
-				D7093C74219EE26400723F17 /* AuthTests.swift in Sources */,
-				2132C22B29D23485000C4355 /* MockErrorChecker.swift in Sources */,
-				D7093C72219EE25B00723F17 /* NSObject+TestSuite.swift in Sources */,
-				D7093C7B219EE26400723F17 /* RealtimeClientTests.swift in Sources */,
-				213AEA2B2D36C4CD0067FD5F /* WrapperSDKProxyTests.swift in Sources */,
-				56190956238C3D3200A862A6 /* CryptoTest.m in Sources */,
-				D7093C7A219EE26400723F17 /* RestPaginatedTests.swift in Sources */,
-				21276CC429F00BAA00107B5F /* ContinuousClockTests.swift in Sources */,
-				21FD9F292A015BE400216482 /* Test.swift in Sources */,
-				D7093C81219EE26400723F17 /* UtilitiesTests.swift in Sources */,
-				217FCF4129D626E4006E5F2D /* StaticJitterCoefficients.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4011,21 +3291,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		D7093C11219E2DB200723F17 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D710D45A219495E2008F54AD /* Ably-macOS */;
-			targetProxy = D7093C10219E2DB200723F17 /* PBXContainerItemProxy */;
-		};
-		D7093C67219EE1AE00723F17 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D710D474219495FC008F54AD /* Ably-tvOS */;
-			targetProxy = D7093C66219EE1AE00723F17 /* PBXContainerItemProxy */;
-		};
-		D73BF7172260E7BD00579773 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 96BF61301A35B2AB004CF2B3 /* Ably-iOS */;
-			targetProxy = D73BF7162260E7BD00579773 /* PBXContainerItemProxy */;
-		};
 		EB3630A023804F7C00B83598 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = EB36308823804F7A00B83598 /* Ably-SoakTest-App */;
@@ -4058,62 +3323,6 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-		856AAC931B6E304B00B07119 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_MODULES = YES;
-				DEBUG_INFORMATION_FORMAT = dwarf;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"$(inherited)",
-					"TEST_SUITE=1",
-				);
-				INFOPLIST_FILE = "Test/Info-iOS.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				OTHER_SWIFT_FLAGS = "$(inherited) -D TEST_SUITE -D TARGET_OS_IOS -D TARGET_OS_IPHONE -D TARGET_OS_MAC";
-				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
-				PRODUCT_NAME = "Ably-iOS-Tests";
-				SWIFT_OBJC_BRIDGING_HEADER = "Test/AblyTests-Bridging-Header.h";
-				SWIFT_OBJC_INTERFACE_HEADER_NAME = "Ably_Tests-Swift.h";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
-			};
-			name = Debug;
-		};
-		856AAC941B6E304B00B07119 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ENABLE_MODULES = YES;
-				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"$(inherited)",
-					"TEST_SUITE=1",
-				);
-				INFOPLIST_FILE = "Test/Info-iOS.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				OTHER_SWIFT_FLAGS = "$(inherited) -D TEST_SUITE -D TARGET_OS_IOS -D TARGET_OS_IPHONE -D TARGET_OS_MAC";
-				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
-				PRODUCT_NAME = "Ably-iOS-Tests";
-				SWIFT_OBJC_BRIDGING_HEADER = "Test/AblyTests-Bridging-Header.h";
-				SWIFT_OBJC_INTERFACE_HEADER_NAME = "Ably_Tests-Swift.h";
-				SWIFT_VERSION = 5.0;
-			};
-			name = Release;
-		};
 		96BF61451A35B2AB004CF2B3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = D75B85F921BAF8F900FD8DD2 /* Ably.xcconfig */;
@@ -4289,144 +3498,6 @@
 				PRODUCT_NAME = Ably;
 				PROVISIONING_PROFILE_SPECIFIER = "ably-cocoa-soak-test";
 				SWIFT_VERSION = 5.0;
-			};
-			name = Release;
-		};
-		D7093C13219E2DB200723F17 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "-";
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				DEBUG_INFORMATION_FORMAT = dwarf;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				INFOPLIST_FILE = "Test/Info-macOS.plist";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/../Frameworks",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 10.14;
-				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
-				MTL_FAST_MATH = YES;
-				OTHER_SWIFT_FLAGS = "-D TARGET_OS_OSX -D TARGET_OS_MAC";
-				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.Ably-macOS-Tests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-				SWIFT_OBJC_BRIDGING_HEADER = "Test/AblyTests-Bridging-Header.h";
-				SWIFT_OBJC_INTERFACE_HEADER_NAME = "Ably_Tests-Swift.h";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
-			};
-			name = Debug;
-		};
-		D7093C14219E2DB200723F17 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "-";
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				INFOPLIST_FILE = "Test/Info-macOS.plist";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/../Frameworks",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 10.14;
-				MTL_FAST_MATH = YES;
-				OTHER_SWIFT_FLAGS = "-D TARGET_OS_OSX -D TARGET_OS_MAC";
-				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.Ably-macOS-Tests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx;
-				SWIFT_OBJC_BRIDGING_HEADER = "Test/AblyTests-Bridging-Header.h";
-				SWIFT_OBJC_INTERFACE_HEADER_NAME = "Ably_Tests-Swift.h";
-				SWIFT_VERSION = 5.0;
-			};
-			name = Release;
-		};
-		D7093C69219EE1AE00723F17 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_STYLE = Automatic;
-				DEBUG_INFORMATION_FORMAT = dwarf;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				INFOPLIST_FILE = "Test/Info-tvOS.plist";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
-				MTL_FAST_MATH = YES;
-				OTHER_SWIFT_FLAGS = "-D TARGET_OS_TV -D TARGET_OS_IPHONE -D TARGET_OS_MAC";
-				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.Ably-tvOS-Tests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = appletvos;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-				SWIFT_OBJC_BRIDGING_HEADER = "Test/AblyTests-Bridging-Header.h";
-				SWIFT_OBJC_INTERFACE_HEADER_NAME = "Ably_Tests-Swift.h";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 12.1;
-			};
-			name = Debug;
-		};
-		D7093C6A219EE1AE00723F17 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_STYLE = Automatic;
-				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				INFOPLIST_FILE = "Test/Info-tvOS.plist";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				MTL_FAST_MATH = YES;
-				OTHER_SWIFT_FLAGS = "-D TARGET_OS_TV -D TARGET_OS_IPHONE -D TARGET_OS_MAC";
-				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.Ably-tvOS-Tests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = appletvos;
-				SWIFT_OBJC_BRIDGING_HEADER = "Test/AblyTests-Bridging-Header.h";
-				SWIFT_OBJC_INTERFACE_HEADER_NAME = "Ably_Tests-Swift.h";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 12.1;
 			};
 			name = Release;
 		};
@@ -4721,15 +3792,6 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		856AAC921B6E304B00B07119 /* Build configuration list for PBXNativeTarget "Ably-iOS-Tests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				856AAC931B6E304B00B07119 /* Debug */,
-				856AAC941B6E304B00B07119 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		96BF612B1A35B2AB004CF2B3 /* Build configuration list for PBXProject "Ably" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -4744,24 +3806,6 @@
 			buildConfigurations = (
 				96BF61481A35B2AB004CF2B3 /* Debug */,
 				96BF61491A35B2AB004CF2B3 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		D7093C12219E2DB200723F17 /* Build configuration list for PBXNativeTarget "Ably-macOS-Tests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				D7093C13219E2DB200723F17 /* Debug */,
-				D7093C14219E2DB200723F17 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		D7093C68219EE1AE00723F17 /* Build configuration list for PBXNativeTarget "Ably-tvOS-Tests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				D7093C69219EE1AE00723F17 /* Debug */,
-				D7093C6A219EE1AE00723F17 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
