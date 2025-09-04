@@ -35,36 +35,43 @@ NSInteger ARTMaxSandboxMessageSize = 16384;
 }
 
 + (NSString *)primaryDomainForRoutingPolicy:(NSString *)routingPolicy {
+    // [policy].realtime.ably.net
     return [NSString stringWithFormat:@"%@.%@.%@", routingPolicy, ARTDefaultRoutingSubdomain, ARTDefaultPrimaryTLD];
 }
 
 + (NSString *)nonprodPrimaryDomainForRoutingPolicy:(NSString *)routingPolicy {
+    // [policy].realtime.ably-nonprod.net
     return [NSString stringWithFormat:@"%@.%@.%@", routingPolicy, ARTDefaultRoutingSubdomain, ARTDefaultNonprodPrimaryTLD];
 }
 
 + (NSArray<NSString *> *)fallbackSubdomains {
+    // ["a", "b", "c", "d", "e"]
     return [ARTDefaultFallbackSubdomains componentsSeparatedByString:@","];
 }
 
 + (NSArray<NSString *> *)fallbackSubdomainsForRoutingPolicy:(NSString *)routingPolicy {
+    // [policy].[a-e].fallback
     return [self.fallbackSubdomains artMap:^NSString *(NSString *fallback) {
         return [NSString stringWithFormat:@"%@.%@.fallback", routingPolicy, fallback];
     }];
 }
 
 + (NSArray<NSString *> *)fallbackDomains {
+    // [a-e].ably-realtime.com
     return [self.fallbackSubdomains artMap:^NSString * (NSString *fallback) {
         return [NSString stringWithFormat:@"%@.%@", fallback, ARTDefaultFallbacksTLD];
     }];
 }
 
 + (NSArray<NSString *> *)fallbackNonprodDomainsForRoutingPolicy:(NSString *)routingPolicy {
+    // [policy].[a-e].fallback.ably-realtime-nonprod.com
     return [[self fallbackSubdomainsForRoutingPolicy:routingPolicy] artMap:^NSString * (NSString *fallback) {
         return [NSString stringWithFormat:@"%@.%@", fallback, ARTDefaultNonprodFallbacksTLD];
     }];
 }
 
 + (NSArray<NSString *> *)fallbackDomainsForRoutingPolicy:(NSString *)routingPolicy {
+    // [policy].[a-e].fallback.ably-realtime.com
     return [[self fallbackSubdomainsForRoutingPolicy:routingPolicy] artMap:^NSString * (NSString *fallback) {
         return [NSString stringWithFormat:@"%@.%@", fallback, ARTDefaultFallbacksTLD];
     }];
