@@ -183,7 +183,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 96BF612B1A35B2AB004CF2B3 /* Build configuration list for PBXProject "Ably" */;
+			buildConfigurationList = 96BF612B1A35B2AB004CF2B3 /* Build configuration list for PBXProject "Ably-SoakTest-App" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -535,7 +535,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		96BF612B1A35B2AB004CF2B3 /* Build configuration list for PBXProject "Ably" */ = {
+		96BF612B1A35B2AB004CF2B3 /* Build configuration list for PBXProject "Ably-SoakTest-App" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				96BF61451A35B2AB004CF2B3 /* Debug */,

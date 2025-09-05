@@ -5,7 +5,7 @@
       location = "group:">
    </FileRef>
    <FileRef
-      location = "group:Ably.xcodeproj">
+      location = "group:Ably-SoakTest-App.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:Test/Ably.xctestplan">

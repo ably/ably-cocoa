@@ -17,7 +17,7 @@
                BlueprintIdentifier = "EB36308823804F7A00B83598"
                BuildableName = "Ably-SoakTest-App.app"
                BlueprintName = "Ably-SoakTest-App"
-               ReferencedContainer = "container:Ably.xcodeproj">
+               ReferencedContainer = "container:Ably-SoakTest-App.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -36,7 +36,7 @@
                BlueprintIdentifier = "EB36309D23804F7C00B83598"
                BuildableName = "Ably-SoakTest-AppUITests.xctest"
                BlueprintName = "Ably-SoakTest-AppUITests"
-               ReferencedContainer = "container:Ably.xcodeproj">
+               ReferencedContainer = "container:Ably-SoakTest-App.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -58,7 +58,7 @@
             BlueprintIdentifier = "EB36308823804F7A00B83598"
             BuildableName = "Ably-SoakTest-App.app"
             BlueprintName = "Ably-SoakTest-App"
-            ReferencedContainer = "container:Ably.xcodeproj">
+            ReferencedContainer = "container:Ably-SoakTest-App.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -75,7 +75,7 @@
             BlueprintIdentifier = "EB36308823804F7A00B83598"
             BuildableName = "Ably-SoakTest-App.app"
             BlueprintName = "Ably-SoakTest-App"
-            ReferencedContainer = "container:Ably.xcodeproj">
+            ReferencedContainer = "container:Ably-SoakTest-App.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
