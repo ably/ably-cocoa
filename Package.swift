@@ -33,7 +33,6 @@ let package = Package(
             resources: [.copy("PrivacyInfo.xcprivacy")],
             publicHeadersPath: "include",
             cSettings: [
-                .define("ABLY_SUPPORTS_PLUGINS"),
                 .headerSearchPath("PrivateHeaders"),
                 .headerSearchPath("PrivateHeaders/Ably"),
                 .headerSearchPath("include/Ably"),
