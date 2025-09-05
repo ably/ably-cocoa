@@ -8,11 +8,9 @@
 #import "ARTStringifiable.h"
 #import "ARTNSString+ARTUtil.h"
 #import "ARTTestClientOptions.h"
-
-#ifdef ABLY_SUPPORTS_PLUGINS
-@import _AblyPluginSupportPrivate;
 #import "ARTPluginAPI.h"
-#endif
+
+@import _AblyPluginSupportPrivate;
 
 const ARTPluginName ARTPluginNameLiveObjects = @"LiveObjects";
 
@@ -31,10 +29,8 @@ NSString *ARTDefaultEnvironment = nil;
 - (instancetype)initDefaults {
     self = [super initDefaults];
 
-#ifdef ABLY_SUPPORTS_PLUGINS
     // The LiveObjects repository provides an extension to `ARTClientOptions` so we need to ensure that we register the pluginAPI before that extension is used.
     [ARTPluginAPI registerSelf];
-#endif
 
     _port = [ARTDefault port];
     _tlsPort = [ARTDefault tlsPort];
@@ -243,7 +239,6 @@ NSString *ARTDefaultEnvironment = nil;
 
 // MARK: - Plugins
 
-#ifdef ABLY_SUPPORTS_PLUGINS
 - (nullable id<APLiveObjectsInternalPluginProtocol>)liveObjectsPlugin {
     Class<APLiveObjectsPluginProtocol> publicPlugin = self.plugins[ARTPluginNameLiveObjects];
 
@@ -253,7 +248,6 @@ NSString *ARTDefaultEnvironment = nil;
 
     return [publicPlugin internalPlugin];
 }
-#endif
 
 // MARK: - Options for plugins
 

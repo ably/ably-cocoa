@@ -1,5 +1,3 @@
-#ifdef ABLY_SUPPORTS_PLUGINS
-
 #import "ARTPluginDecodingContext.h"
 
 @implementation ARTPluginDecodingContext
@@ -24,5 +22,3 @@
 }
 
 @end
-
-#endif

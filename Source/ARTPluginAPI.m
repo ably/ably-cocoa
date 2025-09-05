@@ -1,5 +1,3 @@
-#ifdef ABLY_SUPPORTS_PLUGINS
-
 #import "ARTPluginAPI.h"
 #import "ARTRealtimeChannel+Private.h"
 #import "ARTChannel+Private.h"
@@ -177,5 +175,3 @@ static ARTLogLevel _convertPluginLogLevel(APLogLevel pluginLogLevel) {
 }
 
 @end
-
-#endif

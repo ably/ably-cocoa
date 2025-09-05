@@ -10,9 +10,7 @@
 #import "ARTAuth+Private.h"
 #import "ARTRest+Private.h"
 
-#ifdef ABLY_SUPPORTS_PLUGINS
 @import _AblyPluginSupportPrivate;
-#endif
 
 @class ARTRestInternal;
 @class ARTErrorInfo;
@@ -31,11 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-#ifdef ABLY_SUPPORTS_PLUGINS
 @interface ARTRealtimeInternal : NSObject <APRealtimeClient>
-#else
-@interface ARTRealtimeInternal : NSObject
-#endif
 
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithOptions:(ARTClientOptions *)options;

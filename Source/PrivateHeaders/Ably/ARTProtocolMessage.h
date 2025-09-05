@@ -1,8 +1,5 @@
 #import <Foundation/Foundation.h>
-
-#ifdef ABLY_SUPPORTS_PLUGINS
 @import _AblyPluginSupportPrivate;
-#endif
 
 #import <Ably/ARTMessage.h>
 #import <Ably/ARTPresenceMessage.h>
@@ -65,14 +62,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, readwrite, nonatomic) NSArray<ARTMessage *> *messages;
 @property (nullable, readwrite, nonatomic) NSArray<ARTPresenceMessage *> *presence;
 @property (nullable, readwrite, nonatomic) NSArray<ARTAnnotation *> *annotations;
+@property (nullable, readwrite, nonatomic) NSArray<id<APObjectMessageProtocol>> *state;
 @property (readwrite, nonatomic) int64_t flags;
 @property (nullable, readwrite, nonatomic) ARTConnectionDetails *connectionDetails;
 @property (nullable, nonatomic) ARTAuthDetails *auth;
 @property (nonatomic, nullable) NSStringDictionary *params;
-
-#ifdef ABLY_SUPPORTS_PLUGINS
-@property (nullable, readwrite, nonatomic) NSArray<id<APObjectMessageProtocol>> *state;
-#endif
 
 @end
 

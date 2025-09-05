@@ -1,4 +1,5 @@
 #import <Foundation/Foundation.h>
+@import _AblyPluginSupportPrivate;
 
 #import "ARTJsonLikeEncoder.h"
 
@@ -28,11 +29,7 @@
 #import "ARTPushChannelSubscription.h"
 #import "ARTMessageOperation+Private.h"
 #import "ARTClientOptions+Private.h"
-
-#ifdef ABLY_SUPPORTS_PLUGINS
 #import "ARTPluginDecodingContext.h"
-@import _AblyPluginSupportPrivate;
-#endif
 
 @implementation ARTJsonLikeEncoder {
     __weak ARTRestInternal *_rest; // weak because rest owns self
@@ -578,11 +575,9 @@
         output[@"params"] = message.params;
     }
 
-#ifdef ABLY_SUPPORTS_PLUGINS
     if (message.state) {
         output[@"state"] = [self objectMessagesToArray:message.state];
     }
-#endif
 
     ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: protocolMessageToDictionary %@", _rest, [_delegate formatAsString], output);
     return output;
@@ -828,9 +823,7 @@
     message.messages = [self messagesFromArray:messages protocolMessage:message];
     message.presence = [self presenceMessagesFromArray:[input objectForKey:@"presence"]];
     message.annotations = [self annotationsFromArray:[input objectForKey:@"annotations"]];
-#ifdef ABLY_SUPPORTS_PLUGINS
     message.state = [self objectMessagesFromArray:[input objectForKey:@"state"] protocolMessage:message];
-#endif
 
     return message;
 }
@@ -1109,7 +1102,6 @@
     return encoded;
 }
 
-#ifdef ABLY_SUPPORTS_PLUGINS
 /// Converts an `ARTEncoderFormat` to an `APEncodingFormat`.
 - (APEncodingFormat)apEncodingFormatFromARTEncoderFormat:(ARTEncoderFormat)format {
     switch (format) {
@@ -1119,9 +1111,7 @@
             return APEncodingFormatMessagePack;
     }
 }
-#endif
 
-#ifdef ABLY_SUPPORTS_PLUGINS
 /// Uses the LiveObjects plugin to decode an array of `ObjectMessage`s.
 ///
 /// Returns `nil` if the LiveObjects plugin has not been supplied, or if we fail to decode any of the `ObjectMessage`s.
@@ -1197,7 +1187,6 @@
 
     return result;
 }
-#endif
 
 @end
 

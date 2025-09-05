@@ -1,9 +1,6 @@
 @import Foundation;
-#import <Ably/ARTLog.h>
-
-#ifdef ABLY_SUPPORTS_PLUGINS
 @import _AblyPluginSupportPrivate;
-#endif
+#import <Ably/ARTLog.h>
 
 @protocol ARTInternalLogCore;
 @protocol ARTVersion2Log;
@@ -37,11 +34,7 @@ NS_SWIFT_NAME(InternalLog)
 
  - Note: It would be great if we could make `ARTInternalLog` a protocol (with a default implementation) instead of a class, since this would make it easier to test the logging behaviour of the SDK. However, since its interface currently makes heavy use of variadic Objective-C methods, which cannot be represented in Swift, we would be unable to write mocks for this protocol in our Swift test suite. As the `ARTInternalLog` interface evolves we may end up removing these variadic methods, in which case we can reconsider.
  */
-#ifdef ABLY_SUPPORTS_PLUGINS
 @interface ARTInternalLog: NSObject <APLogger>
-#else
-@interface ARTInternalLog: NSObject
-#endif
 
 /**
  Provides a shared logger to be used by all public class methods meeting the following criteria:
