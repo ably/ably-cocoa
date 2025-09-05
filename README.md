@@ -43,7 +43,7 @@ The following platforms are supported:
 
 ## Installation
 
-You can install Ably for iOS and macOS through [Swift package manager](#swift-package-manager), [CocoaPods](#cocoapods) or [install manually](#manual-install).
+You can install Ably for iOS and macOS through [Swift package manager](#swift-package-manager) or [install manually](#manual-install).
 
 ### Swift Package Manager
 
@@ -65,31 +65,6 @@ To install the `ably-cocoa` package in another Swift package, add the following 
 
 See Apple's [adding package dependencies to your app](https://developer.apple.com/documentation/swift_packages/adding_package_dependencies_to_your_app) guide for more detail.
 </details>
-
-### CocoaPods
-
-The Ably Pub/Sub SDK includes installation support for [CocoaPods](https://cocoapods.org/).
-
-<details>
-<summary>CocoaPods installation details.</summary>
-
-If you intend to use Swift, using `use_frameworks!` in your Podfile is recommended (this will create a Framework that can be used in Swift natively).
-
-Add this line to your application's Podfile:
-
-```ruby
-# For Xcode 7.3 and newer
-pod 'Ably', '>= 1.2'
-```
-
-And then install the dependency:
-
-```bash
-$ pod install
-```
-
-</details>
-
 
 
 ### Manual install

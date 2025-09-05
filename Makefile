@@ -76,13 +76,6 @@ test_tvOS:
 test_macOS:
 	ABLY_ENV="sandbox" NAME="ably-macOS" bundle exec fastlane test_macOS
 
-## -- CocoaPods --
-
-## [CocoaPods] Validates Ably pod
-pod_lint:
-	pod lib lint --swift-version=4.2 --allow-warnings
-
-
 ## -- Version --
 
 ## [Version] Bump Patch Version, creating Git commit and tag

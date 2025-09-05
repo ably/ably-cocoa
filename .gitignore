@@ -16,12 +16,6 @@ DerivedData/
 # This is created when running `xcodebuild`:
 build/
 
-## CocoaPods
-#
-# We recommend against adding the Pods directory to your .gitignore. However
-# you should judge for yourself, the pros and cons are mentioned at:
-# http://guides.cocoapods.org/using/using-cocoapods.html#should-i-check-the-pods-directory-into-source-control
-Pods/
 
 
 ## Scan
@@ -33,7 +27,6 @@ fastlane/test_output
 fastlane/README.md
 derived_data/
 
-Examples/Tests/Podfile.lock
 
 ## AppCode
 .build

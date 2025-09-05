@@ -78,5 +78,4 @@ For each release, the following needs to be done:
 * Publish your drafted release:
     * refer to previous releases for release notes format
 * Checkout `main` locally, pulling in changes using `git checkout main && git pull`. Make sure the new tag you need was created on publish
-* Release an update for CocoaPods using `pod trunk push Ably.podspec`. Details on this command, as well as instructions for adding other contributors as maintainers, are at [Getting setup with Trunk](https://guides.cocoapods.org/making/getting-setup-with-trunk.html) in the [CocoaPods Guides](https://guides.cocoapods.org/)
-* Test the integration of the library in a Xcode project using CocoaPods using the [installation guide](https://github.com/ably/ably-cocoa#installation-guide)
+* Test the integration of the library in a Xcode project using Swift Package Manager using the [installation guide](https://github.com/ably/ably-cocoa#installation-guide)
