@@ -745,9 +745,8 @@ public class ARTErrorInfo: @unchecked Sendable {
     }
 }
 
-public class ARTMessage: @unchecked Sendable {}
-public class ARTAnnotation: @unchecked Sendable {}
-public class ARTPresenceMessage: @unchecked Sendable {}
+
+
 public class ARTTokenParams: @unchecked Sendable {}
 public class ARTTokenRequest: @unchecked Sendable {}
 public class ARTTokenDetails: @unchecked Sendable {}
@@ -757,7 +756,6 @@ public class ARTStats: @unchecked Sendable {}
 public class ARTPushChannelSubscription: @unchecked Sendable {}
 public class ARTDeviceDetails: @unchecked Sendable {}
 
-public class ARTProtocolMessage: @unchecked Sendable {}
 public class ARTLocalDevice: @unchecked Sendable {}
 public class ARTDeviceIdentityTokenDetails: @unchecked Sendable {}
 public class ARTDevicePushDetails: @unchecked Sendable {}

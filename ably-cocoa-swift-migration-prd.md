@@ -377,10 +377,32 @@ Sources/
 
 ## Project Management & Review Process
 
+### Migration Progress Documentation **[REQUIRED]**
+
+**Real-Time Migration Log:**
+- **File**: [`ably-cocoa-swift-migration-log.md`](ably-cocoa-swift-migration-log.md)
+- **Purpose**: Comprehensive documentation of all migration decisions, challenges, and solutions
+- **Update Frequency**: After completing each significant component or resolving any technical challenge
+- **Content Requirements**:
+  - Technical decisions made during migration (with justification)
+  - Challenges encountered and solutions applied
+  - Swift-specific patterns established
+  - Architecture changes from Objective-C to Swift
+  - Performance considerations and optimizations
+  - Compilation and testing status for each phase
+
+**Documentation Standards:**
+- Document **why** certain translation approaches were chosen
+- Record patterns that can be reused for similar code
+- Track deviations from mechanical translation with reasoning
+- Maintain architectural decision records (ADRs) for significant choices
+- Include code examples showing Objective-C → Swift transformations
+
 ### Progress Tracking
 **LLM Progress Documentation:**
 - Use `update_todo_list` tool after completing each major component
 - Create commit-ready file batches for each migration phase
+- Update migration log with progress details and technical decisions
 - Generate summary reports showing:
   - Files migrated per phase with line count comparisons
   - Key architectural decisions made during translation
