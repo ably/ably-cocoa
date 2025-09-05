@@ -8,14 +8,16 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTInternalLog.h"
+// TODO restore
+//#import "ARTInternalLog.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 // Uncomment this line to enable debug logging
 //#define ARTSR_DEBUG_LOG_ENABLED
 
-#define ARTSRErrorLog(logger, format, ...) ARTLogError(logger, @"%@", [NSString stringWithFormat:@"[SocketRocket] %@", [NSString stringWithFormat:format, ##__VA_ARGS__]])
+// TODO restore
+#define ARTSRErrorLog(logger, format, ...)
 
 #ifdef ARTSR_DEBUG_LOG_ENABLED
 #define ARTSRDebugLog(logger, format, ...) ARTLogDebug(logger, @"%@", [NSString stringWithFormat:@"[SocketRocket] %@", [NSString stringWithFormat:format, ##__VA_ARGS__]])

@@ -1,5 +1,6 @@
+@import SocketRocket;
+
 #import "ARTWebSocketTransport.h"
-#import "ARTSRWebSocket.h"
 #import "ARTEncoder.h"
 #import <Ably/ARTAuth.h>
 #import "ARTWebSocket.h"

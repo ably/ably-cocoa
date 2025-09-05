@@ -3,6 +3,7 @@ import Foundation
 import XCTest
 import Nimble
 import AblyTestingObjC
+import SocketRocket
 
 import Ably.Private
 

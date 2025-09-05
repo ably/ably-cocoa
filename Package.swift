@@ -25,6 +25,7 @@ let package = Package(
         .target(
             name: "Ably",
             dependencies: [
+                "SocketRocket",
                 .product(name: "msgpack", package: "msgpack-objective-c"),
                 .product(name: "AblyDeltaCodec", package: "delta-codec-cocoa"),
                 .product(name: "_AblyPluginSupportPrivate", package: "ably-cocoa-plugin-support")
@@ -35,14 +36,19 @@ let package = Package(
                 .headerSearchPath("PrivateHeaders"),
                 .headerSearchPath("PrivateHeaders/Ably"),
                 .headerSearchPath("include/Ably"),
-                .headerSearchPath("SocketRocket"),
-                .headerSearchPath("SocketRocket/Internal"),
-                .headerSearchPath("SocketRocket/Internal/Security"),
-                .headerSearchPath("SocketRocket/Internal/Proxy"),
-                .headerSearchPath("SocketRocket/Internal/Utilities"),
-                .headerSearchPath("SocketRocket/Internal/RunLoop"),
-                .headerSearchPath("SocketRocket/Internal/Delegate"),
-                .headerSearchPath("SocketRocket/Internal/IOConsumer"),
+            ]
+        ),
+        .target(
+            name: "SocketRocket",
+            publicHeadersPath: ".",
+            cSettings: [
+                .headerSearchPath("Internal"),
+                .headerSearchPath("Internal/Security"),
+                .headerSearchPath("Internal/Proxy"),
+                .headerSearchPath("Internal/Utilities"),
+                .headerSearchPath("Internal/RunLoop"),
+                .headerSearchPath("Internal/Delegate"),
+                .headerSearchPath("Internal/IOConsumer"),
             ]
         ),
         .testTarget(
