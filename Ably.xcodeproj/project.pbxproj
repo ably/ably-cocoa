@@ -241,7 +241,6 @@
 		D54C5547268B31E500729EC4 /* ARTNSMutableDictionary+ARTDictionaryUtil.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "ARTNSMutableDictionary+ARTDictionaryUtil.m"; sourceTree = "<group>"; };
 		D54C55A526957FDD00729EC4 /* ARTNSURL+ARTUtils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTNSURL+ARTUtils.h"; path = "PrivateHeaders/Ably/ARTNSURL+ARTUtils.h"; sourceTree = "<group>"; };
 		D54C55A626957FDE00729EC4 /* ARTNSURL+ARTUtils.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "ARTNSURL+ARTUtils.m"; sourceTree = "<group>"; };
-		D5A22170266F3CB700C87C42 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		D5BB212C26AAA55C00AA5F3E /* ARTNSMutableURLRequest+ARTUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ARTNSMutableURLRequest+ARTUtils.h"; path = "PrivateHeaders/Ably/ARTNSMutableURLRequest+ARTUtils.h"; sourceTree = "<group>"; };
 		D5BB212D26AAA55C00AA5F3E /* ARTNSMutableURLRequest+ARTUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ARTNSMutableURLRequest+ARTUtils.m"; sourceTree = "<group>"; };
 		D5BB213426AAA60500AA5F3E /* ARTNSError+ARTUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ARTNSError+ARTUtils.m"; sourceTree = "<group>"; };
@@ -302,7 +301,6 @@
 		D7588AF21BFF91B800BB8279 /* ARTURLSessionServerTrust.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTURLSessionServerTrust.m; sourceTree = "<group>"; };
 		D75A3F191DDE5B62002A4AAD /* ARTGCD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTGCD.h; path = PrivateHeaders/Ably/ARTGCD.h; sourceTree = "<group>"; };
 		D75A3F1A1DDE5B62002A4AAD /* ARTGCD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTGCD.m; sourceTree = "<group>"; };
-		D75B85F921BAF8F900FD8DD2 /* Ably.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Ably.xcconfig; sourceTree = "<group>"; };
 		D75F49C2205ACFEC003DE04F /* ARTDeviceStorage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTDeviceStorage.h; path = PrivateHeaders/Ably/ARTDeviceStorage.h; sourceTree = "<group>"; };
 		D768C6AA1E4B5B0200436011 /* ARTDevicePushDetails.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTDevicePushDetails.h; path = include/Ably/ARTDevicePushDetails.h; sourceTree = "<group>"; };
 		D768C6AB1E4B5B0200436011 /* ARTDevicePushDetails.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDevicePushDetails.m; sourceTree = "<group>"; };
@@ -355,7 +353,6 @@
 		D7DF73891EA645300013CD36 /* ARTLocalDeviceStorage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTLocalDeviceStorage.m; sourceTree = "<group>"; };
 		D7E0FEB6211DE94700659FAA /* ARTNSMutableRequest+ARTRest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ARTNSMutableRequest+ARTRest.h"; path = "PrivateHeaders/Ably/ARTNSMutableRequest+ARTRest.h"; sourceTree = "<group>"; };
 		D7E0FEB7211DE94700659FAA /* ARTNSMutableRequest+ARTRest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ARTNSMutableRequest+ARTRest.m"; sourceTree = "<group>"; };
-		D7EE14F51F07964500C178D5 /* Version.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Version.xcconfig; sourceTree = "<group>"; };
 		D7F1D3711BF4DE07001A4B5E /* ARTRestPresence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTRestPresence.h; path = include/Ably/ARTRestPresence.h; sourceTree = "<group>"; };
 		D7F1D3721BF4DE07001A4B5E /* ARTRestPresence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRestPresence.m; sourceTree = "<group>"; };
 		D7F1D3751BF4DE72001A4B5E /* ARTRealtimePresence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTRealtimePresence.h; path = include/Ably/ARTRealtimePresence.h; sourceTree = "<group>"; };
@@ -588,9 +585,6 @@
 		96BF61271A35B2AB004CF2B3 = {
 			isa = PBXGroup;
 			children = (
-				D5A22170266F3CB700C87C42 /* Package.swift */,
-				D75B85F921BAF8F900FD8DD2 /* Ably.xcconfig */,
-				D7EE14F51F07964500C178D5 /* Version.xcconfig */,
 				96BF61331A35B2AB004CF2B3 /* Source */,
 				217D17EE25421FC100DFF07E /* SocketRocket */,
 				EB36308A23804F7A00B83598 /* Ably-SoakTest-App */,
@@ -1162,7 +1156,6 @@
 /* Begin XCBuildConfiguration section */
 		96BF61451A35B2AB004CF2B3 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = D75B85F921BAF8F900FD8DD2 /* Ably.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = "$(inherited)";
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -1227,7 +1220,6 @@
 		};
 		96BF61461A35B2AB004CF2B3 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = D75B85F921BAF8F900FD8DD2 /* Ably.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = "$(inherited)";
 				ALWAYS_SEARCH_USER_PATHS = NO;
