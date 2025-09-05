@@ -310,8 +310,50 @@ public class ARTStatus: @unchecked Sendable {
     }
 }
 
+public enum ARTLogLevel: Int, Comparable, @unchecked Sendable {
+    case none = 0
+    case error = 1
+    case warn = 2
+    case info = 3
+    case debug = 4
+    case verbose = 5
+    
+    public static func < (lhs: ARTLogLevel, rhs: ARTLogLevel) -> Bool {
+        return lhs.rawValue < rhs.rawValue
+    }
+}
+
 public class ARTInternalLog: @unchecked Sendable {
-    // Placeholder for logging - will be migrated in later phases
+    public var logLevel: ARTLogLevel = .info
+    
+    public init(logLevel: ARTLogLevel = .info) {
+        self.logLevel = logLevel
+    }
+    
+    public func debug(_ message: String) {
+        guard logLevel >= .debug else { return }
+        print("[DEBUG] \(message)")
+    }
+    
+    public func info(_ message: String) {
+        guard logLevel >= .info else { return }
+        print("[INFO] \(message)")
+    }
+    
+    public func warn(_ message: String) {
+        guard logLevel >= .warn else { return }
+        print("[WARN] \(message)")
+    }
+    
+    public func error(_ message: String) {
+        guard logLevel >= .error else { return }
+        print("[ERROR] \(message)")
+    }
+    
+    public func verbose(_ message: String) {
+        guard logLevel >= .verbose else { return }
+        print("[VERBOSE] \(message)")
+    }
 }
 
 // Error handling constants

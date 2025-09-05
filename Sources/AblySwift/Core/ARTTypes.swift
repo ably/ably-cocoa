@@ -649,10 +649,13 @@ public typealias ARTURLRequestCallback = (HTTPURLResponse?, Data?, Error?) -> Vo
 public typealias ARTTokenDetailsCallback = @Sendable (ARTTokenDetails?, Error?) -> Void
 
 /// :nodoc:
-public typealias ARTTokenDetailsCompatibleCallback = @Sendable (ARTTokenDetailsCompatible?, Error?) -> Void
+public typealias ARTTokenRequestCallback = @Sendable (ARTTokenRequest?, Error?) -> Void
 
 /// :nodoc:
-public typealias ARTAuthCallback = @Sendable (ARTTokenParams, @escaping ARTTokenDetailsCompatibleCallback) -> Void
+public typealias ARTTokenDetailsCompatibleCallback = (ARTTokenDetailsCompatible?, Error?) -> Void
+
+/// :nodoc:
+public typealias ARTAuthCallback = (ARTTokenParams, @escaping ARTTokenDetailsCompatibleCallback) -> Void
 
 /// :nodoc:
 public typealias ARTHTTPPaginatedCallback = (ARTHTTPPaginatedResponse?, ARTErrorInfo?) -> Void
@@ -747,9 +750,89 @@ public class ARTErrorInfo: @unchecked Sendable {
 
 
 
-public class ARTTokenParams: @unchecked Sendable {}
-public class ARTTokenRequest: @unchecked Sendable {}
-public class ARTTokenDetails: @unchecked Sendable {}
+/// Placeholder for ARTTokenParams - will be migrated when needed
+public class ARTTokenParams: @unchecked Sendable {
+    public var capability: String?
+    public var clientId: String?
+    public var timestamp: Date?
+    public var ttl: TimeInterval?
+    public var nonce: String?
+    
+    public init(options: ARTAuthOptions) {
+        // Initialize from auth options - placeholder implementation
+    }
+    
+    public init() {
+        // Default initializer
+    }
+}
+
+/// Placeholder for ARTTokenRequest - will be migrated when needed
+public class ARTTokenRequest: @unchecked Sendable {
+    public var keyName: String?
+    public var ttl: TimeInterval?
+    public var capability: String?
+    public var clientId: String?
+    public var timestamp: Date?
+    public var nonce: String?
+    public var mac: String?
+    
+    public init() {}
+}
+
+/// Placeholder for ARTTokenDetails - will be migrated when needed
+public class ARTTokenDetails: @unchecked Sendable {
+    public var token: String?
+    public var clientId: String?
+    public var expires: Date?
+    public var issued: Date?
+    public var capability: String?
+    
+    public init(token: String) {
+        self.token = token
+    }
+    
+    public init() {}
+}
+
+/// Placeholder for ARTAuthOptions - will be migrated when needed
+public class ARTAuthOptions: @unchecked Sendable {
+    public var key: String?
+    public var tokenDetails: ARTTokenDetails?
+    public var authCallback: ARTAuthCallback?
+    public var authUrl: URL?
+    public var authHeaders: [String: String]?
+    public var authMethod: String = "GET"
+    public var authParams: [String: String]?
+    public var useTokenAuth: Bool = false
+    public var queryTime: Bool = false
+    public var clientId: String?
+    public var defaultTokenParams: ARTTokenParams?
+    
+    public init(from options: ARTClientOptions) {
+        // Initialize from client options - placeholder implementation
+    }
+    
+    public init() {
+        // Default initializer
+    }
+}
+
+/// Placeholder for ARTClientOptions - will be migrated when needed
+public class ARTClientOptions: @unchecked Sendable {
+    public var tokenDetails: ARTTokenDetails?
+    public var token: String?
+    public var key: String?
+    public var tls: Bool = true
+    public var clientId: String?
+    public var authUrl: URL?
+    public var authCallback: ARTAuthCallback?
+    public var defaultTokenParams: ARTTokenParams?
+    
+    public func isBasicAuth() -> Bool {
+        return key != nil && tokenDetails == nil && token == nil && authUrl == nil && authCallback == nil
+    }
+}
 public class ARTHTTPPaginatedResponse: @unchecked Sendable {}
 public class ARTPaginatedResult<ItemType>: @unchecked Sendable {}
 public class ARTStats: @unchecked Sendable {}

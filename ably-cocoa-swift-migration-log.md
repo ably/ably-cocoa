@@ -125,14 +125,56 @@ This document tracks the progress, decisions, and technical details of migrating
 
 ---
 
-### Phase 4: Networking & Authentication 🔄 NEXT PHASE
-**Planned Components**:
-- `ARTHttp` classes for REST communication
-- `ARTAuth` for authentication handling  
-- URL request builders and HTTP response processing
-- Token management and authentication flows
+### Phase 4: Networking & Authentication ✅ COMPLETED
+**Duration**: Networking infrastructure phase
+**Files Migrated**: 2 files, ~577 lines of Swift code
+**Status**: ✅ Both ARTHttp and ARTAuth completed and compiling successfully
 
-**Dependencies**: Builds on message classes from Phase 3 and encoders from Phase 2
+#### Migrated Components
+1. **Core HTTP Networking** (1 file)
+   - [`ARTHttp.swift`](Sources/AblySwift/Networking/ARTHttp.swift) - HTTP client with logging and URL session management (151 lines)
+
+2. **Authentication System** (1 file)
+   - [`ARTAuth.swift`](Sources/AblySwift/Networking/ARTAuth.swift) - Complete authentication infrastructure with token management (426 lines)
+
+#### Key Technical Decisions
+- **Protocol-Oriented Networking**: Defined `ARTHTTPExecutor` and `ARTURLSession` protocols for testability
+- **Authentication Architecture**: Clean public/internal split with `ARTAuth` wrapping `ARTAuthInternal`
+- **Authorization State Machine**: Enum-based state management (`.succeeded`, `.failed`, `.cancelled`)
+- **Logging Integration**: Extended `ARTInternalLog` with proper log levels and methods (`debug()`, `info()`, `warn()`, `error()`)
+- **Thread Safety**: Used `nonisolated(unsafe)` with `NSLock` for global URL session class configuration
+- **Swift Concurrency Compliance**: All callbacks marked `@Sendable` for strict concurrency checking
+- **Platform Conditionals**: Migrated from `TARGET_OS_*` macros to Swift `#if os(iOS)` syntax
+
+#### Challenges & Solutions
+- **Challenge**: Swift concurrency warnings for global mutable state
+  - **Solution**: Used `nonisolated(unsafe)` with proper locking mechanism
+- **Challenge**: Missing logging infrastructure
+  - **Solution**: Implemented `ARTLogLevel` enum and logging methods in `ARTInternalLog`
+- **Challenge**: URLRequest mutability in Swift vs Objective-C NSMutableURLRequest
+  - **Solution**: Used native Swift `URLRequest` var declarations instead of mutable copies
+- **Challenge**: Swift strict concurrency for callback types
+  - **Solution**: Updated all callback typealias definitions to `@Sendable` and proper callback wrapping
+- **Challenge**: Reserved keyword conflicts (`internal` parameter name)
+  - **Solution**: Used backticks for reserved keywords: `self._internal = \`internal\``
+- **Challenge**: Platform-specific notification handling
+  - **Solution**: Converted `TARGET_OS_*` macros to Swift `#if os(iOS)` conditionals
+
+#### Architecture Benefits
+- **Protocol Abstraction**: HTTP executor and URL session protocols enable easy testing and mocking
+- **Clean API Separation**: ARTAuth public interface cleanly wraps internal implementation details
+- **Type Safety**: Swift's type system prevents many HTTP-related and authentication runtime errors
+- **Memory Safety**: Automatic reference counting eliminates manual memory management
+- **Concurrency Safety**: Proper Sendable conformance enables safe concurrent operations
+- **Event-Driven Architecture**: Proper cancellation and event emission support for authentication flows
+- **Token Management Infrastructure**: Complete foundation for token lifecycle management
+
+#### Swift Migration Patterns Established
+1. **Public/Internal Split**: Clean separation between public APIs and internal implementation
+2. **Reserved Keyword Handling**: Use backticks for Swift reserved words in parameter names
+3. **Platform Conditionals**: Swift `#if os()` syntax replaces Objective-C preprocessor macros
+4. **Sendable Callback Types**: All async callback types must be marked `@Sendable`
+5. **Thread-Safe Wrapper Pattern**: Dispatch callbacks to main queue for UI thread safety
 
 ---
 
@@ -162,14 +204,14 @@ This document tracks the progress, decisions, and technical details of migrating
 3. **Compilation Verification**: Each phase verified with `swift build --target AblySwift`
 
 ## Progress Metrics
-- **Total Files Migrated**: 18 files
-- **Total Lines of Swift Code**: ~1,857 lines
+- **Total Files Migrated**: 20 files
+- **Total Lines of Swift Code**: ~2,434 lines
 - **Compilation Success Rate**: 100%
-- **Phases Completed**: 3/7 major phases (43%)
+- **Phases Completed**: 4/7 major phases (57%)
 - **Technical Debt**: Minimal - clean Swift patterns established
 
 ## Next Steps
-1. Continue with Phase 4: Networking & Authentication
-2. Document networking layer architectural decisions
+1. Begin Phase 5: Channel Management (ARTChannel, ARTRestChannel, channel state management)
+2. Continue building on established networking infrastructure from Phase 4
 3. Maintain compilation success after each file migration
-4. Update this log with Phase 4 progress and decisions
+4. Document channel management architectural decisions and patterns
