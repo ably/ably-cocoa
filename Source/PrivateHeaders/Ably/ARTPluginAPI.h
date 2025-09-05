@@ -1,5 +1,3 @@
-#ifdef ABLY_SUPPORTS_PLUGINS
-
 @import Foundation;
 @import _AblyPluginSupportPrivate;
 
@@ -16,5 +14,3 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 NS_ASSUME_NONNULL_END
-
-#endif

@@ -33,14 +33,12 @@
 #import "ARTBackoffRetryDelayCalculator.h"
 #import "ARTInternalLog.h"
 #import "ARTAttachRetryState.h"
+#import "ARTPluginAPI.h"
 #if TARGET_OS_IPHONE
 #import "ARTPushChannel+Private.h"
 #endif
 
-#ifdef ABLY_SUPPORTS_PLUGINS
 @import _AblyPluginSupportPrivate;
-#import "ARTPluginAPI.h"
-#endif
 
 @implementation ARTRealtimeChannel {
     ARTQueuedDealloc *_dealloc;
@@ -290,7 +288,6 @@ NS_ASSUME_NONNULL_END
                                                                      logMessagePrefix:[NSString stringWithFormat:@"RT: %p C:%p ", _realtime, self]];
         _pluginData = [[NSMutableDictionary alloc] init];
 
-#ifdef ABLY_SUPPORTS_PLUGINS
         // We need to register the pluginAPI before the LiveObjects plugin tries to fetch it in the call to prepareChannel below (and also before the LiveObjects plugin later tries to use it in its extension of ARTRealtimeChannel).
         [ARTPluginAPI registerSelf];
 
@@ -299,7 +296,6 @@ NS_ASSUME_NONNULL_END
         if (liveObjectsPlugin) {
             [liveObjectsPlugin nosync_prepareChannel:self client:realtime];
         }
-#endif
     }
     return self;
 }
@@ -419,7 +415,6 @@ dispatch_sync(_queue, ^{
 });
 }
 
-#ifdef ABLY_SUPPORTS_PLUGINS
 - (void)sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
                           completion:(ARTCallback)completion {
     ARTProtocolMessage *pm = [[ARTProtocolMessage alloc] init];
@@ -433,7 +428,6 @@ dispatch_sync(_queue, ^{
         }
     }];
  }
-#endif
 
 - (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(ARTStatusCallback)cb {
     switch (self.state_nosync) {
@@ -706,10 +700,8 @@ dispatch_sync(_queue, ^{
         self.channelSerial = message.channelSerial;
     }
 
-#ifdef ABLY_SUPPORTS_PLUGINS
     [self.realtime.options.liveObjectsPlugin nosync_onChannelAttached:self
                                                            hasObjects:message.hasObjects];
-#endif
 
     if (state == ARTRealtimeChannelAttached) {
         if (!message.resumed) { // RTL12
@@ -893,7 +885,6 @@ dispatch_sync(_queue, ^{
         self.channelSerial = pm.channelSerial;
     }
 
-#ifdef ABLY_SUPPORTS_PLUGINS
     if (!pm.state) {
         // Because the plugin isn't set up or because decoding failed
         return;
@@ -901,11 +892,9 @@ dispatch_sync(_queue, ^{
 
     [self.realtime.options.liveObjectsPlugin nosync_handleObjectProtocolMessageWithObjectMessages:pm.state
                                                                                           channel:self];
-#endif
 }
 
 - (void)onObjectSync:(ARTProtocolMessage *)pm {
-#ifdef ABLY_SUPPORTS_PLUGINS
     if (!pm.state) {
         // Because the plugin isn't set up or because decoding failed
         return;
@@ -914,7 +903,6 @@ dispatch_sync(_queue, ^{
     [self.realtime.options.liveObjectsPlugin nosync_handleObjectSyncProtocolMessageWithObjectMessages:pm.state
                                                                          protocolMessageChannelSerial:pm.channelSerial
                                                                                               channel:self];
-#endif
 }
 
 - (void)attach {

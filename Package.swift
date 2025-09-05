@@ -30,15 +30,9 @@ let package = Package(
                 .product(name: "_AblyPluginSupportPrivate", package: "ably-cocoa-plugin-support")
             ],
             path: "Source",
-            exclude: [
-                "Info-iOS.plist",
-                "Info-tvOS.plist",
-                "Info-macOS.plist"
-            ],
             resources: [.copy("PrivacyInfo.xcprivacy")],
             publicHeadersPath: "include",
             cSettings: [
-                .define("ABLY_SUPPORTS_PLUGINS"),
                 .headerSearchPath("PrivateHeaders"),
                 .headerSearchPath("PrivateHeaders/Ably"),
                 .headerSearchPath("include/Ably"),

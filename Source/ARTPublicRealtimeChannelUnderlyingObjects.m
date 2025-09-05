@@ -1,5 +1,3 @@
-#ifdef ABLY_SUPPORTS_PLUGINS
-
 #import "ARTPublicRealtimeChannelUnderlyingObjects.h"
 
 @implementation APDefaultPublicRealtimeChannelUnderlyingObjects
@@ -17,5 +15,3 @@
 }
 
 @end
-
-#endif

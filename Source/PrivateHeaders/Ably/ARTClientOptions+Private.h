@@ -1,17 +1,9 @@
 #import <Ably/ARTClientOptions.h>
-
-#ifdef ABLY_SUPPORTS_PLUGINS
 @import _AblyPluginSupportPrivate;
-#endif
 
 NS_ASSUME_NONNULL_BEGIN
 
-#ifdef ABLY_SUPPORTS_PLUGINS
 @interface ARTClientOptions () <APPublicClientOptions>
-@end
-#endif
-
-@interface ARTClientOptions ()
 
 @property (readonly) BOOL isProductionEnvironment;
 @property (readonly) BOOL hasEnvironment;
@@ -29,10 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 // MARK: - Plugins
 
-#ifdef ABLY_SUPPORTS_PLUGINS
 /// The plugin that channels should use to access LiveObjects functionality.
 @property (nullable, readonly) id<APLiveObjectsInternalPluginProtocol> liveObjectsPlugin;
-#endif
 
 // MARK: - Options for plugins
 
