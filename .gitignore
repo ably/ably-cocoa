@@ -1,47 +1,29 @@
-# Created by https://www.gitignore.io/api/objective-c
+## Swift Package Manager
 
-### Objective-C ###
-# Xcode
-#
-# gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
+# Start of .gitignore created by Swift Package Manager
+.DS_Store
+/.build
+/Packages
+xcuserdata/
+DerivedData/
+.swiftpm/configuration/registries.json
+.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
+.netrc
+# End of .gitignore created by Swift Package Manager
 
-## Build generated
+## Xcode
+
+# This is created when running `xcodebuild`:
 build/
-.build
-DerivedData
-derived_data/
 
-## Various settings
-*.pbxuser
-!default.pbxuser
-*.mode1v3
-!default.mode1v3
-*.mode2v3
-!default.mode2v3
-*.perspectivev3
-!default.perspectivev3
-xcuserdata
-
-## Other
-*.xcworkspace
-*.xccheckout
-*.moved-aside
-*.xcuserstate
-*.xcscmblueprint
-
-## Obj-C/Swift specific
-*.hmap
-*.ipa
-
-# CocoaPods
+## CocoaPods
 #
 # We recommend against adding the Pods directory to your .gitignore. However
 # you should judge for yourself, the pros and cons are mentioned at:
 # http://guides.cocoapods.org/using/using-cocoapods.html#should-i-check-the-pods-directory-into-source-control
-#
 Pods/
 
-# Carthage
+## Carthage
 #
 # Add this line if you want to avoid checking in source code from Carthage dependencies.
 Carthage/Checkouts
@@ -50,30 +32,23 @@ Carthage/Build
 # Output from `carthage build`
 Ably.framework.zip
 
-### Objective-C Patch ###
-*.xcscmblueprint
-
-# Log
-xcodebuild.log
-
-# Scan
+## Scan
 test_output/
 
-# Fastlane
+## Fastlane
 fastlane/report.xml
 fastlane/test_output
 fastlane/README.md
+derived_data/
 
 Examples/Tests/Podfile.lock
-.DS_Store
 
-.DS_Store
-# AppCode
+## AppCode
 .build
 .idea
 
-# Jazzy Docs
+## Jazzy Docs
 Docs/jazzy
 
-# Tooling
+## Tooling
 xcparse/
