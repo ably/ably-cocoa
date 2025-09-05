@@ -220,11 +220,6 @@ extension ARTMessage {
 
 // These will be migrated in later phases
 public class ARTMessageOperation: @unchecked Sendable {}
-public class ARTChannelOptions: @unchecked Sendable {
-    public var cipher: ARTCipherParams?
-    
-    public init() {}
-}
 
 public class ARTJsonLikeEncoder: @unchecked Sendable {
     private let delegate: ARTJsonLikeEncoderDelegate
