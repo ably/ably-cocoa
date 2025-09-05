@@ -1,4 +1,4 @@
-#import "ARTNSArray+ARTFunctional.h"
+#import "NSArray+ARTFunctional.h"
 
 @implementation NSArray (ARTFunctional)
 

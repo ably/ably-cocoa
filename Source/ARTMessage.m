@@ -2,7 +2,7 @@
 #import "ARTJsonEncoder.h"
 #import "ARTJsonLikeEncoder.h"
 #import "ARTBaseMessage+Private.h"
-#import "ARTNSArray+ARTFunctional.h"
+#import "NSArray+ARTFunctional.h"
 #import "ARTInternalLog.h"
 
 @implementation ARTMessage

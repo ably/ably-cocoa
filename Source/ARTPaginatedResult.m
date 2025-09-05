@@ -4,8 +4,8 @@
 #import "ARTHttp.h"
 #import "ARTAuth.h"
 #import "ARTRest+Private.h"
-#import "ARTNSMutableURLRequest+ARTPaginated.h"
-#import "ARTNSHTTPURLResponse+ARTPaginated.h"
+#import "NSMutableURLRequest+ARTPaginated.h"
+#import "NSHTTPURLResponse+ARTPaginated.h"
 #import "ARTInternalLog.h"
 
 @implementation ARTPaginatedResult {

@@ -1,5 +1,5 @@
-#import "ARTNSDictionary+ARTDictionaryUtil.h"
-#import "ARTNSDate+ARTUtil.h"
+#import "NSDictionary+ARTDictionaryUtil.h"
+#import "NSDate+ARTUtil.h"
 
 @implementation NSDictionary (ARTDictionaryUtil)
 

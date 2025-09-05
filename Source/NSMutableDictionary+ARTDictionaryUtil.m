@@ -1,4 +1,4 @@
-#import "ARTNSMutableDictionary+ARTDictionaryUtil.h"
+#import "NSMutableDictionary+ARTDictionaryUtil.h"
 
 @implementation NSMutableDictionary (ARTDictionaryUtil)
 

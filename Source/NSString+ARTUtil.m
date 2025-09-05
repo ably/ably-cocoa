@@ -1,4 +1,4 @@
-#import "ARTNSString+ARTUtil.h"
+#import "NSString+ARTUtil.h"
 
 @implementation NSString (ARTUtil)
 

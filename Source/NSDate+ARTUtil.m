@@ -1,4 +1,4 @@
-#import "ARTNSDate+ARTUtil.h"
+#import "NSDate+ARTUtil.h"
 
 @implementation NSDate (ARTUtil)
 

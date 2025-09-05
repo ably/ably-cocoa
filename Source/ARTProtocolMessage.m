@@ -3,8 +3,8 @@
 #import "ARTProtocolMessage+Private.h"
 #import "ARTStatus.h"
 #import "ARTConnectionDetails.h"
-#import "ARTNSString+ARTUtil.h"
-#import "ARTNSArray+ARTFunctional.h"
+#import "NSString+ARTUtil.h"
+#import "NSArray+ARTFunctional.h"
 
 @implementation ARTProtocolMessage
 

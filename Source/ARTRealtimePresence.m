@@ -8,7 +8,7 @@
 #import "ARTPresence+Private.h"
 #import "ARTDataQuery+Private.h"
 #import "ARTConnection+Private.h"
-#import "ARTNSArray+ARTFunctional.h"
+#import "NSArray+ARTFunctional.h"
 #import "ARTInternalLog.h"
 #import "ARTEventEmitter+Private.h"
 #import "ARTDataEncoder.h"

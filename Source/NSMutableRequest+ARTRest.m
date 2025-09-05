@@ -1,4 +1,4 @@
-#import "ARTNSMutableRequest+ARTRest.h"
+#import "NSMutableRequest+ARTRest.h"
 
 #import "ARTEncoder.h"
 

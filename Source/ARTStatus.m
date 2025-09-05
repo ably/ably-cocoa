@@ -1,7 +1,7 @@
 #import <Foundation/Foundation.h>
 
 #import "ARTStatus.h"
-#import "ARTNSError+ARTUtils.h"
+#import "NSError+ARTUtils.h"
 #import "ARTErrorInfo+Private.h"
 
 // Reverse-DNS style domain

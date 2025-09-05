@@ -2,7 +2,7 @@
 #import "ARTTokenParams.h"
 #import "ARTAuth+Private.h"
 #import "ARTDefault.h"
-#import "ARTNSDictionary+ARTDictionaryUtil.h"
+#import "NSDictionary+ARTDictionaryUtil.h"
 
 @implementation ARTTokenRequest
 

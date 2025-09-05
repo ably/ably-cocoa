@@ -1,4 +1,4 @@
-#import "ARTNSURL+ARTUtils.h"
+#import "NSURL+ARTUtils.h"
 
 @implementation NSURL (ARTUtils)
 

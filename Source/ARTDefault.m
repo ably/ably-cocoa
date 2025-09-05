@@ -1,6 +1,6 @@
 #import "Ably.h"
 #import "ARTDefault+Private.h"
-#import "ARTNSArray+ARTFunctional.h"
+#import "NSArray+ARTFunctional.h"
 #import "ARTClientInformation+Private.h"
 
 static NSString *const ARTDefault_apiVersion = @"2"; // CSV2

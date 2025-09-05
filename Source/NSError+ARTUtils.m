@@ -1,4 +1,4 @@
-#import "ARTNSError+ARTUtils.h"
+#import "NSError+ARTUtils.h"
 #import "ARTStatus.h"
 
 @implementation NSError (ARTUtils)

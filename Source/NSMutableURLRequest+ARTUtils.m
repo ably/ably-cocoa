@@ -1,4 +1,4 @@
-#import "ARTNSMutableURLRequest+ARTUtils.h"
+#import "NSMutableURLRequest+ARTUtils.h"
 
 @implementation NSMutableURLRequest (ARTUtils)
 

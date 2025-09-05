@@ -1,5 +1,5 @@
 #import "ARTLog+Private.h"
-#import "ARTNSDate+ARTUtil.h"
+#import "NSDate+ARTUtil.h"
 
 static const char *logLevelName(ARTLogLevel level) {
     switch(level) {

@@ -3,7 +3,7 @@
 #import "ARTDataEncoder.h"
 #import "ARTMessage.h"
 #import "ARTChannelOptions.h"
-#import "ARTNSArray+ARTFunctional.h"
+#import "NSArray+ARTFunctional.h"
 #import "ARTBaseMessage+Private.h"
 #import "ARTDataQuery.h"
 #import "ARTRest+Private.h"

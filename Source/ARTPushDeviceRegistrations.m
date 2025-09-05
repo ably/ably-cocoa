@@ -9,7 +9,7 @@
 #import "ARTEncoder.h"
 #import "ARTRest+Private.h"
 #import "ARTLocalDevice.h"
-#import "ARTNSMutableRequest+ARTPush.h"
+#import "NSMutableRequest+ARTPush.h"
 
 @implementation ARTPushDeviceRegistrations {
     ARTQueuedDealloc *_dealloc;

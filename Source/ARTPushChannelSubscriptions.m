@@ -4,10 +4,10 @@
 #import "ARTPushChannelSubscription.h"
 #import "ARTClientOptions.h"
 #import "ARTEncoder.h"
-#import "ARTNSArray+ARTFunctional.h"
+#import "NSArray+ARTFunctional.h"
 #import "ARTRest+Private.h"
 #import "ARTTypes.h"
-#import "ARTNSMutableRequest+ARTPush.h"
+#import "NSMutableRequest+ARTPush.h"
 #import "ARTInternalLog.h"
 
 @implementation ARTPushChannelSubscriptions {

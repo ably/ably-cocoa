@@ -6,7 +6,7 @@
 #import "ARTPaginatedResult+Private.h"
 #import "ARTDataQuery+Private.h"
 #import "ARTJsonEncoder.h"
-#import "ARTNSArray+ARTFunctional.h"
+#import "NSArray+ARTFunctional.h"
 #import "ARTChannel+Private.h"
 #import "ARTBaseMessage+Private.h"
 #import "ARTInternalLog.h"

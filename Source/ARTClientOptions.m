@@ -6,7 +6,7 @@
 #import "ARTStatus.h"
 #import "ARTTokenParams.h"
 #import "ARTStringifiable.h"
-#import "ARTNSString+ARTUtil.h"
+#import "NSString+ARTUtil.h"
 #import "ARTTestClientOptions.h"
 #import "ARTPluginAPI.h"
 

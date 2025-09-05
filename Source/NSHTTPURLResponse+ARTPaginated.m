@@ -1,4 +1,4 @@
-#import "ARTNSHTTPURLResponse+ARTPaginated.h"
+#import "NSHTTPURLResponse+ARTPaginated.h"
 
 @implementation NSHTTPURLResponse (ARTPaginated)
 

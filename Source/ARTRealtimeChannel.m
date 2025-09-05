@@ -13,7 +13,7 @@
 #import "ARTRealtimeChannelOptions.h"
 #import "ARTProtocolMessage.h"
 #import "ARTProtocolMessage+Private.h"
-#import "ARTNSArray+ARTFunctional.h"
+#import "NSArray+ARTFunctional.h"
 #import "ARTStatus.h"
 #import "ARTDefault.h"
 #import "ARTRest.h"

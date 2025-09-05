@@ -8,7 +8,7 @@
 #import "ARTPushChannelSubscription.h"
 #import "ARTChannel+Private.h"
 #import "ARTLocalDevice+Private.h"
-#import "ARTNSMutableRequest+ARTPush.h"
+#import "NSMutableRequest+ARTPush.h"
 
 @implementation ARTPushChannel {
     ARTQueuedDealloc *_dealloc;

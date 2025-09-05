@@ -1,4 +1,4 @@
-#import "ARTNSMutableRequest+ARTPush.h"
+#import "NSMutableRequest+ARTPush.h"
 
 #import "ARTInternalLog.h"
 #import "ARTDeviceDetails.h"

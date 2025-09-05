@@ -12,7 +12,7 @@
 #import "ARTDeviceStorage.h"
 #import "ARTDevicePushDetails.h"
 #import "ARTDeviceIdentityTokenDetails.h"
-#import "ARTNSMutableRequest+ARTPush.h"
+#import "NSMutableRequest+ARTPush.h"
 #import "ARTAuth+Private.h"
 
 #if TARGET_OS_IOS

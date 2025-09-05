@@ -11,11 +11,11 @@
 #import "ARTJsonEncoder.h"
 #import "ARTAuth+Private.h"
 #import "ARTTokenDetails.h"
-#import "ARTNSArray+ARTFunctional.h"
+#import "NSArray+ARTFunctional.h"
 #import "ARTPushChannel+Private.h"
 #import "ARTCrypto+Private.h"
 #import "ARTClientOptions.h"
-#import "ARTNSError+ARTUtils.h"
+#import "NSError+ARTUtils.h"
 #import "ARTInternalLog.h"
 
 @implementation ARTRestChannel {
