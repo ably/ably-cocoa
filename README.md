@@ -43,11 +43,7 @@ The following platforms are supported:
 
 ## Installation
 
-You can install Ably for iOS and macOS through [Swift package manager](#swift-package-manager) or [install manually](#manual-install).
-
-### Swift Package Manager
-
-The Ably Pub/Sub SDK includes installation support for [Swift Package Manager](https://swift.org/package-manager/).
+You can install Ably for iOS and macOS through [Swift Package Manager](https://swift.org/package-manager/).
 
 <details>
 <summary>Swift Package Manager installation details.</summary>
@@ -66,20 +62,6 @@ To install the `ably-cocoa` package in another Swift package, add the following 
 See Apple's [adding package dependencies to your app](https://developer.apple.com/documentation/swift_packages/adding_package_dependencies_to_your_app) guide for more detail.
 </details>
 
-
-### Manual install
-
-The Ably Pub/Sub SDK includes manual installation support.
-
-<details>
-<summary>Manual installation details.</summary>
-
-* Download the [Ably Pub/Sub Cocoa SDK.](https://github.com/ably/ably-cocoa)
-* Drag the `ably-cocoa/ably-cocoa` directory into your Xcode project as a group.
-
-Ably depends on our [MessagePack Fork](https://github.com/ably-forks/msgpack-objective-C) 0.2.0; get it [from the releases page](https://github.com/ably-forks/msgpack-objective-C/releases/tag/0.2.0-ably-1) and link it into your project.
-
-</details>
 
 ---
 
