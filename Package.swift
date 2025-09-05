@@ -14,6 +14,10 @@ let package = Package(
             name: "Ably",
             targets: ["Ably"]
         ),
+        .library(
+            name: "AblySwift",
+            targets: ["AblySwift"]
+        ),
     ],
     dependencies: [
         .package(url: "https://github.com/rvi/msgpack-objective-C", from: "0.4.0"),
@@ -36,6 +40,12 @@ let package = Package(
                 .headerSearchPath("PrivateHeaders"),
                 .headerSearchPath("PrivateHeaders/Ably"),
                 .headerSearchPath("include/Ably"),
+            ]
+        ),
+        .target(
+            name: "AblySwift",
+            dependencies: [
+                "SocketRocket"
             ]
         ),
         .target(
