@@ -45,13 +45,11 @@ internal class ARTDefaultRealtimeTransportFactory: ARTRealtimeTransportFactory, 
 private class ARTPlaceholderWebSocketTransport: ARTRealtimeTransport, @unchecked Sendable {
     private let _resumeKey: String
     private let _state: ARTRealtimeTransportState = .closed
-    weak var delegate: ARTRealtimeTransportDelegate?
-    let stateEmitter: ARTEventEmitter<ARTEvent, Any>
+    var delegate: ARTRealtimeTransportDelegate?
     var host: String = ""
     
     init(rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, logger: ARTInternalLog, webSocketFactory: ARTWebSocketFactory) {
         self._resumeKey = resumeKey ?? ""
-        self.stateEmitter = ARTEventEmitter<ARTEvent, Any>()
     }
     
     var resumeKey: String { return _resumeKey }

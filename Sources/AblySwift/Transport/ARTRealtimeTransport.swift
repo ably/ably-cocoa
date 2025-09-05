@@ -110,7 +110,9 @@ public protocol ARTRealtimeTransport: AnyObject {
     var resumeKey: String { get }
     var state: ARTRealtimeTransportState { get }
     var delegate: ARTRealtimeTransportDelegate? { get set }
-    var stateEmitter: ARTEventEmitter<ARTEvent, Any> { get }
+    // Note: stateEmitter will be properly implemented when ARTEventEmitter is migrated
+    // For now, making it internal to avoid visibility issues
+    // var stateEmitter: ARTEventEmitter<ARTEvent, Any> { get }
     
     @discardableResult
     func send(_ data: Data, withSource decodedObject: Any?) -> Bool

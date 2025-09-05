@@ -134,7 +134,7 @@ extension ARTRestChannel: ARTChannelProtocol {
 /**
  * Internal implementation of REST channel
  */
-internal class ARTRestChannelInternal: ARTChannel {
+internal class ARTRestChannelInternal: ARTChannel, @unchecked Sendable {
     
     // MARK: - Properties
     
