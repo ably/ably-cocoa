@@ -1,4 +1,4 @@
-// swift-tools-version:5.3.0
+// swift-tools-version: 6.1
 
 import PackageDescription
 
@@ -16,17 +16,17 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(name: "msgpack", url: "https://github.com/rvi/msgpack-objective-C", from: "0.4.0"),
-        .package(name: "AblyDeltaCodec", url: "https://github.com/ably/delta-codec-cocoa", from: "1.3.3"),
-        .package(name: "Nimble", url: "https://github.com/quick/nimble", from: "11.2.2"),
-        .package(name: "ably-cocoa-plugin-support", url: "https://github.com/ably/ably-cocoa-plugin-support", .revision("2ce1058ed4430cc3563dcead0299e92a81d2774b")),
+        .package(url: "https://github.com/rvi/msgpack-objective-C", from: "0.4.0"),
+        .package(url: "https://github.com/ably/delta-codec-cocoa", from: "1.3.3"),
+        .package(url: "https://github.com/quick/nimble", from: "11.2.2"),
+        .package(url: "https://github.com/ably/ably-cocoa-plugin-support", revision: "2ce1058ed4430cc3563dcead0299e92a81d2774b"),
     ],
     targets: [
         .target(
             name: "Ably",
             dependencies: [
-                .byName(name: "msgpack"),
-                .byName(name: "AblyDeltaCodec"),
+                .product(name: "msgpack", package: "msgpack-objective-c"),
+                .product(name: "AblyDeltaCodec", package: "delta-codec-cocoa"),
                 .product(name: "_AblyPluginSupportPrivate", package: "ably-cocoa-plugin-support")
             ],
             path: "Source",
@@ -49,23 +49,26 @@ let package = Package(
         .testTarget(
             name: "AblyTests",
             dependencies: [
-                .byName(name: "Ably"),
-                .byName(name: "AblyTesting"),
-                .byName(name: "AblyTestingObjC"),
-                .byName(name: "Nimble"),
+                "Ably",
+                "AblyTesting",
+                "AblyTestingObjC",
+                .product(name: "Nimble", package: "nimble"),
             ],
             path: "Test/AblyTests",
             resources: [
                 .copy("ably-common")
+            ],
+            swiftSettings: [
+                .swiftLanguageMode(.v5)
             ]
         ),
         // A handful of tests written in Objective-C (they can't be part of AblyTests because SPM doesn't allow mixed-language targets).
         .testTarget(
             name: "AblyTestsObjC",
             dependencies: [
-                .byName(name: "Ably"),
-                .byName(name: "AblyTesting"),
-                .byName(name: "AblyTestingObjC"),
+                "Ably",
+                "AblyTesting",
+                "AblyTestingObjC",
             ],
             path: "Test/AblyTestsObjC"
         ),
@@ -73,7 +76,7 @@ let package = Package(
         .target(
             name: "AblyTesting",
             dependencies: [
-                .byName(name: "Ably"),
+                "Ably",
             ],
             path: "Test/AblyTesting"
         ),
