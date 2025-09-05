@@ -29,7 +29,6 @@ let package = Package(
                 .product(name: "AblyDeltaCodec", package: "delta-codec-cocoa"),
                 .product(name: "_AblyPluginSupportPrivate", package: "ably-cocoa-plugin-support")
             ],
-            path: "Source",
             resources: [.copy("PrivacyInfo.xcprivacy")],
             publicHeadersPath: "include",
             cSettings: [
