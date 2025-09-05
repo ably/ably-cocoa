@@ -4,9 +4,6 @@ E.g. `1.0.11`
 ### On which platform does the issue happen? 
 E.g. `iOS11`
 
-### Are you using Carthage? 
-If yes, specify the version (`carthage version`)
-
 ### Are you using Cocoapods? 
 If yes, specify the version (`pod --version`)
 

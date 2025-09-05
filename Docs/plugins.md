@@ -10,7 +10,6 @@ Currently, our only plugin is for adding LiveObjects functionality. This plugin 
 
 ## Notes on `_AblyPluginSupportPrivate`
 
-- Everything in ably-cocoa that depends on `_AblyPluginSupportPrivate` is gated behind `#ifdef ABLY_SUPPORTS_PLUGINS`, which is only defined in SPM builds. This is so as not to affect the non-SPM builds (i.e. Xcode, CocoaPods), which do not have access to `_AblyPluginSupportPrivate`.
 - ably-cocoa provides an implementation of `_AblyPluginSupportPrivate`'s `APPluginAPI` protocol, which is the interface that plugins use to access ably-cocoa's internals. On library initialization, it registers this implementation with `APDependencyStore`, from where plugins can subsequetly fetch it.
 - Currently, the plan is to test all the LiveObjects functionality within the LiveObjects plugin repository, so ably-cocoa does not contain any tests for the plugins mechanism.
 - The underscore and `Private` are to reduce the chances of the user accidentally importing it into their project.
