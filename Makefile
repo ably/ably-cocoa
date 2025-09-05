@@ -50,10 +50,9 @@ help:
 	{ lastLine = $$0 }' \
 	$(MAKEFILE_LIST)
 
-## Update dependencies (Git submodules and Carthage)
+## Update dependencies (Git submodules)
 update: \
-	submodules \
-	update_carthage_dependencies
+	submodules
 
 ## -- Source Code Tasks --
 
@@ -83,47 +82,6 @@ test_macOS:
 pod_lint:
 	pod lib lint --swift-version=4.2 --allow-warnings
 
-## -- Carthage --
-
-## [Carthage] Make a .zip package of frameworks
-carthage_package:
-	$(info Building and archiving…)
-
-	# https://github.com/Carthage/Carthage#archive-prebuilt-frameworks-into-one-zip-file
-	# From `carthage help build` we are told that `--archive` implies `--no-skip-current`.
-	./Scripts/carthage-with-workaround-for-issue-3019.sh build --archive --no-use-binaries --platform iOS,macOS,tvOS
-	# Add LICENSE files (ours and SocketRocket’s).
-	./Scripts/add-licenses-to-carthage-output.sh
-
-## [Carthage] Clear Carthage caches. Helps with Carthage update issues
-carthage_clean:
-	$(info Deleting Carthage caches…)
-
-	rm -rf ~/Library/Caches/org.carthage.CarthageKit/dependencies/
-
-## [Carthage] Update dependencies for all platforms
-update_carthage_dependencies:
-	$(info Updating Carthage dependencies for all platforms…)
-
-	carthage update --use-xcframeworks --platform iOS,macOS,tvOS --no-use-binaries
-
-## [Carthage] Update dependencies for just iOS
-update_carthage_dependencies_ios:
-	$(info Updating Carthage dependencies for iOS…)
-
-	carthage update --use-xcframeworks --platform iOS --no-use-binaries
-
-## [Carthage] Update dependencies for just tvOS
-update_carthage_dependencies_tvos:
-	$(info Updating Carthage dependencies for tvOS…)
-
-	carthage update --use-xcframeworks --platform tvOS --no-use-binaries
-
-## [Carthage] Update dependencies for just macOS
-update_carthage_dependencies_macos:
-	$(info Updating Carthage dependencies for macOS…)
-
-	carthage update --use-xcframeworks --platform macOS --no-use-binaries
 
 ## -- Version --
 

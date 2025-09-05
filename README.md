@@ -43,7 +43,7 @@ The following platforms are supported:
 
 ## Installation
 
-You can install Ably for iOS and macOS through [Swift package manager](#swift-package-manager), [CocoaPods](#cocoapods), [Carthage](#carthage) or [install manually](#manual-install).
+You can install Ably for iOS and macOS through [Swift package manager](#swift-package-manager), [CocoaPods](#cocoapods) or [install manually](#manual-install).
 
 ### Swift Package Manager
 
@@ -91,46 +91,6 @@ $ pod install
 </details>
 
 
-
-### Carthage
-
-The Ably Pub/Sub SDK includes installation support for [Carthage](https://github.com/Carthage/Carthage/).
-
-<details>
-<summary>Carthage installation details.</summary>
-
-Add the following line to your application's Cartfile:
-
-```ruby
-# For Xcode 7.3 and newer
-github "ably/ably-cocoa" >= 1.2
-```
-
-And then run one of the following commands required for your platform:
-
-| Platform | Command |
-|----------|---------|
-| iOS | `carthage update --use-xcframeworks --platform iOS --no-use-binaries` |
-| macOS | `carthage update --use-xcframeworks --platform macOS --no-use-binaries`|
-| tvOS | `carthage update --use-xcframeworks --platform tvOS --no-use-binaries` |
-
-After building the framework (located in `[PROJECT_ROOT]/Carthage/Build`), drag the following files into the **Frameworks**, **Libraries**, and **Embedded content** section of your Xcode target’s **General** tab:
-
-* `Ably.xcframework`
-* `AblyDeltaCodec.xcframework`
-* `msgpack.xcframework`
-* For applications, select **Embed & Sign**
-* For other targets, select **Do Not Embed**
-
-If you encounter an error similar to the following, you’ve likely missed adding one or more required dependencies:
-
-```
-dyld: Library not loaded: @rpath/AblyDeltaCodec.framework/AblyDeltaCodec
-```
-
-For further information review the Carthage [adding frameworks to an application](https://github.com/Carthage/Carthage#adding-frameworks-to-an-application) guide.
-
-</details>
 
 ### Manual install
 

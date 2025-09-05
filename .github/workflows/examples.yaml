@@ -36,7 +36,6 @@ jobs:
         run: |
           make submodules
           bundle install
-          make update_carthage_dependencies_ios
 
       - name: Run Examples Tests
         working-directory: ./Examples/Tests
@@ -45,13 +44,6 @@ jobs:
           pod install
           bundle exec fastlane scan -s Tests --output-directory "fastlane/test_output/examples/test_iOS18_4"
 
-      - name: Carthage Installation
-        working-directory: ./Examples/AblyCarthage
-        run:  |
-          echo 'Installing Carthage dependencies...'
-          carthage update --use-xcframeworks --platform iOS --no-use-binaries
-          echo 'Building AblyCarthage example...'
-          xcodebuild build -scheme "AblyCarthage" -destination "platform=iOS Simulator,name=iPhone 16" -configuration "Debug"
       
       - name: SPM Installation
         working-directory: ./
