@@ -727,7 +727,24 @@ public protocol ARTEventIdentification {}
 public protocol ARTTokenDetailsCompatible {}
 
 // Placeholder classes that will be migrated in later phases
-public class ARTErrorInfo: @unchecked Sendable {}
+public class ARTErrorInfo: @unchecked Sendable {
+    public let code: Int
+    public let message: String
+    
+    public init(code: Int, message: String) {
+        self.code = code
+        self.message = message
+    }
+    
+    public static func create(from error: Error) -> ARTErrorInfo {
+        return ARTErrorInfo(code: (error as NSError).code, message: error.localizedDescription)
+    }
+    
+    public static func create(withCode code: Int, message: String) -> ARTErrorInfo {
+        return ARTErrorInfo(code: code, message: message)
+    }
+}
+
 public class ARTMessage: @unchecked Sendable {}
 public class ARTAnnotation: @unchecked Sendable {}
 public class ARTPresenceMessage: @unchecked Sendable {}
@@ -739,4 +756,8 @@ public class ARTPaginatedResult<ItemType>: @unchecked Sendable {}
 public class ARTStats: @unchecked Sendable {}
 public class ARTPushChannelSubscription: @unchecked Sendable {}
 public class ARTDeviceDetails: @unchecked Sendable {}
-public class ARTStatus: @unchecked Sendable {}
+
+public class ARTProtocolMessage: @unchecked Sendable {}
+public class ARTLocalDevice: @unchecked Sendable {}
+public class ARTDeviceIdentityTokenDetails: @unchecked Sendable {}
+public class ARTDevicePushDetails: @unchecked Sendable {}
