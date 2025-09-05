@@ -63,6 +63,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic) BOOL attachOnSubscribe;
 
+/**
+ * A nullable boolean which controls whether the channel should attempt to resume from the last known position when reattaching. When set to false, the channel will not use attach resume and will rely solely on message history. When nil (default), the standard attach resume behavior is used. Defaults to nil.
+ */
+@property (nonatomic, nullable) NSNumber *attachResume;
+
 @end
 
 NS_ASSUME_NONNULL_END
