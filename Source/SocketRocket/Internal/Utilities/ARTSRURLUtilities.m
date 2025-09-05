@@ -80,12 +80,6 @@ extern NSString *_Nullable ARTSRStreamNetworkServiceTypeFromURLRequest(NSURLRequ
             networkServiceType = NSStreamNetworkServiceTypeVoice;
             break;
 
-#if !TARGET_OS_MACCATALYST
-        case NSURLNetworkServiceTypeVoIP:
-            networkServiceType = NSStreamNetworkServiceTypeVoIP;
-            break;
-#endif
-
 #if _ARTSR_XCODE_VERSION_11_OR_LATER
         case NSURLNetworkServiceTypeAVStreaming:
             networkServiceType = NSStreamNetworkServiceTypeVideo;
@@ -97,9 +91,7 @@ extern NSString *_Nullable ARTSRStreamNetworkServiceTypeFromURLRequest(NSURLRequ
 
 #if (__MAC_OS_X_VERSION_MAX_ALLOWED >= 101200 || __IPHONE_OS_VERSION_MAX_ALLOWED >= 100000 || __TV_OS_VERSION_MAX_ALLOWED >= 100000 || __WATCH_OS_VERSION_MAX_ALLOWED >= 30000)
         case NSURLNetworkServiceTypeCallSignaling:
-            if (@available(macOS 10.12, iOS 10.0, tvOS 10.0, watchOS 3.0, *)) {
-                networkServiceType = NSStreamNetworkServiceTypeCallSignaling;
-            }
+            networkServiceType = NSStreamNetworkServiceTypeCallSignaling;
             break;
 #endif
     }

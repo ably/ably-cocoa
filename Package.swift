@@ -5,9 +5,9 @@ import PackageDescription
 let package = Package(
     name: "ably-cocoa",
     platforms: [
-        .macOS(.v10_11),
-        .iOS(.v9),
-        .tvOS(.v10)
+        .macOS(.v11),
+        .iOS(.v14),
+        .tvOS(.v14),
     ],
     products: [
         .library(
