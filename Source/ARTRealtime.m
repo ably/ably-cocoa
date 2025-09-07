@@ -1669,7 +1669,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 
     ARTClientOptions *const clientOptions = [self getClientOptions];
     
-    if (![self isSuspendMode] && [self shouldRetryWithFallbackForError:transportError options:clientOptions]) {
+    if ([self shouldRetryWithFallbackForError:transportError options:clientOptions]) {
         ARTLogDebug(self.logger, @"R:%p host is down; can retry with fallback host", self);
         if (!_fallbacks) {
             NSArray *hosts = clientOptions.fallbackDomains;

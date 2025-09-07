@@ -603,8 +603,7 @@ func getJWTToken(for test: Test, invalid: Bool = false, expiresIn: Int = 3600, c
         URLQueryItem(name: "clientId", value: clientId),
         URLQueryItem(name: "capability", value: capability),
         URLQueryItem(name: "jwtType", value: jwtType),
-        URLQueryItem(name: "encrypted", value: String(encrypted)),
-        URLQueryItem(name: "environment", value: getEnvironment()) 
+        URLQueryItem(name: "encrypted", value: String(encrypted)) 
     ]
     
     let request = NSMutableURLRequest(url: urlComponents!.url!)

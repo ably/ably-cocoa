@@ -231,7 +231,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (NSString *)host {
-    return self.options.endpoint ?: self.options.primaryDomain;
+    return self.options.primaryDomain;
 }
 
 - (ARTRealtimeTransportState)state {

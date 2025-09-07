@@ -43,10 +43,12 @@ NSString *ARTDefaultEnvironment = nil;
     [ARTPluginAPI registerSelf];
 #endif
 
-    _endpoint = nil;
+    _endpoint = ARTDefaultEnvironment;
     _port = [ARTDefault port];
     _tlsPort = [ARTDefault tlsPort];
-    _environment = ARTDefaultEnvironment;
+    _restHost = nil;
+    _realtimeHost = nil;
+    _environment = nil;
     _queueMessages = YES;
     _echoMessages = YES;
     _useBinaryProtocol = true;
@@ -295,7 +297,7 @@ NSString *ARTDefaultEnvironment = nil;
     options->_fallbackHostsUseDefault = self.fallbackHostsUseDefault; //ignore setter
     if (self->_restHost) options.restHost = self.restHost;
     if (self->_realtimeHost) options.realtimeHost = self.realtimeHost;
-    options.environment = self.environment;
+    if (self->_environment) options.environment = self.environment;
 #pragma clang diagnostic pop
 
     options.httpRequestTimeout = self.httpRequestTimeout;
