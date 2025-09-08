@@ -8,7 +8,9 @@
 #import "ARTDefault+Private.h"
 #import "ARTClientOptions+Private.h"
 
-#define IsInactiveConnectionState(state) (state == ARTRealtimeClosing || state == ARTRealtimeClosed || state == ARTRealtimeFailed || state == ARTRealtimeSuspended)
+static BOOL _isInactiveConnectionState(ARTRealtimeConnectionState state) {
+    return state == ARTRealtimeClosing || state == ARTRealtimeClosed || state == ARTRealtimeFailed || state == ARTRealtimeSuspended;
+}
 
 @implementation ARTConnection {
     ARTQueuedDealloc *_dealloc;
@@ -223,7 +225,7 @@ dispatch_sync(_queue, ^{
 
 - (void)setState:(ARTRealtimeConnectionState)state {
     _state = state;
-    if (IsInactiveConnectionState(state)) {
+    if (_isInactiveConnectionState(state)) {
         _id = nil; // RTN8c
         _key = nil; // RTN9c
     }
@@ -272,7 +274,7 @@ dispatch_sync(_queue, ^{
 #pragma clang diagnostic pop
 
 - (NSString *)createRecoveryKey_nosync {
-    if (_key == nil || IsInactiveConnectionState(_state)) { // RTN16g2
+    if (_key == nil || _isInactiveConnectionState(_state)) { // RTN16g2
         return nil;
     }
     

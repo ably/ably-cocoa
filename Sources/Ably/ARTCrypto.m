@@ -3,7 +3,7 @@
 
 #import <CommonCrypto/CommonCrypto.h>
 
-#define ART_CBC_BLOCK_LENGTH (16)
+static int _cbcBlockLength = 16;
 
 @interface ARTCipherParams ()
 
@@ -67,8 +67,8 @@
 - (BOOL)ccAlgorithm:(CCAlgorithm *)algorithm error:(NSError **)error {
     NSString *errorMsg;
     if (NSOrderedSame == [self.algorithm compare:@"AES" options:NSCaseInsensitiveSearch]) {
-        if (self.iv != nil && [self.iv length] != ART_CBC_BLOCK_LENGTH) {
-            errorMsg = [NSString stringWithFormat:@"iv length expected to be %d, got %d instead", ART_CBC_BLOCK_LENGTH, (int)[self.iv length]];
+        if (self.iv != nil && [self.iv length] != _cbcBlockLength) {
+            errorMsg = [NSString stringWithFormat:@"iv length expected to be %d, got %d instead", _cbcBlockLength, (int)[self.iv length]];
         } else if (self.keyLength != 128 && self.keyLength != 256) {
             errorMsg = [NSString stringWithFormat:@"invalid key length for AES algorithm: %d", (int)self.keyLength];
         } else {
@@ -117,7 +117,7 @@
     if (self) {
         _keySpec = cipherParams.key;
         _iv = cipherParams.iv;
-        _blockLength = ART_CBC_BLOCK_LENGTH;
+        _blockLength = _cbcBlockLength;
         _logger = logger;
 
         if (![cipherParams ccAlgorithm:&_algorithm error:nil]) {

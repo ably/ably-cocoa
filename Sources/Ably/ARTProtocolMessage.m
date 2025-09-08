@@ -48,10 +48,10 @@
     [description appendFormat:@" msgSerial: %@,\n", self.msgSerial];
     [description appendFormat:@" timestamp: %@,\n", self.timestamp];
     [description appendFormat:@" flags: %lld,\n", self.flags];
-    [description appendFormat:@" flags.hasPresence: %@,\n", NSStringFromBOOL(self.hasPresence)];
-    [description appendFormat:@" flags.hasObjects: %@,\n", NSStringFromBOOL(self.hasObjects)];
-    [description appendFormat:@" flags.hasBacklog: %@,\n", NSStringFromBOOL(self.hasBacklog)];
-    [description appendFormat:@" flags.resumed: %@,\n", NSStringFromBOOL(self.resumed)];
+    [description appendFormat:@" flags.hasPresence: %@,\n", ARTStringFromBool(self.hasPresence)];
+    [description appendFormat:@" flags.hasObjects: %@,\n", ARTStringFromBool(self.hasObjects)];
+    [description appendFormat:@" flags.hasBacklog: %@,\n", ARTStringFromBool(self.hasBacklog)];
+    [description appendFormat:@" flags.resumed: %@,\n", ARTStringFromBool(self.resumed)];
     [description appendFormat:@" messages: %@\n", self.messages];
     [description appendFormat:@" presence: %@\n", self.presence];
     [description appendFormat:@" annotations: %@\n", self.annotations];

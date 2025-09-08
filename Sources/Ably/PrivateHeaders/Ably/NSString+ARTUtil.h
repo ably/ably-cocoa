@@ -1,6 +1,6 @@
 #import <Foundation/Foundation.h>
 
-#define NSStringFromBOOL(aBOOL) ((aBOOL) ? @"YES" : @"NO")
+extern NSString *ARTStringFromBool(BOOL aBool);
 
 @interface NSString (ARTUtil)
 

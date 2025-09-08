@@ -12,8 +12,18 @@ static inline NSString *enc(id in, NSString *ignore) {
     return [[in description] stringByAddingPercentEncodingWithAllowedCharacters:allowedSet];
 }
 
-#define enckey(in) enc(in, @"[]")
-#define encval(in) enc(in, @"")
+static inline NSString *enckey(id in) {
+    return enc(in, @"[]");
+}
+
+static inline NSString *encval(id in) {
+    return enc(in, @"");
+}
+
+// TODO: This can be an inline function again in Swift
+static inline NSSortDescriptor *createSortDescriptor() {
+    return [NSSortDescriptor sortDescriptorWithKey:@"description" ascending:YES selector:@selector(compare:)];
+}
 
 static NSArray *DoQueryMagic(NSString *key, id value) {
     NSMutableArray *parts = [NSMutableArray new];
@@ -21,11 +31,10 @@ static NSArray *DoQueryMagic(NSString *key, id value) {
     // Sort dictionary keys to ensure consistent ordering in query string,
     // which is important when deserializing potentially ambiguous sequences,
     // such as an array of dictionaries
-    #define sortDescriptor [NSSortDescriptor sortDescriptorWithKey:@"description" ascending:YES selector:@selector(compare:)]
 
     if ([value isKindOfClass:[NSDictionary class]]) {
         NSDictionary *dictionary = value;
-        for (id nestedKey in [dictionary.allKeys sortedArrayUsingDescriptors:@[sortDescriptor]]) {
+        for (id nestedKey in [dictionary.allKeys sortedArrayUsingDescriptors:@[createSortDescriptor()]]) {
             id recursiveKey = key ? [NSString stringWithFormat:@"%@[%@]", key, nestedKey] : nestedKey;
             [parts addObjectsFromArray:DoQueryMagic(recursiveKey, dictionary[nestedKey])];
         }
@@ -33,15 +42,13 @@ static NSArray *DoQueryMagic(NSString *key, id value) {
         for (id nestedValue in value)
             [parts addObjectsFromArray:DoQueryMagic([NSString stringWithFormat:@"%@[]", key], nestedValue)];
     } else if ([value isKindOfClass:[NSSet class]]) {
-        for (id obj in [value sortedArrayUsingDescriptors:@[sortDescriptor]])
+        for (id obj in [value sortedArrayUsingDescriptors:@[createSortDescriptor()]])
             [parts addObjectsFromArray:DoQueryMagic(key, obj)];
     } else {
         [parts addObjectsFromArray:[NSArray arrayWithObjects:key, value, nil]];
     }
 
     return parts;
-
-    #undef sortDescriptor
 }
 
 NSString *ARTFormEncode(NSDictionary *parameters) {

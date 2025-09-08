@@ -1,5 +1,9 @@
 #import "NSString+ARTUtil.h"
 
+NSString *ARTStringFromBool(BOOL aBool) {
+    return aBool ? @"YES" : @"NO";
+}
+
 @implementation NSString (ARTUtil)
 
 + (NSString *)nilToEmpty:(NSString*)aString {
