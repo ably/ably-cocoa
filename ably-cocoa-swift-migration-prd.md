@@ -250,6 +250,23 @@ Swift replacement:
 fatalError("InvalidArgument: ...")
 ```
 
+#### 2. Error Handling Pattern
+```objective-c
+// Objective-C NSError** pattern
+- (id)methodWithError:(NSError **)error {
+    // implementation
+}
+```
+
+Swift replacement:
+
+```swift
+// Swift throws pattern
+func method() throws -> SomeType {
+    // implementation
+}
+```
+
 #### 2. Atomic Properties
 ```objective-c
 // Current usage (found in ARTGCD.m)
