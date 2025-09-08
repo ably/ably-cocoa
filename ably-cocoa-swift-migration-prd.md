@@ -23,6 +23,14 @@ Before making any change, ask yourself:
 - [ ] Will this change runtime behavior? → **STOP, ASK USER**
 - [ ] Will this change when/how objects are deallocated? → **STOP, ASK USER**
 
+## Pre-Migration Documentation Checklist
+
+Before writing `swift-migration:` comments for each method/property/class:
+- [ ] Have I checked the main header (.h) for this entity's declaration?
+- [ ] Have I checked the private header (+Private.h) for this entity's declaration?  
+- [ ] If found in headers, did I include BOTH header line AND implementation line in my comment?
+- [ ] Does my comment follow the exact format: `// swift-migration: original location Header.h, line X and Implementation.m, line Y`?
+
 ## Critical Examples: Threading Behavior
 
 ### ❌ WRONG - Changes Threading Behavior
@@ -563,7 +571,12 @@ Sources/
 **Required Comments:**
 - **Source Location**: Before each migrated entity (class, method, property, enum, etc.), add a comment indicating its original location: `// swift-migration: original location Foo.m, line 123`
   - **IMPORTANT**: This comment must appear BEFORE any documentation comments or original Objective-C comments
-  - **For entities with both declaration and definition**: Include both locations: `// swift-migration: original location Foo.h, line 45 and Foo.m, line 123`
+  - **CRITICAL REQUIREMENT - For entities with both declaration and definition**: Include both locations: `// swift-migration: original location Foo.h, line 45 and Foo.m, line 123`
+  - **How to Check**: Before writing the comment, search both the header files (.h, +Private.h) and implementation file (.m) to verify if the entity is declared in headers
+  - **Examples**:
+    - Method declared in ARTAuth+Private.h line 106 and implemented in ARTAuth.m line 798: `// swift-migration: original location ARTAuth+Private.h, line 106 and ARTAuth.m, line 798`
+    - Method only in .m file: `// swift-migration: original location ARTAuth.m, line 456`
+    - Public method from ARTAuth.h: `// swift-migration: original location ARTAuth.h, line 37 and ARTAuth.m, line 55`
 - Any code modifications or skips during migration
 - Decisions documented in both code and `swift-migration-files-progress.md`
 

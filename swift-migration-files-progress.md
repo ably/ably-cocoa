@@ -48,7 +48,7 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
   - **Dependencies**: Used existing placeholders for ARTRestInternal, ARTClientOptions, ARTAuthOptions, ARTTokenParams, ARTTokenDetails, ARTTokenRequest, ARTInternalLog, ARTQueuedDealloc, ARTEventEmitter types and various auth constants
   - **Compilation Errors**: Fixed duplicate clientId method declaration, removed redundant nil checks on @escaping callbacks, fixed unused variable warning
   - **Compilation Warnings**: None beyond expected Sendable warnings from other files
-  - **Location Comments**: Applied dual-location format with extensive line number references for this complex 874-line file
+  - **Location Comments**: Applied dual-location format with extensive line number references for this complex 874-line file. **CORRECTED**: Fixed missing dual-location references for methods/properties declared in headers - now properly includes both header and implementation locations per PRD requirements
   - **Swift Adaptations**: Converted Objective-C notification observers to Swift, used Swift URL components, converted memory management patterns to Swift ARC
 
 ### ARTAuthDetails.m → ARTAuthDetails.swift

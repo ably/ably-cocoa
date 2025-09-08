@@ -53,7 +53,7 @@ internal class ARTAuthInternal {
     // swift-migration: original location ARTAuth.m, line 104
     private let cancelationEventEmitter: ARTEventEmitter<ARTEvent, ARTErrorInfo>
     
-    // swift-migration: original location ARTAuth+Private.h, line 76
+    // swift-migration: original location ARTAuth+Private.h, line 76 and ARTAuth.m, line 107
     internal init(_ rest: ARTRestInternal, withOptions options: ARTClientOptions, logger: ARTInternalLog) {
         self.rest = rest
         self.userQueue = rest.userQueue
@@ -163,7 +163,7 @@ internal class ARTAuthInternal {
         }
     }
     
-    // swift-migration: original location ARTAuth.m, line 206
+    // swift-migration: original location ARTAuth+Private.h, line 78 and ARTAuth.m, line 206
     private func mergeOptions(_ customOptions: ARTAuthOptions?) -> ARTAuthOptions {
         return customOptions != nil ? options.merge(with: customOptions!) : options
     }
@@ -181,7 +181,7 @@ internal class ARTAuthInternal {
         options.queryTime = false
     }
     
-    // swift-migration: original location ARTAuth.m, line 222
+    // swift-migration: original location ARTAuth+Private.h, line 79 and ARTAuth.m, line 222
     private func mergeParams(_ customParams: ARTTokenParams?) -> ARTTokenParams {
         return customParams ?? ARTTokenParams(options: options)
     }
@@ -192,7 +192,7 @@ internal class ARTAuthInternal {
         options.defaultTokenParams = customOptions
     }
     
-    // swift-migration: original location ARTAuth.m, line 231
+    // swift-migration: original location ARTAuth+Private.h, line 81 and ARTAuth.m, line 231
     private func buildURL(_ options: ARTAuthOptions, withParams params: ARTTokenParams) -> URL? {
         guard let authUrl = options.authUrl else { return nil }
         var urlComponents = URLComponents(url: authUrl, resolvingAgainstBaseURL: true)
@@ -219,7 +219,7 @@ internal class ARTAuthInternal {
         return urlComponents?.url
     }
     
-    // swift-migration: original location ARTAuth.m, line 259
+    // swift-migration: original location ARTAuth+Private.h, line 82 and ARTAuth.m, line 259
     private func buildRequest(_ options: ARTAuthOptions, withParams params: ARTTokenParams) -> URLRequest? {
         guard let url = buildURL(options, withParams: params) else { return nil }
         var request = URLRequest(url: url)
@@ -250,12 +250,12 @@ internal class ARTAuthInternal {
         return request
     }
     
-    // swift-migration: original location ARTAuth.m, line 286
+    // swift-migration: original location ARTAuth+Private.h, line 54 and ARTAuth.m, line 286
     internal var isTokenAuth: Bool {
         return tokenDetails != nil || authorizing_nosync
     }
     
-    // swift-migration: original location ARTAuth.m, line 290
+    // swift-migration: original location ARTAuth+Private.h, line 97 and ARTAuth.m, line 290
     internal var tokenIsRenewable: Bool {
         return canRenewTokenAutomatically(options)
     }
@@ -265,7 +265,7 @@ internal class ARTAuthInternal {
         return options.authCallback != nil || options.authUrl != nil || options.key != nil
     }
     
-    // swift-migration: original location ARTAuth.m, line 298
+    // swift-migration: original location ARTAuth+Private.h, line 100 and ARTAuth.m, line 298
     internal var tokenRemainsValid: Bool {
         guard let tokenDetails = tokenDetails, tokenDetails.token != nil else {
             return false
@@ -304,7 +304,7 @@ internal class ARTAuthInternal {
         }
     }
     
-    // swift-migration: original location ARTAuth.m, line 338
+    // swift-migration: original location ARTAuth+Private.h, line 68 and ARTAuth.m, line 338
     @discardableResult
     private func _requestToken(_ tokenParams: ARTTokenParams?, withOptions authOptions: ARTAuthOptions?, callback: @escaping ARTTokenDetailsCallback) -> ARTCancellable? {
         // If options, params passed in, they're used instead of stored, don't merge them
@@ -468,7 +468,7 @@ internal class ARTAuthInternal {
         }
     }
     
-    // swift-migration: original location ARTAuth.m, line 492
+    // swift-migration: original location ARTAuth+Private.h, line 85 and ARTAuth.m, line 492
     @discardableResult
     private func executeTokenRequest(_ tokenRequest: ARTTokenRequest, callback: @escaping ARTTokenDetailsCallback) -> ARTCancellable? {
         guard let rest = rest else {
@@ -512,7 +512,7 @@ internal class ARTAuthInternal {
         }
     }
     
-    // swift-migration: original location ARTAuth.m, line 526
+    // swift-migration: original location ARTAuth+Private.h, line 59 and ARTAuth.m, line 526
     internal var authorizing: Bool {
         var count = 0
         queue.sync {
@@ -521,7 +521,7 @@ internal class ARTAuthInternal {
         return count > 0
     }
     
-    // swift-migration: original location ARTAuth.m, line 534
+    // swift-migration: original location ARTAuth+Private.h, line 60 and ARTAuth.m, line 534
     internal var authorizing_nosync: Bool {
         return authorizationsCount > 0
     }
@@ -545,7 +545,7 @@ internal class ARTAuthInternal {
         }
     }
     
-    // swift-migration: original location ARTAuth.m, line 559
+    // swift-migration: original location ARTAuth+Private.h, line 62 and ARTAuth.m, line 559
     @discardableResult
     internal func _authorize(_ tokenParams: ARTTokenParams?, options authOptions: ARTAuthOptions?, callback: @escaping ARTTokenDetailsCallback) -> ARTCancellable? {
         let replacedOptions = authOptions?.copy() ?? options.copy()
@@ -634,7 +634,7 @@ internal class ARTAuthInternal {
         return task
     }
     
-    // swift-migration: original location ARTAuth.m, line 656
+    // swift-migration: original location ARTAuth+Private.h, line 66 and ARTAuth.m, line 656
     internal func cancelAuthorization(_ error: ARTErrorInfo?) {
         ARTLogDebug(logger, "RS:\(String(describing: rest)) authorization cancelled with \(String(describing: error))")
         cancelationEventEmitter.emit(nil, with: error)
@@ -716,7 +716,7 @@ internal class ARTAuthInternal {
         return time
     }
     
-    // swift-migration: original location ARTAuth.m, line 734
+    // swift-migration: original location ARTAuth+Private.h, line 88 and ARTAuth.m, line 734
     internal func setProtocolClientId(_ clientId: String?) {
         protocolClientId = clientId
         #if os(iOS)
@@ -727,7 +727,7 @@ internal class ARTAuthInternal {
     // swift-migration: original location ARTAuth.m, line 741
     // swift-migration: Method removed as it duplicates the property above
     
-    // swift-migration: original location ARTAuth.m, line 749
+    // swift-migration: original location ARTAuth+Private.h, line 50 and ARTAuth.m, line 749
     internal func clientId_nosync() -> String? {
         if let protocolClientId = protocolClientId {
             return protocolClientId
@@ -753,7 +753,7 @@ internal class ARTAuthInternal {
         return timeOffset != nil && timeOffset!.doubleValue > 0
     }
     
-    // swift-migration: original location ARTAuth.m, line 773
+    // swift-migration: original location ARTAuth+Private.h, line 91 and ARTAuth.m, line 773
     internal func discardTimeOffset() {
         // This may run after dealloc has been called in _rest. I've seen this
         // happen when rest.auth is put in a variable, even if (apparently) that
@@ -772,7 +772,7 @@ internal class ARTAuthInternal {
         }
     }
     
-    // swift-migration: original location ARTAuth.m, line 791
+    // swift-migration: original location ARTAuth+Private.h, line 103 and ARTAuth.m, line 791
     internal func setTokenDetails(_ tokenDetails: ARTTokenDetails?) {
         self.tokenDetails = tokenDetails
         #if os(iOS)
@@ -780,17 +780,17 @@ internal class ARTAuthInternal {
         #endif
     }
     
-    // swift-migration: original location ARTAuth.m, line 798
+    // swift-migration: original location ARTAuth+Private.h, line 106 and ARTAuth.m, line 798
     internal func setTimeOffset(_ offset: TimeInterval) {
         timeOffset = NSNumber(value: offset)
     }
     
-    // swift-migration: original location ARTAuth.m, line 802
+    // swift-migration: original location ARTAuth+Private.h, line 107 and ARTAuth.m, line 802
     internal func clearTimeOffset() {
         timeOffset = nil
     }
     
-    // swift-migration: original location ARTAuth.m, line 806
+    // swift-migration: original location ARTAuth+Private.h, line 111 and ARTAuth.m, line 806
     internal func appId() -> String? {
         var s: String?
         if let key = options.key {
