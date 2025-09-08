@@ -45,7 +45,14 @@ let package = Package(
         .target(
             name: "AblySwift",
             dependencies: [
-                "SocketRocket"
+                "SocketRocket",
+                .product(name: "msgpack", package: "msgpack-objective-c"),
+                .product(name: "AblyDeltaCodec", package: "delta-codec-cocoa"),
+                .product(name: "_AblyPluginSupportPrivate", package: "ably-cocoa-plugin-support")
+            ],
+            resources: [.copy("PrivacyInfo.xcprivacy")],
+            swiftSettings: [
+                .swiftLanguageMode(.v5)
             ]
         ),
         .target(
