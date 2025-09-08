@@ -51,109 +51,109 @@ The following table shows all 115 `.m` files to be migrated in alphabetical orde
 
 | .m File | Associated .h Files | Resulting .swift File |
 |---------|-------------------|---------------------|
-| ARTAnnotation.m | ARTAnnotation+Private.h, ARTAnnotation.h | ARTAnnotation.swift |
+| ARTAnnotation.m | ARTAnnotation.h, ARTAnnotation+Private.h | ARTAnnotation.swift |
 | ARTAttachRequestParams.m | ARTAttachRequestParams.h | ARTAttachRequestParams.swift |
 | ARTAttachRetryState.m | ARTAttachRetryState.h | ARTAttachRetryState.swift |
-| ARTAuth.m | ARTAuth+Private.h, ARTAuth.h | ARTAuth.swift |
+| ARTAuth.m | ARTAuth.h, ARTAuth+Private.h | ARTAuth.swift |
 | ARTAuthDetails.m | ARTAuthDetails.h | ARTAuthDetails.swift |
-| ARTAuthOptions.m | ARTAuthOptions+Private.h, ARTAuthOptions.h | ARTAuthOptions.swift |
+| ARTAuthOptions.m | ARTAuthOptions.h, ARTAuthOptions+Private.h | ARTAuthOptions.swift |
 | ARTBackoffRetryDelayCalculator.m | ARTBackoffRetryDelayCalculator.h | ARTBackoffRetryDelayCalculator.swift |
-| ARTBaseMessage.m | ARTBaseMessage+Private.h, ARTBaseMessage.h | ARTBaseMessage.swift |
-| ARTChannel.m | ARTChannel+Private.h, ARTChannel.h | ARTChannel.swift |
-| ARTChannelOptions.m | ARTChannelOptions+Private.h, ARTChannelOptions.h | ARTChannelOptions.swift |
+| ARTBaseMessage.m | ARTBaseMessage.h, ARTBaseMessage+Private.h | ARTBaseMessage.swift |
+| ARTChannel.m | ARTChannel.h, ARTChannel+Private.h | ARTChannel.swift |
+| ARTChannelOptions.m | ARTChannelOptions.h, ARTChannelOptions+Private.h | ARTChannelOptions.swift |
 | ARTChannelProtocol.m | ARTChannelProtocol.h | ARTChannelProtocol.swift |
 | ARTChannelStateChangeParams.m | ARTChannelStateChangeParams.h | ARTChannelStateChangeParams.swift |
-| ARTChannels.m | ARTChannels+Private.h, ARTChannels.h | ARTChannels.swift |
-| ARTClientInformation.m | ARTClientInformation+Private.h, ARTClientInformation.h | ARTClientInformation.swift |
-| ARTClientOptions.m | ARTClientOptions+Private.h, ARTClientOptions.h | ARTClientOptions.swift |
+| ARTChannels.m | ARTChannels.h, ARTChannels+Private.h | ARTChannels.swift |
+| ARTClientInformation.m | ARTClientInformation.h, ARTClientInformation+Private.h | ARTClientInformation.swift |
+| ARTClientOptions.m | ARTClientOptions.h, ARTClientOptions+Private.h | ARTClientOptions.swift |
 | ARTConnectRetryState.m | ARTConnectRetryState.h | ARTConnectRetryState.swift |
-| ARTConnection.m | ARTConnection+Private.h, ARTConnection.h | ARTConnection.swift |
-| ARTConnectionDetails.m | ARTConnectionDetails+Private.h, ARTConnectionDetails.h | ARTConnectionDetails.swift |
+| ARTConnection.m | ARTConnection.h, ARTConnection+Private.h | ARTConnection.swift |
+| ARTConnectionDetails.m | ARTConnectionDetails.h, ARTConnectionDetails+Private.h | ARTConnectionDetails.swift |
 | ARTConnectionStateChangeParams.m | ARTConnectionStateChangeParams.h | ARTConnectionStateChangeParams.swift |
 | ARTConstants.m | ARTConstants.h | ARTConstants.swift |
 | ARTContinuousClock.m | ARTContinuousClock.h | ARTContinuousClock.swift |
-| ARTCrypto.m | ARTCrypto+Private.h, ARTCrypto.h | ARTCrypto.swift |
+| ARTCrypto.m | ARTCrypto.h, ARTCrypto+Private.h | ARTCrypto.swift |
 | ARTDataEncoder.m | ARTDataEncoder.h | ARTDataEncoder.swift |
-| ARTDataQuery.m | ARTDataQuery+Private.h, ARTDataQuery.h | ARTDataQuery.swift |
-| ARTDefault.m | ARTDefault+Private.h, ARTDefault.h | ARTDefault.swift |
-| ARTDeviceDetails.m | ARTDeviceDetails+Private.h, ARTDeviceDetails.h | ARTDeviceDetails.swift |
-| ARTDeviceIdentityTokenDetails.m | ARTDeviceIdentityTokenDetails+Private.h, ARTDeviceIdentityTokenDetails.h | ARTDeviceIdentityTokenDetails.swift |
-| ARTDevicePushDetails.m | ARTDevicePushDetails+Private.h, ARTDevicePushDetails.h | ARTDevicePushDetails.swift |
+| ARTDataQuery.m | ARTDataQuery.h, ARTDataQuery+Private.h | ARTDataQuery.swift |
+| ARTDefault.m | ARTDefault.h, ARTDefault+Private.h | ARTDefault.swift |
+| ARTDeviceDetails.m | ARTDeviceDetails.h, ARTDeviceDetails+Private.h | ARTDeviceDetails.swift |
+| ARTDeviceIdentityTokenDetails.m | ARTDeviceIdentityTokenDetails.h, ARTDeviceIdentityTokenDetails+Private.h | ARTDeviceIdentityTokenDetails.swift |
+| ARTDevicePushDetails.m | ARTDevicePushDetails.h, ARTDevicePushDetails+Private.h | ARTDevicePushDetails.swift |
 | ARTErrorChecker.m | ARTErrorChecker.h | ARTErrorChecker.swift |
-| ARTEventEmitter.m | ARTEventEmitter+Private.h, ARTEventEmitter.h | ARTEventEmitter.swift |
-| ARTFallback.m | ARTFallback+Private.h, ARTFallback.h | ARTFallback.swift |
+| ARTEventEmitter.m | ARTEventEmitter.h, ARTEventEmitter+Private.h | ARTEventEmitter.swift |
+| ARTFallback.m | ARTFallback.h, ARTFallback+Private.h | ARTFallback.swift |
 | ARTFallbackHosts.m | ARTFallbackHosts.h | ARTFallbackHosts.swift |
 | ARTFormEncode.m | ARTFormEncode.h | ARTFormEncode.swift |
 | ARTGCD.m | ARTGCD.h | ARTGCD.swift |
-| ARTHTTPPaginatedResponse.m | ARTHTTPPaginatedResponse+Private.h, ARTHTTPPaginatedResponse.h | ARTHTTPPaginatedResponse.swift |
-| ARTHttp.m | ARTHttp+Private.h, ARTHttp.h | ARTHttp.swift |
-| ARTInternalLog.m | ARTInternalLog+Testing.h, ARTInternalLog.h | ARTInternalLog.swift |
-| ARTInternalLogCore.m | ARTInternalLogCore+Testing.h, ARTInternalLogCore.h | ARTInternalLogCore.swift |
+| ARTHTTPPaginatedResponse.m | ARTHTTPPaginatedResponse.h, ARTHTTPPaginatedResponse+Private.h | ARTHTTPPaginatedResponse.swift |
+| ARTHttp.m | ARTHttp.h, ARTHttp+Private.h | ARTHttp.swift |
+| ARTInternalLog.m | ARTInternalLog.h, ARTInternalLog+Testing.h | ARTInternalLog.swift |
+| ARTInternalLogCore.m | ARTInternalLogCore.h, ARTInternalLogCore+Testing.h | ARTInternalLogCore.swift |
 | ARTJitterCoefficientGenerator.m | ARTJitterCoefficientGenerator.h | ARTJitterCoefficientGenerator.swift |
 | ARTJsonEncoder.m | ARTJsonEncoder.h | ARTJsonEncoder.swift |
 | ARTJsonLikeEncoder.m | ARTJsonLikeEncoder.h | ARTJsonLikeEncoder.swift |
-| ARTLocalDevice.m | ARTLocalDevice+Private.h, ARTLocalDevice.h | ARTLocalDevice.swift |
+| ARTLocalDevice.m | ARTLocalDevice.h, ARTLocalDevice+Private.h | ARTLocalDevice.swift |
 | ARTLocalDeviceStorage.m | ARTLocalDeviceStorage.h | ARTLocalDeviceStorage.swift |
-| ARTLog.m | ARTLog+Private.h, ARTLog.h | ARTLog.swift |
-| ARTLogAdapter.m | ARTLogAdapter+Testing.h, ARTLogAdapter.h | ARTLogAdapter.swift |
+| ARTLog.m | ARTLog.h, ARTLog+Private.h | ARTLog.swift |
+| ARTLogAdapter.m | ARTLogAdapter.h, ARTLogAdapter+Testing.h | ARTLogAdapter.swift |
 | ARTMessage.m | ARTMessage.h | ARTMessage.swift |
-| ARTMessageOperation.m | ARTMessageOperation+Private.h, ARTMessageOperation.h | ARTMessageOperation.swift |
+| ARTMessageOperation.m | ARTMessageOperation.h, ARTMessageOperation+Private.h | ARTMessageOperation.swift |
 | ARTMsgPackEncoder.m | ARTMsgPackEncoder.h | ARTMsgPackEncoder.swift |
 | ARTOSReachability.m | ARTOSReachability.h | ARTOSReachability.swift |
-| ARTPaginatedResult.m | ARTPaginatedResult+Private.h, ARTPaginatedResult+Subclass.h, ARTPaginatedResult.h | ARTPaginatedResult.swift |
+| ARTPaginatedResult.m | ARTPaginatedResult.h, ARTPaginatedResult+Private.h, ARTPaginatedResult+Subclass.h | ARTPaginatedResult.swift |
 | ARTPendingMessage.m | ARTPendingMessage.h | ARTPendingMessage.swift |
 | ARTPluginAPI.m | ARTPluginAPI.h | ARTPluginAPI.swift |
 | ARTPluginDecodingContext.m | ARTPluginDecodingContext.h | ARTPluginDecodingContext.swift |
-| ARTPresence.m | ARTPresence+Private.h, ARTPresence.h | ARTPresence.swift |
-| ARTPresenceMessage.m | ARTPresenceMessage+Private.h, ARTPresenceMessage.h | ARTPresenceMessage.swift |
-| ARTProtocolMessage.m | ARTProtocolMessage+Private.h, ARTProtocolMessage.h | ARTProtocolMessage.swift |
+| ARTPresence.m | ARTPresence.h, ARTPresence+Private.h | ARTPresence.swift |
+| ARTPresenceMessage.m | ARTPresenceMessage.h, ARTPresenceMessage+Private.h | ARTPresenceMessage.swift |
+| ARTProtocolMessage.m | ARTProtocolMessage.h, ARTProtocolMessage+Private.h | ARTProtocolMessage.swift |
 | ARTPublicRealtimeChannelUnderlyingObjects.m | ARTPublicRealtimeChannelUnderlyingObjects.h | ARTPublicRealtimeChannelUnderlyingObjects.swift |
-| ARTPush.m | ARTPush+Private.h, ARTPush.h | ARTPush.swift |
+| ARTPush.m | ARTPush.h, ARTPush+Private.h | ARTPush.swift |
 | ARTPushActivationEvent.m | ARTPushActivationEvent.h | ARTPushActivationEvent.swift |
 | ARTPushActivationState.m | ARTPushActivationState.h | ARTPushActivationState.swift |
-| ARTPushActivationStateMachine.m | ARTPushActivationStateMachine+Private.h, ARTPushActivationStateMachine.h | ARTPushActivationStateMachine.swift |
-| ARTPushAdmin.m | ARTPushAdmin+Private.h, ARTPushAdmin.h | ARTPushAdmin.swift |
-| ARTPushChannel.m | ARTPushChannel+Private.h, ARTPushChannel.h | ARTPushChannel.swift |
+| ARTPushActivationStateMachine.m | ARTPushActivationStateMachine.h, ARTPushActivationStateMachine+Private.h | ARTPushActivationStateMachine.swift |
+| ARTPushAdmin.m | ARTPushAdmin.h, ARTPushAdmin+Private.h | ARTPushAdmin.swift |
+| ARTPushChannel.m | ARTPushChannel.h, ARTPushChannel+Private.h | ARTPushChannel.swift |
 | ARTPushChannelSubscription.m | ARTPushChannelSubscription.h | ARTPushChannelSubscription.swift |
-| ARTPushChannelSubscriptions.m | ARTPushChannelSubscriptions+Private.h, ARTPushChannelSubscriptions.h | ARTPushChannelSubscriptions.swift |
-| ARTPushDeviceRegistrations.m | ARTPushDeviceRegistrations+Private.h, ARTPushDeviceRegistrations.h | ARTPushDeviceRegistrations.swift |
+| ARTPushChannelSubscriptions.m | ARTPushChannelSubscriptions.h, ARTPushChannelSubscriptions+Private.h | ARTPushChannelSubscriptions.swift |
+| ARTPushDeviceRegistrations.m | ARTPushDeviceRegistrations.h, ARTPushDeviceRegistrations+Private.h | ARTPushDeviceRegistrations.swift |
 | ARTQueuedDealloc.m | ARTQueuedDealloc.h | ARTQueuedDealloc.swift |
 | ARTQueuedMessage.m | ARTQueuedMessage.h | ARTQueuedMessage.swift |
-| ARTRealtime.m | ARTRealtime+Private.h, ARTRealtime+WrapperSDKProxy.h, ARTRealtime.h | ARTRealtime.swift |
-| ARTRealtimeAnnotations.m | ARTRealtimeAnnotations+Private.h, ARTRealtimeAnnotations.h | ARTRealtimeAnnotations.swift |
-| ARTRealtimeChannel.m | ARTRealtimeChannel+Private.h, ARTRealtimeChannel.h | ARTRealtimeChannel.swift |
+| ARTRealtime.m | ARTRealtime.h, ARTRealtime+Private.h, ARTRealtime+WrapperSDKProxy.h | ARTRealtime.swift |
+| ARTRealtimeAnnotations.m | ARTRealtimeAnnotations.h, ARTRealtimeAnnotations+Private.h | ARTRealtimeAnnotations.swift |
+| ARTRealtimeChannel.m | ARTRealtimeChannel.h, ARTRealtimeChannel+Private.h | ARTRealtimeChannel.swift |
 | ARTRealtimeChannelOptions.m | ARTRealtimeChannelOptions.h | ARTRealtimeChannelOptions.swift |
-| ARTRealtimeChannels.m | ARTRealtimeChannels+Private.h, ARTRealtimeChannels.h | ARTRealtimeChannels.swift |
-| ARTRealtimePresence.m | ARTRealtimePresence+Private.h, ARTRealtimePresence.h | ARTRealtimePresence.swift |
+| ARTRealtimeChannels.m | ARTRealtimeChannels.h, ARTRealtimeChannels+Private.h | ARTRealtimeChannels.swift |
+| ARTRealtimePresence.m | ARTRealtimePresence.h, ARTRealtimePresence+Private.h | ARTRealtimePresence.swift |
 | ARTRealtimeTransport.m | ARTRealtimeTransport.h | ARTRealtimeTransport.swift |
 | ARTRealtimeTransportFactory.m | ARTRealtimeTransportFactory.h | ARTRealtimeTransportFactory.swift |
-| ARTRest.m | ARTRest+Private.h, ARTRest.h | ARTRest.swift |
-| ARTRestChannel.m | ARTRestChannel+Private.h, ARTRestChannel.h | ARTRestChannel.swift |
-| ARTRestChannels.m | ARTRestChannels+Private.h, ARTRestChannels.h | ARTRestChannels.swift |
-| ARTRestPresence.m | ARTRestPresence+Private.h, ARTRestPresence.h | ARTRestPresence.swift |
+| ARTRest.m | ARTRest.h, ARTRest+Private.h | ARTRest.swift |
+| ARTRestChannel.m | ARTRestChannel.h, ARTRestChannel+Private.h | ARTRestChannel.swift |
+| ARTRestChannels.m | ARTRestChannels.h, ARTRestChannels+Private.h | ARTRestChannels.swift |
+| ARTRestPresence.m | ARTRestPresence.h, ARTRestPresence+Private.h | ARTRestPresence.swift |
 | ARTRetrySequence.m | ARTRetrySequence.h | ARTRetrySequence.swift |
 | ARTStats.m | ARTStats.h | ARTStats.swift |
 | ARTStatus.m | ARTStatus.h | ARTStatus.swift |
-| ARTStringifiable.m | ARTStringifiable+Private.h, ARTStringifiable.h | ARTStringifiable.swift |
+| ARTStringifiable.m | ARTStringifiable.h, ARTStringifiable+Private.h | ARTStringifiable.swift |
 | ARTTestClientOptions.m | ARTTestClientOptions.h | ARTTestClientOptions.swift |
 | ARTTokenDetails.m | ARTTokenDetails.h | ARTTokenDetails.swift |
-| ARTTokenParams.m | ARTTokenParams+Private.h, ARTTokenParams.h | ARTTokenParams.swift |
+| ARTTokenParams.m | ARTTokenParams.h, ARTTokenParams+Private.h | ARTTokenParams.swift |
 | ARTTokenRequest.m | ARTTokenRequest.h | ARTTokenRequest.swift |
-| ARTTypes.m | ARTTypes+Private.h, ARTTypes.h | ARTTypes.swift |
+| ARTTypes.m | ARTTypes.h, ARTTypes+Private.h | ARTTypes.swift |
 | ARTURLSessionServerTrust.m | ARTURLSessionServerTrust.h | ARTURLSessionServerTrust.swift |
 | ARTWebSocketFactory.m | ARTWebSocketFactory.h | ARTWebSocketFactory.swift |
-| ARTWebSocketTransport.m | ARTWebSocketTransport+Private.h, ARTWebSocketTransport.h | ARTWebSocketTransport.swift |
+| ARTWebSocketTransport.m | ARTWebSocketTransport.h, ARTWebSocketTransport+Private.h | ARTWebSocketTransport.swift |
 | ARTWrapperSDKProxyOptions.m | ARTWrapperSDKProxyOptions.h | ARTWrapperSDKProxyOptions.swift |
-| ARTWrapperSDKProxyPush.m | ARTWrapperSDKProxyPush+Private.h, ARTWrapperSDKProxyPush.h | ARTWrapperSDKProxyPush.swift |
-| ARTWrapperSDKProxyPushAdmin.m | ARTWrapperSDKProxyPushAdmin+Private.h, ARTWrapperSDKProxyPushAdmin.h | ARTWrapperSDKProxyPushAdmin.swift |
-| ARTWrapperSDKProxyPushChannel.m | ARTWrapperSDKProxyPushChannel+Private.h, ARTWrapperSDKProxyPushChannel.h | ARTWrapperSDKProxyPushChannel.swift |
-| ARTWrapperSDKProxyPushChannelSubscriptions.m | ARTWrapperSDKProxyPushChannelSubscriptions+Private.h, ARTWrapperSDKProxyPushChannelSubscriptions.h | ARTWrapperSDKProxyPushChannelSubscriptions.swift |
-| ARTWrapperSDKProxyPushDeviceRegistrations.m | ARTWrapperSDKProxyPushDeviceRegistrations+Private.h, ARTWrapperSDKProxyPushDeviceRegistrations.h | ARTWrapperSDKProxyPushDeviceRegistrations.swift |
-| ARTWrapperSDKProxyRealtime.m | ARTWrapperSDKProxyRealtime+Private.h, ARTWrapperSDKProxyRealtime.h | ARTWrapperSDKProxyRealtime.swift |
-| ARTWrapperSDKProxyRealtimeAnnotations.m | ARTWrapperSDKProxyRealtimeAnnotations+Private.h, ARTWrapperSDKProxyRealtimeAnnotations.h | ARTWrapperSDKProxyRealtimeAnnotations.swift |
-| ARTWrapperSDKProxyRealtimeChannel.m | ARTWrapperSDKProxyRealtimeChannel+Private.h, ARTWrapperSDKProxyRealtimeChannel.h | ARTWrapperSDKProxyRealtimeChannel.swift |
-| ARTWrapperSDKProxyRealtimeChannels.m | ARTWrapperSDKProxyRealtimeChannels+Private.h, ARTWrapperSDKProxyRealtimeChannels.h | ARTWrapperSDKProxyRealtimeChannels.swift |
-| ARTWrapperSDKProxyRealtimePresence.m | ARTWrapperSDKProxyRealtimePresence+Private.h, ARTWrapperSDKProxyRealtimePresence.h | ARTWrapperSDKProxyRealtimePresence.swift |
+| ARTWrapperSDKProxyPush.m | ARTWrapperSDKProxyPush.h, ARTWrapperSDKProxyPush+Private.h | ARTWrapperSDKProxyPush.swift |
+| ARTWrapperSDKProxyPushAdmin.m | ARTWrapperSDKProxyPushAdmin.h, ARTWrapperSDKProxyPushAdmin+Private.h | ARTWrapperSDKProxyPushAdmin.swift |
+| ARTWrapperSDKProxyPushChannel.m | ARTWrapperSDKProxyPushChannel.h, ARTWrapperSDKProxyPushChannel+Private.h | ARTWrapperSDKProxyPushChannel.swift |
+| ARTWrapperSDKProxyPushChannelSubscriptions.m | ARTWrapperSDKProxyPushChannelSubscriptions.h, ARTWrapperSDKProxyPushChannelSubscriptions+Private.h | ARTWrapperSDKProxyPushChannelSubscriptions.swift |
+| ARTWrapperSDKProxyPushDeviceRegistrations.m | ARTWrapperSDKProxyPushDeviceRegistrations.h, ARTWrapperSDKProxyPushDeviceRegistrations+Private.h | ARTWrapperSDKProxyPushDeviceRegistrations.swift |
+| ARTWrapperSDKProxyRealtime.m | ARTWrapperSDKProxyRealtime.h, ARTWrapperSDKProxyRealtime+Private.h | ARTWrapperSDKProxyRealtime.swift |
+| ARTWrapperSDKProxyRealtimeAnnotations.m | ARTWrapperSDKProxyRealtimeAnnotations.h, ARTWrapperSDKProxyRealtimeAnnotations+Private.h | ARTWrapperSDKProxyRealtimeAnnotations.swift |
+| ARTWrapperSDKProxyRealtimeChannel.m | ARTWrapperSDKProxyRealtimeChannel.h, ARTWrapperSDKProxyRealtimeChannel+Private.h | ARTWrapperSDKProxyRealtimeChannel.swift |
+| ARTWrapperSDKProxyRealtimeChannels.m | ARTWrapperSDKProxyRealtimeChannels.h, ARTWrapperSDKProxyRealtimeChannels+Private.h | ARTWrapperSDKProxyRealtimeChannels.swift |
+| ARTWrapperSDKProxyRealtimePresence.m | ARTWrapperSDKProxyRealtimePresence.h, ARTWrapperSDKProxyRealtimePresence+Private.h | ARTWrapperSDKProxyRealtimePresence.swift |
 | NSArray+ARTFunctional.m | NSArray+ARTFunctional.h | NSArray+ARTFunctional.swift |
 | NSDate+ARTUtil.m | NSDate+ARTUtil.h | NSDate+ARTUtil.swift |
 | NSDictionary+ARTDictionaryUtil.m | NSDictionary+ARTDictionaryUtil.h | NSDictionary+ARTDictionaryUtil.swift |
@@ -234,7 +234,9 @@ The following Objective-C tests need to be converted to Swift:
 - **`CryptoTest.m`**: Tests AES encryption/decryption with varying data lengths
 - **`ObjcppTest.mm`**: Mixed Objective-C++ test (likely can be pure Swift)
 
-### Swift Migration Challenges to Resolve
+### Swift Migration Requirements
+
+The following technical patterns MUST be implemented during migration to ensure proper Swift functionality:
 
 #### 1. Exception Handling
 ```objective-c
@@ -368,30 +370,6 @@ for (Item *item in items) {
 let results = items.map { processItem($0) }
 ```
 
-### Build Configuration
-
-**Package.swift Updates:**
-```swift
-.target(
-    name: "AblySwift",
-    dependencies: [
-        "SocketRocket",
-        .product(name: "msgpack", package: "msgpack-objective-c"),
-        .product(name: "AblyDeltaCodec", package: "delta-codec-cocoa"),
-        .product(name: "_AblyPluginSupportPrivate", package: "ably-cocoa-plugin-support")
-    ],
-    swiftSettings: [
-        .swiftLanguageMode(.v5)
-    ]
-)
-```
-
-**Transitional Approach:**
-1. Keep existing "Ably" target (Objective-C) during migration
-2. Build new "AblySwift" target alongside
-3. Convert 4 Objective-C test files to Swift tests in main test suite
-4. Switch primary target once Swift implementation is complete
-5. Remove Objective-C target in future release
 
 ### File Organization
 
@@ -468,6 +446,9 @@ Sources/
 ```
 
 **NSMutableArray Queue Operations:**
+
+Do not migrate the following methods; instead just use the following at the call sites in `ARTRealtime`:
+
 - `NSMutableArray.art_enqueue` → `Array.append`
 - `NSMutableArray.art_dequeue` → `Array.popFirst`
 - `NSMutableArray.art_peek` → `Array.first`

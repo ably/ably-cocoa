@@ -62,6 +62,14 @@ A platform conditional like `#if TARGET_OS_IOS` should be migrated to `#if os(iO
 Claude's currently working on incorporating the above. Some further stuff:
 
 - the headers in the table should show the base header first, then the extension headers
-- `swift-migration-files-progress.md` should show the names of the headers too, in the same order
+- `swift-migration-files-progress.md` should show the names of the geaders too, in the same order
 - get rid of stuff that has to do with changing the build configuration; that's already been taken care of
 - make it clear that the stuff under "Swift Migration Challenges to Resolve" are _requirements_ that must be met by the migration
+
+Now it's working on those.
+
+(I note that it's really slow to do some stuff that doesn't seem like it should take so long, I don't know if that's because it's like generating a program or something to do it). I also don't like the fact that when I asked it to incorporate my notes, it did it in a style that I didn't like compared to the original language I gave it, dropping some little bits of the insturctions.
+
+Another one:
+
+- before each migrated entity, add a `swift-migration:` comment explaining the file and line that this entity came from, e.g. `// swift-migration: original location Foo.m, line 123`
