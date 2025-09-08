@@ -92,13 +92,23 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 ### ARTChannel.m → ARTChannel.swift
 - **Headers**: ARTChannel.h, ARTChannel+Private.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Base channel class with complex message publishing, encoding, and validation logic. Preserved all callback patterns and threading behavior exactly as original. Used internal access level as per private header location. Implemented numerous publish method overloads with different parameter combinations. 
+  - **Dependencies**: Updated placeholders for ARTMessage.encode method, ARTChannelsDelegate protocol, ARTRestChannel class, ARTDefault.maxMessageSize method
+  - **Compilation Errors**: Fixed dataEncoder initialization issue by making it implicitly unwrapped optional, fixed NSString key requirement for NSMutableDictionary, fixed method signature for message.messageSize()
+  - **Location Comments**: Applied dual-location format for all methods and properties
+  - **Swift Adaptations**: Converted complex Objective-C method overloading to Swift, used proper error handling patterns, converted NSAssert to fatalError
 
 ### ARTChannelOptions.m → ARTChannelOptions.swift
 - **Headers**: ARTChannelOptions.h, ARTChannelOptions+Private.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Channel options class with encryption parameters, frozen state management, and NSCopying support. Used public access level as per public header location. Implemented complex cipher parameter initialization with dictionary compatibility.
+  - **Dependencies**: Created placeholders for ARTCipherParamsCompatible and ARTCipherKeyCompatible protocols, helper class for dictionary-like cipher parameter creation
+  - **Compilation Errors**: None
+  - **Location Comments**: Applied dual-location format for all methods and properties
+  - **Swift Adaptations**: Converted NSException to fatalError, used Swift computed properties with setters that check frozen state
 
 ### ARTChannelProtocol.m → ARTChannelProtocol.swift
 - **Headers**: ARTChannelProtocol.h
@@ -121,8 +131,15 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 ### ARTChannels.m → ARTChannels.swift
 - **Headers**: ARTChannels.h, ARTChannels+Private.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Generic channel container class for managing ARTChannel instances. Preserved complex thread-safe channel management with prefix handling and delegate pattern. Used internal access level as per private header location. Maintained exact threading behavior with dispatch_sync calls.
+  - **Dependencies**: Updated ARTChannelsDelegate protocol, ARTRestChannel placeholder, converted NSFastEnumeration iteration pattern
+  - **Compilation Errors**: Fixed access level conflicts by making class internal, fixed NSFastEnumeration iteration to use nextObject() pattern, fixed NSMutableDictionary key type requirement with NSString casting
+  - **Location Comments**: Applied dual-location format for all methods and properties
+  - **Swift Adaptations**: Converted generic Objective-C type to Swift generics with constraints, used weak delegate reference, converted string prefix logic to Swift string operations
+
+### ARTClientInformation.m → ARTClientInformation.swift
 
 ---
 

@@ -13,6 +13,10 @@ public protocol ARTJsonCompatible {
 public class ARTDataEncoder {
     public init() {}
     
+    public init(cipherParams: ARTCipherParams?, logger: ARTInternalLog, error: inout Error?) {
+        fatalError("ARTDataEncoder not yet migrated")
+    }
+    
     public func decode(_ data: Any?, encoding: String?) -> ARTDataEncoderOutput {
         fatalError("ARTDataEncoder not yet migrated")
     }
@@ -47,6 +51,10 @@ public class ARTErrorInfo: Error {
     
     public static func create(withCode code: Int, message: String) -> ARTErrorInfo {
         return ARTErrorInfo(code: code, message: message)
+    }
+    
+    public static func createFromNSError(_ error: Error) -> ARTErrorInfo {
+        fatalError("ARTErrorInfo createFromNSError not yet migrated")
     }
 }
 
@@ -435,9 +443,10 @@ public typealias ARTCallback = (ARTErrorInfo?) -> Void
 
 // Placeholder for ARTMessage
 public class ARTMessage: ARTBaseMessage {
+    // Note: extras property is inherited from ARTBaseMessage
     
     // swift-migration: ARTMessage inherits from ARTBaseMessage but adds message-specific functionality
-    public override required init() {
+    public required init() {
         super.init()
         fatalError("ARTMessage not yet migrated")
     }
@@ -450,6 +459,10 @@ public class ARTMessage: ARTBaseMessage {
     public init(name: String?, data: Any?, clientId: String?) {
         super.init()
         fatalError("ARTMessage not yet migrated")
+    }
+    
+    public func encode(with encoder: ARTDataEncoder, error: inout Error?) -> ARTMessage {
+        fatalError("ARTMessage encode not yet migrated")
     }
 }
 
@@ -485,4 +498,63 @@ public enum ARTState: UInt {
     case authUrlIncompatibleContent
     case badConnectionState
     case error = 99999
+}
+
+// These placeholders will be replaced by the actual ARTChannelOptions implementation
+
+// Placeholder for ARTCipherParams
+public class ARTCipherParams {
+    public init() {
+        fatalError("ARTCipherParams not yet migrated")
+    }
+}
+
+// Placeholder protocols for ARTChannelOptions dependencies
+public protocol ARTCipherParamsCompatible {
+    func toCipherParams() -> ARTCipherParams
+}
+
+public protocol ARTCipherKeyCompatible {
+}
+
+// Extension to make Dictionary conform to ARTCipherParamsCompatible, just like the original Objective-C
+extension Dictionary: ARTCipherParamsCompatible where Key == String {
+    public func toCipherParams() -> ARTCipherParams {
+        fatalError("Dictionary.toCipherParams() not yet implemented")
+    }
+}
+
+// Placeholder for ARTDefault
+public class ARTDefault {
+    public static func maxMessageSize() -> Int {
+        fatalError("ARTDefault not yet migrated")
+    }
+}
+
+// Placeholder constants for error codes
+public let ARTErrorMaxMessageLengthExceeded: Int = 40009
+
+// Placeholder logging functions
+public func ARTLogWarn(_ logger: ARTInternalLog, _ message: String) {
+    // Placeholder - actual implementation will inject file/line info
+}
+
+public func ARTLogError(_ logger: ARTInternalLog, _ message: String) {
+    // Placeholder - actual implementation will inject file/line info
+}
+
+// Placeholder for NSStringDictionary
+public typealias NSStringDictionary = [String: String]
+
+// Placeholder for ARTChannelsDelegate protocol
+internal protocol ARTChannelsDelegate: AnyObject {
+    func makeChannel(_ channel: String, options: ARTChannelOptions?) -> ARTChannel
+}
+
+// Placeholder for ARTRestChannel
+internal class ARTRestChannel: ARTChannel {
+    internal override init(name: String, andOptions options: ARTChannelOptions, rest: ARTRestInternal, logger: ARTInternalLog) {
+        super.init(name: name, andOptions: options, rest: rest, logger: logger)
+        fatalError("ARTRestChannel not yet migrated")
+    }
 }

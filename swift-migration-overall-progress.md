@@ -18,11 +18,11 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTAuthOptions.m | ARTAuthOptions.h, ARTAuthOptions+Private.h | ARTAuthOptions.swift | Completed |
 | ARTBackoffRetryDelayCalculator.m | ARTBackoffRetryDelayCalculator.h | ARTBackoffRetryDelayCalculator.swift | Completed |
 | ARTBaseMessage.m | ARTBaseMessage.h, ARTBaseMessage+Private.h | ARTBaseMessage.swift | Completed |
-| ARTChannel.m | ARTChannel.h, ARTChannel+Private.h | ARTChannel.swift | Not Started |
-| ARTChannelOptions.m | ARTChannelOptions.h, ARTChannelOptions+Private.h | ARTChannelOptions.swift | Not Started |
+| ARTChannel.m | ARTChannel.h, ARTChannel+Private.h | ARTChannel.swift | Completed |
+| ARTChannelOptions.m | ARTChannelOptions.h, ARTChannelOptions+Private.h | ARTChannelOptions.swift | Completed |
 | ARTChannelProtocol.m | ARTChannelProtocol.h | ARTChannelProtocol.swift | Completed |
 | ARTChannelStateChangeParams.m | ARTChannelStateChangeParams.h | ARTChannelStateChangeParams.swift | Completed |
-| ARTChannels.m | ARTChannels.h, ARTChannels+Private.h | ARTChannels.swift | Not Started |
+| ARTChannels.m | ARTChannels.h, ARTChannels+Private.h | ARTChannels.swift | Completed |
 | ARTClientInformation.m | ARTClientInformation.h, ARTClientInformation+Private.h | ARTClientInformation.swift | Not Started |
 | ARTClientOptions.m | ARTClientOptions.h, ARTClientOptions+Private.h | ARTClientOptions.swift | Not Started |
 | ARTConnectRetryState.m | ARTConnectRetryState.h | ARTConnectRetryState.swift | Not Started |
@@ -129,14 +129,14 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 ## Progress Summary
 
 - **Total Files**: 115
-- **Not Started**: 109
+- **Not Started**: 104
 - **In Progress**: 0
-- **Completed**: 6
+- **Completed**: 11
 - **Blocked**: 0
 
 ## Migration Batches
 
-- **Batch 1**: ARTAnnotation - ARTChannels (13 files) - In Progress (6 completed)
+- **Batch 1**: ARTAnnotation - ARTChannels (13 files) - In Progress (11 completed)
 - **Batch 2**: ARTClientInformation - ARTDefault (11 files) - Not Started  
 - **Batch 3**: ARTDeviceDetails - ARTInternalLogCore (12 files) - Not Started
 - **Batch 4**: ARTJitterCoefficientGenerator - ARTPluginDecodingContext (14 files) - Not Started
