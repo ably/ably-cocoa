@@ -689,6 +689,99 @@ Do not migrate the following methods; instead just use the following at the call
 - Methods accepting `NSMutableDictionary` → Accept `inout Dictionary` in Swift
 - Examples: `ARTMessageOperation.writeToDictionary:`, `ARTJsonLikeEncoder.writeData:…`
 
+### NSCopying Protocol Translation
+
+**The Challenge:**
+Objective-C's `NSCopying` protocol requires implementing `copyWithZone:` which returns `id`. In Swift, the `copy(with:)` method returns `Any`, requiring type casting at usage sites.
+
+**Swift Implementation Pattern:**
+```swift
+// Objective-C
+- (id)copyWithZone:(NSZone *)zone {
+    ARTAuthOptions *options = [[[self class] allocWithZone:zone] init];
+    // ... copy properties
+    return options;
+}
+
+// Swift
+public func copy(with zone: NSZone?) -> Any {
+    let options = type(of: self).init()
+    // ... copy properties
+    return options
+}
+```
+
+**Usage Pattern:**
+```swift
+// At call sites, force casting is acceptable and expected
+let copiedOptions = (originalOptions.copy() as! ARTAuthOptions)
+```
+
+**Required Initializer:**
+Classes implementing NSCopying that use `type(of: self).init()` must mark their default initializer as `required`:
+
+```swift
+public class ARTAuthOptions: NSObject, NSCopying {
+    public required override init() {  // Note: required keyword
+        super.init()
+        _ = initDefaults()
+    }
+}
+```
+
+### Callback Escaping Requirements
+
+**The Challenge:**
+Swift has stricter escaping rules for closures compared to Objective-C blocks. Callbacks that are stored or called asynchronously must be marked as `@escaping`.
+
+**Common Patterns Requiring @escaping:**
+
+1. **Typealias Definitions:**
+```swift
+// ❌ INCORRECT - callback will be captured in async contexts
+public typealias ARTAuthCallback = (ARTTokenParams?, ARTTokenDetailsCompatibleCallback) -> Void
+
+// ✅ CORRECT - mark nested callback as @escaping
+public typealias ARTAuthCallback = (ARTTokenParams?, @escaping ARTTokenDetailsCompatibleCallback) -> Void
+```
+
+2. **Method Parameters:**
+```swift
+// Methods that store or async-dispatch callbacks need @escaping
+internal func authenticate(_ callback: @escaping ARTTokenDetailsCallback) {
+    userQueue.async {
+        // callback used in async context - needs @escaping
+        callback(result, error)
+    }
+}
+```
+
+3. **Nested Callback Scenarios:**
+```swift
+// When callbacks are passed to user code that may store them
+let userCallback: ARTAuthCallback = { tokenParams, callback in
+    self.userQueue.async {
+        // callback parameter needs @escaping in typealias
+        authCallback(tokenParams, callback)
+    }
+}
+```
+
+**Migration Strategy:**
+- **Immediate Fix**: Add `@escaping` to callback typealiases and method parameters as compilation errors arise
+- **Retroactive Updates**: Previously migrated files may need `@escaping` additions when new migrations depend on them
+- **Document Changes**: Use `swift-migration:` comments when adding `@escaping` to existing signatures
+
+**Example Retroactive Fix:**
+```swift
+// Original migration
+internal func authorize(_ callback: ARTTokenDetailsCallback) // Missing @escaping
+
+// Fixed after compilation error in dependent file
+// swift-migration: Added @escaping for callback compatibility with new migrations
+internal func authorize(_ callback: @escaping ARTTokenDetailsCallback)
+```
+
 ## Risk Assessment & Mitigation
 
 ### High-Risk Areas

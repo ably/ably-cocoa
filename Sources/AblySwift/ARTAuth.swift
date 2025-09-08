@@ -552,7 +552,7 @@ internal class ARTAuthInternal {
     // swift-migration: original location ARTAuth+Private.h, line 62 and ARTAuth.m, line 559
     @discardableResult
     internal func _authorize(_ tokenParams: ARTTokenParams?, options authOptions: ARTAuthOptions?, callback: @escaping ARTTokenDetailsCallback) -> ARTCancellable? {
-        let replacedOptions = authOptions?.copy() ?? options.copy()
+        let replacedOptions = (authOptions?.copy() ?? options.copy()) as! ARTAuthOptions
         storeOptions(replacedOptions)
         
         let currentTokenParams = mergeParams(tokenParams)

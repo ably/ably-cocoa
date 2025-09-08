@@ -15,7 +15,7 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTAttachRetryState.m | ARTAttachRetryState.h | ARTAttachRetryState.swift | Completed |
 | ARTAuth.m | ARTAuth.h, ARTAuth+Private.h | ARTAuth.swift | Completed |
 | ARTAuthDetails.m | ARTAuthDetails.h | ARTAuthDetails.swift | Completed |
-| ARTAuthOptions.m | ARTAuthOptions.h, ARTAuthOptions+Private.h | ARTAuthOptions.swift | Not Started |
+| ARTAuthOptions.m | ARTAuthOptions.h, ARTAuthOptions+Private.h | ARTAuthOptions.swift | Completed |
 | ARTBackoffRetryDelayCalculator.m | ARTBackoffRetryDelayCalculator.h | ARTBackoffRetryDelayCalculator.swift | Not Started |
 | ARTBaseMessage.m | ARTBaseMessage.h, ARTBaseMessage+Private.h | ARTBaseMessage.swift | Not Started |
 | ARTChannel.m | ARTChannel.h, ARTChannel+Private.h | ARTChannel.swift | Not Started |
@@ -129,14 +129,14 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 ## Progress Summary
 
 - **Total Files**: 115
-- **Not Started**: 110
+- **Not Started**: 109
 - **In Progress**: 0
-- **Completed**: 5
+- **Completed**: 6
 - **Blocked**: 0
 
 ## Migration Batches
 
-- **Batch 1**: ARTAnnotation - ARTChannels (13 files) - In Progress (5 completed)
+- **Batch 1**: ARTAnnotation - ARTChannels (13 files) - In Progress (6 completed)
 - **Batch 2**: ARTClientInformation - ARTDefault (11 files) - Not Started  
 - **Batch 3**: ARTDeviceDetails - ARTInternalLogCore (12 files) - Not Started
 - **Batch 4**: ARTJitterCoefficientGenerator - ARTPluginDecodingContext (14 files) - Not Started

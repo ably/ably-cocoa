@@ -148,44 +148,15 @@ public class ARTTokenParams {
         fatalError("ARTTokenParams not yet migrated")
     }
     
-    public func toArray(withUnion other: [String: String]?) -> [URLQueryItem] {
+    public func toArray(withUnion other: [URLQueryItem]?) -> [URLQueryItem] {
         fatalError("ARTTokenParams not yet migrated")
     }
     
-    public func toDictionary(withUnion other: [String: String]?) -> [String: String] {
+    public func toDictionary(withUnion other: [URLQueryItem]?) -> [String: String] {
         fatalError("ARTTokenParams not yet migrated")
     }
 }
 
-// Placeholder for ARTAuthOptions
-public class ARTAuthOptions {
-    public var authUrl: URL? = nil
-    public var authCallback: ARTAuthCallback? = nil
-    public var key: String? = nil
-    public var token: String? = nil
-    public var tokenDetails: ARTTokenDetails? = nil
-    public var authHeaders: [String: String]? = nil
-    public var authMethod: String = "GET"
-    public var authParams: [String: String]? = nil
-    public var useTokenAuth: Bool = false
-    public var queryTime: Bool = false
-    
-    public init() {
-        fatalError("ARTAuthOptions not yet migrated")
-    }
-    
-    public func copy() -> ARTAuthOptions {
-        fatalError("ARTAuthOptions not yet migrated")
-    }
-    
-    public func isMethodGET() -> Bool {
-        return authMethod.uppercased() == "GET"
-    }
-    
-    public func isMethodPOST() -> Bool {
-        return authMethod.uppercased() == "POST"
-    }
-}
 
 // Placeholder for ARTTokenRequest
 public class ARTTokenRequest {
@@ -206,7 +177,7 @@ public class ARTClientOptions: ARTAuthOptions {
     public var clientId: String? = nil
     public var tls: Bool = true
     
-    public override init() {
+    public required override init() {
         super.init()
         fatalError("ARTClientOptions not yet migrated")
     }
@@ -215,7 +186,7 @@ public class ARTClientOptions: ARTAuthOptions {
         fatalError("ARTClientOptions not yet migrated")
     }
     
-    public func merge(with other: ARTAuthOptions) -> ARTAuthOptions {
+    public override func merge(with other: ARTAuthOptions) -> ARTAuthOptions {
         fatalError("ARTClientOptions not yet migrated")
     }
 }
@@ -422,10 +393,6 @@ public enum ARTAuthMethod: Int {
 public let ARTAuthMethodBasic = ARTAuthMethod.basic
 public let ARTAuthMethodToken = ARTAuthMethod.token
 
-// Placeholder for ARTTokenDetailsCompatible protocol
-public protocol ARTTokenDetailsCompatible {
-    func toTokenDetails(_ auth: ARTAuth, callback: @escaping ARTTokenDetailsCallback)
-}
 
 // Placeholder callback types
 public typealias ARTTokenDetailsCompatibleCallback = (ARTTokenDetailsCompatible?, Error?) -> Void
@@ -442,7 +409,7 @@ public func ARTFormEncode(_ dictionary: [String: String]) -> String {
 
 // Placeholder function for creating cancellable from callback
 public func artCancellableFromCallback(
-    _ callback: @escaping ARTTokenDetailsCompatibleCallback,
+    _ callback: ARTTokenDetailsCompatibleCallback,
     _ safeCallback: inout ARTTokenDetailsCompatibleCallback?
 ) -> ARTCancellable {
     fatalError("artCancellableFromCallback not yet migrated")
