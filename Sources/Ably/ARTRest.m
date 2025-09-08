@@ -409,7 +409,8 @@ NS_ASSUME_NONNULL_END
             if (data) {
                 NSError *decodeError = nil;
                 ARTErrorInfo *dataError = [self->_encoders[response.MIMEType] decodeErrorInfo:data error:&decodeError];
-                if ([self shouldRenewToken:&dataError] && [request isKindOfClass:[NSMutableURLRequest class]]) {
+                ARTErrorInfo *errorBecauseShouldNotRenewToken = [self errorBecauseShouldNotRenewToken:dataError];
+                if (!errorBecauseShouldNotRenewToken && [request isKindOfClass:[NSMutableURLRequest class]]) {
                     ARTLogDebug(self.logger, @"RS:%p retry request %@", self, request);
                     // Make a single attempt to reissue the token and resend the request
                     if (self->_tokenErrorRetries < 1) {
@@ -417,7 +418,10 @@ NS_ASSUME_NONNULL_END
                         return;
                     }
                 }
-                if (dataError) {
+                if (errorBecauseShouldNotRenewToken) {
+                    error = errorBecauseShouldNotRenewToken;
+                }
+                else if (dataError) {
                     error = dataError;
                 }
                 else if (decodeError) {
@@ -481,14 +485,16 @@ NS_ASSUME_NONNULL_END
     return task;
 }
 
-- (BOOL)shouldRenewToken:(ARTErrorInfo **)errorPtr {
-    if (errorPtr && *errorPtr && [[[ARTDefaultErrorChecker alloc] init] isTokenError: *errorPtr]) {
+/// If returns `nil`, then the token should be renewed. If it returns non-`nil`, then the token should not be renewed and this error should be returned.
+- (nullable ARTErrorInfo *)errorBecauseShouldNotRenewToken:(nullable ARTErrorInfo *)error {
+    if (error && [[[ARTDefaultErrorChecker alloc] init] isTokenError: error]) {
         if ([self.auth tokenIsRenewable]) {
-            return YES;
+            return nil;
         }
-        *errorPtr = [ARTErrorInfo createWithCode:ARTStateRequestTokenFailed message:ARTAblyMessageNoMeansToRenewToken];
+        return [ARTErrorInfo createWithCode:ARTStateRequestTokenFailed message:ARTAblyMessageNoMeansToRenewToken];
     }
-    return NO;
+
+    return error;
 }
 
 - (BOOL)shouldRetryWithFallback:(NSURLRequest *)request response:(NSHTTPURLResponse *)response error:(NSError *)error {
