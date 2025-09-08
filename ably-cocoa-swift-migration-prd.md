@@ -416,8 +416,22 @@ Sources/
 **Testing Requirement:** `swift build` must be run before considering any batch of files complete.
 
 **Compilation Errors:**
-- **Obvious fixes**: Fix immediately and document in `swift-migration-files-progress.md`
-- **Significant deviations**: Leave code as-is, stop migration, and ask user for guidance
+
+**ACCEPTABLE immediate fixes (with `swift-migration:` comment):**
+- Syntax translation (e.g., `@selector` → `#selector`)
+- Import statement changes
+- Type annotation fixes that don't change logic
+- Property access syntax (`obj.property` → `obj.property`)
+- Simple placeholder type additions to support dependencies
+
+**UNACCEPTABLE without user guidance:**
+- **Changing queue/threading behavior** (e.g., replacing `_userQueue` with `DispatchQueue.main`)
+- **Replacing configured objects with new empty instances** (e.g., `options` → `ARTAuthOptions()`)
+- **Changing callback patterns or timing**
+- **Any change that alters runtime behavior**
+- **Missing class inheritance relationships in placeholder types**
+
+**When in doubt:** Stop migration and ask user for guidance
 
 **Compilation Warnings:**
 - **Obvious fixes**: Fix immediately and document in `swift-migration-files-progress.md`
@@ -435,9 +449,12 @@ Sources/
 
 **Placeholder Creation Rules:**
 1. **Enums**: Create the full enum definition
-2. **Protocols**: Create the full protocol interface for method calls
+2. **Protocols**: Create the full protocol interface for method calls  
 3. **Classes**: Create class with `fatalError()` implementations for all methods/properties
 4. **Extensions**: Create extension with `fatalError()` implementations for all methods/properties
+5. **CRITICAL - Inheritance**: Always check if placeholder classes should inherit from other types
+   - Example: `ARTClientOptions` inherits from `ARTAuthOptions` in original code
+   - Missing inheritance relationships will cause type errors during migration
 
 **Placeholder Removal:** Remove placeholder types from `MigrationPlaceholders.swift` once proper implementation exists
 
