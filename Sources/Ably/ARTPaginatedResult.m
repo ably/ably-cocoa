@@ -4,7 +4,7 @@
 #import "ARTHttp.h"
 #import "ARTAuth.h"
 #import "ARTRest+Private.h"
-#import "NSMutableURLRequest+ARTPaginated.h"
+#import "NSURLRequest+ARTPaginated.h"
 #import "NSHTTPURLResponse+ARTPaginated.h"
 #import "ARTInternalLog.h"
 
@@ -163,9 +163,9 @@
 
             NSDictionary *links = [response extractLinks];
 
-            NSMutableURLRequest *firstRel = [NSMutableURLRequest requestWithPath:links[@"first"] relativeTo:request];
-            NSMutableURLRequest *currentRel = [NSMutableURLRequest requestWithPath:links[@"current"] relativeTo:request];
-            NSMutableURLRequest *nextRel = [NSMutableURLRequest requestWithPath:links[@"next"] relativeTo:request];
+            NSMutableURLRequest *firstRel = [[NSURLRequest requestWithPath:links[@"first"] relativeTo:request] mutableCopy];
+            NSMutableURLRequest *currentRel = [[NSURLRequest requestWithPath:links[@"current"] relativeTo:request] mutableCopy];
+            NSMutableURLRequest *nextRel = [[NSURLRequest requestWithPath:links[@"next"] relativeTo:request] mutableCopy];
 
             ARTPaginatedResult *result = [[ARTPaginatedResult alloc] initWithItems:items
                                                                               rest:rest

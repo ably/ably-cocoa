@@ -9,7 +9,7 @@
 #import "ARTEncoder.h"
 #import "ARTRest+Private.h"
 #import "ARTLocalDevice.h"
-#import "NSMutableRequest+ARTPush.h"
+#import "NSURLRequest+ARTPush.h"
 
 @implementation ARTPushDeviceRegistrations {
     ARTQueuedDealloc *_dealloc;
@@ -88,7 +88,7 @@ dispatch_async(_queue, ^{
     request.HTTPMethod = @"PUT";
     request.HTTPBody = [[self->_rest defaultEncoder] encodeDeviceDetails:deviceDetails error:nil];
     [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
-    [request setDeviceAuthentication:deviceDetails.id localDevice:local logger:self->_logger];
+    request = [[request settingDeviceAuthentication:deviceDetails.id localDevice:local logger:self->_logger] mutableCopy];
 
     ARTLogDebug(self->_logger, @"save device with request %@", request);
     [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -136,7 +136,7 @@ dispatch_async(_queue, ^{
 dispatch_async(_queue, ^{
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:deviceId]];
     request.HTTPMethod = @"GET";
-    [request setDeviceAuthentication:deviceId localDevice:local logger:self->_logger];
+    request = [[request settingDeviceAuthentication:deviceId localDevice:local logger:self->_logger] mutableCopy];
 
     ARTLogDebug(self->_logger, @"get device with request %@", request);
     [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -254,7 +254,7 @@ dispatch_async(_queue, ^{
     }
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"DELETE";
-    [request setDeviceAuthentication:[params objectForKey:@"deviceId"] localDevice:local];
+    request = [[request settingDeviceAuthentication:[params objectForKey:@"deviceId"] localDevice:local] mutableCopy];
 
     ARTLogDebug(self->_logger, @"remove devices with request %@", request);
     [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {

@@ -7,7 +7,7 @@
 #import "NSArray+ARTFunctional.h"
 #import "ARTRest+Private.h"
 #import "ARTTypes.h"
-#import "NSMutableRequest+ARTPush.h"
+#import "NSURLRequest+ARTPush.h"
 #import "ARTInternalLog.h"
 
 @implementation ARTPushChannelSubscriptions {
@@ -87,7 +87,7 @@
         request.HTTPMethod = @"POST";
         request.HTTPBody = [[self->_rest defaultEncoder] encodePushChannelSubscription:channelSubscription error:nil];
         [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
-        [request setDeviceAuthentication:channelSubscription.deviceId localDevice:local];
+        request = [[request settingDeviceAuthentication:channelSubscription.deviceId localDevice:local] mutableCopy];
         
         ARTLogDebug(self->_logger, @"save channel subscription with request %@", request);
         [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -204,7 +204,7 @@
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"DELETE";
 #if TARGET_OS_IOS
-    [request setDeviceAuthentication:[params objectForKey:@"deviceId"] localDevice:_rest.device_nosync];
+    request = [request settingDeviceAuthentication:[params objectForKey:@"deviceId"] localDevice:_rest.device_nosync];
 #endif
     
     ARTLogDebug(_logger, @"remove channel subscription with request %@", request);

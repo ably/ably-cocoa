@@ -14,7 +14,7 @@
 #import "ARTGCD.h"
 #import "ARTEventEmitter+Private.h"
 #import "NSURLQueryItem+Stringifiable.h"
-#import "NSMutableDictionary+ARTDictionaryUtil.h"
+#import "NSDictionary+ARTDictionaryUtil.h"
 #import "ARTStringifiable.h"
 #import "ARTClientInformation.h"
 #import "ARTConnection+Private.h"
@@ -136,18 +136,18 @@ NS_ASSUME_NONNULL_END
 }
 
 - (NSURL *)setupWebSocket:(NSDictionary<NSString *, NSURLQueryItem *> *)params withOptions:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey {
-    __block NSMutableDictionary<NSString*, NSURLQueryItem*> *queryItems = [params mutableCopy];
+    __block NSDictionary<NSString*, NSURLQueryItem*> *queryItems = params;
     
     // ClientID
     if (options.clientId) {
-        [queryItems addValueAsURLQueryItem:options.clientId forKey:@"clientId"];
+        queryItems = [queryItems addingValueAsURLQueryItem:options.clientId forKey:@"clientId"];
     }
 
     // Echo
-    [queryItems addValueAsURLQueryItem:options.echoMessages ? @"true" : @"false" forKey:@"echo"];
+    queryItems = [queryItems addingValueAsURLQueryItem:options.echoMessages ? @"true" : @"false" forKey:@"echo"];
 
     // Format: MsgPack, JSON
-    [queryItems addValueAsURLQueryItem:[_encoder formatAsString] forKey:@"format"];
+    queryItems = [queryItems addingValueAsURLQueryItem:[_encoder formatAsString] forKey:@"format"];
 
     // RTN16k
     if (options.recover != nil) {
@@ -157,22 +157,22 @@ NS_ASSUME_NONNULL_END
             ARTLogError(_logger, @"Couldn't construct a recovery key from the string provided: %@", options.recover);
         }
         else {
-            [queryItems addValueAsURLQueryItem:recoveryKey.connectionKey forKey:@"recover"];
+            queryItems = [queryItems addingValueAsURLQueryItem:recoveryKey.connectionKey forKey:@"recover"];
         }
     }
     else if (resumeKey != nil) {
-        [queryItems addValueAsURLQueryItem:resumeKey forKey:@"resume"]; // RTN15b1
+        queryItems = [queryItems addingValueAsURLQueryItem:resumeKey forKey:@"resume"]; // RTN15b1
     }
 
-    [queryItems addValueAsURLQueryItem:[ARTDefault apiVersion] forKey:@"v"];
+    queryItems = [queryItems addingValueAsURLQueryItem:[ARTDefault apiVersion] forKey:@"v"];
     
     // Lib
-    [queryItems addValueAsURLQueryItem:[ARTClientInformation agentIdentifierWithAdditionalAgents:options.agents] forKey:@"agent"];
+    queryItems = [queryItems addingValueAsURLQueryItem:[ARTClientInformation agentIdentifierWithAdditionalAgents:options.agents] forKey:@"agent"];
 
     // Transport Params
     if (options.transportParams != nil) {
         [options.transportParams enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, ARTStringifiable * _Nonnull obj, BOOL * _Nonnull stop) {
-            [queryItems addValueAsURLQueryItem:obj.stringValue forKey:key];
+            queryItems = [queryItems addingValueAsURLQueryItem:obj.stringValue forKey:key];
         }];
     }
     

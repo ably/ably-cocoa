@@ -12,4 +12,9 @@
 
 - (id)artTyped:(Class)cls key:(id)key;
 
+/**
+ Creates NSURLQueryItem for given value, and key, and returns a new dictionary with the item added.
+ */
+- (NSDictionary *)addingValueAsURLQueryItem:(NSString *)value forKey:(NSString *)key;
+
 @end

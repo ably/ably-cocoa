@@ -1,17 +1,19 @@
-#import "NSMutableRequest+ARTRest.h"
+#import "NSURLRequest+ARTRest.h"
 
 #import "ARTEncoder.h"
 
-@implementation NSMutableURLRequest (ARTRest)
+@implementation NSURLRequest (ARTRest)
 
-- (void)setAcceptHeader:(id<ARTEncoder>)defaultEncoder encoders:(NSDictionary<NSString *, id<ARTEncoder>> *)encoders {
+- (NSURLRequest *)settingAcceptHeader:(id<ARTEncoder>)defaultEncoder encoders:(NSDictionary<NSString *, id<ARTEncoder>> *)encoders {
     NSMutableArray *allEncoders = [NSMutableArray arrayWithArray:[encoders.allValues valueForKeyPath:@"mimeType"]];
     NSString *defaultMimetype = [defaultEncoder mimeType];
     // Make the mime type of the default encoder the first element of the Accept header field
     [allEncoders removeObject:defaultMimetype];
     [allEncoders insertObject:defaultMimetype atIndex:0];
     NSString *accept = [allEncoders componentsJoinedByString:@","];
-    [self setValue:accept forHTTPHeaderField:@"Accept"];
+    NSMutableURLRequest *mutableRequest = [self mutableCopy];
+    [mutableRequest setValue:accept forHTTPHeaderField:@"Accept"];
+    return [mutableRequest copy];
 }
 
 @end

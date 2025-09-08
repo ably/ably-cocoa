@@ -55,4 +55,10 @@
     return [self artInteger:key] != 0;
 }
 
+- (NSDictionary *)addingValueAsURLQueryItem:(NSString *)value forKey:(NSString *)key {
+    NSMutableDictionary *mutableDict = [self mutableCopy];
+    mutableDict[key] = [NSURLQueryItem queryItemWithName:key value:value];
+    return [mutableDict copy];
+}
+
 @end

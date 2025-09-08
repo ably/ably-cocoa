@@ -31,10 +31,10 @@
 #import "ARTPush+Private.h"
 #import "ARTLocalDevice+Private.h"
 #import "ARTLocalDeviceStorage.h"
-#import "NSMutableRequest+ARTRest.h"
+#import "NSURLRequest+ARTRest.h"
 #import "ARTHTTPPaginatedResponse+Private.h"
 #import "NSError+ARTUtils.h"
-#import "NSMutableURLRequest+ARTUtils.h"
+#import "NSURLRequest+ARTUtils.h"
 #import "NSURL+ARTUtils.h"
 #import "ARTClientInformation.h"
 #import "ARTErrorChecker.h"
@@ -347,14 +347,15 @@ NS_ASSUME_NONNULL_END
     NSString *requestId = nil;
     __block ARTFallback *blockFallbacks = fallbacks;
 
-    NSMutableURLRequest *updatedRequest = [request mutableCopy];
-    [updatedRequest setAcceptHeader:self.defaultEncoder encoders:self.encoders];
-    [updatedRequest setTimeoutInterval:_options.httpRequestTimeout];
-    [updatedRequest setValue:[ARTDefault apiVersion] forHTTPHeaderField:@"X-Ably-Version"];
-    [updatedRequest setValue:[self agentIdentifierWithWrapperSDKAgents:wrapperSDKAgents] forHTTPHeaderField:@"Ably-Agent"];
+    NSURLRequest *updatedRequest = [request settingAcceptHeader:self.defaultEncoder encoders:self.encoders];
+    NSMutableURLRequest *mutableRequest = [updatedRequest mutableCopy];
+    [mutableRequest setTimeoutInterval:_options.httpRequestTimeout];
+    [mutableRequest setValue:[ARTDefault apiVersion] forHTTPHeaderField:@"X-Ably-Version"];
+    [mutableRequest setValue:[self agentIdentifierWithWrapperSDKAgents:wrapperSDKAgents] forHTTPHeaderField:@"Ably-Agent"];
     if (_options.clientId && !self.auth.isTokenAuth) {
-        [updatedRequest setValue:encodeBase64(_options.clientId) forHTTPHeaderField:@"X-Ably-ClientId"];
+        [mutableRequest setValue:encodeBase64(_options.clientId) forHTTPHeaderField:@"X-Ably-ClientId"];
     }
+    updatedRequest = mutableRequest;
 
     if (_options.addRequestIds) {
         if (fallbacks != nil) {
@@ -364,7 +365,7 @@ NS_ASSUME_NONNULL_END
             requestId = [[randomId dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:0];
         }
 
-        [updatedRequest appendQueryItem:[NSURLQueryItem queryItemWithName:@"request_id" value:requestId]];
+        updatedRequest = [updatedRequest appendingQueryItem:[NSURLQueryItem queryItemWithName:@"request_id" value:requestId]];
     }
 
     // RSC15f - reset the successed fallback host on fallbackRetryTimeout expiration
@@ -375,7 +376,7 @@ NS_ASSUME_NONNULL_END
 
         self.currentFallbackHost = nil;
         self.prioritizedHost = nil;
-        [updatedRequest replaceHostWith:_options.restHost];
+        updatedRequest = [updatedRequest replacingHostWith:_options.restHost];
     }
 
 
@@ -412,7 +413,7 @@ NS_ASSUME_NONNULL_END
                     ARTLogDebug(self.logger, @"RS:%p retry request %@", self, updatedRequest);
                     // Make a single attempt to reissue the token and resend the request
                     if (self->_tokenErrorRetries < 1) {
-                        task = [self executeRequest:updatedRequest withAuthOption:ARTAuthenticationTokenRetry wrapperSDKAgents:wrapperSDKAgents completion:callback];
+                        task = [self executeRequest:[updatedRequest mutableCopy] withAuthOption:ARTAuthenticationTokenRetry wrapperSDKAgents:wrapperSDKAgents completion:callback];
                         return;
                     }
                 }
@@ -662,7 +663,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         }
     }
 
-    [request setAcceptHeader:self.defaultEncoder encoders:self.encoders];
+    request = [[request settingAcceptHeader:self.defaultEncoder encoders:self.encoders] mutableCopy];
 
     ARTLogDebug(self.logger, @"request %@ %@", method, path);
     dispatch_async(_queue, ^{

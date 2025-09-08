@@ -8,7 +8,7 @@
 #import "ARTPushChannelSubscription.h"
 #import "ARTChannel+Private.h"
 #import "ARTLocalDevice+Private.h"
-#import "NSMutableRequest+ARTPush.h"
+#import "NSURLRequest+ARTPush.h"
 
 @implementation ARTPushChannel {
     ARTQueuedDealloc *_dealloc;
@@ -126,7 +126,7 @@ dispatch_async(_queue, ^{
         @"channel": self->_channel.name,
     } error:nil];
     [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
-    [request setDeviceAuthentication:deviceId localDevice:device];
+    request = [[request settingDeviceAuthentication:deviceId localDevice:device] mutableCopy];
 
     ARTLogDebug(self->_logger, @"subscribe notifications for device %@ in channel %@", deviceId, self->_channel.name);
     [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -197,7 +197,7 @@ dispatch_async(_queue, ^{
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"DELETE";
-    [request setDeviceAuthentication:deviceId localDevice:device];
+    request = [[request settingDeviceAuthentication:deviceId localDevice:device] mutableCopy];
 
     ARTLogDebug(self->_logger, @"unsubscribe notifications for device %@ in channel %@", deviceId, self->_channel.name);
     [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {

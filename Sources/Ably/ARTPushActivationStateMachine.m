@@ -12,7 +12,7 @@
 #import "ARTDeviceStorage.h"
 #import "ARTDevicePushDetails.h"
 #import "ARTDeviceIdentityTokenDetails.h"
-#import "NSMutableRequest+ARTPush.h"
+#import "NSURLRequest+ARTPush.h"
 #import "ARTAuth+Private.h"
 
 #if TARGET_OS_IOS
@@ -259,7 +259,7 @@ dispatch_async(_queue, ^{
         }
     } error:nil];
     [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
-    [request setDeviceAuthentication:local];
+    request = [request settingDeviceAuthentication:local];
 
     ARTLogDebug(_logger, @"%@: update device with request %@", NSStringFromClass(self.class), request);
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -307,7 +307,7 @@ dispatch_async(_queue, ^{
         request.HTTPMethod = @"PUT";
         request.HTTPBody = [[self->_rest defaultEncoder] encodeDeviceDetails:local error:nil];
         [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
-        [request setDeviceAuthentication:local];
+        request = [request settingDeviceAuthentication:local];
 
         ARTLogDebug(self->_logger, @"%@: sync device with request %@", NSStringFromClass(self.class), request);
         [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -362,7 +362,7 @@ dispatch_async(_queue, ^{
     // Asynchronous HTTP request
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:local.id]];
     request.HTTPMethod = @"DELETE";
-    [request setDeviceAuthentication:local];
+    request = [request settingDeviceAuthentication:local];
 
     ARTLogDebug(_logger, @"%@: device deregistration with request %@", NSStringFromClass(self.class), request);
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
