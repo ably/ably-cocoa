@@ -429,10 +429,35 @@ Sources/
 **Migration Comments:** All migration-related code comments MUST start with `swift-migration: ` so that a human reviewer can distinguish them from the original Objective-C comments
 
 **Required Comments:**
+- **Source Location**: Before each migrated entity (class, method, property, enum, etc.), add a comment indicating its original location: `// swift-migration: original location Foo.m, line 123`
+  - **IMPORTANT**: This comment must appear BEFORE any documentation comments or original Objective-C comments
 - Any code modifications or skips during migration
 - Decisions documented in both code and `swift-migration-files-progress.md`
 
 **Original Comments:** Preserve all existing Objective-C comments unchanged
+
+**Source Location Comment Format:**
+```swift
+// swift-migration: original location ARTAuth.m, line 45
+/// Authenticates the user with the given callback
+/// - Parameter callback: The callback to invoke when authentication completes
+func authenticate(callback: @escaping ARTAuthCallback) {
+    // ... implementation
+}
+
+// swift-migration: original location ARTAuth.h, line 23
+/// The ARTAuth class handles authentication for Ably connections
+/// This class manages token-based authentication and callback patterns
+public class ARTAuth {
+    // ... implementation
+}
+
+// swift-migration: original location ARTTypes.h, line 156
+/// Connection state enumeration
+public enum ARTConnectionState: UInt {
+    // ... cases
+}
+```
 
 ### Special Translation Rules
 

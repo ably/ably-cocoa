@@ -73,3 +73,49 @@ Now it's working on those.
 Another one:
 
 - before each migrated entity, add a `swift-migration:` comment explaining the file and line that this entity came from, e.g. `// swift-migration: original location Foo.m, line 123`
+
+> > Read the plan in ably-cocoa-swift-migration-prd.md. Does this plan make it sufficiently clear
+>   to an LLM tasked with executing this plan that the aim is to modify the Objective-C code as
+>   little as possible (with the exception of the permitted deviations), and that when deviations
+>   are made they should be exposed to a human reviewer in a variety of very specific manners?
+> 
+> ⏺ I'll read the plan document to understand the migration strategy and assess whether it
+>   clearly communicates the objective to minimize Objective-C modifications and the requirements
+>    for exposing deviations to reviewers.
+> 
+> ⏺ Read(ably-cocoa-swift-migration-prd.md)
+>   ⎿  Read 557 lines (ctrl+r to expand)
+> 
+> ⏺ Based on my review of the plan document, I can assess whether it makes the objectives
+>   sufficiently clear to an LLM:
+> 
+>   The plan is VERY clear about minimizing Objective-C modifications:
+> 
+>   1. Explicitly states the "carbon-copy" approach - Section "Migration Strategy" emphasizes
+>   "Mechanical Carbon-Copy Translation" with rationale focused on preserving existing logic
+>   2. Multiple reinforcements - The plan repeatedly states goals like "preserve existing
+>   battle-tested logic," "direct syntax translation vs architectural redesign," and "clear 1:1
+>   mapping between old and new code"
+>   3. Specific technical requirements preserve all API compatibility without requiring
+>   Objective-C interoperability
+> 
+>   However, the plan has some weaknesses regarding deviation tracking:
+> 
+>   GOOD - Clear deviation documentation requirements:
+>   - All migration comments must start with swift-migration:  prefix
+>   - Required source location comments before each entity
+>   - Documentation in both code and progress files
+>   - Specific rules for error/warning handling
+> 
+>   GAPS - Could be more specific about deviation exposure:
+>   - Doesn't explicitly define what constitutes a "significant deviation"
+>   - Lacks specific examples of when to "stop migration and ask user for guidance"
+>   - Could be clearer about what level of review human reviewers should expect
+>   - The "obvious fixes" vs "significant deviations" distinction could use more concrete
+>   criteria
+> 
+>   Recommendation: The plan would benefit from a more detailed section defining deviation
+>   thresholds and examples of when LLM should halt for human input, but overall it does
+>   communicate the minimal-change objective clearly.
+
+I don't yet know what I mean by a "sigificant deviation", so I think perhaps let's try a few files and find out.
