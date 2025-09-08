@@ -141,7 +141,7 @@ NS_ASSUME_NONNULL_END
 
     NSURLComponents *requestUrl = [NSURLComponents componentsWithString:[_channel.basePath stringByAppendingPathComponent:@"presence"]];
     requestUrl.queryItems = [query asQueryItems];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl.URL];
+    NSURLRequest *request = [NSURLRequest requestWithURL:requestUrl.URL];
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
         id<ARTEncoder> encoder = [self->_channel.rest.encoders objectForKey:response.MIMEType];
@@ -202,7 +202,7 @@ dispatch_async(_queue, ^{
         }
         return NO;
     }
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl.URL];
+    NSURLRequest *request = [NSURLRequest requestWithURL:requestUrl.URL];
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
         id<ARTEncoder> encoder = [self->_channel.rest.encoders objectForKey:response.MIMEType];

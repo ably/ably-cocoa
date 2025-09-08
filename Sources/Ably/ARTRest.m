@@ -244,37 +244,38 @@ NS_ASSUME_NONNULL_END
     return [NSString stringWithFormat:@"%@ - \n\t %@;", [super description], info];
 }
 
-- (NSObject<ARTCancellable> *)executeRequest:(NSMutableURLRequest *)request
+- (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request
                               withAuthOption:(ARTAuthentication)authOption
                             wrapperSDKAgents:(nullable NSDictionary<NSString *, NSString *> *)wrapperSDKAgents
                                   completion:(ARTURLRequestCallback)callback {
-    request.URL = [NSURL URLWithString:request.URL.relativeString relativeToURL:self.baseUrl];
+    NSMutableURLRequest *mutableRequest = [request mutableCopy];
+    mutableRequest.URL = [NSURL URLWithString:mutableRequest.URL.relativeString relativeToURL:self.baseUrl];
     
     switch (authOption) {
         case ARTAuthenticationOff:
-            return [self executeRequest:request wrapperSDKAgents:wrapperSDKAgents completion:callback];
+            return [self executeRequest:mutableRequest wrapperSDKAgents:wrapperSDKAgents completion:callback];
         case ARTAuthenticationOn:
             _tokenErrorRetries = 0;
-            return [self executeRequestWithAuthentication:request withMethod:self.auth.method force:NO wrapperSDKAgents:wrapperSDKAgents completion:callback];
+            return [self executeRequestWithAuthentication:mutableRequest withMethod:self.auth.method force:NO wrapperSDKAgents:wrapperSDKAgents completion:callback];
         case ARTAuthenticationNewToken:
             _tokenErrorRetries = 0;
-            return [self executeRequestWithAuthentication:request withMethod:self.auth.method force:YES wrapperSDKAgents:wrapperSDKAgents completion:callback];
+            return [self executeRequestWithAuthentication:mutableRequest withMethod:self.auth.method force:YES wrapperSDKAgents:wrapperSDKAgents completion:callback];
         case ARTAuthenticationTokenRetry:
             _tokenErrorRetries = _tokenErrorRetries + 1;
-            return [self executeRequestWithAuthentication:request withMethod:self.auth.method force:YES wrapperSDKAgents:wrapperSDKAgents completion:callback];
+            return [self executeRequestWithAuthentication:mutableRequest withMethod:self.auth.method force:YES wrapperSDKAgents:wrapperSDKAgents completion:callback];
         case ARTAuthenticationUseBasic:
-            return [self executeRequestWithAuthentication:request withMethod:ARTAuthMethodBasic wrapperSDKAgents:wrapperSDKAgents completion:callback];
+            return [self executeRequestWithAuthentication:mutableRequest withMethod:ARTAuthMethodBasic wrapperSDKAgents:wrapperSDKAgents completion:callback];
     }
 }
 
-- (NSObject<ARTCancellable> *)executeRequestWithAuthentication:(NSMutableURLRequest *)request
+- (NSObject<ARTCancellable> *)executeRequestWithAuthentication:(NSURLRequest *)request
                                                     withMethod:(ARTAuthMethod)method
                                               wrapperSDKAgents:(nullable NSDictionary<NSString *, NSString *> *)wrapperSDKAgents
                                                     completion:(ARTURLRequestCallback)callback {
     return [self executeRequestWithAuthentication:request withMethod:method force:NO wrapperSDKAgents:wrapperSDKAgents completion:callback];
 }
 
-- (NSObject<ARTCancellable> *)executeRequestWithAuthentication:(NSMutableURLRequest *)request
+- (NSObject<ARTCancellable> *)executeRequestWithAuthentication:(NSURLRequest *)request
                                                     withMethod:(ARTAuthMethod)method
                                                          force:(BOOL)force
                                               wrapperSDKAgents:(nullable NSDictionary<NSString *, NSString *> *)wrapperSDKAgents
@@ -285,17 +286,19 @@ NS_ASSUME_NONNULL_END
     if (method == ARTAuthMethodBasic) {
         // Basic
         NSString *authorization = [self prepareBasicAuthorisationHeader:self.options.key];
-        [request setValue:authorization forHTTPHeaderField:@"Authorization"];
+        NSMutableURLRequest *mutableRequest = [request mutableCopy];
+        [mutableRequest setValue:authorization forHTTPHeaderField:@"Authorization"];
         ARTLogVerbose(self.logger, @"RS:%p ARTRest: %@", self, authorization);
-        task = [self executeRequest:request wrapperSDKAgents:wrapperSDKAgents completion:callback];
+        task = [self executeRequest:mutableRequest wrapperSDKAgents:wrapperSDKAgents completion:callback];
     }
     else {
         if (!force && [self.auth tokenRemainsValid]) {
             // Reuse token
             NSString *authorization = [self prepareTokenAuthorisationHeader:self.auth.tokenDetails.token];
             ARTLogVerbose(self.logger, @"RS:%p ARTRestInternal reusing token: authorization bearer in Base64 %@", self, authorization);
-            [request setValue:authorization forHTTPHeaderField:@"Authorization"];
-            task = [self executeRequest:request wrapperSDKAgents:wrapperSDKAgents completion:callback];
+            NSMutableURLRequest *mutableRequest = [request mutableCopy];
+            [mutableRequest setValue:authorization forHTTPHeaderField:@"Authorization"];
+            task = [self executeRequest:mutableRequest wrapperSDKAgents:wrapperSDKAgents completion:callback];
         }
         else {
             // New Token
@@ -307,8 +310,9 @@ NS_ASSUME_NONNULL_END
                 }
                 NSString *authorization = [self prepareTokenAuthorisationHeader:tokenDetails.token];
                 ARTLogVerbose(self.logger, @"RS:%p ARTRestInternal reissuing token: authorization bearer %@", self, authorization);
-                [request setValue:authorization forHTTPHeaderField:@"Authorization"];
-                task = [self executeRequest:request wrapperSDKAgents:wrapperSDKAgents completion:callback];
+                NSMutableURLRequest *mutableRequest = [request mutableCopy];
+                [mutableRequest setValue:authorization forHTTPHeaderField:@"Authorization"];
+                task = [self executeRequest:mutableRequest wrapperSDKAgents:wrapperSDKAgents completion:callback];
             }];
         }
     }
@@ -645,25 +649,25 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     }];
     components.queryItems = queryItems;
 
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
-    request.HTTPMethod = method;
+    NSMutableURLRequest *mutableRequest = [NSMutableURLRequest requestWithURL:[components URL]];
+    mutableRequest.HTTPMethod = method;
 
     [headers enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *value, BOOL *stop) {
-        [request addValue:value forHTTPHeaderField:key];
+        [mutableRequest addValue:value forHTTPHeaderField:key];
     }];
 
     if (body != nil) {
         NSError *encodeError = nil;
         NSData *bodyData = [self.defaultEncoder encode:body error:&encodeError];
 
-        request.HTTPBody = bodyData;
-        [request setValue:[self.defaultEncoder mimeType] forHTTPHeaderField:@"Content-Type"];
+        mutableRequest.HTTPBody = bodyData;
+        [mutableRequest setValue:[self.defaultEncoder mimeType] forHTTPHeaderField:@"Content-Type"];
         if ([[method lowercaseString] isEqualToString:@"post"]) {
-            [request setValue:[NSString stringWithFormat:@"%d", (unsigned int)bodyData.length] forHTTPHeaderField:@"Content-Length"];
+            [mutableRequest setValue:[NSString stringWithFormat:@"%d", (unsigned int)bodyData.length] forHTTPHeaderField:@"Content-Length"];
         }
     }
 
-    request = [[request settingAcceptHeader:self.defaultEncoder encoders:self.encoders] mutableCopy];
+    NSURLRequest *request = [mutableRequest settingAcceptHeader:self.defaultEncoder encoders:self.encoders];
 
     ARTLogDebug(self.logger, @"request %@ %@", method, path);
     dispatch_async(_queue, ^{

@@ -16,9 +16,9 @@
 - (instancetype)initWithResponse:(NSHTTPURLResponse *)response
                            items:(NSArray *)items
                             rest:(ARTRestInternal *)rest
-                        relFirst:(NSMutableURLRequest *)relFirst
-                      relCurrent:(NSMutableURLRequest *)relCurrent
-                         relNext:(NSMutableURLRequest *)relNext
+                        relFirst:(NSURLRequest *)relFirst
+                      relCurrent:(NSURLRequest *)relCurrent
+                         relNext:(NSURLRequest *)relNext
                responseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
                 wrapperSDKAgents:(nullable NSDictionary<NSString *,NSString *> *)wrapperSDKAgents
                           logger:(ARTInternalLog *)logger {
@@ -86,7 +86,7 @@
 }
 
 + (void)executePaginated:(ARTRestInternal *)rest
-             withRequest:(NSMutableURLRequest *)request
+             withRequest:(NSURLRequest *)request
         wrapperSDKAgents:(nullable NSDictionary<NSString *, NSString *> *)wrapperSDKAgents
                   logger:(ARTInternalLog *)logger
                 callback:(ARTHTTPPaginatedCallback)callback {
@@ -116,9 +116,9 @@
 
         NSDictionary *links = [response extractLinks];
 
-        NSMutableURLRequest *firstRel = [[NSURLRequest requestWithPath:links[@"first"] relativeTo:request] mutableCopy];
-        NSMutableURLRequest *currentRel = [[NSURLRequest requestWithPath:links[@"current"] relativeTo:request] mutableCopy];
-        NSMutableURLRequest *nextRel = [[NSURLRequest requestWithPath:links[@"next"] relativeTo:request] mutableCopy];
+        NSURLRequest *firstRel = [NSURLRequest requestWithPath:links[@"first"] relativeTo:request];
+        NSURLRequest *currentRel = [NSURLRequest requestWithPath:links[@"current"] relativeTo:request];
+        NSURLRequest *nextRel = [NSURLRequest requestWithPath:links[@"next"] relativeTo:request];
 
         ARTHTTPPaginatedResponse *result = [[ARTHTTPPaginatedResponse alloc] initWithResponse:response items:items rest:rest relFirst:firstRel relCurrent:currentRel relNext:nextRel responseProcessor:responseProcessor wrapperSDKAgents:wrapperSDKAgents logger:logger];
 

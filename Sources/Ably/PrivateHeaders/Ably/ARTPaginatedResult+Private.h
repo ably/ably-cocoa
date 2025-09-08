@@ -10,23 +10,23 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) ARTRestInternal *rest;
 @property (nonatomic, readonly) dispatch_queue_t userQueue;
 @property (nonatomic, readonly) dispatch_queue_t queue;
-@property (nonatomic, readonly) NSMutableURLRequest *relFirst;
-@property (nonatomic, readonly) NSMutableURLRequest *relCurrent;
-@property (nonatomic, readonly) NSMutableURLRequest *relNext;
+@property (nonatomic, readonly) NSURLRequest *relFirst;
+@property (nonatomic, readonly) NSURLRequest *relCurrent;
+@property (nonatomic, readonly) NSURLRequest *relNext;
 
 typedef NSArray<ItemType> *_Nullable(^ARTPaginatedResultResponseProcessor)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable *_Nullable);
 
 - (instancetype)initWithItems:(NSArray *)items
                          rest:(ARTRestInternal *)rest
-                     relFirst:(NSMutableURLRequest *)relFirst
-                   relCurrent:(NSMutableURLRequest *)relCurrent
-                      relNext:(NSMutableURLRequest *)relNext
+                     relFirst:(NSURLRequest *)relFirst
+                   relCurrent:(NSURLRequest *)relCurrent
+                      relNext:(NSURLRequest *)relNext
             responseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
              wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
                        logger:(ARTInternalLog *)logger NS_DESIGNATED_INITIALIZER;
 
 + (void)executePaginated:(ARTRestInternal *)rest
-             withRequest:(NSMutableURLRequest *)request
+             withRequest:(NSURLRequest *)request
     andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
         wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
                   logger:(ARTInternalLog *)logger

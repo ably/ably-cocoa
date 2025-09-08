@@ -193,7 +193,7 @@ dispatch_sync(_queue, ^{
         return;
     }
 
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:componentsUrl.URL];
+    NSURLRequest *request = [NSURLRequest requestWithURL:componentsUrl.URL];
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^NSArray<ARTMessage *> *(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
         id<ARTEncoder> encoder = [self->_rest.encoders objectForKey:response.MIMEType];

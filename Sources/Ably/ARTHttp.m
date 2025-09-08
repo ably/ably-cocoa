@@ -43,7 +43,7 @@ Class configuredUrlSessionClass = nil;
     [_urlSession finishTasksAndInvalidate];
 }
 
-- (NSObject<ARTCancellable> *)executeRequest:(NSMutableURLRequest *)request completion:(ARTURLRequestCallback)callback {
+- (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(ARTURLRequestCallback)callback {
     ARTLogDebug(self.logger, @"--> %@ %@\n  Body: %@\n  Headers: %@", request.HTTPMethod, request.URL.absoluteString, [self debugDescriptionOfBodyWithData:request.HTTPBody], request.allHTTPHeaderFields);
 
     return [_urlSession get:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {

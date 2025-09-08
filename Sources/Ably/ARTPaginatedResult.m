@@ -15,9 +15,9 @@
     ARTRestInternal *_Nullable _rest;
     dispatch_queue_t _Nullable _userQueue;
     dispatch_queue_t _Nullable _queue;
-    NSMutableURLRequest *_Nullable _relFirst;
-    NSMutableURLRequest *_Nullable _relCurrent;
-    NSMutableURLRequest *_Nullable _relNext;
+    NSURLRequest *_Nullable _relFirst;
+    NSURLRequest *_Nullable _relCurrent;
+    NSURLRequest *_Nullable _relNext;
     ARTPaginatedResultResponseProcessor _Nullable _responseProcessor;
     ARTQueuedDealloc *_Nullable _dealloc;
 }
@@ -42,9 +42,9 @@
 
 - (instancetype)initWithItems:(NSArray *)items
                      rest:(ARTRestInternal *)rest
-                     relFirst:(NSMutableURLRequest *)relFirst
-                   relCurrent:(NSMutableURLRequest *)relCurrent
-                      relNext:(NSMutableURLRequest *)relNext
+                     relFirst:(NSURLRequest *)relFirst
+                   relCurrent:(NSURLRequest *)relCurrent
+                      relNext:(NSURLRequest *)relNext
             responseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
              wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
                        logger:(ARTInternalLog *)logger {
@@ -143,7 +143,7 @@
     [self.class executePaginated:_rest withRequest:_relNext andResponseProcessor:_responseProcessor wrapperSDKAgents:_wrapperSDKAgents logger:_logger callback:callback];
 }
 
-+ (void)executePaginated:(ARTRestInternal *)rest withRequest:(NSMutableURLRequest *)request andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents logger:(ARTInternalLog *)logger callback:(void (^)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
++ (void)executePaginated:(ARTRestInternal *)rest withRequest:(NSURLRequest *)request andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents logger:(ARTInternalLog *)logger callback:(void (^)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
     ARTLogDebug(logger, @"Paginated request: %@", request);
 
     [rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -163,9 +163,9 @@
 
             NSDictionary *links = [response extractLinks];
 
-            NSMutableURLRequest *firstRel = [[NSURLRequest requestWithPath:links[@"first"] relativeTo:request] mutableCopy];
-            NSMutableURLRequest *currentRel = [[NSURLRequest requestWithPath:links[@"current"] relativeTo:request] mutableCopy];
-            NSMutableURLRequest *nextRel = [[NSURLRequest requestWithPath:links[@"next"] relativeTo:request] mutableCopy];
+            NSURLRequest *firstRel = [NSURLRequest requestWithPath:links[@"first"] relativeTo:request];
+            NSURLRequest *currentRel = [NSURLRequest requestWithPath:links[@"current"] relativeTo:request];
+            NSURLRequest *nextRel = [NSURLRequest requestWithPath:links[@"next"] relativeTo:request];
 
             ARTPaginatedResult *result = [[ARTPaginatedResult alloc] initWithItems:items
                                                                               rest:rest

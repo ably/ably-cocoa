@@ -77,7 +77,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // MARK: Internal
 
-- (nullable NSObject<ARTCancellable> *)executeRequest:(NSMutableURLRequest *)request
+- (nullable NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request
                                        withAuthOption:(ARTAuthentication)authOption
                                      wrapperSDKAgents:(nullable NSDictionary<NSString *, NSString *> *)wrapperSDKAgents
                                            completion:(ARTURLRequestCallback)callback;

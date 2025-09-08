@@ -13,20 +13,20 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithResponse:(NSHTTPURLResponse *)response
                            items:(NSArray *)items
                             rest:(ARTRestInternal *)rest
-                        relFirst:(NSMutableURLRequest *)relFirst
-                      relCurrent:(NSMutableURLRequest *)relCurrent
-                         relNext:(NSMutableURLRequest *)relNext
+                        relFirst:(NSURLRequest *)relFirst
+                      relCurrent:(NSURLRequest *)relCurrent
+                         relNext:(NSURLRequest *)relNext
                responseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
                 wrapperSDKAgents:(nullable NSDictionary<NSString *, NSString *> *)wrapperSDKAgents
                           logger:(ARTInternalLog *)logger;
 
 + (void)executePaginated:(ARTRestInternal *)rest
-             withRequest:(NSMutableURLRequest *)request
+             withRequest:(NSURLRequest *)request
     andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
                 callback:(void (^)(ARTPaginatedResult * _Nullable, ARTErrorInfo * _Nullable))callback UNAVAILABLE_ATTRIBUTE;
 
 + (void)executePaginated:(ARTRestInternal *)rest
-             withRequest:(NSMutableURLRequest *)request
+             withRequest:(NSURLRequest *)request
         wrapperSDKAgents:(nullable NSDictionary<NSString *, NSString *> *)wrapperSDKAgents
                   logger:(ARTInternalLog *)logger
                 callback:(ARTHTTPPaginatedCallback)callback;
