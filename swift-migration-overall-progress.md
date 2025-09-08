@@ -10,11 +10,11 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 
 | .m File | Associated .h Files | Resulting .swift File | Progress |
 |---------|-------------------|---------------------|----------|
-| ARTAnnotation.m | ARTAnnotation.h, ARTAnnotation+Private.h | ARTAnnotation.swift | Not Started |
-| ARTAttachRequestParams.m | ARTAttachRequestParams.h | ARTAttachRequestParams.swift | Not Started |
-| ARTAttachRetryState.m | ARTAttachRetryState.h | ARTAttachRetryState.swift | Not Started |
-| ARTAuth.m | ARTAuth.h, ARTAuth+Private.h | ARTAuth.swift | Not Started |
-| ARTAuthDetails.m | ARTAuthDetails.h | ARTAuthDetails.swift | Not Started |
+| ARTAnnotation.m | ARTAnnotation.h, ARTAnnotation+Private.h | ARTAnnotation.swift | Completed |
+| ARTAttachRequestParams.m | ARTAttachRequestParams.h | ARTAttachRequestParams.swift | Completed |
+| ARTAttachRetryState.m | ARTAttachRetryState.h | ARTAttachRetryState.swift | Completed |
+| ARTAuth.m | ARTAuth.h, ARTAuth+Private.h | ARTAuth.swift | In Progress |
+| ARTAuthDetails.m | ARTAuthDetails.h | ARTAuthDetails.swift | Completed |
 | ARTAuthOptions.m | ARTAuthOptions.h, ARTAuthOptions+Private.h | ARTAuthOptions.swift | Not Started |
 | ARTBackoffRetryDelayCalculator.m | ARTBackoffRetryDelayCalculator.h | ARTBackoffRetryDelayCalculator.swift | Not Started |
 | ARTBaseMessage.m | ARTBaseMessage.h, ARTBaseMessage+Private.h | ARTBaseMessage.swift | Not Started |
@@ -129,14 +129,14 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 ## Progress Summary
 
 - **Total Files**: 115
-- **Not Started**: 115
-- **In Progress**: 0
-- **Completed**: 0
+- **Not Started**: 110
+- **In Progress**: 1
+- **Completed**: 4
 - **Blocked**: 0
 
 ## Migration Batches
 
-- **Batch 1**: ARTAnnotation - ARTChannels (13 files) - Not Started
+- **Batch 1**: ARTAnnotation - ARTChannels (13 files) - In Progress (4 completed, 1 partial)
 - **Batch 2**: ARTClientInformation - ARTDefault (11 files) - Not Started  
 - **Batch 3**: ARTDeviceDetails - ARTInternalLogCore (12 files) - Not Started
 - **Batch 4**: ARTJitterCoefficientGenerator - ARTPluginDecodingContext (14 files) - Not Started

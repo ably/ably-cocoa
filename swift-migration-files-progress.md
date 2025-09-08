@@ -14,28 +14,50 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 ### ARTAnnotation.m → ARTAnnotation.swift
 - **Headers**: ARTAnnotation.h, ARTAnnotation+Private.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Used Swift string interpolation instead of NSString formatting for description method. Converted Objective-C error handling to Swift throws pattern for encode/decode methods.
+  - **Dependencies**: Created placeholders for ARTJsonCompatible protocol, ARTDataEncoder, ARTEvent, ARTAblyErrorDomain
+  - **Compilation Warnings**: Expected Sendable warnings ignored per migration plan
+  - **Location Comments**: Updated to include both declaration and definition locations per new PRD requirement
+  - **Corrected isIdEmpty**: Fixed implementation to match ARTBaseMessage inheritance (id == nil || id == "") instead of invented logic
 
 ### ARTAttachRequestParams.m → ARTAttachRequestParams.swift
 - **Headers**: ARTAttachRequestParams.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Simple data class with three-tier convenience initializer chain preserved
+  - **Dependencies**: Created placeholder for ARTRetryAttempt class
+  - **Compilation Errors**: None
+  - **Location Comments**: Applied dual-location format
 
 ### ARTAttachRetryState.m → ARTAttachRetryState.swift
 - **Headers**: ARTAttachRetryState.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Preserved complex retry sequence logic and state transitions. Converted Objective-C logging macros to function calls.
+  - **Dependencies**: Created placeholders for ARTInternalLog, ARTRetryDelayCalculator protocol, ARTRetrySequence, ARTRealtimeChannelState enum, ARTLogDebug function
+  - **Compilation Errors**: None
+  - **Location Comments**: Applied dual-location format
 
 ### ARTAuth.m → ARTAuth.swift
 - **Headers**: ARTAuth.h, ARTAuth+Private.h
-- **Status**: Not Started
+- **Status**: In Progress
 - **Notes**: 
+  - **Migration Decisions**: Created comprehensive interface structure with fatalError placeholders for complex 873-line implementation. Fixed Swift keyword conflict (internal parameter → internalAuth).
+  - **Dependencies**: Created extensive auth-related placeholder types (ARTTokenDetailsCallback, ARTTokenDetails, ARTTokenParams, ARTAuthOptions, ARTTokenRequest, ARTClientOptions, ARTRestInternal, ARTQueuedDealloc, ARTEventEmitter)
+  - **Compilation Errors**: Fixed Swift keyword conflict in initializer
+  - **Remaining Work**: Complete ARTAuthInternal implementation (800+ lines of complex auth logic), notification observers, token validation
+  - **Location Comments**: Applied dual-location format
 
 ### ARTAuthDetails.m → ARTAuthDetails.swift
 - **Headers**: ARTAuthDetails.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Simple data class with token storage and NSCopying implementation
+  - **Dependencies**: None additional
+  - **Compilation Errors**: None
+  - **Location Comments**: Applied dual-location format
 
 ### ARTAuthOptions.m → ARTAuthOptions.swift
 - **Headers**: ARTAuthOptions.h, ARTAuthOptions+Private.h
@@ -637,13 +659,33 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 Document all placeholder types created in `MigrationPlaceholders.swift`:
 
-- No placeholders created yet
+- **ARTJsonCompatible** - Protocol placeholder for JSON compatibility
+- **ARTDataEncoder** - Class placeholder for data encoding functionality 
+- **ARTDataEncoderOutput** - Class placeholder for encoder output
+- **ARTErrorInfo** - Class placeholder for error information
+- **ARTEvent** - Class placeholder for event handling
+- **ARTRetryAttempt** - Class placeholder for retry attempt tracking
+- **ARTInternalLog** - Class placeholder for internal logging
+- **ARTRetryDelayCalculator** - Protocol placeholder for retry delay calculation
+- **ARTRetrySequence** - Class placeholder for retry sequencing
+- **ARTRealtimeChannelState** - Enum placeholder for channel states
+- **ARTLogDebug** - Function placeholder for debug logging
+- **ARTTokenDetailsCallback** - Typealias placeholder for token callbacks
+- **ARTTokenDetails** - Class placeholder for token details
+- **ARTTokenParams** - Class placeholder for token parameters
+- **ARTAuthOptions** - Class placeholder for auth options
+- **ARTTokenRequest** - Class placeholder for token requests
+- **ARTClientOptions** - Class placeholder for client options
+- **ARTRestInternal** - Class placeholder for REST internals
+- **ARTQueuedDealloc** - Class placeholder for queued deallocation
+- **ARTEventEmitter** - Generic class placeholder for event emission
+- **ARTInternalEventEmitter** - Class placeholder extending ARTEventEmitter
 
 ---
 
 ## Overall Progress Summary
 
-- **Batches Completed**: 0/9
-- **Files Migrated**: 0/115
-- **Current Batch**: None
-- **Next Steps**: Begin Batch 1 migration
+- **Batches Completed**: 0/9 (Batch 1 in progress)
+- **Files Migrated**: 4 completed, 1 in progress/115
+- **Current Batch**: Batch 1 - ARTAnnotation through ARTChannels
+- **Next Steps**: Complete ARTAuth implementation, continue with remaining Batch 1 files

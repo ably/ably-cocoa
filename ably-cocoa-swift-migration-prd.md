@@ -431,6 +431,7 @@ Sources/
 **Required Comments:**
 - **Source Location**: Before each migrated entity (class, method, property, enum, etc.), add a comment indicating its original location: `// swift-migration: original location Foo.m, line 123`
   - **IMPORTANT**: This comment must appear BEFORE any documentation comments or original Objective-C comments
+  - **For entities with both declaration and definition**: Include both locations: `// swift-migration: original location Foo.h, line 45 and Foo.m, line 123`
 - Any code modifications or skips during migration
 - Decisions documented in both code and `swift-migration-files-progress.md`
 
@@ -540,6 +541,13 @@ Do not migrate the following methods; instead just use the following at the call
 - **[`swift-migration-overall-progress.md`](swift-migration-overall-progress.md)**: Master table tracking migration status of all 115 files with progress column
 - **[`swift-migration-files-progress.md`](swift-migration-files-progress.md)**: Detailed file-by-file progress with batch organization, compilation notes, and migration decisions
 - **Update Frequency**: Both files must be updated as each file is migrated and each batch is completed
+
+**CRITICAL: Progress File Format Preservation**
+- **NEVER completely rewrite or change the structure** of these progress tracking files
+- **ONLY update the relevant entries** (Progress column in overall file, Notes sections in detailed file)
+- **PRESERVE the original table structure, headers, and file organization**
+- When updating files, make minimal changes to only the relevant sections - this ensures clean Git diffs for human reviewers
+- The files have established formats that must be maintained for proper tracking
 
 **Documentation Standards:**
 - Document **why** certain translation approaches were chosen
