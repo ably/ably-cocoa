@@ -42,13 +42,8 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 ### ARTAuth.m → ARTAuth.swift
 - **Headers**: ARTAuth.h, ARTAuth+Private.h
-- **Status**: In Progress
-- **Notes**: 
-  - **Migration Decisions**: Created comprehensive interface structure with fatalError placeholders for complex 873-line implementation. Fixed Swift keyword conflict (internal parameter → internalAuth).
-  - **Dependencies**: Created extensive auth-related placeholder types (ARTTokenDetailsCallback, ARTTokenDetails, ARTTokenParams, ARTAuthOptions, ARTTokenRequest, ARTClientOptions, ARTRestInternal, ARTQueuedDealloc, ARTEventEmitter)
-  - **Compilation Errors**: Fixed Swift keyword conflict in initializer
-  - **Remaining Work**: Complete ARTAuthInternal implementation (800+ lines of complex auth logic), notification observers, token validation
-  - **Location Comments**: Applied dual-location format
+- **Status**: Not Started
+- **Notes**:
 
 ### ARTAuthDetails.m → ARTAuthDetails.swift
 - **Headers**: ARTAuthDetails.h

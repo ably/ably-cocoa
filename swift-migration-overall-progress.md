@@ -13,7 +13,7 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTAnnotation.m | ARTAnnotation.h, ARTAnnotation+Private.h | ARTAnnotation.swift | Completed |
 | ARTAttachRequestParams.m | ARTAttachRequestParams.h | ARTAttachRequestParams.swift | Completed |
 | ARTAttachRetryState.m | ARTAttachRetryState.h | ARTAttachRetryState.swift | Completed |
-| ARTAuth.m | ARTAuth.h, ARTAuth+Private.h | ARTAuth.swift | Completed |
+| ARTAuth.m | ARTAuth.h, ARTAuth+Private.h | ARTAuth.swift | Not Started |
 | ARTAuthDetails.m | ARTAuthDetails.h | ARTAuthDetails.swift | Completed |
 | ARTAuthOptions.m | ARTAuthOptions.h, ARTAuthOptions+Private.h | ARTAuthOptions.swift | Not Started |
 | ARTBackoffRetryDelayCalculator.m | ARTBackoffRetryDelayCalculator.h | ARTBackoffRetryDelayCalculator.swift | Not Started |
