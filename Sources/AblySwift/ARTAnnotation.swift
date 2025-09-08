@@ -144,12 +144,6 @@ public class ARTAnnotation: NSObject, NSCopying, Sendable {
         return annotation
     }
     
-    // swift-migration: original location ARTAnnotation+Private.h, line 9 and ARTBaseMessage.m, line (inherited)
-    /// Private computed property - inherited from ARTBaseMessage
-    internal var isIdEmpty: Bool {
-        return id == nil || id == ""
-    }
-    
     // swift-migration: original location ARTAnnotation+Private.h, line 11 and ARTAnnotation.m, line 76
     internal func decode(with encoder: ARTDataEncoder) throws -> ARTAnnotation {
         let decoded = encoder.decode(self.data, encoding: self.encoding)

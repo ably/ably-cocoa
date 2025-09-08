@@ -437,6 +437,12 @@ Sources/
 
 **Original Comments:** Preserve all existing Objective-C comments unchanged
 
+**CRITICAL: Implementation Rule**
+- **ONLY implement methods/properties that exist in the .m file being migrated**
+- **DO NOT implement methods/properties that are only declared in headers** - these may be inherited from parent classes or implemented elsewhere
+- **If a header declares something not implemented in the .m file**: Document this in migration notes, do not implement it
+- **ALL explanatory comments about what you're doing must have `swift-migration:` prefix**
+
 **Source Location Comment Format:**
 ```swift
 // swift-migration: original location ARTAuth.m, line 45

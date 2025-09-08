@@ -20,7 +20,7 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
   - **Dependencies**: Created placeholders for ARTJsonCompatible protocol, ARTDataEncoder, ARTEvent, ARTAblyErrorDomain
   - **Compilation Warnings**: Expected Sendable warnings ignored per migration plan
   - **Location Comments**: Updated to include both declaration and definition locations per new PRD requirement
-  - **Corrected isIdEmpty**: Fixed implementation to match ARTBaseMessage inheritance (id == nil || id == "") instead of invented logic
+  - **Corrected isIdEmpty**: Removed incorrectly added implementation - `isIdEmpty` is declared in ARTAnnotation+Private.h but not implemented in ARTAnnotation.m (likely inherited from ARTBaseMessage)
 
 ### ARTAttachRequestParams.m → ARTAttachRequestParams.swift
 - **Headers**: ARTAttachRequestParams.h
