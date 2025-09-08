@@ -102,7 +102,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark ARTEventEmitter
 
-ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
+// Begin expansion of: ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
+- (ARTEventListener *)on:(ARTChannelEvent)event callback:(void (^)(ARTChannelStateChange *))cb;
+- (ARTEventListener *)on:(void (^)(ARTChannelStateChange *))cb;
+
+- (ARTEventListener *)once:(ARTChannelEvent)event callback:(void (^)(ARTChannelStateChange *))cb;
+- (ARTEventListener *)once:(void (^)(ARTChannelStateChange *))cb;
+
+- (void)off:(ARTChannelEvent)event listener:(ARTEventListener *)listener;
+- (void)off:(ARTEventListener *)listener;
+- (void)off;
+// End expansion of: ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
 
 @end
 

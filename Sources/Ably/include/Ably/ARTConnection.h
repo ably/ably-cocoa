@@ -71,7 +71,17 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Embeds an `ARTEventEmitter` object.
  */
-ART_EMBED_INTERFACE_EVENT_EMITTER(ARTRealtimeConnectionEvent, ARTConnectionStateChange *)
+// Begin expansion of: ART_EMBED_INTERFACE_EVENT_EMITTER(ARTRealtimeConnectionEvent, ARTConnectionStateChange *)
+- (ARTEventListener *)on:(ARTRealtimeConnectionEvent)event callback:(void (^)(ARTConnectionStateChange *))cb;
+- (ARTEventListener *)on:(void (^)(ARTConnectionStateChange *))cb;
+
+- (ARTEventListener *)once:(ARTRealtimeConnectionEvent)event callback:(void (^)(ARTConnectionStateChange *))cb;
+- (ARTEventListener *)once:(void (^)(ARTConnectionStateChange *))cb;
+
+- (void)off:(ARTRealtimeConnectionEvent)event listener:(ARTEventListener *)listener;
+- (void)off:(ARTEventListener *)listener;
+- (void)off;
+// End expansion of: ART_EMBED_INTERFACE_EVENT_EMITTER(ARTRealtimeConnectionEvent, ARTConnectionStateChange *)
 
 @end
 
