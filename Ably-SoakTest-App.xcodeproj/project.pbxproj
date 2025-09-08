@@ -1,0 +1,575 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 54;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2162D7BD2E6B36DD0077201D /* Ably in Frameworks */ = {isa = PBXBuildFile; productRef = 2162D7BC2E6B36DD0077201D /* Ably */; };
+		EB8A0C33238D53DF00A20331 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB8A0C0F238D53A200A20331 /* AppDelegate.swift */; };
+		EB8A0C35238D53DF00A20331 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB8A0C13238D53A200A20331 /* ViewController.swift */; };
+		EB8A0C36238D53EB00A20331 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EB8A0C1A238D53A300A20331 /* LaunchScreen.storyboard */; };
+		EB8A0C37238D53EE00A20331 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EB8A0C15238D53A200A20331 /* Main.storyboard */; };
+		EB8A0C38238D53F300A20331 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EB8A0C18238D53A300A20331 /* Assets.xcassets */; };
+		EB8A0C39238D540200A20331 /* SoakTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB721C12376A4E6001C3550 /* SoakTest.swift */; };
+		EB8A0C3A238D540900A20331 /* SoakTestWebSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB721C82376B16B001C3550 /* SoakTestWebSocket.swift */; };
+		EB8A0C3B238D540900A20331 /* SoakTestURLSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB721CE2376B60E001C3550 /* SoakTestURLSession.swift */; };
+		EB8A0C3C238D540900A20331 /* SoakTestReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB721D02376B999001C3550 /* SoakTestReachability.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		EB36309F23804F7C00B83598 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 96BF61281A35B2AB004CF2B3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EB36308823804F7A00B83598;
+			remoteInfo = "Ably-SoakTest-App";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		EB3630C8238055F100B83598 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		EB36308923804F7A00B83598 /* Ably-SoakTest-App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Ably-SoakTest-App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		EB36309E23804F7C00B83598 /* Ably-SoakTest-AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Ably-SoakTest-AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		EB3630A423804F7C00B83598 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		EB8A0C0F238D53A200A20331 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		EB8A0C13238D53A200A20331 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		EB8A0C16238D53A200A20331 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		EB8A0C18238D53A300A20331 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		EB8A0C1B238D53A300A20331 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		EB8A0C1D238D53A300A20331 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		EBB721C12376A4E6001C3550 /* SoakTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoakTest.swift; sourceTree = "<group>"; };
+		EBB721C82376B16B001C3550 /* SoakTestWebSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoakTestWebSocket.swift; sourceTree = "<group>"; };
+		EBB721CE2376B60E001C3550 /* SoakTestURLSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoakTestURLSession.swift; sourceTree = "<group>"; };
+		EBB721D02376B999001C3550 /* SoakTestReachability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoakTestReachability.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		EB36308623804F7A00B83598 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EB36309B23804F7C00B83598 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2162D7BD2E6B36DD0077201D /* Ably in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		96BF61271A35B2AB004CF2B3 = {
+			isa = PBXGroup;
+			children = (
+				EB36308A23804F7A00B83598 /* Ably-SoakTest-App */,
+				EB3630A123804F7C00B83598 /* Ably-SoakTest-AppUITests */,
+				96BF61321A35B2AB004CF2B3 /* Products */,
+			);
+			indentWidth = 4;
+			sourceTree = "<group>";
+			tabWidth = 4;
+		};
+		96BF61321A35B2AB004CF2B3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				EB36308923804F7A00B83598 /* Ably-SoakTest-App.app */,
+				EB36309E23804F7C00B83598 /* Ably-SoakTest-AppUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		EB36308A23804F7A00B83598 /* Ably-SoakTest-App */ = {
+			isa = PBXGroup;
+			children = (
+				EB8A0C0F238D53A200A20331 /* AppDelegate.swift */,
+				EB8A0C13238D53A200A20331 /* ViewController.swift */,
+				EB8A0C15238D53A200A20331 /* Main.storyboard */,
+				EB8A0C18238D53A300A20331 /* Assets.xcassets */,
+				EB8A0C1A238D53A300A20331 /* LaunchScreen.storyboard */,
+				EB8A0C1D238D53A300A20331 /* Info.plist */,
+			);
+			path = "Ably-SoakTest-App";
+			sourceTree = "<group>";
+		};
+		EB3630A123804F7C00B83598 /* Ably-SoakTest-AppUITests */ = {
+			isa = PBXGroup;
+			children = (
+				EBB721C12376A4E6001C3550 /* SoakTest.swift */,
+				EBB721C82376B16B001C3550 /* SoakTestWebSocket.swift */,
+				EBB721CE2376B60E001C3550 /* SoakTestURLSession.swift */,
+				EBB721D02376B999001C3550 /* SoakTestReachability.swift */,
+				EB3630A423804F7C00B83598 /* Info.plist */,
+			);
+			path = "Ably-SoakTest-AppUITests";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		EB36308823804F7A00B83598 /* Ably-SoakTest-App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EB3630A523804F7C00B83598 /* Build configuration list for PBXNativeTarget "Ably-SoakTest-App" */;
+			buildPhases = (
+				EB36308523804F7A00B83598 /* Sources */,
+				EB36308623804F7A00B83598 /* Frameworks */,
+				EB36308723804F7A00B83598 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Ably-SoakTest-App";
+			productName = "Ably-SoakTest-App";
+			productReference = EB36308923804F7A00B83598 /* Ably-SoakTest-App.app */;
+			productType = "com.apple.product-type.application";
+		};
+		EB36309D23804F7C00B83598 /* Ably-SoakTest-AppUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EB3630A823804F7C00B83598 /* Build configuration list for PBXNativeTarget "Ably-SoakTest-AppUITests" */;
+			buildPhases = (
+				EB36309A23804F7C00B83598 /* Sources */,
+				EB36309B23804F7C00B83598 /* Frameworks */,
+				EB36309C23804F7C00B83598 /* Resources */,
+				EB3630C8238055F100B83598 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				EB3630A023804F7C00B83598 /* PBXTargetDependency */,
+			);
+			name = "Ably-SoakTest-AppUITests";
+			productName = "Ably-SoakTest-AppUITests";
+			productReference = EB36309E23804F7C00B83598 /* Ably-SoakTest-AppUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		96BF61281A35B2AB004CF2B3 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				CLASSPREFIX = ART;
+				DefaultBuildSystemTypeForWorkspace = Original;
+				LastSwiftUpdateCheck = 1120;
+				LastUpgradeCheck = 1310;
+				ORGANIZATIONNAME = Ably;
+				TargetAttributes = {
+					EB36308823804F7A00B83598 = {
+						CreatedOnToolsVersion = 11.2;
+						ProvisioningStyle = Manual;
+					};
+					EB36309D23804F7C00B83598 = {
+						CreatedOnToolsVersion = 11.2;
+						ProvisioningStyle = Manual;
+						TestTargetID = EB36308823804F7A00B83598;
+					};
+				};
+			};
+			buildConfigurationList = 96BF612B1A35B2AB004CF2B3 /* Build configuration list for PBXProject "Ably-SoakTest-App" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 96BF61271A35B2AB004CF2B3;
+			productRefGroup = 96BF61321A35B2AB004CF2B3 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				EB36308823804F7A00B83598 /* Ably-SoakTest-App */,
+				EB36309D23804F7C00B83598 /* Ably-SoakTest-AppUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		EB36308723804F7A00B83598 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EB8A0C37238D53EE00A20331 /* Main.storyboard in Resources */,
+				EB8A0C36238D53EB00A20331 /* LaunchScreen.storyboard in Resources */,
+				EB8A0C38238D53F300A20331 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EB36309C23804F7C00B83598 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		EB36308523804F7A00B83598 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EB8A0C35238D53DF00A20331 /* ViewController.swift in Sources */,
+				EB8A0C33238D53DF00A20331 /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EB36309A23804F7C00B83598 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EB8A0C3C238D540900A20331 /* SoakTestReachability.swift in Sources */,
+				EB8A0C3B238D540900A20331 /* SoakTestURLSession.swift in Sources */,
+				EB8A0C39238D540200A20331 /* SoakTest.swift in Sources */,
+				EB8A0C3A238D540900A20331 /* SoakTestWebSocket.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		EB3630A023804F7C00B83598 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = EB36308823804F7A00B83598 /* Ably-SoakTest-App */;
+			targetProxy = EB36309F23804F7C00B83598 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		EB8A0C15238D53A200A20331 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				EB8A0C16238D53A200A20331 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		EB8A0C1A238D53A300A20331 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				EB8A0C1B238D53A300A20331 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		96BF61451A35B2AB004CF2B3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = "$(inherited)";
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DYLIB_COMPATIBILITY_VERSION = 1.0.0;
+				DYLIB_CURRENT_VERSION = "$(CURRENT_PROJECT_VERSION)";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				RUN_CLANG_STATIC_ANALYZER = YES;
+				SDKROOT = iphoneos;
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		96BF61461A35B2AB004CF2B3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = "$(inherited)";
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1.0.0;
+				DYLIB_CURRENT_VERSION = "$(CURRENT_PROJECT_VERSION)";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				RUN_CLANG_STATIC_ANALYZER = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		EB3630A623804F7C00B83598 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Manual;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "Ably-SoakTest-App/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.3;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "ably.io.Ably-SoakTest-App";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		EB3630A723804F7C00B83598 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "Ably-SoakTest-App/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.3;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "ably.io.Ably-SoakTest-App";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		EB3630A923804F7C00B83598 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Manual;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "Ably-SoakTest-AppUITests/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "ably.io.Ably-SoakTest-AppUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "Ably-SoakTest-App";
+			};
+			name = Debug;
+		};
+		EB3630AA23804F7C00B83598 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "Ably-SoakTest-AppUITests/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "ably.io.Ably-SoakTest-AppUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "Ably-SoakTest-App";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		96BF612B1A35B2AB004CF2B3 /* Build configuration list for PBXProject "Ably-SoakTest-App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				96BF61451A35B2AB004CF2B3 /* Debug */,
+				96BF61461A35B2AB004CF2B3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EB3630A523804F7C00B83598 /* Build configuration list for PBXNativeTarget "Ably-SoakTest-App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EB3630A623804F7C00B83598 /* Debug */,
+				EB3630A723804F7C00B83598 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EB3630A823804F7C00B83598 /* Build configuration list for PBXNativeTarget "Ably-SoakTest-AppUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EB3630A923804F7C00B83598 /* Debug */,
+				EB3630AA23804F7C00B83598 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		2162D7BC2E6B36DD0077201D /* Ably */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Ably;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 96BF61281A35B2AB004CF2B3 /* Project object */;
+}
