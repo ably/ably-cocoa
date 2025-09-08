@@ -5,7 +5,8 @@ import Foundation
 
 // Placeholder for ARTJsonCompatible protocol
 public protocol ARTJsonCompatible {
-    // Placeholder implementation
+    func toJSON() throws -> [String: Any]?
+    func toJSONString() -> String?
 }
 
 // Placeholder for ARTDataEncoder
@@ -423,3 +424,65 @@ public let ARTErrorIncompatibleCredentials = 40102
 public let ARTStateAuthUrlIncompatibleContent = 40170
 public let ARTClientIdKey = "ARTClientIdKey"
 public let kCFURLErrorCancelled: CFIndex = -999
+
+// Placeholder for ARTJitterCoefficientGenerator protocol
+public protocol ARTJitterCoefficientGenerator {
+    func generateJitterCoefficient() -> Double
+}
+
+// Placeholder for ARTCallback
+public typealias ARTCallback = (ARTErrorInfo?) -> Void
+
+// Placeholder for ARTMessage
+public class ARTMessage: ARTBaseMessage {
+    
+    // swift-migration: ARTMessage inherits from ARTBaseMessage but adds message-specific functionality
+    public override required init() {
+        super.init()
+        fatalError("ARTMessage not yet migrated")
+    }
+    
+    public init(name: String?, data: Any?) {
+        super.init()
+        fatalError("ARTMessage not yet migrated")
+    }
+    
+    public init(name: String?, data: Any?, clientId: String?) {
+        super.init()
+        fatalError("ARTMessage not yet migrated")
+    }
+}
+
+// Placeholder for ARTPaginatedResult
+public class ARTPaginatedResult<ItemType> {
+    public init() {
+        fatalError("ARTPaginatedResult not yet migrated")
+    }
+}
+
+// Placeholder callback types
+public typealias ARTPaginatedMessagesCallback = (ARTPaginatedResult<ARTMessage>?, ARTErrorInfo?) -> Void
+
+// Placeholder for ARTState enum
+public enum ARTState: UInt {
+    case ok = 0
+    case connectionClosedByClient
+    case connectionDisconnected
+    case connectionSuspended
+    case connectionFailed
+    case accessRefused
+    case neverConnected
+    case connectionTimedOut
+    case attachTimedOut
+    case detachTimedOut
+    case notAttached
+    case invalidArgs
+    case cryptoBadPadding
+    case noClientId
+    case mismatchedClientId
+    case requestTokenFailed
+    case authorizationFailed
+    case authUrlIncompatibleContent
+    case badConnectionState
+    case error = 99999
+}

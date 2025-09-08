@@ -16,12 +16,12 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTAuth.m | ARTAuth.h, ARTAuth+Private.h | ARTAuth.swift | Completed |
 | ARTAuthDetails.m | ARTAuthDetails.h | ARTAuthDetails.swift | Completed |
 | ARTAuthOptions.m | ARTAuthOptions.h, ARTAuthOptions+Private.h | ARTAuthOptions.swift | Completed |
-| ARTBackoffRetryDelayCalculator.m | ARTBackoffRetryDelayCalculator.h | ARTBackoffRetryDelayCalculator.swift | Not Started |
-| ARTBaseMessage.m | ARTBaseMessage.h, ARTBaseMessage+Private.h | ARTBaseMessage.swift | Not Started |
+| ARTBackoffRetryDelayCalculator.m | ARTBackoffRetryDelayCalculator.h | ARTBackoffRetryDelayCalculator.swift | Completed |
+| ARTBaseMessage.m | ARTBaseMessage.h, ARTBaseMessage+Private.h | ARTBaseMessage.swift | Completed |
 | ARTChannel.m | ARTChannel.h, ARTChannel+Private.h | ARTChannel.swift | Not Started |
 | ARTChannelOptions.m | ARTChannelOptions.h, ARTChannelOptions+Private.h | ARTChannelOptions.swift | Not Started |
-| ARTChannelProtocol.m | ARTChannelProtocol.h | ARTChannelProtocol.swift | Not Started |
-| ARTChannelStateChangeParams.m | ARTChannelStateChangeParams.h | ARTChannelStateChangeParams.swift | Not Started |
+| ARTChannelProtocol.m | ARTChannelProtocol.h | ARTChannelProtocol.swift | Completed |
+| ARTChannelStateChangeParams.m | ARTChannelStateChangeParams.h | ARTChannelStateChangeParams.swift | Completed |
 | ARTChannels.m | ARTChannels.h, ARTChannels+Private.h | ARTChannels.swift | Not Started |
 | ARTClientInformation.m | ARTClientInformation.h, ARTClientInformation+Private.h | ARTClientInformation.swift | Not Started |
 | ARTClientOptions.m | ARTClientOptions.h, ARTClientOptions+Private.h | ARTClientOptions.swift | Not Started |
