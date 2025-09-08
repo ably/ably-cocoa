@@ -346,46 +346,44 @@ NS_ASSUME_NONNULL_END
                                   completion:(ARTURLRequestCallback)callback {
     NSString *requestId = nil;
     __block ARTFallback *blockFallbacks = fallbacks;
-    
-    if ([request isKindOfClass:[NSMutableURLRequest class]]) {
-        NSMutableURLRequest *mutableRequest = (NSMutableURLRequest *)request;
-        [mutableRequest setAcceptHeader:self.defaultEncoder encoders:self.encoders];
-        [mutableRequest setTimeoutInterval:_options.httpRequestTimeout];
-        [mutableRequest setValue:[ARTDefault apiVersion] forHTTPHeaderField:@"X-Ably-Version"];
-        [mutableRequest setValue:[self agentIdentifierWithWrapperSDKAgents:wrapperSDKAgents] forHTTPHeaderField:@"Ably-Agent"];
-        if (_options.clientId && !self.auth.isTokenAuth) {
-            [mutableRequest setValue:encodeBase64(_options.clientId) forHTTPHeaderField:@"X-Ably-ClientId"];
+
+    NSMutableURLRequest *updatedRequest = [request mutableCopy];
+    [updatedRequest setAcceptHeader:self.defaultEncoder encoders:self.encoders];
+    [updatedRequest setTimeoutInterval:_options.httpRequestTimeout];
+    [updatedRequest setValue:[ARTDefault apiVersion] forHTTPHeaderField:@"X-Ably-Version"];
+    [updatedRequest setValue:[self agentIdentifierWithWrapperSDKAgents:wrapperSDKAgents] forHTTPHeaderField:@"Ably-Agent"];
+    if (_options.clientId && !self.auth.isTokenAuth) {
+        [updatedRequest setValue:encodeBase64(_options.clientId) forHTTPHeaderField:@"X-Ably-ClientId"];
+    }
+
+    if (_options.addRequestIds) {
+        if (fallbacks != nil) {
+            requestId = originalRequestId;
+        } else {
+            NSString *randomId = [NSUUID new].UUIDString;
+            requestId = [[randomId dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:0];
         }
-        
-        if (_options.addRequestIds) {
-            if (fallbacks != nil) {
-                requestId = originalRequestId;
-            } else {
-                NSString *randomId = [NSUUID new].UUIDString;
-                requestId = [[randomId dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:0];
-            }
-            
-            [mutableRequest appendQueryItem:[NSURLQueryItem queryItemWithName:@"request_id" value:requestId]];
-        }
-        
-        // RSC15f - reset the successed fallback host on fallbackRetryTimeout expiration
-        // change URLRequest host from `fallback host` to `default host`
-        //
-        if (self.currentFallbackHost != nil && self.fallbackRetryExpiration != nil && [[self.continuousClock now] isAfter:self.fallbackRetryExpiration]) {
-            ARTLogDebug(self.logger, @"RS:%p fallbackRetryExpiration ids expired, reset `prioritizedHost` and `currentFallbackHost`", self);
-            
-            self.currentFallbackHost = nil;
-            self.prioritizedHost = nil;
-            [mutableRequest replaceHostWith:_options.restHost];
-        }
+
+        [updatedRequest appendQueryItem:[NSURLQueryItem queryItemWithName:@"request_id" value:requestId]];
+    }
+
+    // RSC15f - reset the successed fallback host on fallbackRetryTimeout expiration
+    // change URLRequest host from `fallback host` to `default host`
+    //
+    if (self.currentFallbackHost != nil && self.fallbackRetryExpiration != nil && [[self.continuousClock now] isAfter:self.fallbackRetryExpiration]) {
+        ARTLogDebug(self.logger, @"RS:%p fallbackRetryExpiration ids expired, reset `prioritizedHost` and `currentFallbackHost`", self);
+
+        self.currentFallbackHost = nil;
+        self.prioritizedHost = nil;
+        [updatedRequest replaceHostWith:_options.restHost];
     }
 
 
-    ARTLogDebug(self.logger, @"RS:%p executing request %@", self, request);
+    ARTLogDebug(self.logger, @"RS:%p executing request %@", self, updatedRequest);
     __block NSObject<ARTCancellable> *task;
-    task = [self.httpExecutor executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    task = [self.httpExecutor executeRequest:updatedRequest completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         // Error messages in plaintext and HTML format (only if the URL request is different than `options.authUrl` and we don't have an error already)
-        if (error == nil && data != nil && data.length != 0 && ![request.URL.host isEqualToString:[self.options.authUrl host]]) {
+        if (error == nil && data != nil && data.length != 0 && ![updatedRequest.URL.host isEqualToString:[self.options.authUrl host]]) {
             NSString *contentType = [response.allHeaderFields objectForKey:@"Content-Type"];
 
             BOOL validContentType = NO;
@@ -401,7 +399,7 @@ NS_ASSUME_NONNULL_END
                 // Construct artificial error
                 error = [ARTErrorInfo createWithCode:response.statusCode * 100 status:response.statusCode message:[plain art_shortString] requestId:requestId];
                 data = nil; // Discard data; format is unreliable.
-                ARTLogError(self.logger, @"Request %@ failed with %@", request, error);
+                ARTLogError(self.logger, @"Request %@ failed with %@", updatedRequest, error);
             }
         }
 
@@ -410,11 +408,11 @@ NS_ASSUME_NONNULL_END
                 NSError *decodeError = nil;
                 ARTErrorInfo *dataError = [self->_encoders[response.MIMEType] decodeErrorInfo:data error:&decodeError];
                 ARTErrorInfo *errorBecauseShouldNotRenewToken = [self errorBecauseShouldNotRenewToken:dataError];
-                if (!errorBecauseShouldNotRenewToken && [request isKindOfClass:[NSMutableURLRequest class]]) {
-                    ARTLogDebug(self.logger, @"RS:%p retry request %@", self, request);
+                if (!errorBecauseShouldNotRenewToken) {
+                    ARTLogDebug(self.logger, @"RS:%p retry request %@", self, updatedRequest);
                     // Make a single attempt to reissue the token and resend the request
                     if (self->_tokenErrorRetries < 1) {
-                        task = [self executeRequest:(NSMutableURLRequest *)request withAuthOption:ARTAuthenticationTokenRetry wrapperSDKAgents:wrapperSDKAgents completion:callback];
+                        task = [self executeRequest:updatedRequest withAuthOption:ARTAuthenticationTokenRetry wrapperSDKAgents:wrapperSDKAgents completion:callback];
                         return;
                     }
                 }
@@ -445,7 +443,7 @@ NS_ASSUME_NONNULL_END
             }
         }
         
-        if (retries < self->_options.httpMaxRetryCount && [self shouldRetryWithFallback:request response:response error:error]) {
+        if (retries < self->_options.httpMaxRetryCount && [self shouldRetryWithFallback:updatedRequest response:response error:error]) {
             if (!blockFallbacks) {
                 NSArray *hosts = [ARTFallbackHosts hostsFromOptions:self->_options];
                 blockFallbacks = [[ARTFallback alloc] initWithFallbackHosts:hosts shuffleArray:self->_options.testOptions.shuffleArray];
@@ -456,9 +454,9 @@ NS_ASSUME_NONNULL_END
                     ARTLogDebug(self.logger, @"RS:%p host is down; retrying request at %@", self, host);
                     
                     self.currentFallbackHost = host;
-                    NSMutableURLRequest *newRequest = [request copy];
+                    NSMutableURLRequest *newRequest = [updatedRequest copy];
                     [newRequest setValue:host forHTTPHeaderField:@"Host"];
-                    newRequest.URL = [NSURL copyFromURL:request.URL withHost:host];
+                    newRequest.URL = [NSURL copyFromURL:updatedRequest.URL withHost:host];
                     task = [self executeRequest:newRequest
                                       fallbacks:blockFallbacks
                                         retries:retries + 1
