@@ -41,9 +41,15 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
   - **Location Comments**: Applied dual-location format
 
 ### ARTAuth.m → ARTAuth.swift
-- **Headers**: ARTAuth.h, ARTAuth+Private.h
-- **Status**: Not Started
+- **Headers**: ARTAuth.h, ARTAuth+Private.h  
+- **Status**: Completed
 - **Notes**:
+  - **Migration Decisions**: Migrated complex authentication logic including token request/refresh, authorization state management, callback handling, and platform-specific notification observers. Preserved all callback patterns and threading behavior exactly as original - used `self.userQueue` instead of changing to `DispatchQueue.main`. Removed duplicate clientId() method that conflicted with property.
+  - **Dependencies**: Used existing placeholders for ARTRestInternal, ARTClientOptions, ARTAuthOptions, ARTTokenParams, ARTTokenDetails, ARTTokenRequest, ARTInternalLog, ARTQueuedDealloc, ARTEventEmitter types and various auth constants
+  - **Compilation Errors**: Fixed duplicate clientId method declaration, removed redundant nil checks on @escaping callbacks, fixed unused variable warning
+  - **Compilation Warnings**: None beyond expected Sendable warnings from other files
+  - **Location Comments**: Applied dual-location format with extensive line number references for this complex 874-line file
+  - **Swift Adaptations**: Converted Objective-C notification observers to Swift, used Swift URL components, converted memory management patterns to Swift ARC
 
 ### ARTAuthDetails.m → ARTAuthDetails.swift
 - **Headers**: ARTAuthDetails.h

@@ -4,6 +4,85 @@
 
 This document outlines the requirements and approach for migrating the Ably Cocoa SDK from Objective-C to Swift, maintaining full API compatibility while leveraging Swift's type safety and modern language features.
 
+# ⚠️ CRITICAL MIGRATION RULES - READ FIRST ⚠️
+
+**NEVER CHANGE THESE WITHOUT EXPLICIT USER APPROVAL:**
+- ❌ **Queue/threading behavior** (e.g., `_userQueue` → `DispatchQueue.main`)
+- ❌ **Callback patterns or timing** 
+- ❌ **Any runtime behavior differences**
+- ❌ **Memory management patterns**
+- ❌ **State machine transitions**
+
+**WHEN IN DOUBT: STOP MIGRATION AND ASK USER FOR GUIDANCE**
+
+## Pre-Migration Behavioral Safety Checklist
+
+Before making any change, ask yourself:
+- [ ] Will this change any queue/threading behavior? → **STOP, ASK USER**
+- [ ] Will this change callback timing? → **STOP, ASK USER**  
+- [ ] Will this change runtime behavior? → **STOP, ASK USER**
+- [ ] Will this change when/how objects are deallocated? → **STOP, ASK USER**
+
+## Critical Examples: Threading Behavior
+
+### ❌ WRONG - Changes Threading Behavior
+```objective-c
+// Original Objective-C
+dispatch_async(self->_userQueue, ^{
+    userCallback(result, error);
+});
+```
+
+```swift
+// ❌ WRONG - Changes from user-configured queue to main queue
+DispatchQueue.main.async {
+    userCallback(result, error)  
+}
+```
+
+### ✅ CORRECT - Preserves Original Behavior
+```swift
+// ✅ CORRECT - Preserves original threading behavior  
+self.userQueue.async {
+    userCallback(result, error)
+}
+```
+
+### Why This Matters
+The original code uses `_userQueue` because it allows `ARTRestInternal` to configure which queue should handle user callbacks. Changing to `DispatchQueue.main` breaks this configurability and could cause threading issues in production apps.
+
+## Critical Examples: Callback Patterns
+
+### ❌ WRONG - Changes Callback Timing
+```objective-c
+// Original: Immediate callback
+if (error) {
+    callback(nil, error);
+    return;
+}
+```
+
+```swift
+// ❌ WRONG - Adds async delay that wasn't there before
+if let error = error {
+    DispatchQueue.main.async {
+        callback(nil, error)
+    }
+    return
+}
+```
+
+### ✅ CORRECT - Preserves Callback Timing
+```swift
+// ✅ CORRECT - Immediate callback preserved
+if let error = error {
+    callback(nil, error)
+    return
+}
+```
+
+---
+
 ## Background
 
 The current Ably Cocoa SDK consists of approximately 100+ Objective-C implementation files (.m) with corresponding header files (.h), representing a mature, production-ready codebase that handles real-time messaging, REST API interactions, push notifications, and complex connection management.
@@ -428,6 +507,8 @@ Sources/
 
 ## Migration Implementation Rules
 
+> **⚠️ IMPORTANT:** Before reading this section, ensure you've reviewed the **[Critical Migration Rules](#️-critical-migration-rules---read-first-️)** at the top of this document.
+
 ### Error and Warning Handling
 
 **Testing Requirement:** `swift build` must be run before considering any batch of files complete.
@@ -617,5 +698,16 @@ Do not migrate the following methods; instead just use the following at the call
 ## Conclusion
 
 This mechanical migration approach prioritizes reliability and speed over Swift modernization. The result will be a Swift-native codebase that behaves identically to the current Objective-C implementation, providing a solid foundation for future Swift-idiomatic enhancements.
+
+### ⚠️ Final Reminder: Behavioral Preservation is Paramount
+
+The single most critical aspect of this migration is **preserving exact runtime behavior**. This means:
+
+- **Threading/queue behavior must remain identical**
+- **Callback patterns and timing must be preserved** 
+- **Memory management semantics must be maintained**
+- **State transitions must occur exactly as before**
+
+**Remember:** A Swift file that compiles but changes behavior is worse than no migration at all, because it introduces subtle bugs that may only surface in production.
 
 The phased approach allows for incremental validation and reduces risk by tackling components in dependency order, ensuring each layer is stable before building upon it. The comprehensive process management ensures both quality assurance and maintainability throughout the migration lifecycle.
