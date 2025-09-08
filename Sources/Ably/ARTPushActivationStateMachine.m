@@ -259,7 +259,7 @@ dispatch_async(_queue, ^{
         }
     } error:nil];
     [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
-    request = [request settingDeviceAuthentication:local];
+    request = [[request settingDeviceAuthentication:local] mutableCopy];
 
     ARTLogDebug(_logger, @"%@: update device with request %@", NSStringFromClass(self.class), request);
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -303,11 +303,11 @@ dispatch_async(_queue, ^{
     void (^doDeviceSync)(void) = ^{
         // Asynchronous HTTP request
         NSString *const path = [@"/push/deviceRegistrations" stringByAppendingPathComponent:local.id];
-        NSMutableURLRequest *const request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:path]];
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:path]];
         request.HTTPMethod = @"PUT";
         request.HTTPBody = [[self->_rest defaultEncoder] encodeDeviceDetails:local error:nil];
         [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
-        request = [request settingDeviceAuthentication:local];
+        request = [[request settingDeviceAuthentication:local] mutableCopy];
 
         ARTLogDebug(self->_logger, @"%@: sync device with request %@", NSStringFromClass(self.class), request);
         [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -362,7 +362,7 @@ dispatch_async(_queue, ^{
     // Asynchronous HTTP request
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:local.id]];
     request.HTTPMethod = @"DELETE";
-    request = [request settingDeviceAuthentication:local];
+    request = [[request settingDeviceAuthentication:local] mutableCopy];
 
     ARTLogDebug(_logger, @"%@: device deregistration with request %@", NSStringFromClass(self.class), request);
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {

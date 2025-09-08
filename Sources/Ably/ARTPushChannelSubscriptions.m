@@ -204,7 +204,7 @@
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"DELETE";
 #if TARGET_OS_IOS
-    request = [request settingDeviceAuthentication:[params objectForKey:@"deviceId"] localDevice:_rest.device_nosync];
+    request = [[request settingDeviceAuthentication:[params objectForKey:@"deviceId"] localDevice:_rest.device_nosync] mutableCopy];
 #endif
     
     ARTLogDebug(_logger, @"remove channel subscription with request %@", request);
