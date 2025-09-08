@@ -101,6 +101,18 @@ public class ARTRetrySequence {
     }
 }
 
+// Placeholder for ARTRealtimeConnectionState
+public enum ARTRealtimeConnectionState: UInt {
+    case initialized = 0
+    case connecting = 1
+    case connected = 2
+    case disconnected = 3
+    case suspended = 4
+    case closing = 5
+    case closed = 6
+    case failed = 7
+}
+
 // Placeholder for ARTRealtimeChannelState
 public enum ARTRealtimeChannelState: UInt {
     case initialized = 0
@@ -506,12 +518,7 @@ extension Dictionary: ARTCipherParamsCompatible where Key == String {
     }
 }
 
-// Placeholder for ARTDefault
-public class ARTDefault {
-    public static func maxMessageSize() -> Int {
-        fatalError("ARTDefault not yet migrated")
-    }
-}
+// swift-migration: ARTDefault placeholder removed - now implemented
 
 // Placeholder constants for error codes
 public let ARTErrorMaxMessageLengthExceeded: Int = 40009
@@ -543,31 +550,9 @@ internal class ARTRestChannel: ARTChannel {
 
 // Additional placeholders for ARTClientOptions dependencies
 
-// Extend ARTDefault to add missing methods
-extension ARTDefault {
-    public static func port() -> Int {
-        fatalError("ARTDefault port() not yet migrated")
-    }
-    
-    public static func tlsPort() -> Int {
-        fatalError("ARTDefault tlsPort() not yet migrated")
-    }
-    
-    public static func restHost() -> String {
-        fatalError("ARTDefault restHost() not yet migrated")
-    }
-    
-    public static func realtimeHost() -> String {
-        fatalError("ARTDefault realtimeHost() not yet migrated")
-    }
-    
-    public static func apiVersion() -> String {
-        fatalError("ARTDefault apiVersion() not yet migrated")
-    }
-}
+// swift-migration: ARTDefault extension placeholder removed - now implemented
 
-// Placeholder for ARTDefaultProduction constant
-public let ARTDefaultProduction = "production"
+// swift-migration: ARTDefaultProduction placeholder removed - now implemented
 
 // Placeholder for ARTLog class
 public class ARTLog {
@@ -623,5 +608,40 @@ public protocol APLiveObjectsInternalPluginProtocol {
 extension ARTTokenParams {
     public convenience init(tokenParams: ARTTokenParams) {
         fatalError("ARTTokenParams init(tokenParams:) not yet migrated")
+    }
+}
+
+// Placeholder for ARTQueryDirection enum
+public enum ARTQueryDirection: UInt {
+    case forwards = 0
+    case backwards = 1
+}
+
+// Placeholder for ARTRealtimeChannelInternal
+public class ARTRealtimeChannelInternal {
+    public var state_nosync: ARTRealtimeChannelState = .initialized
+    public var attachSerial: String = ""
+    
+    public init() {
+        fatalError("ARTRealtimeChannelInternal not yet migrated")
+    }
+}
+
+// Functions already used in the codebase - need to make sure they exist
+public func dateToMilliseconds(_ date: Date) -> UInt64 {
+    return UInt64(date.timeIntervalSince1970 * 1000)
+}
+
+// Placeholder for ARTRealtimeHistoryError enum
+public enum ARTRealtimeHistoryError: Int {
+    case notAttached = 3  // ARTDataQueryErrorTimestampRange + 1
+}
+
+// swift-migration: ARTClientInformation placeholder removed - now implemented
+
+// Extension for Array to provide artMap functionality
+extension Array {
+    internal func artMap<T>(_ transform: (Element) -> T) -> [T] {
+        return self.map(transform)
     }
 }

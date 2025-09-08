@@ -25,16 +25,16 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTChannels.m | ARTChannels.h, ARTChannels+Private.h | ARTChannels.swift | Completed |
 | ARTClientInformation.m | ARTClientInformation.h, ARTClientInformation+Private.h | ARTClientInformation.swift | Completed |
 | ARTClientOptions.m | ARTClientOptions.h, ARTClientOptions+Private.h | ARTClientOptions.swift | Completed |
-| ARTConnectRetryState.m | ARTConnectRetryState.h | ARTConnectRetryState.swift | Not Started |
+| ARTConnectRetryState.m | ARTConnectRetryState.h | ARTConnectRetryState.swift | Completed |
 | ARTConnection.m | ARTConnection.h, ARTConnection+Private.h | ARTConnection.swift | Not Started |
-| ARTConnectionDetails.m | ARTConnectionDetails.h, ARTConnectionDetails+Private.h | ARTConnectionDetails.swift | Not Started |
-| ARTConnectionStateChangeParams.m | ARTConnectionStateChangeParams.h | ARTConnectionStateChangeParams.swift | Not Started |
-| ARTConstants.m | ARTConstants.h | ARTConstants.swift | Not Started |
-| ARTContinuousClock.m | ARTContinuousClock.h | ARTContinuousClock.swift | Not Started |
+| ARTConnectionDetails.m | ARTConnectionDetails.h, ARTConnectionDetails+Private.h | ARTConnectionDetails.swift | Completed |
+| ARTConnectionStateChangeParams.m | ARTConnectionStateChangeParams.h | ARTConnectionStateChangeParams.swift | Completed |
+| ARTConstants.m | ARTConstants.h | ARTConstants.swift | Completed |
+| ARTContinuousClock.m | ARTContinuousClock.h | ARTContinuousClock.swift | Completed |
 | ARTCrypto.m | ARTCrypto.h, ARTCrypto+Private.h | ARTCrypto.swift | Not Started |
 | ARTDataEncoder.m | ARTDataEncoder.h | ARTDataEncoder.swift | Not Started |
-| ARTDataQuery.m | ARTDataQuery.h, ARTDataQuery+Private.h | ARTDataQuery.swift | Not Started |
-| ARTDefault.m | ARTDefault.h, ARTDefault+Private.h | ARTDefault.swift | Not Started |
+| ARTDataQuery.m | ARTDataQuery.h, ARTDataQuery+Private.h | ARTDataQuery.swift | Completed |
+| ARTDefault.m | ARTDefault.h, ARTDefault+Private.h | ARTDefault.swift | Completed |
 | ARTDeviceDetails.m | ARTDeviceDetails.h, ARTDeviceDetails+Private.h | ARTDeviceDetails.swift | Not Started |
 | ARTDeviceIdentityTokenDetails.m | ARTDeviceIdentityTokenDetails.h, ARTDeviceIdentityTokenDetails+Private.h | ARTDeviceIdentityTokenDetails.swift | Not Started |
 | ARTDevicePushDetails.m | ARTDevicePushDetails.h, ARTDevicePushDetails+Private.h | ARTDevicePushDetails.swift | Not Started |
@@ -129,15 +129,15 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 ## Progress Summary
 
 - **Total Files**: 115
-- **Not Started**: 102
+- **Not Started**: 96
 - **In Progress**: 0
-- **Completed**: 13
+- **Completed**: 19
 - **Blocked**: 0
 
 ## Migration Batches
 
 - **Batch 1**: ARTAnnotation - ARTChannels (13 files) - Completed (13 completed)
-- **Batch 2**: ARTClientInformation - ARTDefault (11 files) - Not Started  
+- **Batch 2**: ARTClientInformation - ARTDefault (11 files) - Partially Completed (8 completed, 3 deferred)
 - **Batch 3**: ARTDeviceDetails - ARTInternalLogCore (12 files) - Not Started
 - **Batch 4**: ARTJitterCoefficientGenerator - ARTPluginDecodingContext (14 files) - Not Started
 - **Batch 5**: ARTPresence - ARTRealtimeChannelOptions (15 files) - Not Started
