@@ -31,6 +31,61 @@ Before writing `swift-migration:` comments for each method/property/class:
 - [ ] If found in headers, did I include BOTH header line AND implementation line in my comment?
 - [ ] Does my comment follow the exact format: `// swift-migration: original location Header.h, line X and Implementation.m, line Y`?
 
+## ⚠️ Critical: Property Custom Getters
+
+**ALWAYS check if properties have custom getters in the .m file before migrating:**
+
+### Property Migration Checklist
+
+Before migrating any property, ALWAYS check if it has a custom getter in the .m file:
+
+1. **Search the .m file** for `- (PropertyType *)propertyName {`
+2. **Look for thread-safety patterns**:
+   - `dispatch_sync(_queue, ^{ ... })`  
+   - `dispatch_async`
+   - `@synchronized`
+3. **Check for companion methods** like `propertyName_nosync`
+
+### Example Pattern to Watch For
+
+```objective-c
+// Header declares simple property
+@property (readonly) NSString *clientId;
+
+// But implementation has custom thread-safe getter!
+- (NSString *)clientId {
+    __block NSString *clientId;
+    dispatch_sync(_queue, ^{
+        clientId = self.clientId_nosync;
+    });
+    return clientId;
+}
+```
+
+**Swift Migration Must Preserve This:**
+```swift
+internal var clientId: String? {
+    var result: String?
+    queue.sync {
+        result = clientId_nosync()
+    }
+    return result
+}
+```
+
+### Common Migration Pitfalls
+
+#### ❌ DON'T: Assume header declarations tell the full story
+```swift
+// Wrong - missing thread safety from custom getter
+internal var clientId: String? {
+    return clientId_nosync()
+}
+```
+
+#### ✅ DO: Always check .m implementation files
+Search for custom getters that may include critical thread-safety logic.
+
 ## Critical Examples: Threading Behavior
 
 ### ❌ WRONG - Changes Threading Behavior

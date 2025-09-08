@@ -9,9 +9,13 @@ public enum ARTAuthorizationState: UInt {
 
 // swift-migration: original location ARTAuth+Private.h, line 16
 internal class ARTAuthInternal {
-    // swift-migration: original location ARTAuth+Private.h, line 18
+    // swift-migration: original location ARTAuth+Private.h, line 18 and ARTAuth.m clientId getter
     internal var clientId: String? {
-        return clientId_nosync()
+        var result: String?
+        queue.sync {
+            result = clientId_nosync()
+        }
+        return result
     }
     
     // swift-migration: original location ARTAuth+Private.h, line 19
