@@ -332,25 +332,42 @@ var timestamp: Date
 
 **Current Objective-C Structure:**
 - **`Sources/Ably/include/`**: Public headers forming the public API
-- **`Sources/Ably/PrivateHeaders/`**: Private headers with two categories:
-  1. Private declarations for public types (exposed via `Ably.Private` module for testing)
-  2. Private types not exposed externally
+- **`Sources/Ably/PrivateHeaders/`**: Private headers with internal declarations
+- **`.m` implementation files**: Implementation-only declarations
 
-**Swift Access Control Strategy:**
+**Swift Access Control Decision Rule:**
+
+All declarations (classes, methods, properties, types, etc.) inherit their access level from their original declaration location:
+
+- **Declarations from `Sources/Ably/include/`** → `public`
+- **Declarations from `Sources/Ably/PrivateHeaders/`** → `internal`
+- **Declarations only in `.m` files** → `private`
+
+**Swift Access Control Examples:**
 ```swift
-// Public API (equivalent to include/ headers)
+// Example 1: Public API (from Sources/Ably/include/ARTRealtime.h)
 public class ARTRealtime {
-    public func connect() { }
+    public func connect() { }  // Declared in include/ header
 }
 
-// Internal API (equivalent to private declarations for public types)
-// Its definition should be inserted inside the implementation of the class
-    internal func internalConnect() { }
+// Example 2: Internal API (from Sources/Ably/PrivateHeaders/ARTRealtime+Private.h)
+extension ARTRealtime {
+    internal func internalConnect() { }  // Declared in PrivateHeaders/
 }
 
-// Private types (equivalent to private headers)
-internal class ARTInternalHelper { }
+// Example 3: Private implementation (from ARTRealtime.m only)
+extension ARTRealtime {
+    private func helperMethod() { }  // Only exists in .m file
+}
+
+// Example 4: Internal types (from Sources/Ably/PrivateHeaders/ARTInternalHelper.h)
+internal class ARTInternalHelper { }  // Declared in PrivateHeaders/
 ```
+
+**Decision Algorithm for LLM Implementation:**
+1. **Check declaration location**: Look up where each method/property/type is originally declared
+2. **Apply access level**: Use the location-based rule above
+3. **Consistency check**: Ensure all members of a type follow the same pattern based on their original declaration location
 
 ### Swift-Specific Requirements
 
