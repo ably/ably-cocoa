@@ -9,6 +9,7 @@ This document outlines the requirements and approach for migrating the Ably Coco
 **NEVER CHANGE THESE WITHOUT EXPLICIT USER APPROVAL:**
 - ❌ **Queue/threading behavior** (e.g., `_userQueue` → `DispatchQueue.main`)
 - ❌ **Callback patterns or timing** 
+- ❌ **Property storage and getter behavior** (remove storage, change custom getter logic)
 - ❌ **Any runtime behavior differences**
 - ❌ **Memory management patterns**
 - ❌ **State machine transitions**
@@ -20,6 +21,7 @@ This document outlines the requirements and approach for migrating the Ably Coco
 Before making any change, ask yourself:
 - [ ] Will this change any queue/threading behavior? → **STOP, ASK USER**
 - [ ] Will this change callback timing? → **STOP, ASK USER**  
+- [ ] Will this remove property storage or change getter logic? → **STOP, ASK USER**
 - [ ] Will this change runtime behavior? → **STOP, ASK USER**
 - [ ] Will this change when/how objects are deallocated? → **STOP, ASK USER**
 
@@ -45,9 +47,11 @@ Before migrating any property, ALWAYS check if it has a custom getter in the .m 
    - `dispatch_async`
    - `@synchronized`
 3. **Check for companion methods** like `propertyName_nosync`
+4. **Check for complex logic**: Environment handling, fallback values, validation
 
-### Example Pattern to Watch For
+### Two Critical Property Patterns
 
+#### Pattern 1: Thread-Safe Property with Custom Logic
 ```objective-c
 // Header declares simple property
 @property (readonly) NSString *clientId;
@@ -73,18 +77,92 @@ internal var clientId: String? {
 }
 ```
 
+#### Pattern 2: Property with Storage AND Custom Getter Logic
+```objective-c
+// Header declares property
+@property (readwrite, nonatomic) NSString *restHost;
+
+// Implementation has custom getter with fallback logic
+- (NSString*)restHost {
+    if (_restHost != nil) {
+        return _restHost;
+    }
+    if ([_environment isEqualToString:ARTDefaultProduction]) {
+        return [ARTDefault restHost];
+    }
+    return self.hasEnvironment ? [self host:[ARTDefault restHost] forEnvironment:_environment] : [ARTDefault restHost];
+}
+// Automatic setter: - (void)setRestHost:(NSString*)value { _restHost = value; }
+```
+
+**Swift Migration Must Preserve Storage AND Logic:**
+```swift
+public var restHost: String? {
+    get {
+        // swift-migration: exact logic from original getter
+        if let restHost = _restHost {
+            return restHost
+        }
+        if environment == ARTDefaultProduction {
+            return ARTDefault.restHost()
+        }
+        return hasEnvironment ? host(ARTDefault.restHost(), forEnvironment: environment!) : ARTDefault.restHost()
+    }
+    set { _restHost = newValue }  // Must preserve ability to store values
+}
+private var _restHost: String?  // Must have backing storage
+```
+
 ### Common Migration Pitfalls
 
-#### ❌ DON'T: Assume header declarations tell the full story
+#### ❌ DON'T: Remove storage when custom getter exists
 ```swift
-// Wrong - missing thread safety from custom getter
-internal var clientId: String? {
-    return clientId_nosync()
+// WRONG - removes storage, changes behavior completely
+var restHost: String? {
+    if environment == ARTDefaultProduction {
+        return ARTDefault.restHost()
+    }
+    return defaultHost  // Can never be set to a custom value!
 }
 ```
 
-#### ✅ DO: Always check .m implementation files
-Search for custom getters that may include critical thread-safety logic.
+#### ❌ DON'T: Create helper methods instead of proper getters
+```swift
+// WRONG - changes the property access pattern
+private var _restHost: String?
+public var restHost: String? {
+    get { restHost_computed }  // Wrong!
+    set { _restHost = newValue }
+}
+private var restHost_computed: String {
+    // logic here - but this breaks the storage pattern
+}
+```
+
+#### ✅ DO: Preserve both storage and custom getter logic
+```swift
+// CORRECT - maintains storage AND custom logic
+public var restHost: String? {
+    get {
+        // Check stored value first
+        if let restHost = _restHost {
+            return restHost
+        }
+        // Then apply custom logic for defaults
+        return computeDefaultValue()
+    }
+    set { _restHost = newValue }  // Still allows storing custom values
+}
+private var _restHost: String?  // Backing storage preserved
+```
+
+### Key Principle: Objective-C Properties Can Store AND Compute
+
+**Remember**: Objective-C properties with custom getters can:
+1. **Store** values when assigned (`obj.restHost = @"custom"`)
+2. **Compute** default values when not set (`obj.restHost` returns computed default)
+
+**Swift migration must preserve both capabilities.**
 
 ## Critical Examples: Threading Behavior
 

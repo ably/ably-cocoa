@@ -23,8 +23,8 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTChannelProtocol.m | ARTChannelProtocol.h | ARTChannelProtocol.swift | Completed |
 | ARTChannelStateChangeParams.m | ARTChannelStateChangeParams.h | ARTChannelStateChangeParams.swift | Completed |
 | ARTChannels.m | ARTChannels.h, ARTChannels+Private.h | ARTChannels.swift | Completed |
-| ARTClientInformation.m | ARTClientInformation.h, ARTClientInformation+Private.h | ARTClientInformation.swift | Not Started |
-| ARTClientOptions.m | ARTClientOptions.h, ARTClientOptions+Private.h | ARTClientOptions.swift | Not Started |
+| ARTClientInformation.m | ARTClientInformation.h, ARTClientInformation+Private.h | ARTClientInformation.swift | Completed |
+| ARTClientOptions.m | ARTClientOptions.h, ARTClientOptions+Private.h | ARTClientOptions.swift | Completed |
 | ARTConnectRetryState.m | ARTConnectRetryState.h | ARTConnectRetryState.swift | Not Started |
 | ARTConnection.m | ARTConnection.h, ARTConnection+Private.h | ARTConnection.swift | Not Started |
 | ARTConnectionDetails.m | ARTConnectionDetails.h, ARTConnectionDetails+Private.h | ARTConnectionDetails.swift | Not Started |
@@ -129,14 +129,14 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 ## Progress Summary
 
 - **Total Files**: 115
-- **Not Started**: 104
+- **Not Started**: 102
 - **In Progress**: 0
-- **Completed**: 11
+- **Completed**: 13
 - **Blocked**: 0
 
 ## Migration Batches
 
-- **Batch 1**: ARTAnnotation - ARTChannels (13 files) - In Progress (11 completed)
+- **Batch 1**: ARTAnnotation - ARTChannels (13 files) - Completed (13 completed)
 - **Batch 2**: ARTClientInformation - ARTDefault (11 files) - Not Started  
 - **Batch 3**: ARTDeviceDetails - ARTInternalLogCore (12 files) - Not Started
 - **Batch 4**: ARTJitterCoefficientGenerator - ARTPluginDecodingContext (14 files) - Not Started

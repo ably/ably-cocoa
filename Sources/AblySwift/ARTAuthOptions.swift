@@ -101,7 +101,8 @@ public class ARTAuthOptions: NSObject, NSCopying {
     }
     
     // swift-migration: original location ARTAuthOptions+Private.h, line 7 and ARTAuthOptions.m, line 48
-    private func initDefaults() -> ARTAuthOptions {
+    @discardableResult
+    internal func initDefaults() -> ARTAuthOptions {
         _authMethod = ARTAuthOptionsMethodDefault
         return self
     }

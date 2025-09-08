@@ -140,17 +140,34 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
   - **Swift Adaptations**: Converted generic Objective-C type to Swift generics with constraints, used weak delegate reference, converted string prefix logic to Swift string operations
 
 ### ARTClientInformation.m → ARTClientInformation.swift
+- **Headers**: ARTClientInformation.h, ARTClientInformation+Private.h
+- **Status**: Completed
+- **Notes**: 
+  - **Migration Decisions**: Static utility class for client information and agent string construction. Converted dispatch_once pattern to Swift static computed property with nested struct. Used public access level as per public header location. Maintained platform-specific conditional compilation patterns exactly.
+  - **Dependencies**: Created placeholders for ARTDefault methods (port, tlsPort, restHost, realtimeHost, apiVersion)
+  - **Compilation Errors**: Fixed osName method syntax for conditional compilation blocks, fixed Darwin import for utsname functionality  
+  - **Location Comments**: Applied dual-location format for all methods and properties
+  - **Swift Adaptations**: Converted NSString stringWithCString to Swift String(cString:), used static computed properties instead of dispatch_once, converted utsname C interop with proper memory management
+
+### ARTClientOptions.m → ARTClientOptions.swift
+- **Headers**: ARTClientOptions.h, ARTClientOptions+Private.h, ARTClientOptions+TestConfiguration.h
+- **Status**: Completed
+- **Notes**: 
+  - **Migration Decisions**: Complex client options class inheriting from ARTAuthOptions with numerous properties, custom getters/setters, NSCopying support, and plugin management. Preserved all threading behavior, queue management, and configuration validation exactly as original. Used public access level as per public header location. CRITICAL FIX: Implemented restHost and realtimeHost as properties with custom getters (not computed properties) to preserve exact runtime behavior with backing storage.
+  - **Dependencies**: Extended ARTDefault placeholder with additional methods, created placeholders for ARTLog, ARTLogLevel, ARTStringifiable, ARTPushRegistererDelegate, ARTTestClientOptions, ARTPluginAPI, and plugin protocols
+  - **Compilation Errors**: Fixed redundant NSCopying conformance (inherited from parent), fixed override keywords for initDefaults and copy methods, added @discardableResult attributes
+  - **Runtime Behavior Fix**: Corrected restHost and realtimeHost from computed properties to properties with backing storage (_restHost, _realtimeHost) and custom getters implementing the exact original logic from ARTClientOptions.m lines 71-90
+  - **Location Comments**: Applied dual-location format for all methods and properties  
+  - **Swift Adaptations**: Converted complex property setters with validation logic, converted NSException to fatalError, preserved deprecated property warnings, used DispatchQueue instead of dispatch_queue_t, converted plugin management patterns
 
 ---
 
-## Batch 2: ARTClientInformation - ARTDefault (11 files)
+## Batch 2: ARTConnectRetryState - ARTDefault (11 files)
 
-### ARTClientInformation.m → ARTClientInformation.swift
-- **Headers**: ARTClientInformation.h, ARTClientInformation+Private.h
+### ARTConnectRetryState.m → ARTConnectRetryState.swift
+- **Headers**: ARTConnectRetryState.h
 - **Status**: Not Started
-- **Notes**: 
-
-### ARTClientOptions.m → ARTClientOptions.swift
+- **Notes**:
 - **Headers**: ARTClientOptions.h, ARTClientOptions+Private.h
 - **Status**: Not Started
 - **Notes**: 

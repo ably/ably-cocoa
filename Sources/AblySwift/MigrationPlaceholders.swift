@@ -180,25 +180,7 @@ public class ARTTokenRequest {
     }
 }
 
-// Placeholder for ARTClientOptions - inherits from ARTAuthOptions  
-public class ARTClientOptions: ARTAuthOptions {
-    public var defaultTokenParams: ARTTokenParams? = nil
-    public var clientId: String? = nil
-    public var tls: Bool = true
-    
-    public required override init() {
-        super.init()
-        fatalError("ARTClientOptions not yet migrated")
-    }
-    
-    public func isBasicAuth() -> Bool {
-        fatalError("ARTClientOptions not yet migrated")
-    }
-    
-    public override func merge(with other: ARTAuthOptions) -> ARTAuthOptions {
-        fatalError("ARTClientOptions not yet migrated")
-    }
-}
+// swift-migration: ARTClientOptions placeholder removed - now implemented
 
 // Placeholder for ARTRestInternal
 public class ARTRestInternal {
@@ -556,5 +538,90 @@ internal class ARTRestChannel: ARTChannel {
     internal override init(name: String, andOptions options: ARTChannelOptions, rest: ARTRestInternal, logger: ARTInternalLog) {
         super.init(name: name, andOptions: options, rest: rest, logger: logger)
         fatalError("ARTRestChannel not yet migrated")
+    }
+}
+
+// Additional placeholders for ARTClientOptions dependencies
+
+// Extend ARTDefault to add missing methods
+extension ARTDefault {
+    public static func port() -> Int {
+        fatalError("ARTDefault port() not yet migrated")
+    }
+    
+    public static func tlsPort() -> Int {
+        fatalError("ARTDefault tlsPort() not yet migrated")
+    }
+    
+    public static func restHost() -> String {
+        fatalError("ARTDefault restHost() not yet migrated")
+    }
+    
+    public static func realtimeHost() -> String {
+        fatalError("ARTDefault realtimeHost() not yet migrated")
+    }
+    
+    public static func apiVersion() -> String {
+        fatalError("ARTDefault apiVersion() not yet migrated")
+    }
+}
+
+// Placeholder for ARTDefaultProduction constant
+public let ARTDefaultProduction = "production"
+
+// Placeholder for ARTLog class
+public class ARTLog {
+    public init() {
+        // Empty init for now
+    }
+}
+
+// Placeholder for ARTLogLevel enum
+public enum ARTLogLevel: UInt {
+    case none = 0
+    case verbose = 1
+    case debug = 2
+    case info = 3
+    case warn = 4
+    case error = 5
+}
+
+// Placeholder for ARTStringifiable protocol
+public protocol ARTStringifiable {
+    func toString() -> String
+}
+
+// Placeholder for ARTPushRegistererDelegate protocol  
+public protocol ARTPushRegistererDelegate {
+    // Placeholder methods
+}
+
+// Placeholder for ARTTestClientOptions class
+public class ARTTestClientOptions {
+    public init() {
+        // Empty init for now
+    }
+}
+
+// Placeholder for ARTPluginAPI class
+public class ARTPluginAPI {
+    public static func registerSelf() {
+        // Placeholder implementation
+    }
+}
+
+// Placeholder for plugin protocols
+public protocol APLiveObjectsPluginProtocol {
+    static func internalPlugin() -> APLiveObjectsInternalPluginProtocol
+}
+
+public protocol APLiveObjectsInternalPluginProtocol {
+    // Placeholder protocol
+}
+
+// Extend ARTTokenParams to add missing initializer
+extension ARTTokenParams {
+    public convenience init(tokenParams: ARTTokenParams) {
+        fatalError("ARTTokenParams init(tokenParams:) not yet migrated")
     }
 }
