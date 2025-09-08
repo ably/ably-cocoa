@@ -47,7 +47,7 @@ The current Ably Cocoa SDK consists of approximately 100+ Objective-C implementa
 
 ### Complete Migration Table
 
-The following table shows all 106 `.m` files to be migrated in alphabetical order, along with their associated header files and resulting Swift file names:
+The following table shows all 115 `.m` files to be migrated in alphabetical order, along with their associated header files and resulting Swift file names:
 
 | .m File | Associated .h Files | Resulting .swift File |
 |---------|-------------------|---------------------|
@@ -180,6 +180,13 @@ With alphabetical ordering, the migration can be approached in manageable batche
 **Batch 7: ARTWrapperSDKProxy* files (15 files)**
 **Batch 8: Foundation Extensions (NS* files) (12 files)**
 **Batch 9: Build System & Testing**
+
+**Batch Completion Criteria:**
+1. All files in batch migrated to Swift
+2. `swift build` runs without compilation errors
+3. Warnings handled according to error handling rules
+4. Progress tracking files updated
+5. Placeholder types created/updated as needed
 
 **Swift Adaptations Example:**
 ```objective-c
@@ -393,18 +400,81 @@ let results = items.map { processItem($0) }
 Sources/
 ├── Ably/                    # Existing Objective-C (keep during transition)
 ├── AblySwift/              # New Swift implementation
-│   ├── Foundation/         # Swift extensions
-│   ├── Core/              # Types, constants, utilities
-│   ├── Encoding/          # Data encoding/decoding
-│   ├── Networking/        # HTTP, auth, fallback
-│   ├── Messaging/         # Message handling
-│   ├── Channels/          # Channel management
-│   ├── Realtime/          # Transport, connection
-│   ├── Push/              # Push notifications  
-│   ├── Clients/           # Main ARTRest, ARTRealtime
-│   └── Proxies/           # Wrapper SDK proxies
+│   ├── MigrationPlaceholders.swift  # Temporary placeholder types
+│   ├── ARTAnnotation.swift
+│   ├── ARTAttachRequestParams.swift
+│   ├── ARTAuth.swift
+│   ├── ... (all other migrated .swift files in single directory)
+│   └── NSURLRequest+ARTUtils.swift
 └── SocketRocket/          # Unchanged C/ObjC dependency
 ```
+
+**File Organization Rules:**
+- All migrated `.swift` files go directly into the `Sources/AblySwift/` directory
+- No subdirectories or categorization - keep all Swift files in a flat structure
+- `MigrationPlaceholders.swift` is the only special file for temporary placeholder types
+
+## Migration Implementation Rules
+
+### Error and Warning Handling
+
+**Testing Requirement:** `swift build` must be run before considering any batch of files complete.
+
+**Compilation Errors:**
+- **Obvious fixes**: Fix immediately and document in `swift-migration-files-progress.md`
+- **Significant deviations**: Leave code as-is, stop migration, and ask user for guidance
+
+**Compilation Warnings:**
+- **Obvious fixes**: Fix immediately and document in `swift-migration-files-progress.md`
+- **Significant deviations**: Leave code as-is and document decision in `swift-migration-files-progress.md`
+
+**Ignored Warnings:**
+- Unused method call results
+- Concurrency safety warnings (e.g., `Capture of 'callback' with non-sendable type`)
+
+### Placeholder Type Management
+
+**Purpose:** Handle dependencies on unmigrated types to prevent build failures.
+
+**Placeholder File:** All placeholder types go in `Sources/AblySwift/MigrationPlaceholders.swift`
+
+**Placeholder Creation Rules:**
+1. **Enums**: Create the full enum definition
+2. **Protocols**: Create the full protocol interface for method calls
+3. **Classes**: Create class with `fatalError()` implementations for all methods/properties
+4. **Extensions**: Create extension with `fatalError()` implementations for all methods/properties
+
+**Placeholder Removal:** Remove placeholder types from `MigrationPlaceholders.swift` once proper implementation exists
+
+### Code Comment Guidelines
+
+**Migration Comments:** All migration-related code comments MUST start with `swift-migration: ` so that a human reviewer can distinguish them from the original Objective-C comments
+
+**Required Comments:**
+- Any code modifications or skips during migration
+- Decisions documented in both code and `swift-migration-files-progress.md`
+
+**Original Comments:** Preserve all existing Objective-C comments unchanged
+
+### Special Translation Rules
+
+**Platform Conditionals:**
+```objective-c
+// Objective-C
+#if TARGET_OS_IOS
+
+// Swift
+#if os(iOS)
+```
+
+**NSMutableArray Queue Operations:**
+- `NSMutableArray.art_enqueue` → `Array.append`
+- `NSMutableArray.art_dequeue` → `Array.popFirst`
+- `NSMutableArray.art_peek` → `Array.first`
+
+**NSMutableDictionary Parameters:**
+- Methods accepting `NSMutableDictionary` → Accept `inout Dictionary` in Swift
+- Examples: `ARTMessageOperation.writeToDictionary:`, `ARTJsonLikeEncoder.writeData:…`
 
 ## Risk Assessment & Mitigation
 
@@ -441,7 +511,6 @@ Sources/
 ### Functional Requirements
 - [ ] All existing tests pass against Swift implementation
 - [ ] No behavioral changes in client-facing APIs
-- [ ] Performance within 5% of Objective-C implementation
 - [ ] Memory usage comparable to current implementation
 
 ### Quality Requirements  
@@ -461,17 +530,10 @@ Sources/
 
 ### Migration Progress Documentation **[REQUIRED]**
 
-**Real-Time Migration Log:**
-- **File**: [`ably-cocoa-swift-migration-log.md`](ably-cocoa-swift-migration-log.md)
-- **Purpose**: Comprehensive documentation of all migration decisions, challenges, and solutions
-- **Update Frequency**: After completing each significant component or resolving any technical challenge
-- **Content Requirements**:
-  - Technical decisions made during migration (with justification)
-  - Challenges encountered and solutions applied
-  - Swift-specific patterns established
-  - Architecture changes from Objective-C to Swift
-  - Performance considerations and optimizations
-  - Compilation and testing status for each phase
+**Progress Tracking Files:**
+- **[`swift-migration-overall-progress.md`](swift-migration-overall-progress.md)**: Master table tracking migration status of all 115 files with progress column
+- **[`swift-migration-files-progress.md`](swift-migration-files-progress.md)**: Detailed file-by-file progress with batch organization, compilation notes, and migration decisions
+- **Update Frequency**: Both files must be updated as each file is migrated and each batch is completed
 
 **Documentation Standards:**
 - Document **why** certain translation approaches were chosen
@@ -479,40 +541,7 @@ Sources/
 - Track deviations from mechanical translation with reasoning
 - Maintain architectural decision records (ADRs) for significant choices
 - Include code examples showing Objective-C → Swift transformations
-
-### Progress Tracking
-**LLM Progress Documentation:**
-- Use `update_todo_list` tool after completing each major component
-- Create commit-ready file batches for each migration phase
-- Update migration log with progress details and technical decisions
-- Generate summary reports showing:
-  - Files migrated per phase with line count comparisons
-  - Key architectural decisions made during translation
-  - Deviations from mechanical translation (with justification)
-
-### Human Review Process
-**Structured Review Approach:**
-- **Phase-by-Phase Review**: Complete one dependency layer before proceeding
-- **Side-by-Side Comparison**: Generate diff reports showing Objective-C → Swift transformations
-- **Key Decision Documentation**: Maintain decision log for non-obvious translations
-- **Test Result Validation**: Provide before/after test execution reports
-
-### Upstream Change Integration
-**Process for Ongoing Objective-C Updates:**
-1. **Change Detection**: Monitor upstream commits to Objective-C files
-2. **Impact Analysis**: Identify which Swift files need corresponding updates
-3. **Mechanical Re-application**: Apply same translation patterns to new changes
-4. **Regression Testing**: Ensure changes don't break existing Swift implementation
-5. **Documentation Updates**: Update translation decision log for new patterns
-
-**Change Tracking Strategy:**
-```
-Git workflow:
-feature/swift-migration-phase-1  # Foundation & Types
-feature/swift-migration-phase-2  # Encoding & Data
-feature/swift-migration-phase-3  # Networking & Auth
-...
-```
+- **All migration comments in code must start with `swift-migration: `**
 
 ## Conclusion
 
