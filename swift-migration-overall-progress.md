@@ -94,7 +94,7 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTRestPresence.m | ARTRestPresence.h, ARTRestPresence+Private.h | ARTRestPresence.swift | Not Started |
 | ARTRetrySequence.m | ARTRetrySequence.h | ARTRetrySequence.swift | Not Started |
 | ARTStats.m | ARTStats.h | ARTStats.swift | Not Started |
-| ARTStatus.m | ARTStatus.h | ARTStatus.swift | Not Started |
+| ARTStatus.m | ARTStatus.h | ARTStatus.swift | Completed |
 | ARTStringifiable.m | ARTStringifiable.h, ARTStringifiable+Private.h | ARTStringifiable.swift | Not Started |
 | ARTTestClientOptions.m | ARTTestClientOptions.h | ARTTestClientOptions.swift | Not Started |
 | ARTTokenDetails.m | ARTTokenDetails.h | ARTTokenDetails.swift | Not Started |
@@ -131,9 +131,9 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 ## Progress Summary
 
 - **Total Files**: 116
-- **Not Started**: 67
+- **Not Started**: 66
 - **In Progress**: 0
-- **Completed**: 48
+- **Completed**: 49
 - **Blocked**: 0
 - **Deferred**: 1
 

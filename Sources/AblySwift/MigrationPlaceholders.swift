@@ -11,44 +11,11 @@ public protocol ARTJsonCompatible {
 
 // ARTDataEncoder and ARTDataEncoderOutput implemented in ARTDataEncoder.swift
 
-// Placeholder for ARTErrorInfo
-public class ARTErrorInfo: NSObject, Error, NSCopying {
-    public let code: Int
-    public let message: String
-    public let statusCode: Int
-    
-    public init(code: Int, message: String, statusCode: Int = 0) {
-        self.code = code
-        self.message = message
-        self.statusCode = statusCode
-        super.init()
-    }
-    
-    public func copy(with zone: NSZone?) -> Any {
-        return ARTErrorInfo(code: self.code, message: self.message, statusCode: self.statusCode)
-    }
-    
-    public static func create(withCode code: Int, message: String) -> ARTErrorInfo {
-        return ARTErrorInfo(code: code, message: message)
-    }
-    
-    public static func create(withCode code: Int, status: Int, message: String) -> ARTErrorInfo {
-        return ARTErrorInfo(code: code, message: message, statusCode: status)
-    }
-    
-    public static func createWithCode(_ code: Int, message: String) -> ARTErrorInfo {
-        return ARTErrorInfo(code: code, message: message)
-    }
-    
-    public static func createFromNSError(_ error: Error) -> ARTErrorInfo {
-        fatalError("ARTErrorInfo createFromNSError not yet migrated")
-    }
-}
+// swift-migration: ARTErrorInfo placeholder removed - now implemented in ARTStatus.swift
 
 // ARTEvent implemented in ARTEventEmitter.swift
 
-// Placeholder constants
-public let ARTAblyErrorDomain = "ARTAblyErrorDomain"
+// swift-migration: ARTAblyErrorDomain constant now defined in ARTStatus.swift
 
 // Placeholder for ARTRetryAttempt
 public class ARTRetryAttempt {
@@ -213,24 +180,7 @@ public class ARTRestInternal {
 
 // NSString extension implemented in ARTDataEncoder.swift
 
-// Placeholder for ARTStatus
-public class ARTStatus: NSObject {
-    public enum State {
-        case ok
-        case error
-        case invalidArgs
-        case cryptoBadPadding
-    }
-    
-    public let state: State
-    public let errorInfo: ARTErrorInfo?
-    
-    public init(state: State, errorInfo: ARTErrorInfo? = nil) {
-        self.state = state
-        self.errorInfo = errorInfo
-        super.init()
-    }
-}
+// swift-migration: ARTStatus placeholder removed - now implemented in ARTStatus.swift
 
 // Placeholder types needed for ARTConnection and other migrations
 
@@ -296,16 +246,7 @@ public protocol ARTConnectionProtocol: NSObjectProtocol {
     func once(_ event: ARTRealtimeConnectionEvent, callback cb: @escaping ARTConnectionStateCallback) -> ARTEventListener
 }
 
-// Placeholder for ARTErrorCode
-public enum ARTErrorCode: Int {
-    case ARTErrorDisconnected = 80001
-    case ARTErrorConnectionSuspended = 80002
-    case ARTErrorConnectionFailed = 80003
-    case ARTErrorConnectionClosed = 80004
-    case ARTErrorInvalidTransportHandle = 80005
-    case ARTErrorInvalidMessageDataOrEncoding = 40013
-    case ARTErrorUnableToDecodeMessage = 40014
-}
+// swift-migration: ARTErrorCode enum now defined in ARTStatus.swift
 
 // Placeholder helper functions
 public func ARTRealtimeConnectionStateToStr(_ state: ARTRealtimeConnectionState) -> String {
@@ -459,7 +400,7 @@ public func artCancellableFromCallback(
 
 // Error constants placeholder
 public let ARTStateRequestTokenFailed = 40170
-public let ARTAblyMessageNoMeansToRenewToken = "No means to renew token"
+// swift-migration: ARTAblyMessageNoMeansToRenewToken constant now defined in ARTStatus.swift
 public let ARTErrorErrorFromClientTokenCallback = 80019
 public let ARTErrorIncompatibleCredentials = 40102
 public let ARTStateAuthUrlIncompatibleContent = 40170
@@ -491,29 +432,7 @@ public protocol ARTDeviceStorage {
 // Placeholder callback types
 public typealias ARTPaginatedMessagesCallback = (ARTPaginatedResult<ARTMessage>?, ARTErrorInfo?) -> Void
 
-// Placeholder for ARTState enum
-public enum ARTState: UInt {
-    case ok = 0
-    case connectionClosedByClient
-    case connectionDisconnected
-    case connectionSuspended
-    case connectionFailed
-    case accessRefused
-    case neverConnected
-    case connectionTimedOut
-    case attachTimedOut
-    case detachTimedOut
-    case notAttached
-    case invalidArgs
-    case cryptoBadPadding
-    case noClientId
-    case mismatchedClientId
-    case requestTokenFailed
-    case authorizationFailed
-    case authUrlIncompatibleContent
-    case badConnectionState
-    case error = 99999
-}
+// swift-migration: ARTState enum placeholder removed - now implemented in ARTStatus.swift
 
 // These placeholders will be replaced by the actual ARTChannelOptions implementation
 
@@ -752,11 +671,7 @@ public protocol ARTJsonLikeEncoderDelegate {
     func encode(_ obj: Any) throws -> Data?
 }
 
-// Placeholder for ARTClientCodeError enum
-public enum ARTClientCodeError: UInt {
-    case invalidType = 0
-    case transport = 1
-}
+// swift-migration: ARTClientCodeError enum now defined in ARTStatus.swift
 
 public let ARTClientCodeErrorInvalidType = ARTClientCodeError.invalidType
 
@@ -936,12 +851,7 @@ public class ARTJsonLikeEncoder {
     }
 }
 
-// Placeholder for ARTErrorInfo.wrap static method
-extension ARTErrorInfo {
-    public static func wrap(_ errorInfo: ARTErrorInfo, prepend: String) -> ARTErrorInfo {
-        return ARTErrorInfo(code: errorInfo.code, message: "\(prepend): \(errorInfo.message)", statusCode: errorInfo.statusCode)
-    }
-}
+// swift-migration: ARTErrorInfo.wrap static method now defined in ARTStatus.swift
 
 // Placeholder for APObjectMessageProtocol
 public protocol APObjectMessageProtocol {}
@@ -1118,12 +1028,7 @@ public typealias ARTPaginatedTextCallback = (ARTPaginatedResult<String>?, ARTErr
 // Placeholder for ARTPaginatedDeviceDetailsCallback  
 public typealias ARTPaginatedDeviceDetailsCallback = (ARTPaginatedResult<ARTDeviceDetails>?, ARTErrorInfo?) -> Void
 
-// Add missing static methods to ARTErrorInfo
-extension ARTErrorInfo {
-    public static func createUnknownError() -> ARTErrorInfo {
-        return ARTErrorInfo(code: -1, message: "Unknown error")
-    }
-}
+// swift-migration: ARTErrorInfo methods now defined in ARTStatus.swift
 
 // Extension for URLRequest to add device authentication
 extension URLRequest {
