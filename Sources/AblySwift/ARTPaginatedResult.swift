@@ -107,7 +107,7 @@ public class ARTPaginatedResult<ItemType>: NSObject {
         // that would just be bookkeeping since we know it will be initialized
         // from the ARTRestInternal we already have access to anyway, so we can
         // make our own.
-        self.deallocInternal = ARTQueuedDealloc(object: rest, queue: rest.queue)
+        self.deallocInternal = ARTQueuedDealloc(ref: rest, queue: rest.queue)
         
         super.init()
     }

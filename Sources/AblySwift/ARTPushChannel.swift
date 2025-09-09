@@ -182,8 +182,8 @@ internal class ARTPushChannelInternal: NSObject {
                     "deviceId": deviceId as Any,
                     "channel": channel.name
                 ]
-                request.httpBody = try rest.defaultEncoder.encode(any: body)
-                request.setValue(rest.defaultEncoder.mimeType(), forHTTPHeaderField: "Content-Type")
+                request.httpBody = try rest.defaultEncoder().encode(any: body)
+                request.setValue(rest.defaultEncoder().mimeType(), forHTTPHeaderField: "Content-Type")
                 let authenticatedRequest = request.settingDeviceAuthentication(deviceId ?? "", localDevice: device).mutableCopy() as! NSMutableURLRequest
 
                 ARTLogDebug(self.logger, "subscribe notifications for device \(deviceId) in channel \(channel.name)")
@@ -228,8 +228,8 @@ internal class ARTPushChannelInternal: NSObject {
                     "clientId": clientId,
                     "channel": channel.name
                 ]
-                request.httpBody = try rest.defaultEncoder.encode(any: body)
-                request.setValue(rest.defaultEncoder.mimeType(), forHTTPHeaderField: "Content-Type")
+                request.httpBody = try rest.defaultEncoder().encode(any: body)
+                request.setValue(rest.defaultEncoder().mimeType(), forHTTPHeaderField: "Content-Type")
 
                 ARTLogDebug(self.logger, "subscribe notifications for clientId \(clientId) in channel \(channel.name)")
                 _ = rest.executeRequest(request as URLRequest, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { [weak self] response, data, error in

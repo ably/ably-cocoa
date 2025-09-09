@@ -213,7 +213,7 @@ internal class ARTAuthInternal {
         }
         
         guard let rest = rest else { return nil }
-        urlComponents?.queryItems?.append(URLQueryItem(name: "format", value: rest.defaultEncoder.formatAsString()))
+        urlComponents?.queryItems?.append(URLQueryItem(name: "format", value: rest.defaultEncoder().formatAsString()))
         
         // swift-migration: Handling '+' sign pitfall as documented in original code
         if let percentEncodedQuery = urlComponents?.percentEncodedQuery {
@@ -242,7 +242,7 @@ internal class ARTAuthInternal {
             }
         } else {
             guard let rest = rest else { return nil }
-            request.setValue(rest.defaultEncoder.mimeType(), forHTTPHeaderField: "Accept")
+            request.setValue(rest.defaultEncoder().mimeType(), forHTTPHeaderField: "Accept")
         }
         
         if let authHeaders = options.authHeaders {
@@ -428,7 +428,7 @@ internal class ARTAuthInternal {
         guard let rest = rest else {
             fatalError("Rest is nil in toAuth")
         }
-        let dealloc = ARTQueuedDealloc(object: rest, queue: queue)
+        let dealloc = ARTQueuedDealloc(ref: rest, queue: queue)
         return ARTAuth(internal: self, queuedDealloc: dealloc)
     }
     
@@ -479,7 +479,7 @@ internal class ARTAuthInternal {
             return nil
         }
         
-        let encoder = rest.defaultEncoder
+        let encoder = rest.defaultEncoder()
         
         guard let keyName = tokenRequest.keyName else {
             callback(nil, ARTErrorInfo.create(withCode: ARTStateRequestTokenFailed, message: "Token request key name is nil"))

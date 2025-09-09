@@ -626,28 +626,48 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 ### ARTPushChannelSubscription.m → ARTPushChannelSubscription.swift
 - **Headers**: ARTPushChannelSubscription.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Simple data class with device/client-based subscription tracking. Implemented NSCopying protocol with proper object copying. Fixed typo in original equality check where deviceId was incorrectly checked against clientId.
+  - **Dependencies**: None - standalone data class
+  - **Compilation Errors**: None
+  - **Location Comments**: Applied dual-location format per PRD requirements
 
 ### ARTPushChannelSubscriptions.m → ARTPushChannelSubscriptions.swift
 - **Headers**: ARTPushChannelSubscriptions.h, ARTPushChannelSubscriptions+Private.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Public and internal classes for managing push channel subscriptions. HTTP-based CRUD operations with proper queue/threading behavior preservation using `_userQueue` for callbacks. Migrated from NSErrorPointer to Swift throws pattern for encoder methods.
+  - **Dependencies**: Used existing ARTRestInternal, ARTInternalLog, ARTCallback, ARTPaginatedResult placeholders
+  - **Compilation Errors**: Fixed mimeType() function call, updated encoder methods to use throws instead of NSErrorPointer
+  - **Location Comments**: Applied dual-location format for all classes and methods
 
 ### ARTPushDeviceRegistrations.m → ARTPushDeviceRegistrations.swift
 - **Headers**: ARTPushDeviceRegistrations.h, ARTPushDeviceRegistrations+Private.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Device registration management with CRUD operations. Preserved platform-specific conditional compilation for iOS device handling. Maintained all original threading behavior using `_userQueue` for callbacks. Updated encoder methods to use Swift throws pattern.
+  - **Dependencies**: Used existing ARTRestInternal, ARTInternalLog, ARTDeviceDetails, ARTLocalDevice placeholders
+  - **Compilation Errors**: Fixed encoder method signatures to use throws, updated device authentication placeholder methods
+  - **Location Comments**: Applied dual-location format for all classes and methods
 
 ### ARTQueuedDealloc.m → ARTQueuedDealloc.swift
 - **Headers**: ARTQueuedDealloc.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Simple utility class for queued deallocation. Preserves threading behavior by dispatching cleanup to specified queue. Renamed initializer parameter from 'object' to 'ref' for clarity.
+  - **Dependencies**: None - uses only Foundation types
+  - **Compilation Errors**: Fixed initializer parameter name in dependent files (ARTAuth.swift, ARTPaginatedResult.swift)
+  - **Location Comments**: Applied dual-location format
 
 ### ARTQueuedMessage.m → ARTQueuedMessage.swift
 - **Headers**: ARTQueuedMessage.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Message queuing with callback management. Preserves NSMutableArray for callback storage to maintain exact compatibility. Proper callback aggregation for sent and ack callbacks.
+  - **Dependencies**: Used existing ARTProtocolMessage, ARTCallback, ARTStatusCallback placeholders
+  - **Compilation Errors**: None
+  - **Location Comments**: Applied dual-location format for all methods
 
 ### ARTRealtime.m → ARTRealtime.swift
 - **Headers**: ARTRealtime.h, ARTRealtime+Private.h, ARTRealtime+WrapperSDKProxy.h

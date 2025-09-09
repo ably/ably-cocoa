@@ -175,13 +175,18 @@ public class ARTRestInternal {
     public let userQueue: DispatchQueue = DispatchQueue.main
     public let queue: DispatchQueue = DispatchQueue.main
     public let baseUrl: URL = URL(string: "https://rest.ably.io")!
-    public let defaultEncoder: ARTEncoder = ARTEncoderPlaceholder()
     public let encoders: [String: ARTEncoder] = [:]
     public var device_nosync: ARTLocalDevice { fatalError("ARTRestInternal not yet migrated") }
     internal var storage: ARTLocalDeviceStorage { fatalError("ARTRestInternal not yet migrated") }
+    public var options: ARTClientOptions { fatalError("ARTRestInternal not yet migrated") }
+    public var device: ARTLocalDevice { fatalError("ARTRestInternal not yet migrated") }
     // swift-migration: push property moved to extension below
     
     public init() {
+        fatalError("ARTRestInternal not yet migrated")
+    }
+    
+    public func defaultEncoder() -> ARTEncoder {
         fatalError("ARTRestInternal not yet migrated")
     }
     
@@ -202,16 +207,7 @@ public class ARTRestInternal {
     }
 }
 
-// Placeholder for ARTQueuedDealloc
-public class ARTQueuedDealloc {
-    public init() {
-        fatalError("ARTQueuedDealloc not yet migrated")
-    }
-    
-    public init(object: Any, queue: DispatchQueue) {
-        fatalError("ARTQueuedDealloc not yet migrated")
-    }
-}
+// ARTQueuedDealloc implemented in ARTQueuedDealloc.swift
 
 // ARTEventEmitter, ARTInternalEventEmitter, ARTPublicEventEmitter implemented in ARTEventEmitter.swift
 
@@ -774,12 +770,7 @@ public class ARTChannelDetails {
 }
 
 
-// swift-migration: ARTPushChannelSubscription placeholder kept for callback types - will be migrated later
-public class ARTPushChannelSubscription {
-    public init() {
-        fatalError("ARTPushChannelSubscription not yet migrated")
-    }
-}
+// ARTPushChannelSubscription implemented in ARTPushChannelSubscription.swift
 
 // Placeholder implementation for ARTEncoder protocol
 public class ARTEncoderPlaceholder: ARTEncoder {
@@ -907,6 +898,8 @@ public class ARTEncoderPlaceholder: ARTEncoder {
         fatalError("ARTEncoder not yet migrated")
     }
     
+// swift-migration: These methods are now defined in the original sections above
+    
     public func decodeTime(_ data: Data) throws -> Date? {
         fatalError("ARTEncoder not yet migrated")
     }
@@ -970,30 +963,12 @@ internal protocol ARTReachability: NSObjectProtocol {
 // ARTStatusCallback and ARTQueuedMessage placeholders
 public typealias ARTStatusCallback = (ARTStatus) -> Void
 
-// Placeholder for ARTQueuedMessage
-public class ARTQueuedMessage: NSObject {
-    public let msg: ARTProtocolMessage
-    public let sentCallbacks: NSMutableArray
-    public let ackCallbacks: NSMutableArray
-    
-    public init(protocolMessage msg: ARTProtocolMessage, sentCallback: ARTCallback?, ackCallback: ARTStatusCallback?) {
-        self.msg = msg
-        self.sentCallbacks = NSMutableArray()
-        self.ackCallbacks = NSMutableArray()
-        super.init()
-        fatalError("ARTQueuedMessage not yet migrated")
-    }
-    
-    public func mergeFrom(_ msg: ARTProtocolMessage, maxSize: Int, sentCallback: ARTCallback?, ackCallback: ARTStatusCallback?) -> Bool {
-        fatalError("ARTQueuedMessage not yet migrated")
-    }
-    
-    public func sentCallback() -> ARTCallback {
-        fatalError("ARTQueuedMessage not yet migrated")
-    }
-    
-    public func ackCallback() -> ARTStatusCallback {
-        fatalError("ARTQueuedMessage not yet migrated")
+// ARTQueuedMessage implemented in ARTQueuedMessage.swift
+
+// Extension for ARTProtocolMessage to add missing merge method
+extension ARTProtocolMessage {
+    func merge(from msg: ARTProtocolMessage, maxSize: Int) -> Bool {
+        fatalError("ARTProtocolMessage merge method not yet migrated - needed by ARTQueuedMessage")
     }
 }
 
@@ -1109,30 +1084,7 @@ public enum ARTDataQueryError: Int {
     case invalidParameters = 1
 }
 
-// Placeholders for ARTPushDeviceRegistrations and ARTPushChannelSubscriptions
-public class ARTPushDeviceRegistrations {
-    internal init(internal: ARTPushDeviceRegistrationsInternal, queuedDealloc: ARTQueuedDealloc) {
-        fatalError("ARTPushDeviceRegistrations not yet migrated")
-    }
-}
-
-public class ARTPushChannelSubscriptions {
-    internal init(internal: ARTPushChannelSubscriptionsInternal, queuedDealloc: ARTQueuedDealloc) {
-        fatalError("ARTPushChannelSubscriptions not yet migrated")
-    }
-}
-
-public class ARTPushDeviceRegistrationsInternal {
-    internal init(rest: ARTRestInternal, logger: ARTInternalLog) {
-        fatalError("ARTPushDeviceRegistrationsInternal not yet migrated")
-    }
-}
-
-public class ARTPushChannelSubscriptionsInternal {
-    internal init(rest: ARTRestInternal, logger: ARTInternalLog) {
-        fatalError("ARTPushChannelSubscriptionsInternal not yet migrated")
-    }
-}
+// ARTPushDeviceRegistrations and ARTPushChannelSubscriptions implemented in their respective .swift files
 
 // Extension for NSDictionary to add art_asURLQueryItems method
 extension NSDictionary {
@@ -1144,15 +1096,62 @@ extension NSDictionary {
     }
 }
 
+// Extension for Dictionary to add art_asURLQueryItems method
+extension Dictionary where Key == String, Value == String {
+    func art_asURLQueryItems() -> [URLQueryItem] {
+        return map { key, value in
+            URLQueryItem(name: key, value: value)
+        }
+    }
+}
+
+// Extension for String to add art_shortString method
+extension String {
+    var art_shortString: String {
+        return self // For now, just return the string as-is
+    }
+}
+
+// Placeholder for ARTPaginatedTextCallback
+public typealias ARTPaginatedTextCallback = (ARTPaginatedResult<String>?, ARTErrorInfo?) -> Void
+
+// Placeholder for ARTPaginatedDeviceDetailsCallback  
+public typealias ARTPaginatedDeviceDetailsCallback = (ARTPaginatedResult<ARTDeviceDetails>?, ARTErrorInfo?) -> Void
+
+// Add missing static methods to ARTErrorInfo
+extension ARTErrorInfo {
+    public static func createUnknownError() -> ARTErrorInfo {
+        return ARTErrorInfo(code: -1, message: "Unknown error")
+    }
+}
+
+// Extension for URLRequest to add device authentication
+extension URLRequest {
+    func settingDeviceAuthentication(_ deviceId: String?, localDevice: ARTLocalDevice?) -> URLRequest {
+        // swift-migration: Placeholder for device authentication - will be implemented when NSURLRequest+ARTPush.swift is migrated
+        return self
+    }
+    
+    func settingDeviceAuthentication(_ deviceId: String?, localDevice: ARTLocalDevice?, logger: ARTInternalLog) -> URLRequest {
+        // swift-migration: Placeholder for device authentication - will be implemented when NSURLRequest+ARTPush.swift is migrated
+        return self
+    }
+    
+    func settingDeviceAuthentication(_ localDevice: ARTLocalDevice) -> URLRequest {
+        // swift-migration: Placeholder for device authentication - will be implemented when NSURLRequest+ARTPush.swift is migrated  
+        return self
+    }
+}
+
 // Extension for NSMutableURLRequest to add device authentication
 extension NSMutableURLRequest {
-    func settingDeviceAuthentication(_ deviceId: String, localDevice: ARTLocalDevice) -> NSURLRequest {
+    func settingDeviceAuthentication(_ deviceId: String, localDevice: ARTLocalDevice?) -> NSURLRequest {
         // swift-migration: Placeholder for device authentication - will be implemented when NSURLRequest+ARTPush.swift is migrated
         return self
     }
     
     func settingDeviceAuthentication(_ localDevice: ARTLocalDevice) -> NSURLRequest {
-        // swift-migration: Placeholder for device authentication - will be implemented when NSURLRequest+ARTPush.swift is migrated  
+        // swift-migration: Placeholder for device authentication - will be implemented when NSURLRequest+ARTPush.swift is migrated
         return self
     }
 }
