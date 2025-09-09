@@ -47,9 +47,9 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTHTTPPaginatedResponse.m | ARTHTTPPaginatedResponse.h, ARTHTTPPaginatedResponse+Private.h | ARTHTTPPaginatedResponse.swift | Completed |
 | ARTHttp.m | ARTHttp.h, ARTHttp+Private.h | ARTHttp.swift | Completed |
 | ARTInternalLog.m | ARTInternalLog.h, ARTInternalLog+Testing.h | ARTInternalLog.swift | Completed |
-| ARTInternalLogCore.m | ARTInternalLogCore.h, ARTInternalLogCore+Testing.h | ARTInternalLogCore.swift | Not Started |
-| ARTJitterCoefficientGenerator.m | ARTJitterCoefficientGenerator.h | ARTJitterCoefficientGenerator.swift | Not Started |
-| ARTJsonEncoder.m | ARTJsonEncoder.h | ARTJsonEncoder.swift | Not Started |
+| ARTInternalLogCore.m | ARTInternalLogCore.h, ARTInternalLogCore+Testing.h | ARTInternalLogCore.swift | Completed |
+| ARTJitterCoefficientGenerator.m | ARTJitterCoefficientGenerator.h | ARTJitterCoefficientGenerator.swift | Completed |
+| ARTJsonEncoder.m | ARTJsonEncoder.h | ARTJsonEncoder.swift | Completed |
 | ARTJsonLikeEncoder.m | ARTJsonLikeEncoder.h | ARTJsonLikeEncoder.swift | Not Started |
 | ARTLocalDevice.m | ARTLocalDevice.h, ARTLocalDevice+Private.h | ARTLocalDevice.swift | Not Started |
 | ARTLocalDeviceStorage.m | ARTLocalDeviceStorage.h | ARTLocalDeviceStorage.swift | Not Started |
@@ -129,16 +129,16 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 ## Progress Summary
 
 - **Total Files**: 115
-- **Not Started**: 85
+- **Not Started**: 83
 - **In Progress**: 0
-- **Completed**: 30
+- **Completed**: 32
 - **Blocked**: 0
 
 ## Migration Batches
 
 - **Batch 1**: ARTAnnotation - ARTChannels (13 files) - Completed (13 completed)
 - **Batch 2**: ARTClientInformation - ARTDefault (11 files) - Completed
-- **Batch 3**: ARTDeviceDetails - ARTInternalLogCore (12 files) - In Progress (8 of 12 completed)
+- **Batch 3**: ARTDeviceDetails - ARTInternalLogCore (12 files) - In Progress (10 of 12 completed, 2 deferred to Batch 4)
 - **Batch 4**: ARTJitterCoefficientGenerator - ARTPluginDecodingContext (14 files) - Not Started
 - **Batch 5**: ARTPresence - ARTRealtimeChannelOptions (15 files) - Not Started
 - **Batch 6**: ARTRealtimeChannels - ARTWrapperSDKProxyOptions (10 files) - Not Started

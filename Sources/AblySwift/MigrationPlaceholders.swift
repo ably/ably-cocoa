@@ -564,10 +564,7 @@ public let ARTErrorConnectionLimitsExceeded = 40110
 // Placeholder for ARTDeviceId (seems to be a String typealias based on usage)
 public typealias ARTDeviceId = String
 
-// Placeholder for ARTJitterCoefficientGenerator protocol
-public protocol ARTJitterCoefficientGenerator {
-    func generateJitterCoefficient() -> Double
-}
+// ARTJitterCoefficientGenerator protocol implemented in ARTJitterCoefficientGenerator.swift
 
 // ARTCallback defined above
 
@@ -849,37 +846,24 @@ public extension URLRequest {
     }
 }
 
-// Placeholder for ARTInternalLogCore protocol
-public protocol ARTInternalLogCore {
-    var logLevel: ARTLogLevel { get set }
-    func log(_ message: String, withLevel level: ARTLogLevel, file fileName: String, line: Int)
-}
-
-// Placeholder for ARTDefaultInternalLogCore
-public class ARTDefaultInternalLogCore: ARTInternalLogCore {
-    public var logLevel: ARTLogLevel = .error
-    
-    public init(logger: any ARTVersion2Log) {
-        fatalError("ARTDefaultInternalLogCore not yet migrated")
-    }
-    
-    public init(clientOptions: ARTClientOptions) {
-        fatalError("ARTDefaultInternalLogCore not yet migrated")
-    }
-    
-    public func log(_ message: String, withLevel level: ARTLogLevel, file fileName: String, line: Int) {
-        fatalError("ARTDefaultInternalLogCore not yet migrated")
-    }
-}
+// ARTInternalLogCore protocol and ARTDefaultInternalLogCore class implemented in ARTInternalLogCore.swift
 
 // Placeholder for ARTVersion2Log protocol
 public protocol ARTVersion2Log {
-    // Placeholder
+    var logLevel: ARTLogLevel { get set }
+    func log(_ message: String, withLevel level: ARTLogLevel, file: String, line: Int)
 }
 
 // Placeholder for ARTLogAdapter
 public class ARTLogAdapter: ARTVersion2Log {
+    public var logLevel: ARTLogLevel = .error
+    private let wrappedLogger: ARTLog
+    
     public init(logger: ARTLog) {
+        self.wrappedLogger = logger
+    }
+    
+    public func log(_ message: String, withLevel level: ARTLogLevel, file: String, line: Int) {
         fatalError("ARTLogAdapter not yet migrated")
     }
 }
@@ -892,3 +876,26 @@ public typealias ARTHTTPPaginatedCallback = (ARTHTTPPaginatedResponse?, ARTError
 
 // Placeholder for ARTPaginatedResultResponseProcessor
 public typealias ARTPaginatedResultResponseProcessor = (HTTPURLResponse?, Data?, inout Error?) -> [Any]?
+
+// Placeholder for ARTEncoderFormat enum
+public enum ARTEncoderFormat: UInt {
+    case json = 0
+    case msgPack = 1
+}
+
+// Placeholder for ARTJsonLikeEncoderDelegate protocol
+public protocol ARTJsonLikeEncoderDelegate {
+    func mimeType() -> String
+    func format() -> ARTEncoderFormat  
+    func formatAsString() -> String
+    func decode(_ data: Data) throws -> Any?
+    func encode(_ obj: Any) throws -> Data?
+}
+
+// Placeholder for ARTClientCodeError enum
+public enum ARTClientCodeError: UInt {
+    case invalidType = 0
+    case transport = 1
+}
+
+public let ARTClientCodeErrorInvalidType = ARTClientCodeError.invalidType
