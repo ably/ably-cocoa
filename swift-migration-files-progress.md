@@ -780,8 +780,14 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 ### ARTTokenParams.m → ARTTokenParams.swift
 - **Headers**: ARTTokenParams.h, ARTTokenParams+Private.h
-- **Status**: Not Started
+- **Status**: **Completed**
 - **Notes**: 
+  - **Migration Status**: Successfully migrated all functionality from ARTTokenParams.m including token parameter management, NSCopying support, URL query item conversion, dictionary serialization, and HMAC-based signing functionality.
+  - **Implementation Details**: Complete mechanical carbon-copy translation preserving all original behavior. Includes NSCopying implementation with proper required initializer pattern, CommonCrypto-based HMAC signing function, and all conversion methods (toArray, toDictionary, toArrayWithUnion, toDictionaryWithUnion).
+  - **Migration Decisions**: Made the main init(clientId:nonce:) the required initializer to support NSCopying protocol. All other initializers use convenience pattern calling the required init. The `toDictionary` method is internal (implementation-only in .m file) while public methods declared in headers remain public.
+  - **Swift Adaptations**: Used Swift arrays/dictionaries instead of NSMutableArray/NSMutableDictionary, Swift string interpolation for formatting, Data type for HMAC operations with proper unsafe buffer pointer handling for CommonCrypto interface.
+  - **Compilation**: **Build successful** - all syntax and type errors resolved including NSCopying required initializer pattern
+  - **Dependencies**: Removed placeholder from MigrationPlaceholders.swift, relies on existing ARTClientOptions, ARTTokenRequest, and utility functions (decomposeKey, generateNonce, dateToMilliseconds, timeIntervalToMilliseconds) 
 
 ### ARTTokenRequest.m → ARTTokenRequest.swift
 - **Headers**: ARTTokenRequest.h

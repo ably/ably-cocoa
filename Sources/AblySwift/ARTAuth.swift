@@ -203,7 +203,7 @@ internal class ARTAuthInternal {
         
         if options.isMethodGET() {
             // TokenParams take precedence over any configured authParams when a name conflict occurs
-            let unitedParams = params.toArray(withUnion: options.authParams)
+            let unitedParams = params.toArray(withUnion: options.authParams ?? [])
             
             // When GET, use query string params
             if urlComponents?.queryItems == nil {
@@ -232,9 +232,9 @@ internal class ARTAuthInternal {
         // HTTP Header Fields
         if options.isMethodPOST() {
             // TokenParams take precedence over any configured authParams when a name conflict occurs
-            let unitedParams = params.toDictionary(withUnion: options.authParams)
+            let unitedParams = params.toDictionary(withUnion: options.authParams ?? [])
             let encodedParametersString = ARTFormEncode(unitedParams)
-            let formData = encodedParametersString.data(using: .utf8)
+            let formData = encodedParametersString.data(using: String.Encoding.utf8)
             request.httpBody = formData
             request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
             if let formData = formData {
@@ -313,7 +313,7 @@ internal class ARTAuthInternal {
     private func _requestToken(_ tokenParams: ARTTokenParams?, withOptions authOptions: ARTAuthOptions?, callback: @escaping ARTTokenDetailsCallback) -> ARTCancellable? {
         // If options, params passed in, they're used instead of stored, don't merge them
         let replacedOptions = authOptions ?? options
-        let currentTokenParams = (tokenParams ?? _tokenParams).copy()
+        let currentTokenParams = (tokenParams ?? _tokenParams).copy() as! ARTTokenParams
         var task: ARTCancellable?
         
         if !canRenewTokenAutomatically(replacedOptions) {
@@ -662,7 +662,7 @@ internal class ARTAuthInternal {
     @discardableResult
     private func _createTokenRequest(_ tokenParams: ARTTokenParams?, options: ARTAuthOptions?, callback: @escaping (ARTTokenRequest?, Error?) -> Void) -> ARTCancellable? {
         let replacedOptions = options ?? self.options
-        let currentTokenParams = tokenParams ?? _tokenParams.copy() // copy since _tokenParams should be read-only
+        let currentTokenParams = tokenParams ?? (_tokenParams.copy() as! ARTTokenParams) // copy since _tokenParams should be read-only
         currentTokenParams.timestamp = currentDate
         
         if let capability = currentTokenParams.capability {

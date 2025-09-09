@@ -77,37 +77,7 @@ public typealias ARTTokenDetailsCallback = (ARTTokenDetails?, Error?) -> Void
 
 // swift-migration: ARTTokenDetails placeholder removed - now implemented in ARTTokenDetails.swift
 
-// Placeholder for ARTTokenParams
-public class ARTTokenParams {
-    public var capability: String? = nil
-    public var timestamp: Date? = nil
-    public var clientId: String? = nil
-    public var ttl: NSNumber? = nil
-    
-    public init(options: ARTClientOptions) {
-        fatalError("ARTTokenParams not yet migrated")
-    }
-    
-    public init(clientId: String?) {
-        self.clientId = clientId
-    }
-    
-    public func copy() -> ARTTokenParams {
-        fatalError("ARTTokenParams not yet migrated")
-    }
-    
-    public func sign(_ key: String) -> ARTTokenRequest {
-        fatalError("ARTTokenParams not yet migrated")
-    }
-    
-    public func toArray(withUnion other: [URLQueryItem]?) -> [URLQueryItem] {
-        fatalError("ARTTokenParams not yet migrated")
-    }
-    
-    public func toDictionary(withUnion other: [URLQueryItem]?) -> [String: String] {
-        fatalError("ARTTokenParams not yet migrated")
-    }
-}
+// swift-migration: ARTTokenParams placeholder removed - now implemented in ARTTokenParams.swift
 
 
 // swift-migration: ARTTokenRequest placeholder removed - now implemented in ARTTokenRequest.swift
@@ -465,12 +435,7 @@ public protocol APLiveObjectsInternalPluginProtocol {
     // Placeholder protocol
 }
 
-// Extend ARTTokenParams to add missing initializer
-extension ARTTokenParams {
-    public convenience init(tokenParams: ARTTokenParams) {
-        fatalError("ARTTokenParams init(tokenParams:) not yet migrated")
-    }
-}
+// swift-migration: ARTTokenParams extension removed - now implemented in ARTTokenParams.swift
 
 // Placeholder for ARTQueryDirection enum
 public enum ARTQueryDirection: UInt {

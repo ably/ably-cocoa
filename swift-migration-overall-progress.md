@@ -98,7 +98,7 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTStringifiable.m | ARTStringifiable.h, ARTStringifiable+Private.h | ARTStringifiable.swift | Completed |
 | ARTTestClientOptions.m | ARTTestClientOptions.h | ARTTestClientOptions.swift | Completed |
 | ARTTokenDetails.m | ARTTokenDetails.h | ARTTokenDetails.swift | Completed |
-| ARTTokenParams.m | ARTTokenParams.h, ARTTokenParams+Private.h | ARTTokenParams.swift | Not Started |
+| ARTTokenParams.m | ARTTokenParams.h, ARTTokenParams+Private.h | ARTTokenParams.swift | Completed |
 | ARTTokenRequest.m | ARTTokenRequest.h | ARTTokenRequest.swift | Completed |
 | ARTTypes.m | ARTTypes.h, ARTTypes+Private.h | ARTTypes.swift | Completed |
 | ARTURLSessionServerTrust.m | ARTURLSessionServerTrust.h | ARTURLSessionServerTrust.swift | Not Started |
