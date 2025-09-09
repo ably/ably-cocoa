@@ -51,7 +51,6 @@ internal func ARTRealtimeTransportStateToStr(_ state: ARTRealtimeTransportState)
 
 // swift-migration: original location ARTWebSocketTransport.h, line 11 and ARTWebSocketTransport.m, line 51
 internal class ARTWebSocketTransport: NSObject, ARTRealtimeTransport, ARTWebSocketDelegate {
-    
     // swift-migration: original location ARTWebSocketTransport.m, line 52
     private weak var _delegate: ARTRealtimeTransportDelegate?
     
@@ -84,8 +83,11 @@ internal class ARTWebSocketTransport: NSObject, ARTRealtimeTransport, ARTWebSock
     private let webSocketFactory: ARTWebSocketFactory
     
     // swift-migration: original location ARTWebSocketTransport.m, line 61
-    public var stateEmitter: ARTInternalEventEmitter<ARTEvent, NSNull>
-    
+    public var _stateEmitter: ARTInternalEventEmitter<ARTEvent, Any>
+    public var stateEmitter: ARTEventEmitter<ARTEvent, Any> {
+        return _stateEmitter
+    }
+
     // swift-migration: original location ARTWebSocketTransport.m, line 60
     public weak var delegate: ARTRealtimeTransportDelegate? {
         get { _delegate }
@@ -106,7 +108,7 @@ internal class ARTWebSocketTransport: NSObject, ARTRealtimeTransport, ARTWebSock
         self.logger = logger
         self.options = options.copy() as! ARTClientOptions
         self.resumeKey = resumeKey
-        self.stateEmitter = ARTInternalEventEmitter<ARTEvent, NSNull>(queue: rest.queue)
+        self._stateEmitter = ARTInternalEventEmitter<ARTEvent, Any>(queue: rest.queue)
         self.webSocketFactory = webSocketFactory
         
         super.init()
@@ -287,7 +289,7 @@ internal class ARTWebSocketTransport: NSObject, ARTRealtimeTransport, ARTWebSock
     }
     
     // swift-migration: original location ARTWebSocketTransport.m, line 233
-    public var host: String {
+    public func host() -> String {
         return options.realtimeHost ?? ""
     }
     
@@ -332,7 +334,8 @@ internal class ARTWebSocketTransport: NSObject, ARTRealtimeTransport, ARTWebSock
         case ARTWebSocketCloseCode.refuse.rawValue,
              ARTWebSocketCloseCode.policyValidation.rawValue:
             let errorInfo = ARTErrorInfo.create(withCode: code, message: reason ?? "")
-            let error = ARTRealtimeTransportError(error: errorInfo, type: .refused, url: websocketURL)
+            // swift-migration: Lawrence added force unwrap
+            let error = ARTRealtimeTransportError(error: errorInfo, type: .refused, url: websocketURL!)
             delegate?.realtimeTransportRefused(self, withError: error)
         case ARTWebSocketCloseCode.tooBig.rawValue:
             delegate?.realtimeTransportTooBig(self)
@@ -343,7 +346,8 @@ internal class ARTWebSocketTransport: NSObject, ARTRealtimeTransport, ARTWebSock
              ARTWebSocketCloseCode.tlsError.rawValue:
             // Failed
             let errorInfo = ARTErrorInfo.create(withCode: code, message: reason ?? "")
-            let error = ARTRealtimeTransportError(error: errorInfo, type: .other, url: websocketURL)
+            // swift-migration: Lawrence added force unwrap
+            let error = ARTRealtimeTransportError(error: errorInfo, type: .other, url: websocketURL!)
             delegate?.realtimeTransportFailed(self, withError: error)
         default:
             assert(true, "WebSocket close: unknown code")
@@ -374,11 +378,13 @@ internal class ARTWebSocketTransport: NSObject, ARTRealtimeTransport, ARTWebSock
             type = .noInternet
         } else if nsError.domain == ARTSRWebSocketErrorDomain && nsError.code == 2132 {
             if let status = nsError.userInfo[ARTSRHTTPResponseErrorKey] as? NSNumber {
-                return ARTRealtimeTransportError(error: nsError, badResponseCode: status.intValue, url: websocketURL)
+                // swift-migration: Lawrence added force unwrap
+                return ARTRealtimeTransportError(error: nsError, badResponseCode: status.intValue, url: websocketURL!)
             }
         }
         
-        return ARTRealtimeTransportError(error: nsError, type: type, url: websocketURL)
+        // swift-migration: Lawrence added force unwrap
+        return ARTRealtimeTransportError(error: nsError, type: type, url: websocketURL!)
     }
     
     // swift-migration: original location ARTWebSocketTransport.m, line 337

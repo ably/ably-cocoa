@@ -97,16 +97,17 @@ public protocol ARTRealtimeTransportDelegate: AnyObject {
 public protocol ARTRealtimeTransport: AnyObject {
     // All methods must be called from rest's serial queue.
     
-    var resumeKey: String { get }
+    // swift-migration: Lawrence changed this to optional (that's what the initializer accepts and I think that's what makes sense)
+    var resumeKey: String? { get }
     var state: ARTRealtimeTransportState { get }
     var delegate: ARTRealtimeTransportDelegate? { get set }
     var stateEmitter: ARTEventEmitter<ARTEvent, Any> { get }
     
-    func send(_ data: Data, withSource decodedObject: Any?) -> Bool
+    func send(_ data: Data, withSource decodedObject: Any) -> Bool
     func receive(_ msg: ARTProtocolMessage)
-    func receiveWithData(_ data: Data) -> ARTProtocolMessage?
-    func connectWithKey(_ key: String)
-    func connectWithToken(_ token: String)
+    func receive(withData data: Data) -> ARTProtocolMessage?
+    func connect(withKey key: String)
+    func connect(withToken token: String)
     func sendClose()
     func sendPing()
     func close()
