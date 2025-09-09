@@ -1,6 +1,10 @@
 import Foundation
 import SocketRocket
 
+extension ARTInternalLog: ARTSRInternalLog {}
+
+// TODO these line numbers are now out of sync because I added some stuff to the .m file
+
 // swift-migration: original location ARTWebSocketFactory.h, line 12
 /// A factory for creating an `ARTWebSocket` object.
 public protocol ARTWebSocketFactory {
