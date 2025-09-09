@@ -7,6 +7,7 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 - `In Progress` - Currently being migrated
 - `Completed` - Migration finished and compiles without errors
 - `Blocked` - Migration blocked pending dependency or user decision
+- `Deferred` - Migration deferred due to complex dependencies requiring other files to be migrated first
 
 | .m File | Associated .h Files | Resulting .swift File | Progress |
 |---------|-------------------|---------------------|----------|
@@ -62,8 +63,8 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTOSReachability.m | ARTOSReachability.h | ARTOSReachability.swift | Completed |
 | ARTPaginatedResult.m | ARTPaginatedResult.h, ARTPaginatedResult+Private.h, ARTPaginatedResult+Subclass.h | ARTPaginatedResult.swift | Completed |
 | ARTPendingMessage.m | ARTPendingMessage.h | ARTPendingMessage.swift | Completed |
-| ARTPluginAPI.m | ARTPluginAPI.h | ARTPluginAPI.swift | Not Started |
-| ARTPluginDecodingContext.m | ARTPluginDecodingContext.h | ARTPluginDecodingContext.swift | Not Started |
+| ARTPluginAPI.m | ARTPluginAPI.h | ARTPluginAPI.swift | Deferred |
+| ARTPluginDecodingContext.m | ARTPluginDecodingContext.h | ARTPluginDecodingContext.swift | Completed |
 | ARTPresence.m | ARTPresence.h, ARTPresence+Private.h | ARTPresence.swift | Not Started |
 | ARTPresenceMessage.m | ARTPresenceMessage.h, ARTPresenceMessage+Private.h | ARTPresenceMessage.swift | Completed |
 | ARTProtocolMessage.m | ARTProtocolMessage.h, ARTProtocolMessage+Private.h | ARTProtocolMessage.swift | Completed |
@@ -130,17 +131,18 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 ## Progress Summary
 
 - **Total Files**: 116
-- **Not Started**: 79
+- **Not Started**: 77
 - **In Progress**: 0
-- **Completed**: 37
+- **Completed**: 38
 - **Blocked**: 0
+- **Deferred**: 1
 
 ## Migration Batches
 
 - **Batch 1**: ARTAnnotation - ARTChannels (13 files) - Completed (13 completed)
 - **Batch 2**: ARTClientInformation - ARTDefault (11 files) - Completed
 - **Batch 3**: ARTDeviceDetails - ARTLogAdapter (16 files) - Completed (14 completed, 2 deferred to Batch 4)
-- **Batch 4**: ARTJitterCoefficientGenerator - ARTPluginDecodingContext (14 files) - Not Started
+- **Batch 4**: ARTJitterCoefficientGenerator - ARTPluginDecodingContext (14 files) - In Progress (1 completed, 1 deferred, 12 remaining)
 - **Batch 5**: ARTPresence - ARTRealtimeChannelOptions (15 files) - Not Started
 - **Batch 6**: ARTRealtimeChannels - ARTWrapperSDKProxyOptions (10 files) - Not Started
 - **Batch 7**: ARTWrapperSDKProxy* files (15 files) - Not Started

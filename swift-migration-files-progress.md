@@ -527,13 +527,28 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 ### ARTPluginAPI.m → ARTPluginAPI.swift
 - **Headers**: ARTPluginAPI.h
-- **Status**: Not Started
+- **Status**: Deferred
 - **Notes**: 
+  - **Deferred Reason**: ARTPluginAPI requires full protocol conformance with _AblyPluginSupportPrivate.PluginAPIProtocol, which needs extensive dependencies that haven't been migrated yet:
+    - ARTRealtimeChannel and ARTRealtimeChannelInternal (not migrated)
+    - ARTRealtimeInternal (not migrated) 
+    - Plugin data management methods on channel internals
+    - Plugin options handling on ARTClientOptions
+    - Proper DependencyStore registration patterns
+  - **Current Implementation**: Created basic class structure with placeholder registerSelf method to allow compilation, but removed protocol conformance to avoid compilation errors
+  - **Migration Plan**: Will complete this file after ARTRealtime, ARTRealtimeChannel, and related internal classes are migrated
+  - **Location Comments**: Applied dual-location format for class structure
+  - **Swift Adaptations**: Replaced dispatch_once with lazy static initialization pattern
 
 ### ARTPluginDecodingContext.m → ARTPluginDecodingContext.swift
-- **Headers**: ARTPluginDecodingContext.h
-- **Status**: Not Started
+- **Headers**: ARTPluginDecodingContext.h  
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Direct mechanical translation preserving @synthesize property backing variables as private stored properties with computed property accessors
+  - **Dependencies**: Requires _AblyPluginSupportPrivate.DecodingContextProtocol conformance
+  - **Compilation Errors**: None
+  - **Location Comments**: Applied dual-location format for class and initializer
+  - **Swift Adaptations**: Converted designated initializer pattern, made default init unavailable as in header
 
 ---
 

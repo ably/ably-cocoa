@@ -630,7 +630,7 @@ public class ARTTestClientOptions {
     }
 }
 
-// Placeholder for ARTPluginAPI class
+// swift-migration: ARTPluginAPI placeholder remains - ARTPluginAPI.swift exists but deferred due to complex dependencies
 public class ARTPluginAPI {
     public static func registerSelf() {
         // Placeholder implementation
