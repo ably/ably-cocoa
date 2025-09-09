@@ -310,23 +310,43 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 ### ARTGCD.m → ARTGCD.swift
 - **Headers**: ARTGCD.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Grand Central Dispatch utility class with scheduled block handle for delayed execution with cancellation support. Implemented atomic property behavior using NSLock in Swift to replicate Objective-C atomic properties. Used public access level as per private header location.
+  - **Dependencies**: None - self-contained dispatch functionality
+  - **Compilation Errors**: Fixed DispatchWorkItem usage by simplifying to closure-based approach, corrected initializer signature
+  - **Location Comments**: Applied dual-location format for class, methods, and global functions
+  - **Swift Adaptations**: Replaced Objective-C atomic property with NSLock-protected property, converted dispatch_block_t to Swift closures, preserved weak reference patterns for memory safety
 
 ### ARTHTTPPaginatedResponse.m → ARTHTTPPaginatedResponse.swift
 - **Headers**: ARTHTTPPaginatedResponse.h, ARTHTTPPaginatedResponse+Private.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: HTTP-specific pagination response class extending ARTPaginatedResult with HTTP status codes, error headers, and response metadata. Preserved callback wrapping for user queue dispatch. Removed @objc decorators due to generic inheritance limitations. Used public access level as per public header location.
+  - **Dependencies**: Added placeholders for ARTHTTPPaginatedCallback, ARTPaginatedResultResponseProcessor typealias, ARTRestInternal execution methods
+  - **Compilation Errors**: Removed @objc annotations incompatible with generic subclasses, fixed compilation errors with placeholder type conflicts
+  - **Location Comments**: Applied dual-location format for class, properties, and methods
+  - **Swift Adaptations**: Converted header field dictionary access to safe casting, used string interpolation in logging, maintained generic NSDictionary inheritance pattern
 
 ### ARTHttp.m → ARTHttp.swift
 - **Headers**: ARTHttp.h, ARTHttp+Private.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Core HTTP execution class implementing ARTHTTPExecutor protocol with URL session management, logging, and request/response handling. Preserved exact logging behavior and debug output formatting. Used internal access level as per private header location.
+  - **Dependencies**: Added placeholders for ARTURLRequestCallback, ARTURLSession protocol, ARTURLSessionServerTrust, ARTCancellable protocol, constants for HTTP header fields
+  - **Compilation Errors**: Fixed type inference issues with closure parameters, added placeholder interfaces for networking protocols
+  - **Location Comments**: Applied dual-location format for class, methods, and protocol
+  - **Swift Adaptations**: Converted URL session class configuration to Swift type casting, preserved NSData base64 encoding behavior, maintained queue property access patterns
 
 ### ARTInternalLog.m → ARTInternalLog.swift
 - **Headers**: ARTInternalLog.h, ARTInternalLog+Testing.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Core logging infrastructure with shared logger singleton, multiple initialization patterns, and variadic logging support. Implemented Objective-C logging macros (ARTLogVerbose, ARTLogDebug, etc.) as Swift functions using default arguments for #fileID and #line injection. Used public access level as per private header location (internal class made public for macro compatibility).
+  - **Dependencies**: Added comprehensive placeholders for ARTInternalLogCore protocol, ARTDefaultInternalLogCore, ARTVersion2Log protocol, ARTLogAdapter, ARTLog, ARTLogLevel enum with proper Int raw values
+  - **Compilation Errors**: Resolved duplicate type conflicts by consolidating ARTLogLevel definitions, cleaned up duplicate placeholders for consistent type resolution
+  - **Location Comments**: Applied dual-location format for class, methods, and global functions
+  - **Swift Adaptations**: Converted Objective-C macros to Swift functions with variadic arguments and String.format, used lazy static singleton initialization, preserved exact logging level compatibility with Int-based enum values
 
 ### ARTInternalLogCore.m → ARTInternalLogCore.swift
 - **Headers**: ARTInternalLogCore.h, ARTInternalLogCore+Testing.h

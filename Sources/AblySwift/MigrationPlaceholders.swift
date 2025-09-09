@@ -53,22 +53,7 @@ public class ARTRetryAttempt {
     }
 }
 
-// Placeholder for ARTInternalLog
-public class ARTInternalLog {
-    public enum LogLevel: Int {
-        case verbose = 0
-        case debug = 1
-        case info = 2  
-        case warn = 3
-        case error = 4
-    }
-    
-    public var logLevel: LogLevel = .error
-    
-    public init() {
-        fatalError("ARTInternalLog not yet migrated")
-    }
-}
+// ARTInternalLog implemented in ARTInternalLog.swift
 
 // Placeholder for ARTRetryDelayCalculator protocol
 public protocol ARTRetryDelayCalculator {
@@ -199,7 +184,7 @@ public class ARTRestInternal {
     public func executeRequest(
         _ request: URLRequest,
         withAuthOption authOption: ARTAuthentication,
-        wrapperSDKAgents: [String]?,
+        wrapperSDKAgents: [String: String]?,
         completion: @escaping (HTTPURLResponse?, Data?, Error?) -> Void
     ) -> ARTCancellable {
         fatalError("ARTRestInternal not yet migrated")
@@ -435,6 +420,10 @@ public class ARTEncoder {
     public func decodeTokenRequest(_ data: Data, error: inout Error?) -> ARTTokenRequest? {
         fatalError("ARTEncoder not yet migrated")
     }
+    
+    public func decodeToArray(_ data: Data?, error: inout Error?) -> [Any]? {
+        fatalError("ARTEncoder not yet migrated")
+    }
 }
 
 // Placeholder for ARTLocalDevice
@@ -609,8 +598,25 @@ public class ARTMessage: ARTBaseMessage {
 
 // Placeholder for ARTPaginatedResult
 public class ARTPaginatedResult<ItemType> {
-    public init() {
-        fatalError("ARTPaginatedResult not yet migrated")
+    public let items: [Any]
+    public let rest: ARTRestInternal
+    public let relFirst: URLRequest?
+    public let relCurrent: URLRequest?
+    public let relNext: URLRequest?
+    public let responseProcessor: ARTPaginatedResultResponseProcessor
+    public let wrapperSDKAgents: [String: String]?
+    public let logger: ARTInternalLog
+    public var userQueue: DispatchQueue { return rest.userQueue }
+    
+    public init(items: [Any], rest: ARTRestInternal, relFirst: URLRequest?, relCurrent: URLRequest?, relNext: URLRequest?, responseProcessor: @escaping ARTPaginatedResultResponseProcessor, wrapperSDKAgents: [String: String]?, logger: ARTInternalLog) {
+        self.items = items
+        self.rest = rest
+        self.relFirst = relFirst
+        self.relCurrent = relCurrent
+        self.relNext = relNext
+        self.responseProcessor = responseProcessor
+        self.wrapperSDKAgents = wrapperSDKAgents
+        self.logger = logger
     }
 }
 
@@ -683,19 +689,21 @@ internal class ARTRestChannel: ARTChannel {
 
 // Placeholder for ARTLog class
 public class ARTLog {
+    public var logLevel: ARTLogLevel = .none
+    
     public init() {
         // Empty init for now
     }
 }
 
 // Placeholder for ARTLogLevel enum
-public enum ARTLogLevel: UInt {
-    case none = 0
-    case verbose = 1
-    case debug = 2
-    case info = 3
-    case warn = 4
-    case error = 5
+public enum ARTLogLevel: Int {
+    case none = 99
+    case error = 4
+    case warn = 3
+    case info = 2
+    case debug = 1
+    case verbose = 0
 }
 
 // Placeholder for ARTStringifiable protocol
@@ -789,23 +797,98 @@ extension NSObject {
     }
 }
 
-// Placeholder types for ARTGCD - scheduled dispatch functionality
-public class ARTScheduledBlockHandle {
-    public init() {
-        fatalError("ARTScheduledBlockHandle not yet migrated")
+// ARTGCD implemented in ARTGCD.swift
+
+// Logging functions implemented in ARTInternalLog.swift
+
+// Placeholder for network types
+public typealias ARTURLRequestCallback = (HTTPURLResponse?, Data?, Error?) -> Void
+
+// Placeholder for ARTURLSession protocol
+public protocol ARTURLSession {
+    var queue: DispatchQueue { get }
+    init(_ queue: DispatchQueue)
+    func get(_ request: URLRequest, completion: @escaping (HTTPURLResponse?, Data?, Error?) -> Void) -> (any ARTCancellable)?
+    func finishTasksAndInvalidate()
+}
+
+// Placeholder for ARTURLSessionServerTrust
+public class ARTURLSessionServerTrust: ARTURLSession {
+    public let queue: DispatchQueue
+    
+    public required init(_ queue: DispatchQueue) {
+        self.queue = queue
+    }
+    
+    public func get(_ request: URLRequest, completion: @escaping (HTTPURLResponse?, Data?, Error?) -> Void) -> (any ARTCancellable)? {
+        fatalError("ARTURLSessionServerTrust not yet migrated")
+    }
+    
+    public func finishTasksAndInvalidate() {
+        fatalError("ARTURLSessionServerTrust not yet migrated")
     }
 }
 
-// Placeholder functions for dispatch scheduling (ARTGCD)
-public func artDispatchScheduled(_ timeoutDeadline: TimeInterval, _ queue: DispatchQueue, _ block: @escaping () -> Void) -> ARTScheduledBlockHandle {
-    fatalError("artDispatchScheduled not yet migrated")
+
+// ARTEncoder class already defined above
+
+
+// Constants defined in ARTConstants.swift
+
+// Placeholder for HTTP response extensions
+public extension HTTPURLResponse {
+    func extractLinks() -> [String: String] {
+        fatalError("HTTPURLResponse extractLinks not yet migrated")
+    }
 }
 
-public func artDispatchCancel(_ work: ARTScheduledBlockHandle?) {
-    fatalError("artDispatchCancel not yet migrated")
+// Placeholder for URLRequest extensions
+public extension URLRequest {
+    static func requestWithPath(_ path: String?, relativeTo baseRequest: URLRequest) -> URLRequest? {
+        fatalError("URLRequest requestWithPath not yet migrated")
+    }
 }
 
-// Placeholder logging functions for ARTEventEmitter
-public func ARTLogVerbose(_ logger: ARTInternalLog, _ message: String, fileID: String = #fileID, line: Int = #line) {
-    fatalError("ARTLogVerbose not yet migrated")
+// Placeholder for ARTInternalLogCore protocol
+public protocol ARTInternalLogCore {
+    var logLevel: ARTLogLevel { get set }
+    func log(_ message: String, withLevel level: ARTLogLevel, file fileName: String, line: Int)
 }
+
+// Placeholder for ARTDefaultInternalLogCore
+public class ARTDefaultInternalLogCore: ARTInternalLogCore {
+    public var logLevel: ARTLogLevel = .error
+    
+    public init(logger: any ARTVersion2Log) {
+        fatalError("ARTDefaultInternalLogCore not yet migrated")
+    }
+    
+    public init(clientOptions: ARTClientOptions) {
+        fatalError("ARTDefaultInternalLogCore not yet migrated")
+    }
+    
+    public func log(_ message: String, withLevel level: ARTLogLevel, file fileName: String, line: Int) {
+        fatalError("ARTDefaultInternalLogCore not yet migrated")
+    }
+}
+
+// Placeholder for ARTVersion2Log protocol
+public protocol ARTVersion2Log {
+    // Placeholder
+}
+
+// Placeholder for ARTLogAdapter
+public class ARTLogAdapter: ARTVersion2Log {
+    public init(logger: ARTLog) {
+        fatalError("ARTLogAdapter not yet migrated")
+    }
+}
+
+
+// Placeholders for ARTRest types
+
+// Placeholder for ARTHTTPPaginatedCallback
+public typealias ARTHTTPPaginatedCallback = (ARTHTTPPaginatedResponse?, ARTErrorInfo?) -> Void
+
+// Placeholder for ARTPaginatedResultResponseProcessor
+public typealias ARTPaginatedResultResponseProcessor = (HTTPURLResponse?, Data?, inout Error?) -> [Any]?

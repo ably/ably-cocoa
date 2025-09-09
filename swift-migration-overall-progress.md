@@ -43,10 +43,10 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTFallback.m | ARTFallback.h, ARTFallback+Private.h | ARTFallback.swift | Completed |
 | ARTFallbackHosts.m | ARTFallbackHosts.h | ARTFallbackHosts.swift | Completed |
 | ARTFormEncode.m | ARTFormEncode.h | ARTFormEncode.swift | Completed |
-| ARTGCD.m | ARTGCD.h | ARTGCD.swift | Not Started |
-| ARTHTTPPaginatedResponse.m | ARTHTTPPaginatedResponse.h, ARTHTTPPaginatedResponse+Private.h | ARTHTTPPaginatedResponse.swift | Not Started |
-| ARTHttp.m | ARTHttp.h, ARTHttp+Private.h | ARTHttp.swift | Not Started |
-| ARTInternalLog.m | ARTInternalLog.h, ARTInternalLog+Testing.h | ARTInternalLog.swift | Not Started |
+| ARTGCD.m | ARTGCD.h | ARTGCD.swift | Completed |
+| ARTHTTPPaginatedResponse.m | ARTHTTPPaginatedResponse.h, ARTHTTPPaginatedResponse+Private.h | ARTHTTPPaginatedResponse.swift | Completed |
+| ARTHttp.m | ARTHttp.h, ARTHttp+Private.h | ARTHttp.swift | Completed |
+| ARTInternalLog.m | ARTInternalLog.h, ARTInternalLog+Testing.h | ARTInternalLog.swift | Completed |
 | ARTInternalLogCore.m | ARTInternalLogCore.h, ARTInternalLogCore+Testing.h | ARTInternalLogCore.swift | Not Started |
 | ARTJitterCoefficientGenerator.m | ARTJitterCoefficientGenerator.h | ARTJitterCoefficientGenerator.swift | Not Started |
 | ARTJsonEncoder.m | ARTJsonEncoder.h | ARTJsonEncoder.swift | Not Started |
@@ -129,16 +129,16 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 ## Progress Summary
 
 - **Total Files**: 115
-- **Not Started**: 89
+- **Not Started**: 85
 - **In Progress**: 0
-- **Completed**: 26
+- **Completed**: 30
 - **Blocked**: 0
 
 ## Migration Batches
 
 - **Batch 1**: ARTAnnotation - ARTChannels (13 files) - Completed (13 completed)
 - **Batch 2**: ARTClientInformation - ARTDefault (11 files) - Completed
-- **Batch 3**: ARTDeviceDetails - ARTInternalLogCore (12 files) - In Progress (4 of 12 completed)
+- **Batch 3**: ARTDeviceDetails - ARTInternalLogCore (12 files) - In Progress (8 of 12 completed)
 - **Batch 4**: ARTJitterCoefficientGenerator - ARTPluginDecodingContext (14 files) - Not Started
 - **Batch 5**: ARTPresence - ARTRealtimeChannelOptions (15 files) - Not Started
 - **Batch 6**: ARTRealtimeChannels - ARTWrapperSDKProxyOptions (10 files) - Not Started
