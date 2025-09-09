@@ -83,7 +83,7 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTRealtime.m | ARTRealtime.h, ARTRealtime+Private.h, ARTRealtime+WrapperSDKProxy.h | ARTRealtime.swift | Not Started |
 | ARTRealtimeAnnotations.m | ARTRealtimeAnnotations.h, ARTRealtimeAnnotations+Private.h | ARTRealtimeAnnotations.swift | Not Started |
 | ARTRealtimeChannel.m | ARTRealtimeChannel.h, ARTRealtimeChannel+Private.h | ARTRealtimeChannel.swift | Not Started |
-| ARTRealtimeChannelOptions.m | ARTRealtimeChannelOptions.h | ARTRealtimeChannelOptions.swift | Not Started |
+| ARTRealtimeChannelOptions.m | ARTRealtimeChannelOptions.h | ARTRealtimeChannelOptions.swift | Completed |
 | ARTRealtimeChannels.m | ARTRealtimeChannels.h, ARTRealtimeChannels+Private.h | ARTRealtimeChannels.swift | Not Started |
 | ARTRealtimePresence.m | ARTRealtimePresence.h, ARTRealtimePresence+Private.h | ARTRealtimePresence.swift | Not Started |
 | ARTRealtimeTransport.m | ARTRealtimeTransport.h | ARTRealtimeTransport.swift | Completed |
