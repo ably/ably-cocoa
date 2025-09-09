@@ -256,6 +256,16 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
   - **Location Comments**: Applied dual-location format for all properties and methods
   - **Swift Adaptations**: Used nil-coalescing operator in description, proper NSZone handling in copy method
 
+### ARTEncoder.h → ARTEncoder.swift
+- **Headers**: ARTEncoder.h
+- **Status**: Completed
+- **Notes**: 
+  - **Migration Decisions**: Protocol-only file with encoder interface and ARTEncoderFormat enum. Converted all NSError** pattern methods to Swift throws pattern. Used internal access level as per private header location.
+  - **Dependencies**: Protocol references all major Ably types (ARTTokenRequest, ARTTokenDetails, ARTMessage, ARTPresenceMessage, etc.) - placeholders exist for most
+  - **Compilation Errors**: None
+  - **Location Comments**: Applied location format for protocol and enum declaration
+  - **Swift Adaptations**: Converted Objective-C error handling patterns to Swift throws, used proper Swift naming conventions for enum cases
+
 ### ARTErrorChecker.m → ARTErrorChecker.swift
 - **Headers**: ARTErrorChecker.h  
 - **Status**: Completed

@@ -171,7 +171,7 @@ public class ARTRestInternal {
     public let userQueue: DispatchQueue = DispatchQueue.main
     public let queue: DispatchQueue = DispatchQueue.main
     public let baseUrl: URL = URL(string: "https://rest.ably.io")!
-    public let defaultEncoder: ARTEncoder = ARTEncoder()
+    public let defaultEncoder: ARTEncoder = ARTEncoderPlaceholder()
     public let encoders: [String: ARTEncoder] = [:]
     public let device_nosync: ARTLocalDevice = ARTLocalDevice()
     public let storage: ARTLocalDeviceStorage = ARTLocalDeviceStorage()
@@ -395,36 +395,6 @@ public class ARTRealtimeChannelInternal: NSObject {
 
 // Additional placeholder types and constants needed by ARTAuth
 
-// Placeholder for ARTEncoder
-public class ARTEncoder {
-    public init() {
-        fatalError("ARTEncoder not yet migrated")
-    }
-    
-    public func formatAsString() -> String {
-        fatalError("ARTEncoder not yet migrated")
-    }
-    
-    public func mimeType() -> String {
-        fatalError("ARTEncoder not yet migrated")
-    }
-    
-    public func encodeTokenRequest(_ request: ARTTokenRequest, error: inout Error?) -> Data? {
-        fatalError("ARTEncoder not yet migrated")
-    }
-    
-    public func decodeTokenDetails(_ data: Data, error: inout Error?) -> ARTTokenDetails? {
-        fatalError("ARTEncoder not yet migrated")
-    }
-    
-    public func decodeTokenRequest(_ data: Data, error: inout Error?) -> ARTTokenRequest? {
-        fatalError("ARTEncoder not yet migrated")
-    }
-    
-    public func decodeToArray(_ data: Data?, error: inout Error?) -> [Any]? {
-        fatalError("ARTEncoder not yet migrated")
-    }
-}
 
 // Placeholder for ARTLocalDevice
 public class ARTLocalDevice {
@@ -877,11 +847,6 @@ public typealias ARTHTTPPaginatedCallback = (ARTHTTPPaginatedResponse?, ARTError
 // Placeholder for ARTPaginatedResultResponseProcessor
 public typealias ARTPaginatedResultResponseProcessor = (HTTPURLResponse?, Data?, inout Error?) -> [Any]?
 
-// Placeholder for ARTEncoderFormat enum
-public enum ARTEncoderFormat: UInt {
-    case json = 0
-    case msgPack = 1
-}
 
 // Placeholder for ARTJsonLikeEncoderDelegate protocol
 public protocol ARTJsonLikeEncoderDelegate {
@@ -899,3 +864,168 @@ public enum ARTClientCodeError: UInt {
 }
 
 public let ARTClientCodeErrorInvalidType = ARTClientCodeError.invalidType
+
+// Placeholder types for ARTEncoder protocol
+public class ARTPresenceMessage {
+    public init() {
+        fatalError("ARTPresenceMessage not yet migrated")
+    }
+}
+
+public class ARTProtocolMessage {
+    public init() {
+        fatalError("ARTProtocolMessage not yet migrated")
+    }
+}
+
+public class ARTChannelDetails {
+    public init() {
+        fatalError("ARTChannelDetails not yet migrated")
+    }
+}
+
+
+public class ARTPushChannelSubscription {
+    public init() {
+        fatalError("ARTPushChannelSubscription not yet migrated")
+    }
+}
+
+// Placeholder implementation for ARTEncoder protocol
+public class ARTEncoderPlaceholder: ARTEncoder {
+    public func mimeType() -> String {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func format() -> ARTEncoderFormat {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func formatAsString() -> String {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func decode(_ data: Data) throws -> Any? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func encode(any obj: Any) throws -> Data? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func decodeToArray(_ data: Data) throws -> [Dictionary<String, Any>]? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func encodeTokenRequest(_ request: ARTTokenRequest) throws -> Data? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func decodeTokenRequest(_ data: Data) throws -> ARTTokenRequest? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func encodeTokenDetails(_ tokenDetails: ARTTokenDetails) throws -> Data? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func decodeTokenDetails(_ data: Data) throws -> ARTTokenDetails? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func encodeMessage(_ message: ARTMessage) throws -> Data? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func decodeMessage(_ data: Data) throws -> ARTMessage? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func encodeMessages(_ messages: [ARTMessage]) throws -> Data? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func decodeMessages(_ data: Data) throws -> [ARTMessage]? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func encodePresenceMessage(_ message: ARTPresenceMessage) throws -> Data? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func decodePresenceMessage(_ data: Data) throws -> ARTPresenceMessage? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func encodePresenceMessages(_ messages: [ARTPresenceMessage]) throws -> Data? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func decodePresenceMessages(_ data: Data) throws -> [ARTPresenceMessage]? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func encodeProtocolMessage(_ message: ARTProtocolMessage) throws -> Data? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func decodeProtocolMessage(_ data: Data) throws -> ARTProtocolMessage? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func encodeDeviceDetails(_ deviceDetails: ARTDeviceDetails) throws -> Data? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func decodeDeviceDetails(_ data: Data) throws -> ARTDeviceDetails? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func encodeLocalDevice(_ device: ARTLocalDevice) throws -> Data? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func decodeChannelDetails(_ data: Data) throws -> ARTChannelDetails? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func decodeDevicesDetails(_ data: Data) throws -> [ARTDeviceDetails]? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func decodeDeviceIdentityTokenDetails(_ data: Data) throws -> ARTDeviceIdentityTokenDetails? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func encodeDevicePushDetails(_ devicePushDetails: ARTDevicePushDetails) throws -> Data? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func decodeDevicePushDetails(_ data: Data) throws -> ARTDevicePushDetails? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func encodePushChannelSubscription(_ channelSubscription: ARTPushChannelSubscription) throws -> Data? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func decodePushChannelSubscription(_ data: Data) throws -> ARTPushChannelSubscription? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func decodePushChannelSubscriptions(_ data: Data) throws -> [ARTPushChannelSubscription]? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func decodeTime(_ data: Data) throws -> Date? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func decodeErrorInfo(_ error: Data) throws -> ARTErrorInfo? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+    
+    public func decodeStats(_ data: Data) throws -> [Any]? {
+        fatalError("ARTEncoder not yet migrated")
+    }
+}

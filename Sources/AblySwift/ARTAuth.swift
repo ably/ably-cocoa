@@ -441,23 +441,22 @@ internal class ARTAuthInternal {
         
         // The token retrieved is assumed by the library to be a token string if the response has Content-Type "text/plain", or taken to be a TokenRequest or TokenDetails object if the response has Content-Type "application/json"
         if response.mimeType == "application/json" {
-            var decodeError: Error?
-            if let tokenDetails = rest.encoders["application/json"]?.decodeTokenDetails(data, error: &decodeError) {
-                if decodeError != nil {
-                    completion(nil, decodeError)
-                } else if tokenDetails.token == nil {
-                    if let tokenRequest = rest.encoders["application/json"]?.decodeTokenRequest(data, error: &decodeError) {
-                        if decodeError != nil {
-                            completion(nil, decodeError)
-                        } else {
+            do {
+                if let tokenDetails = try rest.encoders["application/json"]?.decodeTokenDetails(data) {
+                    if tokenDetails.token == nil {
+                        if let tokenRequest = try rest.encoders["application/json"]?.decodeTokenRequest(data) {
                             tokenRequest.toTokenDetails(toAuth(), callback: completion)
+                        } else {
+                            completion(nil, ARTErrorInfo.create(withCode: ARTStateAuthUrlIncompatibleContent, message: "content response cannot be used for token request"))
                         }
                     } else {
-                        completion(nil, ARTErrorInfo.create(withCode: ARTStateAuthUrlIncompatibleContent, message: "content response cannot be used for token request"))
+                        completion(tokenDetails, nil)
                     }
                 } else {
-                    completion(tokenDetails, nil)
+                    completion(nil, ARTErrorInfo.create(withCode: ARTStateAuthUrlIncompatibleContent, message: "Could not decode TokenDetails"))
                 }
+            } catch {
+                completion(nil, error)
             }
         } else if response.mimeType == "text/plain" || response.mimeType == "application/jwt" {
             let token = String(data: data, encoding: .utf8)
@@ -492,10 +491,10 @@ internal class ARTAuthInternal {
         var request = URLRequest(url: requestUrl)
         request.httpMethod = "POST"
         
-        var encodeError: Error?
-        request.httpBody = encoder.encodeTokenRequest(tokenRequest, error: &encodeError)
-        if let encodeError = encodeError {
-            callback(nil, encodeError)
+        do {
+            request.httpBody = try encoder.encodeTokenRequest(tokenRequest)
+        } catch {
+            callback(nil, error)
             return nil
         }
         request.setValue(encoder.mimeType(), forHTTPHeaderField: "Accept")
@@ -505,12 +504,11 @@ internal class ARTAuthInternal {
             if let error = error {
                 callback(nil, error)
             } else if let data = data {
-                var decodeError: Error?
-                let tokenDetails = encoder.decodeTokenDetails(data, error: &decodeError)
-                if let decodeError = decodeError {
-                    callback(nil, decodeError)
-                } else {
+                do {
+                    let tokenDetails = try encoder.decodeTokenDetails(data)
                     callback(tokenDetails, nil)
+                } catch {
+                    callback(nil, error)
                 }
             }
         }

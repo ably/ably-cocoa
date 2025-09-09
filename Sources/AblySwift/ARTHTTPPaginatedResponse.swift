@@ -120,8 +120,13 @@ public class ARTHTTPPaginatedResponse: ARTPaginatedResult<NSDictionary> {
             var decodeError: Error? = nil
 
             let responseProcessor: ARTPaginatedResultResponseProcessor = { response, data, errorPtr in
-                if let encoder = rest.encoders[response?.mimeType ?? ""] {
-                    return encoder.decodeToArray(data, error: &errorPtr)
+                if let encoder = rest.encoders[response?.mimeType ?? ""], let data = data {
+                    do {
+                        return try encoder.decodeToArray(data)?.map { $0 as Any }
+                    } catch {
+                        errorPtr = error
+                        return nil
+                    }
                 }
                 return nil
             }

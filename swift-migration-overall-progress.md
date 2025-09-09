@@ -38,6 +38,7 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTDeviceDetails.m | ARTDeviceDetails.h, ARTDeviceDetails+Private.h | ARTDeviceDetails.swift | Completed |
 | ARTDeviceIdentityTokenDetails.m | ARTDeviceIdentityTokenDetails.h, ARTDeviceIdentityTokenDetails+Private.h | ARTDeviceIdentityTokenDetails.swift | Completed |
 | ARTDevicePushDetails.m | ARTDevicePushDetails.h, ARTDevicePushDetails+Private.h | ARTDevicePushDetails.swift | Completed |
+| ARTEncoder.h | ARTEncoder.h | ARTEncoder.swift | Completed |
 | ARTErrorChecker.m | ARTErrorChecker.h | ARTErrorChecker.swift | Completed |
 | ARTEventEmitter.m | ARTEventEmitter.h, ARTEventEmitter+Private.h | ARTEventEmitter.swift | Completed |
 | ARTFallback.m | ARTFallback.h, ARTFallback+Private.h | ARTFallback.swift | Completed |
@@ -128,10 +129,10 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 
 ## Progress Summary
 
-- **Total Files**: 115
+- **Total Files**: 116
 - **Not Started**: 83
 - **In Progress**: 0
-- **Completed**: 32
+- **Completed**: 33
 - **Blocked**: 0
 
 ## Migration Batches
