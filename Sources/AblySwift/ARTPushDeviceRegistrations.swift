@@ -53,8 +53,8 @@ public protocol ARTPushDeviceRegistrationsProtocol {
  * @see See `ARTPushDeviceRegistrationsProtocol` for details.
  */
 // swift-migration: original location ARTPushDeviceRegistrations.h, line 65 and ARTPushDeviceRegistrations.m, line 14
-public class ARTPushDeviceRegistrations: NSObject, ARTPushDeviceRegistrationsProtocol, Sendable {
-    
+public class ARTPushDeviceRegistrations: NSObject, ARTPushDeviceRegistrationsProtocol, @unchecked Sendable {
+
     // swift-migration: original location ARTPushDeviceRegistrations+Private.h, line 27
     internal let internalInstance: ARTPushDeviceRegistrationsInternal
     
@@ -151,9 +151,9 @@ internal class ARTPushDeviceRegistrationsInternal: NSObject {
             }
             
             ARTLogDebug(self._logger, "save device with request \(request)")
-            rest.executeRequest(request, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
-                if let httpResponse = response as? HTTPURLResponse {
-                    if httpResponse.statusCode == 200 {
+            _ = rest.executeRequest(request, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
+                if let response {
+                    if response.statusCode == 200 {
                         if let data = data {
                             do {
                                 let deviceDetails = try rest.defaultEncoder().decodeDeviceDetails(data)
@@ -169,9 +169,9 @@ internal class ARTPushDeviceRegistrationsInternal: NSObject {
                             wrappedCallback(nil)
                         }
                     } else {
-                        ARTLogError(self._logger, "\(String(describing: type(of: self))): save device failed with status code \(httpResponse.statusCode)")
+                        ARTLogError(self._logger, "\(String(describing: type(of: self))): save device failed with status code \(response.statusCode)")
                         let plain = data.flatMap { String(data: $0, encoding: .utf8) } ?? ""
-                        wrappedCallback(ARTErrorInfo.create(withCode: httpResponse.statusCode * 100, status: httpResponse.statusCode, message: plain.art_shortString))
+                        wrappedCallback(ARTErrorInfo.create(withCode: response.statusCode * 100, status: response.statusCode, message: plain.art_shortString))
                     }
                 } else if let error = error {
                     ARTLogError(self._logger, "\(String(describing: type(of: self))): save device failed (\(error.localizedDescription))")
@@ -211,11 +211,11 @@ internal class ARTPushDeviceRegistrationsInternal: NSObject {
             }
             
             ARTLogDebug(self._logger, "get device with request \(request)")
-            rest.executeRequest(request, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
-                if let httpResponse = response as? HTTPURLResponse {
-                    if httpResponse.statusCode == 200 {
+            _ = rest.executeRequest(request, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
+                if let response {
+                    if response.statusCode == 200 {
                         if let data = data,
-                           let mimeType = httpResponse.mimeType,
+                           let mimeType = response.mimeType,
                            let encoder = rest.encoders[mimeType] {
                             do {
                                 let device = try encoder.decodeDeviceDetails(data)
@@ -235,9 +235,9 @@ internal class ARTPushDeviceRegistrationsInternal: NSObject {
                             wrappedCallback(nil, ARTErrorInfo.createUnknownError())
                         }
                     } else {
-                        ARTLogError(self._logger, "\(String(describing: type(of: self))): get device failed with status code \(httpResponse.statusCode)")
+                        ARTLogError(self._logger, "\(String(describing: type(of: self))): get device failed with status code \(response.statusCode)")
                         let plain = data.flatMap { String(data: $0, encoding: .utf8) } ?? ""
-                        wrappedCallback(nil, ARTErrorInfo.create(withCode: httpResponse.statusCode * 100, status: httpResponse.statusCode, message: plain.art_shortString))
+                        wrappedCallback(nil, ARTErrorInfo.create(withCode: response.statusCode * 100, status: response.statusCode, message: plain.art_shortString))
                     }
                 } else if let error = error {
                     ARTLogError(self._logger, "\(String(describing: type(of: self))): get device failed (\(error.localizedDescription))")
@@ -267,9 +267,9 @@ internal class ARTPushDeviceRegistrationsInternal: NSObject {
             request.httpMethod = "GET"
             
             let responseProcessor: ARTPaginatedResultResponseProcessor = { response, data, errorPtr in
-                guard let httpResponse = response as? HTTPURLResponse,
+                guard let response,
                       let data = data,
-                      let mimeType = httpResponse.mimeType,
+                      let mimeType = response.mimeType,
                       let encoder = rest.encoders[mimeType] else {
                     return []
                 }
@@ -311,15 +311,15 @@ internal class ARTPushDeviceRegistrationsInternal: NSObject {
             request.setValue(rest.defaultEncoder().mimeType(), forHTTPHeaderField: "Content-Type")
             
             ARTLogDebug(self._logger, "remove device with request \(request)")
-            rest.executeRequest(request, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
-                if let httpResponse = response as? HTTPURLResponse {
-                    if httpResponse.statusCode == 200 || httpResponse.statusCode == 204 {
+            _ = rest.executeRequest(request, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
+                if let response {
+                    if response.statusCode == 200 || response.statusCode == 204 {
                         ARTLogDebug(self._logger, "\(String(describing: type(of: self))): save device successfully")
                         wrappedCallback(nil)
                     } else {
-                        ARTLogError(self._logger, "\(String(describing: type(of: self))): remove device failed with status code \(httpResponse.statusCode)")
+                        ARTLogError(self._logger, "\(String(describing: type(of: self))): remove device failed with status code \(response.statusCode)")
                         let plain = data.flatMap { String(data: $0, encoding: .utf8) } ?? ""
-                        wrappedCallback(ARTErrorInfo.create(withCode: httpResponse.statusCode * 100, status: httpResponse.statusCode, message: plain.art_shortString))
+                        wrappedCallback(ARTErrorInfo.create(withCode: response.statusCode * 100, status: response.statusCode, message: plain.art_shortString))
                     }
                 } else if let error = error {
                     ARTLogError(self._logger, "\(String(describing: type(of: self))): remove device failed (\(error.localizedDescription))")
@@ -365,15 +365,15 @@ internal class ARTPushDeviceRegistrationsInternal: NSObject {
             }
             
             ARTLogDebug(self._logger, "remove devices with request \(request)")
-            rest.executeRequest(request, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
-                if let httpResponse = response as? HTTPURLResponse {
-                    if httpResponse.statusCode == 200 || httpResponse.statusCode == 204 {
+            _ = rest.executeRequest(request, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
+                if let response {
+                    if response.statusCode == 200 || response.statusCode == 204 {
                         ARTLogDebug(self._logger, "\(String(describing: type(of: self))): remove devices successfully")
                         wrappedCallback(nil)
                     } else {
-                        ARTLogError(self._logger, "\(String(describing: type(of: self))): remove devices failed with status code \(httpResponse.statusCode)")
+                        ARTLogError(self._logger, "\(String(describing: type(of: self))): remove devices failed with status code \(response.statusCode)")
                         let plain = data.flatMap { String(data: $0, encoding: .utf8) } ?? ""
-                        wrappedCallback(ARTErrorInfo.create(withCode: httpResponse.statusCode * 100, status: httpResponse.statusCode, message: plain.art_shortString))
+                        wrappedCallback(ARTErrorInfo.create(withCode: response.statusCode * 100, status: response.statusCode, message: plain.art_shortString))
                     }
                 } else if let error = error {
                     ARTLogError(self._logger, "\(String(describing: type(of: self))): remove devices failed (\(error.localizedDescription))")

@@ -146,7 +146,7 @@ public class ARTDataEncoder: NSObject {
         var errorInfo: ARTErrorInfo?
         let encodings = encoding.components(separatedBy: "/")
         var outputEncoding = encoding
-        var currentData = data
+        var currentData: Any? = data
         
         if !((encodings.last == "base64") || encodings.contains("vcdiff")) {
             // RTL19d2: Non-Base64-encoded non-delta message
@@ -159,11 +159,11 @@ public class ARTDataEncoder: NSObject {
             
             if currentEncoding == "base64" {
                 if let nsData = currentData as? Data { // E. g. when decrypted.
-                    currentData = String(data: nsData, encoding: .utf8)
+                    currentData = String(data: nsData, encoding: .utf8) as Any
                 }
                 if let stringData = currentData as? String {
                     // Note that this, in combination with the vcdiff decoding step below, gives us RTL19e1 (deriving the base payload in the case of a Base64-encoded delta message)
-                    currentData = Data(base64Encoded: stringData)
+                    currentData = Data(base64Encoded: stringData) as Any
                 } else {
                     errorInfo = ARTErrorInfo.create(withCode: ARTErrorCode.ARTErrorInvalidMessageDataOrEncoding.rawValue, message: "invalid data type for 'base64' decoding: '\(type(of: currentData))'")
                 }
@@ -174,14 +174,14 @@ public class ARTDataEncoder: NSObject {
                 }
             } else if currentEncoding == "" || currentEncoding == "utf-8" {
                 if let nsData = currentData as? Data { // E. g. when decrypted.
-                    currentData = String(data: nsData, encoding: .utf8)
+                    currentData = String(data: nsData, encoding: .utf8) as Any
                 }
                 if !(currentData is String) {
                     errorInfo = ARTErrorInfo.create(withCode: ARTErrorCode.ARTErrorInvalidMessageDataOrEncoding.rawValue, message: "invalid data type for '\(currentEncoding)' decoding: '\(type(of: currentData))'")
                 }
             } else if currentEncoding == "json" {
                 if let nsData = currentData as? Data { // E. g. when decrypted.
-                    currentData = String(data: nsData, encoding: .utf8)
+                    currentData = String(data: nsData, encoding: .utf8) as Any
                 }
                 if let stringData = currentData as? String {
                     if let jsonData = stringData.data(using: .utf8) {
@@ -200,7 +200,7 @@ public class ARTDataEncoder: NSObject {
                 if status.state != .ok {
                     errorInfo = status.errorInfo ?? ARTErrorInfo.create(withCode: ARTErrorCode.ARTErrorInvalidMessageDataOrEncoding.rawValue, message: "decrypt failed")
                 } else {
-                    currentData = output
+                    currentData = output as Any
                 }
             } else if currentEncoding == "vcdiff", let nsData = currentData as? Data {
                 do {

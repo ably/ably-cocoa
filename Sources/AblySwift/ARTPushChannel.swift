@@ -186,11 +186,11 @@ internal class ARTPushChannelInternal: NSObject {
                 request.setValue(rest.defaultEncoder().mimeType(), forHTTPHeaderField: "Content-Type")
                 let authenticatedRequest = request.settingDeviceAuthentication(deviceId ?? "", localDevice: device).mutableCopy() as! NSMutableURLRequest
 
-                ARTLogDebug(self.logger, "subscribe notifications for device \(deviceId) in channel \(channel.name)")
+                ARTLogDebug(self.logger, "subscribe notifications for device \(String(describing: deviceId)) in channel \(channel.name)")
                 _ = rest.executeRequest(authenticatedRequest as URLRequest, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { [weak self] response, data, error in
                     guard let self = self else { return }
                     if let error = error {
-                        ARTLogError(self.logger, "\(type(of: self)): subscribe notifications for device \(deviceId) in channel \(channel.name) failed (\(error.localizedDescription))")
+                        ARTLogError(self.logger, "\(type(of: self)): subscribe notifications for device \(String(describing: deviceId)) in channel \(channel.name) failed (\(error.localizedDescription))")
                     }
                     wrappedCallback?(error != nil ? ARTErrorInfo.createFromNSError(error!) : nil)
                 }
@@ -279,11 +279,11 @@ internal class ARTPushChannelInternal: NSObject {
             request.httpMethod = "DELETE"
             let authenticatedRequest = request.settingDeviceAuthentication(deviceId ?? "", localDevice: device).mutableCopy() as! NSMutableURLRequest
 
-            ARTLogDebug(self.logger, "unsubscribe notifications for device \(deviceId) in channel \(channel.name)")
+            ARTLogDebug(self.logger, "unsubscribe notifications for device \(String(describing: deviceId)) in channel \(channel.name)")
             _ = rest.executeRequest(authenticatedRequest as URLRequest, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { [weak self] response, data, error in
                 guard let self = self else { return }
                 if let error = error {
-                    ARTLogError(self.logger, "\(type(of: self)): unsubscribe notifications for device \(deviceId) in channel \(channel.name) failed (\(error.localizedDescription))")
+                    ARTLogError(self.logger, "\(type(of: self)): unsubscribe notifications for device \(String(describing: deviceId)) in channel \(channel.name) failed (\(error.localizedDescription))")
                 }
                 wrappedCallback?(error != nil ? ARTErrorInfo.createFromNSError(error!) : nil)
             }

@@ -53,7 +53,7 @@ public protocol ARTPushChannelSubscriptionsProtocol {
  * @see See `ARTPushChannelSubscriptionsProtocol` for details.
  */
 // swift-migration: original location ARTPushChannelSubscriptions.h, line 66 and ARTPushChannelSubscriptions.m, line 13
-public class ARTPushChannelSubscriptions: NSObject, ARTPushChannelSubscriptionsProtocol, Sendable {
+public class ARTPushChannelSubscriptions: NSObject, ARTPushChannelSubscriptionsProtocol, @unchecked Sendable {
     
     // swift-migration: original location ARTPushChannelSubscriptions+Private.h, line 27
     internal let internalInstance: ARTPushChannelSubscriptionsInternal
@@ -152,15 +152,15 @@ internal class ARTPushChannelSubscriptionsInternal: NSObject {
             }
             
             ARTLogDebug(self._logger, "save channel subscription with request \(request)")
-            rest.executeRequest(request, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
-                if let httpResponse = response as? HTTPURLResponse {
-                    if httpResponse.statusCode == 200 || httpResponse.statusCode == 201 {
+            _ = rest.executeRequest(request, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
+                if let response {
+                    if response.statusCode == 200 || response.statusCode == 201 {
                         ARTLogDebug(self._logger, "channel subscription saved successfully")
                         finalCallback(nil)
                     } else {
-                        ARTLogError(self._logger, "\(String(describing: type(of: self))): save channel subscription failed with status code \(httpResponse.statusCode)")
+                        ARTLogError(self._logger, "\(String(describing: type(of: self))): save channel subscription failed with status code \(response.statusCode)")
                         let plain = data.flatMap { String(data: $0, encoding: .utf8) } ?? ""
-                        finalCallback(ARTErrorInfo.create(withCode: httpResponse.statusCode * 100, status: httpResponse.statusCode, message: plain.art_shortString))
+                        finalCallback(ARTErrorInfo.create(withCode: response.statusCode * 100, status: response.statusCode, message: plain.art_shortString))
                     }
                 } else if let error = error {
                     ARTLogError(self._logger, "\(String(describing: type(of: self))): save channel subscription failed (\(error.localizedDescription))")
@@ -190,9 +190,9 @@ internal class ARTPushChannelSubscriptionsInternal: NSObject {
             request.httpMethod = "GET"
             
             let responseProcessor: ARTPaginatedResultResponseProcessor = { response, data, errorPtr in
-                guard let httpResponse = response as? HTTPURLResponse,
+                guard let response,
                       let data = data,
-                      let mimeType = httpResponse.mimeType,
+                      let mimeType = response.mimeType,
                       let encoder = rest.encoders[mimeType] else {
                     return []
                 }
@@ -229,9 +229,9 @@ internal class ARTPushChannelSubscriptionsInternal: NSObject {
             request.httpMethod = "GET"
             
             let responseProcessor: ARTPaginatedResultResponseProcessor = { response, data, errorPtr in
-                guard let httpResponse = response as? HTTPURLResponse,
+                guard let response,
                       let data = data,
-                      let mimeType = httpResponse.mimeType,
+                      let mimeType = response.mimeType,
                       let encoder = rest.encoders[mimeType] else {
                     return []
                 }
@@ -313,15 +313,15 @@ internal class ARTPushChannelSubscriptionsInternal: NSObject {
     #endif
         
         ARTLogDebug(_logger, "remove channel subscription with request \(request)")
-        rest.executeRequest(request, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
-            if let httpResponse = response as? HTTPURLResponse {
-                if httpResponse.statusCode == 200 || httpResponse.statusCode == 204 {
+        _ = rest.executeRequest(request, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
+            if let response {
+                if response.statusCode == 200 || response.statusCode == 204 {
                     ARTLogDebug(self._logger, "\(String(describing: type(of: self))): channel subscription removed successfully")
                     callback(nil)
                 } else {
-                    ARTLogError(self._logger, "\(String(describing: type(of: self))): remove channel subscription failed with status code \(httpResponse.statusCode)")
+                    ARTLogError(self._logger, "\(String(describing: type(of: self))): remove channel subscription failed with status code \(response.statusCode)")
                     let plain = data.flatMap { String(data: $0, encoding: .utf8) } ?? ""
-                    callback(ARTErrorInfo.create(withCode: httpResponse.statusCode * 100, status: httpResponse.statusCode, message: plain.art_shortString))
+                    callback(ARTErrorInfo.create(withCode: response.statusCode * 100, status: response.statusCode, message: plain.art_shortString))
                 }
             } else if let error = error {
                 ARTLogError(self._logger, "\(String(describing: type(of: self))): remove channel subscription failed (\(error.localizedDescription))")

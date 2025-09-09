@@ -21,7 +21,7 @@ func ARTAnnotationActionToStr(_ action: ARTAnnotationAction) -> String {
 }
 
 // swift-migration: original location ARTAnnotation.h, line 26 and ARTAnnotation.m, line 8
-public class ARTAnnotation: NSObject, NSCopying, Sendable {
+public class ARTAnnotation: NSObject, NSCopying, @unchecked Sendable {
     
     // swift-migration: original location ARTAnnotation.h, line 29
     /// A Unique ID assigned by Ably to this message.
