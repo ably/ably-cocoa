@@ -497,18 +497,33 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 ### ARTOSReachability.m → ARTOSReachability.swift
 - **Headers**: ARTOSReachability.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Core network reachability monitoring class implementing ARTReachability protocol with SystemConfiguration integration. Created helper class for callback bridging to handle Core Foundation callback context properly. Preserved exact logic from Mike Ash's reachability strategy including weak/strong self pattern and queue-based callback dispatching.
+  - **Dependencies**: Added ARTReachability protocol to MigrationPlaceholders.swift
+  - **Compilation Errors**: Fixed Core Foundation bridging issues with callback context (retain/release callbacks and CFRunLoopMode usage), resolved Swift callback handling with wrapper class pattern
+  - **Location Comments**: Applied dual-location format for class, methods, and callback functions
+  - **Swift Adaptations**: Used Unmanaged for Core Foundation callback bridging, SystemConfiguration framework import, proper SCNetworkReachabilityFlags handling with rawValue access
 
 ### ARTPaginatedResult.m → ARTPaginatedResult.swift
 - **Headers**: ARTPaginatedResult.h, ARTPaginatedResult+Private.h, ARTPaginatedResult+Subclass.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Complete pagination system for REST API results with generic ItemType support. Maintains dual initialization pattern (init for subclasses, full initializer for actual use) with initializedViaInitCheck safety mechanism. Preserved exact callback wrapping patterns for userQueue dispatching and ARTQueuedDealloc integration for proper memory management.
+  - **Dependencies**: Removed ARTPaginatedResult placeholder from MigrationPlaceholders.swift, added ARTAuthentication enum to placeholders, resolved duplicate ARTAuthentication definitions
+  - **Compilation Errors**: Fixed ARTInternalLog initialization chain (core -> logger chain), removed redundant type casting warnings in callbacks, added @discardableResult for executeRequest return value
+  - **Location Comments**: Applied dual-location format for class, methods, properties across all three header files (main, private, subclass)
+  - **Swift Adaptations**: Used generic type constraints with ItemType, proper @escaping callback handling, Swift optionals for all nullable properties, class-level static method for executePaginated factory pattern
 
 ### ARTPendingMessage.m → ARTPendingMessage.swift
 - **Headers**: ARTPendingMessage.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Simple subclass of ARTQueuedMessage with single custom initializer. Clean implementation that calls super with nil sentCallback and provided ackCallback. Minimal class requiring only placeholder dependencies for parent class.
+  - **Dependencies**: Added ARTQueuedMessage placeholder and ARTStatusCallback typealias to MigrationPlaceholders.swift
+  - **Compilation Errors**: None - compiled successfully without issues
+  - **Location Comments**: Applied dual-location format for class and method  
+  - **Swift Adaptations**: Direct translation with optional callback parameters, maintains internal access level as per private header location
 
 ### ARTPluginAPI.m → ARTPluginAPI.swift
 - **Headers**: ARTPluginAPI.h

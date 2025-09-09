@@ -61,7 +61,7 @@ public class ARTHTTPPaginatedResponse: ARTPaginatedResult<NSDictionary> {
     // swift-migration: original location ARTHTTPPaginatedResponse.h, line 43 and ARTHTTPPaginatedResponse.m, line 54
     /// Returns a new `ARTHTTPPaginatedResponse` for the first page of results.
     /// - Parameter callback: A callback for retriving an `ARTHTTPPaginatedResponse` object with an array of `NSDictionary` objects.
-    public func first(_ callback: @escaping ARTHTTPPaginatedCallback) {
+    public override func first(_ callback: @escaping ARTHTTPPaginatedCallback) {
         var wrappedCallback = callback
         let userCallback = callback
         wrappedCallback = { result, error in
@@ -76,7 +76,7 @@ public class ARTHTTPPaginatedResponse: ARTPaginatedResult<NSDictionary> {
     // swift-migration: original location ARTHTTPPaginatedResponse.h, line 50 and ARTHTTPPaginatedResponse.m, line 67
     /// Returns a new `ARTHTTPPaginatedResponse` loaded with the next page of results. If there are no further pages, then `nil` is returned.
     /// - Parameter callback: A callback for retriving an `ARTHTTPPaginatedResponse` object with an array of `NSDictionary` objects.
-    public func next(_ callback: @escaping ARTHTTPPaginatedCallback) {
+    public override func next(_ callback: @escaping ARTHTTPPaginatedCallback) {
         var wrappedCallback = callback
         let userCallback = callback
         wrappedCallback = { result, error in
@@ -104,7 +104,7 @@ public class ARTHTTPPaginatedResponse: ARTPaginatedResult<NSDictionary> {
                                            callback: @escaping ARTHTTPPaginatedCallback) {
         ARTLogDebug(logger, "HTTP Paginated request: \(request)")
 
-        rest.executeRequest(request, withAuthOption: ARTAuthentication.on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
+        _ = rest.executeRequest(request, withAuthOption: ARTAuthentication.on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
             if let error = error, (error as NSError).domain != ARTAblyErrorDomain {
                 callback(nil, ARTErrorInfo.createFromNSError(error))
                 return

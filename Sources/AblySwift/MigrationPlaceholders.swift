@@ -532,29 +532,7 @@ public protocol ARTDeviceStorage {
 
 // swift-migration: ARTMessage placeholder removed - now implemented in ARTMessage.swift
 
-// Placeholder for ARTPaginatedResult
-public class ARTPaginatedResult<ItemType> {
-    public let items: [Any]
-    public let rest: ARTRestInternal
-    public let relFirst: URLRequest?
-    public let relCurrent: URLRequest?
-    public let relNext: URLRequest?
-    public let responseProcessor: ARTPaginatedResultResponseProcessor
-    public let wrapperSDKAgents: [String: String]?
-    public let logger: ARTInternalLog
-    public var userQueue: DispatchQueue { return rest.userQueue }
-    
-    public init(items: [Any], rest: ARTRestInternal, relFirst: URLRequest?, relCurrent: URLRequest?, relNext: URLRequest?, responseProcessor: @escaping ARTPaginatedResultResponseProcessor, wrapperSDKAgents: [String: String]?, logger: ARTInternalLog) {
-        self.items = items
-        self.rest = rest
-        self.relFirst = relFirst
-        self.relCurrent = relCurrent
-        self.relNext = relNext
-        self.responseProcessor = responseProcessor
-        self.wrapperSDKAgents = wrapperSDKAgents
-        self.logger = logger
-    }
-}
+// swift-migration: ARTPaginatedResult placeholder removed - now implemented in ARTPaginatedResult.swift
 
 // Placeholder callback types
 public typealias ARTPaginatedMessagesCallback = (ARTPaginatedResult<ARTMessage>?, ARTErrorInfo?) -> Void
@@ -1002,4 +980,43 @@ public protocol APObjectMessageProtocol {}
 // Placeholder for ARTStringFromBool function
 func ARTStringFromBool(_ value: Bool) -> String {
     return value ? "true" : "false"
+}
+
+// ARTReachability protocol
+internal protocol ARTReachability: NSObjectProtocol {
+    init(logger: ARTInternalLog, queue: DispatchQueue)
+    func listenForHost(_ host: String, callback: @escaping (Bool) -> Void)
+    func off()
+}
+
+// swift-migration: ARTAuthentication enum already defined above
+
+// ARTStatusCallback and ARTQueuedMessage placeholders
+public typealias ARTStatusCallback = (ARTStatus) -> Void
+
+// Placeholder for ARTQueuedMessage
+public class ARTQueuedMessage: NSObject {
+    public let msg: ARTProtocolMessage
+    public let sentCallbacks: NSMutableArray
+    public let ackCallbacks: NSMutableArray
+    
+    public init(protocolMessage msg: ARTProtocolMessage, sentCallback: ARTCallback?, ackCallback: ARTStatusCallback?) {
+        self.msg = msg
+        self.sentCallbacks = NSMutableArray()
+        self.ackCallbacks = NSMutableArray()
+        super.init()
+        fatalError("ARTQueuedMessage not yet migrated")
+    }
+    
+    public func mergeFrom(_ msg: ARTProtocolMessage, maxSize: Int, sentCallback: ARTCallback?, ackCallback: ARTStatusCallback?) -> Bool {
+        fatalError("ARTQueuedMessage not yet migrated")
+    }
+    
+    public func sentCallback() -> ARTCallback {
+        fatalError("ARTQueuedMessage not yet migrated")
+    }
+    
+    public func ackCallback() -> ARTStatusCallback {
+        fatalError("ARTQueuedMessage not yet migrated")
+    }
 }

@@ -59,9 +59,9 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTMessage.m | ARTMessage.h | ARTMessage.swift | Completed |
 | ARTMessageOperation.m | ARTMessageOperation.h, ARTMessageOperation+Private.h | ARTMessageOperation.swift | Completed |
 | ARTMsgPackEncoder.m | ARTMsgPackEncoder.h | ARTMsgPackEncoder.swift | Completed |
-| ARTOSReachability.m | ARTOSReachability.h | ARTOSReachability.swift | Not Started |
-| ARTPaginatedResult.m | ARTPaginatedResult.h, ARTPaginatedResult+Private.h, ARTPaginatedResult+Subclass.h | ARTPaginatedResult.swift | Not Started |
-| ARTPendingMessage.m | ARTPendingMessage.h | ARTPendingMessage.swift | Not Started |
+| ARTOSReachability.m | ARTOSReachability.h | ARTOSReachability.swift | Completed |
+| ARTPaginatedResult.m | ARTPaginatedResult.h, ARTPaginatedResult+Private.h, ARTPaginatedResult+Subclass.h | ARTPaginatedResult.swift | Completed |
+| ARTPendingMessage.m | ARTPendingMessage.h | ARTPendingMessage.swift | Completed |
 | ARTPluginAPI.m | ARTPluginAPI.h | ARTPluginAPI.swift | Not Started |
 | ARTPluginDecodingContext.m | ARTPluginDecodingContext.h | ARTPluginDecodingContext.swift | Not Started |
 | ARTPresence.m | ARTPresence.h, ARTPresence+Private.h | ARTPresence.swift | Not Started |
