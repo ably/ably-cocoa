@@ -75,33 +75,21 @@ public func ARTLogDebug(_ logger: ARTInternalLog, _ message: String) {
 // Placeholder typealias for callbacks
 public typealias ARTTokenDetailsCallback = (ARTTokenDetails?, Error?) -> Void
 
-// Placeholder for ARTTokenDetails
-public class ARTTokenDetails {
-    public let clientId: String? = nil
-    public let token: String? = nil
-    public let expires: Date? = nil
-    
-    public init() {
-        fatalError("ARTTokenDetails not yet migrated")
-    }
-    
-    public init(token: String) {
-        fatalError("ARTTokenDetails not yet migrated")
-    }
-    
-    public func copy() -> ARTTokenDetails {
-        fatalError("ARTTokenDetails not yet migrated")
-    }
-}
+// swift-migration: ARTTokenDetails placeholder removed - now implemented in ARTTokenDetails.swift
 
 // Placeholder for ARTTokenParams
 public class ARTTokenParams {
     public var capability: String? = nil
     public var timestamp: Date? = nil
     public var clientId: String? = nil
+    public var ttl: NSNumber? = nil
     
     public init(options: ARTClientOptions) {
         fatalError("ARTTokenParams not yet migrated")
+    }
+    
+    public init(clientId: String?) {
+        self.clientId = clientId
     }
     
     public func copy() -> ARTTokenParams {
@@ -122,18 +110,7 @@ public class ARTTokenParams {
 }
 
 
-// Placeholder for ARTTokenRequest
-public class ARTTokenRequest {
-    public let keyName: String? = nil
-    
-    public init() {
-        fatalError("ARTTokenRequest not yet migrated")
-    }
-    
-    public func toTokenDetails(_ auth: ARTAuth, callback: @escaping ARTTokenDetailsCallback) {
-        fatalError("ARTTokenRequest not yet migrated")
-    }
-}
+// swift-migration: ARTTokenRequest placeholder removed - now implemented in ARTTokenRequest.swift
 
 // swift-migration: ARTClientOptions placeholder removed - now implemented
 
@@ -202,26 +179,9 @@ public enum ARTRealtimeConnectionEvent: Int {
 // Placeholder for ARTConnectionStateCallback
 public typealias ARTConnectionStateCallback = (ARTConnectionStateChange) -> Void
 
-// Placeholder for ARTConnectionStateChange
-public class ARTConnectionStateChange: NSObject {
-    public let current: ARTRealtimeConnectionState
-    public let previous: ARTRealtimeConnectionState
-    public let event: ARTRealtimeConnectionEvent
-    public let reason: ARTErrorInfo?
-    public let retryIn: TimeInterval
-    
-    public init(current: ARTRealtimeConnectionState, previous: ARTRealtimeConnectionState, event: ARTRealtimeConnectionEvent, reason: ARTErrorInfo?, retryIn: TimeInterval) {
-        self.current = current
-        self.previous = previous
-        self.event = event
-        self.reason = reason
-        self.retryIn = retryIn
-        super.init()
-    }
-}
+// swift-migration: ARTConnectionStateChange and related functions moved to ARTTypes.swift
 
-// Placeholder for ARTCallback
-public typealias ARTCallback = (ARTErrorInfo?) -> Void
+// swift-migration: ARTCallback moved to ARTTypes.swift
 
 // Placeholder for ARTConnectionProtocol
 public protocol ARTConnectionProtocol: NSObjectProtocol {
@@ -244,36 +204,6 @@ public protocol ARTConnectionProtocol: NSObjectProtocol {
     func on(_ event: ARTRealtimeConnectionEvent, callback cb: @escaping ARTConnectionStateCallback) -> ARTEventListener
     func once(_ cb: @escaping ARTConnectionStateCallback) -> ARTEventListener
     func once(_ event: ARTRealtimeConnectionEvent, callback cb: @escaping ARTConnectionStateCallback) -> ARTEventListener
-}
-
-// swift-migration: ARTErrorCode enum now defined in ARTStatus.swift
-
-// Placeholder helper functions
-public func ARTRealtimeConnectionStateToStr(_ state: ARTRealtimeConnectionState) -> String {
-    switch state {
-    case .initialized: return "initialized"
-    case .connecting: return "connecting"
-    case .connected: return "connected"
-    case .disconnected: return "disconnected"
-    case .suspended: return "suspended"
-    case .closing: return "closing"
-    case .closed: return "closed"
-    case .failed: return "failed"
-    }
-}
-
-public func ARTRealtimeConnectionEventToStr(_ event: ARTRealtimeConnectionEvent) -> String {
-    switch event {
-    case .initialized: return "initialized"
-    case .connecting: return "connecting"
-    case .connected: return "connected"
-    case .disconnected: return "disconnected"
-    case .suspended: return "suspended"
-    case .closing: return "closing"
-    case .closed: return "closed"
-    case .failed: return "failed"
-    case .update: return "update"
-    }
 }
 
 // Placeholder for ARTRealtimeInternal
@@ -356,26 +286,14 @@ public protocol ARTCancellable {
     func cancel()
 }
 
-// Placeholder for ARTAuthentication enum
-public enum ARTAuthentication: Int {
-    case off = 0
-    case on = 1
-    case useBasic = 2
-    case newToken = 3
-}
+// swift-migration: ARTAuthentication and ARTAuthMethod enums moved to ARTTypes.swift
 
-// Placeholder constants
 public let ARTAuthenticationOff = ARTAuthentication.off
-
-// Placeholder for ARTAuthMethod enum
-public enum ARTAuthMethod: Int {
-    case basic = 0
-    case token = 1
-}
-
 public let ARTAuthMethodBasic = ARTAuthMethod.basic
 public let ARTAuthMethodToken = ARTAuthMethod.token
 
+
+// swift-migration: ARTTokenDetailsCompatible protocol moved to ARTAuthOptions.swift
 
 // Placeholder callback types
 public typealias ARTTokenDetailsCompatibleCallback = (ARTTokenDetailsCompatible?, Error?) -> Void
@@ -410,8 +328,7 @@ public let kCFURLErrorCancelled: CFIndex = -999
 public let ARTErrorTokenErrorUnspecified = 40140
 public let ARTErrorConnectionLimitsExceeded = 40110
 
-// Placeholder for ARTDeviceId (seems to be a String typealias based on usage)
-public typealias ARTDeviceId = String
+// swift-migration: ARTDeviceId moved to ARTTypes.swift
 
 // Placeholder for ARTDeviceStorage protocol
 public protocol ARTDeviceStorage {
@@ -452,8 +369,7 @@ public func ARTLogError(_ logger: ARTInternalLog, _ message: String) {
     // Placeholder - actual implementation will inject file/line info
 }
 
-// Placeholder for NSStringDictionary
-public typealias NSStringDictionary = [String: String]
+// swift-migration: NSStringDictionary moved to ARTTypes.swift
 
 // Placeholder for ARTChannelsDelegate protocol
 internal protocol ARTChannelsDelegate: AnyObject {
@@ -486,10 +402,7 @@ public enum ARTLogLevel: Int {
     case verbose = 0
 }
 
-// Placeholder for ARTStringifiable protocol
-public protocol ARTStringifiable {
-    func toString() -> String
-}
+// swift-migration: ARTStringifiable class moved to ARTStringifiable.swift
 
 // Placeholder for ARTPushRegistererDelegate protocol (from ARTPush.h)
 #if os(iOS)
@@ -509,12 +422,32 @@ public protocol ARTPushRegistererDelegate {
 }
 #endif
 
-// Placeholder for ARTTestClientOptions class
-public class ARTTestClientOptions {
-    public init() {
-        // Empty init for now
+// swift-migration: ARTTestClientOptions placeholder removed - now implemented in ARTTestClientOptions.swift
+
+// Placeholder for ARTDefaultRealtimeTransportFactory
+public class ARTDefaultRealtimeTransportFactory: ARTRealtimeTransportFactory {
+    public init() {}
+    
+    public func transportWithRest(_ rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, logger: ARTInternalLog) -> ARTRealtimeTransport {
+        fatalError("ARTDefaultRealtimeTransportFactory not yet migrated")
     }
 }
+
+// Placeholder for ARTRealtimeTransportFactory protocol
+public protocol ARTRealtimeTransportFactory {
+    func transportWithRest(_ rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, logger: ARTInternalLog) -> ARTRealtimeTransport
+}
+
+// Placeholder for ARTRealtimeTransport
+public class ARTRealtimeTransport {
+    public init() {
+        fatalError("ARTRealtimeTransport not yet migrated")
+    }
+}
+
+// swift-migration: ARTFallback_shuffleArray moved to ARTFallback.swift - duplicate removed
+
+// swift-migration: ARTFallback_shuffleArray moved to ARTTestClientOptions.swift placeholder section
 
 // swift-migration: ARTPluginAPI placeholder remains - ARTPluginAPI.swift exists but deferred due to complex dependencies
 public class ARTPluginAPI {
@@ -547,15 +480,9 @@ public enum ARTQueryDirection: UInt {
 
 // ARTRealtimeChannelInternal defined above
 
-// Functions already used in the codebase - need to make sure they exist
-public func dateToMilliseconds(_ date: Date) -> UInt64 {
-    return UInt64(date.timeIntervalSince1970 * 1000)
-}
+// swift-migration: dateToMilliseconds function moved to ARTTypes.swift
 
-// Placeholder for ARTRealtimeHistoryError enum
-public enum ARTRealtimeHistoryError: Int {
-    case notAttached = 3  // ARTDataQueryErrorTimestampRange + 1
-}
+// swift-migration: ARTRealtimeHistoryError moved to ARTTypes.swift
 
 // swift-migration: ARTClientInformation placeholder removed - now implemented
 
@@ -566,29 +493,7 @@ extension Array {
     }
 }
 
-// Archiving extension for NSObject
-extension NSObject {
-    internal func art_archive(withLogger logger: ARTInternalLog?) -> Data {
-        // swift-migration: Placeholder for archiving functionality
-        do {
-            return try NSKeyedArchiver.archivedData(withRootObject: self, requiringSecureCoding: true)
-        } catch {
-            return Data()
-        }
-    }
-    
-    internal static func art_unarchive(fromData data: Data, withLogger logger: ARTInternalLog?) -> Self? {
-        // swift-migration: Placeholder for unarchiving functionality
-        do {
-            if let result = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? Self {
-                return result
-            }
-            return nil
-        } catch {
-            return nil
-        }
-    }
-}
+// swift-migration: Archiving extensions moved to ARTTypes.swift
 
 // ARTGCD implemented in ARTGCD.swift
 
@@ -678,11 +583,7 @@ public let ARTClientCodeErrorInvalidType = ARTClientCodeError.invalidType
 // Placeholder types for ARTEncoder protocol
 
 
-public class ARTChannelDetails {
-    public init() {
-        fatalError("ARTChannelDetails not yet migrated")
-    }
-}
+// swift-migration: ARTChannelDetails moved to ARTTypes.swift
 
 
 // ARTPushChannelSubscription implemented in ARTPushChannelSubscription.swift
@@ -979,20 +880,12 @@ public extension ARTRestInternal {
 
 // swift-migration: ARTPushAdmin placeholder removed - now implemented in ARTPushAdmin.swift
 
-// Placeholder for ARTPushRecipient
-public typealias ARTPushRecipient = [String: Any]
-
-// Placeholder for ARTJsonObject 
-public typealias ARTJsonObject = [String: Any]
+// swift-migration: ARTPushRecipient and ARTJsonObject moved to ARTTypes.swift
 
 // Placeholder for ARTPaginatedPushChannelCallback
 public typealias ARTPaginatedPushChannelCallback = (ARTPaginatedResult<ARTPushChannelSubscription>?, ARTErrorInfo?) -> Void
 
-// Placeholder for ARTDataQueryError enum
-public enum ARTDataQueryError: Int {
-    case missingRequiredFields = 0
-    case invalidParameters = 1
-}
+// swift-migration: ARTDataQueryError moved to ARTTypes.swift
 
 // ARTPushDeviceRegistrations and ARTPushChannelSubscriptions implemented in their respective .swift files
 
@@ -1071,3 +964,45 @@ public class PlaceholderLogCore: ARTInternalLogCore {
         // swift-migration: Placeholder implementation
     }
 }
+
+// Utility functions for dictionary access (from NSDictionary+ARTDictionaryUtil)
+extension Dictionary where Key == String, Value == Any {
+    func artString(_ key: String) -> String? {
+        return self[key] as? String
+    }
+    
+    func artNumber(_ key: String) -> NSNumber? {
+        return self[key] as? NSNumber
+    }
+    
+    func artTimestamp(_ key: String) -> Date? {
+        guard let number = self[key] as? NSNumber else { return nil }
+        return Date(timeIntervalSince1970: number.doubleValue / 1000)
+    }
+    
+    func artArray(_ key: String) -> [Any]? {
+        return self[key] as? [Any]
+    }
+    
+    func artDictionary(_ key: String) -> [String: Any]? {
+        return self[key] as? [String: Any]
+    }
+    
+    func artInteger(_ key: String) -> Int {
+        guard let number = self[key] as? NSNumber else { return 0 }
+        return number.intValue
+    }
+    
+    func artBoolean(_ key: String) -> Bool {
+        guard let value = self[key] else { return false }
+        if let boolean = value as? Bool {
+            return boolean
+        }
+        if let number = value as? NSNumber {
+            return number.boolValue
+        }
+        return false
+    }
+}
+
+// swift-migration: millisecondsToTimeInterval function moved to ARTTypes.swift

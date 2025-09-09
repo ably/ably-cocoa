@@ -64,12 +64,12 @@ internal class ARTPushActivationState: NSObject, NSSecureCoding {
 
     // swift-migration: original location ARTPushActivationState.h, line 20 and ARTPushActivationState.m, line 70
     internal func archive() -> Data {
-        return self.art_archive(withLogger: self.logger)
+        return self.art_archive(withLogger: self.logger) ?? Data()
     }
 
     // swift-migration: original location ARTPushActivationState.h, line 21 and ARTPushActivationState.m, line 74
     internal static func unarchive(_ data: Data, withLogger logger: ARTInternalLog?) -> ARTPushActivationState? {
-        return self.art_unarchive(fromData: data, withLogger: logger)
+        return self.art_unarchive(fromData: data, withLogger: logger) as? ARTPushActivationState
     }
 }
 

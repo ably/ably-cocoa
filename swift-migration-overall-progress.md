@@ -95,12 +95,12 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTRetrySequence.m | ARTRetrySequence.h | ARTRetrySequence.swift | Not Started |
 | ARTStats.m | ARTStats.h | ARTStats.swift | Not Started |
 | ARTStatus.m | ARTStatus.h | ARTStatus.swift | Completed |
-| ARTStringifiable.m | ARTStringifiable.h, ARTStringifiable+Private.h | ARTStringifiable.swift | Not Started |
-| ARTTestClientOptions.m | ARTTestClientOptions.h | ARTTestClientOptions.swift | Not Started |
-| ARTTokenDetails.m | ARTTokenDetails.h | ARTTokenDetails.swift | Not Started |
+| ARTStringifiable.m | ARTStringifiable.h, ARTStringifiable+Private.h | ARTStringifiable.swift | Completed |
+| ARTTestClientOptions.m | ARTTestClientOptions.h | ARTTestClientOptions.swift | Completed |
+| ARTTokenDetails.m | ARTTokenDetails.h | ARTTokenDetails.swift | Completed |
 | ARTTokenParams.m | ARTTokenParams.h, ARTTokenParams+Private.h | ARTTokenParams.swift | Not Started |
-| ARTTokenRequest.m | ARTTokenRequest.h | ARTTokenRequest.swift | Not Started |
-| ARTTypes.m | ARTTypes.h, ARTTypes+Private.h | ARTTypes.swift | Not Started |
+| ARTTokenRequest.m | ARTTokenRequest.h | ARTTokenRequest.swift | Completed |
+| ARTTypes.m | ARTTypes.h, ARTTypes+Private.h | ARTTypes.swift | Completed |
 | ARTURLSessionServerTrust.m | ARTURLSessionServerTrust.h | ARTURLSessionServerTrust.swift | Not Started |
 | ARTWebSocketFactory.m | ARTWebSocketFactory.h | ARTWebSocketFactory.swift | Not Started |
 | ARTWebSocketTransport.m | ARTWebSocketTransport.h, ARTWebSocketTransport+Private.h | ARTWebSocketTransport.swift | Not Started |

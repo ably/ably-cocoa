@@ -3,10 +3,7 @@ import Foundation
 // swift-migration: original location ARTAuthOptions.m, line 6
 internal let ARTAuthOptionsMethodDefault = "GET"
 
-// swift-migration: decomposeKey function from ARTTypes.m
-internal func decomposeKey(_ key: String) -> [String] {
-    return key.components(separatedBy: ":")
-}
+// swift-migration: decomposeKey function moved to ARTTypes.swift to avoid duplication
 
 // swift-migration: original location Ably/ARTAuthOptions.h, line 11
 public protocol ARTTokenDetailsCompatible {

@@ -61,7 +61,7 @@ internal class ARTPushActivationStateMachine: NSObject {
         
         // Unarchiving - do this after super.init() so we can pass self as machine
         if let stateData = rest.storage.objectForKey(ARTPushActivationCurrentStateKey) as? Data {
-            if let unarchivedState = ARTPushActivationState.art_unarchive(fromData: stateData, withLogger: logger) {
+            if let unarchivedState = ARTPushActivationState.art_unarchive(fromData: stateData, withLogger: logger) as? ARTPushActivationState {
                 self.current = unarchivedState
             } else {
                 self.current = ARTPushActivationStateNotActivated(machine: self, logger: logger)

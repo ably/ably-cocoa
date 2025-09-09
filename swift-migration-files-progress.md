@@ -757,18 +757,26 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 ### ARTStringifiable.m → ARTStringifiable.swift
 - **Headers**: ARTStringifiable.h, ARTStringifiable+Private.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Direct mechanical translation of utility class for string conversion. All static factory methods preserved with exact same signatures.
+  - **Compilation**: No errors or warnings after migration
 
 ### ARTTestClientOptions.m → ARTTestClientOptions.swift
 - **Headers**: ARTTestClientOptions.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Changed access levels from internal to public to fix compilation errors when used in public ARTClientOptions.testOptions property
+  - **Compilation**: Fixed ARTJitterCoefficientGenerator and ARTRealtimeTransportFactory access levels from internal to public
+  - **Dependencies**: Used existing placeholders for ARTDefaultRealtimeTransportFactory, ARTDefaultJitterCoefficientGenerator, ARTFallback_shuffleArray
 
 ### ARTTokenDetails.m → ARTTokenDetails.swift
 - **Headers**: ARTTokenDetails.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Implemented NSCopying with proper Swift copy() method. Preserved exact JSON compatibility with toJSON/fromJSON methods.
+  - **Compilation**: No errors after proper ARTTokenDetailsCompatible protocol implementation
+  - **Dependencies**: Removed placeholder, now implements ARTTokenDetailsCompatible protocol
 
 ### ARTTokenParams.m → ARTTokenParams.swift
 - **Headers**: ARTTokenParams.h, ARTTokenParams+Private.h
@@ -777,13 +785,21 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 ### ARTTokenRequest.m → ARTTokenRequest.swift
 - **Headers**: ARTTokenRequest.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Preserved exact authentication signature behavior. Fixed executeTokenRequest access level in ARTAuth to be internal for protocol compliance.
+  - **Compilation**: Fixed access level issue for executeTokenRequest method, added missing ttl property to ARTTokenParams placeholder
+  - **Dependencies**: Removed placeholder, now implements ARTTokenDetailsCompatible protocol
 
 ### ARTTypes.m → ARTTypes.swift
 - **Headers**: ARTTypes.h, ARTTypes+Private.h
-- **Status**: Not Started
+- **Status**: **Completed**
 - **Notes**: 
+  - **Migration Status**: **Successfully migrated all functionality from ARTTypes.m**:
+    - ✅ **Completed**: Global helper functions (decomposeKey, encodeBase64, etc.), all enums (ARTAuthentication, ARTAuthMethod, etc.), callback typedefs, ARTConnectionStateChange, ARTChannelStateChange, ARTChannelMetrics/Occupancy/Status/Details classes, state-to-string functions, NSString/Dictionary ARTJsonCompatible extensions, NSObject archiving extensions, NSDictionary(ARTURLQueryItemAdditions) extension, Array(ARTQueueAdditions) extension (Swift equivalent), NSString(ARTUtilities) extension with art_shortString/art_base64Encoded, NSDate(ARTUtilities) extension, ARTCancellableFromCallback class, artCancellableFromCallback function
+  - **Implementation Details**: Complete mechanical carbon-copy translation preserving all original behavior. ARTCancellableFromCallback uses proper weak reference pattern to prevent memory leaks. All string and date utilities faithfully replicated.
+  - **Compilation**: **Build successful** - all syntax errors resolved, proper Swift initialization patterns used
+  - **Dependencies**: Consolidated all core types and moved duplicates from MigrationPlaceholders.swift to ARTTypes.swift, art_shortString implementation correctly referenced from MigrationPlaceholders.swift to avoid duplication 
 
 ### ARTURLSessionServerTrust.m → ARTURLSessionServerTrust.swift
 - **Headers**: ARTURLSessionServerTrust.h

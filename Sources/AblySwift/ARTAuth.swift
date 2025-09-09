@@ -175,7 +175,7 @@ internal class ARTAuthInternal {
     // swift-migration: original location ARTAuth.m, line 210
     private func storeOptions(_ customOptions: ARTAuthOptions) {
         options.key = customOptions.key
-        options.tokenDetails = customOptions.tokenDetails?.copy()
+        options.tokenDetails = customOptions.tokenDetails?.copy() as? ARTTokenDetails
         options.authCallback = customOptions.authCallback
         options.authUrl = customOptions.authUrl
         options.authHeaders = customOptions.authHeaders
@@ -473,7 +473,7 @@ internal class ARTAuthInternal {
     
     // swift-migration: original location ARTAuth+Private.h, line 85 and ARTAuth.m, line 492
     @discardableResult
-    private func executeTokenRequest(_ tokenRequest: ARTTokenRequest, callback: @escaping ARTTokenDetailsCallback) -> ARTCancellable? {
+    internal func executeTokenRequest(_ tokenRequest: ARTTokenRequest, callback: @escaping ARTTokenDetailsCallback) -> ARTCancellable? {
         guard let rest = rest else {
             callback(nil, ARTErrorInfo.create(withCode: ARTStateRequestTokenFailed, message: "Rest is nil"))
             return nil
@@ -481,10 +481,7 @@ internal class ARTAuthInternal {
         
         let encoder = rest.defaultEncoder()
         
-        guard let keyName = tokenRequest.keyName else {
-            callback(nil, ARTErrorInfo.create(withCode: ARTStateRequestTokenFailed, message: "Token request key name is nil"))
-            return nil
-        }
+        let keyName = tokenRequest.keyName
         
         let requestUrl = URL(string: "/keys/\(keyName)/requestToken?format=\(encoder.formatAsString())", relativeTo: rest.baseUrl)!
         
