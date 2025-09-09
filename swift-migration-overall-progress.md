@@ -86,8 +86,8 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTRealtimeChannelOptions.m | ARTRealtimeChannelOptions.h | ARTRealtimeChannelOptions.swift | Not Started |
 | ARTRealtimeChannels.m | ARTRealtimeChannels.h, ARTRealtimeChannels+Private.h | ARTRealtimeChannels.swift | Not Started |
 | ARTRealtimePresence.m | ARTRealtimePresence.h, ARTRealtimePresence+Private.h | ARTRealtimePresence.swift | Not Started |
-| ARTRealtimeTransport.m | ARTRealtimeTransport.h | ARTRealtimeTransport.swift | Not Started |
-| ARTRealtimeTransportFactory.m | ARTRealtimeTransportFactory.h | ARTRealtimeTransportFactory.swift | Not Started |
+| ARTRealtimeTransport.m | ARTRealtimeTransport.h | ARTRealtimeTransport.swift | Completed |
+| ARTRealtimeTransportFactory.m | ARTRealtimeTransportFactory.h | ARTRealtimeTransportFactory.swift | Completed |
 | ARTRest.m | ARTRest.h, ARTRest+Private.h | ARTRest.swift | Not Started |
 | ARTRestChannel.m | ARTRestChannel.h, ARTRestChannel+Private.h | ARTRestChannel.swift | Not Started |
 | ARTRestChannels.m | ARTRestChannels.h, ARTRestChannels+Private.h | ARTRestChannels.swift | Not Started |
