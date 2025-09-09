@@ -279,18 +279,34 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 ### ARTFallback.m → ARTFallback.swift
 - **Headers**: ARTFallback.h, ARTFallback+Private.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Simple fallback host management class with host shuffling functionality. Preserved all original behavior including the global shuffle function and NSMutableArray usage for exact compatibility. Used internal access level as per private header location.
+  - **Dependencies**: None additional required
+  - **Compilation Errors**: None
+  - **Location Comments**: Applied dual-location format for class, methods, and global function
+  - **Swift Adaptations**: Used failable initializer for nil/empty array checks, converted C-style for loop to stride, preserved NSMutableArray over Swift Array for behavioral compatibility
 
 ### ARTFallbackHosts.m → ARTFallbackHosts.swift
 - **Headers**: ARTFallbackHosts.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Simple utility class with single static method for determining fallback hosts from client options. Used internal access level as per private header location. Preserved original logic flow and deprecated API usage exactly as in original code.
+  - **Dependencies**: Uses existing ARTDefault.fallbackHosts() and ARTDefault.fallbackHostsWithEnvironment() methods  
+  - **Compilation Errors**: Fixed method name from fallbackHosts(withEnvironment:) to fallbackHostsWithEnvironment()
+  - **Compilation Warnings**: Expected deprecation warning for fallbackHostsUseDefault preserved as per original pragma
+  - **Location Comments**: Applied dual-location format for class and method
+  - **Swift Adaptations**: Converted class method syntax to static func, preserved conditional logic flow
 
 ### ARTFormEncode.m → ARTFormEncode.swift
 - **Headers**: ARTFormEncode.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Complex form URL encoding utility with recursive dictionary/array/set handling based on @mxcl's OMGHTTPURLRQ. Preserved all original logic including character set manipulation and recursive query magic algorithm. Used internal access level as per private header location.
+  - **Dependencies**: None additional required
+  - **Compilation Errors**: Fixed dictionary keys casting to NSArray by converting to Array first
+  - **Location Comments**: Applied dual-location format for all functions and main entry point
+  - **Swift Adaptations**: Converted C inline functions to Swift private functions, used Swift string interpolation, converted NSEnumerator to Swift Iterator, preserved NSMutableString usage for behavior compatibility
 
 ### ARTGCD.m → ARTGCD.swift
 - **Headers**: ARTGCD.h
@@ -775,6 +791,6 @@ Document all placeholder types created in `MigrationPlaceholders.swift`:
 ## Overall Progress Summary
 
 - **Batches Completed**: 2/9 (Batch 1 and Batch 2 completed)
-- **Files Migrated**: 27 completed/115 
-- **Current Batch**: Batch 3 - ARTDeviceDetails through ARTInternalLogCore (5/12 files completed)
-- **Next Steps**: Continue with remaining 7 files in Batch 3 (ARTFallback, ARTFallbackHosts, ARTFormEncode, ARTGCD, ARTHTTPPaginatedResponse, ARTHttp, ARTInternalLog, ARTInternalLogCore)
+- **Files Migrated**: 30 completed/115 
+- **Current Batch**: Batch 3 - ARTDeviceDetails through ARTInternalLogCore (8/12 files completed)
+- **Next Steps**: Continue with remaining 4 files in Batch 3 (ARTGCD, ARTHTTPPaginatedResponse, ARTHttp, ARTInternalLog, ARTInternalLogCore)

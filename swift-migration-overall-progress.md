@@ -40,9 +40,9 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTDevicePushDetails.m | ARTDevicePushDetails.h, ARTDevicePushDetails+Private.h | ARTDevicePushDetails.swift | Completed |
 | ARTErrorChecker.m | ARTErrorChecker.h | ARTErrorChecker.swift | Completed |
 | ARTEventEmitter.m | ARTEventEmitter.h, ARTEventEmitter+Private.h | ARTEventEmitter.swift | Completed |
-| ARTFallback.m | ARTFallback.h, ARTFallback+Private.h | ARTFallback.swift | Not Started |
-| ARTFallbackHosts.m | ARTFallbackHosts.h | ARTFallbackHosts.swift | Not Started |
-| ARTFormEncode.m | ARTFormEncode.h | ARTFormEncode.swift | Not Started |
+| ARTFallback.m | ARTFallback.h, ARTFallback+Private.h | ARTFallback.swift | Completed |
+| ARTFallbackHosts.m | ARTFallbackHosts.h | ARTFallbackHosts.swift | Completed |
+| ARTFormEncode.m | ARTFormEncode.h | ARTFormEncode.swift | Completed |
 | ARTGCD.m | ARTGCD.h | ARTGCD.swift | Not Started |
 | ARTHTTPPaginatedResponse.m | ARTHTTPPaginatedResponse.h, ARTHTTPPaginatedResponse+Private.h | ARTHTTPPaginatedResponse.swift | Not Started |
 | ARTHttp.m | ARTHttp.h, ARTHttp+Private.h | ARTHttp.swift | Not Started |
