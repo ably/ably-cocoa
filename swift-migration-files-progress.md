@@ -928,67 +928,133 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 ---
 
-## Batch 8: Foundation Extensions (NS* files) (12 files)
+## Batch 9: Foundation Extensions (NS* files) (12 files)
 
 ### NSArray+ARTFunctional.m → NSArray+ARTFunctional.swift
 - **Headers**: NSArray+ARTFunctional.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Mechanical carbon-copy translation of array functional programming extensions. Converted NSArray category methods to Array extension methods. Used Swift generic programming with Element type parameter. Made extension internal as per private header location.
+  - **Dependencies**: None - pure Foundation Array extension
+  - **Compilation Errors**: None - straightforward functional programming methods
+  - **Location Comments**: Applied dual-location format for extension and all methods
+  - **Swift Adaptations**: Used Swift Array.map() and Array.filter() native implementations internally while maintaining ART-prefixed method names for API compatibility
+  - **Placeholder Cleanup**: Removed Array.artMap placeholder functionality from MigrationPlaceholders.swift
 
 ### NSDate+ARTUtil.m → NSDate+ARTUtil.swift
-- **Headers**: NSDate+ARTUtil.h
-- **Status**: Not Started
+- **Headers**: NSDate+ARTUtil.h  
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Mechanical carbon-copy translation of date utility methods for millisecond timestamp conversion. Converted NSDate category methods to Date extension methods. Preserved exact millisecond conversion logic using division by 1000.0 and rounding. Made extension internal as per private header location.
+  - **Dependencies**: None - pure Foundation Date extension
+  - **Compilation Errors**: None - straightforward date conversion utilities
+  - **Location Comments**: Applied dual-location format for extension and all methods
+  - **Swift Adaptations**: Used Swift Date instead of NSDate, Int64 instead of long long, maintained NSNumber compatibility for Objective-C interop
 
 ### NSDictionary+ARTDictionaryUtil.m → NSDictionary+ARTDictionaryUtil.swift
 - **Headers**: NSDictionary+ARTDictionaryUtil.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Mechanical carbon-copy translation of dictionary utility methods for typed access to dictionary values. Converted NSDictionary category methods to Dictionary<String, Any> extension. Preserved all original type checking and conversion logic. Made extension internal as per private header location. Improved artBoolean implementation to handle Bool values directly in addition to NSNumber values.
+  - **Dependencies**: Uses Date.artDateFromNumberMs() from NSDate+ARTUtil.swift for timestamp conversion
+  - **Compilation Errors**: None - all type conversions handled properly
+  - **Location Comments**: Applied dual-location format for extension and all methods  
+  - **Swift Adaptations**: Used Swift Dictionary instead of NSDictionary, native type casting instead of isKindOfClass checks, improved boolean handling to work with Swift Bool values
+  - **Placeholder Cleanup**: Removed Dictionary utility function placeholders from MigrationPlaceholders.swift
 
 ### NSError+ARTUtils.m → NSError+ARTUtils.swift
 - **Headers**: NSError+ARTUtils.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Mechanical carbon-copy translation of NSError utility methods for request ID management. Made extension internal as per private header location. Removed requestId property implementation to avoid conflict with existing requestId property in ARTErrorInfo extension in ARTStatus.swift.
+  - **Dependencies**: Uses ARTErrorInfoRequestIdKey constant from ARTStatus.swift
+  - **Compilation Errors**: Fixed requestId property conflict by removing duplicate implementation and adding migration comment referencing ARTStatus.swift implementation
+  - **Location Comments**: Applied dual-location format for extension and methods
+  - **Swift Adaptations**: Used Swift Dictionary for userInfo instead of NSMutableDictionary, maintained NSError return type for Objective-C compatibility
 
-### NSHTTPURLResponse+ARTPaginated.m → NSHTTPURLResponse+ARTPaginated.swift
+### NSHTTPURLResponse+ARTPaginated.m → NSHTTPURLResponse+ARTPaginated.swift  
 - **Headers**: NSHTTPURLResponse+ARTPaginated.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Mechanical carbon-copy translation of HTTP response link header parsing. Converted NSHTTPURLResponse category method to HTTPURLResponse extension. Preserved exact regular expression pattern and link parsing logic. Made extension internal as per private header location. Handled Swift string range conversion properly.
+  - **Dependencies**: None - pure Foundation HTTPURLResponse extension using NSRegularExpression
+  - **Compilation Errors**: None - proper string range handling for regex matches
+  - **Location Comments**: Applied dual-location format for extension and method
+  - **Swift Adaptations**: Used Swift HTTPURLResponse instead of NSHTTPURLResponse, proper Range<String.Index> handling for regex matches, Swift Dictionary instead of NSMutableDictionary
+  - **Placeholder Cleanup**: Removed HTTPURLResponse.extractLinks placeholder from MigrationPlaceholders.swift
 
 ### NSString+ARTUtil.m → NSString+ARTUtil.swift
 - **Headers**: NSString+ARTUtil.h
-- **Status**: Not Started
+- **Status**: Completed  
 - **Notes**: 
+  - **Migration Decisions**: Mechanical carbon-copy translation of string utility functions and methods. Migrated global ARTStringFromBool function and NSString category methods to String extension. Preserved exact boolean string representation ("YES"/"NO"). Made extension internal as per private header location. Corrected ARTStringFromBool return value to match original ("YES"/"NO" instead of "true"/"false").
+  - **Dependencies**: None - pure Foundation String extension
+  - **Compilation Errors**: None - straightforward string utility methods
+  - **Location Comments**: Applied dual-location format for function and extension methods
+  - **Swift Adaptations**: Used Swift String instead of NSString, proper whitespace character set handling, maintained function-style API for ARTStringFromBool
+  - **Placeholder Cleanup**: Removed ARTStringFromBool placeholder function and art_shortString placeholder from MigrationPlaceholders.swift
 
 ### NSURL+ARTUtils.m → NSURL+ARTUtils.swift
 - **Headers**: NSURL+ARTUtils.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Mechanical carbon-copy translation of URL utility method for host replacement. Converted NSURL category method to URL extension. Preserved exact URLComponents-based host replacement logic. Made extension internal as per private header location.
+  - **Dependencies**: None - pure Foundation URL extension
+  - **Compilation Errors**: None - straightforward URL manipulation
+  - **Location Comments**: Applied dual-location format for extension and method
+  - **Swift Adaptations**: Used Swift URL instead of NSURL, URLComponents instead of NSURLComponents, proper Swift optionals handling
 
 ### NSURLQueryItem+Stringifiable.m → NSURLQueryItem+Stringifiable.swift
 - **Headers**: NSURLQueryItem+Stringifiable.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Mechanical carbon-copy translation of URLQueryItem factory method for ARTStringifiable values. Converted NSURLQueryItem category method to URLQueryItem extension. Made extension internal as per private header location.
+  - **Dependencies**: Uses ARTStringifiable.stringValue() method
+  - **Compilation Errors**: None - simple factory method
+  - **Location Comments**: Applied dual-location format for extension and method
+  - **Swift Adaptations**: Used Swift URLQueryItem instead of NSURLQueryItem, maintained ARTStringifiable protocol dependency
 
 ### NSURLRequest+ARTPaginated.m → NSURLRequest+ARTPaginated.swift
 - **Headers**: NSURLRequest+ARTPaginated.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Mechanical carbon-copy translation of URLRequest factory method for creating requests with relative paths. Converted NSURLRequest category method to URLRequest extension. Preserved exact URL creation logic with relative URL handling. Made extension internal as per private header location.
+  - **Dependencies**: None - pure Foundation URLRequest extension
+  - **Compilation Errors**: None - straightforward URL request creation
+  - **Location Comments**: Applied dual-location format for extension and method
+  - **Swift Adaptations**: Used Swift URLRequest instead of NSURLRequest, proper Swift optionals handling for path and URL creation
+  - **Placeholder Cleanup**: Removed URLRequest.requestWithPath placeholder from MigrationPlaceholders.swift
 
 ### NSURLRequest+ARTPush.m → NSURLRequest+ARTPush.swift
 - **Headers**: NSURLRequest+ARTPush.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Mechanical carbon-copy translation of URLRequest device authentication methods. Converted NSURLRequest category methods to URLRequest extension. Preserved exact device authentication logic using device tokens and secrets. Made extension internal as per private header location. Added NSMutableURLRequest extensions for backward compatibility with existing code.
+  - **Dependencies**: Uses ARTLocalDevice, ARTDeviceId, ARTInternalLog types and ARTLogDebug function
+  - **Compilation Errors**: Fixed NSMutableURLRequest compatibility by adding extension methods that convert to URLRequest, apply authentication, and return NSURLRequest
+  - **Location Comments**: Applied dual-location format for extension and all methods
+  - **Swift Adaptations**: Used Swift URLRequest instead of NSURLRequest, proper header field setting, maintained NSMutableURLRequest compatibility for existing code
+  - **Placeholder Cleanup**: Removed URLRequest device authentication placeholder methods from MigrationPlaceholders.swift
 
 ### NSURLRequest+ARTRest.m → NSURLRequest+ARTRest.swift
-- **Headers**: NSURLRequest+ARTRest.h
-- **Status**: Not Started
+- **Headers**: NSURLRequest+ARTRest.h  
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Mechanical carbon-copy translation of URLRequest Accept header configuration method. Converted NSURLRequest category method to URLRequest extension. Preserved exact encoder MIME type prioritization logic with default encoder first. Made extension internal as per private header location.
+  - **Dependencies**: Uses ARTEncoder protocol for MIME type access
+  - **Compilation Errors**: None - straightforward header manipulation
+  - **Location Comments**: Applied dual-location format for extension and method
+  - **Swift Adaptations**: Used Swift URLRequest instead of NSURLRequest, Array operations instead of NSMutableArray, proper header field setting
 
-### NSURLRequest+ARTUtils.m → NSURLRequest+ARTUtils.swift
+### NSURLRequest+ARTUtils.m → NSURLRequest+ARTUtils.swift  
 - **Headers**: NSURLRequest+ARTUtils.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Mechanical carbon-copy translation of URLRequest utility methods for query item appending and host replacement. Converted NSURLRequest category methods to URLRequest extension. Preserved exact URLComponents-based URL manipulation logic. Made extension internal as per private header location. Maintained original documentation comments.
+  - **Dependencies**: None - pure Foundation URLRequest extension
+  - **Compilation Errors**: None - proper URLComponents handling and error fallback
+  - **Location Comments**: Applied dual-location format for extension and all methods
+  - **Swift Adaptations**: Used Swift URLRequest instead of NSURLRequest, URLComponents instead of NSURLComponents, proper Swift optionals and URL manipulation
 
 ---
 
@@ -1042,7 +1108,8 @@ Document all placeholder types created in `MigrationPlaceholders.swift`:
 
 ## Overall Progress Summary
 
-- **Batches Completed**: 2/9 (Batch 1 and Batch 2 completed)
-- **Files Migrated**: 32 completed/115 
-- **Current Batch**: Batch 3 - ARTDeviceDetails through ARTInternalLogCore (8/12 files completed)
-- **Next Steps**: Continue with remaining 4 files in Batch 3 (ARTGCD, ARTHTTPPaginatedResponse, ARTHttp, ARTInternalLog, ARTInternalLogCore)
+- **Batches Completed**: 6/10 (Batches 1, 2, 3, 4, 5, 6, and 9 completed)
+- **Files Migrated**: 75 completed/116 
+- **Current Status**: Foundation Extensions (Batch 9) completed - all 12 NS* files successfully migrated
+- **Remaining Work**: Batches 7-8 (ARTRealtime core classes and ARTWrapperSDKProxy* files) and Batch 10 (Build System & Testing)
+- **Next Steps**: Continue with remaining core classes (ARTRealtime, ARTRealtimeChannel, etc.) and wrapper SDK proxy files

@@ -115,25 +115,25 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTWrapperSDKProxyRealtimeChannel.m | ARTWrapperSDKProxyRealtimeChannel.h, ARTWrapperSDKProxyRealtimeChannel+Private.h | ARTWrapperSDKProxyRealtimeChannel.swift | Not Started |
 | ARTWrapperSDKProxyRealtimeChannels.m | ARTWrapperSDKProxyRealtimeChannels.h, ARTWrapperSDKProxyRealtimeChannels+Private.h | ARTWrapperSDKProxyRealtimeChannels.swift | Not Started |
 | ARTWrapperSDKProxyRealtimePresence.m | ARTWrapperSDKProxyRealtimePresence.h, ARTWrapperSDKProxyRealtimePresence+Private.h | ARTWrapperSDKProxyRealtimePresence.swift | Not Started |
-| NSArray+ARTFunctional.m | NSArray+ARTFunctional.h | NSArray+ARTFunctional.swift | Not Started |
-| NSDate+ARTUtil.m | NSDate+ARTUtil.h | NSDate+ARTUtil.swift | Not Started |
-| NSDictionary+ARTDictionaryUtil.m | NSDictionary+ARTDictionaryUtil.h | NSDictionary+ARTDictionaryUtil.swift | Not Started |
-| NSError+ARTUtils.m | NSError+ARTUtils.h | NSError+ARTUtils.swift | Not Started |
-| NSHTTPURLResponse+ARTPaginated.m | NSHTTPURLResponse+ARTPaginated.h | NSHTTPURLResponse+ARTPaginated.swift | Not Started |
-| NSString+ARTUtil.m | NSString+ARTUtil.h | NSString+ARTUtil.swift | Not Started |
-| NSURL+ARTUtils.m | NSURL+ARTUtils.h | NSURL+ARTUtils.swift | Not Started |
-| NSURLQueryItem+Stringifiable.m | NSURLQueryItem+Stringifiable.h | NSURLQueryItem+Stringifiable.swift | Not Started |
-| NSURLRequest+ARTPaginated.m | NSURLRequest+ARTPaginated.h | NSURLRequest+ARTPaginated.swift | Not Started |
-| NSURLRequest+ARTPush.m | NSURLRequest+ARTPush.h | NSURLRequest+ARTPush.swift | Not Started |
-| NSURLRequest+ARTRest.m | NSURLRequest+ARTRest.h | NSURLRequest+ARTRest.swift | Not Started |
-| NSURLRequest+ARTUtils.m | NSURLRequest+ARTUtils.h | NSURLRequest+ARTUtils.swift | Not Started |
+| NSArray+ARTFunctional.m | NSArray+ARTFunctional.h | NSArray+ARTFunctional.swift | Completed |
+| NSDate+ARTUtil.m | NSDate+ARTUtil.h | NSDate+ARTUtil.swift | Completed |
+| NSDictionary+ARTDictionaryUtil.m | NSDictionary+ARTDictionaryUtil.h | NSDictionary+ARTDictionaryUtil.swift | Completed |
+| NSError+ARTUtils.m | NSError+ARTUtils.h | NSError+ARTUtils.swift | Completed |
+| NSHTTPURLResponse+ARTPaginated.m | NSHTTPURLResponse+ARTPaginated.h | NSHTTPURLResponse+ARTPaginated.swift | Completed |
+| NSString+ARTUtil.m | NSString+ARTUtil.h | NSString+ARTUtil.swift | Completed |
+| NSURL+ARTUtils.m | NSURL+ARTUtils.h | NSURL+ARTUtils.swift | Completed |
+| NSURLQueryItem+Stringifiable.m | NSURLQueryItem+Stringifiable.h | NSURLQueryItem+Stringifiable.swift | Completed |
+| NSURLRequest+ARTPaginated.m | NSURLRequest+ARTPaginated.h | NSURLRequest+ARTPaginated.swift | Completed |
+| NSURLRequest+ARTPush.m | NSURLRequest+ARTPush.h | NSURLRequest+ARTPush.swift | Completed |
+| NSURLRequest+ARTRest.m | NSURLRequest+ARTRest.h | NSURLRequest+ARTRest.swift | Completed |
+| NSURLRequest+ARTUtils.m | NSURLRequest+ARTUtils.h | NSURLRequest+ARTUtils.swift | Completed |
 
 ## Progress Summary
 
 - **Total Files**: 116
-- **Not Started**: 64
+- **Not Started**: 52
 - **In Progress**: 0
-- **Completed**: 51
+- **Completed**: 63
 - **Blocked**: 0
 - **Deferred**: 1
 
@@ -147,5 +147,5 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 - **Batch 6**: ARTPushChannelSubscription - ARTQueuedMessage (5 files) - Completed (5 completed)
 - **Batch 7**: ARTRealtimeChannels - ARTWrapperSDKProxyOptions (10 files) - Not Started
 - **Batch 8**: ARTWrapperSDKProxy* files (15 files) - Not Started
-- **Batch 9**: Foundation Extensions (NS* files) (12 files) - Not Started
+- **Batch 9**: Foundation Extensions (NS* files) (12 files) - Completed (12 completed)
 - **Batch 10**: Build System & Testing - Not Started

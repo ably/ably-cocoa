@@ -459,12 +459,7 @@ public enum ARTQueryDirection: UInt {
 
 // swift-migration: ARTClientInformation placeholder removed - now implemented
 
-// Extension for Array to provide artMap functionality
-extension Array {
-    internal func artMap<T>(_ transform: (Element) -> T) -> [T] {
-        return self.map(transform)
-    }
-}
+// swift-migration: Array artMap functionality now implemented in NSArray+ARTFunctional.swift
 
 // swift-migration: Archiving extensions moved to ARTTypes.swift
 
@@ -483,19 +478,9 @@ public typealias ARTURLRequestCallback = (HTTPURLResponse?, Data?, Error?) -> Vo
 
 // Constants defined in ARTConstants.swift
 
-// Placeholder for HTTP response extensions
-public extension HTTPURLResponse {
-    func extractLinks() -> [String: String] {
-        fatalError("HTTPURLResponse extractLinks not yet migrated")
-    }
-}
+// swift-migration: HTTPURLResponse extractLinks now implemented in NSHTTPURLResponse+ARTPaginated.swift
 
-// Placeholder for URLRequest extensions
-public extension URLRequest {
-    static func requestWithPath(_ path: String?, relativeTo baseRequest: URLRequest) -> URLRequest? {
-        fatalError("URLRequest requestWithPath not yet migrated")
-    }
-}
+// swift-migration: URLRequest requestWithPath now implemented in NSURLRequest+ARTPaginated.swift
 
 // ARTInternalLogCore protocol and ARTDefaultInternalLogCore class implemented in ARTInternalLogCore.swift
 
@@ -707,10 +692,7 @@ public class ARTJsonLikeEncoder {
 // Placeholder for APObjectMessageProtocol
 public protocol APObjectMessageProtocol {}
 
-// Placeholder for ARTStringFromBool function
-func ARTStringFromBool(_ value: Bool) -> String {
-    return value ? "true" : "false"
-}
+// swift-migration: ARTStringFromBool function now implemented in NSString+ARTUtil.swift
 
 // ARTReachability protocol
 internal protocol ARTReachability: NSObjectProtocol {
@@ -858,12 +840,7 @@ extension Dictionary where Key == String, Value == String {
     }
 }
 
-// Extension for String to add art_shortString method
-extension String {
-    var art_shortString: String {
-        return self // For now, just return the string as-is
-    }
-}
+// swift-migration: String art_shortString method was a placeholder - not needed in actual implementation
 
 // Placeholder for ARTPaginatedTextCallback
 public typealias ARTPaginatedTextCallback = (ARTPaginatedResult<String>?, ARTErrorInfo?) -> Void
@@ -873,36 +850,7 @@ public typealias ARTPaginatedDeviceDetailsCallback = (ARTPaginatedResult<ARTDevi
 
 // swift-migration: ARTErrorInfo methods now defined in ARTStatus.swift
 
-// Extension for URLRequest to add device authentication
-extension URLRequest {
-    func settingDeviceAuthentication(_ deviceId: String?, localDevice: ARTLocalDevice?) -> URLRequest {
-        // swift-migration: Placeholder for device authentication - will be implemented when NSURLRequest+ARTPush.swift is migrated
-        return self
-    }
-    
-    func settingDeviceAuthentication(_ deviceId: String?, localDevice: ARTLocalDevice?, logger: ARTInternalLog) -> URLRequest {
-        // swift-migration: Placeholder for device authentication - will be implemented when NSURLRequest+ARTPush.swift is migrated
-        return self
-    }
-    
-    func settingDeviceAuthentication(_ localDevice: ARTLocalDevice) -> URLRequest {
-        // swift-migration: Placeholder for device authentication - will be implemented when NSURLRequest+ARTPush.swift is migrated  
-        return self
-    }
-}
-
-// Extension for NSMutableURLRequest to add device authentication
-extension NSMutableURLRequest {
-    func settingDeviceAuthentication(_ deviceId: String, localDevice: ARTLocalDevice?) -> NSURLRequest {
-        // swift-migration: Placeholder for device authentication - will be implemented when NSURLRequest+ARTPush.swift is migrated
-        return self
-    }
-    
-    func settingDeviceAuthentication(_ localDevice: ARTLocalDevice) -> NSURLRequest {
-        // swift-migration: Placeholder for device authentication - will be implemented when NSURLRequest+ARTPush.swift is migrated
-        return self
-    }
-}
+// swift-migration: URLRequest device authentication methods now implemented in NSURLRequest+ARTPush.swift
 
 // Placeholder logger core
 public class PlaceholderLogCore: ARTInternalLogCore {
@@ -915,44 +863,6 @@ public class PlaceholderLogCore: ARTInternalLogCore {
     }
 }
 
-// Utility functions for dictionary access (from NSDictionary+ARTDictionaryUtil)
-extension Dictionary where Key == String, Value == Any {
-    func artString(_ key: String) -> String? {
-        return self[key] as? String
-    }
-    
-    func artNumber(_ key: String) -> NSNumber? {
-        return self[key] as? NSNumber
-    }
-    
-    func artTimestamp(_ key: String) -> Date? {
-        guard let number = self[key] as? NSNumber else { return nil }
-        return Date(timeIntervalSince1970: number.doubleValue / 1000)
-    }
-    
-    func artArray(_ key: String) -> [Any]? {
-        return self[key] as? [Any]
-    }
-    
-    func artDictionary(_ key: String) -> [String: Any]? {
-        return self[key] as? [String: Any]
-    }
-    
-    func artInteger(_ key: String) -> Int {
-        guard let number = self[key] as? NSNumber else { return 0 }
-        return number.intValue
-    }
-    
-    func artBoolean(_ key: String) -> Bool {
-        guard let value = self[key] else { return false }
-        if let boolean = value as? Bool {
-            return boolean
-        }
-        if let number = value as? NSNumber {
-            return number.boolValue
-        }
-        return false
-    }
-}
+// swift-migration: Dictionary utility functions now implemented in NSDictionary+ARTDictionaryUtil.swift
 
 // swift-migration: millisecondsToTimeInterval function moved to ARTTypes.swift
