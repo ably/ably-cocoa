@@ -9,35 +9,7 @@ public protocol ARTJsonCompatible {
     func toJSONString() -> String?
 }
 
-// Placeholder for ARTDataEncoder
-public class ARTDataEncoder {
-    public init() {}
-    
-    public init(cipherParams: ARTCipherParams?, logger: ARTInternalLog, error: inout Error?) {
-        fatalError("ARTDataEncoder not yet migrated")
-    }
-    
-    public func decode(_ data: Any?, encoding: String?) -> ARTDataEncoderOutput {
-        fatalError("ARTDataEncoder not yet migrated")
-    }
-    
-    public func encode(_ data: Any?) -> ARTDataEncoderOutput {
-        fatalError("ARTDataEncoder not yet migrated")
-    }
-}
-
-// Placeholder for ARTDataEncoderOutput
-public class ARTDataEncoderOutput {
-    public let data: Any?
-    public let encoding: String?
-    public let errorInfo: ARTErrorInfo?
-    
-    public init(data: Any?, encoding: String?, errorInfo: ARTErrorInfo?) {
-        self.data = data
-        self.encoding = encoding
-        self.errorInfo = errorInfo
-    }
-}
+// ARTDataEncoder and ARTDataEncoderOutput implemented in ARTDataEncoder.swift
 
 // Placeholder for ARTErrorInfo
 public class ARTErrorInfo: Error {
@@ -50,6 +22,10 @@ public class ARTErrorInfo: Error {
     }
     
     public static func create(withCode code: Int, message: String) -> ARTErrorInfo {
+        return ARTErrorInfo(code: code, message: message)
+    }
+    
+    public static func create(withCode code: Int, status: Int, message: String) -> ARTErrorInfo {
         return ARTErrorInfo(code: code, message: message)
     }
     
@@ -243,7 +219,31 @@ public class ARTEventEmitter<EventType, DataType> {
         fatalError("ARTEventEmitter not yet migrated")
     }
     
-    public func once(_ callback: @escaping (DataType?) -> Void) {
+    public func once(_ callback: @escaping (DataType) -> Void) -> ARTEventListener {
+        fatalError("ARTEventEmitter not yet migrated")
+    }
+    
+    public func once(_ event: EventType, callback: @escaping (DataType) -> Void) -> ARTEventListener {
+        fatalError("ARTEventEmitter not yet migrated")
+    }
+    
+    public func on(_ callback: @escaping (DataType) -> Void) -> ARTEventListener {
+        fatalError("ARTEventEmitter not yet migrated")
+    }
+    
+    public func on(_ event: EventType, callback: @escaping (DataType) -> Void) -> ARTEventListener {
+        fatalError("ARTEventEmitter not yet migrated")
+    }
+    
+    public func off() {
+        fatalError("ARTEventEmitter not yet migrated")
+    }
+    
+    public func off(_ listener: ARTEventListener) {
+        fatalError("ARTEventEmitter not yet migrated")
+    }
+    
+    public func off(_ event: EventType, listener: ARTEventListener) {
         fatalError("ARTEventEmitter not yet migrated")
     }
     
@@ -259,12 +259,201 @@ public class ARTInternalEventEmitter: ARTEventEmitter<ARTEvent, ARTErrorInfo> {
     }
 }
 
-// Placeholder for NSString extension
-extension NSString {
-    @objc public static func artAddEncoding(_ encoding: String?, toString existingEncoding: String?) -> String? {
-        fatalError("NSString+ARTUtil not yet migrated")
+// Placeholder for ARTPublicEventEmitter
+public class ARTPublicEventEmitter: ARTEventEmitter<ARTEvent, ARTConnectionStateChange> {
+    public init(rest: ARTRestInternal, logger: ARTInternalLog) {
+        super.init(queue: rest.queue)
+        fatalError("ARTPublicEventEmitter not yet migrated")
     }
 }
+
+// NSString extension implemented in ARTDataEncoder.swift
+
+// Placeholder for ARTStatus
+public class ARTStatus: NSObject {
+    public enum State {
+        case ok
+        case error
+        case invalidArgs
+        case cryptoBadPadding
+    }
+    
+    public let state: State
+    public let errorInfo: ARTErrorInfo?
+    
+    public init(state: State, errorInfo: ARTErrorInfo? = nil) {
+        self.state = state
+        self.errorInfo = errorInfo
+        super.init()
+    }
+}
+
+// Placeholder types needed for ARTConnection and other migrations
+
+// Placeholder for ARTEventListener
+public class ARTEventListener: NSObject {
+    public override init() {
+        super.init()
+        fatalError("ARTEventListener not yet migrated")
+    }
+}
+
+// Placeholder for ARTRealtimeConnectionEvent
+public enum ARTRealtimeConnectionEvent: Int {
+    case initialized = 0
+    case connecting = 1
+    case connected = 2
+    case disconnected = 3
+    case suspended = 4
+    case closing = 5
+    case closed = 6
+    case failed = 7
+    case update = 8
+}
+
+// Placeholder for ARTConnectionStateCallback
+public typealias ARTConnectionStateCallback = (ARTConnectionStateChange) -> Void
+
+// Placeholder for ARTConnectionStateChange
+public class ARTConnectionStateChange: NSObject {
+    public let current: ARTRealtimeConnectionState
+    public let previous: ARTRealtimeConnectionState
+    public let event: ARTRealtimeConnectionEvent
+    public let reason: ARTErrorInfo?
+    public let retryIn: TimeInterval
+    
+    public init(current: ARTRealtimeConnectionState, previous: ARTRealtimeConnectionState, event: ARTRealtimeConnectionEvent, reason: ARTErrorInfo?, retryIn: TimeInterval) {
+        self.current = current
+        self.previous = previous
+        self.event = event
+        self.reason = reason
+        self.retryIn = retryIn
+        super.init()
+    }
+}
+
+// Placeholder for ARTCallback
+public typealias ARTCallback = (ARTErrorInfo?) -> Void
+
+// Placeholder for ARTConnectionProtocol
+public protocol ARTConnectionProtocol: NSObjectProtocol {
+    var id: String? { get }
+    var key: String? { get }
+    var maxMessageSize: Int { get }
+    var state: ARTRealtimeConnectionState { get }
+    var errorReason: ARTErrorInfo? { get }
+    var recoveryKey: String? { get }
+    
+    func createRecoveryKey() -> String?
+    func connect()
+    func close()
+    func ping(_ callback: @escaping ARTCallback)
+    
+    func off()
+    func off(_ listener: ARTEventListener)
+    func off(_ event: ARTRealtimeConnectionEvent, listener: ARTEventListener)
+    func on(_ cb: @escaping ARTConnectionStateCallback) -> ARTEventListener
+    func on(_ event: ARTRealtimeConnectionEvent, callback cb: @escaping ARTConnectionStateCallback) -> ARTEventListener
+    func once(_ cb: @escaping ARTConnectionStateCallback) -> ARTEventListener
+    func once(_ event: ARTRealtimeConnectionEvent, callback cb: @escaping ARTConnectionStateCallback) -> ARTEventListener
+}
+
+// Placeholder for ARTErrorCode
+public enum ARTErrorCode: Int {
+    case ARTErrorDisconnected = 80001
+    case ARTErrorConnectionSuspended = 80002
+    case ARTErrorConnectionFailed = 80003
+    case ARTErrorConnectionClosed = 80004
+    case ARTErrorInvalidTransportHandle = 80005
+    case ARTErrorInvalidMessageDataOrEncoding = 40013
+    case ARTErrorUnableToDecodeMessage = 40014
+}
+
+// Placeholder helper functions
+public func ARTRealtimeConnectionStateToStr(_ state: ARTRealtimeConnectionState) -> String {
+    switch state {
+    case .initialized: return "initialized"
+    case .connecting: return "connecting"
+    case .connected: return "connected"
+    case .disconnected: return "disconnected"
+    case .suspended: return "suspended"
+    case .closing: return "closing"
+    case .closed: return "closed"
+    case .failed: return "failed"
+    }
+}
+
+public func ARTRealtimeConnectionEventToStr(_ event: ARTRealtimeConnectionEvent) -> String {
+    switch event {
+    case .initialized: return "initialized"
+    case .connecting: return "connecting"
+    case .connected: return "connected"
+    case .disconnected: return "disconnected"
+    case .suspended: return "suspended"
+    case .closing: return "closing"
+    case .closed: return "closed"
+    case .failed: return "failed"
+    case .update: return "update"
+    }
+}
+
+// Placeholder for ARTRealtimeInternal
+public class ARTRealtimeInternal: NSObject {
+    public let rest: ARTRestInternal
+    public let options: ARTClientOptions
+    public let isActive: Bool = false
+    public let msgSerial: Int64 = 0
+    public let channels: ARTRealtimeChannelsInternal
+    
+    public override init() {
+        self.rest = ARTRestInternal()
+        self.options = ARTClientOptions()
+        self.channels = ARTRealtimeChannelsInternal()
+        super.init()
+        fatalError("ARTRealtimeInternal not yet migrated")
+    }
+    
+    public func connect() {
+        fatalError("ARTRealtimeInternal not yet migrated")
+    }
+    
+    public func close() {
+        fatalError("ARTRealtimeInternal not yet migrated")  
+    }
+    
+    public func ping(_ callback: @escaping ARTCallback) {
+        fatalError("ARTRealtimeInternal not yet migrated")
+    }
+}
+
+// ARTRestInternal defined above
+
+// Placeholder for ARTRealtimeChannelsInternal
+public class ARTRealtimeChannelsInternal: NSObject {
+    public var nosyncIterable: [ARTRealtimeChannelInternal] {
+        return []
+    }
+    
+    public override init() {
+        super.init()
+        fatalError("ARTRealtimeChannelsInternal not yet migrated")
+    }
+}
+
+// Placeholder for ARTRealtimeChannelInternal
+public class ARTRealtimeChannelInternal: NSObject {
+    public let name: String = ""
+    public let channelSerial: String? = nil
+    public let attachSerial: String = ""
+    public var state_nosync: ARTRealtimeChannelState = .initialized
+    
+    public override init() {
+        super.init()
+        fatalError("ARTRealtimeChannelInternal not yet migrated")
+    }
+}
+
+// ARTRealtimeChannelState defined above
 
 // Additional placeholder types and constants needed by ARTAuth
 
@@ -432,8 +621,7 @@ public protocol ARTJitterCoefficientGenerator {
     func generateJitterCoefficient() -> Double
 }
 
-// Placeholder for ARTCallback
-public typealias ARTCallback = (ARTErrorInfo?) -> Void
+// ARTCallback defined above
 
 // Placeholder for ARTMessage
 public class ARTMessage: ARTBaseMessage {
@@ -496,27 +684,7 @@ public enum ARTState: UInt {
 
 // These placeholders will be replaced by the actual ARTChannelOptions implementation
 
-// Placeholder for ARTCipherParams
-public class ARTCipherParams {
-    public init() {
-        fatalError("ARTCipherParams not yet migrated")
-    }
-}
-
-// Placeholder protocols for ARTChannelOptions dependencies
-public protocol ARTCipherParamsCompatible {
-    func toCipherParams() -> ARTCipherParams
-}
-
-public protocol ARTCipherKeyCompatible {
-}
-
-// Extension to make Dictionary conform to ARTCipherParamsCompatible, just like the original Objective-C
-extension Dictionary: ARTCipherParamsCompatible where Key == String {
-    public func toCipherParams() -> ARTCipherParams {
-        fatalError("Dictionary.toCipherParams() not yet implemented")
-    }
-}
+// ARTCipherParams, ARTCipherParamsCompatible, and ARTCipherKeyCompatible implemented in ARTCrypto.swift
 
 // swift-migration: ARTDefault placeholder removed - now implemented
 
@@ -617,15 +785,7 @@ public enum ARTQueryDirection: UInt {
     case backwards = 1
 }
 
-// Placeholder for ARTRealtimeChannelInternal
-public class ARTRealtimeChannelInternal {
-    public var state_nosync: ARTRealtimeChannelState = .initialized
-    public var attachSerial: String = ""
-    
-    public init() {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-}
+// ARTRealtimeChannelInternal defined above
 
 // Functions already used in the codebase - need to make sure they exist
 public func dateToMilliseconds(_ date: Date) -> UInt64 {
