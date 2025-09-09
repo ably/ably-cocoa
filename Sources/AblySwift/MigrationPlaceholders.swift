@@ -17,32 +17,9 @@ public protocol ARTJsonCompatible {
 
 // swift-migration: ARTAblyErrorDomain constant now defined in ARTStatus.swift
 
-// Placeholder for ARTRetryAttempt
-public class ARTRetryAttempt {
-    public init() {
-        fatalError("ARTRetryAttempt not yet migrated")
-    }
-}
+// swift-migration: ARTRetryAttempt and ARTRetryDelayCalculator placeholders removed - now implemented in ARTRetrySequence.swift
 
 // ARTInternalLog implemented in ARTInternalLog.swift
-
-// Placeholder for ARTRetryDelayCalculator protocol
-public protocol ARTRetryDelayCalculator {
-    // Placeholder implementation
-}
-
-// Placeholder for ARTRetrySequence
-public class ARTRetrySequence {
-    public let id: String = "placeholder"
-    
-    public init(delayCalculator: ARTRetryDelayCalculator) {
-        fatalError("ARTRetrySequence not yet migrated")
-    }
-    
-    public func addRetryAttempt() -> ARTRetryAttempt {
-        fatalError("ARTRetrySequence not yet migrated")
-    }
-}
 
 // Placeholder for ARTRealtimeConnectionState
 public enum ARTRealtimeConnectionState: UInt {

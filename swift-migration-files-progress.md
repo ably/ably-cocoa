@@ -753,8 +753,17 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 ### ARTRetrySequence.m → ARTRetrySequence.swift
 - **Headers**: ARTRetrySequence.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration**: Completed ARTRetrySequence.m migration with ARTRetryDelayCalculator protocol and retry classes
+  - **Protocols**: Migrated ARTRetryDelayCalculator protocol with delayForRetryNumber method
+  - **Classes**: Migrated ARTRetryAttempt class with id, delay properties, and description formatting
+  - **Classes**: Migrated ARTRetrySequence class with retry counting logic and attempt generation
+  - **Access Control**: Made all types and methods public as they're used by public APIs
+  - **UUID Generation**: Converted NSUUID to UUID for Swift native types
+  - **Memory Management**: Used Unmanaged.passUnretained for pointer formatting in description
+  - **Dependencies**: Removed ARTRetryAttempt and ARTRetryDelayCalculator placeholders from MigrationPlaceholders.swift
+  - **Compilation**: All types compile successfully and integrate with existing retry state classes
 
 ### ARTStats.m → ARTStats.swift
 - **Headers**: ARTStats.h
