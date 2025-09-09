@@ -177,8 +177,8 @@ public class ARTRestInternal {
     public let baseUrl: URL = URL(string: "https://rest.ably.io")!
     public let defaultEncoder: ARTEncoder = ARTEncoderPlaceholder()
     public let encoders: [String: ARTEncoder] = [:]
-    public let device_nosync: ARTLocalDevice = ARTLocalDevice()
-    public let storage: ARTLocalDeviceStorage = ARTLocalDeviceStorage()
+    public var device_nosync: ARTLocalDevice { fatalError("ARTRestInternal not yet migrated") }
+    internal var storage: ARTLocalDeviceStorage { fatalError("ARTRestInternal not yet migrated") }
     public let push: ARTPush = ARTPush()
     
     public init() {
@@ -400,29 +400,9 @@ public class ARTRealtimeChannelInternal: NSObject {
 // Additional placeholder types and constants needed by ARTAuth
 
 
-// Placeholder for ARTLocalDevice
-public class ARTLocalDevice {
-    public var clientId: String? = nil
-    
-    public init() {
-        fatalError("ARTLocalDevice not yet migrated")
-    }
-    
-    public func setClientId(_ clientId: String?) {
-        fatalError("ARTLocalDevice not yet migrated")
-    }
-}
+// ARTLocalDevice implemented in ARTLocalDevice.swift
 
-// Placeholder for ARTLocalDeviceStorage
-public class ARTLocalDeviceStorage {
-    public init() {
-        fatalError("ARTLocalDeviceStorage not yet migrated")
-    }
-    
-    public func setObject(_ object: Any?, forKey key: String) {
-        fatalError("ARTLocalDeviceStorage not yet migrated")
-    }
-}
+// ARTLocalDeviceStorage implemented in ARTLocalDeviceStorage.swift
 
 // Placeholder for ARTPush
 public class ARTPush {
@@ -529,7 +509,7 @@ public let ARTAblyMessageNoMeansToRenewToken = "No means to renew token"
 public let ARTErrorErrorFromClientTokenCallback = 80019
 public let ARTErrorIncompatibleCredentials = 40102
 public let ARTStateAuthUrlIncompatibleContent = 40170
-public let ARTClientIdKey = "ARTClientIdKey"
+// ARTClientIdKey now defined in ARTLocalDevice.swift
 public let kCFURLErrorCancelled: CFIndex = -999
 
 public let ARTErrorTokenErrorUnspecified = 40140
@@ -537,6 +517,14 @@ public let ARTErrorConnectionLimitsExceeded = 40110
 
 // Placeholder for ARTDeviceId (seems to be a String typealias based on usage)
 public typealias ARTDeviceId = String
+
+// Placeholder for ARTDeviceStorage protocol
+public protocol ARTDeviceStorage {
+    func objectForKey(_ key: String) -> Any?
+    func setObject(_ value: Any?, forKey key: String)
+    func secretForDevice(_ deviceId: String) -> String?
+    func setSecret(_ value: String?, forDevice deviceId: String)
+}
 
 // ARTJitterCoefficientGenerator protocol implemented in ARTJitterCoefficientGenerator.swift
 
@@ -635,14 +623,7 @@ internal class ARTRestChannel: ARTChannel {
 
 // swift-migration: ARTDefaultProduction placeholder removed - now implemented
 
-// Placeholder for ARTLog class
-public class ARTLog {
-    public var logLevel: ARTLogLevel = .none
-    
-    public init() {
-        // Empty init for now
-    }
-}
+// ARTLog implemented in ARTLog.swift
 
 // Placeholder for ARTLogLevel enum
 public enum ARTLogLevel: Int {
@@ -805,19 +786,7 @@ public protocol ARTVersion2Log {
     func log(_ message: String, withLevel level: ARTLogLevel, file: String, line: Int)
 }
 
-// Placeholder for ARTLogAdapter
-public class ARTLogAdapter: ARTVersion2Log {
-    public var logLevel: ARTLogLevel = .error
-    private let wrappedLogger: ARTLog
-    
-    public init(logger: ARTLog) {
-        self.wrappedLogger = logger
-    }
-    
-    public func log(_ message: String, withLevel level: ARTLogLevel, file: String, line: Int) {
-        fatalError("ARTLogAdapter not yet migrated")
-    }
-}
+// ARTLogAdapter implemented in ARTLogAdapter.swift
 
 
 // Placeholders for ARTRest types
