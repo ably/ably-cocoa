@@ -402,50 +402,17 @@ public class ARTRealtimeChannelInternal: NSObject {
 
 // ARTLocalDevice implemented in ARTLocalDevice.swift
 
+// swift-migration: isRegistered property implemented in ARTLocalDevice.swift
+
 // ARTLocalDeviceStorage implemented in ARTLocalDeviceStorage.swift
 
 // swift-migration: ARTPush placeholder removed - now implemented in ARTPush.swift
 
-// Placeholder for ARTPushActivationStateMachine
-public class ARTPushActivationStateMachine {
-    public let current_nosync: ARTPushActivationState = ARTPushActivationStateNotActivated()
-    
-    public init() {
-        fatalError("ARTPushActivationStateMachine not yet migrated")
-    }
-    
-    public func sendEvent(_ event: ARTPushActivationEvent) {
-        fatalError("ARTPushActivationStateMachine not yet migrated")
-    }
-}
+// swift-migration: ARTPushActivationStateMachine placeholder removed - now implemented in ARTPushActivationStateMachine.swift
 
-// Placeholder for ARTPushActivationState
-public class ARTPushActivationState {
-    public init() {
-        fatalError("ARTPushActivationState not yet migrated")
-    }
-}
+// swift-migration: ARTPushActivationState placeholder removed - now implemented in ARTPushActivationState.swift
 
-// Placeholder for ARTPushActivationStateNotActivated
-public class ARTPushActivationStateNotActivated: ARTPushActivationState {
-    public override init() {
-        super.init()
-    }
-}
-
-// Placeholder for ARTPushActivationEvent
-public class ARTPushActivationEvent {
-    public init() {
-        fatalError("ARTPushActivationEvent not yet migrated")
-    }
-}
-
-// Placeholder for ARTPushActivationEventGotPushDeviceDetails
-public class ARTPushActivationEventGotPushDeviceDetails: ARTPushActivationEvent {
-    public override init() {
-        super.init()
-    }
-}
+// swift-migration: ARTPushActivationEvent placeholder removed - now implemented in ARTPushActivationEvent.swift
 
 // Placeholder for ARTCancellable protocol
 public protocol ARTCancellable {
@@ -807,6 +774,7 @@ public class ARTChannelDetails {
 }
 
 
+// swift-migration: ARTPushChannelSubscription placeholder kept for callback types - will be migrated later
 public class ARTPushChannelSubscription {
     public init() {
         fatalError("ARTPushChannelSubscription not yet migrated")
@@ -950,6 +918,10 @@ public class ARTEncoderPlaceholder: ARTEncoder {
     public func decodeStats(_ data: Data) throws -> [Any]? {
         fatalError("ARTEncoder not yet migrated")
     }
+    
+    public func encode(localDevice: ARTLocalDevice) throws -> Data? {
+        fatalError("ARTEncoder not yet migrated")
+    }
 }
 
 // swift-migration: ARTMessageOperation placeholder removed - now implemented in ARTMessageOperation.swift
@@ -1069,28 +1041,7 @@ public enum ARTAPNSDeviceTokenType: Int {
 public let ARTAPNSDeviceDefaultTokenType = ARTAPNSDeviceTokenType.defaultType
 public let ARTAPNSDeviceLocationTokenType = ARTAPNSDeviceTokenType.locationType
 
-// Push activation event placeholders
-public class ARTPushActivationEventGettingPushDeviceDetailsFailed: ARTPushActivationEvent {
-    public static func new(error: ARTErrorInfo) -> ARTPushActivationEventGettingPushDeviceDetailsFailed {
-        return ARTPushActivationEventGettingPushDeviceDetailsFailed()
-    }
-    
-    public override init() {
-        super.init()
-    }
-}
-
-public class ARTPushActivationEventCalledActivate: ARTPushActivationEvent {
-    public override init() {
-        super.init()
-    }
-}
-
-public class ARTPushActivationEventCalledDeactivate: ARTPushActivationEvent {
-    public override init() {
-        super.init()
-    }
-}
+// swift-migration: Push activation event placeholders removed - now implemented in ARTPushActivationEvent.swift
 
 // Placeholder for main app types we might need
 public extension ARTRestInternal {
@@ -1141,16 +1092,78 @@ public extension ARTRestInternal {
 
 #endif
 
-// Placeholder for ARTPushAdmin (not yet migrated) - available on all platforms
-public class ARTPushAdmin {
-    internal init(internal: ARTPushAdminInternal, queuedDealloc: ARTQueuedDealloc) {
-        fatalError("ARTPushAdmin not yet migrated")
+// swift-migration: ARTPushAdmin placeholder removed - now implemented in ARTPushAdmin.swift
+
+// Placeholder for ARTPushRecipient
+public typealias ARTPushRecipient = [String: Any]
+
+// Placeholder for ARTJsonObject 
+public typealias ARTJsonObject = [String: Any]
+
+// Placeholder for ARTPaginatedPushChannelCallback
+public typealias ARTPaginatedPushChannelCallback = (ARTPaginatedResult<ARTPushChannelSubscription>?, ARTErrorInfo?) -> Void
+
+// Placeholder for ARTDataQueryError enum
+public enum ARTDataQueryError: Int {
+    case missingRequiredFields = 0
+    case invalidParameters = 1
+}
+
+// Placeholders for ARTPushDeviceRegistrations and ARTPushChannelSubscriptions
+public class ARTPushDeviceRegistrations {
+    internal init(internal: ARTPushDeviceRegistrationsInternal, queuedDealloc: ARTQueuedDealloc) {
+        fatalError("ARTPushDeviceRegistrations not yet migrated")
     }
 }
 
-// Placeholder for ARTPushAdminInternal (not yet migrated) - available on all platforms
-public class ARTPushAdminInternal {
+public class ARTPushChannelSubscriptions {
+    internal init(internal: ARTPushChannelSubscriptionsInternal, queuedDealloc: ARTQueuedDealloc) {
+        fatalError("ARTPushChannelSubscriptions not yet migrated")
+    }
+}
+
+public class ARTPushDeviceRegistrationsInternal {
     internal init(rest: ARTRestInternal, logger: ARTInternalLog) {
-        fatalError("ARTPushAdminInternal not yet migrated")
+        fatalError("ARTPushDeviceRegistrationsInternal not yet migrated")
+    }
+}
+
+public class ARTPushChannelSubscriptionsInternal {
+    internal init(rest: ARTRestInternal, logger: ARTInternalLog) {
+        fatalError("ARTPushChannelSubscriptionsInternal not yet migrated")
+    }
+}
+
+// Extension for NSDictionary to add art_asURLQueryItems method
+extension NSDictionary {
+    func art_asURLQueryItems() -> [URLQueryItem] {
+        return compactMap { key, value in
+            guard let keyString = key as? String, let valueString = value as? String else { return nil }
+            return URLQueryItem(name: keyString, value: valueString)
+        }
+    }
+}
+
+// Extension for NSMutableURLRequest to add device authentication
+extension NSMutableURLRequest {
+    func settingDeviceAuthentication(_ deviceId: String, localDevice: ARTLocalDevice) -> NSURLRequest {
+        // swift-migration: Placeholder for device authentication - will be implemented when NSURLRequest+ARTPush.swift is migrated
+        return self
+    }
+    
+    func settingDeviceAuthentication(_ localDevice: ARTLocalDevice) -> NSURLRequest {
+        // swift-migration: Placeholder for device authentication - will be implemented when NSURLRequest+ARTPush.swift is migrated  
+        return self
+    }
+}
+
+// Placeholder logger core
+public class PlaceholderLogCore: ARTInternalLogCore {
+    public var logLevel: ARTLogLevel = .debug
+    
+    public init() {}
+    
+    public func log(_ message: String, withLevel level: ARTLogLevel, file fileName: UnsafePointer<CChar>, line: Int) {
+        // swift-migration: Placeholder implementation
     }
 }

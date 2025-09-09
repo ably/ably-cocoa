@@ -70,11 +70,11 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTProtocolMessage.m | ARTProtocolMessage.h, ARTProtocolMessage+Private.h | ARTProtocolMessage.swift | Completed |
 | ARTPublicRealtimeChannelUnderlyingObjects.m | ARTPublicRealtimeChannelUnderlyingObjects.h | ARTPublicRealtimeChannelUnderlyingObjects.swift | Completed |
 | ARTPush.m | ARTPush.h, ARTPush+Private.h | ARTPush.swift | Completed |
-| ARTPushActivationEvent.m | ARTPushActivationEvent.h | ARTPushActivationEvent.swift | Not Started |
-| ARTPushActivationState.m | ARTPushActivationState.h | ARTPushActivationState.swift | Not Started |
-| ARTPushActivationStateMachine.m | ARTPushActivationStateMachine.h, ARTPushActivationStateMachine+Private.h | ARTPushActivationStateMachine.swift | Not Started |
-| ARTPushAdmin.m | ARTPushAdmin.h, ARTPushAdmin+Private.h | ARTPushAdmin.swift | Not Started |
-| ARTPushChannel.m | ARTPushChannel.h, ARTPushChannel+Private.h | ARTPushChannel.swift | Not Started |
+| ARTPushActivationEvent.m | ARTPushActivationEvent.h | ARTPushActivationEvent.swift | Completed |
+| ARTPushActivationState.m | ARTPushActivationState.h | ARTPushActivationState.swift | Completed |
+| ARTPushActivationStateMachine.m | ARTPushActivationStateMachine.h, ARTPushActivationStateMachine+Private.h | ARTPushActivationStateMachine.swift | Completed |
+| ARTPushAdmin.m | ARTPushAdmin.h, ARTPushAdmin+Private.h | ARTPushAdmin.swift | Completed |
+| ARTPushChannel.m | ARTPushChannel.h, ARTPushChannel+Private.h | ARTPushChannel.swift | Completed |
 | ARTPushChannelSubscription.m | ARTPushChannelSubscription.h | ARTPushChannelSubscription.swift | Not Started |
 | ARTPushChannelSubscriptions.m | ARTPushChannelSubscriptions.h, ARTPushChannelSubscriptions+Private.h | ARTPushChannelSubscriptions.swift | Not Started |
 | ARTPushDeviceRegistrations.m | ARTPushDeviceRegistrations.h, ARTPushDeviceRegistrations+Private.h | ARTPushDeviceRegistrations.swift | Not Started |
@@ -131,9 +131,9 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 ## Progress Summary
 
 - **Total Files**: 116
-- **Not Started**: 77
+- **Not Started**: 72
 - **In Progress**: 0
-- **Completed**: 38
+- **Completed**: 43
 - **Blocked**: 0
 - **Deferred**: 1
 
@@ -142,9 +142,10 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 - **Batch 1**: ARTAnnotation - ARTChannels (13 files) - Completed (13 completed)
 - **Batch 2**: ARTClientInformation - ARTDefault (11 files) - Completed
 - **Batch 3**: ARTDeviceDetails - ARTLogAdapter (16 files) - Completed (14 completed, 2 deferred to Batch 4)
-- **Batch 4**: ARTJitterCoefficientGenerator - ARTPluginDecodingContext (14 files) - In Progress (1 completed, 1 deferred, 12 remaining)
-- **Batch 5**: ARTPresence - ARTRealtimeChannelOptions (15 files) - Not Started
-- **Batch 6**: ARTRealtimeChannels - ARTWrapperSDKProxyOptions (10 files) - Not Started
-- **Batch 7**: ARTWrapperSDKProxy* files (15 files) - Not Started
-- **Batch 8**: Foundation Extensions (NS* files) (12 files) - Not Started
-- **Batch 9**: Build System & Testing - Not Started
+- **Batch 4**: ARTJitterCoefficientGenerator - ARTPluginDecodingContext (14 files) - Completed (13 completed, 1 deferred)
+- **Batch 5**: ARTPush.m - ARTPushChannel.m (5 files) - Completed (5 completed)
+- **Batch 6**: ARTPushChannelSubscription - ARTRealtimeChannelOptions (10 files) - Not Started
+- **Batch 7**: ARTRealtimeChannels - ARTWrapperSDKProxyOptions (10 files) - Not Started
+- **Batch 8**: ARTWrapperSDKProxy* files (15 files) - Not Started
+- **Batch 9**: Foundation Extensions (NS* files) (12 files) - Not Started
+- **Batch 10**: Build System & Testing - Not Started
