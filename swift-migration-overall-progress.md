@@ -39,7 +39,7 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTDeviceIdentityTokenDetails.m | ARTDeviceIdentityTokenDetails.h, ARTDeviceIdentityTokenDetails+Private.h | ARTDeviceIdentityTokenDetails.swift | Completed |
 | ARTDevicePushDetails.m | ARTDevicePushDetails.h, ARTDevicePushDetails+Private.h | ARTDevicePushDetails.swift | Completed |
 | ARTErrorChecker.m | ARTErrorChecker.h | ARTErrorChecker.swift | Completed |
-| ARTEventEmitter.m | ARTEventEmitter.h, ARTEventEmitter+Private.h | ARTEventEmitter.swift | Not Started |
+| ARTEventEmitter.m | ARTEventEmitter.h, ARTEventEmitter+Private.h | ARTEventEmitter.swift | Completed |
 | ARTFallback.m | ARTFallback.h, ARTFallback+Private.h | ARTFallback.swift | Not Started |
 | ARTFallbackHosts.m | ARTFallbackHosts.h | ARTFallbackHosts.swift | Not Started |
 | ARTFormEncode.m | ARTFormEncode.h | ARTFormEncode.swift | Not Started |

@@ -41,13 +41,7 @@ public class ARTErrorInfo: NSObject, Error, NSCopying {
     }
 }
 
-// Placeholder for ARTEvent
-public class ARTEvent: NSObject {
-    public init(string: String) {
-        super.init()
-        fatalError("ARTEvent not yet migrated")
-    }
-}
+// ARTEvent implemented in ARTEventEmitter.swift
 
 // Placeholder constants
 public let ARTAblyErrorDomain = "ARTAblyErrorDomain"
@@ -61,6 +55,16 @@ public class ARTRetryAttempt {
 
 // Placeholder for ARTInternalLog
 public class ARTInternalLog {
+    public enum LogLevel: Int {
+        case verbose = 0
+        case debug = 1
+        case info = 2  
+        case warn = 3
+        case error = 4
+    }
+    
+    public var logLevel: LogLevel = .error
+    
     public init() {
         fatalError("ARTInternalLog not yet migrated")
     }
@@ -220,59 +224,7 @@ public class ARTQueuedDealloc {
     }
 }
 
-// Placeholder for ARTEventEmitter
-public class ARTEventEmitter<EventType, DataType> {
-    public init(queue: DispatchQueue) {
-        fatalError("ARTEventEmitter not yet migrated")
-    }
-    
-    public func once(_ callback: @escaping (DataType) -> Void) -> ARTEventListener {
-        fatalError("ARTEventEmitter not yet migrated")
-    }
-    
-    public func once(_ event: EventType, callback: @escaping (DataType) -> Void) -> ARTEventListener {
-        fatalError("ARTEventEmitter not yet migrated")
-    }
-    
-    public func on(_ callback: @escaping (DataType) -> Void) -> ARTEventListener {
-        fatalError("ARTEventEmitter not yet migrated")
-    }
-    
-    public func on(_ event: EventType, callback: @escaping (DataType) -> Void) -> ARTEventListener {
-        fatalError("ARTEventEmitter not yet migrated")
-    }
-    
-    public func off() {
-        fatalError("ARTEventEmitter not yet migrated")
-    }
-    
-    public func off(_ listener: ARTEventListener) {
-        fatalError("ARTEventEmitter not yet migrated")
-    }
-    
-    public func off(_ event: EventType, listener: ARTEventListener) {
-        fatalError("ARTEventEmitter not yet migrated")
-    }
-    
-    public func emit(_ event: EventType?, with data: DataType?) {
-        fatalError("ARTEventEmitter not yet migrated")
-    }
-}
-
-// Placeholder for ARTInternalEventEmitter
-public class ARTInternalEventEmitter: ARTEventEmitter<ARTEvent, ARTErrorInfo> {
-    public override init(queue: DispatchQueue) {
-        super.init(queue: queue)
-    }
-}
-
-// Placeholder for ARTPublicEventEmitter
-public class ARTPublicEventEmitter: ARTEventEmitter<ARTEvent, ARTConnectionStateChange> {
-    public init(rest: ARTRestInternal, logger: ARTInternalLog) {
-        super.init(queue: rest.queue)
-        fatalError("ARTPublicEventEmitter not yet migrated")
-    }
-}
+// ARTEventEmitter, ARTInternalEventEmitter, ARTPublicEventEmitter implemented in ARTEventEmitter.swift
 
 // NSString extension implemented in ARTDataEncoder.swift
 
@@ -297,13 +249,7 @@ public class ARTStatus: NSObject {
 
 // Placeholder types needed for ARTConnection and other migrations
 
-// Placeholder for ARTEventListener
-public class ARTEventListener: NSObject {
-    public override init() {
-        super.init()
-        fatalError("ARTEventListener not yet migrated")
-    }
-}
+// ARTEventListener implemented in ARTEventEmitter.swift
 
 // Placeholder for ARTRealtimeConnectionEvent
 public enum ARTRealtimeConnectionEvent: Int {
@@ -841,4 +787,25 @@ extension NSObject {
             return nil
         }
     }
+}
+
+// Placeholder types for ARTGCD - scheduled dispatch functionality
+public class ARTScheduledBlockHandle {
+    public init() {
+        fatalError("ARTScheduledBlockHandle not yet migrated")
+    }
+}
+
+// Placeholder functions for dispatch scheduling (ARTGCD)
+public func artDispatchScheduled(_ timeoutDeadline: TimeInterval, _ queue: DispatchQueue, _ block: @escaping () -> Void) -> ARTScheduledBlockHandle {
+    fatalError("artDispatchScheduled not yet migrated")
+}
+
+public func artDispatchCancel(_ work: ARTScheduledBlockHandle?) {
+    fatalError("artDispatchCancel not yet migrated")
+}
+
+// Placeholder logging functions for ARTEventEmitter
+public func ARTLogVerbose(_ logger: ARTInternalLog, _ message: String, fileID: String = #fileID, line: Int = #line) {
+    fatalError("ARTLogVerbose not yet migrated")
 }
