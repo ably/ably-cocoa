@@ -556,8 +556,11 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 ### ARTPresence.m → ARTPresence.swift
 - **Headers**: ARTPresence.h, ARTPresence+Private.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Simple base class with abstract method that subclasses must override. Changed NSAssert to assertionFailure for Swift. Property access level changed from public to internal to match privacy declaration in ARTPresence+Private.h.
+  - **Dependencies**: Added placeholders for ARTPaginatedPresenceCallback typealias and ARTPresenceQuery class in MigrationPlaceholders.swift
+  - **Compilation Errors**: Fixed access level mismatch - channel property was public but ARTChannel is internal, changed to internal
 
 ### ARTPresenceMessage.m → ARTPresenceMessage.swift
 - **Headers**: ARTPresenceMessage.h, ARTPresenceMessage+Private.h
@@ -581,13 +584,20 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 ### ARTPublicRealtimeChannelUnderlyingObjects.m → ARTPublicRealtimeChannelUnderlyingObjects.swift
 - **Headers**: ARTPublicRealtimeChannelUnderlyingObjects.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Simple class implementing plugin architecture protocol. This is part of the public interface for plugin support. Changed access level from public (implied by default in Objective-C) to internal to match PrivateHeaders location.
+  - **Dependencies**: Added placeholders for plugin architecture protocols: APPublicRealtimeChannelUnderlyingObjects, APRealtimeClient, APRealtimeChannel in MigrationPlaceholders.swift
+  - **Compilation Errors**: None
 
 ### ARTPush.m → ARTPush.swift
 - **Headers**: ARTPush.h, ARTPush+Private.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Complex push notifications class with platform conditionals. Migrated both public ARTPush class and internal ARTPushInternal class. Used `#if os(iOS)` instead of `#if canImport(UIKit)` per PRD requirements. Preserved threading behavior with queue.async calls and activation machine lock patterns. Changed NSAssert to fatalError.
+  - **Dependencies**: Added extensive placeholders for push architecture: ARTPushRegistererDelegate protocol with full method signatures, ARTPushActivationEvent* classes, ARTRest/ARTRealtime classes, ARTPushAdmin/ARTPushAdminInternal classes, ARTAPNSDeviceTokenType enum
+  - **Compilation Errors**: Fixed duplicate ARTPush definition by removing placeholder, moved ARTPushAdmin outside iOS conditional since it's used on all platforms, fixed `@unchecked Sendable` syntax, made default init() private with fatalError to match NS_UNAVAILABLE
+  - **Platform Conditionals**: Used `#if os(iOS)` for all iOS-specific push functionality per PRD specification
 
 ### ARTPushActivationEvent.m → ARTPushActivationEvent.swift
 - **Headers**: ARTPushActivationEvent.h

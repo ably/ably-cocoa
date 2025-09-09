@@ -179,7 +179,7 @@ public class ARTRestInternal {
     public let encoders: [String: ARTEncoder] = [:]
     public var device_nosync: ARTLocalDevice { fatalError("ARTRestInternal not yet migrated") }
     internal var storage: ARTLocalDeviceStorage { fatalError("ARTRestInternal not yet migrated") }
-    public let push: ARTPush = ARTPush()
+    // swift-migration: push property moved to extension below
     
     public init() {
         fatalError("ARTRestInternal not yet migrated")
@@ -404,16 +404,7 @@ public class ARTRealtimeChannelInternal: NSObject {
 
 // ARTLocalDeviceStorage implemented in ARTLocalDeviceStorage.swift
 
-// Placeholder for ARTPush
-public class ARTPush {
-    public init() {
-        fatalError("ARTPush not yet migrated")
-    }
-    
-    public func getActivationMachine(_ callback: @escaping (ARTPushActivationStateMachine) -> Void) {
-        fatalError("ARTPush not yet migrated")
-    }
-}
+// swift-migration: ARTPush placeholder removed - now implemented in ARTPush.swift
 
 // Placeholder for ARTPushActivationStateMachine
 public class ARTPushActivationStateMachine {
@@ -618,10 +609,23 @@ public protocol ARTStringifiable {
     func toString() -> String
 }
 
-// Placeholder for ARTPushRegistererDelegate protocol  
+// Placeholder for ARTPushRegistererDelegate protocol (from ARTPush.h)
+#if os(iOS)
 public protocol ARTPushRegistererDelegate {
-    // Placeholder methods
+    func didActivateAblyPush(_ error: ARTErrorInfo?)
+    func didDeactivateAblyPush(_ error: ARTErrorInfo?)
+    
+    // Optional methods
+    func didUpdateAblyPush(_ error: ARTErrorInfo?)
+    func didAblyPushRegistrationFail(_ error: ARTErrorInfo?)
+    func ablyPushCustomRegister(_ error: ARTErrorInfo?, deviceDetails: ARTDeviceDetails, callback: @escaping (ARTDeviceIdentityTokenDetails?, ARTErrorInfo?) -> Void)
+    func ablyPushCustomDeregister(_ error: ARTErrorInfo?, deviceId: ARTDeviceId, callback: @escaping ARTCallback)
 }
+#else
+public protocol ARTPushRegistererDelegate {
+    // Not available on non-iOS platforms
+}
+#endif
 
 // Placeholder for ARTTestClientOptions class
 public class ARTTestClientOptions {
@@ -1018,5 +1022,135 @@ public class ARTQueuedMessage: NSObject {
     
     public func ackCallback() -> ARTStatusCallback {
         fatalError("ARTQueuedMessage not yet migrated")
+    }
+}
+
+// Placeholder callback types for ARTPresence
+public typealias ARTPaginatedPresenceCallback = (ARTPaginatedResult<ARTPresenceMessage>?, ARTErrorInfo?) -> Void
+
+// Placeholder for ARTPresenceQuery
+public class ARTPresenceQuery: NSObject {
+    public var limit: UInt = 0
+    
+    public override init() {
+        super.init()
+        fatalError("ARTPresenceQuery not yet migrated")
+    }
+    
+    internal func asQueryItems() -> [URLQueryItem] {
+        fatalError("ARTPresenceQuery not yet migrated")
+    }
+}
+
+// Placeholder types for Plugin architecture (from _AblyPluginSupportPrivate)
+public protocol APPublicRealtimeChannelUnderlyingObjects {
+    var client: APRealtimeClient { get }
+    var channel: APRealtimeChannel { get }
+}
+
+public protocol APRealtimeClient {
+    // Placeholder protocol
+}
+
+public protocol APRealtimeChannel {
+    // Placeholder protocol
+}
+
+// Additional placeholders for push notifications architecture
+#if os(iOS)
+import UIKit
+
+// ARTAPNSDeviceTokenType enum
+public enum ARTAPNSDeviceTokenType: Int {
+    case defaultType = 0
+    case locationType = 1
+}
+
+public let ARTAPNSDeviceDefaultTokenType = ARTAPNSDeviceTokenType.defaultType
+public let ARTAPNSDeviceLocationTokenType = ARTAPNSDeviceTokenType.locationType
+
+// Push activation event placeholders
+public class ARTPushActivationEventGettingPushDeviceDetailsFailed: ARTPushActivationEvent {
+    public static func new(error: ARTErrorInfo) -> ARTPushActivationEventGettingPushDeviceDetailsFailed {
+        return ARTPushActivationEventGettingPushDeviceDetailsFailed()
+    }
+    
+    public override init() {
+        super.init()
+    }
+}
+
+public class ARTPushActivationEventCalledActivate: ARTPushActivationEvent {
+    public override init() {
+        super.init()
+    }
+}
+
+public class ARTPushActivationEventCalledDeactivate: ARTPushActivationEvent {
+    public override init() {
+        super.init()
+    }
+}
+
+// Placeholder for main app types we might need
+public extension ARTRestInternal {
+    func setAndPersistAPNSDeviceTokenData(_ data: Data, tokenType: ARTAPNSDeviceTokenType) {
+        fatalError("setAndPersistAPNSDeviceTokenData not yet migrated")
+    }
+    
+    func internalAsync(_ block: @escaping (ARTRestInternal) -> Void) {
+        fatalError("internalAsync not yet migrated")
+    }
+}
+
+// Placeholder for ARTRealtime (not yet migrated)
+public class ARTRealtime {
+    public init() {
+        fatalError("ARTRealtime not yet migrated")
+    }
+    
+    public func internalAsync(_ block: @escaping (ARTRealtimeInternal) -> Void) {
+        fatalError("ARTRealtime internalAsync not yet migrated")
+    }
+}
+
+// Placeholder for ARTRealtimeInternal
+public class ARTRealtimeInternal {
+    public var rest: ARTRestInternal {
+        fatalError("ARTRealtimeInternal rest not yet migrated")
+    }
+}
+
+// Placeholder for ARTRest (not yet migrated)  
+public class ARTRest {
+    public init() {
+        fatalError("ARTRest not yet migrated")
+    }
+    
+    public func internalAsync(_ block: @escaping (ARTRestInternal) -> Void) {
+        fatalError("ARTRest internalAsync not yet migrated")
+    }
+}
+
+// Additional placeholders needed by ARTPush  
+public extension ARTRestInternal {
+    var push: ARTPushInternal {
+        fatalError("ARTRestInternal push not yet migrated")
+    }
+}
+
+#endif
+
+// Placeholder for ARTPushAdmin (not yet migrated) - available on all platforms
+public class ARTPushAdmin {
+    internal init(internal: ARTPushAdminInternal, queuedDealloc: ARTQueuedDealloc) {
+        fatalError("ARTPushAdmin not yet migrated")
+    }
+}
+
+// Placeholder for ARTPushAdminInternal (not yet migrated) - available on all platforms
+public class ARTPushAdminInternal {
+    internal init(rest: ARTRestInternal, logger: ARTInternalLog) {
+        fatalError("ARTPushAdminInternal not yet migrated")
     }
 }

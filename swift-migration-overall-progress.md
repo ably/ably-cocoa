@@ -65,11 +65,11 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTPendingMessage.m | ARTPendingMessage.h | ARTPendingMessage.swift | Completed |
 | ARTPluginAPI.m | ARTPluginAPI.h | ARTPluginAPI.swift | Deferred |
 | ARTPluginDecodingContext.m | ARTPluginDecodingContext.h | ARTPluginDecodingContext.swift | Completed |
-| ARTPresence.m | ARTPresence.h, ARTPresence+Private.h | ARTPresence.swift | Not Started |
+| ARTPresence.m | ARTPresence.h, ARTPresence+Private.h | ARTPresence.swift | Completed |
 | ARTPresenceMessage.m | ARTPresenceMessage.h, ARTPresenceMessage+Private.h | ARTPresenceMessage.swift | Completed |
 | ARTProtocolMessage.m | ARTProtocolMessage.h, ARTProtocolMessage+Private.h | ARTProtocolMessage.swift | Completed |
-| ARTPublicRealtimeChannelUnderlyingObjects.m | ARTPublicRealtimeChannelUnderlyingObjects.h | ARTPublicRealtimeChannelUnderlyingObjects.swift | Not Started |
-| ARTPush.m | ARTPush.h, ARTPush+Private.h | ARTPush.swift | Not Started |
+| ARTPublicRealtimeChannelUnderlyingObjects.m | ARTPublicRealtimeChannelUnderlyingObjects.h | ARTPublicRealtimeChannelUnderlyingObjects.swift | Completed |
+| ARTPush.m | ARTPush.h, ARTPush+Private.h | ARTPush.swift | Completed |
 | ARTPushActivationEvent.m | ARTPushActivationEvent.h | ARTPushActivationEvent.swift | Not Started |
 | ARTPushActivationState.m | ARTPushActivationState.h | ARTPushActivationState.swift | Not Started |
 | ARTPushActivationStateMachine.m | ARTPushActivationStateMachine.h, ARTPushActivationStateMachine+Private.h | ARTPushActivationStateMachine.swift | Not Started |
