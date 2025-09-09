@@ -20,7 +20,7 @@
 @property (nonatomic) NSURL *url;
 @property (nonatomic) NSInputStream *inputStream;
 @property (nonatomic) NSOutputStream *outputStream;
-@property (nonatomic, readonly, nullable) ARTInternalLog *logger;
+@property (nonatomic, readonly, nullable) id<ARTSRInternalLog>logger;
 
 @end
 
@@ -48,7 +48,7 @@
 #pragma mark - Init
 ///--------------------------------------
 
--(instancetype)initWithURL:(NSURL *)url logger:(nullable ARTInternalLog *)logger;
+-(instancetype)initWithURL:(NSURL *)url logger:(nullable id<ARTSRInternalLog>)logger;
 {
     self = [super init];
     if (!self) return self;

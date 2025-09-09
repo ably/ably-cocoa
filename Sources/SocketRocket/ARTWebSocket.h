@@ -3,7 +3,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol ARTWebSocketDelegate;
-@class ARTInternalLog;
+@protocol ARTSRInternalLog;
 
 typedef NS_ENUM(NSInteger, ARTWebSocketReadyState) {
     ARTWebSocketReadyStateConnecting   = 0,
