@@ -228,23 +228,43 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 ### ARTDeviceDetails.m → ARTDeviceDetails.swift
 - **Headers**: ARTDeviceDetails.h, ARTDeviceDetails+Private.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Device details data class with NSCopying support, property accessor pattern with backing storage, and string equality checking. Used public access level as per public header location. Preserved all property getter/setter behavior exactly.
+  - **Dependencies**: Created ARTDeviceId typealias (String), uses ARTDevicePushDetails
+  - **Compilation Errors**: Fixed required initializer for NSCopying pattern, fixed ARTDeviceId missing type by adding typealias to placeholders
+  - **Location Comments**: Applied dual-location format for all properties and methods
+  - **Swift Adaptations**: Converted nil-safe string equality checking to Swift Optional equality, used String interpolation in description
 
-### ARTDeviceIdentityTokenDetails.m → ARTDeviceIdentityTokenDetails.swift
+### ARTDeviceIdentityTokenDetails.m → ARTDeviceIdentityTokenDetails.swift  
 - **Headers**: ARTDeviceIdentityTokenDetails.h, ARTDeviceIdentityTokenDetails+Private.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Immutable identity token details class with NSCoding, NSSecureCoding, and NSCopying support. Archive/unarchive functionality preserved with internal access. Implements immutable NSCopying by returning self.
+  - **Dependencies**: Uses archiving extension added to NSObject in MigrationPlaceholders, string constants for encoder keys
+  - **Compilation Errors**: Fixed NSCoding initializer to use proper guard let pattern, removed unnecessary cast in unarchive method
+  - **Location Comments**: Applied dual-location format for all properties and methods  
+  - **Swift Adaptations**: Converted NSCoder object decoding to Swift patterns, used proper Swift initializer failure handling
 
 ### ARTDevicePushDetails.m → ARTDevicePushDetails.swift
-- **Headers**: ARTDevicePushDetails.h, ARTDevicePushDetails+Private.h
-- **Status**: Not Started
+- **Headers**: ARTDevicePushDetails.h, ARTDevicePushDetails+Private.h  
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Push registration details class with NSMutableDictionary recipient, state management, and NSCopying support. Used public access level as per public header location. Preserved mutable dictionary usage for recipient property.
+  - **Dependencies**: Uses ARTErrorInfo for error reporting
+  - **Compilation Errors**: Fixed NSMutableDictionary generic typing issue by removing generic parameters, fixed required initializer for NSCopying, fixed copy method to use proper NSCopying pattern
+  - **Location Comments**: Applied dual-location format for all properties and methods
+  - **Swift Adaptations**: Used nil-coalescing operator in description, proper NSZone handling in copy method
 
 ### ARTErrorChecker.m → ARTErrorChecker.swift
-- **Headers**: ARTErrorChecker.h
-- **Status**: Not Started
+- **Headers**: ARTErrorChecker.h  
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Simple error checking protocol and default implementation for token error detection per RTH15h1 specification. Used internal access level as per private header location.
+  - **Dependencies**: Added ARTErrorTokenErrorUnspecified and ARTErrorConnectionLimitsExceeded constants to placeholders
+  - **Compilation Errors**: None
+  - **Location Comments**: Applied dual-location format for protocol and implementation
+  - **Swift Adaptations**: Converted protocol method to Swift function signature 
 
 ### ARTEventEmitter.m → ARTEventEmitter.swift
 - **Headers**: ARTEventEmitter.h, ARTEventEmitter+Private.h
@@ -739,12 +759,16 @@ Document all placeholder types created in `MigrationPlaceholders.swift`:
 - **ARTQueuedDealloc** - Class placeholder for queued deallocation
 - **ARTEventEmitter** - Generic class placeholder for event emission
 - **ARTInternalEventEmitter** - Class placeholder extending ARTEventEmitter
+- **ARTDeviceId** - Typealias placeholder for device identifier (String)
+- **ARTErrorTokenErrorUnspecified** - Constant for token error checking
+- **ARTErrorConnectionLimitsExceeded** - Constant for connection limit errors  
+- **NSObject.art_archive/art_unarchive** - Extension methods for archiving functionality
 
 ---
 
 ## Overall Progress Summary
 
-- **Batches Completed**: 0/9 (Batch 1 nearly complete - 10/13 files done)
-- **Files Migrated**: 10 completed/115
-- **Current Batch**: Batch 1 - ARTAnnotation through ARTChannels (3 files remaining: ARTChannel, ARTChannelOptions, ARTChannels)
-- **Next Steps**: Complete remaining 3 files in Batch 1, then proceed to Batch 2
+- **Batches Completed**: 2/9 (Batch 1 and Batch 2 completed)
+- **Files Migrated**: 26 completed/115 
+- **Current Batch**: Batch 3 - ARTDeviceDetails through ARTInternalLogCore (4/12 files completed)
+- **Next Steps**: Continue with remaining 8 files in Batch 3 (ARTEventEmitter, ARTFallback, ARTFallbackHosts, ARTFormEncode, ARTGCD, ARTHTTPPaginatedResponse, ARTHttp, ARTInternalLog, ARTInternalLogCore)

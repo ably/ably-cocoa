@@ -35,10 +35,10 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTDataEncoder.m | ARTDataEncoder.h | ARTDataEncoder.swift | Completed |
 | ARTDataQuery.m | ARTDataQuery.h, ARTDataQuery+Private.h | ARTDataQuery.swift | Completed |
 | ARTDefault.m | ARTDefault.h, ARTDefault+Private.h | ARTDefault.swift | Completed |
-| ARTDeviceDetails.m | ARTDeviceDetails.h, ARTDeviceDetails+Private.h | ARTDeviceDetails.swift | Not Started |
-| ARTDeviceIdentityTokenDetails.m | ARTDeviceIdentityTokenDetails.h, ARTDeviceIdentityTokenDetails+Private.h | ARTDeviceIdentityTokenDetails.swift | Not Started |
-| ARTDevicePushDetails.m | ARTDevicePushDetails.h, ARTDevicePushDetails+Private.h | ARTDevicePushDetails.swift | Not Started |
-| ARTErrorChecker.m | ARTErrorChecker.h | ARTErrorChecker.swift | Not Started |
+| ARTDeviceDetails.m | ARTDeviceDetails.h, ARTDeviceDetails+Private.h | ARTDeviceDetails.swift | Completed |
+| ARTDeviceIdentityTokenDetails.m | ARTDeviceIdentityTokenDetails.h, ARTDeviceIdentityTokenDetails+Private.h | ARTDeviceIdentityTokenDetails.swift | Completed |
+| ARTDevicePushDetails.m | ARTDevicePushDetails.h, ARTDevicePushDetails+Private.h | ARTDevicePushDetails.swift | Completed |
+| ARTErrorChecker.m | ARTErrorChecker.h | ARTErrorChecker.swift | Completed |
 | ARTEventEmitter.m | ARTEventEmitter.h, ARTEventEmitter+Private.h | ARTEventEmitter.swift | Not Started |
 | ARTFallback.m | ARTFallback.h, ARTFallback+Private.h | ARTFallback.swift | Not Started |
 | ARTFallbackHosts.m | ARTFallbackHosts.h | ARTFallbackHosts.swift | Not Started |
@@ -129,16 +129,16 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 ## Progress Summary
 
 - **Total Files**: 115
-- **Not Started**: 93
+- **Not Started**: 89
 - **In Progress**: 0
-- **Completed**: 22
+- **Completed**: 26
 - **Blocked**: 0
 
 ## Migration Batches
 
 - **Batch 1**: ARTAnnotation - ARTChannels (13 files) - Completed (13 completed)
 - **Batch 2**: ARTClientInformation - ARTDefault (11 files) - Completed
-- **Batch 3**: ARTDeviceDetails - ARTInternalLogCore (12 files) - Not Started
+- **Batch 3**: ARTDeviceDetails - ARTInternalLogCore (12 files) - In Progress (4 of 12 completed)
 - **Batch 4**: ARTJitterCoefficientGenerator - ARTPluginDecodingContext (14 files) - Not Started
 - **Batch 5**: ARTPresence - ARTRealtimeChannelOptions (15 files) - Not Started
 - **Batch 6**: ARTRealtimeChannels - ARTWrapperSDKProxyOptions (10 files) - Not Started

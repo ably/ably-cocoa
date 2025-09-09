@@ -12,13 +12,20 @@ public protocol ARTJsonCompatible {
 // ARTDataEncoder and ARTDataEncoderOutput implemented in ARTDataEncoder.swift
 
 // Placeholder for ARTErrorInfo
-public class ARTErrorInfo: Error {
+public class ARTErrorInfo: NSObject, Error, NSCopying {
     public let code: Int
     public let message: String
+    public let statusCode: Int
     
-    public init(code: Int, message: String) {
+    public init(code: Int, message: String, statusCode: Int = 0) {
         self.code = code
         self.message = message
+        self.statusCode = statusCode
+        super.init()
+    }
+    
+    public func copy(with zone: NSZone?) -> Any {
+        return ARTErrorInfo(code: self.code, message: self.message, statusCode: self.statusCode)
     }
     
     public static func create(withCode code: Int, message: String) -> ARTErrorInfo {
@@ -26,7 +33,7 @@ public class ARTErrorInfo: Error {
     }
     
     public static func create(withCode code: Int, status: Int, message: String) -> ARTErrorInfo {
-        return ARTErrorInfo(code: code, message: message)
+        return ARTErrorInfo(code: code, message: message, statusCode: status)
     }
     
     public static func createFromNSError(_ error: Error) -> ARTErrorInfo {
@@ -616,6 +623,12 @@ public let ARTStateAuthUrlIncompatibleContent = 40170
 public let ARTClientIdKey = "ARTClientIdKey"
 public let kCFURLErrorCancelled: CFIndex = -999
 
+public let ARTErrorTokenErrorUnspecified = 40140
+public let ARTErrorConnectionLimitsExceeded = 40110
+
+// Placeholder for ARTDeviceId (seems to be a String typealias based on usage)
+public typealias ARTDeviceId = String
+
 // Placeholder for ARTJitterCoefficientGenerator protocol
 public protocol ARTJitterCoefficientGenerator {
     func generateJitterCoefficient() -> Double
@@ -803,5 +816,29 @@ public enum ARTRealtimeHistoryError: Int {
 extension Array {
     internal func artMap<T>(_ transform: (Element) -> T) -> [T] {
         return self.map(transform)
+    }
+}
+
+// Archiving extension for NSObject
+extension NSObject {
+    internal func art_archive(withLogger logger: ARTInternalLog?) -> Data {
+        // swift-migration: Placeholder for archiving functionality
+        do {
+            return try NSKeyedArchiver.archivedData(withRootObject: self, requiringSecureCoding: true)
+        } catch {
+            return Data()
+        }
+    }
+    
+    internal static func art_unarchive(fromData data: Data, withLogger logger: ARTInternalLog?) -> Self? {
+        // swift-migration: Placeholder for unarchiving functionality
+        do {
+            if let result = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? Self {
+                return result
+            }
+            return nil
+        } catch {
+            return nil
+        }
     }
 }
