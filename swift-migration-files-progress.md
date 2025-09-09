@@ -767,8 +767,15 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 ### ARTStats.m → ARTStats.swift
 - **Headers**: ARTStats.h
-- **Status**: Not Started
+- **Status**: Completed ✅
 - **Notes**: 
+  - **Multiple Statistics Classes**: Successfully migrated all statistics-related classes including ARTStatsQuery, ARTStatsMessageCount, ARTStatsMessageTypes, ARTStatsMessageTraffic, ARTStatsResourceCount, ARTStatsConnectionTypes, ARTStatsRequestCount, ARTStatsPushCount, and ARTStats
+  - **Enum Migration**: ARTStatsGranularity enum migrated with Sendable conformance
+  - **Method Override Fix**: Fixed asQueryItems method to use inout Error? parameter pattern to match ARTDataQuery superclass
+  - **Date Formatting**: Preserved static interval format strings and date formatting logic with UTC timezone handling
+  - **Exception Handling**: Converted @throw NSException to fatalError for invalid intervalId and inProgress values
+  - **Foundation Types**: Used native Swift Date, DateFormatter, TimeZone, and URLQueryItem types
+  - **Compilation**: All classes compile successfully with proper inheritance and method signatures
 
 ### ARTStatus.m → ARTStatus.swift
 - **Headers**: ARTStatus.h

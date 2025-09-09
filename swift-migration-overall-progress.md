@@ -93,7 +93,7 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTRestChannels.m | ARTRestChannels.h, ARTRestChannels+Private.h | ARTRestChannels.swift | Not Started |
 | ARTRestPresence.m | ARTRestPresence.h, ARTRestPresence+Private.h | ARTRestPresence.swift | Not Started |
 | ARTRetrySequence.m | ARTRetrySequence.h | ARTRetrySequence.swift | Completed |
-| ARTStats.m | ARTStats.h | ARTStats.swift | Not Started |
+| ARTStats.m | ARTStats.h | ARTStats.swift | Completed |
 | ARTStatus.m | ARTStatus.h | ARTStatus.swift | Completed |
 | ARTStringifiable.m | ARTStringifiable.h, ARTStringifiable+Private.h | ARTStringifiable.swift | Completed |
 | ARTTestClientOptions.m | ARTTestClientOptions.h | ARTTestClientOptions.swift | Completed |
