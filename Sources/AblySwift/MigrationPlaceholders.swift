@@ -498,30 +498,7 @@ extension Array {
 // Placeholder for network types
 public typealias ARTURLRequestCallback = (HTTPURLResponse?, Data?, Error?) -> Void
 
-// Placeholder for ARTURLSession protocol
-public protocol ARTURLSession {
-    var queue: DispatchQueue { get }
-    init(_ queue: DispatchQueue)
-    func get(_ request: URLRequest, completion: @escaping (HTTPURLResponse?, Data?, Error?) -> Void) -> (any ARTCancellable)?
-    func finishTasksAndInvalidate()
-}
-
-// Placeholder for ARTURLSessionServerTrust
-public class ARTURLSessionServerTrust: ARTURLSession {
-    public let queue: DispatchQueue
-    
-    public required init(_ queue: DispatchQueue) {
-        self.queue = queue
-    }
-    
-    public func get(_ request: URLRequest, completion: @escaping (HTTPURLResponse?, Data?, Error?) -> Void) -> (any ARTCancellable)? {
-        fatalError("ARTURLSessionServerTrust not yet migrated")
-    }
-    
-    public func finishTasksAndInvalidate() {
-        fatalError("ARTURLSessionServerTrust not yet migrated")
-    }
-}
+// swift-migration: ARTURLSession protocol and ARTURLSessionServerTrust class placeholders removed - now implemented in ARTURLSessionServerTrust.swift
 
 
 // ARTEncoder class already defined above

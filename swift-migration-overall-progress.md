@@ -101,7 +101,7 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTTokenParams.m | ARTTokenParams.h, ARTTokenParams+Private.h | ARTTokenParams.swift | Completed |
 | ARTTokenRequest.m | ARTTokenRequest.h | ARTTokenRequest.swift | Completed |
 | ARTTypes.m | ARTTypes.h, ARTTypes+Private.h | ARTTypes.swift | Completed |
-| ARTURLSessionServerTrust.m | ARTURLSessionServerTrust.h | ARTURLSessionServerTrust.swift | Not Started |
+| ARTURLSessionServerTrust.m | ARTURLSessionServerTrust.h | ARTURLSessionServerTrust.swift | Completed |
 | ARTWebSocketFactory.m | ARTWebSocketFactory.h | ARTWebSocketFactory.swift | Completed |
 | ARTWebSocketTransport.m | ARTWebSocketTransport.h, ARTWebSocketTransport+Private.h | ARTWebSocketTransport.swift | Completed |
 | ARTWrapperSDKProxyOptions.m | ARTWrapperSDKProxyOptions.h | ARTWrapperSDKProxyOptions.swift | Not Started |
