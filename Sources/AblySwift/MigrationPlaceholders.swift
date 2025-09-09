@@ -56,59 +56,6 @@ public typealias ARTTokenDetailsCallback = (ARTTokenDetails?, Error?) -> Void
 
 // swift-migration: ARTTokenParams placeholder removed - now implemented in ARTTokenParams.swift
 
-// Placeholder for ARTWebSocket protocol and related types
-public protocol ARTWebSocket {
-    var delegate: ARTWebSocketDelegate? { get set }
-    var readyState: ARTWebSocketReadyState { get }
-    func setDelegateDispatchQueue(_ queue: DispatchQueue)
-    func open()
-    func send(_ data: Data)
-    func close(withCode code: Int, reason: String)
-}
-
-public protocol ARTWebSocketDelegate: AnyObject {
-    func webSocketDidOpen(_ webSocket: ARTWebSocket)
-    func webSocket(_ webSocket: ARTWebSocket, didCloseWithCode code: Int, reason: String?, wasClean: Bool)
-    func webSocket(_ webSocket: ARTWebSocket, didFailWithError error: Error)
-    func webSocket(_ webSocket: ARTWebSocket, didReceiveMessage message: Any)
-}
-
-public enum ARTWebSocketReadyState: Int {
-    case connecting = 0
-    case open = 1
-    case closing = 2
-    case closed = 3
-}
-
-public class ARTSRWebSocket: NSObject, ARTWebSocket {
-    public weak var delegate: ARTWebSocketDelegate?
-    public var readyState: ARTWebSocketReadyState = .closed
-    
-    public init(urlRequest: URLRequest, logger: ARTInternalLog?) {
-        fatalError("ARTSRWebSocket not yet migrated")
-    }
-    
-    public func setDelegateDispatchQueue(_ queue: DispatchQueue) {
-        fatalError("ARTSRWebSocket not yet migrated")
-    }
-    
-    public func open() {
-        fatalError("ARTSRWebSocket not yet migrated")
-    }
-    
-    public func send(_ data: Data) {
-        fatalError("ARTSRWebSocket not yet migrated")
-    }
-    
-    public func close(withCode code: Int, reason: String) {
-        fatalError("ARTSRWebSocket not yet migrated")
-    }
-}
-
-// SocketRocket constants (to be replaced when SocketRocket wrapper is migrated)
-public let ARTSRWebSocketErrorDomain = "com.squareup.SocketRocket"
-public let ARTSRHTTPResponseErrorKey = "HTTPResponseKey"
-
 // swift-migration: ARTTokenRequest placeholder removed - now implemented in ARTTokenRequest.swift
 
 // swift-migration: ARTClientOptions placeholder removed - now implemented
@@ -298,15 +245,6 @@ public let ARTAuthMethodToken = ARTAuthMethod.token
 public typealias ARTTokenDetailsCompatibleCallback = (ARTTokenDetailsCompatible?, Error?) -> Void
 public typealias ARTAuthCallback = (ARTTokenParams?, @escaping ARTTokenDetailsCompatibleCallback) -> Void
 
-// Placeholder logging functions
-public func ARTLogVerbose(_ logger: ARTInternalLog, _ message: String) {
-    // Placeholder
-}
-
-public func ARTFormEncode(_ dictionary: [String: String]) -> String {
-    fatalError("ARTFormEncode not yet migrated")
-}
-
 // Placeholder function for creating cancellable from callback
 public func artCancellableFromCallback(
     _ callback: ARTTokenDetailsCompatibleCallback,
@@ -358,15 +296,6 @@ public typealias ARTPaginatedMessagesCallback = (ARTPaginatedResult<ARTMessage>?
 
 // Placeholder constants for error codes
 public let ARTErrorMaxMessageLengthExceeded: Int = 40009
-
-// Placeholder logging functions
-public func ARTLogWarn(_ logger: ARTInternalLog, _ message: String) {
-    // Placeholder - actual implementation will inject file/line info
-}
-
-public func ARTLogError(_ logger: ARTInternalLog, _ message: String) {
-    // Placeholder - actual implementation will inject file/line info
-}
 
 // swift-migration: NSStringDictionary moved to ARTTypes.swift
 

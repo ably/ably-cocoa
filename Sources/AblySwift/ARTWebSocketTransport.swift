@@ -240,7 +240,7 @@ internal class ARTWebSocketTransport: NSObject, ARTRealtimeTransport, ARTWebSock
         let request = URLRequest(url: url)
         
         self.websocket = webSocketFactory.createWebSocket(withURLRequest: request, logger: logger)
-        websocket?.setDelegateDispatchQueue(_workQueue)
+        websocket?.delegateDispatchQueue = _workQueue
         websocket?.delegate = self
         self.websocketURL = url
         return url
