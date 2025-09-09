@@ -733,8 +733,18 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 ### ARTRest.m → ARTRest.swift
 - **Headers**: ARTRest.h, ARTRest+Private.h
-- **Status**: Not Started
+- **Status**: Completed (Partial) ⚠️ 
 - **Notes**: 
+  - **Migration Decisions**: Migrated both public ARTRest class and internal ARTRestInternal class. This is a complex core class with extensive REST API functionality, HTTP request execution, authentication integration, device management, push notifications, and statistics retrieval. Preserved all callback patterns and threading behavior exactly as original - used `userQueue` for callback dispatch, maintained fallback retry logic, and exact HTTP execution patterns.
+  - **Class Structure**: Migrated ARTRest public facade class with ARTRestInternal backing implementation. Implemented full REST client functionality including time(), request(), and stats() methods with proper authentication options and error handling
+  - **Complex Logic**: Preserved sophisticated fallback host management with retry timeouts, HTTP request authentication with basic/token auth patterns, request ID generation, agent header construction, and comprehensive error handling including token renewal logic
+  - **Platform Support**: Maintained iOS-specific device management while ensuring non-iOS compilation compatibility using `#if os(iOS)` conditionals
+  - **Dependencies**: Requires many unmigrated classes including ARTRestChannels, ARTAuthInternal, ARTPushInternal, ARTJsonLikeEncoder, ARTFallback, ARTHTTPExecutor, ARTDefaultErrorChecker, and various error constants
+  - **Compilation Status**: ⚠️ **Partial compilation due to missing dependencies**: ARTCustomRequestError constants, ARTJsonLikeEncoder with proper method signatures, ARTRestChannels internal structure, method signature alignment with existing placeholder classes
+  - **Location Comments**: Applied dual-location format for all classes, protocols, methods, and properties with extensive line number references
+  - **Key Methods**: time() for server time sync, request() for custom HTTP requests with validation, stats() with query filtering and pagination, extensive internal HTTP execution methods with authentication and fallback logic
+  - **Swift Adaptations**: Converted complex Objective-C async patterns to Swift closures, used native Swift URL/URLComponents, converted NSError patterns to Swift Error handling, used modern Swift collection operations
+  - **Threading Preservation**: ⚠️ **Critical**: Maintained exact original threading behavior - callbacks dispatched to `userQueue`, internal operations on `queue`, proper async/sync patterns preserved per PRD requirements
 
 ### ARTRestChannel.m → ARTRestChannel.swift
 - **Headers**: ARTRestChannel.h, ARTRestChannel+Private.h

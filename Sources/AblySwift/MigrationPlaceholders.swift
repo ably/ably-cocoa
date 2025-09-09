@@ -60,42 +60,7 @@ public typealias ARTTokenDetailsCallback = (ARTTokenDetails?, Error?) -> Void
 
 // swift-migration: ARTClientOptions placeholder removed - now implemented
 
-// Placeholder for ARTRestInternal
-public class ARTRestInternal {
-    public let userQueue: DispatchQueue = DispatchQueue.main
-    public let queue: DispatchQueue = DispatchQueue.main
-    public let baseUrl: URL = URL(string: "https://rest.ably.io")!
-    public let encoders: [String: ARTEncoder] = [:]
-    public var device_nosync: ARTLocalDevice { fatalError("ARTRestInternal not yet migrated") }
-    internal var storage: ARTLocalDeviceStorage { fatalError("ARTRestInternal not yet migrated") }
-    public var options: ARTClientOptions { fatalError("ARTRestInternal not yet migrated") }
-    public var device: ARTLocalDevice { fatalError("ARTRestInternal not yet migrated") }
-    // swift-migration: push property moved to extension below
-    
-    public init() {
-        fatalError("ARTRestInternal not yet migrated")
-    }
-    
-    public func defaultEncoder() -> ARTEncoder {
-        fatalError("ARTRestInternal not yet migrated")
-    }
-    
-    public func executeRequest(
-        _ request: URLRequest,
-        withAuthOption authOption: ARTAuthentication,
-        wrapperSDKAgents: [String: String]?,
-        completion: @escaping (HTTPURLResponse?, Data?, Error?) -> Void
-    ) -> ARTCancellable {
-        fatalError("ARTRestInternal not yet migrated")
-    }
-    
-    public func _time(
-        withWrapperSDKAgents: [String]?,
-        completion: @escaping (Date?, Error?) -> Void
-    ) -> ARTCancellable {
-        fatalError("ARTRestInternal not yet migrated")
-    }
-}
+// swift-migration: ARTRestInternal now implemented in ARTRest.swift
 
 // ARTQueuedDealloc implemented in ARTQueuedDealloc.swift
 
@@ -161,7 +126,7 @@ public class ARTRealtimeInternal: NSObject {
     public let channels: ARTRealtimeChannelsInternal
     
     public override init() {
-        self.rest = ARTRestInternal()
+        self.rest = ARTRestInternal(options: ARTClientOptions())
         self.options = ARTClientOptions()
         self.channels = ARTRealtimeChannelsInternal()
         super.init()
@@ -712,30 +677,16 @@ public class ARTRealtime {
     }
 }
 
-// Placeholder for ARTRealtimeInternal
+// Placeholder for ARTRealtimeInternal - updated for ARTRest migration
 public class ARTRealtimeInternal {
     public var rest: ARTRestInternal {
         fatalError("ARTRealtimeInternal rest not yet migrated")
     }
 }
 
-// Placeholder for ARTRest (not yet migrated)  
-public class ARTRest {
-    public init() {
-        fatalError("ARTRest not yet migrated")
-    }
-    
-    public func internalAsync(_ block: @escaping (ARTRestInternal) -> Void) {
-        fatalError("ARTRest internalAsync not yet migrated")
-    }
-}
+// swift-migration: ARTRest now implemented in ARTRest.swift
 
-// Additional placeholders needed by ARTPush  
-public extension ARTRestInternal {
-    var push: ARTPushInternal {
-        fatalError("ARTRestInternal push not yet migrated")
-    }
-}
+// swift-migration: ARTRestInternal extension for push now implemented in ARTRest.swift
 
 #endif
 
@@ -795,3 +746,213 @@ public class PlaceholderLogCore: ARTInternalLogCore {
 // swift-migration: Dictionary utility functions now implemented in NSDictionary+ARTDictionaryUtil.swift
 
 // swift-migration: millisecondsToTimeInterval function moved to ARTTypes.swift
+
+// Additional placeholders needed for ARTRest compilation
+
+// swift-migration: ARTHTTPExecutor now implemented in ARTHttp.swift
+// swift-migration: ARTFallback now implemented in ARTFallback.swift
+
+// swift-migration: ARTAuthInternal now implemented in ARTAuth.swift
+
+// swift-migration: ARTPushInternal now implemented in ARTPush.swift
+
+// swift-migration: ARTJsonLikeEncoder already exists - removing duplicate placeholder
+// Keep this as placeholder for now since it's complex
+public class ARTJsonLikeEncoderPlaceholder: ARTEncoder {
+    public init(rest: ARTRestInternal?, delegate: ARTJsonLikeEncoderDelegate, logger: ARTInternalLog) {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    // Required ARTEncoder methods
+    public func mimeType() -> String {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func format() -> ARTEncoderFormat {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func formatAsString() -> String {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func decode(_ data: Data) throws -> Any? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func encode(any obj: Any) throws -> Data? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func encode(any obj: Any, error: inout Error?) -> Data? {
+        do {
+            return try encode(any: obj)
+        } catch let caughtError {
+            error = caughtError
+            return nil
+        }
+    }
+    
+    public func decodeToArray(_ data: Data) throws -> [Dictionary<String, Any>]? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func encodeTokenRequest(_ request: ARTTokenRequest) throws -> Data? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func decodeTokenRequest(_ data: Data) throws -> ARTTokenRequest? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func encodeTokenDetails(_ tokenDetails: ARTTokenDetails) throws -> Data? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func decodeTokenDetails(_ data: Data) throws -> ARTTokenDetails? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func encodeMessage(_ message: ARTMessage) throws -> Data? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func decodeMessage(_ data: Data) throws -> ARTMessage? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func encodeMessages(_ messages: [ARTMessage]) throws -> Data? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func decodeMessages(_ data: Data) throws -> [ARTMessage]? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func encodePresenceMessage(_ message: ARTPresenceMessage) throws -> Data? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func decodePresenceMessage(_ data: Data) throws -> ARTPresenceMessage? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func encodePresenceMessages(_ messages: [ARTPresenceMessage]) throws -> Data? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func decodePresenceMessages(_ data: Data) throws -> [ARTPresenceMessage]? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func encodeProtocolMessage(_ message: ARTProtocolMessage) throws -> Data? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func decodeProtocolMessage(_ data: Data) throws -> ARTProtocolMessage? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func encodeDeviceDetails(_ deviceDetails: ARTDeviceDetails) throws -> Data? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func decodeDeviceDetails(_ data: Data) throws -> ARTDeviceDetails? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func encodeLocalDevice(_ device: ARTLocalDevice) throws -> Data? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func decodeChannelDetails(_ data: Data) throws -> ARTChannelDetails? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func decodeDevicesDetails(_ data: Data) throws -> [ARTDeviceDetails]? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func decodeDeviceIdentityTokenDetails(_ data: Data) throws -> ARTDeviceIdentityTokenDetails? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func encodeDevicePushDetails(_ devicePushDetails: ARTDevicePushDetails) throws -> Data? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func decodeDevicePushDetails(_ data: Data) throws -> ARTDevicePushDetails? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func encodePushChannelSubscription(_ channelSubscription: ARTPushChannelSubscription) throws -> Data? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func decodePushChannelSubscription(_ data: Data) throws -> ARTPushChannelSubscription? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func decodePushChannelSubscriptions(_ data: Data) throws -> [ARTPushChannelSubscription]? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func decodeTime(_ data: Data) throws -> Date? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func decodeTime(_ data: Data, error: inout Error?) -> Date? {
+        do {
+            return try decodeTime(data)
+        } catch let caughtError {
+            error = caughtError
+            return nil
+        }
+    }
+    
+    public func decodeErrorInfo(_ error: Data) throws -> ARTErrorInfo? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func decodeErrorInfo(_ data: Data, error: inout Error?) -> ARTErrorInfo? {
+        do {
+            return try decodeErrorInfo(data)
+        } catch let caughtError {
+            error = caughtError
+            return nil
+        }
+    }
+
+    public func decodeStats(_ data: Data) throws -> [Any]? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func decodeStats(_ data: Data, error: inout Error?) -> [Any]? {
+        do {
+            return try decodeStats(data)
+        } catch let caughtError {
+            error = caughtError
+            return nil
+        }
+    }
+   
+    public func encode(localDevice: ARTLocalDevice) throws -> Data? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+}
+
+// swift-migration: ARTDefaultErrorChecker now implemented in ARTErrorChecker.swift
+
+// swift-migration: ARTContinuousClock and ARTContinuousClockInstant now implemented in ARTContinuousClock.swift
+
+// Additional placeholders needed for ARTRest compilation
+
+// swift-migration: ARTCustomRequestError already exists in ARTTypes.swift
+
+// Placeholder for ARTRestChannelsInternal
+public class ARTRestChannelsInternal: NSObject {
+    internal init(rest: ARTRestInternal, logger: ARTInternalLog) {
+        super.init()
+        fatalError("ARTRestChannelsInternal not yet migrated")
+    }
+}
