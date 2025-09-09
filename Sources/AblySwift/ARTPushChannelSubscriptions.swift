@@ -147,7 +147,8 @@ internal class ARTPushChannelSubscriptionsInternal: NSObject {
             }
             request.setValue(rest.defaultEncoder().mimeType(), forHTTPHeaderField: "Content-Type")
             
-            if let mutableRequest = (request.settingDeviceAuthentication(channelSubscription.deviceId, localDevice: local) as NSURLRequest).mutableCopy() as? NSMutableURLRequest {
+            if let deviceId = channelSubscription.deviceId, let localDevice = local,
+               let mutableRequest = (request.settingDeviceAuthentication(deviceId, localDevice: localDevice) as NSURLRequest).mutableCopy() as? NSMutableURLRequest {
                 request = mutableRequest as URLRequest
             }
             

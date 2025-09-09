@@ -146,7 +146,8 @@ internal class ARTPushDeviceRegistrationsInternal: NSObject {
             }
             request.setValue(rest.defaultEncoder().mimeType(), forHTTPHeaderField: "Content-Type")
             
-            if let mutableRequest = (request.settingDeviceAuthentication(deviceDetails.id, localDevice: local, logger: self._logger) as NSURLRequest).mutableCopy() as? NSMutableURLRequest {
+            if let deviceId = deviceDetails.id, let localDevice = local,
+               let mutableRequest = (request.settingDeviceAuthentication(deviceId, localDevice: localDevice, logger: self._logger) as NSURLRequest).mutableCopy() as? NSMutableURLRequest {
                 request = mutableRequest as URLRequest
             }
             
@@ -206,7 +207,8 @@ internal class ARTPushDeviceRegistrationsInternal: NSObject {
             var request = URLRequest(url: deviceURL)
             request.httpMethod = "GET"
             
-            if let mutableRequest = (request.settingDeviceAuthentication(deviceId, localDevice: local, logger: self._logger) as NSURLRequest).mutableCopy() as? NSMutableURLRequest {
+            if let localDevice = local,
+               let mutableRequest = (request.settingDeviceAuthentication(deviceId, localDevice: localDevice, logger: self._logger) as NSURLRequest).mutableCopy() as? NSMutableURLRequest {
                 request = mutableRequest as URLRequest
             }
             
@@ -359,8 +361,8 @@ internal class ARTPushDeviceRegistrationsInternal: NSObject {
             var request = URLRequest(url: components.url!)
             request.httpMethod = "DELETE"
             
-            if let deviceId = params["deviceId"],
-               let mutableRequest = (request.settingDeviceAuthentication(deviceId, localDevice: local) as NSURLRequest).mutableCopy() as? NSMutableURLRequest {
+            if let deviceId = params["deviceId"], let localDevice = local,
+               let mutableRequest = (request.settingDeviceAuthentication(deviceId, localDevice: localDevice) as NSURLRequest).mutableCopy() as? NSMutableURLRequest {
                 request = mutableRequest as URLRequest
             }
             

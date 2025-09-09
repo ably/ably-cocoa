@@ -469,7 +469,12 @@ extension Array {
 
 // MARK: - NSString (ARTUtilities)
 
-// swift-migration: original location ARTTypes.m, line 363 (art_shortString already implemented in MigrationPlaceholders.swift)
+// swift-migration: original location ARTTypes.m, line 363
+extension String {
+    public var art_shortString: String {
+        return self
+    }
+}
 
 // swift-migration: original location ARTTypes.m, line 371
 extension String {

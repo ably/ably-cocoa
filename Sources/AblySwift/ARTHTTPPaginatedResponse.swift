@@ -144,9 +144,9 @@ public class ARTHTTPPaginatedResponse: ARTPaginatedResult<NSDictionary> {
 
             let links = httpResponse.extractLinks()
 
-            let firstRel = URLRequest.requestWithPath(links["first"], relativeTo: request)
-            let currentRel = URLRequest.requestWithPath(links["current"], relativeTo: request)
-            let nextRel = URLRequest.requestWithPath(links["next"], relativeTo: request)
+            let firstRel = URLRequest.requestWithPath(links?["first"], relativeTo: request)
+            let currentRel = URLRequest.requestWithPath(links?["current"], relativeTo: request)
+            let nextRel = URLRequest.requestWithPath(links?["next"], relativeTo: request)
 
             let result = ARTHTTPPaginatedResponse(response: httpResponse, 
                                                 items: items, 

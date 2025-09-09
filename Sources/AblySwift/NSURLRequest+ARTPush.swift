@@ -14,10 +14,14 @@ internal extension URLRequest {
         
         if localDevice.id == deviceId {
             if let token = localDevice.identityTokenDetails?.token {
-                ARTLogDebug(logger, "adding device authentication using local device identity token")
-                mutableRequest.setValue(token.art_base64Encoded(), forHTTPHeaderField: "X-Ably-DeviceToken")
+                if let logger = logger {
+                    ARTLogDebug(logger, "adding device authentication using local device identity token")
+                }
+                mutableRequest.setValue(token.art_base64Encoded, forHTTPHeaderField: "X-Ably-DeviceToken")
             } else if let secret = localDevice.secret {
-                ARTLogDebug(logger, "adding device authentication using local device secret")
+                if let logger = logger {
+                    ARTLogDebug(logger, "adding device authentication using local device secret")
+                }
                 mutableRequest.setValue(secret, forHTTPHeaderField: "X-Ably-DeviceSecret")
             }
         }
@@ -32,7 +36,7 @@ internal extension URLRequest {
     
     // swift-migration: original location NSURLRequest+ARTPush.h, line 15 and NSURLRequest+ARTPush.m, line 35
     func settingDeviceAuthentication(_ localDevice: ARTLocalDevice, logger: ARTInternalLog?) -> URLRequest {
-        return settingDeviceAuthentication(localDevice.id, localDevice: localDevice, logger: logger)
+        return settingDeviceAuthentication(localDevice.id ?? "", localDevice: localDevice, logger: logger)
     }
 }
 
