@@ -379,8 +379,9 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 ### ARTJsonLikeEncoder.m → ARTJsonLikeEncoder.swift
 - **Headers**: ARTJsonLikeEncoder.h
-- **Status**: Not Started
+- **Status**: Deferred
 - **Notes**: 
+  - **Migration Decision**: This file contains complex multi-format encoder/decoder logic with extensive protocol definitions. Deferred to end of migration to implement with proper understanding of all dependencies and usage patterns. Using placeholder for now. 
 
 ### ARTLocalDevice.m → ARTLocalDevice.swift
 - **Headers**: ARTLocalDevice.h, ARTLocalDevice+Private.h
@@ -468,13 +469,23 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 ### ARTPresenceMessage.m → ARTPresenceMessage.swift
 - **Headers**: ARTPresenceMessage.h, ARTPresenceMessage+Private.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Migrated presence message class with ARTPresenceAction enum, NSCopying support, ID parsing, and synthesis detection. Preserved custom equality comparison logic. Added required initializer for NSCopying pattern. Converted exception throwing to fatalError.
+  - **Dependencies**: Removed ARTPresenceMessage placeholder from MigrationPlaceholders.swift
+  - **Compilation Errors**: Fixed required vs override initializer, fixed non-optional connectionId property handling, fixed optional clientId property usage in string interpolation
+  - **Location Comments**: Applied dual-location format for all methods, properties, and enums
+  - **Swift Adaptations**: Used Swift enum with UInt raw values, string interpolation in memberKey method, guard statements for early returns, proper optionals handling
 
 ### ARTProtocolMessage.m → ARTProtocolMessage.swift
 - **Headers**: ARTProtocolMessage.h, ARTProtocolMessage+Private.h
-- **Status**: Not Started
-- **Notes**: 
+- **Status**: Completed
+- **Notes**:
+  - **Migration Decisions**: Complex protocol message class with action enum, flag bitmasks using OptionSet, message merging logic, and NSCopying support. Changed access level to public since used in public protocols. Preserved all bitwise flag operations and merge validation logic.
+  - **Dependencies**: Added ARTStringFromBool function and APObjectMessageProtocol placeholder to MigrationPlaceholders.swift, removed ARTProtocolMessage placeholder
+  - **Compilation Errors**: Fixed required initializer for NSCopying, public access modifiers for NSCopying protocol methods and description override, changed flags type from Int64 to UInt to match flag operations
+  - **Location Comments**: Applied dual-location format for all methods, properties, and enums
+  - **Swift Adaptations**: Used Swift OptionSet for flag bitmasks, @unknown default for enum switch robustness, proper type casting in merge operations 
 
 ### ARTPublicRealtimeChannelUnderlyingObjects.m → ARTPublicRealtimeChannelUnderlyingObjects.swift
 - **Headers**: ARTPublicRealtimeChannelUnderlyingObjects.h

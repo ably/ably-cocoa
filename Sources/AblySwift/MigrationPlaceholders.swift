@@ -847,17 +847,7 @@ public enum ARTClientCodeError: UInt {
 public let ARTClientCodeErrorInvalidType = ARTClientCodeError.invalidType
 
 // Placeholder types for ARTEncoder protocol
-public class ARTPresenceMessage {
-    public init() {
-        fatalError("ARTPresenceMessage not yet migrated")
-    }
-}
 
-public class ARTProtocolMessage {
-    public init() {
-        fatalError("ARTProtocolMessage not yet migrated")
-    }
-}
 
 public class ARTChannelDetails {
     public init() {
@@ -1035,4 +1025,12 @@ extension ARTErrorInfo {
     public static func wrap(_ errorInfo: ARTErrorInfo, prepend: String) -> ARTErrorInfo {
         return ARTErrorInfo(code: errorInfo.code, message: "\(prepend): \(errorInfo.message)", statusCode: errorInfo.statusCode)
     }
+}
+
+// Placeholder for APObjectMessageProtocol
+public protocol APObjectMessageProtocol {}
+
+// Placeholder for ARTStringFromBool function
+func ARTStringFromBool(_ value: Bool) -> String {
+    return value ? "true" : "false"
 }

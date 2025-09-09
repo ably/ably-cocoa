@@ -51,7 +51,7 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTInternalLogCore.m | ARTInternalLogCore.h, ARTInternalLogCore+Testing.h | ARTInternalLogCore.swift | Completed |
 | ARTJitterCoefficientGenerator.m | ARTJitterCoefficientGenerator.h | ARTJitterCoefficientGenerator.swift | Completed |
 | ARTJsonEncoder.m | ARTJsonEncoder.h | ARTJsonEncoder.swift | Completed |
-| ARTJsonLikeEncoder.m | ARTJsonLikeEncoder.h | ARTJsonLikeEncoder.swift | Not Started |
+| ARTJsonLikeEncoder.m | ARTJsonLikeEncoder.h | ARTJsonLikeEncoder.swift | Deferred |
 | ARTLocalDevice.m | ARTLocalDevice.h, ARTLocalDevice+Private.h | ARTLocalDevice.swift | Not Started |
 | ARTLocalDeviceStorage.m | ARTLocalDeviceStorage.h | ARTLocalDeviceStorage.swift | Not Started |
 | ARTLog.m | ARTLog.h, ARTLog+Private.h | ARTLog.swift | Not Started |
@@ -65,8 +65,8 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTPluginAPI.m | ARTPluginAPI.h | ARTPluginAPI.swift | Not Started |
 | ARTPluginDecodingContext.m | ARTPluginDecodingContext.h | ARTPluginDecodingContext.swift | Not Started |
 | ARTPresence.m | ARTPresence.h, ARTPresence+Private.h | ARTPresence.swift | Not Started |
-| ARTPresenceMessage.m | ARTPresenceMessage.h, ARTPresenceMessage+Private.h | ARTPresenceMessage.swift | Not Started |
-| ARTProtocolMessage.m | ARTProtocolMessage.h, ARTProtocolMessage+Private.h | ARTProtocolMessage.swift | Not Started |
+| ARTPresenceMessage.m | ARTPresenceMessage.h, ARTPresenceMessage+Private.h | ARTPresenceMessage.swift | Completed |
+| ARTProtocolMessage.m | ARTProtocolMessage.h, ARTProtocolMessage+Private.h | ARTProtocolMessage.swift | Completed |
 | ARTPublicRealtimeChannelUnderlyingObjects.m | ARTPublicRealtimeChannelUnderlyingObjects.h | ARTPublicRealtimeChannelUnderlyingObjects.swift | Not Started |
 | ARTPush.m | ARTPush.h, ARTPush+Private.h | ARTPush.swift | Not Started |
 | ARTPushActivationEvent.m | ARTPushActivationEvent.h | ARTPushActivationEvent.swift | Not Started |
