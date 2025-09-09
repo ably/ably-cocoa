@@ -56,9 +56,9 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTLocalDeviceStorage.m | ARTLocalDeviceStorage.h | ARTLocalDeviceStorage.swift | Not Started |
 | ARTLog.m | ARTLog.h, ARTLog+Private.h | ARTLog.swift | Not Started |
 | ARTLogAdapter.m | ARTLogAdapter.h, ARTLogAdapter+Testing.h | ARTLogAdapter.swift | Not Started |
-| ARTMessage.m | ARTMessage.h | ARTMessage.swift | Not Started |
-| ARTMessageOperation.m | ARTMessageOperation.h, ARTMessageOperation+Private.h | ARTMessageOperation.swift | Not Started |
-| ARTMsgPackEncoder.m | ARTMsgPackEncoder.h | ARTMsgPackEncoder.swift | Not Started |
+| ARTMessage.m | ARTMessage.h | ARTMessage.swift | Completed |
+| ARTMessageOperation.m | ARTMessageOperation.h, ARTMessageOperation+Private.h | ARTMessageOperation.swift | Completed |
+| ARTMsgPackEncoder.m | ARTMsgPackEncoder.h | ARTMsgPackEncoder.swift | Completed |
 | ARTOSReachability.m | ARTOSReachability.h | ARTOSReachability.swift | Not Started |
 | ARTPaginatedResult.m | ARTPaginatedResult.h, ARTPaginatedResult+Private.h, ARTPaginatedResult+Subclass.h | ARTPaginatedResult.swift | Not Started |
 | ARTPendingMessage.m | ARTPendingMessage.h | ARTPendingMessage.swift | Not Started |

@@ -404,18 +404,33 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 ### ARTMessage.m → ARTMessage.swift
 - **Headers**: ARTMessage.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Complete message class implementation with ARTMessageAction enum, factory methods for encoding/decoding, proper inheritance from ARTBaseMessage. Added both encode methods to support different calling patterns. Implemented static factory methods for JSON decoding with proper error handling.
+  - **Dependencies**: Added ARTMessageOperation and ARTJsonLikeEncoder placeholders, updated ARTErrorInfo with createWithCode method
+  - **Compilation Errors**: Fixed override keyword warnings, ARTDataEncoder initialization with inout Error parameter, ARTJsonCompatible description access, method signature compatibility with ARTChannel expectations
+  - **Location Comments**: Applied dual-location format for all methods, properties, and enums
+  - **Swift Adaptations**: Used Swift optionals properly, implemented throws pattern for error handling, used String(describing:) for protocol description
 
 ### ARTMessageOperation.m → ARTMessageOperation.swift
 - **Headers**: ARTMessageOperation.h, ARTMessageOperation+Private.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Simple data class with three properties (clientId, descriptionText, metadata) and two serialization methods. Used inout parameter for writeToDictionary to match Swift patterns. Clean implementation following Swift idioms.
+  - **Dependencies**: Removed ARTMessageOperation from MigrationPlaceholders.swift after completing implementation
+  - **Compilation Errors**: Fixed missing override keyword in placeholder that was causing conflicts
+  - **Location Comments**: Applied dual-location format for properties and methods
+  - **Swift Adaptations**: Used Swift optionals and type-safe casting, inout parameters for dictionary mutation
 
 ### ARTMsgPackEncoder.m → ARTMsgPackEncoder.swift
 - **Headers**: ARTMsgPackEncoder.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Simple encoder implementing ARTJsonLikeEncoderDelegate protocol for MessagePack binary format. Updated to use Swift throws pattern instead of NSError** pattern. Uses msgpack library extensions for encoding/decoding.
+  - **Dependencies**: None additional - uses existing msgpack dependency
+  - **Compilation Errors**: Fixed Data vs NSData issue by casting to NSData for messagePackParse() method access
+  - **Location Comments**: Applied dual-location format for all methods
+  - **Swift Adaptations**: Used Swift throws pattern, proper casting between Data and NSData types to access Objective-C category methods
 
 ### ARTOSReachability.m → ARTOSReachability.swift
 - **Headers**: ARTOSReachability.h

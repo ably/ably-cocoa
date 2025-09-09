@@ -36,6 +36,10 @@ public class ARTErrorInfo: NSObject, Error, NSCopying {
         return ARTErrorInfo(code: code, message: message, statusCode: status)
     }
     
+    public static func createWithCode(_ code: Int, message: String) -> ARTErrorInfo {
+        return ARTErrorInfo(code: code, message: message)
+    }
+    
     public static func createFromNSError(_ error: Error) -> ARTErrorInfo {
         fatalError("ARTErrorInfo createFromNSError not yet migrated")
     }
@@ -538,30 +542,7 @@ public typealias ARTDeviceId = String
 
 // ARTCallback defined above
 
-// Placeholder for ARTMessage
-public class ARTMessage: ARTBaseMessage {
-    // Note: extras property is inherited from ARTBaseMessage
-    
-    // swift-migration: ARTMessage inherits from ARTBaseMessage but adds message-specific functionality
-    public required init() {
-        super.init()
-        fatalError("ARTMessage not yet migrated")
-    }
-    
-    public init(name: String?, data: Any?) {
-        super.init()
-        fatalError("ARTMessage not yet migrated")
-    }
-    
-    public init(name: String?, data: Any?, clientId: String?) {
-        super.init()
-        fatalError("ARTMessage not yet migrated")
-    }
-    
-    public func encode(with encoder: ARTDataEncoder, error: inout Error?) -> ARTMessage {
-        fatalError("ARTMessage encode not yet migrated")
-    }
-}
+// swift-migration: ARTMessage placeholder removed - now implemented in ARTMessage.swift
 
 // Placeholder for ARTPaginatedResult
 public class ARTPaginatedResult<ItemType> {
@@ -1027,5 +1008,31 @@ public class ARTEncoderPlaceholder: ARTEncoder {
     
     public func decodeStats(_ data: Data) throws -> [Any]? {
         fatalError("ARTEncoder not yet migrated")
+    }
+}
+
+// swift-migration: ARTMessageOperation placeholder removed - now implemented in ARTMessageOperation.swift
+
+// Placeholder for ARTJsonLikeEncoder
+public class ARTJsonLikeEncoder {
+    public let delegate: ARTJsonLikeEncoderDelegate
+    
+    public init(delegate: ARTJsonLikeEncoderDelegate) {
+        self.delegate = delegate
+    }
+    
+    public func messageFromDictionary(_ dict: [String: Any]?, protocolMessage: ARTProtocolMessage?) -> ARTMessage? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+    
+    public func messagesFromArray(_ array: [[String: Any]]?, protocolMessage: ARTProtocolMessage?) -> [ARTMessage]? {
+        fatalError("ARTJsonLikeEncoder not yet migrated")
+    }
+}
+
+// Placeholder for ARTErrorInfo.wrap static method
+extension ARTErrorInfo {
+    public static func wrap(_ errorInfo: ARTErrorInfo, prepend: String) -> ARTErrorInfo {
+        return ARTErrorInfo(code: errorInfo.code, message: "\(prepend): \(errorInfo.message)", statusCode: errorInfo.statusCode)
     }
 }
