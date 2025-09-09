@@ -179,11 +179,6 @@ public class ARTClientOptions: ARTAuthOptions {
     }
     private var _fallbackHostsUseDefault: Bool = false
 
-    // swift-migration: original location ARTClientOptions.h, line 153
-    /// DEPRECATED: this property is deprecated and will be removed in a future version. Defaults to a string value for an Ably error reporting DSN (Data Source Name), which is typically a URL in the format `https://[KEY]:[SECRET]@errors.ably.io/[ID]`. When set to `nil` exception reporting is disabled.
-    @available(*, deprecated, message: "Future library releases will ignore any supplied value.")
-    public var logExceptionReportingUrl: String? = "https://765e1fcaba404d7598d2fd5a2a43c4f0:8d469b2b0fb34c01a12ae217931c4aed@errors.ably.io/3"
-
     // swift-migration: original location ARTClientOptions.h, line 161
     /// The queue to which all calls to user-provided callbacks will be dispatched asynchronously. It will be used as target queue for an internal, serial queue. It defaults to the main queue.
     public var dispatchQueue: DispatchQueue = DispatchQueue.main
@@ -248,7 +243,6 @@ public class ARTClientOptions: ARTAuthOptions {
         httpMaxRetryCount = 3
         _fallbackHosts = nil
         _fallbackHostsUseDefault = false
-        logExceptionReportingUrl = "https://765e1fcaba404d7598d2fd5a2a43c4f0:8d469b2b0fb34c01a12ae217931c4aed@errors.ably.io/3"
         dispatchQueue = DispatchQueue.main
         internalDispatchQueue = DispatchQueue(label: "io.ably.main", qos: .default)
         pushFullWait = false
@@ -325,7 +319,6 @@ public class ARTClientOptions: ARTAuthOptions {
         options._fallbackHosts = self.fallbackHosts
         options._fallbackHostsUseDefault = self.fallbackHostsUseDefault
         options.httpRequestTimeout = self.httpRequestTimeout
-        options.logExceptionReportingUrl = self.logExceptionReportingUrl
         options.dispatchQueue = self.dispatchQueue
         options.internalDispatchQueue = self.internalDispatchQueue
         options.pushFullWait = self.pushFullWait
