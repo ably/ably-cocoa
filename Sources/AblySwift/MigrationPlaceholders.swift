@@ -79,6 +79,116 @@ public typealias ARTTokenDetailsCallback = (ARTTokenDetails?, Error?) -> Void
 
 // swift-migration: ARTTokenParams placeholder removed - now implemented in ARTTokenParams.swift
 
+// Placeholder for ARTWebSocket protocol and related types
+public protocol ARTWebSocket {
+    var delegate: ARTWebSocketDelegate? { get set }
+    var readyState: ARTWebSocketReadyState { get }
+    func setDelegateDispatchQueue(_ queue: DispatchQueue)
+    func open()
+    func send(_ data: Data)
+    func close(withCode code: Int, reason: String)
+}
+
+public protocol ARTWebSocketDelegate: AnyObject {
+    func webSocketDidOpen(_ webSocket: ARTWebSocket)
+    func webSocket(_ webSocket: ARTWebSocket, didCloseWithCode code: Int, reason: String?, wasClean: Bool)
+    func webSocket(_ webSocket: ARTWebSocket, didFailWithError error: Error)
+    func webSocket(_ webSocket: ARTWebSocket, didReceiveMessage message: Any)
+}
+
+public enum ARTWebSocketReadyState: Int {
+    case connecting = 0
+    case open = 1
+    case closing = 2
+    case closed = 3
+}
+
+public class ARTSRWebSocket: NSObject, ARTWebSocket {
+    public weak var delegate: ARTWebSocketDelegate?
+    public var readyState: ARTWebSocketReadyState = .closed
+    
+    public init(urlRequest: URLRequest, logger: ARTInternalLog?) {
+        fatalError("ARTSRWebSocket not yet migrated")
+    }
+    
+    public func setDelegateDispatchQueue(_ queue: DispatchQueue) {
+        fatalError("ARTSRWebSocket not yet migrated")
+    }
+    
+    public func open() {
+        fatalError("ARTSRWebSocket not yet migrated")
+    }
+    
+    public func send(_ data: Data) {
+        fatalError("ARTSRWebSocket not yet migrated")
+    }
+    
+    public func close(withCode code: Int, reason: String) {
+        fatalError("ARTSRWebSocket not yet migrated")
+    }
+}
+
+// SocketRocket constants (to be replaced when SocketRocket wrapper is migrated)
+public let ARTSRWebSocketErrorDomain = "com.squareup.SocketRocket"
+public let ARTSRHTTPResponseErrorKey = "HTTPResponseKey"
+
+// Placeholder for ARTRealtimeTransport related types
+public enum ARTRealtimeTransportState: UInt {
+    case opening = 0
+    case opened = 1
+    case closing = 2
+    case closed = 3
+}
+
+public protocol ARTRealtimeTransportDelegate: AnyObject {
+    func realtimeTransportAvailable(_ transport: ARTRealtimeTransport)
+    func realtimeTransportClosed(_ transport: ARTRealtimeTransport)
+    func realtimeTransportNeverConnected(_ transport: ARTRealtimeTransport)
+    func realtimeTransportDisconnected(_ transport: ARTRealtimeTransport, withError error: ARTRealtimeTransportError?)
+    func realtimeTransportRefused(_ transport: ARTRealtimeTransport, withError error: ARTRealtimeTransportError)
+    func realtimeTransportTooBig(_ transport: ARTRealtimeTransport)
+    func realtimeTransportFailed(_ transport: ARTRealtimeTransport, withError error: ARTRealtimeTransportError)
+    func realtimeTransport(_ transport: ARTRealtimeTransport, didReceiveMessage message: ARTProtocolMessage)
+}
+
+public protocol ARTRealtimeTransport: AnyObject {
+    var delegate: ARTRealtimeTransportDelegate? { get set }
+    var state: ARTRealtimeTransportState { get }
+    var host: String { get }
+    func setHost(_ host: String)
+    func connect(withKey key: String)
+    func connect(withToken token: String)
+    func sendClose()
+    func sendPing()
+    func close()
+    func abort(_ reason: ARTStatus)
+}
+
+public enum ARTRealtimeTransportErrorType {
+    case timeout
+    case hostUnreachable
+    case noInternet
+    case refused
+    case other
+}
+
+public class ARTRealtimeTransportError: NSError {
+    public init(error: Error, type: ARTRealtimeTransportErrorType, url: URL?) {
+        super.init(domain: "ARTRealtimeTransportErrorDomain", code: 0, userInfo: nil)
+        fatalError("ARTRealtimeTransportError not yet migrated")
+    }
+    
+    public init(error: Error, badResponseCode: Int, url: URL?) {
+        super.init(domain: "ARTRealtimeTransportErrorDomain", code: badResponseCode, userInfo: nil)
+        fatalError("ARTRealtimeTransportError not yet migrated")
+    }
+    
+    public required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        fatalError("ARTRealtimeTransportError not yet migrated")
+    }
+}
+
 
 // swift-migration: ARTTokenRequest placeholder removed - now implemented in ARTTokenRequest.swift
 
@@ -408,12 +518,7 @@ public protocol ARTRealtimeTransportFactory {
     func transportWithRest(_ rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, logger: ARTInternalLog) -> ARTRealtimeTransport
 }
 
-// Placeholder for ARTRealtimeTransport
-public class ARTRealtimeTransport {
-    public init() {
-        fatalError("ARTRealtimeTransport not yet migrated")
-    }
-}
+// swift-migration: ARTRealtimeTransport placeholder removed - now implemented as protocol above
 
 // swift-migration: ARTFallback_shuffleArray moved to ARTFallback.swift - duplicate removed
 
@@ -688,11 +793,11 @@ public class ARTEncoderPlaceholder: ARTEncoder {
     public func decodeErrorInfo(_ error: Data) throws -> ARTErrorInfo? {
         fatalError("ARTEncoder not yet migrated")
     }
-    
+
     public func decodeStats(_ data: Data) throws -> [Any]? {
         fatalError("ARTEncoder not yet migrated")
     }
-    
+   
     public func encode(localDevice: ARTLocalDevice) throws -> Data? {
         fatalError("ARTEncoder not yet migrated")
     }

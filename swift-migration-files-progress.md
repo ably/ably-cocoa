@@ -814,13 +814,23 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 ### ARTWebSocketFactory.m → ARTWebSocketFactory.swift
 - **Headers**: ARTWebSocketFactory.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Simple WebSocket factory pattern with protocol definition and default implementation. Used public access level as per public header location. Clean mechanical carbon-copy translation creating ARTSRWebSocket instances.
+  - **Dependencies**: Uses existing ARTWebSocket protocol and ARTSRWebSocket implementation from SocketRocket
+  - **Compilation Errors**: None - straightforward factory pattern
+  - **Location Comments**: Applied dual-location format for protocol and implementation
+  - **Swift Adaptations**: Direct translation of factory method pattern, proper protocol conformance
 
 ### ARTWebSocketTransport.m → ARTWebSocketTransport.swift
 - **Headers**: ARTWebSocketTransport.h, ARTWebSocketTransport+Private.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Complex WebSocket transport implementation with connection management, message handling, error classification, and delegate patterns. Preserved exact threading behavior with workQueue dispatching. Used internal access level as per private header location. Fixed variable shadowing issues in close/abort methods by using optional chaining instead of guard let bindings.
+  - **Dependencies**: Created extensive placeholders for ARTWebSocket protocol hierarchy, ARTRealtimeTransport protocol, ARTRealtimeTransportError class, ARTWebSocketReadyState enum, and various transport-related types in MigrationPlaceholders.swift
+  - **Compilation Errors**: Fixed Swift keyword conflict with `extension` enum case using backticks, resolved variable shadowing in close/abort methods by using optional chaining (`websocket?.delegate = nil`), fixed NSError subclass requirements for ARTRealtimeTransportError, resolved generic type parameters for ARTInternalEventEmitter
+  - **Location Comments**: Applied dual-location format for all methods and properties
+  - **Swift Adaptations**: Used Swift DispatchQueue instead of dispatch_queue_t, converted NSError handling to proper Swift error patterns, used optional chaining for delegate assignment to avoid variable shadowing with guard let statements 
 
 ### ARTWrapperSDKProxyOptions.m → ARTWrapperSDKProxyOptions.swift
 - **Headers**: ARTWrapperSDKProxyOptions.h
@@ -998,6 +1008,6 @@ Document all placeholder types created in `MigrationPlaceholders.swift`:
 ## Overall Progress Summary
 
 - **Batches Completed**: 2/9 (Batch 1 and Batch 2 completed)
-- **Files Migrated**: 30 completed/115 
+- **Files Migrated**: 32 completed/115 
 - **Current Batch**: Batch 3 - ARTDeviceDetails through ARTInternalLogCore (8/12 files completed)
 - **Next Steps**: Continue with remaining 4 files in Batch 3 (ARTGCD, ARTHTTPPaginatedResponse, ARTHttp, ARTInternalLog, ARTInternalLogCore)

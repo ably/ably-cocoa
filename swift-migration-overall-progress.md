@@ -102,8 +102,8 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTTokenRequest.m | ARTTokenRequest.h | ARTTokenRequest.swift | Completed |
 | ARTTypes.m | ARTTypes.h, ARTTypes+Private.h | ARTTypes.swift | Completed |
 | ARTURLSessionServerTrust.m | ARTURLSessionServerTrust.h | ARTURLSessionServerTrust.swift | Not Started |
-| ARTWebSocketFactory.m | ARTWebSocketFactory.h | ARTWebSocketFactory.swift | Not Started |
-| ARTWebSocketTransport.m | ARTWebSocketTransport.h, ARTWebSocketTransport+Private.h | ARTWebSocketTransport.swift | Not Started |
+| ARTWebSocketFactory.m | ARTWebSocketFactory.h | ARTWebSocketFactory.swift | Completed |
+| ARTWebSocketTransport.m | ARTWebSocketTransport.h, ARTWebSocketTransport+Private.h | ARTWebSocketTransport.swift | Completed |
 | ARTWrapperSDKProxyOptions.m | ARTWrapperSDKProxyOptions.h | ARTWrapperSDKProxyOptions.swift | Not Started |
 | ARTWrapperSDKProxyPush.m | ARTWrapperSDKProxyPush.h, ARTWrapperSDKProxyPush+Private.h | ARTWrapperSDKProxyPush.swift | Not Started |
 | ARTWrapperSDKProxyPushAdmin.m | ARTWrapperSDKProxyPushAdmin.h, ARTWrapperSDKProxyPushAdmin+Private.h | ARTWrapperSDKProxyPushAdmin.swift | Not Started |
@@ -131,9 +131,9 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 ## Progress Summary
 
 - **Total Files**: 116
-- **Not Started**: 66
+- **Not Started**: 64
 - **In Progress**: 0
-- **Completed**: 49
+- **Completed**: 51
 - **Blocked**: 0
 - **Deferred**: 1
 
