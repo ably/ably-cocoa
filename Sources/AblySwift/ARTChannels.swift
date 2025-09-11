@@ -116,4 +116,9 @@ internal class ARTChannels<ChannelType>: NSObject where ChannelType: ARTChannel 
         }
         return name
     }
+    
+    // swift-migration: original location ARTChannels+Private.h, line 22 and ARTChannels.m, line 64
+    internal var nosyncIterable: any NSFastEnumeration {
+        return channels.objectEnumerator()
+    }
 }

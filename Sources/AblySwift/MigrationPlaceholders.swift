@@ -121,19 +121,7 @@ public protocol ARTConnectionProtocol: NSObjectProtocol {
 
 // swift-migration: ARTRealtimeProtocol moved to ARTRealtime.swift
 
-// Placeholder for ARTRealtimeChannels
-public class ARTRealtimeChannels: NSObject {
-    public init(internal: ARTRealtimeChannelsInternal, realtimeInternal: ARTRealtimeInternal, queuedDealloc: ARTQueuedDealloc) {
-        super.init()
-        fatalError("ARTRealtimeChannels not yet migrated")
-    }
-    
-    // swift-migration: Simplified initializer for now to avoid access issues
-    internal override init() {
-        super.init()
-        fatalError("ARTRealtimeChannels not yet migrated")
-    }
-}
+// swift-migration: ARTRealtimeChannels placeholder removed - now implemented in ARTRealtimeChannels.swift
 
 // Placeholder for ARTWrapperSDKProxyOptions
 public class ARTWrapperSDKProxyOptions: NSObject {
@@ -155,28 +143,59 @@ public class ARTWrapperSDKProxyRealtime: NSObject {
 
 // ARTRestInternal defined above
 
-// Placeholder for ARTRealtimeChannelsInternal
-public class ARTRealtimeChannelsInternal: NSObject {
-    public var nosyncIterable: [ARTRealtimeChannelInternal] {
-        return []
-    }
-    
-    public override init() {
+// swift-migration: ARTRealtimeChannelsInternal placeholder removed - now implemented in ARTRealtimeChannels.swift
+
+// Placeholder for ARTRealtimeChannelsProtocol
+public protocol ARTRealtimeChannelsProtocol: AnyObject {
+    func exists(_ name: String) -> Bool
+    func release(_ name: String, callback: ARTCallback?)
+    func release(_ name: String)
+}
+
+// Placeholder for ARTRealtimeChannel
+public class ARTRealtimeChannel: NSObject {
+    public init(internal: ARTRealtimeChannelInternal, realtimeInternal: ARTRealtimeInternal, queuedDealloc: ARTQueuedDealloc) {
         super.init()
-        fatalError("ARTRealtimeChannelsInternal not yet migrated")
+        fatalError("ARTRealtimeChannel not yet migrated")
     }
 }
 
 // Placeholder for ARTRealtimeChannelInternal
-public class ARTRealtimeChannelInternal: NSObject {
-    public let name: String = ""
+public class ARTRealtimeChannelInternal: ARTChannel {
     public let channelSerial: String? = nil
     public let attachSerial: String = ""
     public var state_nosync: ARTRealtimeChannelState = .initialized
+    public var presence: ARTRealtimePresenceInternal {
+        fatalError("ARTRealtimeChannelInternal not yet migrated")
+    }
+    
+    public init(realtime: ARTRealtimeInternal, name: String, options: ARTChannelOptions?, logger: ARTInternalLog) {
+        super.init(name: name, andOptions: options ?? ARTChannelOptions(), rest: realtime.rest, logger: logger)
+        fatalError("ARTRealtimeChannelInternal not yet migrated")
+    }
+    
+    public func _detach(_ callback: @escaping ARTCallback) {
+        fatalError("ARTRealtimeChannelInternal not yet migrated")
+    }
+    
+    public func off_nosync() {
+        fatalError("ARTRealtimeChannelInternal not yet migrated")
+    }
+    
+    public func _unsubscribe() {
+        fatalError("ARTRealtimeChannelInternal not yet migrated")
+    }
+}
+
+// Placeholder for ARTRealtimePresenceInternal  
+public class ARTRealtimePresenceInternal: NSObject {
+    public func _unsubscribe() {
+        fatalError("ARTRealtimePresenceInternal not yet migrated")
+    }
     
     public override init() {
         super.init()
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
+        fatalError("ARTRealtimePresenceInternal not yet migrated")
     }
 }
 

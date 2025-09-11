@@ -135,7 +135,9 @@ public class ARTRealtime: NSObject, ARTRealtimeProtocol {
     
     // swift-migration: original location ARTRealtime.h, line 145 and ARTRealtime.m, line 87
     public var channels: ARTRealtimeChannels {
-        return ARTRealtimeChannels()
+        // swift-migration: TODO
+        fatalError()
+        //        return ARTRealtimeChannels()
     }
     
     // swift-migration: original location ARTRealtime.h, line 153 and ARTRealtime.m, line 91
@@ -270,9 +272,11 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     
     // swift-migration: original location ARTRealtime+Private.h, line 35 and ARTRealtime.m, line 238
     internal init(options: ARTClientOptions) {
+        // swift-migration: TODO
+        fatalError("TODO")
         rest = ARTRestInternal(options: options)
         queue = rest.queue
-        channels = ARTRealtimeChannelsInternal()
+//        channels = ARTRealtimeChannelsInternal()
         connection = ARTConnectionInternal()
         
         super.init()

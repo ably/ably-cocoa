@@ -340,8 +340,12 @@ internal class ARTConnectionInternal: NSObject {
         }
         
         var channelSerials: [String: String] = [:]
-        if let channels = realtime?.channels.nosyncIterable {
-            for channel in channels {
+        // swift-migration: Lawrence Changed this to not use NSFastEnumeration because that's not compiling in Swift
+        let channelsCollection = realtime?.channels.collection
+        if let channelsCollection {
+            for value in channelsCollection.allValues {
+                // swift-migration: Lawrence introduced this force cast because the dictionary isn't generic
+                let channel = value as! ARTRealtimeChannelInternal
                 if channel.state_nosync == .attached {
                     if let channelSerial = channel.channelSerial {
                         channelSerials[channel.name] = channelSerial

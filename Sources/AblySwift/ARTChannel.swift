@@ -1,7 +1,7 @@
 import Foundation
 
 // swift-migration: original location ARTChannel+Private.h, line 9 and ARTChannel.m, line 14
-internal class ARTChannel: NSObject {
+public class ARTChannel: NSObject {
     private let queue: DispatchQueue
     private var _options: ARTChannelOptions
     
