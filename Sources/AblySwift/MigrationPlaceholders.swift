@@ -153,19 +153,6 @@ public func artCancellableFromCallback(
     fatalError("artCancellableFromCallback not yet migrated")
 }
 
-// Placeholder for ARTDeviceStorage protocol
-public protocol ARTDeviceStorage {
-    func objectForKey(_ key: String) -> Any?
-    func setObject(_ value: Any?, forKey key: String)
-    func secretForDevice(_ deviceId: String) -> String?
-    func setSecret(_ value: String?, forDevice deviceId: String)
-}
-
-// Placeholder for ARTChannelsDelegate protocol
-internal protocol ARTChannelsDelegate: AnyObject {
-    func makeChannel(_ channel: String, options: ARTChannelOptions?) -> ARTChannel
-}
-
 // Placeholder for ARTPaginatedResultResponseProcessor
 // swift-migration: Changed from inout Error? parameter to throws pattern per PRD requirements
 public typealias ARTPaginatedResultResponseProcessor = (HTTPURLResponse?, Data?) throws -> [Any]?

@@ -1,5 +1,11 @@
 import Foundation
 
+// swift-migration: original location ARTChannels+Private.h, line 8
+internal protocol ARTChannelsDelegate: AnyObject {
+    // swift-migration: original location ARTChannels+Private.h, line 10
+    func makeChannel(_ channel: String, options: ARTChannelOptions?) -> ARTChannel
+}
+
 // swift-migration: original location ARTChannels.h, line 11 and ARTChannels.m, line 15
 internal class ARTChannels<ChannelType>: NSObject where ChannelType: ARTChannel {
     private weak var delegate: ARTChannelsDelegate? // weak because delegates outlive their counterpart
