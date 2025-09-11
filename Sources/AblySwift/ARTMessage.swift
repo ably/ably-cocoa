@@ -166,15 +166,7 @@ public class ARTMessage: ARTBaseMessage {
         return encoded
     }
     
-    // Additional encode method matching ARTChannel's expected signature
-    internal func encode(with encoder: ARTDataEncoder, error: inout Error?) -> ARTMessage {
-        do {
-            return try encode(withEncoder: encoder)
-        } catch let encodeError {
-            error = encodeError
-            return self
-        }
-    }
+    // swift-migration: Removed additional encode method with inout Error parameter - using throws pattern instead
 }
 
 // MARK: - Decoding Extension
@@ -193,10 +185,13 @@ extension ARTMessage {
     public static func fromEncoded(_ jsonObject: [String: Any], channelOptions options: ARTChannelOptions) throws -> ARTMessage {
         let jsonEncoder = ARTJsonLikeEncoder(delegate: ARTJsonEncoder())
         
-        var encoderError: Error?
-        guard let decoder = ARTDataEncoder(cipherParams: options.cipher, logger: ARTInternalLog.sharedClassMethodLogger_readDocumentationBeforeUsing, error: &encoderError) else {
+        // swift-migration: Updated to use try/catch instead of inout error parameter per PRD requirements
+        let decoder: ARTDataEncoder
+        do {
+            decoder = try ARTDataEncoder(cipherParams: options.cipher, logger: ARTInternalLog.sharedClassMethodLogger_readDocumentationBeforeUsing)
+        } catch {
             let errorInfo = ARTErrorInfo.wrap(
-                ARTErrorInfo.createWithCode(Int(ARTErrorCode.ARTErrorUnableToDecodeMessage.rawValue), message: encoderError?.localizedDescription ?? "Unknown error"),
+                ARTErrorInfo.createWithCode(Int(ARTErrorCode.ARTErrorUnableToDecodeMessage.rawValue), message: error.localizedDescription),
                 prepend: "Decoder can't be created with cipher: \(String(describing: options.cipher))"
             )
             throw errorInfo
@@ -229,10 +224,13 @@ extension ARTMessage {
     public static func fromEncodedArray(_ jsonArray: [[String: Any]], channelOptions options: ARTChannelOptions) throws -> [ARTMessage] {
         let jsonEncoder = ARTJsonLikeEncoder(delegate: ARTJsonEncoder())
         
-        var encoderError: Error?
-        guard let decoder = ARTDataEncoder(cipherParams: options.cipher, logger: ARTInternalLog.sharedClassMethodLogger_readDocumentationBeforeUsing, error: &encoderError) else {
+        // swift-migration: Updated to use try/catch instead of inout error parameter per PRD requirements
+        let decoder: ARTDataEncoder
+        do {
+            decoder = try ARTDataEncoder(cipherParams: options.cipher, logger: ARTInternalLog.sharedClassMethodLogger_readDocumentationBeforeUsing)
+        } catch {
             let errorInfo = ARTErrorInfo.wrap(
-                ARTErrorInfo.createWithCode(Int(ARTErrorCode.ARTErrorUnableToDecodeMessage.rawValue), message: encoderError?.localizedDescription ?? "Unknown error"),
+                ARTErrorInfo.createWithCode(Int(ARTErrorCode.ARTErrorUnableToDecodeMessage.rawValue), message: error.localizedDescription),
                 prepend: "Decoder can't be created with cipher: \(String(describing: options.cipher))"
             )
             throw errorInfo

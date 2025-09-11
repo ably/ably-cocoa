@@ -38,7 +38,8 @@ public class ARTDataQuery: NSObject {
     }
     
     // swift-migration: original location ARTDataQuery+Private.h, line 8 and ARTDataQuery.m, line 25
-    internal func asQueryItems(_ error: inout Error?) -> [URLQueryItem]? {
+    // swift-migration: Changed from inout Error? parameter to throws pattern per PRD requirements
+    internal func asQueryItems() throws -> [URLQueryItem] {
         var items: [URLQueryItem] = []
         
         if let start = start {
@@ -81,18 +82,15 @@ public class ARTRealtimeHistoryQuery: ARTDataQuery {
     internal var realtimeChannel: ARTRealtimeChannelInternal?
     
     // swift-migration: original location ARTDataQuery.m, line 45
-    internal override func asQueryItems(_ error: inout Error?) -> [URLQueryItem]? {
-        guard let items = super.asQueryItems(&error) else {
-            return nil
-        }
-        
+    // swift-migration: Changed from inout Error? parameter to throws pattern per PRD requirements
+    internal override func asQueryItems() throws -> [URLQueryItem] {
+        let items = try super.asQueryItems()
         var mutableItems = items
         
         if untilAttach {
             assert(realtimeChannel != nil, "ARTRealtimeHistoryQuery used from outside ARTRealtimeChannel.history")
             if realtimeChannel?.state_nosync != .attached {
-                error = NSError(domain: ARTAblyErrorDomain, code: Int(ARTRealtimeHistoryErrorNotAttached), userInfo: [NSLocalizedDescriptionKey: "ARTRealtimeHistoryQuery: untilAttach used in channel that isn't attached"])
-                return nil
+                throw NSError(domain: ARTAblyErrorDomain, code: Int(ARTRealtimeHistoryErrorNotAttached), userInfo: [NSLocalizedDescriptionKey: "ARTRealtimeHistoryQuery: untilAttach used in channel that isn't attached"])
             }
             mutableItems.append(URLQueryItem(name: "fromSerial", value: realtimeChannel?.attachSerial))
         }

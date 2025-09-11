@@ -174,11 +174,12 @@ public class ARTPaginatedResult<ItemType>: NSObject {
                     ARTLogDebug(logger, "Paginated response data: \(String(data: data, encoding: .utf8) ?? "")")
                 }
                 
-                var decodeError: Error? = nil
-                let items = responseProcessor(response, data, &decodeError)
-                
-                if let decodeError = decodeError {
-                    callback(nil, ARTErrorInfo.createFromNSError(decodeError))
+                // swift-migration: Updated to use throws pattern instead of inout error parameter
+                let items: [Any]?
+                do {
+                    items = try responseProcessor(response, data)
+                } catch {
+                    callback(nil, ARTErrorInfo.createFromNSError(error as NSError))
                     return
                 }
                 

@@ -394,7 +394,8 @@ public protocol ARTVersion2Log {
 public typealias ARTHTTPPaginatedCallback = (ARTHTTPPaginatedResponse?, ARTErrorInfo?) -> Void
 
 // Placeholder for ARTPaginatedResultResponseProcessor
-public typealias ARTPaginatedResultResponseProcessor = (HTTPURLResponse?, Data?, inout Error?) -> [Any]?
+// swift-migration: Changed from inout Error? parameter to throws pattern per PRD requirements
+public typealias ARTPaginatedResultResponseProcessor = (HTTPURLResponse?, Data?) throws -> [Any]?
 
 
 // Placeholder for ARTJsonLikeEncoderDelegate protocol
@@ -773,14 +774,7 @@ public class ARTJsonLikeEncoderPlaceholder: ARTEncoder {
         fatalError("ARTJsonLikeEncoder not yet migrated")
     }
     
-    public func encode(any obj: Any, error: inout Error?) -> Data? {
-        do {
-            return try encode(any: obj)
-        } catch let caughtError {
-            error = caughtError
-            return nil
-        }
-    }
+    // swift-migration: Removed inout Error? wrapper method - using throws pattern instead
     
     public func decodeToArray(_ data: Data) throws -> [Dictionary<String, Any>]? {
         fatalError("ARTJsonLikeEncoder not yet migrated")
@@ -890,40 +884,19 @@ public class ARTJsonLikeEncoderPlaceholder: ARTEncoder {
         fatalError("ARTJsonLikeEncoder not yet migrated")
     }
     
-    public func decodeTime(_ data: Data, error: inout Error?) -> Date? {
-        do {
-            return try decodeTime(data)
-        } catch let caughtError {
-            error = caughtError
-            return nil
-        }
-    }
+    // swift-migration: Removed inout Error? wrapper method - using throws pattern instead
     
     public func decodeErrorInfo(_ error: Data) throws -> ARTErrorInfo? {
         fatalError("ARTJsonLikeEncoder not yet migrated")
     }
     
-    public func decodeErrorInfo(_ data: Data, error: inout Error?) -> ARTErrorInfo? {
-        do {
-            return try decodeErrorInfo(data)
-        } catch let caughtError {
-            error = caughtError
-            return nil
-        }
-    }
+    // swift-migration: Removed inout Error? wrapper method - using throws pattern instead
 
     public func decodeStats(_ data: Data) throws -> [Any]? {
         fatalError("ARTJsonLikeEncoder not yet migrated")
     }
     
-    public func decodeStats(_ data: Data, error: inout Error?) -> [Any]? {
-        do {
-            return try decodeStats(data)
-        } catch let caughtError {
-            error = caughtError
-            return nil
-        }
-    }
+    // swift-migration: Removed inout Error? wrapper method - using throws pattern instead
    
     public func encode(localDevice: ARTLocalDevice) throws -> Data? {
         fatalError("ARTJsonLikeEncoder not yet migrated")

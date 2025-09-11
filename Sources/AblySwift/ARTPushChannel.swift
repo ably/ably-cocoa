@@ -93,14 +93,10 @@ public class ARTPushChannel: NSObject, ARTPushChannelProtocol {
     }
 
     // swift-migration: original location ARTPushChannel.h, line 74 and ARTPushChannel.m, line 58
+    // swift-migration: Updated to use try/catch instead of inout error parameter per PRD requirements
     @discardableResult
     public func listSubscriptions(_ params: NSStringDictionary, callback: @escaping ARTPaginatedPushChannelCallback) throws -> Bool {
-        var error: NSError?
-        let result = `internal`.listSubscriptions(params, wrapperSDKAgents: nil, callback: callback, error: &error)
-        if let error = error {
-            throw error
-        }
-        return result
+        return try `internal`.listSubscriptions(params, wrapperSDKAgents: nil, callback: callback)
     }
 }
 
@@ -332,7 +328,8 @@ internal class ARTPushChannelInternal: NSObject {
     }
 
     // swift-migration: original location ARTPushChannel+Private.h, line 34 and ARTPushChannel.m, line 247
-    internal func listSubscriptions(_ params: NSStringDictionary, wrapperSDKAgents: NSStringDictionary?, callback: @escaping ARTPaginatedPushChannelCallback, error errorPtr: inout NSError?) -> Bool {
+    // swift-migration: Changed from inout NSError? parameter to throws pattern per PRD requirements
+    internal func listSubscriptions(_ params: NSStringDictionary, wrapperSDKAgents: NSStringDictionary?, callback: @escaping ARTPaginatedPushChannelCallback) throws -> Bool {
         var wrappedCallback = callback
         let userCallback = callback
         wrappedCallback = { [weak self] result, error in
@@ -343,22 +340,24 @@ internal class ARTPushChannelInternal: NSObject {
         }
 
         var returnValue = false
+        var thrownError: NSError?
+        
         queue.sync { [weak self] in
             guard let self = self, let rest = self.rest else { return }
             
             let mutableParams = NSMutableDictionary(dictionary: params)
 
             if mutableParams["deviceId"] == nil && mutableParams["clientId"] == nil {
-                errorPtr = NSError(domain: ARTAblyErrorDomain,
-                                  code: ARTDataQueryError.missingRequiredFields.rawValue,
-                                  userInfo: [NSLocalizedDescriptionKey: "cannot list subscriptions with null device ID or null client ID"])
+                thrownError = NSError(domain: ARTAblyErrorDomain,
+                                     code: ARTDataQueryError.missingRequiredFields.rawValue,
+                                     userInfo: [NSLocalizedDescriptionKey: "cannot list subscriptions with null device ID or null client ID"])
                 returnValue = false
                 return
             }
             if mutableParams["deviceId"] != nil && mutableParams["clientId"] != nil {
-                errorPtr = NSError(domain: ARTAblyErrorDomain,
-                                  code: ARTDataQueryError.invalidParameters.rawValue,
-                                  userInfo: [NSLocalizedDescriptionKey: "cannot list subscriptions with device ID and client ID"])
+                thrownError = NSError(domain: ARTAblyErrorDomain,
+                                     code: ARTDataQueryError.invalidParameters.rawValue,
+                                     userInfo: [NSLocalizedDescriptionKey: "cannot list subscriptions with device ID and client ID"])
                 returnValue = false
                 return
             }
@@ -371,14 +370,11 @@ internal class ARTPushChannelInternal: NSObject {
             let request = NSMutableURLRequest(url: urlComponents.url!)
             request.httpMethod = "GET"
 
-            let responseProcessor: ARTPaginatedResultResponseProcessor = { [weak self] response, data, error in
+            // swift-migration: Updated responseProcessor to use throws pattern instead of inout error parameter
+            let responseProcessor: ARTPaginatedResultResponseProcessor = { [weak self] response, data in
                 guard let self = self, let rest = self.rest else { return nil }
                 if let response = response, let mimeType = response.mimeType, let encoder = rest.encoders[mimeType] {
-                    do {
-                        return try encoder.decodePushChannelSubscriptions(data!)
-                    } catch {
-                        return nil
-                    }
+                    return try encoder.decodePushChannelSubscriptions(data!)
                 } else {
                     return nil
                 }
@@ -386,6 +382,10 @@ internal class ARTPushChannelInternal: NSObject {
 
             ARTPaginatedResult.executePaginated(rest, withRequest: request as URLRequest, andResponseProcessor: responseProcessor, wrapperSDKAgents: wrapperSDKAgents, logger: self.logger, callback: wrappedCallback)
             returnValue = true
+        }
+        
+        if let error = thrownError {
+            throw error
         }
         return returnValue
     }

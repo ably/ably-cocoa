@@ -119,18 +119,25 @@ public class ARTHTTPPaginatedResponse: ARTPaginatedResult<NSDictionary> {
 
             var decodeError: Error? = nil
 
-            let responseProcessor: ARTPaginatedResultResponseProcessor = { response, data, errorPtr in
+            // swift-migration: Updated responseProcessor to use throws pattern instead of inout error parameter
+            let responseProcessor: ARTPaginatedResultResponseProcessor = { response, data in
                 if let encoder = rest.encoders[response?.mimeType ?? ""], let data = data {
-                    do {
-                        return try encoder.decodeToArray(data)?.map { $0 as Any }
-                    } catch {
-                        errorPtr = error
-                        return nil
-                    }
+                    return try encoder.decodeToArray(data)?.map { $0 as Any }
                 }
                 return nil
             }
-            let items = error != nil ? [] : (responseProcessor(response, data, &decodeError) ?? [])
+            
+            let items: [Any]
+            if error != nil {
+                items = []
+            } else {
+                do {
+                    items = try responseProcessor(response, data) ?? []
+                } catch {
+                    decodeError = error
+                    items = []
+                }
+            }
 
             if let decodeError = decodeError {
                 callback(nil, ARTErrorInfo.createFromNSError(decodeError))

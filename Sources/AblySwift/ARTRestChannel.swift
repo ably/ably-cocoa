@@ -20,7 +20,8 @@ public protocol ARTRestChannelProtocol: ARTChannelProtocol {
      *
      * @return In case of failure returns `false` and the error information can be retrived via the `error` parameter.
      */
-    func history(_ query: ARTDataQuery?, callback: @escaping ARTPaginatedMessagesCallback, error errorPtr: inout NSError?) -> Bool
+    // swift-migration: Changed from inout NSError? parameter to throws pattern per PRD requirements
+    func history(_ query: ARTDataQuery?, callback: @escaping ARTPaginatedMessagesCallback) throws -> Bool
     
     // swift-migration: original location ARTRestChannel.h, line 35
     /**
@@ -75,8 +76,9 @@ public class ARTRestChannel: NSObject, ARTRestChannelProtocol, @unchecked Sendab
     }
     
     // swift-migration: original location ARTRestChannel.h, line 28 and ARTRestChannel.m, line 46
-    public func history(_ query: ARTDataQuery?, callback: @escaping ARTPaginatedMessagesCallback, error errorPtr: inout NSError?) -> Bool {
-        return _internal.history(query, wrapperSDKAgents: nil, callback: callback, error: &errorPtr)
+    // swift-migration: Changed from inout NSError? parameter to throws pattern per PRD requirements
+    public func history(_ query: ARTDataQuery?, callback: @escaping ARTPaginatedMessagesCallback) throws -> Bool {
+        return try _internal.history(query, wrapperSDKAgents: nil, callback: callback)
     }
     
     // swift-migration: original location ARTRestChannel.h, line 35 and ARTRestChannel.m, line 50
@@ -212,11 +214,18 @@ internal class ARTRestChannelInternal: ARTChannel {
     
     // swift-migration: original location ARTRestChannel.m, line 150
     internal override func historyWithWrapperSDKAgents(_ wrapperSDKAgents: [String: String]?, completion callback: @escaping ARTPaginatedMessagesCallback) {
-        let _ = history(ARTDataQuery(), wrapperSDKAgents: wrapperSDKAgents, callback: callback, error: nil)
+        // swift-migration: Updated to use try/catch instead of error parameter per PRD requirements
+        do {
+            let _ = try history(ARTDataQuery(), wrapperSDKAgents: wrapperSDKAgents, callback: callback)
+        } catch {
+            // If error occurs, call the callback with the error
+            callback(nil, ARTErrorInfo.createFromNSError(error as NSError))
+        }
     }
     
     // swift-migration: original location ARTRestChannel+Private.h, line 29 and ARTRestChannel.m, line 154
-    internal func history(_ query: ARTDataQuery?, wrapperSDKAgents: [String: String]?, callback: @escaping ARTPaginatedMessagesCallback, error errorPtr: UnsafeMutablePointer<NSError?>?) -> Bool {
+    // swift-migration: Changed from UnsafeMutablePointer<NSError?>? parameter to throws pattern per PRD requirements
+    internal func history(_ query: ARTDataQuery?, wrapperSDKAgents: [String: String]?, callback: @escaping ARTPaginatedMessagesCallback) throws -> Bool {
         let userCallback = callback
         let wrappedCallback: ARTPaginatedMessagesCallback = { result, error in
             self._userQueue.async {
@@ -225,22 +234,19 @@ internal class ARTRestChannelInternal: ARTChannel {
         }
         
         var ret = false
+        var thrownError: NSError?
         queue.sync {
             if let query = query, query.limit > 1000 {
-                if let errorPtr = errorPtr {
-                    errorPtr.pointee = NSError(domain: ARTAblyErrorDomain,
-                                             code: ARTDataQueryError.limit.rawValue,
-                                             userInfo: [NSLocalizedDescriptionKey: "Limit supports up to 1000 results only"])
-                }
+                thrownError = NSError(domain: ARTAblyErrorDomain,
+                                     code: ARTDataQueryError.limit.rawValue,
+                                     userInfo: [NSLocalizedDescriptionKey: "Limit supports up to 1000 results only"])
                 ret = false
                 return
             }
             if let query = query, let start = query.start, let end = query.end, start.compare(end) == .orderedDescending {
-                if let errorPtr = errorPtr {
-                    errorPtr.pointee = NSError(domain: ARTAblyErrorDomain,
-                                             code: ARTDataQueryError.timestampRange.rawValue,
-                                             userInfo: [NSLocalizedDescriptionKey: "Start must be equal to or less than end"])
-                }
+                thrownError = NSError(domain: ARTAblyErrorDomain,
+                                     code: ARTDataQueryError.timestampRange.rawValue,
+                                     userInfo: [NSLocalizedDescriptionKey: "Start must be equal to or less than end"])
                 ret = false
                 return
             }
@@ -252,10 +258,10 @@ internal class ARTRestChannelInternal: ARTChannel {
             var components = componentsUrl
             
             if let query = query {
-                var error: (any Error)?
-                components.queryItems = query.asQueryItems(&error)
-                if let error = error {
-                    errorPtr?.pointee = error as NSError?
+                do {
+                    components.queryItems = try query.asQueryItems()
+                } catch {
+                    thrownError = error as NSError?
                     ret = false
                     return
                 }
@@ -267,7 +273,7 @@ internal class ARTRestChannelInternal: ARTChannel {
             }
             let request = URLRequest(url: url)
             
-            let responseProcessor: ARTPaginatedResultResponseProcessor = { response, data, errorPtr in
+            let responseProcessor: ARTPaginatedResultResponseProcessor = { response, data in
                 guard let encoder = self.rest?.encoders[response?.mimeType ?? ""] else {
                     return []
                 }
@@ -275,10 +281,9 @@ internal class ARTRestChannelInternal: ARTChannel {
                 let messages = try? encoder.decodeMessages(data ?? Data())
                 
                 return messages?.artMap { message in
-                    var decodeError: NSError?
                     let decodedMessage = try? message.decode(withEncoder: self.dataEncoder)
-                    if let decodeError = decodeError {
-                        let errorInfo = ARTErrorInfo.wrap(ARTErrorInfo.create(withCode: ARTErrorCode.unableToDecodeMessage.rawValue, message: decodeError.localizedFailureReason ?? ""), prepend: "Failed to decode data: ")
+                    if decodedMessage == nil {
+                        let errorInfo = ARTErrorInfo.create(withCode: ARTErrorCode.unableToDecodeMessage.rawValue, message: "Failed to decode message")
                         ARTLogError(self.logger, "RS:\(Unmanaged.passUnretained(self.rest!).toOpaque()) C:\(Unmanaged.passUnretained(self).toOpaque()) (\(self.name)) \(errorInfo.message)")
                     }
                     return decodedMessage
@@ -288,6 +293,10 @@ internal class ARTRestChannelInternal: ARTChannel {
             ARTLogDebug(logger, "RS:\(Unmanaged.passUnretained(rest!).toOpaque()) C:\(Unmanaged.passUnretained(self).toOpaque()) (\(name)) stats request \(request)")
             ARTPaginatedResult.executePaginated(rest!, withRequest: request, andResponseProcessor: responseProcessor, wrapperSDKAgents: wrapperSDKAgents, logger: logger, callback: wrappedCallback)
             ret = true
+        }
+        
+        if let error = thrownError {
+            throw error
         }
         return ret
     }

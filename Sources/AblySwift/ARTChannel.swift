@@ -24,11 +24,15 @@ internal class ARTChannel: NSObject {
         super.init()
         
         self._options.frozen = true
-        var error: Error? = nil
-        self.dataEncoder = ARTDataEncoder(cipherParams: self._options.cipher, logger: self.logger, error: &error)
-        if error != nil {
-            ARTLogWarn(self.logger, "creating ARTDataEncoder: \(error!)")
-            self.dataEncoder = ARTDataEncoder(cipherParams: nil, logger: self.logger, error: &error)
+        // swift-migration: Updated to use try/catch instead of inout error parameter per PRD requirements
+        // swift-migration: Preserves original behavior - fallback with nil cipherParams should never fail
+        do {
+            self.dataEncoder = try ARTDataEncoder(cipherParams: self._options.cipher, logger: self.logger)
+        } catch {
+            ARTLogWarn(self.logger, "creating ARTDataEncoder: \(error)")
+            // Original ObjC calls with nil cipherParams and nil error - should never fail
+            // If it does fail, something is very wrong, so we use try! to match original behavior
+            self.dataEncoder = try! ARTDataEncoder(cipherParams: nil, logger: self.logger)
         }
     }
     
@@ -60,14 +64,16 @@ internal class ARTChannel: NSObject {
     }
     
     // swift-migration: original location ARTChannel.m, line 59
+    // swift-migration: Updated to use try/catch instead of inout error parameter per PRD requirements
+    // swift-migration: Preserves original behavior - fallback with nil cipherParams should never fail
     private func recreateDataEncoderWith(_ cipher: ARTCipherParams?) {
-        var error: Error? = nil
-        self.dataEncoder = ARTDataEncoder(cipherParams: cipher, logger: self.logger, error: &error)
-        
-        if error != nil {
-            ARTLogWarn(logger, "creating ARTDataEncoder: \(error!)")
-            var errorIgnored: Error? = nil
-            self.dataEncoder = ARTDataEncoder(cipherParams: nil, logger: self.logger, error: &errorIgnored)
+        do {
+            self.dataEncoder = try ARTDataEncoder(cipherParams: cipher, logger: self.logger)
+        } catch {
+            ARTLogWarn(logger, "creating ARTDataEncoder: \(error)")
+            // Original ObjC calls with nil cipherParams and nil error - should never fail
+            // If it does fail, something is very wrong, so we use try! to match original behavior
+            self.dataEncoder = try! ARTDataEncoder(cipherParams: nil, logger: self.logger)
         }
     }
     
@@ -114,13 +120,15 @@ internal class ARTChannel: NSObject {
     }
     
     // swift-migration: original location ARTChannel.m, line 101
+    // swift-migration: Updated to use try/catch instead of inout error parameter per PRD requirements
     private func publish(_ name: String?, message: ARTMessage, extras: ARTJsonCompatible?, callback: ARTCallback?) {
-        var error: Error? = nil
         message.extras = extras
-        let messagesWithDataEncoded = encodeMessageIfNeeded(message, error: &error)
-        if error != nil {
+        let messagesWithDataEncoded: ARTMessage
+        do {
+            messagesWithDataEncoded = try encodeMessageIfNeeded(message)
+        } catch {
             if let callback = callback {
-                callback(ARTErrorInfo.createFromNSError(error!))
+                callback(ARTErrorInfo.createFromNSError(error as NSError))
             }
             return
         }
@@ -144,17 +152,16 @@ internal class ARTChannel: NSObject {
     }
     
     // swift-migration: original location ARTChannel.h, line 45 and ARTChannel.m, line 127
+    // swift-migration: Updated to use try/catch instead of inout error parameter per PRD requirements
     internal func publish(_ messages: [ARTMessage], callback: ARTCallback?) {
-        var error: Error? = nil
-        
         var messagesWithDataEncoded: [ARTMessage] = []
-        for message in messages {
-            messagesWithDataEncoded.append(encodeMessageIfNeeded(message, error: &error))
-        }
-        
-        if error != nil {
+        do {
+            for message in messages {
+                messagesWithDataEncoded.append(try encodeMessageIfNeeded(message))
+            }
+        } catch {
             if let callback = callback {
-                callback(ARTErrorInfo.createFromNSError(error!))
+                callback(ARTErrorInfo.createFromNSError(error as NSError))
             }
             return
         }
@@ -182,14 +189,14 @@ internal class ARTChannel: NSObject {
     }
     
     // swift-migration: original location ARTChannel.m, line 163
-    private func encodeMessageIfNeeded(_ message: ARTMessage, error: inout Error?) -> ARTMessage {
-        var e: Error? = nil
-        let encodedMessage = message.encode(with: dataEncoder, error: &e)
-        if e != nil {
-            ARTLogError(self.logger, "ARTChannel: error encoding data: \(e!)")
+    // swift-migration: Changed from inout Error? parameter to throws pattern per PRD requirements
+    private func encodeMessageIfNeeded(_ message: ARTMessage) throws -> ARTMessage {
+        do {
+            return try message.encode(withEncoder: dataEncoder)
+        } catch {
+            ARTLogError(self.logger, "ARTChannel: error encoding data: \(error)")
+            throw error
         }
-        error = e
-        return encodedMessage
     }
     
     // swift-migration: original location ARTChannel.h, line 47 and ARTChannel.m, line 178

@@ -21,10 +21,9 @@ public class ARTStatsQuery: ARTDataQuery {
     }
     
     // swift-migration: original location ARTStats.m, line 28
-    internal override func asQueryItems(_ error: inout Error?) -> [URLQueryItem]? {
-        guard let items = super.asQueryItems(&error) else {
-            return nil
-        }
+    // swift-migration: Changed from inout Error? parameter to throws pattern per PRD requirements
+    internal override func asQueryItems() throws -> [URLQueryItem] {
+        let items = try super.asQueryItems()
         var mutableItems = items
         mutableItems.append(URLQueryItem(name: "unit", value: statsUnitToString(self.unit)))
         return mutableItems

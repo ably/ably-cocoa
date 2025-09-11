@@ -809,24 +809,16 @@ public class ARTRestInternal: NSObject {
         }
         
         var requestUrl = URLComponents(string: "/stats")!
-        var queryError: Error?
-        requestUrl.queryItems = actualQuery.asQueryItems(&queryError)
-        
-        if let queryError = queryError {
-            throw queryError
-        }
+        // swift-migration: Updated to use throws pattern instead of inout error parameter
+        requestUrl.queryItems = try actualQuery.asQueryItems()
         
         let request = URLRequest(url: requestUrl.url(relativeTo: baseUrl)!)
         
-        let responseProcessor: ARTPaginatedResultResponseProcessor = { response, data, errorPtr in
+        // swift-migration: Updated responseProcessor to use throws pattern instead of inout error parameter
+        let responseProcessor: ARTPaginatedResultResponseProcessor = { response, data in
             guard let response = response, let mimeType = response.mimeType else { return nil }
-            do {
-                let result = try self.encoders[mimeType]?.decodeStats(data ?? Data())
-                return result
-            } catch let error {
-                errorPtr = error
-                return nil
-            }
+            let result = try self.encoders[mimeType]?.decodeStats(data ?? Data())
+            return result
         }
         
         queue.async {

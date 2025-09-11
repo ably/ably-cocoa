@@ -268,19 +268,15 @@ internal class ARTPushDeviceRegistrationsInternal: NSObject {
             var request = URLRequest(url: components.url!)
             request.httpMethod = "GET"
             
-            let responseProcessor: ARTPaginatedResultResponseProcessor = { response, data, errorPtr in
+            // swift-migration: Updated responseProcessor to use throws pattern instead of inout error parameter
+            let responseProcessor: ARTPaginatedResultResponseProcessor = { response, data in
                 guard let response,
                       let data = data,
                       let mimeType = response.mimeType,
                       let encoder = rest.encoders[mimeType] else {
                     return []
                 }
-                do {
-                    return try encoder.decodeDevicesDetails(data) ?? []
-                } catch let swiftError {
-                    errorPtr = swiftError
-                    return []
-                }
+                return try encoder.decodeDevicesDetails(data) ?? []
             }
             
             ARTPaginatedResult.executePaginated(rest, withRequest: request, andResponseProcessor: responseProcessor, wrapperSDKAgents: wrapperSDKAgents, logger: self._logger, callback: wrappedCallback)

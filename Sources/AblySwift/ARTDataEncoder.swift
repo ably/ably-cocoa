@@ -27,21 +27,21 @@ public class ARTDataEncoder: NSObject {
     private var baseId: String?
     
     // swift-migration: original location ARTDataEncoder.h, line 31 and ARTDataEncoder.m, line 25
-    public init?(cipherParams: ARTCipherParams?, logger: ARTInternalLog, error: inout Error?) {
-        do {
-            if let params = cipherParams {
+    // swift-migration: Changed from inout Error? parameter to throws pattern per PRD requirements
+    public init(cipherParams: ARTCipherParams?, logger: ARTInternalLog) throws {
+        if let params = cipherParams {
+            do {
                 self.cipher = try ARTCrypto.cipher(params: params, logger: logger)
-            } else {
-                self.cipher = nil
+            } catch {
+                let desc = "ARTDataEncoder failed to create cipher with name \(params.algorithm ?? "unknown")"
+                throw NSError(domain: ARTAblyErrorDomain, code: 0, userInfo: [NSLocalizedDescriptionKey: desc])
             }
-            
-            self.deltaCodec = ARTDeltaCodec()
-            super.init()
-        } catch let catchError {
-            let desc = "ARTDataEncoder failed to create cipher with name \(cipherParams?.algorithm ?? "unknown")"
-            error = NSError(domain: ARTAblyErrorDomain, code: 0, userInfo: [NSLocalizedDescriptionKey: desc])
-            return nil
+        } else {
+            self.cipher = nil
         }
+        
+        self.deltaCodec = ARTDeltaCodec()
+        super.init()
     }
     
     // swift-migration: original location ARTDataEncoder.m, line 46

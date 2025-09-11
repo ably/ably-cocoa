@@ -12,7 +12,8 @@ public protocol ARTRestPresenceProtocol {
     
     // swift-migration: original location ARTRestPresence.h, line 50
     /// :nodoc: TODO: docstring
-    func get(_ callback: @escaping ARTPaginatedPresenceCallback, error errorPtr: inout NSError?) -> Bool
+    // swift-migration: Changed from inout NSError? parameter to throws pattern per PRD requirements
+    func get(_ callback: @escaping ARTPaginatedPresenceCallback) throws -> Bool
     
     // swift-migration: original location ARTRestPresence.h, line 61
     /**
@@ -24,7 +25,8 @@ public protocol ARTRestPresenceProtocol {
      *
      * @return In case of failure returns `false` and the error information can be retrived via the `error` parameter.
      */
-    func get(_ query: ARTPresenceQuery, callback: @escaping ARTPaginatedPresenceCallback, error errorPtr: inout NSError?) -> Bool
+    // swift-migration: Changed from inout NSError? parameter to throws pattern per PRD requirements
+    func get(_ query: ARTPresenceQuery, callback: @escaping ARTPaginatedPresenceCallback) throws -> Bool
     
     // swift-migration: original location ARTRestPresence.h, line 63
     func history(_ callback: @escaping ARTPaginatedPresenceCallback)
@@ -39,7 +41,8 @@ public protocol ARTRestPresenceProtocol {
      *
      * @return In case of failure returns `false` and the error information can be retrived via the `error` parameter.
      */
-    func history(_ query: ARTDataQuery?, callback: @escaping ARTPaginatedPresenceCallback, error errorPtr: inout NSError?) -> Bool
+    // swift-migration: Changed from inout NSError? parameter to throws pattern per PRD requirements
+    func history(_ query: ARTDataQuery?, callback: @escaping ARTPaginatedPresenceCallback) throws -> Bool
 }
 
 // swift-migration: original location ARTRestPresence.h, lines 13-39 and ARTRestPresence.m, lines 17-52
@@ -116,22 +119,26 @@ public class ARTRestPresence: ARTPresence, ARTRestPresenceProtocol, @unchecked S
     
     // swift-migration: original location ARTRestPresence.h, line 47 and ARTRestPresence.m, line 67
     public func get(_ callback: @escaping ARTPaginatedPresenceCallback) {
-        _internal.get(callback)
+        // Explicitly call the void version
+        let _: Void = _internal.get(callback)
     }
     
     // swift-migration: original location ARTRestPresence.h, line 50 and ARTRestPresence.m, line 71
-    public func get(_ callback: @escaping ARTPaginatedPresenceCallback, error errorPtr: inout NSError?) -> Bool {
-        return _internal.get(callback, error: &errorPtr)
+    // swift-migration: Changed from inout NSError? parameter to throws pattern per PRD requirements
+    public func get(_ callback: @escaping ARTPaginatedPresenceCallback) throws -> Bool {
+        return try _internal.get(callback)
     }
     
     // swift-migration: original location ARTRestPresence.h, line 61 and ARTRestPresence.m, line 75
-    public func get(_ query: ARTPresenceQuery, callback: @escaping ARTPaginatedPresenceCallback, error errorPtr: inout NSError?) -> Bool {
-        return _internal.get(query, callback: callback, error: &errorPtr)
+    // swift-migration: Changed from inout NSError? parameter to throws pattern per PRD requirements
+    public func get(_ query: ARTPresenceQuery, callback: @escaping ARTPaginatedPresenceCallback) throws -> Bool {
+        return try _internal.get(query, callback: callback)
     }
     
     // swift-migration: original location ARTRestPresence.h, line 74 and ARTRestPresence.m, line 79
-    public func history(_ query: ARTDataQuery?, callback: @escaping ARTPaginatedPresenceCallback, error errorPtr: inout NSError?) -> Bool {
-        return _internal.history(query, wrapperSDKAgents: nil, callback: callback, error: &errorPtr)
+    // swift-migration: Changed from inout NSError? parameter to throws pattern per PRD requirements
+    public func history(_ query: ARTDataQuery?, callback: @escaping ARTPaginatedPresenceCallback) throws -> Bool {
+        return try _internal.history(query, wrapperSDKAgents: nil, callback: callback)
     }
     
     // swift-migration: original location ARTRestPresence.h, line 63 and ARTRestPresence.m, line 83
@@ -161,6 +168,31 @@ internal class ARTRestPresenceInternal: NSObject {
     // swift-migration: original location ARTRestPresence+Private.h, line 13 and ARTRestPresence.m, line 115
     internal func get(_ callback: @escaping ARTPaginatedPresenceCallback) {
         let _ = get(ARTPresenceQuery(), callback: callback, error: nil)
+    }
+    
+    // swift-migration: New throws version for migration
+    internal func get(_ callback: @escaping ARTPaginatedPresenceCallback) throws -> Bool {
+        return try get(ARTPresenceQuery(), callback: callback)
+    }
+    
+    // swift-migration: New throws version for migration
+    internal func get(_ query: ARTPresenceQuery, callback: @escaping ARTPaginatedPresenceCallback) throws -> Bool {
+        var error: NSError?
+        let result = get(query, callback: callback, error: &error)
+        if let error = error {
+            throw error
+        }
+        return result
+    }
+    
+    // swift-migration: New throws version for migration  
+    internal func history(_ query: ARTDataQuery?, wrapperSDKAgents: [String: String]?, callback: @escaping ARTPaginatedPresenceCallback) throws -> Bool {
+        var error: NSError?
+        let result = history(query, wrapperSDKAgents: wrapperSDKAgents, callback: callback, error: &error)
+        if let error = error {
+            throw error
+        }
+        return result
     }
     
     // swift-migration: original location ARTRestPresence+Private.h, line 15 and ARTRestPresence.m, line 119
@@ -197,7 +229,8 @@ internal class ARTRestPresenceInternal: NSObject {
         guard let url = components.url else { return false }
         let request = URLRequest(url: url)
         
-        let responseProcessor: ARTPaginatedResultResponseProcessor = { response, data, errorPtr in
+        // swift-migration: Updated responseProcessor to use throws pattern instead of inout error parameter
+        let responseProcessor: ARTPaginatedResultResponseProcessor = { response, data in
             guard let encoder = channel.rest?.encoders[response?.mimeType ?? ""] else {
                 return []
             }
@@ -259,9 +292,9 @@ internal class ARTRestPresenceInternal: NSObject {
         
         var components = requestUrl
         if let query = query {
-            var error: (any Error)?
-            components.queryItems = query.asQueryItems(&error)
-            if let error = error {
+            do {
+                components.queryItems = try query.asQueryItems()
+            } catch {
                 errorPtr?.pointee = error as NSError?
                 return false
             }
@@ -270,7 +303,8 @@ internal class ARTRestPresenceInternal: NSObject {
         guard let url = components.url else { return false }
         let request = URLRequest(url: url)
         
-        let responseProcessor: ARTPaginatedResultResponseProcessor = { response, data, errorPtr in
+        // swift-migration: Updated responseProcessor to use throws pattern instead of inout error parameter
+        let responseProcessor: ARTPaginatedResultResponseProcessor = { response, data in
             guard let encoder = channel.rest?.encoders[response?.mimeType ?? ""] else {
                 return []
             }
@@ -278,10 +312,9 @@ internal class ARTRestPresenceInternal: NSObject {
             let presenceMessages = try? encoder.decodePresenceMessages(data ?? Data())
             
             return presenceMessages?.artMap { message in
-                var decodeError: NSError?
                 let decodedMessage = try? message.decode(withEncoder: channel.dataEncoder)
-                if let decodeError = decodeError {
-                    let errorInfo = ARTErrorInfo.wrap(ARTErrorInfo.create(withCode: ARTErrorCode.unableToDecodeMessage.rawValue, message: decodeError.localizedFailureReason ?? ""), prepend: "Failed to decode data: ")
+                if decodedMessage == nil {
+                    let errorInfo = ARTErrorInfo.create(withCode: ARTErrorCode.unableToDecodeMessage.rawValue, message: "Failed to decode message")
                     ARTLogError(self.logger, "RS:\(Unmanaged.passUnretained(channel.rest!).toOpaque()) \(errorInfo.message)")
                 }
                 return decodedMessage
