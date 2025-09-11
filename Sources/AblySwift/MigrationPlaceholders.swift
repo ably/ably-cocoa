@@ -165,12 +165,26 @@ public class ARTRealtimeChannelInternal: ARTChannel {
     public let channelSerial: String? = nil
     public let attachSerial: String = ""
     public var state_nosync: ARTRealtimeChannelState = .initialized
+    public var realtime: ARTRealtimeInternal {
+        fatalError("ARTRealtimeChannelInternal not yet migrated")
+    }
+    public var shouldAttach: Bool {
+        fatalError("ARTRealtimeChannelInternal not yet migrated")
+    }
     public var presence: ARTRealtimePresenceInternal {
         fatalError("ARTRealtimeChannelInternal not yet migrated")
     }
     
     public init(realtime: ARTRealtimeInternal, name: String, options: ARTChannelOptions?, logger: ARTInternalLog) {
         super.init(name: name, andOptions: options ?? ARTChannelOptions(), rest: realtime.rest, logger: logger)
+        fatalError("ARTRealtimeChannelInternal not yet migrated")
+    }
+    
+    public func getOptions_nosync() -> ARTRealtimeChannelOptions? {
+        fatalError("ARTRealtimeChannelInternal not yet migrated")
+    }
+    
+    public func _attach(_ callback: ARTCallback?) {
         fatalError("ARTRealtimeChannelInternal not yet migrated")
     }
     
@@ -945,3 +959,10 @@ public enum ARTStateCode: Int {
 // swift-migration: ARTRestChannelsProtocol now implemented in ARTRestChannels.swift
 
 // swift-migration: ARTRestPresenceProtocol now implemented in ARTRestPresence.swift
+
+// swift-migration: ARTAnnotationCallback needed for ARTRealtimeAnnotations migration
+public typealias ARTAnnotationCallback = (ARTAnnotation?) -> Void
+
+// swift-migration: Error constant for ARTRealtimeAnnotations migration
+public let ARTErrorChannelOperationFailedInvalidState = 91001
+public let ARTErrorUnableToDecodeMessage = 40019
