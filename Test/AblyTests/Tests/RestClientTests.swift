@@ -184,7 +184,8 @@ class RestClientTests: XCTestCase {
         expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
     }
 
-    func test__016__RestClient__initializer__should_throw_when_provided_an_invalid_key() {
+    // swift-migration: Lawrence skipped this because we don't throw exceptions, we have fatalError now and exit tests
+    func skipped_test__016__RestClient__initializer__should_throw_when_provided_an_invalid_key() {
         XCTAssertNotNil(tryInObjC {
             _ = ARTRest(key: "invalid_key")
         })
@@ -874,8 +875,9 @@ class RestClientTests: XCTestCase {
         XCTAssertFalse(options.fallbackHostsUseDefault)
     }
 
+    // swift-migration: Lawrence skipped this because we don't throw exceptions, we have fatalError now and exit tests
     @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
-    func test__054__RestClient__Host_Fallback__fallbackHostsUseDefault_option__should_never_accept_to_configure__fallbackHost__and_set__fallbackHostsUseDefault__to__true_() {
+    func skipped_test__054__RestClient__Host_Fallback__fallbackHostsUseDefault_option__should_never_accept_to_configure__fallbackHost__and_set__fallbackHostsUseDefault__to__true_() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         XCTAssertNil(options.fallbackHosts)
         XCTAssertFalse(options.fallbackHostsUseDefault)

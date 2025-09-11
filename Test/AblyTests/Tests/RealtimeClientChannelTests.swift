@@ -4872,8 +4872,9 @@ class RealtimeClientChannelTests: XCTestCase {
         }
     }
     
+    // swift-migration: Lawrence skipped this because we don't throw exceptions, we have fatalError now and exit tests
     // TB1
-    func test__140__ChannelOptions__options_provided_when_instantiating_a_channel_should_be_frozen() throws {
+    func skipped_test__140__ChannelOptions__options_provided_when_instantiating_a_channel_should_be_frozen() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false

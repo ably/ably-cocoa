@@ -20,8 +20,9 @@ class CryptoTests: XCTestCase {
 
     // RSE1
 
+    // swift-migration: Lawrence skipped this because we don't throw exceptions, we have fatalError now and exit tests
     // RSE1a, RSE1b
-    func test__001__Crypto__getDefaultParams__returns_a_complete_CipherParams_instance__using_the_default_values_for_any_field_not_supplied() {
+    func skipped_test__001__Crypto__getDefaultParams__returns_a_complete_CipherParams_instance__using_the_default_values_for_any_field_not_supplied() {
         XCTAssertNotNil(tryInObjC {
             _ = ARTCrypto.getDefaultParams(["nokey": "nokey"])
         })
@@ -71,8 +72,9 @@ class CryptoTests: XCTestCase {
         XCTAssertEqual(params.keyLength, 256)
     }
 
+    // swift-migration: Lawrence skipped this because we don't throw exceptions, we have fatalError now and exit tests
     // RSE1e
-    func test__003__Crypto__getDefaultParams__should_check_that_keyLength_is_valid_for_algorithm() {
+    func skipped_test__003__Crypto__getDefaultParams__should_check_that_keyLength_is_valid_for_algorithm() {
         XCTAssertNotNil(tryInObjC {
             _ = ARTCrypto.getDefaultParams([
                 "key": binaryKey.subdata(in: 0 ..< 10),
