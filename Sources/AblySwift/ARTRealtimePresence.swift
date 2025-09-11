@@ -377,7 +377,7 @@ public class ARTRealtimePresence: ARTPresence, ARTRealtimePresenceProtocol {
     }
     
     // swift-migration: original location ARTRealtimePresence.m, line 140
-    public func history(_ query: ARTRealtimeHistoryQuery?, callback: @escaping ARTPaginatedPresenceCallback, error errorPtr: UnsafeMutablePointer<Error?>?) throws {
+    public func history(_ query: ARTRealtimeHistoryQuery?, callback: @escaping ARTPaginatedPresenceCallback) throws -> Bool {
         return try `internal`.history(query, wrapperSDKAgents: nil, callback: callback)
     }
 }
