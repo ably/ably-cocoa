@@ -572,11 +572,13 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
     private var _detachTimer: CFRunLoopTimer?
     
     // swift-migration: original location ARTRealtimeChannel.m, line 243 (ivar)
-    private var _attachedEventEmitter: ARTEventEmitter<ARTEvent, ARTErrorInfo>
-    
+    // swift-migration: nullability of error changed by Lawrence
+    private var _attachedEventEmitter: ARTEventEmitter<ARTEvent, ARTErrorInfo?>
+
     // swift-migration: original location ARTRealtimeChannel.m, line 244 (ivar)
-    private var _detachedEventEmitter: ARTEventEmitter<ARTEvent, ARTErrorInfo>
-    
+    // swift-migration: nullability of error changed by Lawrence
+    private var _detachedEventEmitter: ARTEventEmitter<ARTEvent, ARTErrorInfo?>
+
     // swift-migration: original location ARTRealtimeChannel.m, line 245 (ivar)
     private var _lastPayloadMessageId: String?
     
@@ -1062,13 +1064,15 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
             self.attachResume = false
         case .detached:
             self.channelSerial = nil // RTP5a1
-            presence.failsSync(params.errorInfo) // RTP5a
+            // swift-migration: Unwrap added by Lawrence
+            presence.failsSync(unwrapValueWithAmbiguousObjectiveCNullability(params.errorInfo)) // RTP5a
         case .failed:
             self.channelSerial = nil // RTP5a1
             self.attachResume = false
             _attachedEventEmitter.emit(nil, with: params.errorInfo)
             _detachedEventEmitter.emit(nil, with: params.errorInfo)
-            presence.failsSync(params.errorInfo) // RTP5a
+            // swift-migration: Unwrap added by Lawrence
+            presence.failsSync(unwrapValueWithAmbiguousObjectiveCNullability(params.errorInfo)) // RTP5a
         default:
             break
         }
