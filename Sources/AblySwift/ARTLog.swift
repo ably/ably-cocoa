@@ -1,5 +1,16 @@
 import Foundation
 
+// swift-migration: original location ARTLog.h, line 8
+/// :nodoc:
+public enum ARTLogLevel: UInt {
+    case verbose = 0
+    case debug = 1
+    case info = 2
+    case warn = 3
+    case error = 4
+    case none = 5
+}
+
 // swift-migration: original location ARTLog.m, line 4
 private func logLevelName(_ level: ARTLogLevel) -> String {
     switch level {
@@ -56,7 +67,7 @@ internal class ARTLogLine: NSObject, NSCoding {
             return nil
         }
         self.date = date
-        self.level = ARTLogLevel(rawValue: Int(levelNumber.uintValue)) ?? .error
+        self.level = ARTLogLevel(rawValue: levelNumber.uintValue) ?? .error
         self.message = message
         super.init()
     }

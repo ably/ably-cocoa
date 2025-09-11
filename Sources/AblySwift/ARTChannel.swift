@@ -135,7 +135,7 @@ public class ARTChannel: NSObject {
         
         // Checked after encoding, so that the client can receive callback with encoding errors
         if exceedMaxSize([message]) {
-            let sizeError = ARTErrorInfo(code: ARTErrorMaxMessageLengthExceeded, 
+            let sizeError = ARTErrorInfo(code: Int(ARTErrorCode.maxMessageLengthExceeded.rawValue),
                                        message: "Maximum message length exceeded.")
             if let callback = callback {
                 callback(sizeError)
@@ -168,7 +168,7 @@ public class ARTChannel: NSObject {
         
         // Checked after encoding, so that the client can receive callback with encoding errors
         if exceedMaxSize(messages) {
-            let sizeError = ARTErrorInfo(code: ARTErrorMaxMessageLengthExceeded,
+            let sizeError = ARTErrorInfo(code: Int(ARTErrorCode.maxMessageLengthExceeded.rawValue),
                                        message: "Maximum message length exceeded.")
             if let callback = callback {
                 callback(sizeError)

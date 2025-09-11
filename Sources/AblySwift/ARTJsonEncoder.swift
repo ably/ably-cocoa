@@ -37,7 +37,7 @@ internal class ARTJsonEncoder: NSObject, ARTJsonLikeEncoderDelegate {
             // swift-migration: Preserve original error wrapping behavior but use throws
             let nsError = NSError(
                 domain: ARTAblyErrorDomain,
-                code: Int(ARTClientCodeErrorInvalidType.rawValue),
+                code: Int(ARTClientCodeError.invalidType.rawValue),
                 userInfo: [NSLocalizedDescriptionKey: error.localizedDescription]
             )
             throw nsError

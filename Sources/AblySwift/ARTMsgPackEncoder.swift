@@ -32,7 +32,7 @@ internal class ARTMsgPackEncoder: NSObject, ARTJsonLikeEncoderDelegate {
         guard let result = (obj as AnyObject).messagePack?() else {
             let nsError = NSError(
                 domain: ARTAblyErrorDomain,
-                code: Int(ARTClientCodeErrorInvalidType.rawValue),
+                code: Int(ARTClientCodeError.invalidType.rawValue),
                 userInfo: [NSLocalizedDescriptionKey: "Failed to encode object to msgpack"]
             )
             throw nsError

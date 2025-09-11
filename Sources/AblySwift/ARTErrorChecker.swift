@@ -24,6 +24,6 @@ internal class ARTDefaultErrorChecker: NSObject, ARTErrorChecker {
     // swift-migration: original location ARTErrorChecker.m, line 7
     func isTokenError(_ errorInfo: ARTErrorInfo) -> Bool {
         // RTH15h1
-        return errorInfo.statusCode == 401 && errorInfo.code >= ARTErrorTokenErrorUnspecified && errorInfo.code < ARTErrorConnectionLimitsExceeded
+        return errorInfo.statusCode == 401 && errorInfo.code >= ARTErrorCode.tokenErrorUnspecified.rawValue && errorInfo.code < ARTErrorCode.connectionLimitsExceeded.rawValue
     }
 }

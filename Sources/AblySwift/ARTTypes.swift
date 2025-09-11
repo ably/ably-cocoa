@@ -439,14 +439,12 @@ public func ARTChannelEventToStr(_ event: ARTChannelEvent) -> String {
 // MARK: - NSDictionary (ARTURLQueryItemAdditions)
 
 // swift-migration: original location ARTTypes.m, line 326
-extension Dictionary where Key == String, Value == Any {
+extension Dictionary where Key == String, Value == String {
     // swift-migration: original location ARTTypes.m, line 328
     public func art_asURLQueryItems() -> [URLQueryItem] {
         var items: [URLQueryItem] = []
         for (key, value) in self {
-            if let stringValue = value as? String {
-                items.append(URLQueryItem(name: key, value: stringValue))
-            }
+            items.append(URLQueryItem(name: key, value: value))
         }
         return items
     }

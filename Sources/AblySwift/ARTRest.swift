@@ -571,7 +571,7 @@ public class ARTRestInternal: NSObject {
             if auth.tokenIsRenewable {
                 return nil
             }
-            return ARTErrorInfo.create(withCode: ARTStateRequestTokenFailed, message: ARTAblyMessageNoMeansToRenewToken)
+            return ARTErrorInfo.create(withCode: ARTState.requestTokenFailed.rawValue, message: ARTAblyMessageNoMeansToRenewToken)
         }
         return error
     }

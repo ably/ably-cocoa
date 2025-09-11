@@ -1,5 +1,12 @@
 import Foundation
 
+// swift-migration: original location ARTDataQuery.h, line 9
+/// :nodoc:
+public enum ARTQueryDirection: UInt, Sendable {
+    case forwards = 0
+    case backwards = 1
+}
+
 // swift-migration: original location ARTDataQuery.h, line 17 and ARTDataQuery.m, line 4
 /**
  This object is used for providing parameters into methods with paginated results.

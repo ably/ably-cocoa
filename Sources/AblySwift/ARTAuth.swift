@@ -317,14 +317,14 @@ internal class ARTAuthInternal {
         var task: ARTCancellable?
         
         if !canRenewTokenAutomatically(replacedOptions) {
-            callback(nil, ARTErrorInfo.create(withCode: ARTStateRequestTokenFailed, message: ARTAblyMessageNoMeansToRenewToken))
+            callback(nil, ARTErrorInfo.create(withCode: ARTState.requestTokenFailed.rawValue, message: ARTAblyMessageNoMeansToRenewToken))
             return nil
         }
         
         let checkerCallback: ARTTokenDetailsCallback = { tokenDetails, error in
             if let error = error {
                 if (error as NSError).code == NSURLErrorTimedOut {
-                    let ablyError = ARTErrorInfo.create(withCode: ARTErrorErrorFromClientTokenCallback, message: "Error in requesting auth token")
+                    let ablyError = ARTErrorInfo.create(withCode: ARTErrorCode.errorFromClientTokenCallback.rawValue, message: "Error in requesting auth token")
                     callback(nil, ablyError)
                     return
                 }
@@ -339,7 +339,7 @@ internal class ARTAuthInternal {
             
             if let clientId = self.clientId_nosync(), let tokenClientId = tokenDetails.clientId,
                tokenClientId != "*" && clientId != tokenClientId {
-                callback(nil, ARTErrorInfo.create(withCode: ARTErrorIncompatibleCredentials, message: "incompatible credentials"))
+                callback(nil, ARTErrorInfo.create(withCode: ARTErrorCode.incompatibleCredentials.rawValue, message: "incompatible credentials"))
                 return
             }
             callback(tokenDetails, nil)
@@ -348,7 +348,7 @@ internal class ARTAuthInternal {
         if replacedOptions.authUrl != nil {
             guard let request = buildRequest(replacedOptions, withParams: currentTokenParams),
                   let rest = rest else {
-                callback(nil, ARTErrorInfo.create(withCode: ARTStateRequestTokenFailed, message: "Failed to build request"))
+                callback(nil, ARTErrorInfo.create(withCode: ARTState.requestTokenFailed.rawValue, message: "Failed to build request"))
                 return nil
             }
             
@@ -361,7 +361,7 @@ internal class ARTAuthInternal {
                     ARTLogDebug(self.logger, "RS:\(String(describing: self.rest)) ARTAuth: authUrl response \(response)")
                     self.handleAuthUrlResponse(response, withData: data, completion: checkerCallback)
                 } else {
-                    checkerCallback(nil, ARTErrorInfo.create(withCode: ARTStateRequestTokenFailed, message: "Invalid response"))
+                    checkerCallback(nil, ARTErrorInfo.create(withCode: ARTState.requestTokenFailed.rawValue, message: "Invalid response"))
                 }
             }
         } else {
@@ -435,7 +435,7 @@ internal class ARTAuthInternal {
     // swift-migration: original location ARTAuth.m, line 456
     private func handleAuthUrlResponse(_ response: HTTPURLResponse, withData data: Data, completion: @escaping ARTTokenDetailsCallback) {
         guard let rest = rest else {
-            completion(nil, ARTErrorInfo.create(withCode: ARTStateRequestTokenFailed, message: "Rest is nil"))
+            completion(nil, ARTErrorInfo.create(withCode: ARTState.requestTokenFailed.rawValue, message: "Rest is nil"))
             return
         }
         
@@ -447,13 +447,13 @@ internal class ARTAuthInternal {
                         if let tokenRequest = try rest.encoders["application/json"]?.decodeTokenRequest(data) {
                             tokenRequest.toTokenDetails(toAuth(), callback: completion)
                         } else {
-                            completion(nil, ARTErrorInfo.create(withCode: ARTStateAuthUrlIncompatibleContent, message: "content response cannot be used for token request"))
+                            completion(nil, ARTErrorInfo.create(withCode: ARTState.authUrlIncompatibleContent.rawValue, message: "content response cannot be used for token request"))
                         }
                     } else {
                         completion(tokenDetails, nil)
                     }
                 } else {
-                    completion(nil, ARTErrorInfo.create(withCode: ARTStateAuthUrlIncompatibleContent, message: "Could not decode TokenDetails"))
+                    completion(nil, ARTErrorInfo.create(withCode: ARTState.authUrlIncompatibleContent.rawValue, message: "Could not decode TokenDetails"))
                 }
             } catch {
                 completion(nil, error)
@@ -475,7 +475,7 @@ internal class ARTAuthInternal {
     @discardableResult
     internal func executeTokenRequest(_ tokenRequest: ARTTokenRequest, callback: @escaping ARTTokenDetailsCallback) -> ARTCancellable? {
         guard let rest = rest else {
-            callback(nil, ARTErrorInfo.create(withCode: ARTStateRequestTokenFailed, message: "Rest is nil"))
+            callback(nil, ARTErrorInfo.create(withCode: ARTState.requestTokenFailed.rawValue, message: "Rest is nil"))
             return nil
         }
         
@@ -577,7 +577,7 @@ internal class ARTAuthInternal {
             
             let canceledCallbackBlock: () -> Void = {
                 ARTLogVerbose(self.logger, "RS:\(String(describing: self.rest)) ARTAuthInternal [authorize.\(authorizeId)]: canceled callback")
-                callback(nil, ARTErrorInfo.create(withCode: Int(kCFURLErrorCancelled), message: "Authorization has been canceled"))
+                callback(nil, ARTErrorInfo.create(withCode: Int(CFNetworkErrors.cfurlErrorCancelled.rawValue), message: "Authorization has been canceled"))
             }
             
             if let error = error {
@@ -689,7 +689,7 @@ internal class ARTAuthInternal {
         } else {
             if replacedOptions.queryTime {
                 guard let rest = rest else {
-                    callback(nil, ARTErrorInfo.create(withCode: ARTStateRequestTokenFailed, message: "Rest is nil"))
+                    callback(nil, ARTErrorInfo.create(withCode: ARTState.requestTokenFailed.rawValue, message: "Rest is nil"))
                     return nil
                 }
                 
