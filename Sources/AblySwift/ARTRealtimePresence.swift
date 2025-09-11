@@ -392,6 +392,13 @@ private enum ARTPresenceSyncState: UInt {
     case failed = 3       // ARTPresenceSyncFailed, ItemType: ARTErrorInfo*
 }
 
+// swift-migration: Handle ARTPresenceActionAll migration - internal enum to replace the problematic constant
+// swift-migration: ARTPresenceActionAll was defined as NSIntegerMax in Objective-C (line 148) but can't be used in Swift enum
+private enum PresenceActionFilter {
+    case action(ARTPresenceAction)
+    case all
+}
+
 // swift-migration: original location ARTRealtimePresence+Private.h, line 6 and ARTRealtimePresence.m, line 174
 internal class ARTRealtimePresenceInternal {
     
@@ -406,7 +413,7 @@ internal class ARTRealtimePresenceInternal {
     // swift-migration: original location ARTRealtimePresence+Private.h, line 23 and ARTRealtimePresence.m, line 196
     private let _queue: DispatchQueue
     // swift-migration: original location ARTRealtimePresence.m, line 178
-    private let _pendingPresence: [ARTQueuedMessage]
+    private var _pendingPresence: [ARTQueuedMessage]
     // swift-migration: original location ARTRealtimePresence.m, line 179
     private let _eventEmitter: ARTEventEmitter<ARTEvent, ARTPresenceMessage>
     // swift-migration: original location ARTRealtimePresence.m, line 180
@@ -523,5 +530,847 @@ internal class ARTRealtimePresenceInternal {
         self._internalMembers = [:]
         self._syncState = .initialized
         self._syncEventEmitter = ARTInternalEventEmitter(queue: channel.realtime.rest.queue)
+    }
+    
+    // MARK: - Public API Implementation
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 28 and ARTRealtimePresence.m, line 211
+    // RTP11
+    internal func get(_ callback: @escaping ARTPresenceMessagesCallback) {
+        get(ARTRealtimePresenceQuery(), callback: callback)
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 30 and ARTRealtimePresence.m, line 215
+    internal func get(_ query: ARTRealtimePresenceQuery, callback: @escaping ARTPresenceMessagesCallback) {
+        var userCallback: ARTPresenceMessagesCallback? = callback
+        if userCallback != nil {
+            let originalCallback = userCallback!
+            userCallback = { messages, error in
+                self._userQueue.async {
+                    originalCallback(messages, error)
+                }
+            }
+        }
+        
+        _queue.async {
+            guard let channel = self._channel else { return }
+            
+            switch channel.state_nosync {
+            case .detached, .failed:
+                if let callback = userCallback {
+                    callback(nil, ARTErrorInfo.create(withCode: ARTError.channelOperationFailedInvalidState.rawValue, message: "unable to return the list of current members (incompatible channel state: \(ARTRealtimeChannelStateToStr(channel.state_nosync)))"))
+                }
+                return
+            case .suspended:
+                if let query = query as ARTRealtimePresenceQuery?, !query.waitForSync { // RTP11d
+                    if let callback = userCallback {
+                        callback(Array(self._members.values), nil)
+                    }
+                    return
+                }
+                if let callback = userCallback {
+                    callback(nil, ARTErrorInfo.create(withCode: ARTErrorCode.presenceStateIsOutOfSync.rawValue, message: "presence state is out of sync due to the channel being SUSPENDED"))
+                }
+                return
+            default:
+                break
+            }
+            
+            // RTP11c
+            let filterMemberBlock: (ARTPresenceMessage) -> Bool = { message in
+                return (query.clientId == nil || message.clientId == query.clientId) &&
+                       (query.connectionId == nil || message.connectionId == query.connectionId)
+            }
+            
+            channel._attach { error in // RTP11b
+                if let error = error {
+                    userCallback?(nil, error)
+                    return
+                }
+                
+                let syncInProgress = self.syncInProgress_nosync()
+                if syncInProgress && query.waitForSync {
+                    ARTLogDebug(self.logger, "R:%p C:%p (%@) sync is in progress, waiting until the presence members is synchronized", self._realtime, self._channel, self._channel?.name ?? "")
+                    self.onceSyncEnds { members in
+                        let filteredMembers = members.filter(filterMemberBlock)
+                        userCallback?(filteredMembers, nil)
+                    }
+                    self.onceSyncFails { error in
+                        userCallback?(nil, error)
+                    }
+                } else {
+                    ARTLogDebug(self.logger, "R:%p C:%p (%@) returning presence members (syncInProgress=%d)", self._realtime, self._channel, self._channel?.name ?? "", syncInProgress)
+                    let members = Array(self._members.values)
+                    let filteredMembers = members.filter(filterMemberBlock)
+                    userCallback?(filteredMembers, nil)
+                }
+            }
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 70 and ARTRealtimePresence.m, line 275
+    // RTP12
+    internal func historyWithWrapperSDKAgents(_ wrapperSDKAgents: [String: String]?, completion callback: @escaping ARTPaginatedPresenceCallback) {
+        _ = try! history(ARTRealtimeHistoryQuery(), wrapperSDKAgents: wrapperSDKAgents, callback: callback)
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 73 and ARTRealtimePresence.m, line 280
+    // swift-migration: Updated to be throwing as requested by the user
+    internal func history(_ query: ARTRealtimeHistoryQuery?, wrapperSDKAgents: [String: String]?, callback: @escaping ARTPaginatedPresenceCallback) throws -> Bool {
+        let effectiveQuery = query ?? ARTRealtimeHistoryQuery()
+        effectiveQuery.realtimeChannel = _channel
+        return try _channel?.restChannel.presence.history(effectiveQuery, wrapperSDKAgents: wrapperSDKAgents, callback: callback) ?? false
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 32 and ARTRealtimePresence.m, line 287
+    // RTP8
+    internal func enter(_ data: Any?) {
+        enter(data, callback: nil)
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 34 and ARTRealtimePresence.m, line 291
+    internal func enter(_ data: Any?, callback: ARTCallback?) {
+        var userCallback: ARTCallback? = callback
+        if userCallback != nil {
+            let originalCallback = userCallback!
+            userCallback = { error in
+                self._userQueue.async {
+                    originalCallback(error)
+                }
+            }
+        }
+        
+        _queue.async {
+            self.enterOrUpdateAfterChecks(.enter, messageId: nil, clientId: nil, data: data, callback: userCallback)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 44 and ARTRealtimePresence.m, line 308
+    // RTP14, RTP15
+    internal func enterClient(_ clientId: String, data: Any?) {
+        enterClient(clientId, data: data, callback: nil)
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 46 and ARTRealtimePresence.m, line 312
+    internal func enterClient(_ clientId: String, data: Any?, callback: ARTCallback?) {
+        var userCallback: ARTCallback? = callback
+        if userCallback != nil {
+            let originalCallback = userCallback!
+            userCallback = { error in
+                self._userQueue.async {
+                    originalCallback(error)
+                }
+            }
+        }
+        
+        _queue.async {
+            self.enterOrUpdateAfterChecks(.enter, messageId: nil, clientId: clientId, data: data, callback: userCallback)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimePresence.m, line 327
+    internal func enterWithPresenceMessageId(_ messageId: String?, clientId: String?, data: Any?, callback: ARTCallback?) {
+        var userCallback: ARTCallback? = callback
+        if userCallback != nil {
+            let originalCallback = userCallback!
+            userCallback = { error in
+                self._userQueue.async {
+                    originalCallback(error)
+                }
+            }
+        }
+        
+        _queue.async {
+            self.enterOrUpdateAfterChecks(.enter, messageId: messageId, clientId: clientId, data: data, callback: userCallback)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 36 and ARTRealtimePresence.m, line 343
+    // RTP9
+    internal func update(_ data: Any?) {
+        update(data, callback: nil)
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 38 and ARTRealtimePresence.m, line 347
+    internal func update(_ data: Any?, callback: ARTCallback?) {
+        var userCallback: ARTCallback? = callback
+        if userCallback != nil {
+            let originalCallback = userCallback!
+            userCallback = { error in
+                self._userQueue.async {
+                    originalCallback(error)
+                }
+            }
+        }
+        
+        _queue.async {
+            self.enterOrUpdateAfterChecks(.update, messageId: nil, clientId: nil, data: data, callback: userCallback)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 48 and ARTRealtimePresence.m, line 364
+    // RTP15
+    internal func updateClient(_ clientId: String, data: Any?) {
+        updateClient(clientId, data: data, callback: nil)
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 50 and ARTRealtimePresence.m, line 368
+    internal func updateClient(_ clientId: String, data: Any?, callback: ARTCallback?) {
+        var userCallback: ARTCallback? = callback
+        if userCallback != nil {
+            let originalCallback = userCallback!
+            userCallback = { error in
+                self._userQueue.async {
+                    originalCallback(error)
+                }
+            }
+        }
+        
+        _queue.async {
+            self.enterOrUpdateAfterChecks(.update, messageId: nil, clientId: clientId, data: data, callback: userCallback)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimePresence.m, line 383
+    private func enterOrUpdateAfterChecks(_ action: ARTPresenceAction, messageId: String?, clientId: String?, data: Any?, callback: ARTCallback?) {
+        guard let channel = _channel else { return }
+        
+        switch channel.state_nosync {
+        case .detached, .failed:
+            if let callback = callback {
+                let channelError = ARTErrorInfo.create(withCode: ARTErrorCode.unableToEnterPresenceChannelInvalidState.rawValue, message: "unable to enter presence channel (incompatible channel state: \(ARTRealtimeChannelStateToStr(channel.state_nosync)))")
+                callback(channelError)
+            }
+            return
+        default:
+            break
+        }
+        
+        let msg = ARTPresenceMessage()
+        msg.action = action
+        msg.id = messageId
+        msg.clientId = clientId
+        msg.data = data
+        // swift-migration: unwrap added by Lawrence
+        msg.connectionId = unwrapValueWithAmbiguousObjectiveCNullability(_realtime?.connection.id_nosync)
+
+        publishPresence(msg, callback: callback)
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 40 and ARTRealtimePresence.m, line 409
+    // RTP10
+    internal func leave(_ data: Any?) {
+        leave(data, callback: nil)
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 42 and ARTRealtimePresence.m, line 413
+    internal func leave(_ data: Any?, callback: ARTCallback?) {
+        var userCallback: ARTCallback? = callback
+        if userCallback != nil {
+            let originalCallback = userCallback!
+            userCallback = { error in
+                self._userQueue.async {
+                    originalCallback(error)
+                }
+            }
+        }
+        
+        _queue.sync {
+            // swift-migration: Lawrence removed exception checks here
+            self.leaveAfterChecks(nil, data: data, callback: userCallback)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 52 and ARTRealtimePresence.m, line 438
+    // RTP15
+    internal func leaveClient(_ clientId: String, data: Any?) {
+        leaveClient(clientId, data: data, callback: nil)
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 54 and ARTRealtimePresence.m, line 442
+    internal func leaveClient(_ clientId: String, data: Any?, callback: ARTCallback?) {
+        var userCallback: ARTCallback? = callback
+        if userCallback != nil {
+            let originalCallback = userCallback!
+            userCallback = { error in
+                self._userQueue.async {
+                    originalCallback(error)
+                }
+            }
+        }
+        
+        _queue.sync {
+            leaveAfterChecks(clientId, data: data, callback: userCallback)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimePresence.m, line 457
+    private func leaveAfterChecks(_ clientId: String?, data: Any?, callback: ARTCallback?) {
+        let msg = ARTPresenceMessage()
+        msg.action = .leave
+        msg.data = data
+        msg.clientId = clientId
+        // swift-migration: unwrap added by Lawrence
+        msg.connectionId = unwrapValueWithAmbiguousObjectiveCNullability(_realtime?.connection.id_nosync)
+        publishPresence(msg, callback: callback)
+    }
+    
+    // MARK: - Subscription Methods
+    
+    // swift-migration: original location ARTRealtimePresence.m, line 482
+    // RTP6
+    private func _subscribe(_ actionFilter: PresenceActionFilter, onAttach: ARTCallback?, callback: ARTPresenceMessageCallback?) -> ARTEventListener? {
+        var userCallback: ARTPresenceMessageCallback? = callback
+        if userCallback != nil {
+            let originalCallback = userCallback!
+            userCallback = { message in
+                self._userQueue.async {
+                    originalCallback(message)
+                }
+            }
+        }
+        
+        var userOnAttach: ARTCallback? = onAttach
+        if userOnAttach != nil {
+            let originalOnAttach = userOnAttach!
+            userOnAttach = { error in
+                self._userQueue.async {
+                    originalOnAttach(error)
+                }
+            }
+        }
+        
+        var listener: ARTEventListener?
+        _queue.sync {
+            guard let channel = self._channel else { return }
+            
+            let options = channel.getOptions_nosync()
+            let attachOnSubscribe = options?.attachOnSubscribe ?? true
+            
+            if channel.state_nosync == .failed {
+                if let onAttach = userOnAttach, attachOnSubscribe { // RTL7h
+                    onAttach(ARTErrorInfo.create(withCode: ARTErrorCode.channelOperationFailedInvalidState.rawValue, message: "attempted to subscribe while channel is in Failed state."))
+                }
+                ARTLogWarn(self.logger, "R:%p C:%p (%@) presence subscribe to '%@' action(s) has been ignored (attempted to subscribe while channel is in FAILED state)", self._realtime, self._channel, self._channel?.name ?? "", self.actionFilterDescription(actionFilter))
+                return
+            }
+            
+            if channel.shouldAttach && attachOnSubscribe { // RTP6c
+                channel._attach(userOnAttach)
+            }
+            
+            switch actionFilter {
+            case .all:
+                listener = self._eventEmitter.on(userCallback)
+            case .action(let action):
+                listener = self._eventEmitter.on(ARTEvent.newWithPresenceAction(action), callback: userCallback)
+            }
+            
+            ARTLogVerbose(self.logger, "R:%p C:%p (%@) presence subscribe to '%@' action(s)", self._realtime, self._channel, self._channel?.name ?? "", self.actionFilterDescription(actionFilter))
+        }
+        
+        return listener
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 56 and ARTRealtimePresence.m, line 520
+    internal func subscribe(_ callback: @escaping ARTPresenceMessageCallback) -> ARTEventListener? {
+        return _subscribe(.all, onAttach: nil, callback: callback)
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 58 and ARTRealtimePresence.m, line 524
+    internal func subscribeWithAttachCallback(_ onAttach: ARTCallback?, callback: @escaping ARTPresenceMessageCallback) -> ARTEventListener? {
+        return _subscribe(.all, onAttach: onAttach, callback: callback)
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 60 and ARTRealtimePresence.m, line 528
+    internal func subscribe(_ action: ARTPresenceAction, callback: @escaping ARTPresenceMessageCallback) -> ARTEventListener? {
+        return _subscribe(.action(action), onAttach: nil, callback: callback)
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 62 and ARTRealtimePresence.m, line 532
+    internal func subscribe(_ action: ARTPresenceAction, onAttach: ARTCallback?, callback: @escaping ARTPresenceMessageCallback) -> ARTEventListener? {
+        return _subscribe(.action(action), onAttach: onAttach, callback: callback)
+    }
+    
+    // MARK: - Unsubscription Methods
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 64 and ARTRealtimePresence.m, line 538
+    // RTP7
+    internal func unsubscribe() {
+        _queue.sync {
+            _unsubscribe()
+            ARTLogVerbose(logger, "R:%p C:%p (%@) presence unsubscribe to all actions", _realtime, _channel, _channel?.name ?? "")
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 12 and ARTRealtimePresence.m, line 545
+    internal func _unsubscribe() {
+        _eventEmitter.off()
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 66 and ARTRealtimePresence.m, line 549
+    internal func unsubscribe(_ listener: ARTEventListener) {
+        _queue.sync {
+            _eventEmitter.off(listener)
+            ARTLogVerbose(logger, "R:%p C:%p (%@) presence unsubscribe to all actions", _realtime, _channel, _channel?.name ?? "")
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 68 and ARTRealtimePresence.m, line 556
+    internal func unsubscribe(_ action: ARTPresenceAction, listener: ARTEventListener) {
+        _queue.sync {
+            _eventEmitter.off(ARTEvent.newWithPresenceAction(action), listener: listener)
+            ARTLogVerbose(logger, "R:%p C:%p (%@) presence unsubscribe to action %@", _realtime, _channel, _channel?.name ?? "", ARTPresenceActionToStr(action))
+        }
+    }
+    
+    // MARK: - Internal Message Handling
+    
+    // swift-migration: original location ARTRealtimePresence.m, line 563
+    internal func addPendingPresence(_ msg: ARTProtocolMessage, callback: @escaping ARTStatusCallback) {
+        let qm = ARTQueuedMessage(protocolMessage: msg, sentCallback: nil, ackCallback: callback)
+        _pendingPresence.append(qm)
+    }
+    
+    // swift-migration: original location ARTRealtimePresence.m, line 568
+    internal func publishPresence(_ msg: ARTPresenceMessage, callback: ARTCallback?) {
+        guard let realtime = _realtime, let channel = _channel else { return }
+        
+        if msg.clientId == nil {
+            let authClientId = realtime.auth.clientId_nosync() // RTP8c
+            let connected = realtime.connection.state_nosync == .connected
+            if connected && (authClientId == nil || authClientId == "*") { // RTP8j
+                if let callback = callback {
+                    callback(ARTErrorInfo.create(withCode: ARTState.noClientId.rawValue, message: "Invalid attempt to publish presence message without clientId."))
+                }
+                return
+            }
+        }
+        
+        if !realtime.connection.isActive_nosync {
+            if let callback = callback {
+                callback(realtime.connection.error_nosync)
+            }
+            return
+        }
+        
+        if channel.exceedMaxSize([msg]) {
+            if let callback = callback {
+                let sizeError = ARTErrorInfo.create(withCode: ARTErrorCode.maxMessageLengthExceeded.rawValue, message: "Maximum message length exceeded.")
+                callback(sizeError)
+            }
+            return
+        }
+        
+        if let data = msg.data, let dataEncoder = channel.dataEncoder {
+            let encoded = dataEncoder.encode(data)
+            if let errorInfo = encoded.errorInfo {
+                ARTLogWarn(logger, "RT:%p C:%p (%@) error encoding presence message: %@", realtime, self, channel.name, errorInfo)
+            }
+            msg.data = encoded.data
+            msg.encoding = encoded.encoding
+        }
+        
+        let pm = ARTProtocolMessage()
+        pm.action = .presence
+        pm.channel = channel.name
+        pm.presence = [msg]
+        
+        let channelState = channel.state_nosync
+        switch channelState {
+        case .attached:
+            realtime.send(pm, sentCallback: nil) { status in // RTP16a
+                if let callback = callback {
+                    callback(status.errorInfo)
+                }
+            }
+        case .initialized:
+            if realtime.options.queueMessages { // RTP16b
+                channel._attach(nil)
+            }
+            fallthrough
+        case .attaching:
+            if realtime.options.queueMessages { // RTP16b
+                addPendingPresence(pm) { status in
+                    if let callback = callback {
+                        callback(status.errorInfo)
+                    }
+                }
+                break
+            }
+            fallthrough
+        // RTP16c
+        case .suspended, .detaching, .detached, .failed:
+            if let callback = callback {
+                let invalidChannelError = ARTErrorInfo.create(withCode: ARTErrorCode.unableToEnterPresenceChannelInvalidState.rawValue, message: "channel operation failed (invalid channel state: \(ARTRealtimeChannelStateToStr(channelState)))")
+                callback(invalidChannelError)
+            }
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimePresence.m, line 654
+    internal func sendPendingPresence() {
+        guard let channel = _channel, let realtime = _realtime else { return }
+        
+        let pendingPresence = _pendingPresence
+        let channelState = channel.state_nosync
+        _pendingPresence = []
+        
+        for qm in pendingPresence {
+            if qm.msg.action == .presence && channelState != .attached {
+                // Presence messages should only be sent when the channel is attached.
+                _pendingPresence.append(qm)
+                continue
+            }
+            realtime.send(qm.msg, sentCallback: nil, ackCallback: qm.ackCallback)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 16 and ARTRealtimePresence.m, line 669
+    internal func failPendingPresence(_ status: ARTStatus) {
+        let pendingPresence = _pendingPresence
+        _pendingPresence = []
+        for qm in pendingPresence {
+            qm.ackCallback()(status)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 17 and ARTRealtimePresence.m, line 677
+    internal func broadcast(_ pm: ARTPresenceMessage) {
+        _eventEmitter.emit(ARTEvent.newWithPresenceAction(pm.action), with: pm)
+    }
+    
+    // MARK: - Protocol Message Handling
+    
+    // swift-migration: original location ARTRealtimePresence.m, line 685
+    /*
+     * Checks that a channelSerial is the final serial in a sequence of sync messages,
+     * by checking that there is nothing after the colon - RTP18b, RTP18c
+     */
+    private func isLastChannelSerial(_ channelSerial: String?) -> Bool {
+        guard let channelSerial = channelSerial, !channelSerial.isEmpty else {
+            return true
+        }
+        
+        let components = channelSerial.components(separatedBy: ":")
+        if components.count > 1 && !components[1].isEmpty {
+            return false
+        }
+        return true
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 21 and ARTRealtimePresence.m, line 696
+    internal func onAttached(_ message: ARTProtocolMessage) {
+        startSync()
+        if !message.hasPresence {
+            // RTP1 - when an ATTACHED message is received without a HAS_PRESENCE flag, reset PresenceMap (also RTP19a)
+            endSync()
+            ARTLogDebug(logger, "R:%p C:%p (%@) PresenceMap has been reset", _realtime, self, _channel?.name ?? "")
+        }
+        sendPendingPresence() // RTP5b
+        reenterInternalMembers() // RTP17i
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 19 and ARTRealtimePresence.m, line 707
+    internal func onMessage(_ message: ARTProtocolMessage) {
+        guard let presence = message.presence else { return }
+        
+        for (i, p) in presence.enumerated() {
+            var member = p
+            
+            if let data = member.data, let dataEncoder = _dataEncoder {
+                do {
+                    member = try p.decode(with: dataEncoder)
+                } catch {
+                    let errorInfo = ARTErrorInfo.wrap(ARTErrorInfo.create(withCode: ARTErrorCode.unableToDecodeMessage.rawValue, message: error.localizedDescription), prepend: "Failed to decode data: ")
+                    ARTLogError(logger, "RT:%p C:%p (%@) %@", _realtime, _channel, _channel?.name ?? "", errorInfo.message)
+                }
+            }
+            
+            if member.timestamp == nil {
+                member.timestamp = message.timestamp
+            }
+            
+            if member.id == nil {
+                member.id = "\(message.id ?? ""):\(i)"
+            }
+            
+            if member.connectionId == nil {
+                // swift-migration: Added by Lawrence
+                member.connectionId = unwrapValueWithAmbiguousObjectiveCNullability(message.connectionId)
+            }
+            
+            processMember(member)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 20 and ARTRealtimePresence.m, line 738
+    internal func onSync(_ message: ARTProtocolMessage) {
+        if !syncInProgress_nosync() {
+            startSync()
+        } else {
+            ARTLogDebug(logger, "RT:%p C:%p (%@) PresenceMap sync is in progress", _realtime, _channel, _channel?.name ?? "")
+        }
+        
+        onMessage(message)
+        
+        // TODO: RTP18a (previous in-flight sync should be discarded)
+        if isLastChannelSerial(message.channelSerial) { // RTP18b, RTP18c
+            endSync()
+            ARTLogDebug(logger, "RT:%p C:%p (%@) PresenceMap sync ended", _realtime, _channel, _channel?.name ?? "")
+        }
+    }
+    
+    // MARK: - Private Helper Methods
+    
+    private func actionFilterDescription(_ filter: PresenceActionFilter) -> String {
+        switch filter {
+        case .all:
+            return "ALL"
+        case .action(let action):
+            return ARTPresenceActionToStr(action)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimePresence.m, line 759
+    private func didRemovedMemberNoLongerPresent(_ pm: ARTPresenceMessage) {
+        pm.action = .leave
+        pm.id = nil
+        pm.timestamp = Date()
+        broadcast(pm)
+        ARTLogDebug(logger, "RT:%p C:%p (%@) member \"%@\" no longer present", _realtime, _channel, _channel?.name ?? "", pm.memberKey)
+    }
+    
+    // swift-migration: original location ARTRealtimePresence.m, line 767
+    private func reenterInternalMembers() {
+        ARTLogDebug(logger, "%p reentering local members", self)
+        
+        for member in internalMembers.values {
+            enterWithPresenceMessageId(member.id, clientId: member.clientId, data: member.data) { error in // RTP17g
+                if let error = error {
+                    let message = "Re-entering member \"\(member.memberKey ?? "")\" is failed with code \(error.code) (\(error.message))"
+                    let reenterError = ARTErrorInfo.create(withCode: ARTErrorCode.unableToAutomaticallyReEnterPresenceChannel.rawValue, message: message)
+                    let stateChange = ARTChannelStateChange(current: self._channel?.state_nosync ?? .initialized, previous: self._channel?.state_nosync ?? .initialized, event: .update, reason: reenterError, resumed: true) // RTP17e
+                    
+                    self._channel?.emit(.update, with: stateChange)
+                    
+                    ARTLogWarn(self.logger, "RT:%p C:%p (%@) Re-entering member \"%@\" is failed with code %ld (%@)", self._realtime, self._channel, self._channel?.name ?? "", member.memberKey ?? "", error.code, error.message)
+                } else {
+                    ARTLogDebug(self.logger, "RT:%p C:%p (%@) re-entered local member \"%@\"", self._realtime, self._channel, self._channel?.name ?? "", member.memberKey ?? "")
+                }
+            }
+            ARTLogDebug(logger, "RT:%p C:%p (%@) re-entering local member \"%@\"", _realtime, _channel, _channel?.name ?? "", member.memberKey ?? "")
+        }
+    }
+    
+    // MARK: - Presence Map Methods (PresenceMap category from private header)
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 101 and ARTRealtimePresence.m, line 798
+    internal func processMember(_ message: ARTPresenceMessage) {
+        let messageCopy = message.copy() as! ARTPresenceMessage
+        
+        // Internal member
+        if message.connectionId == connectionId { // RTP17b
+            switch message.action {
+            case .enter, .update, .present:
+                messageCopy.action = .present
+                addInternalMember(messageCopy)
+            case .leave:
+                if !message.isSynthesized() {
+                    removeInternalMember(messageCopy)
+                }
+            default:
+                break
+            }
+        }
+        
+        var memberUpdated = false
+        switch message.action {
+        case .enter, .update, .present:
+            _membersLock.withLock {
+                // swift-migration: unwrap added by Lawrence
+                _beforeSyncMembers?.removeValue(forKey: unwrapValueWithAmbiguousObjectiveCNullability(message.memberKey())) // RTP19
+            }
+            messageCopy.action = .present // RTP2d
+            memberUpdated = addMember(messageCopy)
+        case .leave:
+            if syncInProgress_nosync() {
+                messageCopy.action = .absent // RTP2f
+                memberUpdated = addMember(messageCopy)
+            } else {
+                memberUpdated = removeMember(messageCopy) // RTP2e
+            }
+        default:
+            break
+        }
+        
+        if memberUpdated {
+            broadcast(message) // RTP2g (original action)
+        } else {
+            ARTLogDebug(logger, "Presence member \"%@\" with action %@ has been ignored", message.memberKey ?? "", ARTPresenceActionToStr(message.action))
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 119 and ARTRealtimePresence.m, line 848
+    internal func member(_ msg1: ARTPresenceMessage, isNewerThan msg2: ARTPresenceMessage) -> Bool {
+        if msg1.isSynthesized() || msg2.isSynthesized() { // RTP2b1
+            guard let timestamp1 = msg1.timestamp, let timestamp2 = msg2.timestamp else {
+                return msg1.timestamp != nil
+            }
+            return timestamp1.timeIntervalSince1970 >= timestamp2.timeIntervalSince1970
+        }
+        
+        let msg1Serial = msg1.msgSerialFromId()
+        let msg1Index = msg1.indexFromId()
+        let msg2Serial = msg2.msgSerialFromId()
+        let msg2Index = msg2.indexFromId()
+        
+        // RTP2b2
+        if msg1Serial == msg2Serial {
+            return msg1Index > msg2Index
+        } else {
+            return msg1Serial > msg2Serial
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 111 and ARTRealtimePresence.m, line 867
+    internal func addMember(_ message: ARTPresenceMessage) -> Bool {
+        return _membersLock.withLock {
+            guard let memberKey = message.memberKey else { return false }
+            
+            if let existing = _members[memberKey] {
+                if member(message, isNewerThan: existing) {
+                    _members[memberKey] = message
+                    return true
+                }
+                return false
+            }
+            _members[memberKey] = message
+            return true
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 114 and ARTRealtimePresence.m, line 880
+    internal func removeMember(_ message: ARTPresenceMessage) -> Bool {
+        return _membersLock.withLock {
+            guard let memberKey = message.memberKey else { return false }
+            
+            if let existing = _members[memberKey] {
+                if member(message, isNewerThan: existing) {
+                    _members.removeValue(forKey: memberKey)
+                    return existing.action != .absent
+                }
+            }
+            return false
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 112 and ARTRealtimePresence.m, line 891
+    internal func addInternalMember(_ message: ARTPresenceMessage) {
+        _internalMembersLock.withLock {
+            guard let clientId = message.clientId else { return }
+            
+            if let existing = _internalMembers[clientId] {
+                if !member(message, isNewerThan: existing) {
+                    return
+                }
+            }
+            
+            _internalMembers[clientId] = message
+            ARTLogDebug(logger, "local member %@ with action %@ has been added", clientId, ARTPresenceActionToStr(message.action).uppercased())
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 115 and ARTRealtimePresence.m, line 899
+    internal func removeInternalMember(_ message: ARTPresenceMessage) {
+        _internalMembersLock.withLock {
+            guard let clientId = message.clientId else { return }
+            
+            if let existing = _internalMembers[clientId], member(message, isNewerThan: existing) {
+                _internalMembers.removeValue(forKey: clientId)
+            }
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 117 and ARTRealtimePresence.m, line 906
+    internal func cleanUpAbsentMembers() {
+        ARTLogDebug(logger, "%p cleaning up absent members...", self)
+        
+        _membersLock.withLock {
+            let absentKeys = _members.compactMap { key, message in
+                message.action == .absent ? key : nil
+            }
+            
+            for key in absentKeys {
+                _members.removeValue(forKey: key)
+            }
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimePresence.m, line 916
+    private func leaveMembersNotPresentInSync() {
+        ARTLogDebug(logger, "%p leaving members not present in sync...", self)
+        
+        guard let beforeSyncMembers = _beforeSyncMembers else { return }
+        
+        for member in beforeSyncMembers.values {
+            // Handle members that have not been added or updated in the PresenceMap during the sync process
+            let leave = member.copy() as! ARTPresenceMessage
+            _membersLock.withLock {
+                // swift-migration: unwrap added by Lawrence
+                _members.removeValue(forKey: unwrapValueWithAmbiguousObjectiveCNullability(leave.memberKey()))
+            }
+            didRemovedMemberNoLongerPresent(leave)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 102 and ARTRealtimePresence.m, line 926
+    internal func reset() {
+        _membersLock.withLock {
+            _members = [:]
+        }
+        _internalMembersLock.withLock {
+            _internalMembers = [:]
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 104 and ARTRealtimePresence.m, line 931
+    internal func startSync() {
+        ARTLogDebug(logger, "%p PresenceMap sync started", self)
+        _beforeSyncMembers = _membersLock.withLock { _members }
+        _syncState = .started
+        _syncEventEmitter.emit(ARTEvent.newWithPresenceSyncState(_syncState), with: nil)
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 105 and ARTRealtimePresence.m, line 938
+    internal func endSync() {
+        ARTLogVerbose(logger, "%p PresenceMap sync ending", self)
+        cleanUpAbsentMembers()
+        leaveMembersNotPresentInSync()
+        _syncState = .ended
+        _beforeSyncMembers = nil
+        
+        let membersValues = _membersLock.withLock { Array(_members.values) }
+        _syncEventEmitter.emit(ARTEvent.newWithPresenceSyncState(.ended), with: membersValues)
+        _syncEventEmitter.off()
+        ARTLogDebug(logger, "%p PresenceMap sync ended", self)
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 106 and ARTRealtimePresence.m, line 950
+    internal func failsSync(_ error: ARTErrorInfo) {
+        reset()
+        _syncState = .failed
+        _syncEventEmitter.emit(ARTEvent.newWithPresenceSyncState(.failed), with: error)
+        _syncEventEmitter.off()
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 108 and ARTRealtimePresence.m, line 957
+    internal func onceSyncEnds(_ callback: @escaping ([ARTPresenceMessage]) -> Void) {
+        _syncEventEmitter.once(ARTEvent.newWithPresenceSyncState(.ended), callback: callback)
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 109 and ARTRealtimePresence.m, line 961
+    internal func onceSyncFails(_ callback: @escaping ARTCallback) {
+        _syncEventEmitter.once(ARTEvent.newWithPresenceSyncState(.failed), callback: callback)
     }
 }

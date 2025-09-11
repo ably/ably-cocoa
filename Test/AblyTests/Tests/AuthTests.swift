@@ -76,8 +76,9 @@ class AuthTests: XCTestCase {
         static let capability = "{\"cansubscribe:*\":[\"subscribe\"]}"
     }
 
+    // swift-migration: Lawrence skipped this because we don't throw exceptions, we have fatalError now and exit tests
     // RSA1
-    func test__003__Basic__should_work_over_HTTPS_only() throws {
+    func skipped_test__003__Basic__should_work_over_HTTPS_only() throws {
         let test = Test()
         let clientOptions = try AblyTests.commonAppSetup(for: test)
         clientOptions.tls = false
@@ -566,11 +567,13 @@ class AuthTests: XCTestCase {
 
     // RSA14
 
-    func test__030__Token__options__should_stop_client_when_useTokenAuth_and_no_key_occurs() {
+    // swift-migration: Lawrence skipped this because we don't throw exceptions, we have fatalError now and exit tests
+    func skipped_test__030__Token__options__should_stop_client_when_useTokenAuth_and_no_key_occurs() {
         testStopsClientWithOptions { $0.useTokenAuth = true }
     }
 
-    func test__031__Token__options__should_stop_client_when_authCallback_and_authUrl_occurs() {
+    // swift-migration: Lawrence skipped this because we don't throw exceptions, we have fatalError now and exit tests
+    func skipped_test__031__Token__options__should_stop_client_when_authCallback_and_authUrl_occurs() {
         testStopsClientWithOptions { $0.authCallback = { _, _ in /* nothing */ }; $0.authUrl = URL(string: "http://auth.ably.io") }
     }
 
@@ -948,7 +951,8 @@ class AuthTests: XCTestCase {
         XCTAssertEqual(connectedMessage.connectionDetails!.clientId, expectedClientId)
     }
 
-    func test__043__Token__token_auth_and_clientId__should_check_clientId_consistency__with_wildcard() throws {
+    // swift-migration: Lawrence skipped this because we don't throw exceptions, we have fatalError now and exit tests
+    func skipped_test__043__Token__token_auth_and_clientId__should_check_clientId_consistency__with_wildcard() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "*"
@@ -1360,8 +1364,9 @@ class AuthTests: XCTestCase {
         }
     }
 
+    // swift-migration: Lawrence skipped this because we don't throw exceptions, we have fatalError now and exit tests
     // RSA7c
-    func test__050__Token__clientId_and_authenticated_clients__should_clientId_be_null_or_string() throws {
+    func skipped_test__050__Token__clientId_and_authenticated_clients__should_clientId_be_null_or_string() throws {
         let test = Test()
         let clientOptions = try AblyTests.commonAppSetup(for: test)
         clientOptions.clientId = "*"
