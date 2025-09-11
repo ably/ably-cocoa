@@ -104,7 +104,7 @@ internal class ARTWebSocketTransport: NSObject, ARTRealtimeTransport, ARTWebSock
         self._workQueue = rest.queue
         self.websocket = nil
         self._state = .closed
-        self.encoder = rest.defaultEncoder()
+        self.encoder = rest.defaultEncoder
         self.logger = logger
         self.options = options.copy() as! ARTClientOptions
         self.resumeKey = resumeKey

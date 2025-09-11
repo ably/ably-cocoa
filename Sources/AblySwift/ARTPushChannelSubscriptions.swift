@@ -140,12 +140,12 @@ internal class ARTPushChannelSubscriptionsInternal: NSObject {
             var request = URLRequest(url: finalComponents.url!)
             request.httpMethod = "POST"
             do {
-                request.httpBody = try rest.defaultEncoder().encodePushChannelSubscription(channelSubscription)
+                request.httpBody = try rest.defaultEncoder.encodePushChannelSubscription(channelSubscription)
             } catch {
                 // If encoding fails, continue with nil body
                 request.httpBody = nil
             }
-            request.setValue(rest.defaultEncoder().mimeType(), forHTTPHeaderField: "Content-Type")
+            request.setValue(rest.defaultEncoder.mimeType(), forHTTPHeaderField: "Content-Type")
             
             if let deviceId = channelSubscription.deviceId, let localDevice = local,
                let mutableRequest = (request.settingDeviceAuthentication(deviceId, localDevice: localDevice) as NSURLRequest).mutableCopy() as? NSMutableURLRequest {

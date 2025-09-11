@@ -50,16 +50,21 @@ internal class ARTPushActivationStateMachine: NSObject {
         // swift-migration: Placeholder initialization - machine reference will be updated after super.init()
         self.current = ARTPushActivationStateNotActivated(machine: nil, logger: logger)
         
+        #if os(iOS)
         if let pendingEventsData = rest.storage.objectForKey(ARTPushActivationPendingEventsKey) as? Data,
            let events = NSArray.art_unarchive(fromData: pendingEventsData, withLogger: logger) as? [ARTPushActivationEvent] {
             self.pendingEvents = events
         } else {
             self.pendingEvents = []
         }
+        #else
+        self.pendingEvents = []
+        #endif
         
         super.init()
         
         // Unarchiving - do this after super.init() so we can pass self as machine
+        #if os(iOS)
         if let stateData = rest.storage.objectForKey(ARTPushActivationCurrentStateKey) as? Data {
             if let unarchivedState = ARTPushActivationState.art_unarchive(fromData: stateData, withLogger: logger) as? ARTPushActivationState {
                 self.current = unarchivedState
@@ -69,6 +74,9 @@ internal class ARTPushActivationStateMachine: NSObject {
         } else {
             self.current = ARTPushActivationStateNotActivated(machine: self, logger: logger)
         }
+        #else
+        self.current = ARTPushActivationStateNotActivated(machine: self, logger: logger)
+        #endif
         
         // swift-migration: Set machine reference after init
         self.current.machine = self
@@ -178,10 +186,12 @@ internal class ARTPushActivationStateMachine: NSObject {
     // swift-migration: original location ARTPushActivationStateMachine.m, line 154
     private func persist() {
         // Archiving
+        #if os(iOS)
         if current is ARTPushActivationPersistentState {
             rest.storage.setObject(current.art_archive(withLogger: logger), forKey: ARTPushActivationCurrentStateKey)
         }
         rest.storage.setObject((pendingEvents as NSArray).art_archive(withLogger: logger), forKey: ARTPushActivationPendingEventsKey)
+        #endif
     }
 }
 

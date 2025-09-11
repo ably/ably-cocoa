@@ -5,12 +5,44 @@ public typealias ARTPaginatedStatsCallback = (ARTPaginatedResult<ARTStats>?, ART
 
 // swift-migration: original location ARTRest.h, line 22
 public protocol ARTRestInstanceMethodsProtocol: NSObjectProtocol {
+    /**
+     * Retrieves the time from the Ably service. Clients that do not have access to a sufficiently well maintained time source and wish to issue Ably `ARTTokenRequest`s with a more accurate timestamp should use the `ARTAuthOptions.queryTime` property instead of this method.
+     *
+     * @param callback A callback for receiving the time as a `NSDate` object.
+     */
     func time(_ callback: @escaping ARTDateTimeCallback)
-    func request(_ method: String, path: String, params: [String: String]?, body: Any?, headers: [String: String]?, callback: @escaping ARTHTTPPaginatedCallback, error: UnsafeMutablePointer<Error?>?) -> Bool
-    func stats(_ callback: @escaping ARTPaginatedStatsCallback) -> Bool
-    func stats(_ query: ARTStatsQuery?, callback: @escaping ARTPaginatedStatsCallback, error: UnsafeMutablePointer<Error?>?) -> Bool
+    
+    /**
+     * Makes a REST request to a provided path. This is provided as a convenience for developers who wish to use REST API functionality that is either not documented or is not yet included in the public API, without having to directly handle features such as authentication, paging, fallback hosts, MsgPack and JSON support.
+     *
+     * @param method The request method to use, such as GET, POST.
+     * @param path The request path.
+     * @param params The parameters to include in the URL query of the request. The parameters depend on the endpoint being queried. See the [REST API reference](https://ably.com/docs/api/rest-api) for the available parameters of each endpoint.
+     * @param body The JSON body of the request.
+     * @param headers Additional HTTP headers to include in the request.
+     * @param callback A callback for retriving `ARTHttpPaginatedResponse` object returned by the HTTP request, containing an empty or JSON-encodable object.
+     
+     * @throws An error if the request parameters are invalid.
+     */
+    func request(_ method: String, path: String, params: NSStringDictionary?, body: Any?, headers: NSStringDictionary?, callback: @escaping ARTHTTPPaginatedCallback) throws
+    
+    /// :nodoc: TODO: docstring
+    func stats(_ callback: @escaping ARTPaginatedStatsCallback) throws
+    
+    /**
+     * Queries the REST `/stats` API and retrieves your application's usage statistics. Returns a `ARTPaginatedResult` object, containing an array of `ARTStats` objects. See the [Stats docs](https://ably.com/docs/general/statistics).
+     *
+     * @param query An `ARTStatsQuery` object.
+     * @param callback A callback for retriving an `ARTPaginatedResult` object with an array of `ARTStats` objects.
+     * 
+     * @throws An error if the query parameters are invalid.
+     */
+    func stats(_ query: ARTStatsQuery?, callback: @escaping ARTPaginatedStatsCallback) throws
     
     #if os(iOS)
+    /**
+     * Retrieves an `ARTLocalDevice` object that represents the current state of the device as a target for push notifications.
+     */
     var device: ARTLocalDevice { get }
     #endif
 }
@@ -52,39 +84,36 @@ public class ARTRest: NSObject, ARTRestProtocol {
     #endif
     
     // swift-migration: original location ARTRest+Private.h, line 123 and ARTRest.m, line 55
-    public func internalAsync(_ use: @escaping (ARTRestInternal) -> Void) {
-        DispatchQueue.global().async {
+    internal func internalAsync(_ use: @escaping (ARTRestInternal) -> Void) {
+        _internal.queue.async {
             use(self._internal)
         }
     }
     
     // swift-migration: original location ARTRest.m, line 61
     private func initCommon() {
-        _dealloc = ARTQueuedDealloc(_internal, queue: _internal.queue)
+        _dealloc = ARTQueuedDealloc(ref: _internal, queue: _internal.queue)
     }
     
     // swift-migration: original location ARTRest.h, line 90 and ARTRest.m, line 65
     public required init(options: ARTClientOptions) {
         _internal = ARTRestInternal(options: options)
-        _dealloc = ARTQueuedDealloc()
+        _dealloc = ARTQueuedDealloc(ref: _internal, queue: _internal.queue)
         super.init()
-        initCommon()
     }
     
     // swift-migration: original location ARTRest.h, line 96 and ARTRest.m, line 74
     public required init(key: String) {
         _internal = ARTRestInternal(key: key)
-        _dealloc = ARTQueuedDealloc()
+        _dealloc = ARTQueuedDealloc(ref: _internal, queue: _internal.queue)
         super.init()
-        initCommon()
     }
     
     // swift-migration: original location ARTRest.h, line 102 and ARTRest.m, line 83
     public required init(token: String) {
         _internal = ARTRestInternal(token: token)
-        _dealloc = ARTQueuedDealloc()
+        _dealloc = ARTQueuedDealloc(ref: _internal, queue: _internal.queue)
         super.init()
-        initCommon()
     }
     
     // swift-migration: original location ARTRest.h, line 128 and ARTRest.m, line 92
@@ -107,19 +136,38 @@ public class ARTRest: NSObject, ARTRestProtocol {
         _internal.time(wrapperSDKAgents: nil, completion: callback)
     }
     
-    // swift-migration: original location ARTRest.h, line 44 and ARTRest.m, line 109
-    public func request(_ method: String, path: String, params: [String: String]?, body: Any?, headers: [String: String]?, callback: @escaping ARTHTTPPaginatedCallback, error: UnsafeMutablePointer<Error?>?) -> Bool {
-        return _internal.request(method, path: path, params: params, body: body, headers: headers, wrapperSDKAgents: nil, callback: callback, error: error)
+    // swift-migration: original location ARTRest.h, line 44 and ARTRest.m, line 109 - converted to throwing function per PRD
+    public func request(_ method: String, path: String, params: NSStringDictionary?, body: Any?, headers: NSStringDictionary?, callback: @escaping ARTHTTPPaginatedCallback) throws {
+        var error: Error?
+        let success = _internal.request(method, path: path, params: params, body: body, headers: headers, wrapperSDKAgents: nil, callback: callback, error: &error)
+        if let error = error {
+            throw error
+        }
+        if !success {
+            // swift-migration: Maintain same error behavior as original - errors are provided via the error parameter
+            throw NSError(domain: ARTAblyErrorDomain, code: 40005, userInfo: [NSLocalizedDescriptionKey: "Request failed"])
+        }
     }
     
-    // swift-migration: original location ARTRest.h, line 53 and ARTRest.m, line 119
-    public func stats(_ callback: @escaping ARTPaginatedStatsCallback) -> Bool {
-        return _internal.stats(wrapperSDKAgents: nil, completion: callback)
+    // swift-migration: original location ARTRest.h, line 53 and ARTRest.m, line 119 - converted to throwing function per PRD
+    public func stats(_ callback: @escaping ARTPaginatedStatsCallback) throws {
+        let success = _internal.stats(wrapperSDKAgents: nil, completion: callback)
+        if !success {
+            throw NSError(domain: ARTAblyErrorDomain, code: 40003, userInfo: [NSLocalizedDescriptionKey: "Stats request failed"])
+        }
     }
     
-    // swift-migration: original location ARTRest.h, line 64 and ARTRest.m, line 124
-    public func stats(_ query: ARTStatsQuery?, callback: @escaping ARTPaginatedStatsCallback, error: UnsafeMutablePointer<Error?>?) -> Bool {
-        return _internal.stats(query, wrapperSDKAgents: nil, callback: callback, error: error)
+    // swift-migration: original location ARTRest.h, line 64 and ARTRest.m, line 124 - converted to throwing function per PRD
+    public func stats(_ query: ARTStatsQuery?, callback: @escaping ARTPaginatedStatsCallback) throws {
+        var error: Error?
+        let success = _internal.stats(query, wrapperSDKAgents: nil, callback: callback, error: &error)
+        if let error = error {
+            throw error
+        }
+        if !success {
+            // swift-migration: Maintain same error behavior as original - errors are provided via the error parameter
+            throw NSError(domain: ARTAblyErrorDomain, code: 40003, userInfo: [NSLocalizedDescriptionKey: "Stats request failed"])
+        }
     }
 }
 
@@ -130,13 +178,13 @@ public class ARTRestInternal: NSObject {
     private let _logger: ARTInternalLog
     
     // swift-migration: original location ARTRest+Private.h, line 24 and ARTRest.m, line 205
-    internal let channels: ARTRestChannelsInternal
+    internal var channels: ARTRestChannelsInternal!
     
     // swift-migration: original location ARTRest+Private.h, line 25 and ARTRest.m, line 205
-    internal let auth: ARTAuthInternal
+    internal var auth: ARTAuthInternal!
     
     // swift-migration: original location ARTRest+Private.h, line 26 and ARTRest.m, line 206
-    internal let push: ARTPushInternal
+    internal var push: ARTPushInternal!
     
     // swift-migration: original location ARTRest+Private.h, line 33 and ARTRest.m, line 183
     public let options: ARTClientOptions
@@ -150,10 +198,10 @@ public class ARTRestInternal: NSObject {
     }
     
     // swift-migration: original location ARTRest+Private.h, line 36 and ARTRest.m, line 201
-    public let defaultEncoding: String
+    public var defaultEncoding: String!
     
     // swift-migration: original location ARTRest+Private.h, line 37 and ARTRest.m, line 197
-    public let encoders: [String: ARTEncoder]
+    public var encoders: [String: ARTEncoder]!
     
     // swift-migration: original location ARTRest+Private.h, line 40
     public var prioritizedHost: String?
@@ -205,7 +253,7 @@ public class ARTRestInternal: NSObject {
     }
     
     // swift-migration: original location ARTRest+Private.h, line 64 and ARTRest.m, line 191
-    public let http: ARTHttp
+    internal let http: ARTHttp
     
     // swift-migration: original location ARTRest+Private.h, line 65 and ARTRest.m, line 202
     internal var fallbackCount: Int
@@ -218,10 +266,10 @@ public class ARTRestInternal: NSObject {
     
     #if os(iOS)
     // swift-migration: original location ARTRest+Private.h, line 30 and ARTRest.m, line 189
-    public var storage: ARTDeviceStorage
+    internal var storage: ARTDeviceStorage
     
     // swift-migration: original location ARTRest+Private.h, line 28 and ARTRest.m, line 776
-    public var device: ARTLocalDevice {
+    internal var device: ARTLocalDevice {
         var result: ARTLocalDevice!
         queue.sync {
             result = device_nosync
@@ -230,10 +278,10 @@ public class ARTRestInternal: NSObject {
     }
     
     // swift-migration: original location ARTRest+Private.h, line 29 and ARTRest.m, line 784
-    public var device_nosync: ARTLocalDevice {
+    internal var device_nosync: ARTLocalDevice {
         var result: ARTLocalDevice!
         ARTRestInternal.deviceAccessQueue.sync {
-            result = sharedDevice_onlyCallOnDeviceAccessQueue
+            result = sharedDevice_onlyCallOnDeviceAccessQueue()
         }
         return result
     }
@@ -255,8 +303,12 @@ public class ARTRestInternal: NSObject {
         self.http = ARTHttp(queue: queue, logger: logger)
         self.httpExecutor = http
         
-        let jsonEncoder = ARTJsonEncoder()
-        let msgPackEncoder = ARTMsgPackEncoder()
+        self.fallbackCount = 0
+        
+        super.init()
+        
+        let jsonEncoder = ARTJsonLikeEncoderPlaceholder(rest: self, delegate: ARTJsonEncoder(), logger: logger)
+        let msgPackEncoder = ARTJsonLikeEncoderPlaceholder(rest: self, delegate: ARTMsgPackEncoder(), logger: logger)
         
         self.encoders = [
             jsonEncoder.mimeType(): jsonEncoder,
@@ -264,13 +316,10 @@ public class ARTRestInternal: NSObject {
         ]
         
         self.defaultEncoding = options.useBinaryProtocol ? msgPackEncoder.mimeType() : jsonEncoder.mimeType()
-        self.fallbackCount = 0
         
         self.auth = ARTAuthInternal(self, withOptions: options, logger: logger)
-        self.push = ARTPushInternal(rest: nil, logger: logger)
+        self.push = ARTPushInternal(rest: self, logger: logger)
         self.channels = ARTRestChannelsInternal(rest: self, logger: logger)
-        
-        super.init()
         
         ARTLogVerbose(logger, "RS:\(Unmanaged.passUnretained(self).toOpaque()) initialized")
     }
@@ -283,12 +332,16 @@ public class ARTRestInternal: NSObject {
     
     // swift-migration: original location ARTRest+Private.h, line 21 and ARTRest.m, line 214
     public convenience init(key: String) {
-        self.init(options: ARTClientOptions(key: key))
+        let options = ARTClientOptions()
+        options.key = key
+        self.init(options: options)
     }
     
     // swift-migration: original location ARTRest+Private.h, line 22 and ARTRest.m, line 218
     public convenience init(token: String) {
-        self.init(options: ARTClientOptions(token: token))
+        let options = ARTClientOptions()
+        options.token = token
+        self.init(options: options)
     }
     
     // swift-migration: original location ARTRest.m, line 170
@@ -309,7 +362,7 @@ public class ARTRestInternal: NSObject {
         } else if let authUrl = options.authUrl {
             info = "authUrl: \(authUrl)"
         } else if options.authCallback != nil {
-            info = "authCallback: \(options.authCallback!)"
+            info = "authCallback: \(String(describing: options.authCallback!))"
         } else {
             info = "key: \(options.key ?? "")"
         }
@@ -318,13 +371,13 @@ public class ARTRestInternal: NSObject {
     
     // swift-migration: original location ARTRest+Private.h, line 74 and ARTRest.m, line 322
     @discardableResult
-    public func executeRequest(_ request: URLRequest, wrapperSDKAgents: [String: String]?, completion: @escaping ARTURLRequestCallback) -> ARTCancellable? {
+    internal func executeRequest(_ request: URLRequest, wrapperSDKAgents: NSStringDictionary?, completion: @escaping ARTURLRequestCallback) -> ARTCancellable? {
         return executeRequest(request, fallbacks: nil, retries: 0, originalRequestId: nil, wrapperSDKAgents: wrapperSDKAgents, completion: completion)
     }
     
     // swift-migration: original location ARTRest+Private.h, line 80 and ARTRest.m, line 247
     @discardableResult
-    public func executeRequest(_ request: URLRequest, withAuthOption authOption: ARTAuthentication, wrapperSDKAgents: [String: String]?, completion: @escaping ARTURLRequestCallback) -> ARTCancellable? {
+    internal func executeRequest(_ request: URLRequest, withAuthOption authOption: ARTAuthentication, wrapperSDKAgents: NSStringDictionary?, completion: @escaping ARTURLRequestCallback) -> ARTCancellable? {
         var mutableRequest = request
         mutableRequest.url = URL(string: mutableRequest.url!.relativePath, relativeTo: baseUrl)
         
@@ -347,13 +400,13 @@ public class ARTRestInternal: NSObject {
     
     // swift-migration: original location ARTRest.m, line 271
     @discardableResult
-    private func executeRequestWithAuthentication(_ request: URLRequest, withMethod method: ARTAuthMethod, wrapperSDKAgents: [String: String]?, completion: @escaping ARTURLRequestCallback) -> ARTCancellable? {
+    private func executeRequestWithAuthentication(_ request: URLRequest, withMethod method: ARTAuthMethod, wrapperSDKAgents: NSStringDictionary?, completion: @escaping ARTURLRequestCallback) -> ARTCancellable? {
         return executeRequestWithAuthentication(request, withMethod: method, force: false, wrapperSDKAgents: wrapperSDKAgents, completion: completion)
     }
     
     // swift-migration: original location ARTRest.m, line 278
     @discardableResult
-    private func executeRequestWithAuthentication(_ request: URLRequest, withMethod method: ARTAuthMethod, force: Bool, wrapperSDKAgents: [String: String]?, completion: @escaping ARTURLRequestCallback) -> ARTCancellable? {
+    private func executeRequestWithAuthentication(_ request: URLRequest, withMethod method: ARTAuthMethod, force: Bool, wrapperSDKAgents: NSStringDictionary?, completion: @escaping ARTURLRequestCallback) -> ARTCancellable? {
         ARTLogDebug(logger, "RS:\(Unmanaged.passUnretained(self).toOpaque()) calculating authorization \(method.rawValue)")
         
         var task: ARTCancellable?
@@ -365,7 +418,7 @@ public class ARTRestInternal: NSObject {
             ARTLogVerbose(logger, "RS:\(Unmanaged.passUnretained(self).toOpaque()) ARTRest: \(authorization)")
             task = executeRequest(mutableRequest, wrapperSDKAgents: wrapperSDKAgents, completion: completion)
         } else {
-            if !force && auth.tokenRemainsValid() {
+            if !force && auth.tokenRemainsValid {
                 let authorization = prepareTokenAuthorisationHeader(auth.tokenDetails!.token)
                 ARTLogVerbose(logger, "RS:\(Unmanaged.passUnretained(self).toOpaque()) ARTRestInternal reusing token: authorization bearer in Base64 \(authorization)")
                 var mutableRequest = request
@@ -392,7 +445,7 @@ public class ARTRestInternal: NSObject {
     
     // swift-migration: original location ARTRest.m, line 345
     @discardableResult
-    private func executeRequest(_ request: URLRequest, fallbacks: ARTFallback?, retries: UInt, originalRequestId: String?, wrapperSDKAgents: [String: String]?, completion: @escaping ARTURLRequestCallback) -> ARTCancellable? {
+    private func executeRequest(_ request: URLRequest, fallbacks: ARTFallback?, retries: UInt, originalRequestId: String?, wrapperSDKAgents: NSStringDictionary?, completion: @escaping ARTURLRequestCallback) -> ARTCancellable? {
         
         var requestId: String?
         var blockFallbacks = fallbacks
@@ -420,14 +473,14 @@ public class ARTRestInternal: NSObject {
         }
         
         // RSC15f - reset the successed fallback host on fallbackRetryTimeout expiration
-        if let currentFallbackHost = currentFallbackHost,
+        if let _ = currentFallbackHost,
            let fallbackRetryExpiration = fallbackRetryExpiration,
            continuousClock.now().isAfter(fallbackRetryExpiration) {
             ARTLogDebug(logger, "RS:\(Unmanaged.passUnretained(self).toOpaque()) fallbackRetryExpiration ids expired, reset `prioritizedHost` and `currentFallbackHost`")
             
             self.currentFallbackHost = nil
             self.prioritizedHost = nil
-            updatedRequest = updatedRequest.replacingHost(with: options.restHost)
+            updatedRequest = updatedRequest.replacingHost(options.restHost!)
         }
         
         ARTLogDebug(logger, "RS:\(Unmanaged.passUnretained(self).toOpaque()) executing request \(updatedRequest)")
@@ -450,8 +503,7 @@ public class ARTRestInternal: NSObject {
                     let plain = String(data: data, encoding: .utf8) ?? ""
                     finalError = ARTErrorInfo.create(withCode: (response?.statusCode ?? 0) * 100, 
                                                    status: response?.statusCode ?? 0, 
-                                                   message: plain.art_shortString(), 
-                                                   requestId: requestId)
+                                                   message: plain.art_shortString)
                     finalData = nil
                     ARTLogError(self.logger, "Request \(updatedRequest) failed with \(finalError!)")
                 }
@@ -459,14 +511,13 @@ public class ARTRestInternal: NSObject {
             
             if let response = response, response.statusCode >= 400 {
                 if let data = finalData {
-                    var decodeError: Error?
-                    let dataError = self.encoders[response.mimeType]?.decodeErrorInfo(data, error: &decodeError)
+                    let dataError = try? self.encoders[response.mimeType ?? ""]?.decodeErrorInfo(data)
                     let errorBecauseShouldNotRenewToken = self.errorBecauseShouldNotRenewToken(dataError)
                     
                     if errorBecauseShouldNotRenewToken == nil {
                         ARTLogDebug(self.logger, "RS:\(Unmanaged.passUnretained(self).toOpaque()) retry request \(updatedRequest)")
                         if self.tokenErrorRetries < 1 {
-                            let newTask = self.executeRequest(mutableRequest, withAuthOption: .tokenRetry, wrapperSDKAgents: wrapperSDKAgents, completion: completion)
+                            _ = self.executeRequest(mutableRequest, withAuthOption: .tokenRetry, wrapperSDKAgents: wrapperSDKAgents, completion: completion)
                             return
                         }
                     }
@@ -475,8 +526,6 @@ public class ARTRestInternal: NSObject {
                         finalError = errorBecauseShouldNotRenewToken
                     } else if let dataError = dataError {
                         finalError = dataError
-                    } else if let decodeError = decodeError {
-                        finalError = decodeError
                     }
                 }
                 
@@ -484,8 +533,7 @@ public class ARTRestInternal: NSObject {
                     finalError = ARTErrorInfo.create(
                         withCode: response.statusCode * 100,
                         status: response.statusCode,
-                        message: String(data: finalData ?? Data(), encoding: .utf8) ?? "",
-                        requestId: requestId
+                        message: String(data: finalData ?? Data(), encoding: .utf8) ?? ""
                     )
                 }
             } else {
@@ -498,8 +546,8 @@ public class ARTRestInternal: NSObject {
             
             if retries < self.options.httpMaxRetryCount && self.shouldRetryWithFallback(updatedRequest, response: response, error: finalError) {
                 if blockFallbacks == nil {
-                    let hosts = ARTFallbackHosts.hosts(from: self.options)
-                    blockFallbacks = ARTFallback(fallbackHosts: hosts, shuffleArray: self.options.testOptions?.shuffleArray ?? true)
+                    let hosts = ARTFallbackHosts.hosts(fromOptions: self.options)
+                    blockFallbacks = ARTFallback(fallbackHosts: hosts, shuffleArray: self.options.testOptions.shuffleArray)
                 }
                 
                 if let fallback = blockFallbacks, let host = fallback.popFallbackHost() {
@@ -508,9 +556,9 @@ public class ARTRestInternal: NSObject {
                     self.currentFallbackHost = host
                     var newRequest = updatedRequest
                     newRequest.setValue(host, forHTTPHeaderField: "Host")
-                    newRequest.url = URL.copy(from: updatedRequest.url!, withHost: host)
+                    newRequest.url = URL.copyFromURL(updatedRequest.url!, withHost: host)
                     
-                    let newTask = self.executeRequest(newRequest,
+                    _ = self.executeRequest(newRequest,
                                                     fallbacks: blockFallbacks,
                                                     retries: retries + 1,
                                                     originalRequestId: originalRequestId,
@@ -524,7 +572,7 @@ public class ARTRestInternal: NSObject {
                 if let artError = error as? ARTErrorInfo {
                     completion(response, finalData, artError)
                 } else {
-                    completion(response, finalData, NSError.copy(fromError: error, withRequestId: requestId))
+                    completion(response, finalData, NSError.copyFromError(error, requestId: requestId))
                 }
             } else {
                 completion(response, finalData, nil)
@@ -537,7 +585,7 @@ public class ARTRestInternal: NSObject {
     // swift-migration: original location ARTRest.m, line 492
     private func errorBecauseShouldNotRenewToken(_ error: ARTErrorInfo?) -> ARTErrorInfo? {
         if let error = error, ARTDefaultErrorChecker().isTokenError(error) {
-            if auth.tokenIsRenewable() {
+            if auth.tokenIsRenewable {
                 return nil
             }
             return ARTErrorInfo.create(withCode: ARTStateRequestTokenFailed, message: ARTAblyMessageNoMeansToRenewToken)
@@ -569,7 +617,7 @@ public class ARTRestInternal: NSObject {
         if let prioritizedHost = prioritizedHost {
             return prioritizedHost
         }
-        return options.restHost
+        return options.restHost ?? ARTDefault.restHost()
     }
     
     // swift-migration: original location ARTRest.m, line 527
@@ -585,7 +633,7 @@ public class ARTRestInternal: NSObject {
     }
     
     // swift-migration: original location ARTRest.m, line 539
-    public func time(wrapperSDKAgents: [String: String]?, completion: @escaping ARTDateTimeCallback) {
+    internal func time(wrapperSDKAgents: NSStringDictionary?, completion: @escaping ARTDateTimeCallback) {
         let userCallback = completion
         let wrappedCallback: ARTDateTimeCallback = { time, error in
             self.userQueue.async {
@@ -600,7 +648,7 @@ public class ARTRestInternal: NSObject {
     
     // swift-migration: original location ARTRest+Private.h, line 69 and ARTRest.m, line 555
     @discardableResult
-    public func _time(wrapperSDKAgents: [String: String]?, completion: @escaping ARTDateTimeCallback) -> ARTCancellable? {
+    internal func _time(wrapperSDKAgents: NSStringDictionary?, completion: @escaping ARTDateTimeCallback) -> ARTCancellable? {
         let requestUrl = URL(string: "/time", relativeTo: baseUrl)!
         var request = URLRequest(url: requestUrl)
         request.httpMethod = "GET"
@@ -621,19 +669,17 @@ public class ARTRestInternal: NSObject {
             }
             
             if response.statusCode >= 400 {
-                var decodeError: Error?
-                let dataError = self.encoders[response.mimeType]?.decodeErrorInfo(data ?? Data(), error: &decodeError)
-                completion(nil, dataError ?? decodeError)
+                let dataError = try? self.encoders[response.mimeType ?? ""]?.decodeErrorInfo(data ?? Data())
+                completion(nil, dataError)
             } else {
-                var decodeError: Error?
-                let time = self.encoders[response.mimeType]?.decodeTime(data ?? Data(), error: &decodeError)
-                completion(time, decodeError)
+                let time = try? self.encoders[response.mimeType ?? ""]?.decodeTime(data ?? Data())
+                completion(time, nil)
             }
         }
     }
     
-    // swift-migration: original location ARTRest.m, line 579
-    public func request(_ method: String, path: String, params: [String: String]?, body: Any?, headers: [String: String]?, wrapperSDKAgents: [String: String]?, callback: @escaping ARTHTTPPaginatedCallback, error: UnsafeMutablePointer<Error?>?) -> Bool {
+    // swift-migration: original location ARTRest+Private.h, line 100 and ARTRest.m, line 579
+    internal func request(_ method: String, path: String, params: NSStringDictionary?, body: Any?, headers: NSStringDictionary?, wrapperSDKAgents: NSStringDictionary?, callback: @escaping ARTHTTPPaginatedCallback, error: inout Error?) -> Bool {
         
         let userCallback = callback
         let wrappedCallback: ARTHTTPPaginatedCallback = { response, error in
@@ -644,64 +690,60 @@ public class ARTRestInternal: NSObject {
         
         let allowedMethods = ["get", "post", "patch", "put", "delete"]
         if !allowedMethods.contains(method.lowercased()) {
-            if let errorPtr = error {
-                errorPtr.pointee = NSError(
-                    domain: ARTAblyErrorDomain,
-                    code: ARTCustomRequestErrorInvalidMethod.rawValue,
-                    userInfo: [NSLocalizedDescriptionKey: "Method isn't valid."]
-                )
-            }
+            error = NSError(
+                domain: ARTAblyErrorDomain,
+                code: 40005,
+                userInfo: [NSLocalizedDescriptionKey: "Method isn't valid."]
+            )
             return false
         }
         
         if let body = body {
             if !(body is [String: Any]) && !(body is [Any]) {
-                if let errorPtr = error {
-                    errorPtr.pointee = NSError(
-                        domain: ARTAblyErrorDomain,
-                        code: ARTCustomRequestErrorInvalidBody.rawValue,
-                        userInfo: [NSLocalizedDescriptionKey: "Body should be a Dictionary or an Array."]
-                    )
-                }
+                error = NSError(
+                    domain: ARTAblyErrorDomain,
+                    code: 40006,
+                    userInfo: [NSLocalizedDescriptionKey: "Body should be a Dictionary or an Array."]
+                )
                 return false
             }
         }
         
         if path.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            if let errorPtr = error {
-                errorPtr.pointee = NSError(
-                    domain: ARTAblyErrorDomain,
-                    code: ARTCustomRequestErrorInvalidPath.rawValue,
-                    userInfo: [NSLocalizedDescriptionKey: "Path cannot be empty."]
-                )
-            }
+            error = NSError(
+                domain: ARTAblyErrorDomain,
+                code: 40007,
+                userInfo: [NSLocalizedDescriptionKey: "Path cannot be empty."]
+            )
             return false
         }
         
         guard let url = URL(string: path, relativeTo: baseUrl) else {
-            if let errorPtr = error {
-                errorPtr.pointee = NSError(
-                    domain: ARTAblyErrorDomain,
-                    code: ARTCustomRequestErrorInvalidPath.rawValue,
-                    userInfo: [NSLocalizedDescriptionKey: "Path isn't valid for an URL."]
-                )
-            }
+            error = NSError(
+                domain: ARTAblyErrorDomain,
+                code: 40007,
+                userInfo: [NSLocalizedDescriptionKey: "Path isn't valid for an URL."]
+            )
             return false
         }
         
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
         var queryItems: [URLQueryItem] = []
         
-        params?.forEach { key, value in
-            queryItems.append(URLQueryItem(name: key, value: value))
+        if let params = params {
+            for (key, value) in params {
+                queryItems.append(URLQueryItem(name: key, value: value))
+            }
         }
         components.queryItems = queryItems
         
         var mutableRequest = URLRequest(url: components.url!)
         mutableRequest.httpMethod = method
         
-        headers?.forEach { key, value in
-            mutableRequest.addValue(value, forHTTPHeaderField: key)
+        if let headers = headers {
+            for (key, value) in headers {
+                mutableRequest.addValue(value, forHTTPHeaderField: key)
+            }
         }
         
         if let body = body {
@@ -715,14 +757,12 @@ public class ARTRestInternal: NSObject {
                     mutableRequest.setValue("\(bodyData?.count ?? 0)", forHTTPHeaderField: "Content-Length")
                 }
             } catch let encodeError {
-                if let errorPtr = error {
-                    errorPtr.pointee = encodeError
-                }
+                error = encodeError
                 return false
             }
         }
         
-        let request = mutableRequest.settingAcceptHeader(defaultEncoder: defaultEncoder, encoders: encoders)
+        let request = mutableRequest.settingAcceptHeader(defaultEncoder, encoders: encoders)
         
         ARTLogDebug(logger, "request \(method) \(path)")
         queue.async {
@@ -734,7 +774,7 @@ public class ARTRestInternal: NSObject {
     
     // swift-migration: original location ARTRest+Private.h, line 85 and ARTRest.m, line 679
     @discardableResult
-    public func internetIsUp(_ callback: @escaping (Bool) -> Void) -> ARTCancellable? {
+    internal func internetIsUp(_ callback: @escaping (Bool) -> Void) -> ARTCancellable? {
         let requestUrl = URL(string: "https://internet-up.ably-realtime.com/is-the-internet-up.txt")!
         var request = URLRequest(url: requestUrl)
         request.httpMethod = "GET"
@@ -751,13 +791,13 @@ public class ARTRestInternal: NSObject {
     }
     
     // swift-migration: original location ARTRest+Private.h, line 109 and ARTRest.m, line 694
-    public func stats(wrapperSDKAgents: [String: String]?, completion: @escaping ARTPaginatedStatsCallback) -> Bool {
-        let nilError: UnsafeMutablePointer<Error?>? = nil
-        return stats(ARTStatsQuery(), wrapperSDKAgents: wrapperSDKAgents, callback: completion, error: nilError)
+    internal func stats(wrapperSDKAgents: NSStringDictionary?, completion: @escaping ARTPaginatedStatsCallback) -> Bool {
+        var error: Error?
+        return stats(ARTStatsQuery(), wrapperSDKAgents: wrapperSDKAgents, callback: completion, error: &error)
     }
     
     // swift-migration: original location ARTRest+Private.h, line 112 and ARTRest.m, line 699
-    public func stats(_ query: ARTStatsQuery?, wrapperSDKAgents: [String: String]?, callback: @escaping ARTPaginatedStatsCallback, error: UnsafeMutablePointer<Error?>?) -> Bool {
+    internal func stats(_ query: ARTStatsQuery?, wrapperSDKAgents: NSStringDictionary?, callback: @escaping ARTPaginatedStatsCallback, error: inout Error?) -> Bool {
         
         let userCallback = callback
         let wrappedCallback: ARTPaginatedStatsCallback = { result, error in
@@ -769,24 +809,20 @@ public class ARTRestInternal: NSObject {
         let actualQuery = query ?? ARTStatsQuery()
         
         if actualQuery.limit > 1000 {
-            if let errorPtr = error {
-                errorPtr.pointee = NSError(
-                    domain: ARTAblyErrorDomain,
-                    code: ARTDataQueryError.limit.rawValue,
-                    userInfo: [NSLocalizedDescriptionKey: "Limit supports up to 1000 results only"]
-                )
-            }
+            error = NSError(
+                domain: ARTAblyErrorDomain,
+                code: ARTDataQueryError.limit.rawValue,
+                userInfo: [NSLocalizedDescriptionKey: "Limit supports up to 1000 results only"]
+            )
             return false
         }
         
         if let start = actualQuery.start, let end = actualQuery.end, start.compare(end) == .orderedDescending {
-            if let errorPtr = error {
-                errorPtr.pointee = NSError(
-                    domain: ARTAblyErrorDomain,
-                    code: ARTDataQueryError.timestampRange.rawValue,
-                    userInfo: [NSLocalizedDescriptionKey: "Start must be equal to or less than end"]
-                )
-            }
+            error = NSError(
+                domain: ARTAblyErrorDomain,
+                code: ARTDataQueryError.timestampRange.rawValue,
+                userInfo: [NSLocalizedDescriptionKey: "Start must be equal to or less than end"]
+            )
             return false
         }
         
@@ -795,9 +831,7 @@ public class ARTRestInternal: NSObject {
         requestUrl.queryItems = actualQuery.asQueryItems(&queryError)
         
         if let queryError = queryError {
-            if let errorPtr = error {
-                errorPtr.pointee = queryError
-            }
+            error = queryError
             return false
         }
         
@@ -806,11 +840,10 @@ public class ARTRestInternal: NSObject {
         let responseProcessor: ARTPaginatedResultResponseProcessor = { response, data, errorPtr in
             guard let response = response, let mimeType = response.mimeType else { return nil }
             do {
-                return try self.encoders[mimeType]?.decodeStats(data ?? Data())
-            } catch let caughtError {
-                if let errorPtr = errorPtr {
-                    errorPtr.pointee = caughtError
-                }
+                let result = try self.encoders[mimeType]?.decodeStats(data ?? Data())
+                return result
+            } catch let error {
+                errorPtr = error
                 return nil
             }
         }
@@ -823,7 +856,7 @@ public class ARTRestInternal: NSObject {
     }
     
     // swift-migration: original location ARTRest.m, line 328
-    private func agentIdentifier(wrapperSDKAgents: [String: String]?) -> String {
+    private func agentIdentifier(wrapperSDKAgents: NSStringDictionary?) -> String {
         var additionalAgents: [String: String] = [:]
         
         if let agents = options.agents {
@@ -833,8 +866,8 @@ public class ARTRestInternal: NSObject {
         }
         
         if let wrapperAgents = wrapperSDKAgents {
-            for (agentName, agentValue) in wrapperAgents {
-                additionalAgents[agentName] = agentValue
+            for (key, value) in wrapperAgents {
+                additionalAgents[key] = value
             }
         }
         
@@ -941,7 +974,55 @@ public class ARTRestChannels: NSObject {
 
 // swift-migration: ARTRestChannelsInternal placeholder defined in MigrationPlaceholders.swift
 
-// Additional utility functions needed for compilation
-private func encodeBase64(_ string: String) -> String {
-    return Data(string.utf8).base64EncodedString()
+// swift-migration: encodeBase64 and art_shortString functions implemented in other files
+// Removed duplicate implementations to avoid redeclaration errors
+
+// swift-migration: Extension for URLRequest to add helper methods
+extension URLRequest {
+    func settingAcceptHeader(_ defaultEncoder: ARTEncoder, encoders: [String: ARTEncoder]) -> URLRequest {
+        var request = self
+        let accept = encoders.values.map { $0.mimeType() }.joined(separator: ",")
+        request.setValue(accept, forHTTPHeaderField: "Accept")
+        return request
+    }
+    
+    // swift-migration: appendingQueryItem method implemented in NSURLRequest+ARTUtils.swift
+    
+    func replacingHost(_ host: String) -> URLRequest {
+        guard let url = self.url,
+              var components = URLComponents(url: url, resolvingAgainstBaseURL: true) else {
+            return self
+        }
+        
+        components.host = host
+        var request = self
+        request.url = components.url
+        return request
+    }
 }
+
+// swift-migration: Extension for NSURL to add helper methods
+extension NSURL {
+    static func copyFromURL(_ url: URL, withHost host: String) -> URL? {
+        guard var components = URLComponents(url: url, resolvingAgainstBaseURL: true) else {
+            return nil
+        }
+        components.host = host
+        return components.url
+    }
+}
+
+// swift-migration: Extension for NSError to add helper methods
+extension NSError {
+    static func copyFromError(_ error: Error, requestId: String?) -> NSError {
+        let nsError = error as NSError
+        var userInfo = nsError.userInfo
+        if let requestId = requestId {
+            userInfo["requestId"] = requestId
+        }
+        return NSError(domain: nsError.domain, code: nsError.code, userInfo: userInfo)
+    }
+}
+
+// swift-migration: HTTPURLResponse already has mimeType property as MIMEType
+// Using the existing MIMEType property from Foundation instead of creating our own

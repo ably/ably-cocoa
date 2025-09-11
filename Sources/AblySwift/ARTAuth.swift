@@ -213,7 +213,7 @@ internal class ARTAuthInternal {
         }
         
         guard let rest = rest else { return nil }
-        urlComponents?.queryItems?.append(URLQueryItem(name: "format", value: rest.defaultEncoder().formatAsString()))
+        urlComponents?.queryItems?.append(URLQueryItem(name: "format", value: rest.defaultEncoder.formatAsString()))
         
         // swift-migration: Handling '+' sign pitfall as documented in original code
         if let percentEncodedQuery = urlComponents?.percentEncodedQuery {
@@ -242,7 +242,7 @@ internal class ARTAuthInternal {
             }
         } else {
             guard let rest = rest else { return nil }
-            request.setValue(rest.defaultEncoder().mimeType(), forHTTPHeaderField: "Accept")
+            request.setValue(rest.defaultEncoder.mimeType(), forHTTPHeaderField: "Accept")
         }
         
         if let authHeaders = options.authHeaders {
@@ -479,7 +479,7 @@ internal class ARTAuthInternal {
             return nil
         }
         
-        let encoder = rest.defaultEncoder()
+        let encoder = rest.defaultEncoder
         
         let keyName = tokenRequest.keyName
         
@@ -693,7 +693,7 @@ internal class ARTAuthInternal {
                     return nil
                 }
                 
-                return rest._time(withWrapperSDKAgents: nil) { time, error in
+                return rest._time(wrapperSDKAgents: nil) { time, error in
                     if let error = error {
                         callback(nil, error)
                     } else if let time = time {

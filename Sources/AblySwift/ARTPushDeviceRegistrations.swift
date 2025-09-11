@@ -140,11 +140,11 @@ internal class ARTPushDeviceRegistrationsInternal: NSObject {
             var request = URLRequest(url: components.url!)
             request.httpMethod = "PUT"
             do {
-                request.httpBody = try rest.defaultEncoder().encodeDeviceDetails(deviceDetails)
+                request.httpBody = try rest.defaultEncoder.encodeDeviceDetails(deviceDetails)
             } catch {
                 request.httpBody = nil
             }
-            request.setValue(rest.defaultEncoder().mimeType(), forHTTPHeaderField: "Content-Type")
+            request.setValue(rest.defaultEncoder.mimeType(), forHTTPHeaderField: "Content-Type")
             
             if let deviceId = deviceDetails.id, let localDevice = local,
                let mutableRequest = (request.settingDeviceAuthentication(deviceId, localDevice: localDevice, logger: self._logger) as NSURLRequest).mutableCopy() as? NSMutableURLRequest {
@@ -157,7 +157,7 @@ internal class ARTPushDeviceRegistrationsInternal: NSObject {
                     if response.statusCode == 200 {
                         if let data = data {
                             do {
-                                let deviceDetails = try rest.defaultEncoder().decodeDeviceDetails(data)
+                                let deviceDetails = try rest.defaultEncoder.decodeDeviceDetails(data)
                                 if let deviceDetails = deviceDetails {
                                     ARTLogDebug(self._logger, "\(String(describing: type(of: self))): successfully saved device \(deviceDetails.id ?? "")")
                                 }
@@ -310,7 +310,7 @@ internal class ARTPushDeviceRegistrationsInternal: NSObject {
             
             var request = URLRequest(url: components.url!)
             request.httpMethod = "DELETE"
-            request.setValue(rest.defaultEncoder().mimeType(), forHTTPHeaderField: "Content-Type")
+            request.setValue(rest.defaultEncoder.mimeType(), forHTTPHeaderField: "Content-Type")
             
             ARTLogDebug(self._logger, "remove device with request \(request)")
             _ = rest.executeRequest(request, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in

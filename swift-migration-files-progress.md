@@ -733,10 +733,15 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 ### ARTRest.m → ARTRest.swift
 - **Headers**: ARTRest.h, ARTRest+Private.h
-- **Status**: Completed (Partial) ⚠️ 
+- **Status**: Completed ✅
 - **Notes**: 
   - **Migration Decisions**: Migrated both public ARTRest class and internal ARTRestInternal class. This is a complex core class with extensive REST API functionality, HTTP request execution, authentication integration, device management, push notifications, and statistics retrieval. Preserved all callback patterns and threading behavior exactly as original - used `userQueue` for callback dispatch, maintained fallback retry logic, and exact HTTP execution patterns.
   - **Class Structure**: Migrated ARTRest public facade class with ARTRestInternal backing implementation. Implemented full REST client functionality including time(), request(), and stats() methods with proper authentication options and error handling
+  - **PRD Compliance**: Converted `request()` and `stats()` methods from error pointer pattern to throwing functions as required by PRD. Maintained original error handling behavior while using Swift's throwing mechanism.
+  - **Threading Behavior**: Preserved exact queue behavior - `internalAsync` uses `_internal.queue`, all callbacks dispatched to `userQueue`, no changes to threading patterns
+  - **iOS Support**: Added storage property for device management, migrated all device-related functionality including push notification token handling
+  - **Extensions Added**: Added URLRequest extensions for HTTP header management, NSURL extensions for host manipulation, NSError extensions for request ID copying
+  - **Access Control**: Applied proper access control based on header locations - public for ARTRest.h declarations, internal for ARTRest+Private.h declarations
   - **Complex Logic**: Preserved sophisticated fallback host management with retry timeouts, HTTP request authentication with basic/token auth patterns, request ID generation, agent header construction, and comprehensive error handling including token renewal logic
   - **Platform Support**: Maintained iOS-specific device management while ensuring non-iOS compilation compatibility using `#if os(iOS)` conditionals
   - **Dependencies**: Requires many unmigrated classes including ARTRestChannels, ARTAuthInternal, ARTPushInternal, ARTJsonLikeEncoder, ARTFallback, ARTHTTPExecutor, ARTDefaultErrorChecker, and various error constants

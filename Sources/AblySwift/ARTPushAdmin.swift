@@ -107,8 +107,8 @@ internal class ARTPushAdminInternal: NSObject {
             body.addEntries(from: data)
             
             do {
-                request.httpBody = try rest.defaultEncoder().encode(any: body)
-                request.setValue(rest.defaultEncoder().mimeType(), forHTTPHeaderField: "Content-Type")
+                request.httpBody = try rest.defaultEncoder.encode(any: body)
+                request.setValue(rest.defaultEncoder.mimeType(), forHTTPHeaderField: "Content-Type")
 
                 ARTLogDebug(self.logger, "push notification to a single device \(request)")
                 _ = rest.executeRequest(request as URLRequest, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { [weak self] response, data, error in
