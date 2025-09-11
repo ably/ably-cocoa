@@ -1,7 +1,6 @@
 import Foundation
 
-// swift-migration: Placeholder typealias for stats callback
-public typealias ARTPaginatedStatsCallback = (ARTPaginatedResult<ARTStats>?, ARTErrorInfo?) -> Void
+// swift-migration: ARTPaginatedStatsCallback now defined in ARTTypes.swift
 
 // swift-migration: original location ARTRest.h, line 22
 public protocol ARTRestInstanceMethodsProtocol: NSObjectProtocol {

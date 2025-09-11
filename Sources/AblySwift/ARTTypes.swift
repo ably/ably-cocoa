@@ -597,3 +597,91 @@ public typealias ARTResultCallback = (Any?, Error?) -> Void
 
 /// :nodoc:  
 public typealias ARTDateTimeCallback = (Date?, Error?) -> Void
+
+// swift-migration: original location ARTTypes.h, line 502
+/// :nodoc:
+public typealias ARTMessageCallback = (ARTMessage) -> Void
+
+// swift-migration: original location ARTTypes.h, line 505
+/// :nodoc:
+public typealias ARTChannelStateCallback = (ARTChannelStateChange) -> Void
+
+// swift-migration: original location ARTTypes.h, line 508
+/// :nodoc:
+public typealias ARTConnectionStateCallback = (ARTConnectionStateChange) -> Void
+
+// swift-migration: original location ARTTypes.h, line 511
+/// :nodoc:
+public typealias ARTPresenceMessageCallback = (ARTPresenceMessage) -> Void
+
+// swift-migration: original location ARTTypes.h, line 514
+/// :nodoc:
+public typealias ARTPresenceMessageErrorCallback = (ARTPresenceMessage, ARTErrorInfo?) -> Void
+
+// swift-migration: original location ARTTypes.h, line 517
+/// :nodoc:
+public typealias ARTPresenceMessagesCallback = ([ARTPresenceMessage]?, ARTErrorInfo?) -> Void
+
+// swift-migration: original location ARTTypes.h, line 520
+/// :nodoc:
+public typealias ARTAnnotationCallback = (ARTAnnotation) -> Void
+
+// swift-migration: original location ARTTypes.h, line 523
+/// :nodoc:
+public typealias ARTAnnotationErrorCallback = (ARTAnnotation, ARTErrorInfo?) -> Void
+
+// swift-migration: original location ARTTypes.h, line 526
+/// :nodoc:
+public typealias ARTPaginatedAnnotationsCallback = (ARTPaginatedResult<ARTAnnotation>?, ARTErrorInfo?) -> Void
+
+// swift-migration: original location ARTTypes.h, line 529
+/// :nodoc:
+public typealias ARTChannelDetailsCallback = (ARTChannelDetails?, ARTErrorInfo?) -> Void
+
+// swift-migration: original location ARTTypes.h, line 532
+/// :nodoc:
+public typealias ARTStatusCallback = (ARTStatus) -> Void
+
+// swift-migration: original location ARTTypes.h, line 535
+/// :nodoc:
+public typealias ARTURLRequestCallback = (HTTPURLResponse?, Data?, Error?) -> Void
+
+// swift-migration: original location ARTTypes.h, line 538
+/// :nodoc:
+public typealias ARTTokenDetailsCallback = @Sendable (ARTTokenDetails?, Error?) -> Void
+
+// swift-migration: original location ARTTypes.h, line 541
+/// :nodoc:
+public typealias ARTTokenDetailsCompatibleCallback = @Sendable (ARTTokenDetailsCompatible?, Error?) -> Void
+
+// swift-migration: original location ARTTypes.h, line 544
+/// :nodoc:
+public typealias ARTAuthCallback = @Sendable (ARTTokenParams?, @escaping ARTTokenDetailsCompatibleCallback) -> Void
+
+// swift-migration: original location ARTTypes.h, line 547
+/// :nodoc:
+public typealias ARTHTTPPaginatedCallback = (ARTHTTPPaginatedResponse?, ARTErrorInfo?) -> Void
+
+// swift-migration: original location ARTTypes.h, line 550
+/// :nodoc:
+public typealias ARTPaginatedStatsCallback = (ARTPaginatedResult<ARTStats>?, ARTErrorInfo?) -> Void
+
+// swift-migration: original location ARTTypes.h, line 553
+/// :nodoc:
+public typealias ARTPaginatedPresenceCallback = (ARTPaginatedResult<ARTPresenceMessage>?, ARTErrorInfo?) -> Void
+
+// swift-migration: original location ARTTypes.h, line 556
+/// :nodoc:
+public typealias ARTPaginatedPushChannelCallback = (ARTPaginatedResult<ARTPushChannelSubscription>?, ARTErrorInfo?) -> Void
+
+// swift-migration: original location ARTTypes.h, line 559
+/// :nodoc:
+public typealias ARTPaginatedMessagesCallback = (ARTPaginatedResult<ARTMessage>?, ARTErrorInfo?) -> Void
+
+// swift-migration: original location ARTTypes.h, line 562
+/// :nodoc:
+public typealias ARTPaginatedDeviceDetailsCallback = (ARTPaginatedResult<ARTDeviceDetails>?, ARTErrorInfo?) -> Void
+
+// swift-migration: original location ARTTypes.h, line 565
+/// :nodoc:
+public typealias ARTPaginatedTextCallback = (ARTPaginatedResult<String>?, ARTErrorInfo?) -> Void

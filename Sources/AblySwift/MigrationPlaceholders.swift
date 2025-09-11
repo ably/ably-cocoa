@@ -49,8 +49,7 @@ public func ARTLogDebug(_ logger: ARTInternalLog, _ message: String) {
     // Placeholder - actual implementation will inject file/line info
 }
 
-// Placeholder typealias for callbacks
-public typealias ARTTokenDetailsCallback = (ARTTokenDetails?, Error?) -> Void
+// swift-migration: ARTTokenDetailsCallback now defined in ARTTypes.swift
 
 // swift-migration: ARTTokenDetails placeholder removed - now implemented in ARTTokenDetails.swift
 
@@ -87,8 +86,7 @@ public enum ARTRealtimeConnectionEvent: Int {
     case update = 8
 }
 
-// Placeholder for ARTConnectionStateCallback
-public typealias ARTConnectionStateCallback = (ARTConnectionStateChange) -> Void
+// swift-migration: ARTConnectionStateCallback now defined in ARTTypes.swift
 
 // swift-migration: ARTConnectionStateChange and related functions moved to ARTTypes.swift
 
@@ -246,9 +244,7 @@ public let ARTAuthMethodToken = ARTAuthMethod.token
 
 // swift-migration: ARTTokenDetailsCompatible protocol moved to ARTAuthOptions.swift
 
-// Placeholder callback types
-public typealias ARTTokenDetailsCompatibleCallback = (ARTTokenDetailsCompatible?, Error?) -> Void
-public typealias ARTAuthCallback = (ARTTokenParams?, @escaping ARTTokenDetailsCompatibleCallback) -> Void
+// swift-migration: ARTTokenDetailsCompatibleCallback and ARTAuthCallback now defined in ARTTypes.swift
 
 // Placeholder function for creating cancellable from callback
 public func artCancellableFromCallback(
@@ -288,8 +284,7 @@ public protocol ARTDeviceStorage {
 
 // swift-migration: ARTPaginatedResult placeholder removed - now implemented in ARTPaginatedResult.swift
 
-// Placeholder callback types
-public typealias ARTPaginatedMessagesCallback = (ARTPaginatedResult<ARTMessage>?, ARTErrorInfo?) -> Void
+// swift-migration: ARTPaginatedMessagesCallback now defined in ARTTypes.swift
 
 // swift-migration: ARTState enum placeholder removed - now implemented in ARTStatus.swift
 
@@ -395,8 +390,7 @@ public enum ARTQueryDirection: UInt {
 
 // Logging functions implemented in ARTInternalLog.swift
 
-// Placeholder for network types
-public typealias ARTURLRequestCallback = (HTTPURLResponse?, Data?, Error?) -> Void
+// swift-migration: ARTURLRequestCallback now defined in ARTTypes.swift
 
 // swift-migration: ARTURLSession protocol and ARTURLSessionServerTrust class placeholders removed - now implemented in ARTURLSessionServerTrust.swift
 
@@ -423,8 +417,7 @@ public protocol ARTVersion2Log {
 
 // Placeholders for ARTRest types
 
-// Placeholder for ARTHTTPPaginatedCallback
-public typealias ARTHTTPPaginatedCallback = (ARTHTTPPaginatedResponse?, ARTErrorInfo?) -> Void
+// swift-migration: ARTHTTPPaginatedCallback now defined in ARTTypes.swift
 
 // Placeholder for ARTPaginatedResultResponseProcessor
 // swift-migration: Changed from inout Error? parameter to throws pattern per PRD requirements
@@ -632,8 +625,7 @@ internal protocol ARTReachability: NSObjectProtocol {
 
 // swift-migration: ARTAuthentication enum already defined above
 
-// ARTStatusCallback and ARTQueuedMessage placeholders
-public typealias ARTStatusCallback = (ARTStatus) -> Void
+// swift-migration: ARTStatusCallback now defined in ARTTypes.swift
 
 // ARTQueuedMessage implemented in ARTQueuedMessage.swift
 
@@ -644,8 +636,7 @@ extension ARTProtocolMessage {
     }
 }
 
-// Placeholder callback types for ARTPresence
-public typealias ARTPaginatedPresenceCallback = (ARTPaginatedResult<ARTPresenceMessage>?, ARTErrorInfo?) -> Void
+// swift-migration: ARTPaginatedPresenceCallback now defined in ARTTypes.swift
 
 // swift-migration: ARTPresenceQuery now implemented
 
@@ -717,8 +708,7 @@ public class ARTRealtimeInternal {
 
 // swift-migration: ARTPushRecipient and ARTJsonObject moved to ARTTypes.swift
 
-// Placeholder for ARTPaginatedPushChannelCallback
-public typealias ARTPaginatedPushChannelCallback = (ARTPaginatedResult<ARTPushChannelSubscription>?, ARTErrorInfo?) -> Void
+// swift-migration: ARTPaginatedPushChannelCallback now defined in ARTTypes.swift
 
 // swift-migration: ARTDataQueryError moved to ARTTypes.swift
 
@@ -745,11 +735,7 @@ extension Dictionary where Key == String, Value == String {
 
 // swift-migration: String art_shortString method was a placeholder - not needed in actual implementation
 
-// Placeholder for ARTPaginatedTextCallback
-public typealias ARTPaginatedTextCallback = (ARTPaginatedResult<String>?, ARTErrorInfo?) -> Void
-
-// Placeholder for ARTPaginatedDeviceDetailsCallback  
-public typealias ARTPaginatedDeviceDetailsCallback = (ARTPaginatedResult<ARTDeviceDetails>?, ARTErrorInfo?) -> Void
+// swift-migration: ARTPaginatedTextCallback and ARTPaginatedDeviceDetailsCallback now defined in ARTTypes.swift
 
 // swift-migration: ARTErrorInfo methods now defined in ARTStatus.swift
 
@@ -946,8 +932,7 @@ public class ARTJsonLikeEncoderPlaceholder: ARTEncoder {
 
 // swift-migration: ARTRestChannels and ARTRestChannelsInternal now implemented
 
-// Callback types needed for REST Channel migration
-public typealias ARTChannelDetailsCallback = (ARTChannelDetails?, ARTErrorInfo?) -> Void
+// swift-migration: ARTChannelDetailsCallback now defined in ARTTypes.swift
 
 // State codes needed for REST Channel migration  
 public enum ARTStateCode: Int {
@@ -960,8 +945,7 @@ public enum ARTStateCode: Int {
 
 // swift-migration: ARTRestPresenceProtocol now implemented in ARTRestPresence.swift
 
-// swift-migration: ARTAnnotationCallback needed for ARTRealtimeAnnotations migration
-public typealias ARTAnnotationCallback = (ARTAnnotation?) -> Void
+// swift-migration: ARTAnnotationCallback now defined in ARTTypes.swift
 
 // swift-migration: Error constant for ARTRealtimeAnnotations migration
 public let ARTErrorChannelOperationFailedInvalidState = 91001
