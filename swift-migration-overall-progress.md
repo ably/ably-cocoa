@@ -89,9 +89,9 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTRealtimeTransport.m | ARTRealtimeTransport.h | ARTRealtimeTransport.swift | Completed |
 | ARTRealtimeTransportFactory.m | ARTRealtimeTransportFactory.h | ARTRealtimeTransportFactory.swift | Completed |
 | ARTRest.m | ARTRest.h, ARTRest+Private.h | ARTRest.swift | Completed ✅ |
-| ARTRestChannel.m | ARTRestChannel.h, ARTRestChannel+Private.h | ARTRestChannel.swift | Not Started |
-| ARTRestChannels.m | ARTRestChannels.h, ARTRestChannels+Private.h | ARTRestChannels.swift | Not Started |
-| ARTRestPresence.m | ARTRestPresence.h, ARTRestPresence+Private.h | ARTRestPresence.swift | Not Started |
+| ARTRestChannel.m | ARTRestChannel.h, ARTRestChannel+Private.h | ARTRestChannel.swift | Completed |
+| ARTRestChannels.m | ARTRestChannels.h, ARTRestChannels+Private.h | ARTRestChannels.swift | Completed |
+| ARTRestPresence.m | ARTRestPresence.h, ARTRestPresence+Private.h | ARTRestPresence.swift | Completed |
 | ARTRetrySequence.m | ARTRetrySequence.h | ARTRetrySequence.swift | Completed |
 | ARTStats.m | ARTStats.h | ARTStats.swift | Completed |
 | ARTStatus.m | ARTStatus.h | ARTStatus.swift | Completed |

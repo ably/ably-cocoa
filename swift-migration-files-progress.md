@@ -753,18 +753,30 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 ### ARTRestChannel.m → ARTRestChannel.swift
 - **Headers**: ARTRestChannel.h, ARTRestChannel+Private.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Both public ARTRestChannel wrapper and internal ARTRestChannelInternal implementation migrated. Preserved all REST channel functionality including message publishing, history retrieval, and channel status. Maintained original threading behavior using `_userQueue` for all callbacks. Fixed parameter name conflicts with Swift keywords using backticks.
+  - **Dependencies**: Uses ARTRestChannelProtocol, ARTChannelDetailsCallback, ARTStateCode placeholders from MigrationPlaceholders.swift
+  - **Compilation Errors**: Fixed string interpolation issue, encoder method signatures updated to use throws pattern, property setters corrected to use method calls
+  - **Location Comments**: Applied dual-location format for all classes and methods per PRD requirements
 
 ### ARTRestChannels.m → ARTRestChannels.swift
 - **Headers**: ARTRestChannels.h, ARTRestChannels+Private.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: Channel collection management with generic ARTChannels<ARTRestChannelInternal> implementation. Used placeholder delegate pattern to work around Swift initialization order requirements. Preserved all channel creation, retrieval, and lifecycle management functionality.
+  - **Dependencies**: Uses ARTChannels generic class, ARTChannelsDelegate protocol, ARTRestChannelsProtocol placeholder
+  - **Compilation Errors**: Fixed delegate initialization order using setValue() workaround for private property access
+  - **Location Comments**: Applied dual-location format for all classes and methods
 
 ### ARTRestPresence.m → ARTRestPresence.swift
 - **Headers**: ARTRestPresence.h, ARTRestPresence+Private.h
-- **Status**: Not Started
+- **Status**: Completed
 - **Notes**: 
+  - **Migration Decisions**: ARTPresenceQuery data class and ARTRestPresence with internal implementation migrated. Preserved all presence querying and history functionality. Maintained original threading behavior with `_userQueue` callbacks. Added ARTRestPresenceProtocol to placeholders.
+  - **Dependencies**: Uses ARTRestPresenceProtocol placeholder, ARTPresence base class with dummy channel initialization
+  - **Compilation Errors**: Fixed super.init() call with placeholder channel, encoder methods updated to throws pattern
+  - **Location Comments**: Applied dual-location format for all classes and methods per PRD requirements
 
 ### ARTRetrySequence.m → ARTRetrySequence.swift
 - **Headers**: ARTRetrySequence.h

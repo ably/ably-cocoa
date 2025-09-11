@@ -269,13 +269,7 @@ internal protocol ARTChannelsDelegate: AnyObject {
     func makeChannel(_ channel: String, options: ARTChannelOptions?) -> ARTChannel
 }
 
-// Placeholder for ARTRestChannel
-internal class ARTRestChannel: ARTChannel {
-    internal override init(name: String, andOptions options: ARTChannelOptions, rest: ARTRestInternal, logger: ARTInternalLog) {
-        super.init(name: name, andOptions: options, rest: rest, logger: logger)
-        fatalError("ARTRestChannel not yet migrated")
-    }
-}
+// swift-migration: ARTRestChannel now implemented
 
 // Additional placeholders for ARTClientOptions dependencies
 
@@ -612,19 +606,7 @@ extension ARTProtocolMessage {
 // Placeholder callback types for ARTPresence
 public typealias ARTPaginatedPresenceCallback = (ARTPaginatedResult<ARTPresenceMessage>?, ARTErrorInfo?) -> Void
 
-// Placeholder for ARTPresenceQuery
-public class ARTPresenceQuery: NSObject {
-    public var limit: UInt = 0
-    
-    public override init() {
-        super.init()
-        fatalError("ARTPresenceQuery not yet migrated")
-    }
-    
-    internal func asQueryItems() -> [URLQueryItem] {
-        fatalError("ARTPresenceQuery not yet migrated")
-    }
-}
+// swift-migration: ARTPresenceQuery now implemented
 
 // Placeholder types for Plugin architecture (from _AblyPluginSupportPrivate)
 public protocol APPublicRealtimeChannelUnderlyingObjects {
@@ -949,23 +931,38 @@ public class ARTJsonLikeEncoderPlaceholder: ARTEncoder {
 
 // swift-migration: ARTCustomRequestError already exists in ARTTypes.swift
 
-// Placeholder for ARTRestChannels
-public class ARTRestChannels: NSObject {
-    private let `internal`: ARTRestChannelsInternal
-    private let queuedDealloc: ARTQueuedDealloc
-    
-    internal init(internal: ARTRestChannelsInternal, queuedDealloc: ARTQueuedDealloc) {
-        self.`internal` = `internal`
-        self.queuedDealloc = queuedDealloc
-        super.init()
-        fatalError("ARTRestChannels not yet migrated")
-    }
+// swift-migration: ARTRestChannels and ARTRestChannelsInternal now implemented
+
+// Callback types needed for REST Channel migration
+public typealias ARTChannelDetailsCallback = (ARTChannelDetails?, ARTErrorInfo?) -> Void
+
+// State codes needed for REST Channel migration  
+public enum ARTStateCode: Int {
+    case mismatchedClientId
 }
 
-// Placeholder for ARTRestChannelsInternal
-public class ARTRestChannelsInternal: NSObject {
-    internal init(rest: ARTRestInternal, logger: ARTInternalLog) {
-        super.init()
-        fatalError("ARTRestChannelsInternal not yet migrated")
-    }
+// Protocol for REST Channel
+public protocol ARTRestChannelProtocol: ARTChannelProtocol {
+    var options: ARTChannelOptions? { get set }
+    func history(_ query: ARTDataQuery?, callback: @escaping ARTPaginatedMessagesCallback, error errorPtr: inout NSError?) -> Bool
+    func status(_ callback: @escaping ARTChannelDetailsCallback)
+    func setOptions(_ options: ARTChannelOptions?)
+}
+
+// Protocol for REST Channels
+public protocol ARTRestChannelsProtocol {
+    func exists(_ name: String) -> Bool
+    func release(_ name: String)
+    func get(_ name: String) -> ARTRestChannel
+    func get(_ name: String, options: ARTChannelOptions) -> ARTRestChannel
+    func iterate() -> any NSFastEnumeration
+}
+
+// Protocol for REST Presence
+public protocol ARTRestPresenceProtocol {
+    func get(_ callback: @escaping ARTPaginatedPresenceCallback)
+    func get(_ callback: @escaping ARTPaginatedPresenceCallback, error errorPtr: inout NSError?) -> Bool
+    func get(_ query: ARTPresenceQuery, callback: @escaping ARTPaginatedPresenceCallback, error errorPtr: inout NSError?) -> Bool
+    func history(_ callback: @escaping ARTPaginatedPresenceCallback)
+    func history(_ query: ARTDataQuery?, callback: @escaping ARTPaginatedPresenceCallback, error errorPtr: inout NSError?) -> Bool
 }
