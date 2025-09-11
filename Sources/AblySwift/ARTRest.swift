@@ -138,15 +138,7 @@ public class ARTRest: NSObject, ARTRestProtocol {
     
     // swift-migration: original location ARTRest.h, line 44 and ARTRest.m, line 109 - converted to throwing function per PRD
     public func request(_ method: String, path: String, params: NSStringDictionary?, body: Any?, headers: NSStringDictionary?, callback: @escaping ARTHTTPPaginatedCallback) throws {
-        var error: Error?
-        let success = _internal.request(method, path: path, params: params, body: body, headers: headers, wrapperSDKAgents: nil, callback: callback, error: &error)
-        if let error = error {
-            throw error
-        }
-        if !success {
-            // swift-migration: Maintain same error behavior as original - errors are provided via the error parameter
-            throw NSError(domain: ARTAblyErrorDomain, code: 40005, userInfo: [NSLocalizedDescriptionKey: "Request failed"])
-        }
+        try _internal.request(method, path: path, params: params, body: body, headers: headers, wrapperSDKAgents: nil, callback: callback)
     }
     
     // swift-migration: original location ARTRest.h, line 53 and ARTRest.m, line 119 - converted to throwing function per PRD
@@ -159,15 +151,7 @@ public class ARTRest: NSObject, ARTRestProtocol {
     
     // swift-migration: original location ARTRest.h, line 64 and ARTRest.m, line 124 - converted to throwing function per PRD
     public func stats(_ query: ARTStatsQuery?, callback: @escaping ARTPaginatedStatsCallback) throws {
-        var error: Error?
-        let success = _internal.stats(query, wrapperSDKAgents: nil, callback: callback, error: &error)
-        if let error = error {
-            throw error
-        }
-        if !success {
-            // swift-migration: Maintain same error behavior as original - errors are provided via the error parameter
-            throw NSError(domain: ARTAblyErrorDomain, code: 40003, userInfo: [NSLocalizedDescriptionKey: "Stats request failed"])
-        }
+        try _internal.stats(query, wrapperSDKAgents: nil, callback: callback)
     }
 }
 
@@ -679,7 +663,8 @@ public class ARTRestInternal: NSObject {
     }
     
     // swift-migration: original location ARTRest+Private.h, line 100 and ARTRest.m, line 579
-    internal func request(_ method: String, path: String, params: NSStringDictionary?, body: Any?, headers: NSStringDictionary?, wrapperSDKAgents: NSStringDictionary?, callback: @escaping ARTHTTPPaginatedCallback, error: inout Error?) -> Bool {
+    // swift-migration: Converted inout Error pattern to Swift throws pattern per PRD requirements
+    internal func request(_ method: String, path: String, params: NSStringDictionary?, body: Any?, headers: NSStringDictionary?, wrapperSDKAgents: NSStringDictionary?, callback: @escaping ARTHTTPPaginatedCallback) throws {
         
         let userCallback = callback
         let wrappedCallback: ARTHTTPPaginatedCallback = { response, error in
@@ -690,41 +675,37 @@ public class ARTRestInternal: NSObject {
         
         let allowedMethods = ["get", "post", "patch", "put", "delete"]
         if !allowedMethods.contains(method.lowercased()) {
-            error = NSError(
+            throw NSError(
                 domain: ARTAblyErrorDomain,
                 code: 40005,
                 userInfo: [NSLocalizedDescriptionKey: "Method isn't valid."]
             )
-            return false
         }
         
         if let body = body {
             if !(body is [String: Any]) && !(body is [Any]) {
-                error = NSError(
+                throw NSError(
                     domain: ARTAblyErrorDomain,
                     code: 40006,
                     userInfo: [NSLocalizedDescriptionKey: "Body should be a Dictionary or an Array."]
                 )
-                return false
             }
         }
         
         if path.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            error = NSError(
+            throw NSError(
                 domain: ARTAblyErrorDomain,
                 code: 40007,
                 userInfo: [NSLocalizedDescriptionKey: "Path cannot be empty."]
             )
-            return false
         }
         
         guard let url = URL(string: path, relativeTo: baseUrl) else {
-            error = NSError(
+            throw NSError(
                 domain: ARTAblyErrorDomain,
                 code: 40007,
                 userInfo: [NSLocalizedDescriptionKey: "Path isn't valid for an URL."]
             )
-            return false
         }
         
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
@@ -757,8 +738,7 @@ public class ARTRestInternal: NSObject {
                     mutableRequest.setValue("\(bodyData?.count ?? 0)", forHTTPHeaderField: "Content-Length")
                 }
             } catch let encodeError {
-                error = encodeError
-                return false
+                throw encodeError
             }
         }
         
@@ -768,8 +748,6 @@ public class ARTRestInternal: NSObject {
         queue.async {
             ARTHTTPPaginatedResponse.executePaginated(self, withRequest: request, wrapperSDKAgents: wrapperSDKAgents, logger: self.logger, callback: wrappedCallback)
         }
-        
-        return true
     }
     
     // swift-migration: original location ARTRest+Private.h, line 85 and ARTRest.m, line 679
@@ -792,12 +770,18 @@ public class ARTRestInternal: NSObject {
     
     // swift-migration: original location ARTRest+Private.h, line 109 and ARTRest.m, line 694
     internal func stats(wrapperSDKAgents: NSStringDictionary?, completion: @escaping ARTPaginatedStatsCallback) -> Bool {
-        var error: Error?
-        return stats(ARTStatsQuery(), wrapperSDKAgents: wrapperSDKAgents, callback: completion, error: &error)
+        do {
+            try stats(ARTStatsQuery(), wrapperSDKAgents: wrapperSDKAgents, callback: completion)
+            return true
+        } catch {
+            // swift-migration: Handle error appropriately - for now return false to maintain Bool return type
+            return false
+        }
     }
     
     // swift-migration: original location ARTRest+Private.h, line 112 and ARTRest.m, line 699
-    internal func stats(_ query: ARTStatsQuery?, wrapperSDKAgents: NSStringDictionary?, callback: @escaping ARTPaginatedStatsCallback, error: inout Error?) -> Bool {
+    // swift-migration: Converted inout Error pattern to Swift throws pattern per PRD requirements
+    internal func stats(_ query: ARTStatsQuery?, wrapperSDKAgents: NSStringDictionary?, callback: @escaping ARTPaginatedStatsCallback) throws {
         
         let userCallback = callback
         let wrappedCallback: ARTPaginatedStatsCallback = { result, error in
@@ -809,21 +793,19 @@ public class ARTRestInternal: NSObject {
         let actualQuery = query ?? ARTStatsQuery()
         
         if actualQuery.limit > 1000 {
-            error = NSError(
+            throw NSError(
                 domain: ARTAblyErrorDomain,
                 code: ARTDataQueryError.limit.rawValue,
                 userInfo: [NSLocalizedDescriptionKey: "Limit supports up to 1000 results only"]
             )
-            return false
         }
         
         if let start = actualQuery.start, let end = actualQuery.end, start.compare(end) == .orderedDescending {
-            error = NSError(
+            throw NSError(
                 domain: ARTAblyErrorDomain,
                 code: ARTDataQueryError.timestampRange.rawValue,
                 userInfo: [NSLocalizedDescriptionKey: "Start must be equal to or less than end"]
             )
-            return false
         }
         
         var requestUrl = URLComponents(string: "/stats")!
@@ -831,8 +813,7 @@ public class ARTRestInternal: NSObject {
         requestUrl.queryItems = actualQuery.asQueryItems(&queryError)
         
         if let queryError = queryError {
-            error = queryError
-            return false
+            throw queryError
         }
         
         let request = URLRequest(url: requestUrl.url(relativeTo: baseUrl)!)
@@ -851,8 +832,6 @@ public class ARTRestInternal: NSObject {
         queue.async {
             ARTPaginatedResult<ARTStats>.executePaginated(self, withRequest: request, andResponseProcessor: responseProcessor, wrapperSDKAgents: wrapperSDKAgents, logger: self.logger, callback: wrappedCallback)
         }
-        
-        return true
     }
     
     // swift-migration: original location ARTRest.m, line 328

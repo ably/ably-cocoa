@@ -45,11 +45,8 @@ public protocol ARTRealtimeInstanceMethodsProtocol: NSObjectProtocol {
      * @param body The JSON body of the request.
      * @param headers Additional HTTP headers to include in the request.
      * @param callback A callback for retriving `ARTHttpPaginatedResponse` object returned by the HTTP request, containing an empty or JSON-encodable object.
-     * @param errorPtr A reference to the `NSError` object where an error information will be saved in case of failure.
-
-     * @return In case of failure returns `false` and the error information can be retrived via the `error` parameter.
      */
-    func request(_ method: String, path: String, params: [String: String]?, body: Any?, headers: [String: String]?, callback: @escaping ARTHTTPPaginatedCallback, error errorPtr: NSErrorPointer) -> Bool
+    func request(_ method: String, path: String, params: [String: String]?, body: Any?, headers: [String: String]?, callback: @escaping ARTHTTPPaginatedCallback) throws
     
     // swift-migration: original location ARTRealtime.h, line 73
     /// :nodoc: TODO: docstring
@@ -65,11 +62,8 @@ public protocol ARTRealtimeInstanceMethodsProtocol: NSObjectProtocol {
      *
      * @param query An `ARTStatsQuery` object.
      * @param callback A callback for retriving an `ARTPaginatedResult` object with an array of `ARTStats` objects.
-     * @param errorPtr A reference to the `NSError` object where an error information will be saved in case of failure.
-     *
-     * @return In case of failure returns `false` and the error information can be retrived via the `error` parameter.
      */
-    func stats(_ query: ARTStatsQuery?, callback: @escaping ARTPaginatedStatsCallback, error errorPtr: NSErrorPointer) -> Bool
+    func stats(_ query: ARTStatsQuery?, callback: @escaping ARTPaginatedStatsCallback) throws
     
     // swift-migration: original location ARTRealtime.h, line 92
     /**
@@ -213,8 +207,9 @@ public class ARTRealtime: NSObject, ARTRealtimeProtocol {
     }
     
     // swift-migration: original location ARTRealtime.h, line 64 and ARTRealtime.m, line 157
-    public func request(_ method: String, path: String, params: [String: String]?, body: Any?, headers: [String: String]?, callback: @escaping ARTHTTPPaginatedCallback, error errorPtr: NSErrorPointer) -> Bool {
-        return _internal.request(method, path: path, params: params, body: body, headers: headers, wrapperSDKAgents: nil, callback: callback, error: errorPtr)
+    // swift-migration: Converted NSErrorPointer pattern to Swift throws pattern per PRD requirements
+    public func request(_ method: String, path: String, params: [String: String]?, body: Any?, headers: [String: String]?, callback: @escaping ARTHTTPPaginatedCallback) throws {
+        try _internal.request(method, path: path, params: params, body: body, headers: headers, wrapperSDKAgents: nil, callback: callback)
     }
     
     // swift-migration: original location ARTRealtime.h, line 73 and ARTRealtime.m, line 167
@@ -228,8 +223,9 @@ public class ARTRealtime: NSObject, ARTRealtimeProtocol {
     }
     
     // swift-migration: original location ARTRealtime.h, line 87 and ARTRealtime.m, line 176
-    public func stats(_ query: ARTStatsQuery?, callback: @escaping ARTPaginatedStatsCallback, error errorPtr: NSErrorPointer) -> Bool {
-        return _internal.stats(query, wrapperSDKAgents: nil, callback: callback, error: errorPtr)
+    // swift-migration: Converted NSErrorPointer pattern to Swift throws pattern per PRD requirements
+    public func stats(_ query: ARTStatsQuery?, callback: @escaping ARTPaginatedStatsCallback) throws {
+        try _internal.stats(query, wrapperSDKAgents: nil, callback: callback)
     }
     
     // swift-migration: original location ARTRealtime.h, line 92 and ARTRealtime.m, line 180
@@ -350,9 +346,9 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     }
     
     // swift-migration: original location ARTRealtime.m, line 510
-    internal func request(_ method: String, path: String, params: [String: String]?, body: Any?, headers: [String: String]?, wrapperSDKAgents: [String: String]?, callback: @escaping ARTHTTPPaginatedCallback, error errorPtr: NSErrorPointer) -> Bool {
-        var error: Error?
-        return rest.request(method, path: path, params: params, body: body, headers: headers, wrapperSDKAgents: wrapperSDKAgents, callback: callback, error: &error)
+    // swift-migration: Converted NSErrorPointer pattern to Swift throws pattern per PRD requirements
+    internal func request(_ method: String, path: String, params: [String: String]?, body: Any?, headers: [String: String]?, wrapperSDKAgents: [String: String]?, callback: @escaping ARTHTTPPaginatedCallback) throws {
+        try rest.request(method, path: path, params: params, body: body, headers: headers, wrapperSDKAgents: wrapperSDKAgents, callback: callback)
     }
     
     // swift-migration: original location ARTRealtime.m, line 521  
@@ -373,13 +369,19 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     
     // swift-migration: original location ARTRealtime.m, line 558
     internal func statsWithWrapperSDKAgents(_ wrapperSDKAgents: [String: String]?, callback: @escaping ARTPaginatedStatsCallback) -> Bool {
-        return stats(ARTStatsQuery(), wrapperSDKAgents: wrapperSDKAgents, callback: callback, error: nil)
+        do {
+            try stats(ARTStatsQuery(), wrapperSDKAgents: wrapperSDKAgents, callback: callback)
+            return true
+        } catch {
+            // swift-migration: Handle error appropriately - for now return false to maintain Bool return type
+            return false
+        }
     }
     
     // swift-migration: original location ARTRealtime.m, line 563
-    internal func stats(_ query: ARTStatsQuery?, wrapperSDKAgents: [String: String]?, callback: @escaping ARTPaginatedStatsCallback, error errorPtr: NSErrorPointer) -> Bool {
-        var error: Error?
-        return rest.stats(query, wrapperSDKAgents: wrapperSDKAgents, callback: callback, error: &error)
+    // swift-migration: Converted NSErrorPointer pattern to Swift throws pattern per PRD requirements
+    internal func stats(_ query: ARTStatsQuery?, wrapperSDKAgents: [String: String]?, callback: @escaping ARTPaginatedStatsCallback) throws {
+        try rest.stats(query, wrapperSDKAgents: wrapperSDKAgents, callback: callback)
     }
     
     // swift-migration: original location ARTRealtime.m, line 448
