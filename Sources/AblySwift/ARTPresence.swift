@@ -4,25 +4,27 @@ import Foundation
 /// :nodoc:
 public class ARTPresence: NSObject {
 
-    // swift-migration: original location ARTPresence+Private.h, line 12
-    internal var channel: ARTChannel {
-        return getChannel()
-    }
+    // swift-migration: Lawrence decided to just neuter this pointless superclass, whose public interface claims it needs to be initialized with a channel but wasn't really. TODO get rid of it
 
     // swift-migration: original location ARTPresence+Private.h, line 12
-    private func getChannel() -> ARTChannel {
-        fatalError("ARTPresence getChannel not yet implemented - should be overridden by subclasses")
-    }
+//    internal var channel: ARTChannel {
+//        return getChannel()
+//    }
+
+    // swift-migration: original location ARTPresence+Private.h, line 12
+//    private func getChannel() -> ARTChannel {
+//        fatalError("ARTPresence getChannel not yet implemented - should be overridden by subclasses")
+//    }
 
     // swift-migration: original location ARTPresence+Private.h, line 14
-    internal init(channel: ARTChannel) {
-        super.init()
-        fatalError("ARTPresence init not yet implemented - should be overridden by subclasses")
-    }
+//    internal init(channel: ARTChannel) {
+//        super.init()
+//        fatalError("ARTPresence init not yet implemented - should be overridden by subclasses")
+//    }
 
     // swift-migration: original location ARTPresence.h, line 12 and ARTPresence.m, line 5
-    public func history(_ callback: @escaping ARTPaginatedPresenceCallback) {
-        assertionFailure("-[\(type(of: self)) \(#function)] should always be overriden.")
-    }
+//    public func history(_ callback: @escaping ARTPaginatedPresenceCallback) {
+//        assertionFailure("-[\(type(of: self)) \(#function)] should always be overriden.")
+//    }
 
 }

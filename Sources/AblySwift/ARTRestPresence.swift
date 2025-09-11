@@ -61,9 +61,7 @@ public class ARTRestPresence: ARTPresence, ARTRestPresenceProtocol, @unchecked S
     internal init(internal internalInstance: ARTRestPresenceInternal, queuedDealloc: ARTQueuedDealloc) {
         _internal = internalInstance
         _dealloc = queuedDealloc
-        // swift-migration: Create a placeholder channel for super.init - can't access private _channel, use dummy
-        let placeholderChannel = ARTChannel(name: "placeholder", andOptions: ARTChannelOptions(), rest: ARTRestInternal(options: ARTClientOptions()), logger: internalInstance.logger)
-        super.init(channel: placeholderChannel)
+        super.init()
     }
     
     // swift-migration: original location ARTRestPresence+Private.h, line 28
@@ -92,7 +90,7 @@ public class ARTRestPresence: ARTPresence, ARTRestPresenceProtocol, @unchecked S
     }
     
     // swift-migration: original location ARTRestPresence.h, line 63 and ARTRestPresence.m, line 83
-    public override func history(_ callback: @escaping ARTPaginatedPresenceCallback) {
+    public func history(_ callback: @escaping ARTPaginatedPresenceCallback) {
         _internal.historyWithWrapperSDKAgents(nil, completion: callback)
     }
 }
