@@ -183,17 +183,13 @@ class RealtimeClientTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
 
-        let oldRestHost = options.restHost
-        let oldRealtimeHost = options.realtimeHost
+        let oldPrimaryDomain = options.primaryDomain
 
-        // Change REST and realtime endpoint hosts
-        options.environment = "test"
+        // Change endpoint hosts
+        options.endpoint = "test"
 
-        XCTAssertEqual(options.restHost, "test-rest.ably.io")
-        XCTAssertEqual(options.realtimeHost, "test-realtime.ably.io")
-        // Extra care
-        XCTAssertEqual(oldRestHost, "\(getEnvironment())-rest.ably.io")
-        XCTAssertEqual(oldRealtimeHost, "\(getEnvironment())-realtime.ably.io")
+        XCTAssertEqual(options.primaryDomain, "test.realtime.ably.net")
+        XCTAssertEqual(oldPrimaryDomain, "\(getEnvironment().dropFirst(8)).realtime.ably-nonprod.net") // sandbox.realtime.ably-nonprod.net
     }
 
     // RTC1f
