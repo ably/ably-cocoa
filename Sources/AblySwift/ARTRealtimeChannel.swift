@@ -517,10 +517,9 @@ extension ARTEvent {
 
 // MARK: - ARTRealtimeChannelInternal Placeholder
 
-// swift-migration: Placeholder for ARTRealtimeChannelInternal - contains only the methods needed to make ARTRealtimeChannel compile
-// DO NOT implement anything else for this class, especially not the initializer per user instructions
-internal class ARTRealtimeChannelInternal: ARTChannel {
-    
+// swift-migration: Lawrence — this doesn't have the correct migration comment because of the piecemeal way in which I migrated this class
+internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
+
     // MARK: - Basic Stored Properties
     
     // swift-migration: original location ARTRealtimeChannel.m, line 263 (ivar _queue)
@@ -536,8 +535,8 @@ internal class ARTRealtimeChannelInternal: ARTChannel {
     internal weak var realtime: ARTRealtimeInternal?
     
     // swift-migration: original location ARTRealtimeChannel+Private.h, line 49 (readonly property)
-    internal var restChannel: ARTRestChannelInternal
-    
+    internal var restChannel: ARTRestChannelInternal!
+
     // swift-migration: original location ARTRealtimeChannel+Private.h, line 50 (readwrite property)
     internal var attachSerial: String?
     
@@ -545,22 +544,22 @@ internal class ARTRealtimeChannelInternal: ARTChannel {
     internal var channelSerial: String?
     
     // swift-migration: original location ARTRealtimeChannel+Private.h, line 57 (readwrite property)
-    internal var attachResume: Bool
-    
+    internal var attachResume: Bool = false
+
     // swift-migration: original location ARTRealtimeChannel.m, line 255 (readonly property)
-    private var _attachRetryState: ARTAttachRetryState
-    
+    private var _attachRetryState: ARTAttachRetryState!
+
     // swift-migration: original location ARTRealtimeChannel.m, line 256 (readonly property)
     private var _pluginData: [String: Any]
     
     // MARK: - Instance Variables from Interface
     
     // swift-migration: original location ARTRealtimeChannel.m, line 236 (ivar)
-    private var _realtimePresence: ARTRealtimePresenceInternal
-    
+    private var _realtimePresence: ARTRealtimePresenceInternal!
+
     // swift-migration: original location ARTRealtimeChannel.m, line 237 (ivar)
-    private var _realtimeAnnotations: ARTRealtimeAnnotationsInternal
-    
+    private var _realtimeAnnotations: ARTRealtimeAnnotationsInternal!
+
     #if os(iOS)
     // swift-migration: original location ARTRealtimeChannel.m, line 239 (ivar)
     private var _pushChannel: ARTPushChannelInternal?
@@ -582,8 +581,8 @@ internal class ARTRealtimeChannelInternal: ARTChannel {
     private var _lastPayloadMessageId: String?
     
     // swift-migration: original location ARTRealtimeChannel.m, line 246 (ivar)
-    private var _decodeFailureRecoveryInProgress: Bool
-    
+    private var _decodeFailureRecoveryInProgress: Bool = false
+
     // MARK: - Event Emitters
     
     // swift-migration: original location ARTRealtimeChannel+Private.h, line 53 (readonly property)
@@ -596,9 +595,42 @@ internal class ARTRealtimeChannelInternal: ARTChannel {
     // swift-migration: Lawrence changed this type
     internal var messagesEventEmitter: ARTEventEmitter<String, ARTMessage>
 
-    // swift-migration: Lawrence initializer placeholder
+    // swift-migration: original location ARTRealtimeChannel+Private.h, line 59 and ARTRealtimeChannel.m, line 268
     init(realtime: ARTRealtimeInternal, name: String, options: ARTRealtimeChannelOptions, logger: ARTInternalLog) {
-        fatalError("TODO")
+        // swift-migration: Lawrence — some things moved around here so that we can avoid circular initialization problems (i.e. referring to self before super init called), which Swift is more strict about; we also make some properties implicitly-unwrapped optionals for the same reason
+
+        self.realtime = realtime
+        self._queue = realtime.rest.queue
+        self._userQueue = realtime.rest.userQueue
+        self._state = .initialized
+        self.attachSerial = nil
+        self._pluginData = [:]
+        self.statesEventEmitter = ARTPublicEventEmitter(rest: realtime.rest, logger: logger)
+        self.messagesEventEmitter = ARTInternalEventEmitter(queues: _queue, userQueue: _userQueue)
+        self._attachedEventEmitter = ARTInternalEventEmitter(queue: _queue)
+        self._detachedEventEmitter = ARTInternalEventEmitter(queue: _queue)
+        self.internalEventEmitter = ARTInternalEventEmitter(queue: _queue)
+        let attachRetryDelayCalculator = ARTBackoffRetryDelayCalculator(initialRetryTimeout: realtime.options.channelRetryTimeout,
+                                                                        jitterCoefficientGenerator: realtime.options.testOptions.jitterCoefficientGenerator)
+
+        super.init(name: name, andOptions: options, rest: realtime.rest, logger: logger)
+
+        self.restChannel = realtime.rest.channels._getChannel(self.name, options: options, addPrefix: true)
+        self._attachRetryState = ARTAttachRetryState(retryDelayCalculator: attachRetryDelayCalculator,
+                                                     logger: logger,
+                                                     logMessagePrefix: String(format: "RT: %p C:%p ", realtime, self))
+        self._realtimePresence = ARTRealtimePresenceInternal(channel: self, logger: self.logger)
+        self._realtimeAnnotations = ARTRealtimeAnnotationsInternal(channel: self, logger: self.logger)
+
+
+        // We need to register the pluginAPI before the LiveObjects plugin tries to fetch it in the call to prepareChannel below (and also before the LiveObjects plugin later tries to use it in its extension of ARTRealtimeChannel).
+        ARTPluginAPI.registerSelf()
+
+        // If the LiveObjects plugin has been provided, set up LiveObjects functionality for this channel.
+        let liveObjectsPlugin = realtime.options.liveObjectsPlugin
+        if liveObjectsPlugin != nil {
+            liveObjectsPlugin!.nosync_prepareChannel(self, client: realtime)
+        }
     }
 
     // MARK: - Properties with Custom Getters

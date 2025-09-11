@@ -102,6 +102,7 @@ public protocol APLiveObjectsPluginProtocol {
 
 public protocol APLiveObjectsInternalPluginProtocol {
     // Placeholder protocol
+    func nosync_prepareChannel(_ channel: APRealtimeChannel, client: APRealtimeClient)
 }
 
 // Placeholder for APObjectMessageProtocol
