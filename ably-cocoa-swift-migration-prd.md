@@ -529,6 +529,47 @@ func ARTLogError(_ logger: ARTInternalLog, _ message: String, fileID: String = #
 
 At the call site, instead of using varargs, we will use Swift string interpolation to pass a single message string to the logger.
 
+**CRITICAL REQUIREMENT: Pointer Formatting Support**
+
+For log statements that use `%p` format specifiers in Objective-C (to log pointer addresses), create a custom string interpolation extension:
+
+```swift
+// StringInterpolationExtensions.swift
+extension String.StringInterpolation {
+    mutating func appendInterpolation<T: AnyObject>(pointer: T) {
+        let address = Unmanaged.passUnretained(pointer).toOpaque()
+        appendLiteral(String(format: "%p", Int(bitPattern: address)))
+    }
+    
+    mutating func appendInterpolation<T: AnyObject>(pointer: T?) {
+        if let pointer = pointer {
+            let address = Unmanaged.passUnretained(pointer).toOpaque()
+            appendLiteral(String(format: "%p", Int(bitPattern: address)))
+        } else {
+            appendLiteral("(null)")
+        }
+    }
+}
+```
+
+**Migration Pattern for Logging:**
+
+```objective-c
+// Objective-C
+ARTLogDebug(self.logger, @"R:%p C:%p (%@) received message %tu", _realtime, self, self.name, message.action);
+```
+
+```swift
+// Swift - use string interpolation with pointer support
+ARTLogDebug(logger, "R:\(pointer: realtime) C:\(pointer: self) (\(self.name)) received message \(message.action.rawValue)")
+```
+
+**Key Points:**
+- **NO varargs**: Never use variadic arguments in Swift logging calls
+- **Single string parameter**: Always pass a single interpolated string to logging functions
+- **Pointer formatting**: Use `\(pointer: obj)` for objects that were logged with `%p` in Objective-C
+- **String interpolation**: Use Swift's native string interpolation for all other format specifiers
+
 #### 4. Nullability Analysis Required
 - **Header Interfaces**: Some may have incorrect nullability annotations
 - **Local Variables**: Need to determine proper optionals for local vars

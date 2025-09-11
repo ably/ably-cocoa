@@ -822,14 +822,14 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
             
             guard let realtime = self.realtime else {
                 if let callback = callbackWrapper {
-                    callback(ARTErrorInfo.create(withCode: ARTErrorChannelOperationFailed.rawValue, message: "realtime connection is nil"))
+                    callback(ARTErrorInfo.create(withCode: ARTErrorCode.channelOperationFailed.rawValue, message: "realtime connection is nil"))
                 }
                 return
             }
             
-            if !realtime.connection.isActive_nosync() {
+            if !realtime.connection.isActive_nosync {
                 if let callback = callbackWrapper {
-                    callback(realtime.connection.error_nosync())
+                    callback(realtime.connection.error_nosync)
                 }
                 return
             }
@@ -864,11 +864,11 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
         switch self.state_nosync {
         case .suspended, .failed:
             let errorMessage = "channel operation failed (invalid channel state: \(ARTRealtimeChannelStateToStr(self.state_nosync)))"
-            let statusInvalidChannelState = ARTStatus(state: .error, info: ARTErrorInfo.create(withCode: ARTErrorChannelOperationFailedInvalidState.rawValue, message: errorMessage))
+            let statusInvalidChannelState = ARTStatus(state: .error, errorInfo: ARTErrorInfo.create(withCode: ARTErrorCode.channelOperationFailedInvalidState.rawValue, message: errorMessage))
             callback(statusInvalidChannelState)
         case .initialized, .detaching, .detached, .attaching, .attached:
             guard let realtime = self.realtime else {
-                let status = ARTStatus(state: .error, info: ARTErrorInfo.create(withCode: ARTErrorChannelOperationFailed.rawValue, message: "realtime connection is nil"))
+                let status = ARTStatus(state: .error, errorInfo: ARTErrorInfo.create(withCode: ARTErrorCode.channelOperationFailed.rawValue, message: "realtime connection is nil"))
                 callback(status)
                 return
             }
@@ -910,7 +910,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
             
             if self.state_nosync == .failed {
                 if let onAttach = attachCallback, attachOnSubscribe { // RTL7h
-                    onAttach(ARTErrorInfo.create(withCode: ARTErrorChannelOperationFailedInvalidState.rawValue, message: "attempted to subscribe while channel is in FAILED state."))
+                    onAttach(ARTErrorInfo.create(withCode: ARTErrorCode.channelOperationFailedInvalidState.rawValue, message: "attempted to subscribe while channel is in FAILED state."))
                 }
                 ARTLogWarn(self.logger, "\(pointer: self.realtime) C:\(pointer: self) (\(self.name)) subscribe of '\(name ?? "all")' has been ignored (attempted to subscribe while channel is in FAILED state)")
                 return
@@ -1249,7 +1249,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
                    let deltaFrom = deltaDict["from"] as? String,
                    let lastPayloadMessageId = _lastPayloadMessageId,
                    deltaFrom != lastPayloadMessageId {
-                    let incompatibleIdError = ARTErrorInfo.create(withCode: ARTErrorUnableToDecodeMessage.rawValue, message: "previous id '\(lastPayloadMessageId)' is incompatible with message delta \(firstMessage)")
+                    let incompatibleIdError = ARTErrorInfo.create(withCode: ARTErrorCode.unableToDecodeMessage.rawValue, message: "previous id '\(lastPayloadMessageId)' is incompatible with message delta \(firstMessage)")
                     ARTLogError(logger, "\(pointer: realtime) C:\(pointer: self) (\(self.name)) \(incompatibleIdError.message)")
                     
                     if let messages = pm.messages {
@@ -1274,13 +1274,13 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
                 msg = msg.decode(with: dataEncoder!, error: &decodeError)
                 
                 if let decodeError = decodeError {
-                    let errorInfo = ARTErrorInfo.wrap(ARTErrorInfo.create(withCode: ARTErrorUnableToDecodeMessage.rawValue, message: decodeError.localizedDescription), prepend: "Failed to decode data: ")
+                    let errorInfo = ARTErrorInfo.wrap(ARTErrorInfo.create(withCode: ARTErrorCode.unableToDecodeMessage.rawValue, message: decodeError.localizedDescription), prepend: "Failed to decode data: ")
                     ARTLogError(logger, "\(pointer: realtime) C:\(pointer: self) (\(self.name)) \(errorInfo.message)")
                     _errorReason = errorInfo
                     let stateChange = ARTChannelStateChange(current: self.state_nosync, previous: self.state_nosync, event: .update, reason: errorInfo)
                     emit(stateChange.event, with: stateChange)
                     
-                    if (decodeError as NSError).code == ARTErrorUnableToDecodeMessage.rawValue {
+                    if (decodeError as NSError).code == ARTErrorCode.unableToDecodeMessage.rawValue {
                         startDecodeFailureRecovery(withErrorInfo: errorInfo)
                         return
                     }
@@ -1461,7 +1461,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
         
         if !realtime.isActive {
             ARTLogDebug(logger, "RT:\(pointer: realtime) C:\(pointer: self) (\(self.name)) can't attach when not in an active state")
-            callback?(ARTErrorInfo.create(withCode: ARTErrorChannelOperationFailed.rawValue, message: "Can't attach when not in an active state"))
+            callback?(ARTErrorInfo.create(withCode: ARTErrorCode.channelOperationFailed.rawValue, message: "Can't attach when not in an active state"))
             return
         }
         
@@ -1551,7 +1551,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
             return
         case .failed:
             ARTLogDebug(logger, "RT:\(pointer: realtime) C:\(pointer: self) (\(self.name)) can't detach when in a failed state")
-            callback?(ARTErrorInfo.create(withCode: ARTErrorChannelOperationFailed.rawValue, message: "can't detach when in a failed state"))
+            callback?(ARTErrorInfo.create(withCode: ARTErrorCode.channelOperationFailed.rawValue, message: "can't detach when in a failed state"))
             return
         default:
             break
@@ -1583,7 +1583,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
         
         if !realtime.isActive {
             ARTLogDebug(logger, "RT:\(pointer: realtime) C:\(pointer: self) (\(self.name)) can't detach when not in an active state")
-            callback?(ARTErrorInfo.create(withCode: ARTErrorChannelOperationFailed.rawValue, message: "Can't detach when not in an active state"))
+            callback?(ARTErrorInfo.create(withCode: ARTErrorCode.channelOperationFailed.rawValue, message: "Can't detach when not in an active state"))
             return
         }
         
@@ -1620,7 +1620,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
         }.startTimer()
         
         if presence.syncInProgress_nosync {
-            presence.failsSync(ARTErrorInfo.create(withCode: ARTErrorChannelOperationFailed.rawValue, message: "channel is being DETACHED"))
+            presence.failsSync(ARTErrorInfo.create(withCode: ARTErrorCode.channelOperationFailed.rawValue, message: "channel is being DETACHED"))
         }
     }
     
@@ -1636,11 +1636,11 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
     }
     
     // swift-migration: original location ARTRealtimeChannel.m, line 1138
-    internal func history(_ query: ARTRealtimeHistoryQuery?, wrapperSDKAgents: [String: String]?, callback: @escaping ARTPaginatedMessagesCallback) throws -> Bool {
+    internal func history(_ query: ARTRealtimeHistoryQuery?, wrapperSDKAgents: [String: String]?, callback: @escaping ARTPaginatedMessagesCallback) throws {
         // swift-migration: Lawrence — noticed this, this isn't in the original, it's ignored my instruction about not inserting these things
         let historyQuery = query ?? ARTRealtimeHistoryQuery()
         historyQuery.realtimeChannel = self
-        return try restChannel.history(historyQuery, wrapperSDKAgents: wrapperSDKAgents, callback: callback)
+        try restChannel.history(historyQuery, wrapperSDKAgents: wrapperSDKAgents, callback: callback)
     }
     
     // swift-migration: original location ARTRealtimeChannel.m, line 1143
