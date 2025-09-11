@@ -356,15 +356,17 @@ public class ARTRealtimeChannel: NSObject, ARTRealtimeChannelProtocol, @unchecke
     }
     
     // swift-migration: original location ARTRealtimeChannel.m, line 141
-    // swift-migration: Per PRD requirements, making this a simple Swift throwing method instead of NSError pointer
+    // swift-migration: Per PRD requirements, making this a simple Swift throwing method instead of NSError pointer  
     public func history() throws -> ARTPaginatedResult<ARTMessage> {
-        return try _internal.history()
+        // swift-migration: Lawrence - need to implement a synchronous throws version
+        fatalError("Not yet implemented - need synchronous history method")
     }
     
     // swift-migration: original location ARTRealtimeChannel.h, line 140 and ARTRealtimeChannel.m, line 193
     // swift-migration: Per PRD requirements, converting from NSError** pattern to Swift throws
     public func history(_ query: ARTRealtimeHistoryQuery?) throws -> ARTPaginatedResult<ARTMessage> {
-        return try _internal.history(query)
+        // swift-migration: Lawrence - need to implement a synchronous throws version
+        fatalError("Not yet implemented - need synchronous history method")
     }
     
     // MARK: - Subscribe/Unsubscribe Methods
@@ -1210,7 +1212,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
     
     // swift-migration: original location ARTRealtimeChannel.m, line 762
     internal func failPendingPresence(withState state: ARTState, info: ARTErrorInfo?) {
-        let status = ARTStatus(state: state, info: info)
+        let status = ARTStatus(state: state, errorInfo: info)
         presence.failPendingPresence(status)
     }
     

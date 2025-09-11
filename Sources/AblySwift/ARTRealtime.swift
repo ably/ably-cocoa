@@ -270,6 +270,9 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     internal var options: ARTClientOptions { return rest.options }
     internal var isActive: Bool { return true } // Simplified - full implementation would be more complex
     
+    // swift-migration: Lawrence requested this property for ARTRealtimeChannel migration
+    internal var shouldSendEvents: Bool { return true } // Simplified - full implementation would check connection state
+    
     // swift-migration: original location ARTRealtime+Private.h, line 35 and ARTRealtime.m, line 238
     internal init(options: ARTClientOptions) {
         // swift-migration: TODO

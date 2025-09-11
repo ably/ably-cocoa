@@ -247,8 +247,10 @@ public class ARTEventEmitter<EventType: ARTEventIdentification, ItemType>: NSObj
     }
     
     // swift-migration: original location ARTEventEmitter.h, line 47 and ARTEventEmitter.m, line 194
-    public func on(_ event: EventType, callback: @escaping (ItemType) -> Void) -> ARTEventListener {
-        return _on(event, callback: callback)
+    // swift-migration: Lawrence requested optional callback support for ARTRealtimeChannel migration
+    public func on(_ event: EventType, callback: ((ItemType) -> Void)?) -> ARTEventListener {
+        let actualCallback = callback ?? { _ in /* no-op */ }
+        return _on(event, callback: actualCallback)
     }
     
     // swift-migration: original location ARTEventEmitter.m, line 198
@@ -274,18 +276,24 @@ public class ARTEventEmitter<EventType: ARTEventIdentification, ItemType>: NSObj
     }
     
     // swift-migration: original location ARTEventEmitter.h, line 66 and ARTEventEmitter.m, line 216
-    public func once(_ event: EventType, callback: @escaping (ItemType) -> Void) -> ARTEventListener {
-        return _once(event, callback: callback)
+    // swift-migration: Lawrence requested optional callback support for ARTRealtimeChannel migration
+    public func once(_ event: EventType, callback: ((ItemType) -> Void)?) -> ARTEventListener {
+        let actualCallback = callback ?? { _ in /* no-op */ }
+        return _once(event, callback: actualCallback)
     }
     
     // swift-migration: original location ARTEventEmitter.h, line 56 and ARTEventEmitter.m, line 220
-    public func on(_ callback: @escaping (ItemType) -> Void) -> ARTEventListener {
-        return _on(nil, callback: callback)
+    // swift-migration: Lawrence requested optional callback support for ARTRealtimeChannel migration
+    public func on(_ callback: ((ItemType) -> Void)?) -> ARTEventListener {
+        let actualCallback = callback ?? { _ in /* no-op */ }
+        return _on(nil, callback: actualCallback)
     }
     
     // swift-migration: original location ARTEventEmitter.h, line 75 and ARTEventEmitter.m, line 224
-    public func once(_ callback: @escaping (ItemType) -> Void) -> ARTEventListener {
-        return _once(nil, callback: callback)
+    // swift-migration: Lawrence requested optional callback support for ARTRealtimeChannel migration
+    public func once(_ callback: ((ItemType) -> Void)?) -> ARTEventListener {
+        let actualCallback = callback ?? { _ in /* no-op */ }
+        return _once(nil, callback: actualCallback)
     }
     
     // swift-migration: original location ARTEventEmitter.h, line 83 and ARTEventEmitter.m, line 228
@@ -308,6 +316,18 @@ public class ARTEventEmitter<EventType: ARTEventIdentification, ItemType>: NSObj
             eventListeners.remove(listener)
         }
         anyListeners.remove(listener)
+    }
+    
+    // swift-migration: Lawrence requested this optional listener method for ARTRealtimeChannel migration
+    public func off(_ listener: ARTEventListener?) {
+        guard let listener = listener else { return }
+        off(listener)
+    }
+    
+    // swift-migration: Lawrence requested this optional listener method for ARTRealtimeChannel migration  
+    public func off(_ event: EventType, listener: ARTEventListener?) {
+        guard let listener = listener else { return }
+        off(event, listener: listener)
     }
     
     // swift-migration: original location ARTEventEmitter.h, line 95 and ARTEventEmitter.m, line 244
@@ -411,73 +431,69 @@ public class ARTPublicEventEmitter<EventType: ARTEventIdentification, ItemType>:
     }
     
     // swift-migration: original location ARTEventEmitter.m, line 341
-    public override func on(_ event: EventType, callback: @escaping (ItemType) -> Void) -> ARTEventListener {
-        var modifiedCallback: ((ItemType) -> Void)? = callback
-        if let userCallback = modifiedCallback {
-            modifiedCallback = { [weak self] value in
-                self?._userQueue?.async {
-                    userCallback(value)
-                }
+    // swift-migration: Lawrence requested optional callback support for ARTRealtimeChannel migration
+    public override func on(_ event: EventType, callback: ((ItemType) -> Void)?) -> ARTEventListener {
+        let actualCallback = callback ?? { _ in /* no-op */ }
+        let modifiedCallback: (ItemType) -> Void = { [weak self] value in
+            self?._userQueue?.async {
+                actualCallback(value)
             }
         }
         
         var listener: ARTEventListener!
         queue.sync {
-            listener = super.on(event, callback: modifiedCallback!)
+            listener = super.on(event, callback: modifiedCallback)
         }
         return listener
     }
     
     // swift-migration: original location ARTEventEmitter.m, line 358
-    public override func on(_ callback: @escaping (ItemType) -> Void) -> ARTEventListener {
-        var modifiedCallback: ((ItemType) -> Void)? = callback
-        if let userCallback = modifiedCallback {
-            modifiedCallback = { [weak self] value in
-                self?._userQueue?.async {
-                    userCallback(value)
-                }
+    // swift-migration: Lawrence requested optional callback support for ARTRealtimeChannel migration
+    public override func on(_ callback: ((ItemType) -> Void)?) -> ARTEventListener {
+        let actualCallback = callback ?? { _ in /* no-op */ }
+        let modifiedCallback: (ItemType) -> Void = { [weak self] value in
+            self?._userQueue?.async {
+                actualCallback(value)
             }
         }
         
         var listener: ARTEventListener!
         queue.sync {
-            listener = super.on(modifiedCallback!)
+            listener = super.on(modifiedCallback)
         }
         return listener
     }
     
     // swift-migration: original location ARTEventEmitter.m, line 375
-    public override func once(_ event: EventType, callback: @escaping (ItemType) -> Void) -> ARTEventListener {
-        var modifiedCallback: ((ItemType) -> Void)? = callback
-        if let userCallback = modifiedCallback {
-            modifiedCallback = { [weak self] value in
-                self?._userQueue?.async {
-                    userCallback(value)
-                }
+    // swift-migration: Lawrence requested optional callback support for ARTRealtimeChannel migration
+    public override func once(_ event: EventType, callback: ((ItemType) -> Void)?) -> ARTEventListener {
+        let actualCallback = callback ?? { _ in /* no-op */ }
+        let modifiedCallback: (ItemType) -> Void = { [weak self] value in
+            self?._userQueue?.async {
+                actualCallback(value)
             }
         }
         
         var listener: ARTEventListener!
         queue.sync {
-            listener = super.once(event, callback: modifiedCallback!)
+            listener = super.once(event, callback: modifiedCallback)
         }
         return listener
     }
     
     // swift-migration: original location ARTEventEmitter.m, line 392
-    public override func once(_ callback: @escaping (ItemType) -> Void) -> ARTEventListener {
-        var modifiedCallback: ((ItemType) -> Void)? = callback
-        if let userCallback = modifiedCallback {
-            modifiedCallback = { [weak self] value in
-                self?._userQueue?.async {
-                    userCallback(value)
-                }
+    // swift-migration: Lawrence requested optional callback support for ARTRealtimeChannel migration
+    public override func once(_ callback: ((ItemType) -> Void)?) -> ARTEventListener {
+        let actualCallback = callback ?? { _ in /* no-op */ }
+        let modifiedCallback: (ItemType) -> Void = { [weak self] value in
+            self?._userQueue?.async {
+                actualCallback(value)
             }
         }
         
         var listener: ARTEventListener!
         queue.sync {
-            listener = super.once(modifiedCallback!)
+            listener = super.once(modifiedCallback)
         }
         return listener
     }
