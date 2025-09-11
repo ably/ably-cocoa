@@ -3,7 +3,11 @@ import Foundation
 // swift-migration: Placeholder types for unmigrated dependencies
 // These will be replaced with actual implementations as files are migrated
 
-// MARK: - Outstanding Realtime stuff
+// MARK: - Things already implemented that should have been moved to correct file — get Claude to sort it out
+
+// Placeholder for ARTPaginatedResultResponseProcessor
+// swift-migration: Changed from inout Error? parameter to throws pattern per PRD requirements
+public typealias ARTPaginatedResultResponseProcessor = (HTTPURLResponse?, Data?) throws -> [Any]?
 
 // Placeholder for ARTRealtimeConnectionState
 public enum ARTRealtimeConnectionState: UInt {
@@ -81,10 +85,6 @@ public class ARTWrapperSDKProxyRealtime: NSObject {
         fatalError("ARTWrapperSDKProxyRealtime not yet migrated")
     }
 }
-
-// Placeholder for ARTPaginatedResultResponseProcessor
-// swift-migration: Changed from inout Error? parameter to throws pattern per PRD requirements
-public typealias ARTPaginatedResultResponseProcessor = (HTTPURLResponse?, Data?) throws -> [Any]?
 
 // MARK: - Plugin stuff
 
