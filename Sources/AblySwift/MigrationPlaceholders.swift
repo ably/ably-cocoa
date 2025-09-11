@@ -3,24 +3,6 @@ import Foundation
 // swift-migration: Placeholder types for unmigrated dependencies
 // These will be replaced with actual implementations as files are migrated
 
-// Placeholder for ARTJsonCompatible protocol
-public protocol ARTJsonCompatible {
-    func toJSON() throws -> [String: Any]?
-    func toJSONString() -> String?
-}
-
-// ARTDataEncoder and ARTDataEncoderOutput implemented in ARTDataEncoder.swift
-
-// swift-migration: ARTErrorInfo placeholder removed - now implemented in ARTStatus.swift
-
-// ARTEvent implemented in ARTEventEmitter.swift
-
-// swift-migration: ARTAblyErrorDomain constant now defined in ARTStatus.swift
-
-// swift-migration: ARTRetryAttempt and ARTRetryDelayCalculator placeholders removed - now implemented in ARTRetrySequence.swift
-
-// ARTInternalLog implemented in ARTInternalLog.swift
-
 // Placeholder for ARTRealtimeConnectionState
 public enum ARTRealtimeConnectionState: UInt {
     case initialized = 0
@@ -44,35 +26,6 @@ public enum ARTRealtimeChannelState: UInt {
     case failed = 6
 }
 
-// Placeholder logging functions
-public func ARTLogDebug(_ logger: ARTInternalLog, _ message: String) {
-    // Placeholder - actual implementation will inject file/line info
-}
-
-// swift-migration: ARTTokenDetailsCallback now defined in ARTTypes.swift
-
-// swift-migration: ARTTokenDetails placeholder removed - now implemented in ARTTokenDetails.swift
-
-// swift-migration: ARTTokenParams placeholder removed - now implemented in ARTTokenParams.swift
-
-// swift-migration: ARTTokenRequest placeholder removed - now implemented in ARTTokenRequest.swift
-
-// swift-migration: ARTClientOptions placeholder removed - now implemented
-
-// swift-migration: ARTRestInternal now implemented in ARTRest.swift
-
-// ARTQueuedDealloc implemented in ARTQueuedDealloc.swift
-
-// ARTEventEmitter, ARTInternalEventEmitter, ARTPublicEventEmitter implemented in ARTEventEmitter.swift
-
-// NSString extension implemented in ARTDataEncoder.swift
-
-// swift-migration: ARTStatus placeholder removed - now implemented in ARTStatus.swift
-
-// Placeholder types needed for ARTConnection and other migrations
-
-// ARTEventListener implemented in ARTEventEmitter.swift
-
 // Placeholder for ARTRealtimeConnectionEvent
 public enum ARTRealtimeConnectionEvent: Int {
     case initialized = 0
@@ -85,12 +38,6 @@ public enum ARTRealtimeConnectionEvent: Int {
     case failed = 7
     case update = 8
 }
-
-// swift-migration: ARTConnectionStateCallback now defined in ARTTypes.swift
-
-// swift-migration: ARTConnectionStateChange and related functions moved to ARTTypes.swift
-
-// swift-migration: ARTCallback moved to ARTTypes.swift
 
 // Placeholder for ARTConnectionProtocol
 public protocol ARTConnectionProtocol: NSObjectProtocol {
@@ -115,12 +62,6 @@ public protocol ARTConnectionProtocol: NSObjectProtocol {
     func once(_ event: ARTRealtimeConnectionEvent, callback cb: @escaping ARTConnectionStateCallback) -> ARTEventListener
 }
 
-// swift-migration: ARTRealtimeInternal placeholder removed - now implemented in ARTRealtime.swift
-
-// swift-migration: ARTRealtimeProtocol moved to ARTRealtime.swift
-
-// swift-migration: ARTRealtimeChannels placeholder removed - now implemented in ARTRealtimeChannels.swift
-
 // Placeholder for ARTWrapperSDKProxyOptions
 public class ARTWrapperSDKProxyOptions: NSObject {
     public override init() {
@@ -135,19 +76,6 @@ public class ARTWrapperSDKProxyRealtime: NSObject {
         super.init()
         fatalError("ARTWrapperSDKProxyRealtime not yet migrated")
     }
-}
-
-// swift-migration: APRealtimeClient, ARTRealtimeTransportDelegate, and ARTAuthDelegate protocols are defined elsewhere
-
-// ARTRestInternal defined above
-
-// swift-migration: ARTRealtimeChannelsInternal placeholder removed - now implemented in ARTRealtimeChannels.swift
-
-// Placeholder for ARTRealtimeChannelsProtocol
-public protocol ARTRealtimeChannelsProtocol: AnyObject {
-    func exists(_ name: String) -> Bool
-    func release(_ name: String, callback: ARTCallback?)
-    func release(_ name: String)
 }
 
 // Placeholder for ARTRealtimeChannel
@@ -211,41 +139,6 @@ public class ARTRealtimePresenceInternal: NSObject {
     }
 }
 
-// ARTRealtimeChannelState defined above
-
-// Additional placeholder types and constants needed by ARTAuth
-
-
-// ARTLocalDevice implemented in ARTLocalDevice.swift
-
-// swift-migration: isRegistered property implemented in ARTLocalDevice.swift
-
-// ARTLocalDeviceStorage implemented in ARTLocalDeviceStorage.swift
-
-// swift-migration: ARTPush placeholder removed - now implemented in ARTPush.swift
-
-// swift-migration: ARTPushActivationStateMachine placeholder removed - now implemented in ARTPushActivationStateMachine.swift
-
-// swift-migration: ARTPushActivationState placeholder removed - now implemented in ARTPushActivationState.swift
-
-// swift-migration: ARTPushActivationEvent placeholder removed - now implemented in ARTPushActivationEvent.swift
-
-// Placeholder for ARTCancellable protocol
-public protocol ARTCancellable {
-    func cancel()
-}
-
-// swift-migration: ARTAuthentication and ARTAuthMethod enums moved to ARTTypes.swift
-
-public let ARTAuthenticationOff = ARTAuthentication.off
-public let ARTAuthMethodBasic = ARTAuthMethod.basic
-public let ARTAuthMethodToken = ARTAuthMethod.token
-
-
-// swift-migration: ARTTokenDetailsCompatible protocol moved to ARTAuthOptions.swift
-
-// swift-migration: ARTTokenDetailsCompatibleCallback and ARTAuthCallback now defined in ARTTypes.swift
-
 // Placeholder function for creating cancellable from callback
 public func artCancellableFromCallback(
     _ callback: ARTTokenDetailsCompatibleCallback,
@@ -276,43 +169,13 @@ public protocol ARTDeviceStorage {
     func setSecret(_ value: String?, forDevice deviceId: String)
 }
 
-// ARTJitterCoefficientGenerator protocol implemented in ARTJitterCoefficientGenerator.swift
-
-// ARTCallback defined above
-
-// swift-migration: ARTMessage placeholder removed - now implemented in ARTMessage.swift
-
-// swift-migration: ARTPaginatedResult placeholder removed - now implemented in ARTPaginatedResult.swift
-
-// swift-migration: ARTPaginatedMessagesCallback now defined in ARTTypes.swift
-
-// swift-migration: ARTState enum placeholder removed - now implemented in ARTStatus.swift
-
-// These placeholders will be replaced by the actual ARTChannelOptions implementation
-
-// ARTCipherParams, ARTCipherParamsCompatible, and ARTCipherKeyCompatible implemented in ARTCrypto.swift
-
-// swift-migration: ARTDefault placeholder removed - now implemented
-
 // Placeholder constants for error codes
 public let ARTErrorMaxMessageLengthExceeded: Int = 40009
-
-// swift-migration: NSStringDictionary moved to ARTTypes.swift
 
 // Placeholder for ARTChannelsDelegate protocol
 internal protocol ARTChannelsDelegate: AnyObject {
     func makeChannel(_ channel: String, options: ARTChannelOptions?) -> ARTChannel
 }
-
-// swift-migration: ARTRestChannel now implemented
-
-// Additional placeholders for ARTClientOptions dependencies
-
-// swift-migration: ARTDefault extension placeholder removed - now implemented
-
-// swift-migration: ARTDefaultProduction placeholder removed - now implemented
-
-// ARTLog implemented in ARTLog.swift
 
 // Placeholder for ARTLogLevel enum
 public enum ARTLogLevel: Int {
@@ -344,12 +207,6 @@ public protocol ARTPushRegistererDelegate {
 }
 #endif
 
-// swift-migration: ARTTestClientOptions placeholder removed - now implemented in ARTTestClientOptions.swift
-
-// swift-migration: ARTFallback_shuffleArray moved to ARTFallback.swift - duplicate removed
-
-// swift-migration: ARTFallback_shuffleArray moved to ARTTestClientOptions.swift placeholder section
-
 // swift-migration: ARTPluginAPI placeholder remains - ARTPluginAPI.swift exists but deferred due to complex dependencies
 public class ARTPluginAPI {
     public static func registerSelf() {
@@ -366,6 +223,23 @@ public protocol APLiveObjectsInternalPluginProtocol {
     // Placeholder protocol
 }
 
+// Placeholder for APObjectMessageProtocol
+public protocol APObjectMessageProtocol {}
+
+// Placeholder types for Plugin architecture (from _AblyPluginSupportPrivate)
+public protocol APPublicRealtimeChannelUnderlyingObjects {
+    var client: APRealtimeClient { get }
+    var channel: APRealtimeChannel { get }
+}
+
+public protocol APRealtimeClient {
+    // Placeholder protocol
+}
+
+public protocol APRealtimeChannel {
+    // Placeholder protocol
+}
+
 // swift-migration: ARTTokenParams extension removed - now implemented in ARTTokenParams.swift
 
 // Placeholder for ARTQueryDirection enum
@@ -373,36 +247,6 @@ public enum ARTQueryDirection: UInt {
     case forwards = 0
     case backwards = 1
 }
-
-// ARTRealtimeChannelInternal defined above
-
-// swift-migration: dateToMilliseconds function moved to ARTTypes.swift
-
-// swift-migration: ARTRealtimeHistoryError moved to ARTTypes.swift
-
-// swift-migration: ARTClientInformation placeholder removed - now implemented
-
-// swift-migration: Array artMap functionality now implemented in NSArray+ARTFunctional.swift
-
-// swift-migration: Archiving extensions moved to ARTTypes.swift
-
-// ARTGCD implemented in ARTGCD.swift
-
-// Logging functions implemented in ARTInternalLog.swift
-
-// swift-migration: ARTURLRequestCallback now defined in ARTTypes.swift
-
-// swift-migration: ARTURLSession protocol and ARTURLSessionServerTrust class placeholders removed - now implemented in ARTURLSessionServerTrust.swift
-
-
-// ARTEncoder class already defined above
-
-
-// Constants defined in ARTConstants.swift
-
-// swift-migration: HTTPURLResponse extractLinks now implemented in NSHTTPURLResponse+ARTPaginated.swift
-
-// swift-migration: URLRequest requestWithPath now implemented in NSURLRequest+ARTPaginated.swift
 
 // ARTInternalLogCore protocol and ARTDefaultInternalLogCore class implemented in ARTInternalLogCore.swift
 
@@ -412,17 +256,20 @@ public protocol ARTVersion2Log {
     func log(_ message: String, withLevel level: ARTLogLevel, file: String, line: Int)
 }
 
-// ARTLogAdapter implemented in ARTLogAdapter.swift
-
-
 // Placeholders for ARTRest types
-
-// swift-migration: ARTHTTPPaginatedCallback now defined in ARTTypes.swift
 
 // Placeholder for ARTPaginatedResultResponseProcessor
 // swift-migration: Changed from inout Error? parameter to throws pattern per PRD requirements
 public typealias ARTPaginatedResultResponseProcessor = (HTTPURLResponse?, Data?) throws -> [Any]?
 
+public let ARTClientCodeErrorInvalidType = ARTClientCodeError.invalidType
+
+// ARTReachability protocol
+internal protocol ARTReachability: NSObjectProtocol {
+    init(logger: ARTInternalLog, queue: DispatchQueue)
+    func listenForHost(_ host: String, callback: @escaping (Bool) -> Void)
+    func off()
+}
 
 // Placeholder for ARTJsonLikeEncoderDelegate protocol
 public protocol ARTJsonLikeEncoderDelegate {
@@ -433,17 +280,7 @@ public protocol ARTJsonLikeEncoderDelegate {
     func encode(_ obj: Any) throws -> Data?
 }
 
-// swift-migration: ARTClientCodeError enum now defined in ARTStatus.swift
-
-public let ARTClientCodeErrorInvalidType = ARTClientCodeError.invalidType
-
 // Placeholder types for ARTEncoder protocol
-
-
-// swift-migration: ARTChannelDetails moved to ARTTypes.swift
-
-
-// ARTPushChannelSubscription implemented in ARTPushChannelSubscription.swift
 
 // Placeholder implementation for ARTEncoder protocol
 public class ARTEncoderPlaceholder: ARTEncoder {
@@ -590,8 +427,6 @@ public class ARTEncoderPlaceholder: ARTEncoder {
     }
 }
 
-// swift-migration: ARTMessageOperation placeholder removed - now implemented in ARTMessageOperation.swift
-
 // Placeholder for ARTJsonLikeEncoder
 public class ARTJsonLikeEncoder {
     public let delegate: ARTJsonLikeEncoderDelegate
@@ -607,51 +442,6 @@ public class ARTJsonLikeEncoder {
     public func messagesFromArray(_ array: [[String: Any]]?, protocolMessage: ARTProtocolMessage?) -> [ARTMessage]? {
         fatalError("ARTJsonLikeEncoder not yet migrated")
     }
-}
-
-// swift-migration: ARTErrorInfo.wrap static method now defined in ARTStatus.swift
-
-// Placeholder for APObjectMessageProtocol
-public protocol APObjectMessageProtocol {}
-
-// swift-migration: ARTStringFromBool function now implemented in NSString+ARTUtil.swift
-
-// ARTReachability protocol
-internal protocol ARTReachability: NSObjectProtocol {
-    init(logger: ARTInternalLog, queue: DispatchQueue)
-    func listenForHost(_ host: String, callback: @escaping (Bool) -> Void)
-    func off()
-}
-
-// swift-migration: ARTAuthentication enum already defined above
-
-// swift-migration: ARTStatusCallback now defined in ARTTypes.swift
-
-// ARTQueuedMessage implemented in ARTQueuedMessage.swift
-
-// Extension for ARTProtocolMessage to add missing merge method
-extension ARTProtocolMessage {
-    func merge(from msg: ARTProtocolMessage, maxSize: Int) -> Bool {
-        fatalError("ARTProtocolMessage merge method not yet migrated - needed by ARTQueuedMessage")
-    }
-}
-
-// swift-migration: ARTPaginatedPresenceCallback now defined in ARTTypes.swift
-
-// swift-migration: ARTPresenceQuery now implemented
-
-// Placeholder types for Plugin architecture (from _AblyPluginSupportPrivate)
-public protocol APPublicRealtimeChannelUnderlyingObjects {
-    var client: APRealtimeClient { get }
-    var channel: APRealtimeChannel { get }
-}
-
-public protocol APRealtimeClient {
-    // Placeholder protocol
-}
-
-public protocol APRealtimeChannel {
-    // Placeholder protocol
 }
 
 // Additional placeholders for push notifications architecture
@@ -698,21 +488,7 @@ public class ARTRealtimeInternal {
     }
 }
 
-// swift-migration: ARTRest now implemented in ARTRest.swift
-
-// swift-migration: ARTRestInternal extension for push now implemented in ARTRest.swift
-
 #endif
-
-// swift-migration: ARTPushAdmin placeholder removed - now implemented in ARTPushAdmin.swift
-
-// swift-migration: ARTPushRecipient and ARTJsonObject moved to ARTTypes.swift
-
-// swift-migration: ARTPaginatedPushChannelCallback now defined in ARTTypes.swift
-
-// swift-migration: ARTDataQueryError moved to ARTTypes.swift
-
-// ARTPushDeviceRegistrations and ARTPushChannelSubscriptions implemented in their respective .swift files
 
 // Extension for NSDictionary to add art_asURLQueryItems method
 extension NSDictionary {
@@ -733,15 +509,8 @@ extension Dictionary where Key == String, Value == String {
     }
 }
 
-// swift-migration: String art_shortString method was a placeholder - not needed in actual implementation
-
-// swift-migration: ARTPaginatedTextCallback and ARTPaginatedDeviceDetailsCallback now defined in ARTTypes.swift
-
-// swift-migration: ARTErrorInfo methods now defined in ARTStatus.swift
-
-// swift-migration: URLRequest device authentication methods now implemented in NSURLRequest+ARTPush.swift
-
 // Placeholder logger core
+// Lawrence: Yeah, this does indeed need to exist; there's an NSCoding implementation that just calls the wrong initializer
 public class PlaceholderLogCore: ARTInternalLogCore {
     public var logLevel: ARTLogLevel = .debug
     
@@ -752,20 +521,6 @@ public class PlaceholderLogCore: ARTInternalLogCore {
     }
 }
 
-// swift-migration: Dictionary utility functions now implemented in NSDictionary+ARTDictionaryUtil.swift
-
-// swift-migration: millisecondsToTimeInterval function moved to ARTTypes.swift
-
-// Additional placeholders needed for ARTRest compilation
-
-// swift-migration: ARTHTTPExecutor now implemented in ARTHttp.swift
-// swift-migration: ARTFallback now implemented in ARTFallback.swift
-
-// swift-migration: ARTAuthInternal now implemented in ARTAuth.swift
-
-// swift-migration: ARTPushInternal now implemented in ARTPush.swift
-
-// swift-migration: ARTJsonLikeEncoder already exists - removing duplicate placeholder
 // Keep this as placeholder for now since it's complex
 public class ARTJsonLikeEncoderPlaceholder: ARTEncoder {
     public init(rest: ARTRestInternal?, delegate: ARTJsonLikeEncoderDelegate, logger: ARTInternalLog) {
@@ -903,50 +658,15 @@ public class ARTJsonLikeEncoderPlaceholder: ARTEncoder {
         fatalError("ARTJsonLikeEncoder not yet migrated")
     }
     
-    // swift-migration: Removed inout Error? wrapper method - using throws pattern instead
-    
     public func decodeErrorInfo(_ error: Data) throws -> ARTErrorInfo? {
         fatalError("ARTJsonLikeEncoder not yet migrated")
     }
     
-    // swift-migration: Removed inout Error? wrapper method - using throws pattern instead
-
     public func decodeStats(_ data: Data) throws -> [Any]? {
         fatalError("ARTJsonLikeEncoder not yet migrated")
     }
     
-    // swift-migration: Removed inout Error? wrapper method - using throws pattern instead
-   
     public func encode(localDevice: ARTLocalDevice) throws -> Data? {
         fatalError("ARTJsonLikeEncoder not yet migrated")
     }
 }
-
-// swift-migration: ARTDefaultErrorChecker now implemented in ARTErrorChecker.swift
-
-// swift-migration: ARTContinuousClock and ARTContinuousClockInstant now implemented in ARTContinuousClock.swift
-
-// Additional placeholders needed for ARTRest compilation
-
-// swift-migration: ARTCustomRequestError already exists in ARTTypes.swift
-
-// swift-migration: ARTRestChannels and ARTRestChannelsInternal now implemented
-
-// swift-migration: ARTChannelDetailsCallback now defined in ARTTypes.swift
-
-// State codes needed for REST Channel migration  
-public enum ARTStateCode: Int {
-    case mismatchedClientId
-}
-
-// swift-migration: ARTRestChannelProtocol now implemented in ARTRestChannel.swift
-
-// swift-migration: ARTRestChannelsProtocol now implemented in ARTRestChannels.swift
-
-// swift-migration: ARTRestPresenceProtocol now implemented in ARTRestPresence.swift
-
-// swift-migration: ARTAnnotationCallback now defined in ARTTypes.swift
-
-// swift-migration: Error constant for ARTRealtimeAnnotations migration
-public let ARTErrorChannelOperationFailedInvalidState = 91001
-public let ARTErrorUnableToDecodeMessage = 40019

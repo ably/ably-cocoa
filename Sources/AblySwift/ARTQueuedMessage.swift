@@ -34,7 +34,7 @@ internal class ARTQueuedMessage: NSObject {
     
     // swift-migration: original location ARTQueuedMessage.m, line 28
     internal func merge(from msg: ARTProtocolMessage, maxSize: Int, sentCallback: ARTCallback?, ackCallback: ARTStatusCallback?) -> Bool {
-        if self.msg.merge(from: msg, maxSize: maxSize) {
+        if self.msg.mergeFrom(msg, maxSize: maxSize) {
             if let sentCallback = sentCallback {
                 self.sentCallbacks.add(sentCallback)
             }

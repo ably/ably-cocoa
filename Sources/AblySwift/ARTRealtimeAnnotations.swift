@@ -147,7 +147,7 @@ internal class ARTRealtimeAnnotationsInternal: NSObject, ARTRealtimeAnnotationsP
             let attachOnSubscribe = options?.attachOnSubscribe ?? true
             if channel.state_nosync == .failed {
                 if let onAttach = onAttach, attachOnSubscribe { // RTL7h
-                    onAttach(ARTErrorInfo.create(withCode: ARTErrorChannelOperationFailedInvalidState, message: "attempted to subscribe while channel is in Failed state."))
+                    onAttach(ARTErrorInfo.create(withCode: ARTErrorCode.channelOperationFailedInvalidState.rawValue, message: "attempted to subscribe while channel is in Failed state."))
                 }
                 ARTLogWarn(self.logger, "R:\(Unmanaged.passUnretained(self.realtime!).toOpaque()) C:\(Unmanaged.passUnretained(channel).toOpaque()) (\(channel.name)) anotation subscribe to '\(type ?? "")' action(s) has been ignored (attempted to subscribe while channel is in FAILED state)")
                 return
@@ -210,7 +210,7 @@ internal class ARTRealtimeAnnotationsInternal: NSObject, ARTRealtimeAnnotationsP
                 do {
                     annotation = try a.decode(with: dataEncoder)
                 } catch {
-                    let errorInfo = ARTErrorInfo.wrap(ARTErrorInfo.create(withCode: ARTErrorUnableToDecodeMessage, message: error.localizedDescription), prepend: "Failed to decode data: ")
+                    let errorInfo = ARTErrorInfo.wrap(ARTErrorInfo.create(withCode: ARTErrorCode.unableToDecodeMessage.rawValue, message: error.localizedDescription), prepend: "Failed to decode data: ")
                     ARTLogError(self.logger, "RT:\(Unmanaged.passUnretained(self.realtime!).toOpaque()) C:\(Unmanaged.passUnretained(self.channel!).toOpaque()) (\(self.channel!.name)) \(errorInfo.message)")
                 }
             }

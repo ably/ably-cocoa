@@ -338,7 +338,14 @@ extension String: ARTEventIdentification {
 
 // MARK: - ARTJsonCompatible
 
-// swift-migration: original location ARTTypes.m, line 230
+// swift-migration: original location ARTTypes.h, line 438
+/// :nodoc:
+public protocol ARTJsonCompatible {
+    func toJSON() throws -> [String: Any]?
+    func toJSONString() -> String?
+}
+
+// swift-migration: original location ARTTypes.h, line 448 and ARTTypes.m, line 230
 extension String: ARTJsonCompatible {
     
     // swift-migration: original location ARTTypes.m, line 232
@@ -362,7 +369,7 @@ extension String: ARTJsonCompatible {
     }
 }
 
-// swift-migration: original location ARTTypes.m, line 257
+// swift-migration: original location ARTTypes.h, line 463 and ARTTypes.m, line 257
 extension Dictionary: ARTJsonCompatible where Key == String, Value == Any {
     
     // swift-migration: original location ARTTypes.m, line 259
@@ -685,3 +692,24 @@ public typealias ARTPaginatedDeviceDetailsCallback = (ARTPaginatedResult<ARTDevi
 // swift-migration: original location ARTTypes.h, line 565
 /// :nodoc:
 public typealias ARTPaginatedTextCallback = (ARTPaginatedResult<String>?, ARTErrorInfo?) -> Void
+
+// MARK: - ARTRealtimeChannelsProtocol
+
+// swift-migration: original location ARTRealtimeChannels.h, line 8
+/// :nodoc:
+public protocol ARTRealtimeChannelsProtocol: AnyObject {
+    // We copy this from the parent class and replace ChannelType by ARTRealtimeChannel * because
+    // Swift ignores Objective-C generics and thinks this is returning an id, failing to compile.
+    // Thus, we can't make ARTRealtimeChannels inherit from ARTChannels; we have to compose them instead.
+    func exists(_ name: String) -> Bool
+    func release(_ name: String, callback: ARTCallback?)
+    func release(_ name: String)
+}
+
+// MARK: - ARTCancellable
+
+// swift-migration: original location ARTTypes.h, line 227
+/// :nodoc:
+public protocol ARTCancellable {
+    func cancel()
+}

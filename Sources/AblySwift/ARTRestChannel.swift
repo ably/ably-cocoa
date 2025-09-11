@@ -374,7 +374,7 @@ internal class ARTRestChannelInternal: ARTChannel {
                 if let messageClientId = message.clientId,
                    let authClientId = self.rest?.auth.clientId_nosync(),
                    messageClientId != authClientId {
-                    wrappedCallback(ARTErrorInfo.create(withCode: ARTStateCode.mismatchedClientId.rawValue, message: "attempted to publish message with an invalid clientId"))
+                    wrappedCallback(ARTErrorInfo.create(withCode: ARTState.mismatchedClientId.rawValue, message: "attempted to publish message with an invalid clientId"))
                     return
                 }
                 
@@ -400,7 +400,7 @@ internal class ARTRestChannelInternal: ARTChannel {
                     if let messageClientId = message.clientId,
                        let authClientId = self.rest?.auth.clientId_nosync(),
                        messageClientId != authClientId {
-                        wrappedCallback(ARTErrorInfo.create(withCode: ARTStateCode.mismatchedClientId.rawValue, message: "attempted to publish message with an invalid clientId"))
+                        wrappedCallback(ARTErrorInfo.create(withCode: ARTState.mismatchedClientId.rawValue, message: "attempted to publish message with an invalid clientId"))
                         return
                     }
                     if let baseId = baseId {
