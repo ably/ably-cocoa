@@ -808,6 +808,30 @@ Do not migrate the following methods; instead just use the following at the call
 - Methods accepting `NSMutableDictionary` → Accept `inout Dictionary` in Swift
 - Examples: `ARTMessageOperation.writeToDictionary:`, `ARTJsonLikeEncoder.writeData:…`
 
+**Enum Value Migration:**
+
+When migrating Objective-C constant references to Swift enum cases, use the proper Swift enum syntax:
+
+```objective-c
+// Objective-C constants
+ARTStateRequestTokenFailed
+ARTErrorTokenErrorUnspecified  
+ARTErrorIncompatibleCredentials
+```
+
+```swift
+// Swift enum cases
+ARTState.requestTokenFailed.rawValue
+ARTErrorCode.tokenErrorUnspecified.rawValue
+ARTErrorCode.incompatibleCredentials.rawValue
+```
+
+**Migration Pattern:**
+- `ARTState*` constants → `ARTState.camelCase.rawValue`
+- `ARTError*` constants → `ARTErrorCode.camelCase.rawValue`  
+- Always use `.rawValue` to get the underlying integer value
+- Convert PascalCase to camelCase for Swift enum cases
+
 ### NSCopying Protocol Translation
 
 **The Challenge:**
