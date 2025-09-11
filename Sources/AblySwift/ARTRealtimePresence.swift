@@ -393,5 +393,135 @@ private enum ARTPresenceSyncState: UInt {
 }
 
 // swift-migration: original location ARTRealtimePresence+Private.h, line 6 and ARTRealtimePresence.m, line 174
-public class ARTRealtimePresenceInternal {
+internal class ARTRealtimePresenceInternal {
+    
+    // MARK: - Instance Variables (from .m file line 175-189)
+    
+    // swift-migration: original location ARTRealtimePresence.m, line 175
+    private weak var _channel: ARTRealtimeChannelInternal? // weak because channel owns self
+    // swift-migration: original location ARTRealtimePresence.m, line 176
+    private weak var _realtime: ARTRealtimeInternal?
+    // swift-migration: original location ARTRealtimePresence.m, line 177
+    private let _userQueue: DispatchQueue
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 23 and ARTRealtimePresence.m, line 196
+    private let _queue: DispatchQueue
+    // swift-migration: original location ARTRealtimePresence.m, line 178
+    private let _pendingPresence: [ARTQueuedMessage]
+    // swift-migration: original location ARTRealtimePresence.m, line 179
+    private let _eventEmitter: ARTEventEmitter<ARTEvent, ARTPresenceMessage>
+    // swift-migration: original location ARTRealtimePresence.m, line 180
+    private let _dataEncoder: ARTDataEncoder
+    
+    // swift-migration: original location ARTRealtimePresence.m, line 182
+    private var _syncState: ARTPresenceSyncState
+    // swift-migration: original location ARTRealtimePresence.m, line 183
+    private let _syncEventEmitter: ARTEventEmitter<ARTEvent, Any>
+    
+    // swift-migration: original location ARTRealtimePresence.m, line 185 - RTP2
+    // swift-migration: Atomic property - using NSLock for thread-safety per PRD
+    // swift-migration: Using Swift Dictionary instead of NSMutableDictionary per PRD section 5.1
+    private let _membersLock = NSLock()
+    private var _members: [String: ARTPresenceMessage]
+    
+    // swift-migration: original location ARTRealtimePresence.m, line 186 - RTP17h
+    // swift-migration: Atomic property - using NSLock for thread-safety per PRD
+    // swift-migration: Using Swift Dictionary instead of NSMutableDictionary per PRD section 5.1
+    private let _internalMembersLock = NSLock()
+    private var _internalMembers: [String: ARTPresenceMessage]
+    
+    // swift-migration: original location ARTRealtimePresence.m, line 188 - RTP19
+    // swift-migration: Using Swift Dictionary instead of NSMutableDictionary per PRD section 5.1
+    private var _beforeSyncMembers: [String: ARTPresenceMessage]?
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 154 and ARTRealtimePresence.m, line 198
+    private let logger: ARTInternalLog
+    
+    // MARK: - Properties
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 8 and ARTRealtimePresence.m, line 755
+    // swift-migration: Custom getter - preserves original logic accessing _realtime.connection.id_nosync
+    internal var connectionId: String? {
+        // swift-migration: Lawrence made this nullable, seems like an issue in the Objective-C
+        return _realtime?.connection.id_nosync
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 9
+    internal var eventEmitter: ARTEventEmitter<ARTEvent, ARTPresenceMessage> {
+        return _eventEmitter
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 23
+    internal var queue: DispatchQueue {
+        return _queue
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 24
+    internal var pendingPresence: [ARTQueuedMessage] {
+        return _pendingPresence
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 89 and ARTRealtimePresence.m, line 790
+    // swift-migration: Property marked as atomic in header - implementing atomic access pattern per PRD
+    // swift-migration: Using Swift Dictionary instead of NSDictionary per PRD section 5.1 - returns defensive copy
+    internal var members: [String: ARTPresenceMessage] {
+        get { _membersLock.withLock { _members } }
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 93 and ARTRealtimePresence.m, line 794
+    // swift-migration: Property marked as atomic in header - implementing atomic access pattern per PRD  
+    // swift-migration: Using Swift Dictionary instead of NSDictionary per PRD section 5.1 - returns defensive copy
+    internal var internalMembers: [String: ARTPresenceMessage] {
+        get { _internalMembersLock.withLock { _internalMembers } }
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 26 and ARTRealtimePresence.m, line 466
+    // swift-migration: Custom getter with thread-safe dispatch pattern from original - preserves exact behavior
+    internal var syncComplete: Bool {
+        var result = false
+        queue.sync {
+            result = syncComplete_nosync()
+        }
+        return result
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 96 and ARTRealtimePresence.m, line 969
+    // swift-migration: Custom getter with thread-safe dispatch pattern from original - preserves exact behavior
+    internal var syncInProgress: Bool {
+        var result = false
+        queue.sync {
+            result = syncInProgress_nosync()
+        }
+        return result
+    }
+    
+    // MARK: - Internal Helper Properties/Methods
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 13 and ARTRealtimePresence.m, line 476
+    internal func syncComplete_nosync() -> Bool {
+        return _syncState == .ended || _syncState == .failed
+    }
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 14 and ARTRealtimePresence.m, line 965
+    internal func syncInProgress_nosync() -> Bool {
+        return _syncState == .started
+    }
+    
+    // MARK: - Initialization (placeholder for now as per user request)
+    
+    // swift-migration: original location ARTRealtimePresence+Private.h, line 11 and ARTRealtimePresence.m, line 191
+    internal init(channel: ARTRealtimeChannelInternal, logger: ARTInternalLog) {
+        // swift-migration: Preserving original initialization logic from line 192-206
+        self._channel = channel
+        self._realtime = channel.realtime
+        self._userQueue = channel.realtime.rest.userQueue
+        self._queue = channel.realtime.rest.queue
+        self._pendingPresence = []
+        self.logger = logger
+        self._eventEmitter = ARTInternalEventEmitter(queue: channel.realtime.rest.queue)
+        self._dataEncoder = channel.dataEncoder
+        self._members = [:]
+        self._internalMembers = [:]
+        self._syncState = .initialized
+        self._syncEventEmitter = ARTInternalEventEmitter(queue: channel.realtime.rest.queue)
+    }
 }

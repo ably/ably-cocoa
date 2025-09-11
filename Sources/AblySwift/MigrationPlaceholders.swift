@@ -83,7 +83,7 @@ public class ARTRealtimeChannelInternal: ARTChannel {
     public var shouldAttach: Bool {
         fatalError("ARTRealtimeChannelInternal not yet migrated")
     }
-    public var presence: ARTRealtimePresenceInternal {
+    internal var presence: ARTRealtimePresenceInternal {
         fatalError("ARTRealtimeChannelInternal not yet migrated")
     }
     
