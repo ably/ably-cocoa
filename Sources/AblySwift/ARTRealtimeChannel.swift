@@ -520,67 +520,231 @@ extension ARTEvent {
 // swift-migration: Placeholder for ARTRealtimeChannelInternal - contains only the methods needed to make ARTRealtimeChannel compile
 // DO NOT implement anything else for this class, especially not the initializer per user instructions
 internal class ARTRealtimeChannelInternal: ARTChannel {
-    // swift-migration: Lawrence initializer placeholder
+    
+    // MARK: - Basic Stored Properties
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 263 (ivar _queue)
+    internal var _queue: DispatchQueue
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 264 (ivar _userQueue)
+    internal var _userQueue: DispatchQueue
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 265 (ivar _errorReason)
+    private var _errorReason: ARTErrorInfo?
+    
+    // swift-migration: original location ARTRealtimeChannel+Private.h, line 48 (weak property)
+    internal weak var realtime: ARTRealtimeInternal?
+    
+    // swift-migration: original location ARTRealtimeChannel+Private.h, line 49 (readonly property)
+    internal var restChannel: ARTRestChannelInternal
+    
+    // swift-migration: original location ARTRealtimeChannel+Private.h, line 50 (readwrite property)
+    internal var attachSerial: String?
+    
+    // swift-migration: original location ARTRealtimeChannel+Private.h, line 51 (readwrite property)
+    internal var channelSerial: String?
+    
+    // swift-migration: original location ARTRealtimeChannel+Private.h, line 57 (readwrite property)
+    internal var attachResume: Bool
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 255 (readonly property)
+    private var _attachRetryState: ARTAttachRetryState
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 256 (readonly property)
+    private var _pluginData: [String: Any]
+    
+    // MARK: - Instance Variables from Interface
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 236 (ivar)
+    private var _realtimePresence: ARTRealtimePresenceInternal
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 237 (ivar)
+    private var _realtimeAnnotations: ARTRealtimeAnnotationsInternal
+    
+    #if os(iOS)
+    // swift-migration: original location ARTRealtimeChannel.m, line 239 (ivar)
+    private var _pushChannel: ARTPushChannelInternal?
+    #endif
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 241 (ivar)
+    private var _attachTimer: CFRunLoopTimer?
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 242 (ivar)
+    private var _detachTimer: CFRunLoopTimer?
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 243 (ivar)
+    private var _attachedEventEmitter: ARTEventEmitter<ARTEvent, ARTErrorInfo>
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 244 (ivar)
+    private var _detachedEventEmitter: ARTEventEmitter<ARTEvent, ARTErrorInfo>
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 245 (ivar)
+    private var _lastPayloadMessageId: String?
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 246 (ivar)
+    private var _decodeFailureRecoveryInProgress: Bool
+    
+    // MARK: - Event Emitters
+    
+    // swift-migration: original location ARTRealtimeChannel+Private.h, line 53 (readonly property)
+    internal var internalEventEmitter: ARTEventEmitter<ARTEvent, ARTChannelStateChange>
+    
+    // swift-migration: original location ARTRealtimeChannel+Private.h, line 54 (readonly property)
+    internal var statesEventEmitter: ARTEventEmitter<ARTEvent, ARTChannelStateChange>
+    
+    // swift-migration: original location ARTRealtimeChannel+Private.h, line 55 (readonly property)
+    // swift-migration: Lawrence changed this type
+    internal var messagesEventEmitter: ARTEventEmitter<String, ARTMessage>
 
+    // swift-migration: Lawrence initializer placeholder
     init(realtime: ARTRealtimeInternal, name: String, options: ARTRealtimeChannelOptions, logger: ARTInternalLog) {
         fatalError("TODO")
     }
 
-    // MARK: - Properties needed by ARTRealtimeChannel
+    // MARK: - Properties with Custom Getters
     
+    // swift-migration: original location ARTRealtimeChannel+Private.h, line 69 and ARTRealtimeChannel.m, line 303
     internal var queue: DispatchQueue {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
+        return _queue
     }
-    
+
+    // swift-migration: Lawrence: This is backing storage for `state`; for whatever reason it didn't migrate properly
+    private var _state: ARTRealtimeChannelState
+    // swift-migration: original location ARTRealtimeChannel+Private.h, line 36 and ARTRealtimeChannel.m, line 303
     internal var state: ARTRealtimeChannelState {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
+        return _queue.sync {
+            self.state_nosync
+        }
     }
     
-    internal var properties: ARTChannelProperties {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    internal var errorReason: ARTErrorInfo? {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    internal var realtime: ARTRealtimeInternal {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
+    // swift-migration: original location ARTRealtimeChannel+Private.h, line 41 and ARTRealtimeChannel.m, line 319
     internal var state_nosync: ARTRealtimeChannelState {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
+        return _state
     }
     
-    internal var attachSerial: String? {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
+    // swift-migration: original location ARTRealtimeChannel+Private.h, line 37 and ARTRealtimeChannel.m, line 311
+    internal var errorReason: ARTErrorInfo? {
+        var result: ARTErrorInfo?
+        _queue.sync {
+            result = self.errorReason_nosync()
+        }
+        return result
     }
     
-    internal var shouldAttach: Bool {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
+    // swift-migration: original location ARTRealtimeChannel+Private.h, line 42 and ARTRealtimeChannel.m, line 345
+    internal func errorReason_nosync() -> ARTErrorInfo? {
+        return _errorReason
     }
     
-    internal var restChannel: ARTRestChannelInternal {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    internal var channelSerial: String? {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
+    // swift-migration: original location ARTRealtimeChannel+Private.h, line 29 and ARTRealtimeChannel.m, line 349
     internal var presence: ARTRealtimePresenceInternal {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
+        return _realtimePresence
     }
     
+    // swift-migration: original location ARTRealtimeChannel+Private.h, line 30 and ARTRealtimeChannel.m, line 353
     internal var annotations: ARTRealtimeAnnotationsInternal {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
+        return _realtimeAnnotations
     }
     
     #if os(iOS)
+    // swift-migration: original location ARTRealtimeChannel+Private.h, line 33 and ARTRealtimeChannel.m, line 358
     internal var push: ARTPushChannelInternal {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
+        if _pushChannel == nil {
+            guard let realtime = self.realtime else {
+                fatalError("ARTRealtimeChannelInternal realtime is nil")
+            }
+            _pushChannel = ARTPushChannelInternal(rest: realtime.rest, channel: self, logger: self.logger)
+        }
+        return _pushChannel!
     }
     #endif
+    
+    // swift-migration: original location ARTRealtimeChannel+Private.h, line 44 and ARTRealtimeChannel.m, line 334
+    internal var shouldAttach: Bool {
+        switch state_nosync {
+        case .initialized, .detaching, .detached:
+            return true
+        default:
+            return false
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel+Private.h, line 44 and ARTRealtimeChannel.m, line 323
+    internal func canBeReattached() -> Bool {
+        switch state_nosync {
+        case .attaching, .attached, .suspended:
+            return true
+        default:
+            return false
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel+Private.h, line 52 and ARTRealtimeChannel.m, line 1125
+    internal var clientId: String? {
+        return getClientId()
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel+Private.h, line 43 and ARTRealtimeChannel.m, line 1129
+    internal var clientId_nosync: String? {
+        guard let realtime = self.realtime else { return nil }
+        return realtime.rest.auth.clientId_nosync()
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 1125
+    private func getClientId() -> String? {
+        var result: String?
+        _queue.sync {
+            result = self.clientId_nosync
+        }
+        return result
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel+Private.h, line 39 and ARTRealtimeChannel.m, line 1156
+    internal var connectionId: String {
+        guard let realtime = self.realtime else { return "" }
+        return realtime.connection.id ?? ""
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel+Private.h, line 71 and ARTRealtimeChannel.m, line 1177
+    internal var properties: ARTChannelProperties {
+        return _queue.sync {
+            self.properties_nosync
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel+Private.h, line 46 and ARTRealtimeChannel.m, line 1185
+    internal var properties_nosync: ARTChannelProperties {
+        return ARTChannelProperties(attachSerial: self.attachSerial, channelSerial: self.channelSerial)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel+Private.h, line 73 and ARTRealtimeChannel.m, line 1169
+    internal override var options: ARTRealtimeChannelOptions? {
+        return getOptions()
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 1169
+    internal func getOptions() -> ARTRealtimeChannelOptions? {
+        var result: ARTRealtimeChannelOptions?
+        _queue.sync {
+            result = self.getOptions_nosync()
+        }
+        return result
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel+Private.h, line 38 and ARTRealtimeChannel.m, line 1173
+    internal func getOptions_nosync() -> ARTRealtimeChannelOptions? {
+        return super.options as? ARTRealtimeChannelOptions
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 255
+    internal var attachRetryState: ARTAttachRetryState {
+        return _attachRetryState
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 256
+    internal var pluginData: [String: Any] {
+        return _pluginData
+    }
     
     // MARK: - Methods needed by ARTRealtimeChannel
     
@@ -731,15 +895,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel {
     internal func _unsubscribe() {
         fatalError("ARTRealtimeChannelInternal not yet migrated")
     }
-    
-    internal func getOptions() -> ARTRealtimeChannelOptions? {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    internal func getOptions_nosync() -> ARTRealtimeChannelOptions? {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
+
     internal func setOptions(_ options: ARTRealtimeChannelOptions?, callback: ARTCallback?) {
         fatalError("ARTRealtimeChannelInternal not yet migrated")
     }

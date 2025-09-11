@@ -520,16 +520,17 @@ internal class ARTRealtimePresenceInternal {
         // swift-migration: Preserving original initialization logic from line 192-206
         self._channel = channel
         self._realtime = channel.realtime
-        self._userQueue = channel.realtime.rest.userQueue
-        self._queue = channel.realtime.rest.queue
+        // swift-migration: Lawrence added all these unwraps of channel.realtime
+        self._userQueue = unwrapValueWithAmbiguousObjectiveCNullability(channel.realtime).rest.userQueue
+        self._queue = unwrapValueWithAmbiguousObjectiveCNullability(channel.realtime).rest.queue
         self._pendingPresence = []
         self.logger = logger
-        self._eventEmitter = ARTInternalEventEmitter(queue: channel.realtime.rest.queue)
+        self._eventEmitter = ARTInternalEventEmitter(queue: unwrapValueWithAmbiguousObjectiveCNullability(channel.realtime).rest.queue)
         self._dataEncoder = channel.dataEncoder
         self._members = [:]
         self._internalMembers = [:]
         self._syncState = .initialized
-        self._syncEventEmitter = ARTInternalEventEmitter(queue: channel.realtime.rest.queue)
+        self._syncEventEmitter = ARTInternalEventEmitter(queue: unwrapValueWithAmbiguousObjectiveCNullability(channel.realtime).rest.queue)
     }
     
     // MARK: - Public API Implementation

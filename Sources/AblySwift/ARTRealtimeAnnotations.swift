@@ -120,8 +120,9 @@ internal class ARTRealtimeAnnotationsInternal: NSObject, ARTRealtimeAnnotationsP
     internal init(channel: ARTRealtimeChannelInternal, logger: ARTInternalLog) {
         self.channel = channel
         self.realtime = channel.realtime
-        self.userQueue = channel.realtime.rest.userQueue
-        self.queue = channel.realtime.rest.queue
+        // swift-migration: Lawrence added these two unwraps
+        self.userQueue = unwrapValueWithAmbiguousObjectiveCNullability(channel.realtime).rest.userQueue
+        self.queue = unwrapValueWithAmbiguousObjectiveCNullability(channel.realtime).rest.queue
         self.logger = logger
         self.eventEmitter = ARTInternalEventEmitter(queue: self.queue)
         self.dataEncoder = channel.dataEncoder
