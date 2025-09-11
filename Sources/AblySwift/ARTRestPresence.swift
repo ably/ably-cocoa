@@ -1,6 +1,51 @@
 import Foundation
 
+// swift-migration: original location ARTRestPresence.h, line 44
+/**
+ The protocol upon which the `ARTRestPresence` is implemented.
+ */
+public protocol ARTRestPresenceProtocol {
+    
+    // swift-migration: original location ARTRestPresence.h, line 47
+    /// :nodoc: TODO: docstring
+    func get(_ callback: @escaping ARTPaginatedPresenceCallback)
+    
+    // swift-migration: original location ARTRestPresence.h, line 50
+    /// :nodoc: TODO: docstring
+    func get(_ callback: @escaping ARTPaginatedPresenceCallback, error errorPtr: inout NSError?) -> Bool
+    
+    // swift-migration: original location ARTRestPresence.h, line 61
+    /**
+     * Retrieves the current members present on the channel and the metadata for each member, such as their `ARTPresenceAction` and ID. Returns a `ARTPaginatedResult` object, containing an array of `ARTPresenceMessage` objects.
+     *
+     * @param query An `ARTPresenceQuery` object.
+     * @param callback A callback for retriving an `ARTPaginatedResult` object with an array of `ARTPresenceMessage` objects.
+     * @param errorPtr A reference to the `NSError` object where an error information will be saved in case of failure.
+     *
+     * @return In case of failure returns `false` and the error information can be retrived via the `error` parameter.
+     */
+    func get(_ query: ARTPresenceQuery, callback: @escaping ARTPaginatedPresenceCallback, error errorPtr: inout NSError?) -> Bool
+    
+    // swift-migration: original location ARTRestPresence.h, line 63
+    func history(_ callback: @escaping ARTPaginatedPresenceCallback)
+    
+    // swift-migration: original location ARTRestPresence.h, line 74
+    /**
+     * Retrieves a `ARTPaginatedResult` object, containing an array of historical `ARTPresenceMessage` objects for the channel. If the channel is configured to persist messages, then presence messages can be retrieved from history for up to 72 hours in the past. If not, presence messages can only be retrieved from history for up to two minutes in the past.
+     *
+     * @param query An `ARTDataQuery` object.
+     * @param callback A callback for retriving an `ARTPaginatedResult` object with an array of `ARTPresenceMessage` objects.
+     * @param errorPtr A reference to the `NSError` object where an error information will be saved in case of failure.
+     *
+     * @return In case of failure returns `false` and the error information can be retrived via the `error` parameter.
+     */
+    func history(_ query: ARTDataQuery?, callback: @escaping ARTPaginatedPresenceCallback, error errorPtr: inout NSError?) -> Bool
+}
+
 // swift-migration: original location ARTRestPresence.h, lines 13-39 and ARTRestPresence.m, lines 17-52
+/**
+ This object is used for providing parameters into `ARTRestPresence`'s methods with paginated results.
+ */
 public class ARTPresenceQuery: NSObject {
     // swift-migration: original location ARTRestPresence.h, line 18 and ARTRestPresence.m, line 30
     public var limit: UInt

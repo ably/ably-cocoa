@@ -1,6 +1,48 @@
 import Foundation
 
-// swift-migration: original location ARTRestChannel.m, lines 21-106
+// swift-migration: original location ARTRestChannel.h, line 14
+/**
+ The protocol upon which the `ARTRestChannel` is implemented.
+ */
+public protocol ARTRestChannelProtocol: ARTChannelProtocol {
+    
+    // swift-migration: original location ARTRestChannel.h, line 17
+    /// :nodoc: TODO: docstring
+    var options: ARTChannelOptions? { get set }
+    
+    // swift-migration: original location ARTRestChannel.h, line 28
+    /**
+     * Retrieves a `ARTPaginatedResult` object, containing an array of historical `ARTMessage` objects for the channel. If the channel is configured to persist messages, then messages can be retrieved from history for up to 72 hours in the past. If not, messages can only be retrieved from history for up to two minutes in the past.
+     *
+     * @param query An `ARTDataQuery` object.
+     * @param callback A callback for retriving an `ARTPaginatedResult` object with an array of `ARTMessage` objects.
+     * @param errorPtr A reference to the `NSError` object where an error information will be saved in case of failure.
+     *
+     * @return In case of failure returns `false` and the error information can be retrived via the `error` parameter.
+     */
+    func history(_ query: ARTDataQuery?, callback: @escaping ARTPaginatedMessagesCallback, error errorPtr: inout NSError?) -> Bool
+    
+    // swift-migration: original location ARTRestChannel.h, line 35
+    /**
+     * Retrieves a `ARTChannelDetails` object for the channel, which includes status and occupancy metrics.
+     *
+     * @param callback A callback for receiving the `ARTChannelDetails` object.
+     */
+    func status(_ callback: @escaping ARTChannelDetailsCallback)
+    
+    // swift-migration: original location ARTRestChannel.h, line 42
+    /**
+     * Sets the `ARTChannelOptions` for the channel.
+     *
+     * @param options A `ARTChannelOptions` object.
+     */
+    func setOptions(_ options: ARTChannelOptions?)
+}
+
+// swift-migration: original location ARTRestChannel.h, line 50 and ARTRestChannel.m, lines 21-106
+/**
+ * Enables messages to be published and historic messages to be retrieved for a channel.
+ */
 public class ARTRestChannel: NSObject, ARTRestChannelProtocol, @unchecked Sendable {
     internal let _internal: ARTRestChannelInternal
     private let _dealloc: ARTQueuedDealloc

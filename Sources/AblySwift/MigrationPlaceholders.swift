@@ -941,28 +941,8 @@ public enum ARTStateCode: Int {
     case mismatchedClientId
 }
 
-// Protocol for REST Channel
-public protocol ARTRestChannelProtocol: ARTChannelProtocol {
-    var options: ARTChannelOptions? { get set }
-    func history(_ query: ARTDataQuery?, callback: @escaping ARTPaginatedMessagesCallback, error errorPtr: inout NSError?) -> Bool
-    func status(_ callback: @escaping ARTChannelDetailsCallback)
-    func setOptions(_ options: ARTChannelOptions?)
-}
+// swift-migration: ARTRestChannelProtocol now implemented in ARTRestChannel.swift
 
-// Protocol for REST Channels
-public protocol ARTRestChannelsProtocol {
-    func exists(_ name: String) -> Bool
-    func release(_ name: String)
-    func get(_ name: String) -> ARTRestChannel
-    func get(_ name: String, options: ARTChannelOptions) -> ARTRestChannel
-    func iterate() -> any NSFastEnumeration
-}
+// swift-migration: ARTRestChannelsProtocol now implemented in ARTRestChannels.swift
 
-// Protocol for REST Presence
-public protocol ARTRestPresenceProtocol {
-    func get(_ callback: @escaping ARTPaginatedPresenceCallback)
-    func get(_ callback: @escaping ARTPaginatedPresenceCallback, error errorPtr: inout NSError?) -> Bool
-    func get(_ query: ARTPresenceQuery, callback: @escaping ARTPaginatedPresenceCallback, error errorPtr: inout NSError?) -> Bool
-    func history(_ callback: @escaping ARTPaginatedPresenceCallback)
-    func history(_ query: ARTDataQuery?, callback: @escaping ARTPaginatedPresenceCallback, error errorPtr: inout NSError?) -> Bool
-}
+// swift-migration: ARTRestPresenceProtocol now implemented in ARTRestPresence.swift

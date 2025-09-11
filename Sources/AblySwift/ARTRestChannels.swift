@@ -1,5 +1,33 @@
 import Foundation
 
+// swift-migration: original location ARTRestChannels.h, line 8
+/// :nodoc:
+public protocol ARTRestChannelsProtocol {
+    
+    // swift-migration: original location ARTRestChannels.h, line 13
+    // We copy this from the parent class and replace ChannelType by ARTRestChannel * because
+    // Swift ignores Objective-C generics and thinks this is returning an id, failing to compile.
+    // Thus, we can't make ARTRestChannels inherit from ARTChannels; we have to compose them instead.
+    func exists(_ name: String) -> Bool
+    
+    // swift-migration: original location ARTRestChannels.h, line 14
+    func release(_ name: String)
+    
+    // swift-migration: original location ARTRestChannels.h, line 22
+    func get(_ name: String) -> ARTRestChannel
+    
+    // swift-migration: original location ARTRestChannels.h, line 23
+    func get(_ name: String, options: ARTChannelOptions) -> ARTRestChannel
+    
+    // swift-migration: original location ARTRestChannels.h, line 30
+    /**
+     * Iterates through the existing channels.
+     *
+     * @return Each iteration returns an `ARTRestChannel` object.
+     */
+    func iterate() -> any NSFastEnumeration
+}
+
 // swift-migration: Placeholder delegate for initialization workaround
 private class PlaceholderDelegate: ARTChannelsDelegate {
     func makeChannel(_ channel: String, options: ARTChannelOptions?) -> ARTChannel {
