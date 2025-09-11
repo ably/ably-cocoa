@@ -734,12 +734,13 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
         }
         return result
     }
-    
-    // swift-migration: original location ARTRealtimeChannel+Private.h, line 39 and ARTRealtimeChannel.m, line 1156
-    internal var connectionId: String {
-        guard let realtime = self.realtime else { return "" }
-        return realtime.connection.id ?? ""
-    }
+
+    // swift-migration: Lawrence got rid of the connectionId property because wasn't being used and this ?? "" is suspicious
+//    // swift-migration: original location ARTRealtimeChannel+Private.h, line 39 and ARTRealtimeChannel.m, line 1156
+//    internal var connectionId: String {
+//        guard let realtime = self.realtime else { return "" }
+//        return realtime.connection.id ?? ""
+//    }
     
     // swift-migration: original location ARTRealtimeChannel+Private.h, line 71 and ARTRealtimeChannel.m, line 1177
     internal var properties: ARTChannelProperties {
@@ -1245,27 +1246,29 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
         
         if let firstMessage = pm.messages?.first,
            let extras = firstMessage.extras {
-            var extrasDecodeError: Error?
-            let extrasDict = extras.toJSON(&extrasDecodeError)
-            
-            if let extrasDecodeError = extrasDecodeError {
-                ARTLogError(logger, "\(pointer: realtime) C:\(pointer: self) (\(self.name)) message extras \(extras) decode error: \(extrasDecodeError)")
-            } else {
-                if let deltaDict = extrasDict?["delta"] as? [String: Any],
+            do {
+                let extrasDict = try extras.toJSON()
+                
+                // swift-migration: Lawrence - using do-catch instead of inout error parameter
+                if let extrasDict = extrasDict {
+                if let deltaDict = extrasDict["delta"] as? [String: Any],
                    let deltaFrom = deltaDict["from"] as? String,
                    let lastPayloadMessageId = _lastPayloadMessageId,
                    deltaFrom != lastPayloadMessageId {
-                    let incompatibleIdError = ARTErrorInfo.create(withCode: ARTErrorCode.unableToDecodeMessage.rawValue, message: "previous id '\(lastPayloadMessageId)' is incompatible with message delta \(firstMessage)")
-                    ARTLogError(logger, "\(pointer: realtime) C:\(pointer: self) (\(self.name)) \(incompatibleIdError.message)")
+                        let incompatibleIdError = ARTErrorInfo.create(withCode: ARTErrorCode.unableToDecodeMessage.rawValue, message: "previous id '\(lastPayloadMessageId)' is incompatible with message delta \(firstMessage)")
+                        ARTLogError(logger, "\(pointer: realtime) C:\(pointer: self) (\(self.name)) \(incompatibleIdError.message)")
                     
-                    if let messages = pm.messages {
-                        for j in (i + 1)..<messages.count {
-                            ARTLogVerbose(logger, "\(pointer: realtime) C:\(pointer: self) (\(self.name)) message skipped \(messages[j])")
+                        if let messages = pm.messages {
+                            for j in (i + 1)..<messages.count {
+                                ARTLogVerbose(logger, "\(pointer: realtime) C:\(pointer: self) (\(self.name)) message skipped \(messages[j])")
+                            }
                         }
+                        startDecodeFailureRecovery(withErrorInfo: incompatibleIdError)
+                        return
                     }
-                    startDecodeFailureRecovery(withErrorInfo: incompatibleIdError)
-                    return
                 }
+            } catch let extrasDecodeError {
+                ARTLogError(logger, "\(pointer: realtime) C:\(pointer: self) (\(self.name)) message extras \(extras) decode error: \(extrasDecodeError)")
             }
         }
         
@@ -1276,10 +1279,10 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
             var msg = message
             
             if msg.data != nil && dataEncoder != nil {
-                var decodeError: Error?
-                msg = msg.decode(with: dataEncoder!, error: &decodeError)
-                
-                if let decodeError = decodeError {
+                do {
+                    msg = try msg.decode(with: dataEncoder!)
+                } catch let decodeError {
+                    // swift-migration: Lawrence - using do-catch instead of inout error parameter
                     let errorInfo = ARTErrorInfo.wrap(ARTErrorInfo.create(withCode: ARTErrorCode.unableToDecodeMessage.rawValue, message: decodeError.localizedDescription), prepend: "Failed to decode data: ")
                     ARTLogError(logger, "\(pointer: realtime) C:\(pointer: self) (\(self.name)) \(errorInfo.message)")
                     _errorReason = errorInfo
@@ -1300,7 +1303,8 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
                 msg.id = "\(pm.id ?? ""):\(i)"
             }
             if msg.connectionId == nil {
-                msg.connectionId = pm.connectionId
+                // swift-migration: unwrap added by Lawrence (the ProtocolMessage should always have a connectionID AFAIK)
+                msg.connectionId = unwrapValueWithAmbiguousObjectiveCNullability(pm.connectionId)
             }
             
             _lastPayloadMessageId = msg.id
@@ -1492,11 +1496,12 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
         attachMessage.action = .attach
         attachMessage.channel = self.name
         attachMessage.channelSerial = self.channelSerial // RTL4c1
-        attachMessage.params = options_nosync?.params
-        attachMessage.flags = options_nosync?.modes
-        
+        // swift-migration: Lawrence - using getOptions_nosync() to access ARTRealtimeChannelOptions properties (params, modes) since inherited options_nosync has type ARTChannelOptions
+        attachMessage.params = getOptions_nosync()?.params
+        attachMessage.flags = getOptions_nosync()?.modes.rawValue ?? 0
+
         if self.attachResume {
-            attachMessage.flags = (attachMessage.flags ?? 0) | ARTProtocolMessageFlag.attachResume.rawValue
+            attachMessage.flags = attachMessage.flags | ARTProtocolMessageFlag.attachResume.rawValue
         }
         
         realtime.send(attachMessage, sentCallback: { error in
@@ -1625,7 +1630,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
             self._detachedEventEmitter.emit(nil, with: errorInfo)
         }.startTimer()
         
-        if presence.syncInProgress_nosync {
+        if presence.syncInProgress_nosync() {
             presence.failsSync(ARTErrorInfo.create(withCode: ARTErrorCode.channelOperationFailed.rawValue, message: "channel is being DETACHED"))
         }
     }
