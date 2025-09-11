@@ -114,12 +114,12 @@ internal class ARTRestChannelsInternal: NSObject, ARTChannelsDelegate {
     
     // swift-migration: original location ARTRestChannels+Private.h, line 12 and ARTRestChannels.m, line 81
     internal func get(_ name: String) -> ARTRestChannelInternal {
-        return _channels.get(name) as! ARTRestChannelInternal
+        return _channels.get(name)
     }
     
     // swift-migration: original location ARTRestChannels+Private.h, line 13 and ARTRestChannels.m, line 85
     internal func get(_ name: String, options: ARTChannelOptions) -> ARTRestChannelInternal {
-        return _channels.get(name, options: options) as! ARTRestChannelInternal
+        return _channels.get(name, options: options)
     }
     
     // swift-migration: original location ARTRestChannels+Private.h, line 19 and ARTRestChannels.m, line 89
