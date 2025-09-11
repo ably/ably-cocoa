@@ -13,6 +13,7 @@ This document outlines the requirements and approach for migrating the Ably Coco
 - ❌ **Any runtime behavior differences**
 - ❌ **Memory management patterns**
 - ❌ **State machine transitions**
+- ❌ **Creating fallback objects for missing parameters** (e.g., `param ?? DefaultObject()` changes nil-passing behavior)
 
 **WHEN IN DOUBT: STOP MIGRATION AND ASK USER FOR GUIDANCE**
 
@@ -24,6 +25,7 @@ Before making any change, ask yourself:
 - [ ] Will this remove property storage or change getter logic? → **STOP, ASK USER**
 - [ ] Will this change runtime behavior? → **STOP, ASK USER**
 - [ ] Will this change when/how objects are deallocated? → **STOP, ASK USER**
+- [ ] Will this create a fallback object where original code passes nil? → **STOP, ASK USER**
 
 ## Pre-Migration Documentation Checklist
 
@@ -745,6 +747,45 @@ public enum ARTConnectionState: UInt {
 ```
 
 ### Special Translation Rules
+
+**Handling Objective-C Nullability Mismatch Issues:**
+
+**ALWAYS follow this sequence:**
+
+1. **First attempt: Direct port the Objective-C code as-is**
+   ```swift
+   // Try direct translation first
+   func someMethod(_ param: ParamType?) -> ReturnType {
+       return originalMethod(param: param)
+   }
+   ```
+
+2. **If compilation fails with nullability mismatch:**
+   - Identify conflicting nullability assumptions between different Objective-C declarations
+   - Confirm original Objective-C code was designed to handle nil for that parameter
+   - Only then use the utility function:
+
+   ```swift
+   // ONLY when direct port fails due to conflicting nullability assumptions
+   func someMethod(_ param: ParamType?) -> ReturnType {
+       // swift-migration: Using utility due to conflicting nullability assumptions in original code
+       return originalMethod(param: unwrapValueWithAmbiguousObjectiveCNullability(param))
+   }
+   ```
+
+3. **NEVER create fallback objects** (e.g., `param ?? DefaultObject()`) as this changes runtime behavior
+
+**Common nullability assumption conflicts:**
+- Protocol declares parameter as `nullable` but implementing method is in `NS_ASSUME_NONNULL_BEGIN/END`
+- One part of API explicitly allows nil, another part assumes non-null via compiler directives
+- Method signature assumptions conflict with actual usage patterns in the codebase
+
+**Requirements for using `unwrapValueWithAmbiguousObjectiveCNullability`:**
+- ✅ Direct porting attempt failed with compilation error
+- ✅ Identified conflicting nullability assumptions in original Objective-C
+- ✅ Your Swift method correctly accepts optional parameter
+- ✅ Original Objective-C code was designed to handle nil despite assumptions
+- ✅ Must document the specific conflict with `swift-migration:` comment
 
 **Platform Conditionals:**
 ```objective-c

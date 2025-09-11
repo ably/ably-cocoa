@@ -74,7 +74,9 @@ internal class ARTRestChannelsInternal: NSObject, ARTChannelsDelegate {
     
     // swift-migration: original location ARTRestChannels.m, line 73
     func makeChannel(_ name: String, options: ARTChannelOptions?) -> ARTChannel {
-        return ARTRestChannelInternal(name: name, withOptions: options ?? ARTChannelOptions(), andRest: rest!, logger: logger)
+        // swift-migration: Original Objective-C passes nil directly to initializer when options is nil
+        // Using utility function to preserve nil-passing behavior despite missing _Nullable annotation
+        return ARTRestChannelInternal(name: name, withOptions: unwrapValueWithAmbiguousObjectiveCNullability(options), andRest: rest!, logger: logger)
     }
     
     // swift-migration: original location ARTRestChannels+Private.h, line 14 and ARTRestChannels.m, line 77
