@@ -133,6 +133,19 @@ internal class ARTConnectionInternal: NSObject {
         return _queue
     }
     
+    // swift-migration: Simplified init for when we need to break circular dependencies
+    internal override init() {
+        // swift-migration: Using placeholder values - full implementation would handle circular dependencies properly
+        let placeholderOptions = ARTClientOptions()
+        let placeholderRest = ARTRestInternal(options: placeholderOptions)
+        let placeholderLogger = ARTInternalLog(clientOptions: placeholderOptions)
+        
+        self.eventEmitter = ARTPublicEventEmitter(rest: placeholderRest, logger: placeholderLogger)
+        self.realtime = nil
+        self._queue = DispatchQueue.main // Temporary placeholder
+        super.init()
+    }
+    
     // swift-migration: original location ARTConnection+Private.h, line 34 and ARTConnection.m, line 115
     internal init(realtime: ARTRealtimeInternal, logger: ARTInternalLog) {
         self.eventEmitter = ARTPublicEventEmitter(rest: realtime.rest, logger: logger)

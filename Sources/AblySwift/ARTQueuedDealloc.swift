@@ -1,13 +1,13 @@
 import Foundation
 
 // swift-migration: original location ARTQueuedDealloc.h, line 5 and ARTQueuedDealloc.m, line 3
-internal class ARTQueuedDealloc: NSObject {
+public class ARTQueuedDealloc: NSObject {
     
     private var _ref: AnyObject?
     private let _queue: DispatchQueue
     
     // swift-migration: original location ARTQueuedDealloc.m, line 8
-    internal init(ref: AnyObject, queue: DispatchQueue) {
+    public init(ref: AnyObject, queue: DispatchQueue) {
         self._ref = ref
         self._queue = queue
         super.init()

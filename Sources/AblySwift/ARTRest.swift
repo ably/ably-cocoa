@@ -190,7 +190,7 @@ public class ARTRestInternal: NSObject {
     public let options: ARTClientOptions
     
     // swift-migration: original location ARTRest+Private.h, line 34 and ARTRest.m, line 182
-    public weak var realtime: ARTRealtimeInternal?
+    internal weak var realtime: ARTRealtimeInternal?
     
     // swift-migration: original location ARTRest+Private.h, line 35 and ARTRest.m, line 747
     public var defaultEncoder: ARTEncoder {
@@ -325,7 +325,7 @@ public class ARTRestInternal: NSObject {
     }
     
     // swift-migration: original location ARTRest+Private.h, line 177 and ARTRest.m, line 177
-    public convenience init(options: ARTClientOptions, realtime: ARTRealtimeInternal?, logger: ARTInternalLog) {
+    internal convenience init(options: ARTClientOptions, realtime: ARTRealtimeInternal?, logger: ARTInternalLog) {
         self.init(options: options)
         self.realtime = realtime
     }

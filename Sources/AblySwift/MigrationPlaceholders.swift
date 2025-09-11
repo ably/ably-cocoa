@@ -117,34 +117,41 @@ public protocol ARTConnectionProtocol: NSObjectProtocol {
     func once(_ event: ARTRealtimeConnectionEvent, callback cb: @escaping ARTConnectionStateCallback) -> ARTEventListener
 }
 
-// Placeholder for ARTRealtimeInternal
-public class ARTRealtimeInternal: NSObject {
-    public let rest: ARTRestInternal
-    public let options: ARTClientOptions
-    public let isActive: Bool = false
-    public let msgSerial: Int64 = 0
-    public let channels: ARTRealtimeChannelsInternal
-    
-    public override init() {
-        self.rest = ARTRestInternal(options: ARTClientOptions())
-        self.options = ARTClientOptions()
-        self.channels = ARTRealtimeChannelsInternal()
+// swift-migration: ARTRealtimeInternal placeholder removed - now implemented in ARTRealtime.swift
+
+// swift-migration: ARTRealtimeProtocol moved to ARTRealtime.swift
+
+// Placeholder for ARTRealtimeChannels
+public class ARTRealtimeChannels: NSObject {
+    public init(internal: ARTRealtimeChannelsInternal, realtimeInternal: ARTRealtimeInternal, queuedDealloc: ARTQueuedDealloc) {
         super.init()
-        fatalError("ARTRealtimeInternal not yet migrated")
+        fatalError("ARTRealtimeChannels not yet migrated")
     }
     
-    public func connect() {
-        fatalError("ARTRealtimeInternal not yet migrated")
-    }
-    
-    public func close() {
-        fatalError("ARTRealtimeInternal not yet migrated")  
-    }
-    
-    public func ping(_ callback: @escaping ARTCallback) {
-        fatalError("ARTRealtimeInternal not yet migrated")
+    // swift-migration: Simplified initializer for now to avoid access issues
+    internal override init() {
+        super.init()
+        fatalError("ARTRealtimeChannels not yet migrated")
     }
 }
+
+// Placeholder for ARTWrapperSDKProxyOptions
+public class ARTWrapperSDKProxyOptions: NSObject {
+    public override init() {
+        super.init()
+        fatalError("ARTWrapperSDKProxyOptions not yet migrated")
+    }
+}
+
+// Placeholder for ARTWrapperSDKProxyRealtime
+public class ARTWrapperSDKProxyRealtime: NSObject {
+    public init(realtime: ARTRealtime, proxyOptions: ARTWrapperSDKProxyOptions) {
+        super.init()
+        fatalError("ARTWrapperSDKProxyRealtime not yet migrated")
+    }
+}
+
+// swift-migration: APRealtimeClient, ARTRealtimeTransportDelegate, and ARTAuthDelegate protocols are defined elsewhere
 
 // ARTRestInternal defined above
 
