@@ -262,11 +262,12 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     // MARK: - Public Interface Properties (from header)
     
     // swift-migration: original location ARTRealtime+Private.h, line 39 and ARTRealtime.m, line 259
-    internal let connection: ARTConnectionInternal
-    
+    internal var connection: ARTConnectionInternal!
+
     // swift-migration: original location ARTRealtime+Private.h, line 40 and ARTRealtime.m, line 250
-    internal let channels: ARTRealtimeChannelsInternal
-    
+    // swift-migration: Lawrence — changed let to var so that this could be implicitly unwrapped optional; TODO make it so writing is fatalError
+    internal var channels: ARTRealtimeChannelsInternal!
+
     // swift-migration: original location ARTRealtime+Private.h, line 41 and ARTRealtime.m, line 441
     internal var auth: ARTAuthInternal {
         return rest.auth
@@ -291,24 +292,28 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     }
     
     // swift-migration: original location ARTRealtime+Private.h, line 48 and ARTRealtime.m, line 246
-    internal let queue: DispatchQueue
-    
+    // swift-migration: Lawrence — changed let to var so that this could be implicitly unwrapped optional; TODO make it so writing is fatalError
+    internal var queue: DispatchQueue!
+
     // MARK: - Private Interface Properties (from private extensions in header)
     
     // swift-migration: original location ARTRealtime+Private.h, line 77
-    internal let internalEventEmitter: ARTEventEmitter<ARTEvent, ARTConnectionStateChange>
-    
+    // swift-migration: Lawrence — changed let to var so that this could be implicitly unwrapped optional; TODO make it so writing is fatalError
+    internal var internalEventEmitter: ARTEventEmitter<ARTEvent, ARTConnectionStateChange>!
+
     // swift-migration: original location ARTRealtime+Private.h, line 78
-    internal let connectedEventEmitter: ARTEventEmitter<ARTEvent, NSNull>
-    
+    // swift-migration: Lawrence — changed let to var so that this could be implicitly unwrapped optional; TODO make it so writing is fatalError
+    internal var connectedEventEmitter: ARTEventEmitter<ARTEvent, NSNull>!
+
     // swift-migration: original location ARTRealtime+Private.h, line 80 and ARTRealtime.m, line 258
     internal var pendingAuthorizations: [(ARTRealtimeConnectionState, ARTErrorInfo?) -> Void]
     
     // MARK: - Implementation Properties (from @implementation block)
     
     // swift-migration: original location ARTRealtime+Private.h, line 94 and ARTRealtime.m, line 244
-    internal let rest: ARTRestInternal
-    
+    // swift-migration: Lawrence — changed let to var so that this could be implicitly unwrapped optional; TODO make it so writing is fatalError
+    internal var rest: ARTRestInternal!
+
     // swift-migration: original location ARTRealtime+Private.h, line 95 and ARTRealtime.m, line 411
     internal var transport: ARTRealtimeTransport? {
         return _transport
@@ -349,8 +354,9 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     // MARK: - Private backing storage variables
     
     // swift-migration: original location ARTRealtime.m, line 204
-    private let connectRetryState: ARTConnectRetryState
-    
+    // swift-migration: Lawrence — changed let to var so that this could be implicitly unwrapped optional; TODO make it so writing is fatalError
+    private var connectRetryState: ARTConnectRetryState!
+
     // swift-migration: original location ARTRealtime.m, line 205
     private let logger: ARTInternalLog
     
@@ -358,7 +364,8 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     private var _renewingToken: Bool = false
     
     // swift-migration: original location ARTRealtime.m, line 221
-    private let _pingEventEmitter: ARTEventEmitter<ARTEvent, ARTErrorInfo>
+    // swift-migration: Lawrence — changed let to var so that this could be implicitly unwrapped optional; TODO make it so writing is fatalError
+    private var _pingEventEmitter: ARTEventEmitter<ARTEvent, ARTErrorInfo>!
     
     // swift-migration: original location ARTRealtime.m, line 222
     private var _connectionLostAt: Date?
@@ -397,11 +404,9 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     private var _idleTimer: ARTScheduledBlockHandle?
     
     // swift-migration: original location ARTRealtime.m, line 234
-    private let _userQueue: DispatchQueue
-    
-    // swift-migration: original location ARTRealtime.m, line 235
-    private let _queue: DispatchQueue
-    
+    // swift-migration: Lawrence — changed let to var so that this could be implicitly unwrapped optional; TODO make it so writing is fatalError
+    private var _userQueue: DispatchQueue!
+
     // MARK: - Additional Properties for Protocol Conformance
     
     // Properties needed by ARTConnection - these are computed properties
@@ -430,8 +435,75 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     
     // swift-migration: original location ARTRealtime+Private.h, line 35 and ARTRealtime.m, line 238
     internal init(options: ARTClientOptions) {
-        // swift-migration: TODO - placeholder init - full implementation needed
-        fatalError("TODO - init implementation needed")
+        // swift-migration: Lawrence — some things moved around here so that we can avoid circular initialization problems (i.e. referring to self before super init called), which Swift is more strict about; we also make some properties implicitly-unwrapped optionals for the same reason
+
+        logger = ARTInternalLog(clientOptions: options)
+
+        _transport = nil
+        _networkState = .isUnknown
+        _reachabilityClass = ARTOSReachability.self
+
+        msgSerial = 0
+        queuedMessages = []
+        pendingMessages = []
+        pendingMessageStartSerial = 0
+        pendingAuthorizations = []
+
+        connectionStateTtl = ARTDefault.connectionStateTtl()
+        immediateReconnectionDelay = 0.1
+
+        resuming = false
+        reachability = nil
+
+        super.init()
+
+        rest = ARTRestInternal(options: options, realtime: self, logger: logger)
+        _userQueue = rest.userQueue
+        queue = rest.queue
+        
+        internalEventEmitter = ARTEventEmitter(queue: rest.queue)
+        connectedEventEmitter = ARTEventEmitter(queue: rest.queue)
+        _pingEventEmitter = ARTEventEmitter(queue: rest.queue)
+        
+        channels = ARTRealtimeChannelsInternal(realtime: self, logger: logger)
+
+        connection = ARTConnectionInternal(realtime: self, logger: logger)
+
+        let connectRetryDelayCalculator = ARTBackoffRetryDelayCalculator(
+            initialRetryTimeout: options.disconnectedRetryTimeout,
+            jitterCoefficientGenerator: options.testOptions.jitterCoefficientGenerator
+        )
+        connectRetryState = ARTConnectRetryState(
+            retryDelayCalculator: connectRetryDelayCalculator,
+            logger: logger,
+            logMessagePrefix: "RT: \(Unmanaged.passUnretained(self).toOpaque()) "
+        )
+
+
+        auth.delegate = self
+        connection.setState(.initialized)
+        
+        // swift-migration: Using custom string interpolation for pointer formatting
+        ARTLogVerbose(logger, "R:\(pointer: self) initialized with RS:\(pointer: rest)")
+        
+        rest.prioritizedHost = nil
+        
+        if let recover = options.recover {
+            do {
+                let recoveryKey = try ARTConnectionRecoveryKey.fromJsonString(recover)
+                msgSerial = recoveryKey.msgSerial // RTN16f
+                for (channelName, channelSerial) in recoveryKey.channelSerials {
+                    let channel = channels.get(channelName)
+                    channel.channelSerial = channelSerial // RTN16j
+                }
+            } catch {
+                ARTLogError(logger, "Couldn't construct a recovery key from the string provided: \(recover)")
+            }
+        }
+        
+        if options.autoConnect {
+            connect()
+        }
     }
     
     // swift-migration: original location ARTRealtime.m, line 402
