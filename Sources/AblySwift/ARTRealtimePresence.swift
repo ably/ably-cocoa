@@ -237,7 +237,7 @@ public protocol ARTRealtimePresenceProtocol {
      *
      * @return In case of failure returns `false` and the error information can be retrived via the `error` parameter.
      */
-    func history(_ query: ARTRealtimeHistoryQuery?, callback: @escaping ARTPaginatedPresenceCallback, error errorPtr: UnsafeMutablePointer<Error?>?) -> Bool
+    func history(_ query: ARTRealtimeHistoryQuery?, callback: @escaping ARTPaginatedPresenceCallback) throws -> Bool
 }
 
 // MARK: - ARTRealtimePresence
@@ -377,8 +377,8 @@ public class ARTRealtimePresence: ARTPresence, ARTRealtimePresenceProtocol {
     }
     
     // swift-migration: original location ARTRealtimePresence.m, line 140
-    public func history(_ query: ARTRealtimeHistoryQuery?, callback: @escaping ARTPaginatedPresenceCallback, error errorPtr: UnsafeMutablePointer<Error?>?) -> Bool {
-        return `internal`.history(query, wrapperSDKAgents: nil, callback: callback, error: errorPtr)
+    public func history(_ query: ARTRealtimeHistoryQuery?, callback: @escaping ARTPaginatedPresenceCallback, error errorPtr: UnsafeMutablePointer<Error?>?) throws {
+        return try `internal`.history(query, wrapperSDKAgents: nil, callback: callback)
     }
 }
 
@@ -397,7 +397,7 @@ private enum ARTPresenceSyncState: UInt {
 
 // swift-migration: original location ARTRealtimePresence+Private.h, line 6 and ARTRealtimePresence.m, line 174
 public class ARTRealtimePresenceInternal {
-    
+
     // swift-migration: original location ARTRealtimePresence+Private.h, line 8 and ARTRealtimePresence.m, line 755
     internal var connectionId: String {
         return realtime.connection.id_nosync
