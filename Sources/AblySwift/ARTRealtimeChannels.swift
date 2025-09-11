@@ -90,7 +90,8 @@ internal class ARTRealtimeChannelsInternal: NSObject, ARTChannelsDelegate {
     
     // swift-migration: original location ARTRealtimeChannels.m, line 78
     internal func makeChannel(_ channel: String, options: ARTChannelOptions?) -> ARTChannel {
-        return ARTRealtimeChannelInternal(realtime: realtime!, name: channel, options: options, logger: logger)
+        // swift-migration: Lawrence added the force upcast; we should be able to do better with Swift generics
+        return ARTRealtimeChannelInternal(realtime: realtime!, name: channel, options: options as! ARTRealtimeChannelOptions, logger: logger)
     }
     
     // swift-migration: original location ARTRealtimeChannels+Private.h, line 18 and ARTRealtimeChannels.m, line 82

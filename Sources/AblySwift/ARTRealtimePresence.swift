@@ -619,7 +619,7 @@ internal class ARTRealtimePresenceInternal {
     internal func history(_ query: ARTRealtimeHistoryQuery?, wrapperSDKAgents: [String: String]?, callback: @escaping ARTPaginatedPresenceCallback) throws -> Bool {
         let effectiveQuery = query ?? ARTRealtimeHistoryQuery()
         effectiveQuery.realtimeChannel = _channel
-        return try _channel?.restChannel.presence.history(effectiveQuery, callback: callback) ?? false
+        return try _channel?.restChannel.presence.history(effectiveQuery, wrapperSDKAgents: wrapperSDKAgents, callback: callback) ?? false
     }
     
     // swift-migration: original location ARTRealtimePresence+Private.h, line 32 and ARTRealtimePresence.m, line 287
