@@ -537,7 +537,7 @@ internal class ARTRealtimePresenceInternal {
     // swift-migration: original location ARTRealtimePresence+Private.h, line 28 and ARTRealtimePresence.m, line 211
     // RTP11
     internal func get(_ callback: @escaping ARTPresenceMessagesCallback) {
-        get(ARTRealtimePresenceQuery(), callback: callback)
+        get(ARTRealtimePresenceQuery(limit: 100, clientId: nil, connectionId: nil), callback: callback)
     }
     
     // swift-migration: original location ARTRealtimePresence+Private.h, line 30 and ARTRealtimePresence.m, line 215
@@ -558,7 +558,7 @@ internal class ARTRealtimePresenceInternal {
             switch channel.state_nosync {
             case .detached, .failed:
                 if let callback = userCallback {
-                    callback(nil, ARTErrorInfo.create(withCode: ARTError.channelOperationFailedInvalidState.rawValue, message: "unable to return the list of current members (incompatible channel state: \(ARTRealtimeChannelStateToStr(channel.state_nosync)))"))
+                    callback(nil, ARTErrorInfo.create(withCode: ARTErrorCode.channelOperationFailedInvalidState.rawValue, message: "unable to return the list of current members (incompatible channel state: \(ARTRealtimeChannelStateToStr(channel.state_nosync)))"))
                 }
                 return
             case .suspended:
@@ -590,7 +590,7 @@ internal class ARTRealtimePresenceInternal {
                 
                 let syncInProgress = self.syncInProgress_nosync()
                 if syncInProgress && query.waitForSync {
-                    ARTLogDebug(self.logger, "R:%p C:%p (%@) sync is in progress, waiting until the presence members is synchronized", self._realtime, self._channel, self._channel?.name ?? "")
+                    ARTLogDebug(self.logger, "R:\(String(describing: self._realtime)) C:\(String(describing: self._channel)) (\(self._channel?.name ?? "")) sync is in progress, waiting until the presence members is synchronized")
                     self.onceSyncEnds { members in
                         let filteredMembers = members.filter(filterMemberBlock)
                         userCallback?(filteredMembers, nil)
@@ -599,7 +599,7 @@ internal class ARTRealtimePresenceInternal {
                         userCallback?(nil, error)
                     }
                 } else {
-                    ARTLogDebug(self.logger, "R:%p C:%p (%@) returning presence members (syncInProgress=%d)", self._realtime, self._channel, self._channel?.name ?? "", syncInProgress)
+                    ARTLogDebug(self.logger, "R:\(String(describing: self._realtime)) C:\(String(describing: self._channel)) (\(self._channel?.name ?? "")) returning presence members (syncInProgress=\(syncInProgress))")
                     let members = Array(self._members.values)
                     let filteredMembers = members.filter(filterMemberBlock)
                     userCallback?(filteredMembers, nil)
@@ -851,7 +851,7 @@ internal class ARTRealtimePresenceInternal {
                 if let onAttach = userOnAttach, attachOnSubscribe { // RTL7h
                     onAttach(ARTErrorInfo.create(withCode: ARTErrorCode.channelOperationFailedInvalidState.rawValue, message: "attempted to subscribe while channel is in Failed state."))
                 }
-                ARTLogWarn(self.logger, "R:%p C:%p (%@) presence subscribe to '%@' action(s) has been ignored (attempted to subscribe while channel is in FAILED state)", self._realtime, self._channel, self._channel?.name ?? "", self.actionFilterDescription(actionFilter))
+                ARTLogWarn(self.logger, "R:\(String(describing: self._realtime)) C:\(String(describing: self._channel)) (\(self._channel?.name ?? "")) presence subscribe to '\(self.actionFilterDescription(actionFilter))' action(s) has been ignored (attempted to subscribe while channel is in FAILED state)")
                 return
             }
             
@@ -861,12 +861,16 @@ internal class ARTRealtimePresenceInternal {
             
             switch actionFilter {
             case .all:
-                listener = self._eventEmitter.on(userCallback)
+                if let callback = userCallback {
+                    listener = self._eventEmitter.on(callback)
+                }
             case .action(let action):
-                listener = self._eventEmitter.on(ARTEvent.newWithPresenceAction(action), callback: userCallback)
+                if let callback = userCallback {
+                    listener = self._eventEmitter.on(ARTEvent.newWithPresenceAction(action), callback: callback)
+                }
             }
             
-            ARTLogVerbose(self.logger, "R:%p C:%p (%@) presence subscribe to '%@' action(s)", self._realtime, self._channel, self._channel?.name ?? "", self.actionFilterDescription(actionFilter))
+            ARTLogVerbose(self.logger, "R:\(String(describing: self._realtime)) C:\(String(describing: self._channel)) (\(self._channel?.name ?? "")) presence subscribe to '\(self.actionFilterDescription(actionFilter))' action(s)")
         }
         
         return listener
@@ -899,7 +903,7 @@ internal class ARTRealtimePresenceInternal {
     internal func unsubscribe() {
         _queue.sync {
             _unsubscribe()
-            ARTLogVerbose(logger, "R:%p C:%p (%@) presence unsubscribe to all actions", _realtime, _channel, _channel?.name ?? "")
+            ARTLogVerbose(logger, "R:\(String(describing: _realtime)) C:\(String(describing: _channel)) (\(_channel?.name ?? "")) presence unsubscribe to all actions")
         }
     }
     
@@ -912,7 +916,7 @@ internal class ARTRealtimePresenceInternal {
     internal func unsubscribe(_ listener: ARTEventListener) {
         _queue.sync {
             _eventEmitter.off(listener)
-            ARTLogVerbose(logger, "R:%p C:%p (%@) presence unsubscribe to all actions", _realtime, _channel, _channel?.name ?? "")
+            ARTLogVerbose(logger, "R:\(String(describing: _realtime)) C:\(String(describing: _channel)) (\(_channel?.name ?? "")) presence unsubscribe to all actions")
         }
     }
     
@@ -920,7 +924,7 @@ internal class ARTRealtimePresenceInternal {
     internal func unsubscribe(_ action: ARTPresenceAction, listener: ARTEventListener) {
         _queue.sync {
             _eventEmitter.off(ARTEvent.newWithPresenceAction(action), listener: listener)
-            ARTLogVerbose(logger, "R:%p C:%p (%@) presence unsubscribe to action %@", _realtime, _channel, _channel?.name ?? "", ARTPresenceActionToStr(action))
+            ARTLogVerbose(logger, "R:\(String(describing: _realtime)) C:\(String(describing: _channel)) (\(_channel?.name ?? "")) presence unsubscribe to action \(ARTPresenceActionToStr(action))")
         }
     }
     
@@ -965,7 +969,7 @@ internal class ARTRealtimePresenceInternal {
         if let data = msg.data, let dataEncoder = channel.dataEncoder {
             let encoded = dataEncoder.encode(data)
             if let errorInfo = encoded.errorInfo {
-                ARTLogWarn(logger, "RT:%p C:%p (%@) error encoding presence message: %@", realtime, self, channel.name, errorInfo)
+                ARTLogWarn(logger, "RT:\(String(describing: realtime)) C:\(String(describing: self)) (\(channel.name)) error encoding presence message: \(errorInfo)")
             }
             msg.data = encoded.data
             msg.encoding = encoded.encoding
@@ -1065,7 +1069,7 @@ internal class ARTRealtimePresenceInternal {
         if !message.hasPresence {
             // RTP1 - when an ATTACHED message is received without a HAS_PRESENCE flag, reset PresenceMap (also RTP19a)
             endSync()
-            ARTLogDebug(logger, "R:%p C:%p (%@) PresenceMap has been reset", _realtime, self, _channel?.name ?? "")
+            ARTLogDebug(logger, "R:\(String(describing: _realtime)) C:\(String(describing: self)) (\(_channel?.name ?? "")) PresenceMap has been reset")
         }
         sendPendingPresence() // RTP5b
         reenterInternalMembers() // RTP17i
@@ -1083,7 +1087,7 @@ internal class ARTRealtimePresenceInternal {
                     member = try p.decode(with: dataEncoder)
                 } catch {
                     let errorInfo = ARTErrorInfo.wrap(ARTErrorInfo.create(withCode: ARTErrorCode.unableToDecodeMessage.rawValue, message: error.localizedDescription), prepend: "Failed to decode data: ")
-                    ARTLogError(logger, "RT:%p C:%p (%@) %@", _realtime, _channel, _channel?.name ?? "", errorInfo.message)
+                    ARTLogError(logger, "RT:\(String(describing: _realtime)) C:\(String(describing: _channel)) (\(_channel?.name ?? "")) \(errorInfo.message)")
                 }
             }
             
@@ -1109,7 +1113,7 @@ internal class ARTRealtimePresenceInternal {
         if !syncInProgress_nosync() {
             startSync()
         } else {
-            ARTLogDebug(logger, "RT:%p C:%p (%@) PresenceMap sync is in progress", _realtime, _channel, _channel?.name ?? "")
+            ARTLogDebug(logger, "RT:\(String(describing: _realtime)) C:\(String(describing: _channel)) (\(_channel?.name ?? "")) PresenceMap sync is in progress")
         }
         
         onMessage(message)
@@ -1117,7 +1121,7 @@ internal class ARTRealtimePresenceInternal {
         // TODO: RTP18a (previous in-flight sync should be discarded)
         if isLastChannelSerial(message.channelSerial) { // RTP18b, RTP18c
             endSync()
-            ARTLogDebug(logger, "RT:%p C:%p (%@) PresenceMap sync ended", _realtime, _channel, _channel?.name ?? "")
+            ARTLogDebug(logger, "RT:\(String(describing: _realtime)) C:\(String(describing: _channel)) (\(_channel?.name ?? "")) PresenceMap sync ended")
         }
     }
     
@@ -1138,12 +1142,12 @@ internal class ARTRealtimePresenceInternal {
         pm.id = nil
         pm.timestamp = Date()
         broadcast(pm)
-        ARTLogDebug(logger, "RT:%p C:%p (%@) member \"%@\" no longer present", _realtime, _channel, _channel?.name ?? "", pm.memberKey)
+        ARTLogDebug(logger, "RT:\(String(describing: _realtime)) C:\(String(describing: _channel)) (\(_channel?.name ?? "")) member \"\(pm.memberKey() ?? "")\" no longer present")
     }
     
     // swift-migration: original location ARTRealtimePresence.m, line 767
     private func reenterInternalMembers() {
-        ARTLogDebug(logger, "%p reentering local members", self)
+        ARTLogDebug(logger, "\(String(describing: self)) reentering local members")
         
         for member in internalMembers.values {
             enterWithPresenceMessageId(member.id, clientId: member.clientId, data: member.data) { error in // RTP17g
@@ -1154,12 +1158,12 @@ internal class ARTRealtimePresenceInternal {
                     
                     self._channel?.emit(.update, with: stateChange)
                     
-                    ARTLogWarn(self.logger, "RT:%p C:%p (%@) Re-entering member \"%@\" is failed with code %ld (%@)", self._realtime, self._channel, self._channel?.name ?? "", member.memberKey ?? "", error.code, error.message)
+                    ARTLogWarn(self.logger, "RT:\(String(describing: self._realtime)) C:\(String(describing: self._channel)) (\(self._channel?.name ?? "")) Re-entering member \"\(member.memberKey() ?? "")\" is failed with code \(error.code) (\(error.message))")
                 } else {
-                    ARTLogDebug(self.logger, "RT:%p C:%p (%@) re-entered local member \"%@\"", self._realtime, self._channel, self._channel?.name ?? "", member.memberKey ?? "")
+                    ARTLogDebug(self.logger, "RT:\(String(describing: self._realtime)) C:\(String(describing: self._channel)) (\(self._channel?.name ?? "")) re-entered local member \"\(member.memberKey() ?? "")\"")
                 }
             }
-            ARTLogDebug(logger, "RT:%p C:%p (%@) re-entering local member \"%@\"", _realtime, _channel, _channel?.name ?? "", member.memberKey ?? "")
+            ARTLogDebug(logger, "RT:\(String(describing: _realtime)) C:\(String(describing: _channel)) (\(_channel?.name ?? "")) re-entering local member \"\(member.memberKey() ?? "")\"")
         }
     }
     
@@ -1207,7 +1211,7 @@ internal class ARTRealtimePresenceInternal {
         if memberUpdated {
             broadcast(message) // RTP2g (original action)
         } else {
-            ARTLogDebug(logger, "Presence member \"%@\" with action %@ has been ignored", message.memberKey ?? "", ARTPresenceActionToStr(message.action))
+            ARTLogDebug(logger, "Presence member \"\(message.memberKey() ?? "")\" with action \(ARTPresenceActionToStr(message.action)) has been ignored")
         }
     }
     
@@ -1277,7 +1281,7 @@ internal class ARTRealtimePresenceInternal {
             }
             
             _internalMembers[clientId] = message
-            ARTLogDebug(logger, "local member %@ with action %@ has been added", clientId, ARTPresenceActionToStr(message.action).uppercased())
+            ARTLogDebug(logger, "local member \(clientId) with action \(ARTPresenceActionToStr(message.action).uppercased()) has been added")
         }
     }
     
@@ -1294,7 +1298,7 @@ internal class ARTRealtimePresenceInternal {
     
     // swift-migration: original location ARTRealtimePresence+Private.h, line 117 and ARTRealtimePresence.m, line 906
     internal func cleanUpAbsentMembers() {
-        ARTLogDebug(logger, "%p cleaning up absent members...", self)
+        ARTLogDebug(logger, "\(String(describing: self)) cleaning up absent members...")
         
         _membersLock.withLock {
             let absentKeys = _members.compactMap { key, message in
@@ -1309,7 +1313,7 @@ internal class ARTRealtimePresenceInternal {
     
     // swift-migration: original location ARTRealtimePresence.m, line 916
     private func leaveMembersNotPresentInSync() {
-        ARTLogDebug(logger, "%p leaving members not present in sync...", self)
+        ARTLogDebug(logger, "\(String(describing: self)) leaving members not present in sync...")
         
         guard let beforeSyncMembers = _beforeSyncMembers else { return }
         
@@ -1336,7 +1340,7 @@ internal class ARTRealtimePresenceInternal {
     
     // swift-migration: original location ARTRealtimePresence+Private.h, line 104 and ARTRealtimePresence.m, line 931
     internal func startSync() {
-        ARTLogDebug(logger, "%p PresenceMap sync started", self)
+        ARTLogDebug(logger, "\(String(describing: self)) PresenceMap sync started")
         _beforeSyncMembers = _membersLock.withLock { _members }
         _syncState = .started
         _syncEventEmitter.emit(ARTEvent.newWithPresenceSyncState(_syncState), with: nil)
@@ -1344,7 +1348,7 @@ internal class ARTRealtimePresenceInternal {
     
     // swift-migration: original location ARTRealtimePresence+Private.h, line 105 and ARTRealtimePresence.m, line 938
     internal func endSync() {
-        ARTLogVerbose(logger, "%p PresenceMap sync ending", self)
+        ARTLogVerbose(logger, "\(String(describing: self)) PresenceMap sync ending")
         cleanUpAbsentMembers()
         leaveMembersNotPresentInSync()
         _syncState = .ended
@@ -1353,7 +1357,7 @@ internal class ARTRealtimePresenceInternal {
         let membersValues = _membersLock.withLock { Array(_members.values) }
         _syncEventEmitter.emit(ARTEvent.newWithPresenceSyncState(.ended), with: membersValues)
         _syncEventEmitter.off()
-        ARTLogDebug(logger, "%p PresenceMap sync ended", self)
+        ARTLogDebug(logger, "\(String(describing: self)) PresenceMap sync ended")
     }
     
     // swift-migration: original location ARTRealtimePresence+Private.h, line 106 and ARTRealtimePresence.m, line 950
