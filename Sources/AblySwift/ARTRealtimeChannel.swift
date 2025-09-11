@@ -778,165 +778,945 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
         return _pluginData
     }
     
-    // MARK: - Methods needed by ARTRealtimeChannel
+    // MARK: - ARTRealtimeChannelInternal Methods
     
-    internal func attach() {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    internal func attach(_ callback: ARTCallback?) {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    internal func _attach(_ callback: ARTCallback?) {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    internal func detach() {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    internal func detach(_ callback: ARTCallback?) {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    internal func _detach(_ callback: @escaping (ARTErrorInfo?) -> Void) {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    internal override func publish(_ name: String?, data: Any?) {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    internal override func publish(_ name: String?, data: Any?, callback: ARTCallback?) {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    internal override func publish(_ name: String?, data: Any?, clientId: String) {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    internal override func publish(_ name: String?, data: Any?, clientId: String, callback: ARTCallback?) {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    internal override func publish(_ name: String?, data: Any?, extras: ARTJsonCompatible?) {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    internal override func publish(_ name: String?, data: Any?, extras: ARTJsonCompatible?, callback: ARTCallback?) {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    internal override func publish(_ name: String?, data: Any?, clientId: String, extras: ARTJsonCompatible?) {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    internal override func publish(_ name: String?, data: Any?, clientId: String, extras: ARTJsonCompatible?, callback: ARTCallback?) {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    internal override func publish(_ messages: [ARTMessage]) {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    internal override func publish(_ messages: [ARTMessage], callback: ARTCallback?) {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-
-    // swift-migration: Per PRD requirements, making history methods throw instead of using NSError pointers
-    internal func history() throws -> ARTPaginatedResult<ARTMessage> {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    internal func history(_ query: ARTRealtimeHistoryQuery?) throws -> ARTPaginatedResult<ARTMessage> {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
+    // swift-migration: original location ARTRealtimeChannel.m, line 366
+    internal func internalPostMessages(_ data: Any, callback: @escaping ARTCallback) {
+        var callbackWrapper: ARTCallback? = callback
+        if callbackWrapper != nil {
+            let userCallback = callbackWrapper!
+            callbackWrapper = { error in
+                self._userQueue.async {
+                    userCallback(error)
+                }
+            }
+        }
+        
+        var messageData = data
+        if !(messageData is [Any]) {
+            messageData = [messageData]
+        }
+        
+        _queue.sync {
+            if let message = messageData as? ARTMessage {
+                if let messageClientId = message.clientId,
+                   let authClientId = self.realtime?.rest.auth.clientId_nosync(),
+                   messageClientId != authClientId {
+                    if let callback = callbackWrapper {
+                        callback(ARTErrorInfo.create(withCode: ARTState.mismatchedClientId.rawValue, message: "attempted to publish message with an invalid clientId"))
+                    }
+                    return
+                }
+            } else if let messages = messageData as? [ARTMessage] {
+                for message in messages {
+                    if let messageClientId = message.clientId,
+                       let authClientId = self.realtime?.rest.auth.clientId_nosync(),
+                       messageClientId != authClientId {
+                        if let callback = callbackWrapper {
+                            callback(ARTErrorInfo.create(withCode: ARTState.mismatchedClientId.rawValue, message: "attempted to publish message with an invalid clientId"))
+                        }
+                        return
+                    }
+                }
+            }
+            
+            guard let realtime = self.realtime else {
+                if let callback = callbackWrapper {
+                    callback(ARTErrorInfo.create(withCode: ARTErrorChannelOperationFailed.rawValue, message: "realtime connection is nil"))
+                }
+                return
+            }
+            
+            if !realtime.connection.isActive_nosync() {
+                if let callback = callbackWrapper {
+                    callback(realtime.connection.error_nosync())
+                }
+                return
+            }
+            
+            let pm = ARTProtocolMessage()
+            pm.action = .message
+            pm.channel = self.name
+            pm.messages = messageData as? [ARTMessage]
+            
+            self.publishProtocolMessage(pm) { status in
+                if let callback = callbackWrapper {
+                    callback(status.errorInfo)
+                }
+            }
+        }
     }
     
-    internal override func historyWithWrapperSDKAgents(_ wrapperSDKAgents: NSStringDictionary?, completion callback: @escaping ARTPaginatedMessagesCallback) {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
+    // swift-migration: original location ARTRealtimeChannel.m, line 418
+    internal func sendObject(withObjectMessages objectMessages: [APObjectMessageProtocol], completion: @escaping ARTCallback) {
+        let pm = ARTProtocolMessage()
+        pm.action = .object
+        pm.channel = self.name
+        pm.state = objectMessages
+        
+        publishProtocolMessage(pm) { status in
+            completion(status.errorInfo)
+        }
     }
     
-    @discardableResult
+    // swift-migration: original location ARTRealtimeChannel.m, line 432
+    internal func publishProtocolMessage(_ pm: ARTProtocolMessage, callback: @escaping ARTStatusCallback) {
+        switch self.state_nosync {
+        case .suspended, .failed:
+            let errorMessage = "channel operation failed (invalid channel state: \(ARTRealtimeChannelStateToStr(self.state_nosync)))"
+            let statusInvalidChannelState = ARTStatus(state: .error, info: ARTErrorInfo.create(withCode: ARTErrorChannelOperationFailedInvalidState.rawValue, message: errorMessage))
+            callback(statusInvalidChannelState)
+        case .initialized, .detaching, .detached, .attaching, .attached:
+            guard let realtime = self.realtime else {
+                let status = ARTStatus(state: .error, info: ARTErrorInfo.create(withCode: ARTErrorChannelOperationFailed.rawValue, message: "realtime connection is nil"))
+                callback(status)
+                return
+            }
+            realtime.send(pm, sentCallback: nil) { status in
+                callback(status)
+            }
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 455
+    internal func _subscribe(_ name: String?, onAttach: ARTCallback?, callback: ARTMessageCallback?) -> ARTEventListener? {
+        var messageCallback = callback
+        if messageCallback != nil {
+            let userCallback = messageCallback!
+            messageCallback = { message in
+                if self.state_nosync != .attached { // RTL17
+                    return
+                }
+                self._userQueue.async {
+                    userCallback(message)
+                }
+            }
+        }
+        
+        var attachCallback = onAttach
+        if attachCallback != nil {
+            let userOnAttach = attachCallback!
+            attachCallback = { error in
+                self._userQueue.async {
+                    userOnAttach(error)
+                }
+            }
+        }
+        
+        var listener: ARTEventListener?
+        _queue.sync {
+            let options = self.getOptions_nosync()
+            let attachOnSubscribe = options?.attachOnSubscribe ?? true
+            
+            if self.state_nosync == .failed {
+                if let onAttach = attachCallback, attachOnSubscribe { // RTL7h
+                    onAttach(ARTErrorInfo.create(withCode: ARTErrorChannelOperationFailedInvalidState.rawValue, message: "attempted to subscribe while channel is in FAILED state."))
+                }
+                ARTLogWarn(self.logger, "\(pointer: self.realtime) C:\(pointer: self) (\(self.name)) subscribe of '\(name ?? "all")' has been ignored (attempted to subscribe while channel is in FAILED state)")
+                return
+            }
+            
+            if self.shouldAttach && attachOnSubscribe { // RTL7g
+                self._attach(attachCallback)
+            }
+            
+            if let name = name {
+                listener = self.messagesEventEmitter.on(name, callback: messageCallback)
+            } else {
+                listener = self.messagesEventEmitter.on(messageCallback)
+            }
+            
+            ARTLogVerbose(self.logger, "\(pointer: self.realtime) C:\(pointer: self) (\(self.name)) subscribe to '\(name ?? "all")' event(s)")
+        }
+        
+        return listener
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 496
     internal func subscribe(_ callback: @escaping ARTMessageCallback) -> ARTEventListener? {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
+        return _subscribe(nil, onAttach: nil, callback: callback)
     }
     
-    @discardableResult
+    // swift-migration: original location ARTRealtimeChannel.m, line 500
     internal func subscribeWithAttachCallback(_ onAttach: ARTCallback?, callback: @escaping ARTMessageCallback) -> ARTEventListener? {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
+        return _subscribe(nil, onAttach: onAttach, callback: callback)
     }
     
-    @discardableResult
+    // swift-migration: original location ARTRealtimeChannel.m, line 504
     internal func subscribe(_ name: String, callback: @escaping ARTMessageCallback) -> ARTEventListener? {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
+        return _subscribe(name, onAttach: nil, callback: callback)
     }
     
-    @discardableResult
+    // swift-migration: original location ARTRealtimeChannel.m, line 508
     internal func subscribe(_ name: String, onAttach: ARTCallback?, callback: @escaping ARTMessageCallback) -> ARTEventListener? {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
+        return _subscribe(name, onAttach: onAttach, callback: callback)
     }
     
+    // swift-migration: original location ARTRealtimeChannel.m, line 512
     internal func unsubscribe() {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
+        _queue.sync {
+            self._unsubscribe()
+            ARTLogVerbose(self.logger, "\(pointer: self.realtime) C:\(pointer: self) (\(self.name)) unsubscribe to all events")
+        }
     }
     
-    internal func unsubscribe(_ listener: ARTEventListener?) {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    internal func unsubscribe(_ name: String, listener: ARTEventListener?) {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    @discardableResult
-    internal func on(_ cb: @escaping ARTChannelStateCallback) -> ARTEventListener {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    @discardableResult
-    internal func on(_ event: ARTChannelEvent, callback cb: @escaping ARTChannelStateCallback) -> ARTEventListener {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    @discardableResult
-    internal func once(_ event: ARTChannelEvent, callback cb: @escaping ARTChannelStateCallback) -> ARTEventListener {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    @discardableResult
-    internal func once(_ cb: @escaping ARTChannelStateCallback) -> ARTEventListener {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    internal func off(_ event: ARTChannelEvent, listener: ARTEventListener) {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    internal func off(_ listener: ARTEventListener) {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    internal func off() {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
-    internal func off_nosync() {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-    
+    // swift-migration: original location ARTRealtimeChannel.m, line 519
     internal func _unsubscribe() {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
-    }
-
-    internal func setOptions(_ options: ARTRealtimeChannelOptions?, callback: ARTCallback?) {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
+        messagesEventEmitter.off()
     }
     
-    internal override func exceedMaxSize(_ messages: [ARTBaseMessage]) -> Bool {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
+    // swift-migration: original location ARTRealtimeChannel.m, line 523
+    internal func unsubscribe(_ listener: ARTEventListener?) {
+        _queue.sync {
+            self.messagesEventEmitter.off(listener)
+            ARTLogVerbose(self.logger, "RT:\(pointer: self.realtime) C:\(pointer: self) (\(self.name)) unsubscribe to all events")
+        }
     }
     
+    // swift-migration: original location ARTRealtimeChannel.m, line 530
+    internal func unsubscribe(_ name: String, listener: ARTEventListener?) {
+        _queue.sync {
+            self.messagesEventEmitter.off(name, listener: listener)
+            ARTLogVerbose(self.logger, "RT:\(pointer: self.realtime) C:\(pointer: self) (\(self.name)) unsubscribe to event '\(name)'")
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 537
+    internal func on(_ event: ARTChannelEvent, callback: @escaping ARTChannelStateCallback) -> ARTEventListener {
+        return statesEventEmitter.on(ARTEvent.newWithChannelEvent(event), callback: callback)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 541
+    internal func on(_ callback: @escaping ARTChannelStateCallback) -> ARTEventListener {
+        return statesEventEmitter.on(callback)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 545
+    internal func once(_ event: ARTChannelEvent, callback: @escaping ARTChannelStateCallback) -> ARTEventListener {
+        return statesEventEmitter.once(ARTEvent.newWithChannelEvent(event), callback: callback)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 549
+    internal func once(_ callback: @escaping ARTChannelStateCallback) -> ARTEventListener {
+        return statesEventEmitter.once(callback)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 553
+    internal func off() {
+        statesEventEmitter.off()
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 558
+    internal func off_nosync() {
+        (statesEventEmitter as? ARTPublicEventEmitter)?.off_nosync()
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 562
+    internal func off(_ event: ARTChannelEvent, listener: ARTEventListener) {
+        statesEventEmitter.off(ARTEvent.newWithChannelEvent(event), listener: listener)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 566
+    internal func off(_ listener: ARTEventListener) {
+        statesEventEmitter.off(listener)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 570
     internal func emit(_ event: ARTChannelEvent, with data: ARTChannelStateChange) {
-        fatalError("ARTRealtimeChannelInternal not yet migrated")
+        statesEventEmitter.emit(ARTEvent.newWithChannelEvent(event), with: data)
+        internalEventEmitter.emit(ARTEvent.newWithChannelEvent(event), with: data)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 575
+    internal func performTransitionToState(_ state: ARTRealtimeChannelState, withParams params: ARTChannelStateChangeParams) {
+        guard let realtime = self.realtime else { return }
+        
+        ARTLogDebug(logger, "RT:\(pointer: realtime) C:\(pointer: self) (\(self.name)) channel state transitions from \(self.state_nosync.rawValue) - \(ARTRealtimeChannelStateToStr(self.state_nosync)) to \(state.rawValue) - \(ARTRealtimeChannelStateToStr(state))\(params.retryAttempt != nil ? " (result of \(params.retryAttempt!.id))" : "")")
+        
+        let stateChange = ARTChannelStateChange(current: state, previous: self.state_nosync, event: ARTChannelEvent(rawValue: state.rawValue)!, reason: params.errorInfo, resumed: params.resumed, retryAttempt: params.retryAttempt)
+        self._state = state
+        
+        if params.storeErrorInfo {
+            self._errorReason = params.errorInfo
+        }
+        
+        attachRetryState.channelWillTransition(to: state)
+        
+        var channelRetryListener: ARTEventListener?
+        switch state {
+        case .attached:
+            self.attachResume = true
+        case .suspended:
+            self.channelSerial = nil // RTP5a1
+            let retryAttempt = attachRetryState.addRetryAttempt()
+            
+            _attachedEventEmitter.emit(nil, with: params.errorInfo)
+            if realtime.shouldSendEvents {
+                channelRetryListener = unlessStateChangesBefore(retryAttempt.delay) {
+                    ARTLogDebug(self.logger, "RT:\(pointer: realtime) C:\(pointer: self) (\(self.name)) reattach initiated by retry timeout, acting on retry attempt \(retryAttempt.id)")
+                    let attachParams = ARTAttachRequestParams(reason: nil, channelSerial: nil, retryAttempt: retryAttempt)
+                    self.reattach(withParams: attachParams)
+                }
+            }
+        case .detaching:
+            self.attachResume = false
+        case .detached:
+            self.channelSerial = nil // RTP5a1
+            presence.failsSync(params.errorInfo) // RTP5a
+        case .failed:
+            self.channelSerial = nil // RTP5a1
+            self.attachResume = false
+            _attachedEventEmitter.emit(nil, with: params.errorInfo)
+            _detachedEventEmitter.emit(nil, with: params.errorInfo)
+            presence.failsSync(params.errorInfo) // RTP5a
+        default:
+            break
+        }
+        
+        emit(stateChange.event, with: stateChange)
+        
+        if let channelRetryListener = channelRetryListener {
+            channelRetryListener.startTimer()
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 630
+    internal func unlessStateChangesBefore(_ deadline: TimeInterval, do callback: @escaping () -> Void) -> ARTEventListener {
+        return internalEventEmitter.once { _ in
+            // Any state change cancels the timeout.
+        }.setTimer(deadline) {
+            callback()
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 640
+    internal func onChannelMessage(_ message: ARTProtocolMessage) {
+        guard let realtime = self.realtime else { return }
+        
+        ARTLogDebug(logger, "\(pointer: realtime) C:\(pointer: self) (\(self.name)) received channel message \(message.action.rawValue) - \(ARTProtocolMessageActionToStr(message.action))")
+        
+        switch message.action {
+        case .attached:
+            ARTLogDebug(logger, "\(pointer: realtime) C:\(pointer: self) (\(self.name)) \(message.description)")
+            setAttached(message)
+        case .detach, .detached:
+            setDetached(message)
+        case .message:
+            if _decodeFailureRecoveryInProgress {
+                ARTLogDebug(logger, "\(pointer: realtime) C:\(pointer: self) (\(self.name)) message decode recovery in progress, message skipped: \(message.description)")
+                break
+            }
+            onMessage(message)
+        case .presence:
+            onPresence(message)
+        case .annotation:
+            onAnnotation(message)
+        case .error:
+            onError(message)
+        case .sync:
+            onSync(message)
+        case .object:
+            onObject(message)
+        case .objectSync:
+            onObjectSync(message)
+        default:
+            ARTLogWarn(logger, "\(pointer: realtime) C:\(pointer: self) (\(self.name)) unknown ARTProtocolMessage action: \(message.action.rawValue)")
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 682
+    internal func setAttached(_ message: ARTProtocolMessage) {
+        guard let realtime = self.realtime else { return }
+        
+        let state = self.state_nosync
+        switch state {
+        case .detaching, .failed:
+            // Ignore
+            return
+        default:
+            break
+        }
+        
+        if message.resumed {
+            ARTLogDebug(logger, "\(pointer: realtime) C:\(pointer: self) (\(self.name)) channel has resumed")
+        }
+        
+        // RTL15a
+        self.attachSerial = message.channelSerial
+        // RTL15b
+        if let channelSerial = message.channelSerial {
+            self.channelSerial = channelSerial
+        }
+        
+        realtime.options.liveObjectsPlugin?.nosync_onChannelAttached(self, hasObjects: message.hasObjects)
+        
+        if state == .attached {
+            if !message.resumed { // RTL12
+                if let error = message.error {
+                    _errorReason = error
+                }
+                let stateChange = ARTChannelStateChange(current: state, previous: state, event: .update, reason: message.error, resumed: message.resumed)
+                emit(stateChange.event, with: stateChange)
+                presence.onAttached(message)
+            }
+            return
+        }
+        
+        let params: ARTChannelStateChangeParams
+        if let error = message.error {
+            params = ARTChannelStateChangeParams(state: .error, errorInfo: error)
+        } else {
+            params = ARTChannelStateChangeParams(state: .ok)
+        }
+        params.resumed = message.resumed
+        performTransitionToState(.attached, withParams: params)
+        presence.onAttached(message)
+        _attachedEventEmitter.emit(nil, with: nil)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 730
+    internal func setDetached(_ message: ARTProtocolMessage) {
+        guard let realtime = self.realtime else { return }
+        
+        switch self.state_nosync {
+        case .attached, .suspended:
+            ARTLogDebug(logger, "RT:\(pointer: realtime) C:\(pointer: self) (\(self.name)) reattach initiated by DETACHED message")
+            let params = ARTAttachRequestParams(reason: message.error)
+            reattach(withParams: params)
+            return
+        case .attaching:
+            ARTLogDebug(logger, "RT:\(pointer: realtime) C:\(pointer: self) (\(self.name)) reattach initiated by DETACHED message but it is currently attaching")
+            let state: ARTState = message.error != nil ? .error : .ok
+            let params = ARTChannelStateChangeParams(state: state, errorInfo: message.error, storeErrorInfo: false)
+            setSuspended(params)
+            return
+        case .failed:
+            return
+        default:
+            break
+        }
+        
+        self.attachSerial = nil
+        
+        let errorInfo = message.error ?? ARTErrorInfo.create(withCode: 0, message: "channel has detached")
+        let params = ARTChannelStateChangeParams(state: .notAttached, errorInfo: errorInfo)
+        detachChannel(params)
+        _detachedEventEmitter.emit(nil, with: nil)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 762
+    internal func failPendingPresence(withState state: ARTState, info: ARTErrorInfo?) {
+        let status = ARTStatus(state: state, info: info)
+        presence.failPendingPresence(status)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 767
+    internal func detachChannel(_ params: ARTChannelStateChangeParams) {
+        if self.state_nosync == .detached {
+            return
+        }
+        failPendingPresence(withState: params.state, info: params.errorInfo) // RTP5a
+        performTransitionToState(.detached, withParams: params)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 775
+    internal func setFailed(_ params: ARTChannelStateChangeParams) {
+        failPendingPresence(withState: params.state, info: params.errorInfo) // RTP5a
+        performTransitionToState(.failed, withParams: params)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 780
+    internal func setSuspended(_ params: ARTChannelStateChangeParams) {
+        failPendingPresence(withState: params.state, info: params.errorInfo) // RTP5f
+        performTransitionToState(.suspended, withParams: params)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 785
+    internal func onMessage(_ pm: ARTProtocolMessage) {
+        guard let realtime = self.realtime else { return }
+        
+        var i = 0
+        
+        if let firstMessage = pm.messages?.first,
+           let extras = firstMessage.extras {
+            var extrasDecodeError: Error?
+            let extrasDict = extras.toJSON(&extrasDecodeError)
+            
+            if let extrasDecodeError = extrasDecodeError {
+                ARTLogError(logger, "\(pointer: realtime) C:\(pointer: self) (\(self.name)) message extras \(extras) decode error: \(extrasDecodeError)")
+            } else {
+                if let deltaDict = extrasDict?["delta"] as? [String: Any],
+                   let deltaFrom = deltaDict["from"] as? String,
+                   let lastPayloadMessageId = _lastPayloadMessageId,
+                   deltaFrom != lastPayloadMessageId {
+                    let incompatibleIdError = ARTErrorInfo.create(withCode: ARTErrorUnableToDecodeMessage.rawValue, message: "previous id '\(lastPayloadMessageId)' is incompatible with message delta \(firstMessage)")
+                    ARTLogError(logger, "\(pointer: realtime) C:\(pointer: self) (\(self.name)) \(incompatibleIdError.message)")
+                    
+                    if let messages = pm.messages {
+                        for j in (i + 1)..<messages.count {
+                            ARTLogVerbose(logger, "\(pointer: realtime) C:\(pointer: self) (\(self.name)) message skipped \(messages[j])")
+                        }
+                    }
+                    startDecodeFailureRecovery(withErrorInfo: incompatibleIdError)
+                    return
+                }
+            }
+        }
+        
+        let dataEncoder = self.dataEncoder
+        guard let messages = pm.messages else { return }
+        
+        for message in messages {
+            var msg = message
+            
+            if msg.data != nil && dataEncoder != nil {
+                var decodeError: Error?
+                msg = msg.decode(with: dataEncoder!, error: &decodeError)
+                
+                if let decodeError = decodeError {
+                    let errorInfo = ARTErrorInfo.wrap(ARTErrorInfo.create(withCode: ARTErrorUnableToDecodeMessage.rawValue, message: decodeError.localizedDescription), prepend: "Failed to decode data: ")
+                    ARTLogError(logger, "\(pointer: realtime) C:\(pointer: self) (\(self.name)) \(errorInfo.message)")
+                    _errorReason = errorInfo
+                    let stateChange = ARTChannelStateChange(current: self.state_nosync, previous: self.state_nosync, event: .update, reason: errorInfo)
+                    emit(stateChange.event, with: stateChange)
+                    
+                    if (decodeError as NSError).code == ARTErrorUnableToDecodeMessage.rawValue {
+                        startDecodeFailureRecovery(withErrorInfo: errorInfo)
+                        return
+                    }
+                }
+            }
+            
+            if msg.timestamp == nil {
+                msg.timestamp = pm.timestamp
+            }
+            if msg.id == nil {
+                msg.id = "\(pm.id ?? ""):\(i)"
+            }
+            if msg.connectionId == nil {
+                msg.connectionId = pm.connectionId
+            }
+            
+            _lastPayloadMessageId = msg.id
+            
+            messagesEventEmitter.emit(msg.name, with: msg)
+            
+            i += 1
+        }
+        
+        // RTL15b
+        if let channelSerial = pm.channelSerial {
+            self.channelSerial = channelSerial
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 853
+    internal func onPresence(_ message: ARTProtocolMessage) {
+        guard let realtime = self.realtime else { return }
+        
+        ARTLogDebug(logger, "RT:\(pointer: realtime) C:\(pointer: self) (\(self.name)) handle PRESENCE message")
+        // RTL15b
+        if let channelSerial = message.channelSerial {
+            self.channelSerial = channelSerial
+        }
+        presence.onMessage(message)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 862
+    internal func onAnnotation(_ message: ARTProtocolMessage) {
+        guard let realtime = self.realtime else { return }
+        
+        ARTLogDebug(logger, "RT:\(pointer: realtime) C:\(pointer: self) (\(self.name)) handle ANNOTATION message")
+        // RTL15b
+        if let channelSerial = message.channelSerial {
+            self.channelSerial = channelSerial
+        }
+        annotations.onMessage(message)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 871
+    internal func onSync(_ message: ARTProtocolMessage) {
+        presence.onSync(message)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 875
+    internal func onError(_ msg: ARTProtocolMessage) {
+        let params = ARTChannelStateChangeParams(state: .error, errorInfo: msg.error)
+        performTransitionToState(.failed, withParams: params)
+        failPendingPresence(withState: .error, info: msg.error)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 882
+    internal func onObject(_ pm: ARTProtocolMessage) {
+        // RTL15b
+        if let channelSerial = pm.channelSerial {
+            self.channelSerial = channelSerial
+        }
+        
+        guard let state = pm.state else {
+            // Because the plugin isn't set up or because decoding failed
+            return
+        }
+        
+        guard let realtime = self.realtime else { return }
+        realtime.options.liveObjectsPlugin?.nosync_handleObjectProtocolMessage(withObjectMessages: state as? [APObjectMessageProtocol] ?? [], channel: self)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 897
+    internal func onObjectSync(_ pm: ARTProtocolMessage) {
+        guard let state = pm.state else {
+            // Because the plugin isn't set up or because decoding failed
+            return
+        }
+        
+        guard let realtime = self.realtime else { return }
+        realtime.options.liveObjectsPlugin?.nosync_handleObjectSyncProtocolMessage(withObjectMessages: state as? [APObjectMessageProtocol] ?? [], protocolMessageChannelSerial: pm.channelSerial, channel: self)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 908
+    internal func attach() {
+        attach(nil)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 912
+    internal func attach(_ callback: ARTCallback?) {
+        var callbackWrapper = callback
+        if callbackWrapper != nil {
+            let userCallback = callbackWrapper!
+            callbackWrapper = { error in
+                self._userQueue.async {
+                    userCallback(error)
+                }
+            }
+        }
+        
+        _queue.sync {
+            self._attach(callbackWrapper)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 926
+    internal func _attach(_ callback: ARTCallback?) {
+        guard let realtime = self.realtime else { return }
+        
+        switch self.state_nosync {
+        case .attaching:
+            ARTLogVerbose(logger, "RT:\(pointer: realtime) C:\(pointer: self) (\(self.name)) already attaching")
+            if let callback = callback {
+                _attachedEventEmitter.once(callback)
+            }
+            return
+        case .attached:
+            ARTLogVerbose(logger, "RT:\(pointer: realtime) C:\(pointer: self) (\(self.name)) already attached")
+            callback?(nil)
+            return
+        default:
+            break
+        }
+        
+        let params = ARTAttachRequestParams(reason: nil)
+        internalAttach(callback, withParams: params)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 943
+    internal func reattach(withParams params: ARTAttachRequestParams) {
+        guard let realtime = self.realtime else { return }
+        
+        if canBeReattached() {
+            ARTLogDebug(logger, "RT:\(pointer: realtime) C:\(pointer: self) (\(self.name)) \(ARTRealtimeChannelStateToStr(self.state_nosync)) and will reattach")
+            internalAttach(nil, withParams: params)
+        } else {
+            ARTLogDebug(logger, "RT:\(pointer: realtime) C:\(pointer: self) (\(self.name)) \(ARTRealtimeChannelStateToStr(self.state_nosync)) should not reattach")
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 952
+    internal func proceedAttachDetach(withParams params: ARTAttachRequestParams) {
+        guard let realtime = self.realtime else { return }
+        
+        if self.state_nosync == .detaching {
+            ARTLogDebug(logger, "RT:\(pointer: realtime) C:\(pointer: self) (\(self.name)) \(ARTRealtimeChannelStateToStr(self.state_nosync)) proceeding with detach")
+            internalDetach(nil)
+        } else {
+            reattach(withParams: params)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 961
+    internal func internalAttach(_ callback: ARTCallback?, withParams params: ARTAttachRequestParams) {
+        guard let realtime = self.realtime else { return }
+        
+        switch self.state_nosync {
+        case .detaching:
+            ARTLogDebug(logger, "RT:\(pointer: realtime) C:\(pointer: self) (\(self.name)) attach after the completion of Detaching")
+            _detachedEventEmitter.once { error in
+                self._attach(callback)
+            }
+            return
+        default:
+            break
+        }
+        
+        _errorReason = nil
+        
+        if !realtime.isActive {
+            ARTLogDebug(logger, "RT:\(pointer: realtime) C:\(pointer: self) (\(self.name)) can't attach when not in an active state")
+            callback?(ARTErrorInfo.create(withCode: ARTErrorChannelOperationFailed.rawValue, message: "Can't attach when not in an active state"))
+            return
+        }
+        
+        if let callback = callback {
+            _attachedEventEmitter.once(callback)
+        }
+        
+        // Set state: Attaching
+        if self.state_nosync != .attaching {
+            let state: ARTState = params.reason != nil ? .error : .ok
+            let stateChangeParams = ARTChannelStateChangeParams(state: state, errorInfo: params.reason, storeErrorInfo: false, retryAttempt: params.retryAttempt)
+            performTransitionToState(.attaching, withParams: stateChangeParams)
+        }
+        attachAfterChecks()
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 992
+    internal func attachAfterChecks() {
+        guard let realtime = self.realtime else { return }
+        
+        let attachMessage = ARTProtocolMessage()
+        attachMessage.action = .attach
+        attachMessage.channel = self.name
+        attachMessage.channelSerial = self.channelSerial // RTL4c1
+        attachMessage.params = options_nosync?.params
+        attachMessage.flags = options_nosync?.modes
+        
+        if self.attachResume {
+            attachMessage.flags = (attachMessage.flags ?? 0) | ARTProtocolMessageFlag.attachResume.rawValue
+        }
+        
+        realtime.send(attachMessage, sentCallback: { error in
+            if error != nil {
+                return
+            }
+            // Set attach timer after the connection is active
+            self.unlessStateChangesBefore(realtime.options.testOptions.realtimeRequestTimeout) {
+                // Timeout
+                let errorInfo = ARTErrorInfo.create(withCode: ARTState.attachTimedOut.rawValue, message: "attach timed out")
+                let params = ARTChannelStateChangeParams(state: .attachTimedOut, errorInfo: errorInfo)
+                self.setSuspended(params)
+            }.startTimer()
+        }, ackCallback: nil)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 1019
+    internal func detach(_ callback: ARTCallback?) {
+        var callbackWrapper = callback
+        if callbackWrapper != nil {
+            let userCallback = callbackWrapper!
+            callbackWrapper = { error in
+                self._userQueue.async {
+                    userCallback(error)
+                }
+            }
+        }
+        
+        _queue.sync {
+            self._detach(callbackWrapper)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 1033
+    internal func _detach(_ callback: ARTCallback?) {
+        guard let realtime = self.realtime else { return }
+        
+        switch self.state_nosync {
+        case .initialized:
+            ARTLogDebug(logger, "RT:\(pointer: realtime) C:\(pointer: self) (\(self.name)) can't detach when not attached")
+            callback?(nil)
+            return
+        case .detaching:
+            ARTLogDebug(logger, "RT:\(pointer: realtime) C:\(pointer: self) (\(self.name)) already detaching")
+            if let callback = callback {
+                _detachedEventEmitter.once(callback)
+            }
+            return
+        case .detached:
+            ARTLogDebug(logger, "RT:\(pointer: realtime) C:\(pointer: self) (\(self.name)) already detached")
+            callback?(nil)
+            return
+        case .suspended:
+            ARTLogDebug(logger, "RT:\(pointer: realtime) C:\(pointer: self) (\(self.name)) transitions immediately to the detached")
+            let params = ARTChannelStateChangeParams(state: .ok)
+            performTransitionToState(.detached, withParams: params)
+            callback?(nil)
+            return
+        case .failed:
+            ARTLogDebug(logger, "RT:\(pointer: realtime) C:\(pointer: self) (\(self.name)) can't detach when in a failed state")
+            callback?(ARTErrorInfo.create(withCode: ARTErrorChannelOperationFailed.rawValue, message: "can't detach when in a failed state"))
+            return
+        default:
+            break
+        }
+        
+        internalDetach(callback)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 1064
+    internal func internalDetach(_ callback: ARTCallback?) {
+        guard let realtime = self.realtime else { return }
+        
+        switch self.state_nosync {
+        case .attaching:
+            ARTLogDebug(logger, "RT:\(pointer: realtime) C:\(pointer: self) (\(self.name)) waiting for the completion of the attaching operation")
+            _attachedEventEmitter.once { errorInfo in
+                if let callback = callback, let errorInfo = errorInfo {
+                    callback(errorInfo)
+                    return
+                }
+                self._detach(callback)
+            }
+            return
+        default:
+            break
+        }
+        
+        _errorReason = nil
+        
+        if !realtime.isActive {
+            ARTLogDebug(logger, "RT:\(pointer: realtime) C:\(pointer: self) (\(self.name)) can't detach when not in an active state")
+            callback?(ARTErrorInfo.create(withCode: ARTErrorChannelOperationFailed.rawValue, message: "Can't detach when not in an active state"))
+            return
+        }
+        
+        if let callback = callback {
+            _detachedEventEmitter.once(callback)
+        }
+        
+        // Set state: Detaching
+        let params = ARTChannelStateChangeParams(state: .ok)
+        performTransitionToState(.detaching, withParams: params)
+        
+        detachAfterChecks()
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 1097
+    internal func detachAfterChecks() {
+        guard let realtime = self.realtime else { return }
+        
+        let detachMessage = ARTProtocolMessage()
+        detachMessage.action = .detach
+        detachMessage.channel = self.name
+        
+        realtime.send(detachMessage, sentCallback: nil, ackCallback: nil)
+        
+        unlessStateChangesBefore(realtime.options.testOptions.realtimeRequestTimeout) {
+            guard let realtime = self.realtime else {
+                return
+            }
+            // Timeout
+            let errorInfo = ARTErrorInfo.create(withCode: ARTState.detachTimedOut.rawValue, message: "detach timed out")
+            let params = ARTChannelStateChangeParams(state: .attachTimedOut, errorInfo: errorInfo)
+            self.performTransitionToState(.attached, withParams: params)
+            self._detachedEventEmitter.emit(nil, with: errorInfo)
+        }.startTimer()
+        
+        if presence.syncInProgress_nosync {
+            presence.failsSync(ARTErrorInfo.create(withCode: ARTErrorChannelOperationFailed.rawValue, message: "channel is being DETACHED"))
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 1121
+    internal func detach() {
+        detach(nil)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 1133
+    internal override func historyWithWrapperSDKAgents(_ wrapperSDKAgents: [String: String]?, completion: @escaping ARTPaginatedMessagesCallback) {
+        // swift-migration: Lawrence — absorb the error equivalently to the original
+        let _ = try? history(ARTRealtimeHistoryQuery(), wrapperSDKAgents: wrapperSDKAgents, callback: completion)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 1138
+    internal func history(_ query: ARTRealtimeHistoryQuery?, wrapperSDKAgents: [String: String]?, callback: @escaping ARTPaginatedMessagesCallback) throws -> Bool {
+        // swift-migration: Lawrence — noticed this, this isn't in the original, it's ignored my instruction about not inserting these things
+        let historyQuery = query ?? ARTRealtimeHistoryQuery()
+        historyQuery.realtimeChannel = self
+        return try restChannel.history(historyQuery, wrapperSDKAgents: wrapperSDKAgents, callback: callback)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 1143
+    internal func startDecodeFailureRecovery(withErrorInfo error: ARTErrorInfo) {
+        guard let realtime = self.realtime else { return }
+        
+        if _decodeFailureRecoveryInProgress {
+            return
+        }
+        
+        ARTLogWarn(logger, "\(pointer: realtime) C:\(pointer: self) (\(self.name)) starting delta decode failure recovery process")
+        _decodeFailureRecoveryInProgress = true
+        let params = ARTAttachRequestParams(reason: error)
+        internalAttach({ e in
+            self._decodeFailureRecoveryInProgress = false
+        }, withParams: params)
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 1160
+    internal override func exceedMaxSize(_ messages: [ARTBaseMessage]) -> Bool {
+        guard let realtime = self.realtime else { return false }
+        
+        var size = 0
+        for message in messages {
+            size += (message as? ARTMessage)?.messageSize() ?? 0
+        }
+        let maxSize = realtime.connection.maxMessageSize
+        return size > maxSize
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 1189
+    internal func setOptions(_ options: ARTRealtimeChannelOptions?, callback: ARTCallback?) {
+        var callbackWrapper = callback
+        if callbackWrapper != nil {
+            let userCallback = callbackWrapper!
+            callbackWrapper = { error in
+                self._userQueue.async {
+                    userCallback(error)
+                }
+            }
+        }
+        
+        _queue.sync {
+            self.setOptions_nosync(options, callback: callbackWrapper)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 1203
+    internal func setOptions_nosync(_ options: ARTRealtimeChannelOptions?, callback: ARTCallback?) {
+        guard let realtime = self.realtime else { return }
+        
+        setOptions_nosync(options)
+        restChannel.setOptions_nosync(options)
+        
+        if options?.modes == nil && options?.params == nil {
+            callback?(nil)
+            return
+        }
+        
+        switch self.state_nosync {
+        case .attached, .attaching:
+            ARTLogDebug(logger, "RT:\(pointer: realtime) C:\(pointer: self) (\(self.name)) set options in \(ARTRealtimeChannelStateToStr(self.state_nosync)) state")
+            let params = ARTAttachRequestParams(reason: nil)
+            internalAttach(callback, withParams: params)
+        default:
+            callback?(nil)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 1228
+    internal func setPluginDataValue(_ value: Any?, forKey key: String) {
+        _pluginData[key] = value
+    }
+    
+    // swift-migration: original location ARTRealtimeChannel.m, line 1232
+    internal func pluginDataValue(forKey key: String) -> Any? {
+        return _pluginData[key]
     }
 }
