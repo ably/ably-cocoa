@@ -113,18 +113,6 @@ public class ARTRealtimeChannelInternal: ARTChannel {
     }
 }
 
-// Placeholder for ARTRealtimePresenceInternal  
-public class ARTRealtimePresenceInternal: NSObject {
-    public func _unsubscribe() {
-        fatalError("ARTRealtimePresenceInternal not yet migrated")
-    }
-    
-    public override init() {
-        super.init()
-        fatalError("ARTRealtimePresenceInternal not yet migrated")
-    }
-}
-
 // MARK: - Wrapper SDK proxy
 
 // Placeholder for ARTWrapperSDKProxyOptions
