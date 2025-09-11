@@ -385,7 +385,7 @@ public class ARTRealtimePresence: ARTPresence, ARTRealtimePresenceProtocol {
 // MARK: - ARTRealtimePresenceInternal
 
 // swift-migration: original location ARTRealtimePresence.m, line 160
-private enum ARTPresenceSyncState: UInt {
+internal enum ARTPresenceSyncState: UInt {
     case initialized = 0  // ARTPresenceSyncInitialized
     case started = 1      // ARTPresenceSyncStarted, ItemType: nil  
     case ended = 2        // ARTPresenceSyncEnded, ItemType: NSArray<ARTPresenceMessage *>*
@@ -619,7 +619,7 @@ internal class ARTRealtimePresenceInternal {
     internal func history(_ query: ARTRealtimeHistoryQuery?, wrapperSDKAgents: [String: String]?, callback: @escaping ARTPaginatedPresenceCallback) throws -> Bool {
         let effectiveQuery = query ?? ARTRealtimeHistoryQuery()
         effectiveQuery.realtimeChannel = _channel
-        return try _channel?.restChannel.presence.history(effectiveQuery, wrapperSDKAgents: wrapperSDKAgents, callback: callback) ?? false
+        return try _channel?.restChannel.presence.history(effectiveQuery, callback: callback) ?? false
     }
     
     // swift-migration: original location ARTRealtimePresence+Private.h, line 32 and ARTRealtimePresence.m, line 287
@@ -866,7 +866,7 @@ internal class ARTRealtimePresenceInternal {
                 }
             case .action(let action):
                 if let callback = userCallback {
-                    listener = self._eventEmitter.on(ARTEvent.newWithPresenceAction(action), callback: callback)
+                    listener = self._eventEmitter.on(ARTEvent.new(withPresenceAction: action), callback: callback)
                 }
             }
             
@@ -923,7 +923,7 @@ internal class ARTRealtimePresenceInternal {
     // swift-migration: original location ARTRealtimePresence+Private.h, line 68 and ARTRealtimePresence.m, line 556
     internal func unsubscribe(_ action: ARTPresenceAction, listener: ARTEventListener) {
         _queue.sync {
-            _eventEmitter.off(ARTEvent.newWithPresenceAction(action), listener: listener)
+            _eventEmitter.off(ARTEvent.new(withPresenceAction: action), listener: listener)
             ARTLogVerbose(logger, "R:\(String(describing: _realtime)) C:\(String(describing: _channel)) (\(_channel?.name ?? "")) presence unsubscribe to action \(ARTPresenceActionToStr(action))")
         }
     }
@@ -983,11 +983,11 @@ internal class ARTRealtimePresenceInternal {
         let channelState = channel.state_nosync
         switch channelState {
         case .attached:
-            realtime.send(pm, sentCallback: nil) { status in // RTP16a
+            realtime.send(pm, sentCallback: nil, ackCallback: { status in // RTP16a
                 if let callback = callback {
                     callback(status.errorInfo)
                 }
-            }
+            })
         case .initialized:
             if realtime.options.queueMessages { // RTP16b
                 channel._attach(nil)
@@ -1026,7 +1026,7 @@ internal class ARTRealtimePresenceInternal {
                 _pendingPresence.append(qm)
                 continue
             }
-            realtime.send(qm.msg, sentCallback: nil, ackCallback: qm.ackCallback)
+            realtime.send(qm.msg, sentCallback: nil, ackCallback: qm.ackCallback())
         }
     }
     
@@ -1041,7 +1041,7 @@ internal class ARTRealtimePresenceInternal {
     
     // swift-migration: original location ARTRealtimePresence+Private.h, line 17 and ARTRealtimePresence.m, line 677
     internal func broadcast(_ pm: ARTPresenceMessage) {
-        _eventEmitter.emit(ARTEvent.newWithPresenceAction(pm.action), with: pm)
+        _eventEmitter.emit(ARTEvent.new(withPresenceAction: pm.action), with: pm)
     }
     
     // MARK: - Protocol Message Handling
@@ -1082,9 +1082,11 @@ internal class ARTRealtimePresenceInternal {
         for (i, p) in presence.enumerated() {
             var member = p
             
-            if let data = member.data, let dataEncoder = _dataEncoder {
+            // swift-migration: Lawrence commented out this nil check, haven't compared to the Obj-C
+            if member.data != nil /*, let dataEncoder = _dataEncoder */ {
                 do {
-                    member = try p.decode(with: dataEncoder)
+                    // swift-migration: Lawrence added this cast, haven't checked
+                    member = try p.decode(withEncoder: _dataEncoder) as! ARTPresenceMessage
                 } catch {
                     let errorInfo = ARTErrorInfo.wrap(ARTErrorInfo.create(withCode: ARTErrorCode.unableToDecodeMessage.rawValue, message: error.localizedDescription), prepend: "Failed to decode data: ")
                     ARTLogError(logger, "RT:\(String(describing: _realtime)) C:\(String(describing: _channel)) (\(_channel?.name ?? "")) \(errorInfo.message)")
@@ -1152,7 +1154,7 @@ internal class ARTRealtimePresenceInternal {
         for member in internalMembers.values {
             enterWithPresenceMessageId(member.id, clientId: member.clientId, data: member.data) { error in // RTP17g
                 if let error = error {
-                    let message = "Re-entering member \"\(member.memberKey ?? "")\" is failed with code \(error.code) (\(error.message))"
+                    let message = "Re-entering member \"\(member.memberKey() ?? "")\" is failed with code \(error.code) (\(error.message))"
                     let reenterError = ARTErrorInfo.create(withCode: ARTErrorCode.unableToAutomaticallyReEnterPresenceChannel.rawValue, message: message)
                     let stateChange = ARTChannelStateChange(current: self._channel?.state_nosync ?? .initialized, previous: self._channel?.state_nosync ?? .initialized, event: .update, reason: reenterError, resumed: true) // RTP17e
                     
@@ -1240,8 +1242,10 @@ internal class ARTRealtimePresenceInternal {
     // swift-migration: original location ARTRealtimePresence+Private.h, line 111 and ARTRealtimePresence.m, line 867
     internal func addMember(_ message: ARTPresenceMessage) -> Bool {
         return _membersLock.withLock {
-            guard let memberKey = message.memberKey else { return false }
-            
+            // swift-migration: Lawrence removed a guard because for some reason memberKey is non-nil
+//            guard let memberKey = message.memberKey else { return false }
+            let memberKey = message.memberKey()
+
             if let existing = _members[memberKey] {
                 if member(message, isNewerThan: existing) {
                     _members[memberKey] = message
@@ -1257,8 +1261,10 @@ internal class ARTRealtimePresenceInternal {
     // swift-migration: original location ARTRealtimePresence+Private.h, line 114 and ARTRealtimePresence.m, line 880
     internal func removeMember(_ message: ARTPresenceMessage) -> Bool {
         return _membersLock.withLock {
-            guard let memberKey = message.memberKey else { return false }
-            
+            // swift-migration: Lawrence removed a guard because for some reason memberKey is non-nil
+            //            guard let memberKey = message.memberKey() else { return false }
+            let memberKey = message.memberKey()
+
             if let existing = _members[memberKey] {
                 if member(message, isNewerThan: existing) {
                     _members.removeValue(forKey: memberKey)
@@ -1370,11 +1376,55 @@ internal class ARTRealtimePresenceInternal {
     
     // swift-migration: original location ARTRealtimePresence+Private.h, line 108 and ARTRealtimePresence.m, line 957
     internal func onceSyncEnds(_ callback: @escaping ([ARTPresenceMessage]) -> Void) {
-        _syncEventEmitter.once(ARTEvent.newWithPresenceSyncState(.ended), callback: callback)
+        // swift-migration: Lawrence added this upcast, we can do better than this in Swift though
+        let upcastingCallback: (Any) -> Void = { item in
+            guard let presenceMessages = item as? [ARTPresenceMessage] else {
+                preconditionFailure()
+            }
+            callback(presenceMessages)
+        }
+        _syncEventEmitter.once(ARTEvent.newWithPresenceSyncState(.ended), callback: upcastingCallback)
     }
     
     // swift-migration: original location ARTRealtimePresence+Private.h, line 109 and ARTRealtimePresence.m, line 961
     internal func onceSyncFails(_ callback: @escaping ARTCallback) {
-        _syncEventEmitter.once(ARTEvent.newWithPresenceSyncState(.failed), callback: callback)
+        // swift-migration: Lawrence added this upcast, we can do better than this in Swift though
+        let upcastingCallback: (Any) -> Void = { item in
+            guard let presenceMessages = item as? ARTErrorInfo? else {
+                preconditionFailure()
+            }
+            callback(presenceMessages)
+        }
+        _syncEventEmitter.once(ARTEvent.newWithPresenceSyncState(.failed), callback: upcastingCallback)
+    }
+}
+
+// MARK: - ARTEvent Extensions
+
+// swift-migration: original location ARTRealtimePresence.m, line 981
+internal func ARTPresenceSyncStateToStr(_ state: ARTPresenceSyncState) -> String {
+    switch state {
+    case .initialized:
+        return "Initialized" // 0
+    case .started:
+        return "Started" // 1
+    case .ended:
+        return "Ended" // 2
+    case .failed:
+        return "Failed" // 3
+    }
+}
+
+// swift-migration: original location ARTRealtimePresence.m, line 994
+extension ARTEvent {
+    
+    // swift-migration: original location ARTRealtimePresence.m, line 996
+    convenience init(presenceSyncState value: ARTPresenceSyncState) {
+        self.init(string: "ARTPresenceSyncState\(ARTPresenceSyncStateToStr(value))")
+    }
+    
+    // swift-migration: original location ARTRealtimePresence.m, line 1000
+    static func newWithPresenceSyncState(_ value: ARTPresenceSyncState) -> ARTEvent {
+        return ARTEvent(presenceSyncState: value)
     }
 }

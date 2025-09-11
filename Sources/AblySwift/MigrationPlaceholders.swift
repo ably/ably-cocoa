@@ -72,6 +72,11 @@ public class ARTRealtimeChannel: NSObject {
     }
 }
 
+// ARTRealtimeInternal already exists in ARTRealtime.swift - no placeholder needed
+
+// ARTConnectionInternal already exists in ARTConnection.swift - no placeholder needed
+// ARTAuthInternal already exists in ARTAuth.swift - no placeholder needed
+
 // Placeholder for ARTRealtimeChannelInternal
 public class ARTRealtimeChannelInternal: ARTChannel {
     public let channelSerial: String? = nil
@@ -85,6 +90,11 @@ public class ARTRealtimeChannelInternal: ARTChannel {
     }
     internal var presence: ARTRealtimePresenceInternal {
         fatalError("ARTRealtimeChannelInternal not yet migrated")
+    }
+    
+    // swift-migration: Added restChannel property for ARTRealtimePresence history method
+    public var restChannel: ARTRestChannel {
+        fatalError("ARTRealtimeChannelInternal restChannel not yet migrated")
     }
     
     public init(realtime: ARTRealtimeInternal, name: String, options: ARTChannelOptions?, logger: ARTInternalLog) {
@@ -111,6 +121,11 @@ public class ARTRealtimeChannelInternal: ARTChannel {
     public func _unsubscribe() {
         fatalError("ARTRealtimeChannelInternal not yet migrated")
     }
+
+    func emit(_ event: ARTChannelEvent, with data:ARTChannelStateChange) {
+        fatalError("Not yet migrated")
+    }
+
 }
 
 // MARK: - Wrapper SDK proxy
@@ -238,13 +253,6 @@ public class ARTRealtime {
     
     public func internalAsync(_ block: @escaping (ARTRealtimeInternal) -> Void) {
         fatalError("ARTRealtime internalAsync not yet migrated")
-    }
-}
-
-// Placeholder for ARTRealtimeInternal - updated for ARTRest migration
-public class ARTRealtimeInternal {
-    public var rest: ARTRestInternal {
-        fatalError("ARTRealtimeInternal rest not yet migrated")
     }
 }
 

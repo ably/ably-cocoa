@@ -448,4 +448,14 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     public func realtimeTransportSetMsgSerial(_ transport: ARTRealtimeTransport, msgSerial: Int64) {
         // swift-migration: Placeholder - implementation needed
     }
+
+    // Message sending
+    // swift-migration: These two copied by Lawrence for now
+    func send(_ msg: ARTProtocolMessage, sentCallback: ARTCallback?, ackCallback: ARTStatusCallback?) {
+
+    }
+
+    func send(_ msg: ARTProtocolMessage, reuseMsgSerial: Bool, sentCallback: ARTCallback?, ackCallback: ARTStatusCallback?) {
+
+    }
 }

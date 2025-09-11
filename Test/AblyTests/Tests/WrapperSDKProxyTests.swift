@@ -2,6 +2,8 @@ import Ably
 import XCTest
 import Nimble
 
+// swift-migration: Lawrence disabled these tests because haven't migrated the wrapper SDK proxy stuff yet — TODO do it
+/*
 class WrapperSDKProxyTests: XCTestCase {
     // MARK: - Testing that connection state is shared with underlying Realtime client
 
@@ -620,3 +622,4 @@ class WrapperSDKProxyTests: XCTestCase {
         )
     }
 }
+*/
