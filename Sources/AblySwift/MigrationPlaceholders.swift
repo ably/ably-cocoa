@@ -143,16 +143,6 @@ public class ARTWrapperSDKProxyRealtime: NSObject {
     }
 }
 
-// MARK: - Stuff that needs to go
-
-// Placeholder function for creating cancellable from callback
-public func artCancellableFromCallback(
-    _ callback: ARTTokenDetailsCompatibleCallback,
-    _ safeCallback: inout ARTTokenDetailsCompatibleCallback?
-) -> ARTCancellable {
-    fatalError("artCancellableFromCallback not yet migrated")
-}
-
 // Placeholder for ARTPaginatedResultResponseProcessor
 // swift-migration: Changed from inout Error? parameter to throws pattern per PRD requirements
 public typealias ARTPaginatedResultResponseProcessor = (HTTPURLResponse?, Data?) throws -> [Any]?

@@ -369,15 +369,16 @@ internal class ARTAuthInternal {
             
             if let authCallback = replacedOptions.authCallback {
                 // swift-migration: Complex callback management to prevent memory leaks as documented in original code
-                var safeCallback: ARTTokenDetailsCompatibleCallback?
-                task = artCancellableFromCallback({ tokenDetailsCompat, error in
+                // swift-migration: Lawrence TODO it looks like the migrator just dropped the original comment. Also I think that we've broken it here because the original code had a weak reference to the callback but we can't do that
+                let (task, safeCallback) = artCancellableFromCallback({ tokenDetailsCompat, error in
                     if let error = error {
                         callback(nil, error)
                     } else if let tokenDetailsCompat = tokenDetailsCompat {
-                        tokenDetailsCompat.toTokenDetails(self.toAuth(), callback: callback)
+                        // swift-migration: Lawrence added this force cast because the type of `artCancellableFromCallback` as currently migrated is not rich enough; revisit with generics
+                        (tokenDetailsCompat as! ARTTokenDetailsCompatible).toTokenDetails(self.toAuth(), callback: callback)
                     }
-                }, &safeCallback)
-                
+                })
+
                 let userCallback: ARTAuthCallback = { tokenParams, callback in
                     self.userQueue.async {
                         authCallback(tokenParams, callback)
@@ -388,10 +389,8 @@ internal class ARTAuthInternal {
                     userCallback(tokenParams) { tokenDetailsCompat, error in
                         self.queue.async {
                             // safeCallback is declared weak above so could be nil at this point.
-                            if let callback = safeCallback {
-                                callback(tokenDetailsCompat, error)
-                            }
-                            task?.cancel()
+                            safeCallback(tokenDetailsCompat, error)
+                            task.cancel()
                         }
                     }
                 }
