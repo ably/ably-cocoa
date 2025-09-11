@@ -739,18 +739,8 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 ### ARTRealtimePresence.m → ARTRealtimePresence.swift
 - **Headers**: ARTRealtimePresence.h, ARTRealtimePresence+Private.h
-- **Status**: Completed
+- **Status**: Not Started
 - **Notes**: 
-  - **Migration Approach**: Direct mechanical translation preserving all threading and callback behaviors
-  - **Key Changes**: 
-    - Migrated ARTRealtimePresenceQuery class with waitForSync property
-    - Implemented ARTRealtimePresenceProtocol with all presence operations
-    - Translated ARTRealtimePresenceInternal with complete presence map functionality
-    - Preserved complex sync state management and member tracking
-    - Maintained original queue dispatch patterns for thread safety
-    - Added ARTPresenceSyncState enum and ARTEvent extensions
-  - **Threading**: All user callbacks properly wrapped to dispatch on userQueue
-  - **Compilation**: Mechanical translation completed, ready for build verification 
 
 ### ARTRealtimeTransport.m → ARTRealtimeTransport.swift
 - **Headers**: ARTRealtimeTransport.h
