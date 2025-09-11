@@ -949,6 +949,19 @@ public class ARTJsonLikeEncoderPlaceholder: ARTEncoder {
 
 // swift-migration: ARTCustomRequestError already exists in ARTTypes.swift
 
+// Placeholder for ARTRestChannels
+public class ARTRestChannels: NSObject {
+    private let `internal`: ARTRestChannelsInternal
+    private let queuedDealloc: ARTQueuedDealloc
+    
+    internal init(internal: ARTRestChannelsInternal, queuedDealloc: ARTQueuedDealloc) {
+        self.`internal` = `internal`
+        self.queuedDealloc = queuedDealloc
+        super.init()
+        fatalError("ARTRestChannels not yet migrated")
+    }
+}
+
 // Placeholder for ARTRestChannelsInternal
 public class ARTRestChannelsInternal: NSObject {
     internal init(rest: ARTRestInternal, logger: ARTInternalLog) {

@@ -450,7 +450,7 @@ public class ARTRestInternal: NSObject {
         var requestId: String?
         var blockFallbacks = fallbacks
         
-        var updatedRequest = request.settingAcceptHeader(defaultEncoder, encoders: encoders)
+        var updatedRequest = request.settingAcceptHeader(defaultEncoder: defaultEncoder, encoders: encoders)
         var mutableRequest = updatedRequest
         mutableRequest.timeoutInterval = options.httpRequestTimeout
         mutableRequest.setValue(ARTDefault.apiVersion(), forHTTPHeaderField: "X-Ably-Version")
@@ -480,7 +480,7 @@ public class ARTRestInternal: NSObject {
             
             self.currentFallbackHost = nil
             self.prioritizedHost = nil
-            updatedRequest = updatedRequest.replacingHost(options.restHost!)
+            updatedRequest = updatedRequest.replacingHostWith(options.restHost!)
         }
         
         ARTLogDebug(logger, "RS:\(Unmanaged.passUnretained(self).toOpaque()) executing request \(updatedRequest)")
@@ -572,7 +572,7 @@ public class ARTRestInternal: NSObject {
                 if let artError = error as? ARTErrorInfo {
                     completion(response, finalData, artError)
                 } else {
-                    completion(response, finalData, NSError.copyFromError(error, requestId: requestId))
+                    completion(response, finalData, NSError.copyFromError(error as NSError, withRequestId: requestId))
                 }
             } else {
                 completion(response, finalData, nil)
@@ -762,7 +762,7 @@ public class ARTRestInternal: NSObject {
             }
         }
         
-        let request = mutableRequest.settingAcceptHeader(defaultEncoder, encoders: encoders)
+        let request = mutableRequest.settingAcceptHeader(defaultEncoder: defaultEncoder, encoders: encoders)
         
         ARTLogDebug(logger, "request \(method) \(path)")
         queue.async {
@@ -957,72 +957,6 @@ extension Data {
     }
 }
 
-// Placeholder classes - these will be replaced when dependencies are migrated
-
-// swift-migration: ARTRestChannels placeholder for compilation
-public class ARTRestChannels: NSObject {
-    private let `internal`: ARTRestChannelsInternal
-    private let queuedDealloc: ARTQueuedDealloc
-    
-    internal init(internal: ARTRestChannelsInternal, queuedDealloc: ARTQueuedDealloc) {
-        self.`internal` = `internal`
-        self.queuedDealloc = queuedDealloc
-        super.init()
-        fatalError("ARTRestChannels not yet migrated")
-    }
-}
-
-// swift-migration: ARTRestChannelsInternal placeholder defined in MigrationPlaceholders.swift
-
+// swift-migration: ARTRestChannels and ARTRestChannelsInternal placeholders defined in MigrationPlaceholders.swift
 // swift-migration: encodeBase64 and art_shortString functions implemented in other files
-// Removed duplicate implementations to avoid redeclaration errors
 
-// swift-migration: Extension for URLRequest to add helper methods
-extension URLRequest {
-    func settingAcceptHeader(_ defaultEncoder: ARTEncoder, encoders: [String: ARTEncoder]) -> URLRequest {
-        var request = self
-        let accept = encoders.values.map { $0.mimeType() }.joined(separator: ",")
-        request.setValue(accept, forHTTPHeaderField: "Accept")
-        return request
-    }
-    
-    // swift-migration: appendingQueryItem method implemented in NSURLRequest+ARTUtils.swift
-    
-    func replacingHost(_ host: String) -> URLRequest {
-        guard let url = self.url,
-              var components = URLComponents(url: url, resolvingAgainstBaseURL: true) else {
-            return self
-        }
-        
-        components.host = host
-        var request = self
-        request.url = components.url
-        return request
-    }
-}
-
-// swift-migration: Extension for NSURL to add helper methods
-extension NSURL {
-    static func copyFromURL(_ url: URL, withHost host: String) -> URL? {
-        guard var components = URLComponents(url: url, resolvingAgainstBaseURL: true) else {
-            return nil
-        }
-        components.host = host
-        return components.url
-    }
-}
-
-// swift-migration: Extension for NSError to add helper methods
-extension NSError {
-    static func copyFromError(_ error: Error, requestId: String?) -> NSError {
-        let nsError = error as NSError
-        var userInfo = nsError.userInfo
-        if let requestId = requestId {
-            userInfo["requestId"] = requestId
-        }
-        return NSError(domain: nsError.domain, code: nsError.code, userInfo: userInfo)
-    }
-}
-
-// swift-migration: HTTPURLResponse already has mimeType property as MIMEType
-// Using the existing MIMEType property from Foundation instead of creating our own
