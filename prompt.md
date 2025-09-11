@@ -12,3 +12,5 @@ Look at the migration plan in @ably-cocoa-swift-migration-prd.md. We need to imp
   properties (internal and external) of this class, paying VERY CAREFUL attention to make sure
   that atomic properties are migrated following the rules of the PRD. make sure to implement any
   custom getters as needed. Don't try and build the code now
+
+Look at the migration plan in @ably-cocoa-swift-migration-prd.md. We need to implement ARTRealtimeInternal. We'll have to do this in stages. Begin by just implementing the properties (internal and external) of this class. MAKE SURE to implement any custom getters that exist in the original code. Don't try and implement the initializer. Don't try and build the code now. Don't delete any of the existing code in this file. Remember that we want to use Swift types instead of Foundation types (e.g. Array instead of NSMutableArray) per the PRD.

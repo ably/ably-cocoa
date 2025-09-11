@@ -259,40 +259,179 @@ private enum ARTNetworkState: UInt {
 // swift-migration: original location ARTRealtime+Private.h, line 32 and ARTRealtime.m, line 217
 public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTransportDelegate, ARTAuthDelegate {
     
-    // Properties that need to be accessible
-    internal let rest: ARTRestInternal
+    // MARK: - Public Interface Properties (from header)
+    
+    // swift-migration: original location ARTRealtime+Private.h, line 39 and ARTRealtime.m, line 259
     internal let connection: ARTConnectionInternal
+    
+    // swift-migration: original location ARTRealtime+Private.h, line 40 and ARTRealtime.m, line 250
     internal let channels: ARTRealtimeChannelsInternal
+    
+    // swift-migration: original location ARTRealtime+Private.h, line 41 and ARTRealtime.m, line 441
+    internal var auth: ARTAuthInternal {
+        return rest.auth
+    }
+    
+    // swift-migration: original location ARTRealtime+Private.h, line 42 and ARTRealtime.m, line 445
+    internal var push: ARTPushInternal {
+        return rest.push
+    }
+    
+    #if os(iOS)
+    // swift-migration: original location ARTRealtime+Private.h, line 44 and ARTRealtime.m, line 1768
+    internal var device: ARTLocalDevice {
+        return rest.device
+    }
+    #endif
+    
+    // swift-migration: original location ARTRealtime+Private.h, line 46 and ARTRealtime.m, line 419
+    internal var clientId: String? {
+        // Doesn't need synchronization since it's immutable.
+        return rest.options.clientId
+    }
+    
+    // swift-migration: original location ARTRealtime+Private.h, line 48 and ARTRealtime.m, line 246
     internal let queue: DispatchQueue
-    internal var msgSerial: Int64 = 0
     
-    // Properties needed by ARTConnection
-    internal var options: ARTClientOptions { return rest.options }
-    internal var isActive: Bool { return true } // Simplified - full implementation would be more complex
+    // MARK: - Private Interface Properties (from private extensions in header)
     
-    // swift-migration: Lawrence requested this property for ARTRealtimeChannel migration
-    internal var shouldSendEvents: Bool { return true } // Simplified - full implementation would check connection state
+    // swift-migration: original location ARTRealtime+Private.h, line 77
+    internal let internalEventEmitter: ARTEventEmitter<ARTEvent, ARTConnectionStateChange>
+    
+    // swift-migration: original location ARTRealtime+Private.h, line 78
+    internal let connectedEventEmitter: ARTEventEmitter<ARTEvent, NSNull>
+    
+    // swift-migration: original location ARTRealtime+Private.h, line 80 and ARTRealtime.m, line 258
+    internal var pendingAuthorizations: [(ARTRealtimeConnectionState, ARTErrorInfo?) -> Void]
+    
+    // MARK: - Implementation Properties (from @implementation block)
+    
+    // swift-migration: original location ARTRealtime+Private.h, line 94 and ARTRealtime.m, line 244
+    internal let rest: ARTRestInternal
+    
+    // swift-migration: original location ARTRealtime+Private.h, line 95 and ARTRealtime.m, line 411
+    internal var transport: ARTRealtimeTransport? {
+        return _transport
+    }
+    
+    // swift-migration: original location ARTRealtime+Private.h, line 96
+    internal var reachability: ARTReachability?
+    
+    // swift-migration: original location ARTRealtime+Private.h, line 97 and ARTRealtime.m, line 260
+    internal var connectionStateTtl: TimeInterval
+    
+    // swift-migration: original location ARTRealtime+Private.h, line 98 and ARTRealtime.m, line 940
+    internal var maxIdleInterval: TimeInterval = 0
+    
+    // swift-migration: original location ARTRealtime+Private.h, line 101 and ARTRealtime.m, line 254
+    internal var msgSerial: Int64
+    
+    // swift-migration: original location ARTRealtime+Private.h, line 104 and ARTRealtime.m, line 255
+    internal var queuedMessages: [ARTQueuedMessage]
+    
+    // swift-migration: original location ARTRealtime+Private.h, line 107 and ARTRealtime.m, line 256
+    internal var pendingMessages: [ARTPendingMessage]
+    
+    // swift-migration: original location ARTRealtime+Private.h, line 110 and ARTRealtime.m, line 257
+    internal var pendingMessageStartSerial: Int64
+    
+    // swift-migration: original location ARTRealtime+Private.h, line 113 and ARTRealtime.m, line 218
+    internal var resuming: Bool
+    
+    // swift-migration: original location ARTRealtime+Private.h, line 115 and ARTRealtime.m, line 415
+    internal var options: ARTClientOptions {
+        return rest.options
+    }
+    
+    // swift-migration: original location ARTRealtime+Private.h, line 118 and ARTRealtime.m, line 261
+    internal var immediateReconnectionDelay: TimeInterval
+    
+    // MARK: - Private backing storage variables
+    
+    // swift-migration: original location ARTRealtime.m, line 204
+    private let connectRetryState: ARTConnectRetryState
+    
+    // swift-migration: original location ARTRealtime.m, line 205
+    private let logger: ARTInternalLog
+    
+    // swift-migration: original location ARTRealtime.m, line 219
+    private var _renewingToken: Bool = false
+    
+    // swift-migration: original location ARTRealtime.m, line 221
+    private let _pingEventEmitter: ARTEventEmitter<ARTEvent, ARTErrorInfo>
+    
+    // swift-migration: original location ARTRealtime.m, line 222
+    private var _connectionLostAt: Date?
+    
+    // swift-migration: original location ARTRealtime.m, line 223
+    private var _lastActivity: Date = Date()
+    
+    // swift-migration: original location ARTRealtime.m, line 224
+    private var _reachabilityClass: ARTReachability.Type?
+    
+    // swift-migration: original location ARTRealtime.m, line 225
+    private var _networkState: ARTNetworkState = .isUnknown
+    
+    // swift-migration: original location ARTRealtime.m, line 226
+    private var _transport: ARTRealtimeTransport?
+    
+    // swift-migration: original location ARTRealtime.m, line 227
+    private var _fallbacks: ARTFallback?
+    
+    // swift-migration: original location ARTRealtime.m, line 228
+    private weak var _connectionRetryFromSuspendedListener: ARTEventListener?
+    
+    // swift-migration: original location ARTRealtime.m, line 229
+    private weak var _connectionRetryFromDisconnectedListener: ARTEventListener?
+    
+    // swift-migration: original location ARTRealtime.m, line 230
+    private weak var _connectingTimeoutListener: ARTEventListener?
+    
+    // swift-migration: original location ARTRealtime.m, line 231
+    private var _authenitcatingTimeoutWork: ARTScheduledBlockHandle?
+    
+    // swift-migration: original location ARTRealtime.m, line 232
+    private var _authTask: ARTCancellable?
+    
+    // swift-migration: original location ARTRealtime.m, line 233
+    private var _idleTimer: ARTScheduledBlockHandle?
+    
+    // swift-migration: original location ARTRealtime.m, line 234
+    private let _userQueue: DispatchQueue
+    
+    // swift-migration: original location ARTRealtime.m, line 235
+    private let _queue: DispatchQueue
+    
+    // MARK: - Additional Properties for Protocol Conformance
+    
+    // Properties needed by ARTConnection - these are computed properties
+    internal var isActive: Bool { 
+        // swift-migration: original location ARTRealtime.m, line 1264
+        if shouldSendEvents {
+            return true
+        }
+        switch connection.state_nosync {
+        case .initialized, .connecting, .connected:
+            return true
+        default:
+            return false
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1255
+    internal var shouldSendEvents: Bool {
+        switch connection.state_nosync {
+        case .connected:
+            return !_renewingToken
+        default:
+            return false
+        }
+    }
     
     // swift-migration: original location ARTRealtime+Private.h, line 35 and ARTRealtime.m, line 238
     internal init(options: ARTClientOptions) {
-        // swift-migration: TODO
-        fatalError("TODO")
-        rest = ARTRestInternal(options: options)
-        queue = rest.queue
-//        channels = ARTRealtimeChannelsInternal()
-        connection = ARTConnectionInternal()
-        
-        super.init()
-        
-        // swift-migration: Set circular references after init to avoid issues
-        // For a complete implementation, we'd need to properly initialize connection with circular references
-        
-        // swift-migration: Simplified initialization - full implementation would be much more complex
-        ARTLogVerbose(ARTInternalLog(clientOptions: options), "R:\(Unmanaged.passUnretained(self).toOpaque()) initialized with RS:\(Unmanaged.passUnretained(rest).toOpaque())")
-        
-        if options.autoConnect {
-            connect()
-        }
+        // swift-migration: TODO - placeholder init - full implementation needed
+        fatalError("TODO - init implementation needed")
     }
     
     // swift-migration: original location ARTRealtime.m, line 402
@@ -309,27 +448,6 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
         self.init(options: options)
     }
     
-    // swift-migration: original location ARTRealtime.m, line 418
-    internal var clientId: String? {
-        return rest.options.clientId
-    }
-    
-    // swift-migration: original location ARTRealtime.m, line 440
-    internal var auth: ARTAuthInternal {
-        return rest.auth
-    }
-    
-    // swift-migration: original location ARTRealtime.m, line 444
-    internal var push: ARTPushInternal {
-        return rest.push
-    }
-    
-    #if os(iOS)
-    // swift-migration: original location ARTRealtime.m, line 1767
-    internal var device: ARTLocalDevice {
-        return rest.device
-    }
-    #endif
     
     // swift-migration: original location ARTRealtime.m, line 454
     internal func connect() {
