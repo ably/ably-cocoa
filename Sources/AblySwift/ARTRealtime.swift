@@ -519,4 +519,1349 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
         options.token = token
         self.init(options: options)
     }
+    
+    // MARK: - ARTAuthDelegate
+    
+    // swift-migration: original location ARTRealtime.m, line 299
+    internal func auth(_ auth: ARTAuthInternal, didAuthorize tokenDetails: ARTTokenDetails, completion: @escaping (ARTAuthorizationState, ARTErrorInfo?) -> Void) {
+        let waitForResponse: () -> Void = {
+            self.pendingAuthorizations.append { state, error in
+                switch state {
+                case .connected:
+                    completion(.succeeded, nil)
+                case .failed:
+                    completion(.failed, error)
+                case .suspended:
+                    completion(.failed, ARTErrorInfo.create(withCode: ARTState.authorizationFailed.rawValue, message: "Connection has been suspended"))
+                case .closed:
+                    completion(.failed, ARTErrorInfo.create(withCode: ARTState.authorizationFailed.rawValue, message: "Connection has been closed"))
+                case .disconnected:
+                    completion(.cancelled, nil)
+                case .initialized, .connecting, .closing:
+                    ARTLogDebug(logger, "RS:\(pointer: rest) authorize completion has been ignored because the connection state is unexpected (\(ARTRealtimeConnectionStateToStr(state)))")
+                }
+            }
+        }
+        
+        let haltCurrentConnectionAndReconnect: () -> Void = {
+            // Halt the current connection and reconnect with the most recent token
+            ARTLogDebug(logger, "RS:\(pointer: rest) halt current connection and reconnect with \(tokenDetails)")
+            abortAndReleaseTransport(ARTStatus(state: .ok))
+            setTransportWithResumeKey(_transport?.resumeKey)
+            _transport?.connect(withToken: tokenDetails.token)
+            cancelAllPendingAuthorizations()
+            waitForResponse()
+        }
+        
+        switch connection.state_nosync {
+        case .connected:
+            // Update (send AUTH message)
+            ARTLogDebug(logger, "RS:\(pointer: rest) AUTH message using \(tokenDetails)")
+            let msg = ARTProtocolMessage()
+            msg.action = .auth
+            msg.auth = ARTAuthDetails(token: tokenDetails.token)
+            send(msg, sentCallback: nil, ackCallback: nil)
+            waitForResponse()
+        case .connecting:
+            _transport?.stateEmitter.once(ARTEvent.newWithTransportState(.opened)) { _ in
+                haltCurrentConnectionAndReconnect()
+            }
+        case .closing:
+            // Should ignore because the connection is being closed
+            ARTLogDebug(logger, "RS:\(pointer: rest) authorize has been cancelled because the connection is closing")
+            cancelAllPendingAuthorizations()
+        default:
+            // Client state is NOT Connecting or Connected, so it should start a new connection
+            ARTLogDebug(logger, "RS:\(pointer: rest) new connection from successful authorize \(tokenDetails)")
+            performTransitionToState(.connecting, withParams: ARTConnectionStateChangeParams())
+            waitForResponse()
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 370
+    private func performPendingAuthorizationWithState(_ state: ARTRealtimeConnectionState, error: ARTErrorInfo?) {
+        guard let pendingAuthorization = pendingAuthorizations.popFirst() else {
+            return
+        }
+        switch state {
+        case .connected:
+            pendingAuthorization(state, nil)
+        case .failed:
+            pendingAuthorization(state, error)
+        default:
+            discardPendingAuthorizations()
+            pendingAuthorization(state, error)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 389
+    private func cancelAllPendingAuthorizations() {
+        for pendingAuthorization in pendingAuthorizations {
+            pendingAuthorization(.disconnected, nil)
+        }
+        pendingAuthorizations.removeAll()
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 396
+    private func discardPendingAuthorizations() {
+        pendingAuthorizations.removeAll()
+    }
+    
+    // MARK: - Realtime
+    
+    // swift-migration: original location ARTRealtime.m, line 414
+    internal func getClientOptions() -> ARTClientOptions {
+        return rest.options
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 423
+    public override var description: String {
+        let info: String
+        if let token = options.token {
+            info = "token: \(token)"
+        } else if let authUrl = options.authUrl {
+            info = "authUrl: \(authUrl)"
+        } else if options.authCallback != nil {
+            info = "authCallback: \(String(describing: options.authCallback))"
+        } else {
+            info = "key: \(options.key ?? "")"
+        }
+        return "\(super.description) - \n\t \(info);"
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 448
+    deinit {
+        ARTLogVerbose(logger, "R:\(pointer: self) dealloc")
+        rest.prioritizedHost = nil
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 454
+    internal func connect() {
+        queue.sync {
+            _connect()
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 460
+    private func _connect() {
+        if connection.state_nosync == .connecting {
+            ARTLogError(logger, "R:\(pointer: self) Ignoring new connection attempt - already in the CONNECTING state.")
+            return
+        }
+        if connection.state_nosync == .closing {
+            // New connection
+            _transport = nil
+        }
+        performTransitionToState(.connecting, withParams: ARTConnectionStateChangeParams())
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 472
+    internal func close() {
+        queue.sync {
+            _close()
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 478
+    private func _close() {
+        setReachabilityActive(false)
+        cancelTimers()
+        
+        switch connection.state_nosync {
+        case .initialized, .closing, .closed, .failed:
+            return
+        case .connecting:
+            internalEventEmitter.once { change in
+                self._close()
+            }
+            return
+        case .disconnected, .suspended:
+            performTransitionToState(.closed, withParams: ARTConnectionStateChangeParams())
+        case .connected:
+            performTransitionToState(.closing, withParams: ARTConnectionStateChangeParams())
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 504
+    internal func timeWithWrapperSDKAgents(_ wrapperSDKAgents: [String: String]?, completion: @escaping ARTDateTimeCallback) {
+        rest.timeWithWrapperSDKAgents(wrapperSDKAgents, completion: completion)
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 510
+    internal func request(_ method: String, path: String, params: [String: String]?, body: Any?, headers: [String: String]?, wrapperSDKAgents: [String: String]?, callback: @escaping ARTHTTPPaginatedCallback) throws {
+        try rest.request(method, path: path, params: params, body: body, headers: headers, wrapperSDKAgents: wrapperSDKAgents, callback: callback)
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 521
+    internal func ping(_ cb: @escaping ARTCallback) {
+        var callback = cb
+        
+        callback = { error in
+            self._userQueue.async {
+                cb(error)
+            }
+        }
+        
+        queue.async {
+            switch self.connection.state_nosync {
+            case .initialized, .suspended, .closing, .closed, .failed:
+                callback(ARTErrorInfo.create(withCode: 0, status: .connectionFailed, message: "Can't ping a \(ARTRealtimeConnectionStateToStr(self.connection.state_nosync)) connection"))
+                return
+            case .connecting, .disconnected, .connected:
+                if !self.shouldSendEvents {
+                    self.connectedEventEmitter.once { _ in
+                        self.ping(cb)
+                    }
+                    return
+                }
+                let eventListener = self._pingEventEmitter.once(callback)
+                eventListener.setTimer(self.options.testOptions.realtimeRequestTimeout) {
+                    ARTLogVerbose(self.logger, "R:\(pointer: self) ping timed out")
+                    callback(ARTErrorInfo.create(withCode: ARTErrorCode.connectionTimedOut.rawValue, status: .connectionFailed, message: "timed out"))
+                }
+                eventListener.startTimer()
+                self.transport?.sendPing()
+            }
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 558
+    internal func statsWithWrapperSDKAgents(_ wrapperSDKAgents: [String: String]?, callback: @escaping ARTPaginatedStatsCallback) -> Bool {
+        return stats(ARTStatsQuery(), wrapperSDKAgents: wrapperSDKAgents, callback: callback, error: nil)
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 563
+    internal func stats(_ query: ARTStatsQuery?, wrapperSDKAgents: [String: String]?, callback: @escaping ARTPaginatedStatsCallback, error errorPtr: NSErrorPointer?) -> Bool {
+        return rest.stats(query, wrapperSDKAgents: wrapperSDKAgents, callback: callback, error: errorPtr)
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 567
+    private func performTransitionToDisconnectedOrSuspendedWithParams(_ params: ARTConnectionStateChangeParams) {
+        if isSuspendMode() {
+            performTransitionToState(.suspended, withParams: params)
+        } else {
+            performTransitionToState(.disconnected, withParams: params)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 576
+    private func updateWithErrorInfo(_ errorInfo: ARTErrorInfo?) {
+        ARTLogDebug(logger, "R:\(pointer: self) update requested")
+        
+        if connection.state_nosync != .connected {
+            ARTLogWarn(logger, "R:\(pointer: self) update ignored because connection is not connected")
+            return
+        }
+        
+        let params = ARTConnectionStateChangeParams(errorInfo: errorInfo)
+        performTransitionToState(.connected, withParams: params)
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 588
+    private func didChangeNetworkStateFromState(_ previousState: ARTNetworkState) {
+        if _networkState == .isReachable {
+            switch connection.state_nosync {
+            case .connecting:
+                if previousState == .isUnreachable {
+                    transportReconnectWithExistingParameters()
+                }
+            case .disconnected, .suspended:
+                performTransitionToState(.connecting, withParams: ARTConnectionStateChangeParams())
+            default:
+                break
+            }
+        } else {
+            switch connection.state_nosync {
+            case .connecting, .connected:
+                let unreachable = ARTErrorInfo.create(withCode: -1003, message: "unreachable host")
+                let params = ARTConnectionStateChangeParams(errorInfo: unreachable)
+                performTransitionToDisconnectedOrSuspendedWithParams(params)
+            default:
+                break
+            }
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 619
+    private func setReachabilityActive(_ active: Bool) {
+        if active && reachability == nil {
+            reachability = _reachabilityClass?.init(logger: logger, queue: queue)
+        }
+        if active {
+            reachability?.listenForHost(_transport?.host) { [weak self] reachable in
+                guard let self = self else { return }
+                
+                let previousState = self._networkState
+                self._networkState = reachable ? .isReachable : .isUnreachable
+                self.didChangeNetworkStateFromState(previousState)
+            }
+        } else {
+            reachability?.off()
+            _networkState = .isUnknown
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 640
+    private func clearConnectionStateIfInactive() {
+        let intervalSinceLast = Date().timeIntervalSince(_lastActivity)
+        if intervalSinceLast > (maxIdleInterval + connectionStateTtl) {
+            connection.setId(nil)
+            connection.setKey(nil)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 648
+    private func performTransitionToState(_ state: ARTRealtimeConnectionState, withParams params: ARTConnectionStateChangeParams) {
+        var channelStateChangeParams: ARTChannelStateChangeParams?
+        var stateChangeEventListener: ARTEventListener?
+        
+        ARTLogVerbose(logger, "R:\(pointer: self) realtime state transitions to \(state.rawValue) - \(ARTRealtimeConnectionStateToStr(state))\(params.retryAttempt != nil ? " (result of \(params.retryAttempt!.id))" : "")")
+        
+        let event: ARTRealtimeConnectionEvent = state == connection.state_nosync ? .update : ARTRealtimeConnectionEvent(rawValue: state.rawValue)!
+        
+        let stateChange = ARTConnectionStateChange(
+            current: state,
+            previous: connection.state_nosync,
+            event: event,
+            reason: params.errorInfo,
+            retryIn: 0,
+            retryAttempt: params.retryAttempt
+        )
+        
+        ARTLogDebug(logger, "RT:\(pointer: self) realtime is transitioning from \(stateChange.previous.rawValue) - \(ARTRealtimeConnectionStateToStr(stateChange.previous)) to \(stateChange.current.rawValue) - \(ARTRealtimeConnectionStateToStr(stateChange.current))")
+        
+        connection.setState(state)
+        connection.setErrorReason(params.errorInfo)
+        
+        connectRetryState.connectionWillTransitionToState(stateChange.current)
+        
+        switch stateChange.current {
+        case .connecting:
+            // RTN15g We want to enforce a new connection also when there hasn't been activity for longer than (idle interval + TTL)
+            if stateChange.previous == .disconnected || stateChange.previous == .suspended {
+                clearConnectionStateIfInactive()
+            }
+            
+            stateChangeEventListener = unlessStateChangesBefore(options.testOptions.realtimeRequestTimeout) {
+                self.onConnectionTimeOut()
+            }
+            _connectingTimeoutListener = stateChangeEventListener
+            
+            var usingFallback = false
+            
+            if let fallbacks = _fallbacks {
+                usingFallback = reconnectWithFallback() // RTN17j
+            }
+            if !usingFallback {
+                if _transport == nil {
+                    let resume = stateChange.previous == .failed ||
+                                stateChange.previous == .disconnected ||
+                                stateChange.previous == .suspended
+                    createAndConnectTransportWithConnectionResume(resume)
+                }
+                setReachabilityActive(true)
+            }
+            
+        case .closing:
+            stopIdleTimer()
+            setReachabilityActive(false)
+            stateChangeEventListener = unlessStateChangesBefore(options.testOptions.realtimeRequestTimeout) {
+                self.performTransitionToState(.closed, withParams: ARTConnectionStateChangeParams())
+            }
+            transport?.sendClose()
+            
+        case .closed:
+            stopIdleTimer()
+            setReachabilityActive(false)
+            closeAndReleaseTransport()
+            connection.key = nil
+            connection.id = nil
+            _transport = nil
+            _fallbacks = nil
+            rest.prioritizedHost = nil
+            auth.cancelAuthorization(nil)
+            failPendingMessages(ARTStatus(state: .error, info: ARTErrorInfo.create(withCode: ARTErrorCode.connectionClosed.rawValue, message: "connection broken before receiving publishing acknowledgment")))
+            
+        case .failed:
+            let status = ARTStatus(state: .connectionFailed, info: stateChange.reason)
+            channelStateChangeParams = ARTChannelStateChangeParams(state: status.state, errorInfo: status.errorInfo)
+            abortAndReleaseTransport(status)
+            _fallbacks = nil
+            rest.prioritizedHost = nil
+            auth.cancelAuthorization(stateChange.reason)
+            failPendingMessages(ARTStatus(state: .error, info: ARTErrorInfo.create(withCode: ARTErrorCode.connectionFailed.rawValue, message: "connection broken before receiving publishing acknowledgment")))
+            
+        case .disconnected:
+            closeAndReleaseTransport()
+            if _connectionLostAt == nil {
+                _connectionLostAt = Date()
+                ARTLogVerbose(logger, "RT:\(pointer: self) set connection lost time; expected suspension at \(suspensionTime()) (ttl=\(connectionStateTtl))")
+            }
+            
+            var retryDelay: TimeInterval
+            var retryAttempt: ARTRetryAttempt?
+            
+            // Immediate reconnection as per internal discussion:
+            // https://ably-real-time.slack.com/archives/CURL4U2FP/p1742211172312389?thread_ts=1741387920.007779&cid=CURL4U2FP
+            // See comment to `testRTN14dAndRTB1` test function for details
+            if stateChange.previous == .connected || _fallbacks != nil {
+                retryDelay = immediateReconnectionDelay // RTN15a, RTN15h3
+            } else {
+                retryAttempt = connectRetryState.addRetryAttempt()
+                retryDelay = retryAttempt!.delay
+            }
+            stateChange.setRetryIn(retryDelay)
+            ARTLogVerbose(logger, "RT:\(pointer: self) expecting retry in \(retryDelay) seconds...")
+            stateChangeEventListener = unlessStateChangesBefore(stateChange.retryIn) {
+                self._connectionRetryFromDisconnectedListener = nil
+                let params = ARTConnectionStateChangeParams(errorInfo: nil, retryAttempt: retryAttempt)
+                self.performTransitionToState(.connecting, withParams: params)
+            }
+            _connectionRetryFromDisconnectedListener = stateChangeEventListener
+            
+        case .suspended:
+            _fallbacks = nil // RTN17a - "must always prefer the default endpoint", thus resetting fallbacks to start connection sequence again with the default endpoint
+            _connectionRetryFromDisconnectedListener?.stopTimer()
+            _connectionRetryFromDisconnectedListener = nil
+            auth.cancelAuthorization(nil)
+            closeAndReleaseTransport()
+            stateChange.setRetryIn(options.suspendedRetryTimeout)
+            stateChangeEventListener = unlessStateChangesBefore(stateChange.retryIn) {
+                self._connectionRetryFromSuspendedListener = nil
+                self.performTransitionToState(.connecting, withParams: ARTConnectionStateChangeParams())
+            }
+            _connectionRetryFromSuspendedListener = stateChangeEventListener
+            
+        case .connected:
+            _fallbacks = nil // RTN17a
+            _connectionLostAt = nil
+            options.recover = nil // RTN16k
+            resendPendingMessagesWithResumed(params.resumed) // RTN19a1
+            connectedEventEmitter.emit(nil, with: nil)
+            
+        case .initialized:
+            break
+        }
+        
+        // If there's a channels.release() going on waiting on this channel
+        // to detach, doing those operations on it here would fire its event listener and
+        // immediately remove the channel from the channels dictionary, thus
+        // invalidating the iterator and causing a crashing.
+        //
+        // So copy the channels and operate on them later, when we're done using the iterator.
+        let channelsCopy: [ARTRealtimeChannelInternal] = Array(channels.nosyncIterable)
+        
+        if shouldSendEvents {
+            for channel in channelsCopy {
+                let attachParams = ARTAttachRequestParams(reason: stateChange.reason)
+                channel.proceedAttachDetachWithParams(attachParams)
+            }
+            sendQueuedMessages()
+        } else if !isActive {
+            if channelStateChangeParams == nil {
+                if let reason = stateChange.reason {
+                    channelStateChangeParams = ARTChannelStateChangeParams(state: .error, errorInfo: reason)
+                } else {
+                    channelStateChangeParams = ARTChannelStateChangeParams(state: .error)
+                }
+            }
+            
+            let channelStatus = ARTStatus(state: channelStateChangeParams!.state, info: channelStateChangeParams!.errorInfo)
+            failQueuedMessages(channelStatus)
+            
+            // Channels
+            for channel in channelsCopy {
+                switch stateChange.current {
+                case .closing:
+                    // do nothing. Closed state is coming.
+                    break
+                case .closed:
+                    let params = ARTChannelStateChangeParams(state: .ok)
+                    channel.detachChannel(params)
+                case .suspended:
+                    channel.setSuspended(channelStateChangeParams!)
+                case .failed:
+                    channel.setFailed(channelStateChangeParams!)
+                default:
+                    break
+                }
+            }
+        }
+        
+        connection.emit(stateChange.event, with: stateChange)
+        
+        performPendingAuthorizationWithState(stateChange.current, error: stateChange.reason)
+        
+        internalEventEmitter.emit(ARTEvent.newWithConnectionEvent(ARTRealtimeConnectionEvent(rawValue: state.rawValue)!), with: stateChange)
+        
+        // stateChangeEventListener may be nil if we're in a failed state
+        stateChangeEventListener?.startTimer()
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 855
+    private func createAndConnectTransportWithConnectionResume(_ resume: Bool) {
+        var resumeKey: String?
+        if resume {
+            resumeKey = connection.key_nosync
+            resuming = true
+        }
+        setTransportWithResumeKey(resumeKey)
+        transportConnectForcingNewToken(_renewingToken, newConnection: true)
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 865
+    private func abortAndReleaseTransport(_ status: ARTStatus) {
+        _transport?.abort(status)
+        _transport = nil
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 870
+    private func closeAndReleaseTransport() {
+        if let transport = _transport {
+            transport.close()
+            _transport = nil
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 877
+    private func resetTransportWithResumeKey(_ resumeKey: String?) {
+        closeAndReleaseTransport()
+        setTransportWithResumeKey(resumeKey)
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 882
+    private func setTransportWithResumeKey(_ resumeKey: String?) {
+        let factory = options.testOptions.transportFactory
+        _transport = factory.transport(withRest: rest, options: options, resumeKey: resumeKey, logger: logger)
+        _transport?.delegate = self
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 888
+    @discardableResult
+    private func unlessStateChangesBefore(_ deadline: TimeInterval, do callback: @escaping () -> Void) -> ARTEventListener {
+        let eventListener = internalEventEmitter.once { (change: ARTConnectionStateChange) in
+            // Any state change cancels the timeout.
+        }
+        eventListener.setTimer(deadline) {
+            callback()
+        }
+        return eventListener
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 898
+    private func onHeartbeat() {
+        ARTLogVerbose(logger, "R:\(pointer: self) heartbeat received")
+        if connection.state_nosync != .connected {
+            let msg = "received a ping when in state \(ARTRealtimeConnectionStateToStr(connection.state_nosync))"
+            ARTLogWarn(logger, "R:\(pointer: self) \(msg)")
+        }
+        _pingEventEmitter.emit(nil, with: nil)
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 907
+    private func onConnected(_ message: ARTProtocolMessage) {
+        _renewingToken = false
+        
+        switch connection.state_nosync {
+        case .connecting:
+            if resuming {
+                if message.connectionId == connection.id_nosync {
+                    ARTLogDebug(logger, "RT:\(pointer: self) connection \"\(message.connectionId ?? "")\" has reconnected and resumed successfully")
+                } else {
+                    ARTLogWarn(logger, "RT:\(pointer: self) connection \"\(message.connectionId ?? "")\" has reconnected, but resume failed. Error: \"\(message.error?.message ?? "")\"")
+                }
+            }
+            // If there's no previous connectionId, then don't reset the msgSerial
+            //as it may have been set by recover data (unless the recover failed).
+            let prevConnId = connection.id_nosync
+            let connIdChanged = prevConnId != nil && message.connectionId != prevConnId
+            let recoverFailure = prevConnId == nil && message.error != nil // RTN16d
+            let resumed = !(connIdChanged || recoverFailure)
+            if !resumed {
+                ARTLogDebug(logger, "RT:\(pointer: self) msgSerial of connection \"\(connection.id_nosync ?? "")\" has been reset")
+                msgSerial = 0
+                pendingMessageStartSerial = 0
+            }
+            
+            connection.setId(message.connectionId)
+            connection.setKey(message.connectionKey)
+            connection.setMaxMessageSize(message.connectionDetails?.maxMessageSize)
+            
+            if let connectionDetails = message.connectionDetails {
+                if let connectionStateTtl = connectionDetails.connectionStateTtl {
+                    self.connectionStateTtl = connectionStateTtl
+                }
+                if let maxIdleInterval = connectionDetails.maxIdleInterval {
+                    self.maxIdleInterval = maxIdleInterval
+                    _lastActivity = Date()
+                    setIdleTimer()
+                }
+            }
+            let params = ARTConnectionStateChangeParams(errorInfo: message.error)
+            params.resumed = resumed  // RTN19a
+            performTransitionToState(.connected, withParams: params)
+            
+        case .connected:
+            // Renewing token.
+            updateWithErrorInfo(message.error)
+        default:
+            break
+        }
+        
+        resuming = false
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 961
+    private func onDisconnected() {
+        onDisconnected(nil)
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 965
+    private func onDisconnected(_ message: ARTProtocolMessage?) {
+        ARTLogInfo(logger, "R:\(pointer: self) Realtime disconnected")
+        let error = message?.error
+        
+        if isTokenError(error) && !_renewingToken { // If already reconnecting, give up.
+            if !auth.tokenIsRenewable {
+                let params = ARTConnectionStateChangeParams(errorInfo: error)
+                performTransitionToState(.failed, withParams: params)
+                return
+            }
+            
+            let params = ARTConnectionStateChangeParams(errorInfo: error)
+            performTransitionToDisconnectedOrSuspendedWithParams(params)
+            connection.setErrorReason(nil)
+            _renewingToken = true
+            performTransitionToState(.connecting, withParams: ARTConnectionStateChangeParams())
+            return
+        }
+        
+        let params = ARTConnectionStateChangeParams(errorInfo: error)
+        performTransitionToDisconnectedOrSuspendedWithParams(params)
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 991
+    private func onClosed() {
+        ARTLogInfo(logger, "R:\(pointer: self) Realtime closed")
+        switch connection.state_nosync {
+        case .closed:
+            break
+        case .closing:
+            connection.setId(nil)
+            performTransitionToState(.closed, withParams: ARTConnectionStateChangeParams())
+        default:
+            assertionFailure("Invalid Realtime state transitioning to Closed: expected Closing or Closed, has \(ARTRealtimeConnectionStateToStr(connection.state_nosync))")
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1006
+    private func onAuth() {
+        ARTLogInfo(logger, "R:\(pointer: self) server has requested an authorize")
+        switch connection.state_nosync {
+        case .connecting, .connected:
+            transportConnectForcingNewToken(true, newConnection: false)
+        default:
+            ARTLogError(logger, "Invalid Realtime state: expected Connecting or Connected, has \(ARTRealtimeConnectionStateToStr(connection.state_nosync))")
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1019
+    private func onError(_ message: ARTProtocolMessage) {
+        if message.channel != nil {
+            onChannelMessage(message)
+        } else {
+            let error = message.error
+            
+            if isTokenError(error) && auth.tokenIsRenewable {
+                if _renewingToken {
+                    // Already retrying; give up.
+                    connection.setErrorReason(error)
+                    let params = ARTConnectionStateChangeParams(errorInfo: error)
+                    performTransitionToDisconnectedOrSuspendedWithParams(params)
+                    return
+                }
+                transportReconnectWithRenewedToken()
+                return
+            }
+            
+            connection.setId(nil)
+            let params = ARTConnectionStateChangeParams(errorInfo: message.error)
+            performTransitionToState(.failed, withParams: params)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1043
+    private func cancelTimers() {
+        ARTLogVerbose(logger, "R:\(pointer: self) cancel timers")
+        _connectionRetryFromSuspendedListener?.stopTimer()
+        _connectionRetryFromSuspendedListener = nil
+        _connectionRetryFromDisconnectedListener?.stopTimer()
+        _connectionRetryFromDisconnectedListener = nil
+        // Cancel connecting scheduled work
+        _connectingTimeoutListener?.stopTimer()
+        _connectingTimeoutListener = nil
+        // Cancel auth scheduled work
+        artDispatchCancel(_authenitcatingTimeoutWork)
+        _authenitcatingTimeoutWork = nil
+        _authTask?.cancel()
+        _authTask = nil
+        // Idle timer
+        stopIdleTimer()
+        // Ping timer
+        _pingEventEmitter.off()
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1063
+    private func onConnectionTimeOut() {
+        ARTLogVerbose(logger, "R:\(pointer: self) connection timed out")
+        // Cancel connecting scheduled work
+        _connectingTimeoutListener?.stopTimer()
+        _connectingTimeoutListener = nil
+        // Cancel auth scheduled work
+        artDispatchCancel(_authenitcatingTimeoutWork)
+        _authenitcatingTimeoutWork = nil
+        _authTask?.cancel()
+        _authTask = nil
+        
+        let error: ARTErrorInfo
+        if auth.authorizing_nosync && (options.authUrl != nil || options.authCallback != nil) {
+            error = ARTErrorInfo.create(withCode: ARTErrorCode.authConfiguredProviderFailure.rawValue, status: .connectionFailed, message: "timed out")
+        } else {
+            error = ARTErrorInfo.create(withCode: ARTErrorCode.connectionTimedOut.rawValue, status: .connectionFailed, message: "timed out")
+        }
+        switch connection.state_nosync {
+        case .connected:
+            let params = ARTConnectionStateChangeParams(errorInfo: error)
+            performTransitionToState(.connected, withParams: params)
+        default:
+            let params = ARTConnectionStateChangeParams(errorInfo: error)
+            performTransitionToDisconnectedOrSuspendedWithParams(params)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1095
+    private func isTokenError(_ error: ARTErrorInfo?) -> Bool {
+        guard let error = error else { return false }
+        return ARTDefaultErrorChecker().isTokenError(error)
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1099
+    private func transportReconnectWithExistingParameters() {
+        resetTransportWithResumeKey(_transport?.resumeKey)
+        let host = getClientOptions().testOptions.reconnectionRealtimeHost // for tests purposes only, always `nil` in production
+        if let host = host {
+            transport?.setHost(host)
+        }
+        transportConnectForcingNewToken(false, newConnection: true)
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1108
+    private func transportReconnectWithHost(_ host: String) {
+        resetTransportWithResumeKey(_transport?.resumeKey)
+        transport?.setHost(host)
+        transportConnectForcingNewToken(false, newConnection: true)
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1114
+    private func transportReconnectWithRenewedToken() {
+        _renewingToken = true
+        resetTransportWithResumeKey(_transport?.resumeKey)
+        _connectingTimeoutListener?.restartTimer()
+        transportConnectForcingNewToken(true, newConnection: true)
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1121
+    private func transportConnectForcingNewToken(_ forceNewToken: Bool, newConnection: Bool) {
+        let options = getClientOptions().copy() as! ARTClientOptions
+        if options.isBasicAuth {
+            // Basic
+            transport?.connect(withKey: options.key)
+        } else {
+            // Token
+            ARTLogDebug(logger, "R:\(pointer: self) connecting with token auth; authorising (timeout of \(self.options.testOptions.realtimeRequestTimeout))")
+            
+            if !forceNewToken && auth.tokenRemainsValid {
+                // Reuse token
+                ARTLogDebug(logger, "R:\(pointer: self) reusing token for auth")
+                transport?.connect(withToken: auth.tokenDetails?.token)
+            } else {
+                // New Token
+                auth.setTokenDetails(nil)
+                
+                // Schedule timeout handler
+                _authenitcatingTimeoutWork = artDispatchScheduled(self.options.testOptions.realtimeRequestTimeout, rest.queue) {
+                    self.onConnectionTimeOut()
+                }
+                
+                let delegate = auth.delegate
+                if newConnection {
+                    // Deactivate use of `ARTAuthDelegate`: `authorize` should complete without waiting for a CONNECTED state.
+                    auth.delegate = nil
+                }
+                
+                _authTask = auth._authorize(nil, options: options) { tokenDetails, error in
+                    // Cancel scheduled work
+                    artDispatchCancel(self._authenitcatingTimeoutWork)
+                    self._authenitcatingTimeoutWork = nil
+                    self._authTask = nil
+                    
+                    // It's still valid?
+                    switch self.connection.state_nosync {
+                    case .closing, .closed:
+                        return
+                    default:
+                        break
+                    }
+                    
+                    ARTLogDebug(self.logger, "R:\(pointer: self) authorized: \(String(describing: tokenDetails)) error: \(String(describing: error))")
+                    if let error = error {
+                        self.handleTokenAuthError(error)
+                        return
+                    }
+                    
+                    if forceNewToken && newConnection {
+                        self.resetTransportWithResumeKey(self._transport?.resumeKey)
+                    }
+                    if newConnection {
+                        self.transport?.connect(withToken: tokenDetails?.token)
+                    }
+                }
+                
+                auth.delegate = delegate
+            }
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1187
+    private func handleTokenAuthError(_ error: NSError) {
+        ARTLogError(logger, "R:\(pointer: self) token auth failed with \(error.description)")
+        if error.code == ARTErrorCode.incompatibleCredentials.rawValue {
+            // RSA15c
+            let errorInfo = ARTErrorInfo.createFromNSError(error)
+            let params = ARTConnectionStateChangeParams(errorInfo: errorInfo)
+            performTransitionToState(.failed, withParams: params)
+        } else if options.authUrl != nil || options.authCallback != nil {
+            if error.code == ARTErrorCode.forbidden.rawValue { /* RSA4d */
+                let errorInfo = ARTErrorInfo.create(withCode: ARTErrorCode.authConfiguredProviderFailure.rawValue,
+                                                   status: error.artStatusCode,
+                                                   message: error.description)
+                let params = ARTConnectionStateChangeParams(errorInfo: errorInfo)
+                performTransitionToState(.failed, withParams: params)
+            } else {
+                let errorInfo = ARTErrorInfo.create(withCode: ARTErrorCode.authConfiguredProviderFailure.rawValue, status: .connectionFailed, message: error.description)
+                switch connection.state_nosync {
+                case .connected:
+                    // RSA4c3
+                    connection.setErrorReason(errorInfo)
+                default:
+                    // RSA4c
+                    let params = ARTConnectionStateChangeParams(errorInfo: errorInfo)
+                    performTransitionToDisconnectedOrSuspendedWithParams(params)
+                }
+            }
+        } else {
+            // RSA4b
+            let errorInfo = ARTErrorInfo.createFromNSError(error)
+            let params = ARTConnectionStateChangeParams(errorInfo: errorInfo)
+            performTransitionToDisconnectedOrSuspendedWithParams(params)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1226
+    private func onAck(_ message: ARTProtocolMessage) {
+        ack(message)
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1230
+    private func onNack(_ message: ARTProtocolMessage) {
+        nack(message)
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1234
+    private func onChannelMessage(_ message: ARTProtocolMessage) {
+        guard let channelName = message.channel else {
+            return
+        }
+        let channel = channels._getChannel(channelName, options: nil, addPrefix: false)
+        channel.onChannelMessage(message)
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1242
+    private func onSuspended() {
+        performTransitionToState(.suspended, withParams: ARTConnectionStateChangeParams())
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1246
+    private func suspensionTime() -> Date {
+        return _connectionLostAt?.addingTimeInterval(connectionStateTtl) ?? Date()
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1250
+    private func isSuspendMode() -> Bool {
+        let currentTime = Date()
+        return currentTime.timeIntervalSince(suspensionTime()) > 0
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1280
+    private func sendImpl(_ pm: ARTProtocolMessage, reuseMsgSerial: Bool, sentCallback: ARTCallback?, ackCallback: ARTStatusCallback?) {
+        if pm.ackRequired {
+            if !reuseMsgSerial { // RTN19a2
+                pm.msgSerial = NSNumber(value: msgSerial)
+            }
+        }
+        
+        for msg in pm.messages ?? [] {
+            msg.connectionId = connection.id_nosync
+        }
+        
+        do {
+            let data = try rest.defaultEncoder.encodeProtocolMessage(pm)
+            
+            if pm.ackRequired {
+                if !reuseMsgSerial {
+                    msgSerial += 1
+                }
+                let pendingMessage = ARTPendingMessage(protocolMessage: pm, ackCallback: ackCallback)
+                pendingMessages.append(pendingMessage)
+            }
+            
+            ARTLogDebug(logger, "RT:\(pointer: self) sending action \(pm.action.rawValue) - \(ARTProtocolMessageActionToStr(pm.action))")
+            if transport?.send(data, withSource: pm) == true {
+                sentCallback?(nil)
+                // `ackCallback()` is called with ACK/NACK action
+            }
+        } catch {
+            let e = ARTErrorInfo.createFromNSError(error as NSError)
+            sentCallback?(e)
+            ackCallback?(ARTStatus(state: .error, info: e))
+            return
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1322
+    private func send(_ msg: ARTProtocolMessage, reuseMsgSerial: Bool, sentCallback: ARTCallback?, ackCallback: ARTStatusCallback?) {
+        if shouldSendEvents {
+            sendImpl(msg, reuseMsgSerial: reuseMsgSerial, sentCallback: sentCallback, ackCallback: ackCallback)
+        }
+        // see RTL6c2, RTN19, RTN7 and TO3g
+        else if msg.ackRequired {
+            if isActive && options.queueMessages {
+                let lastQueuedMessage = queuedMessages.last //RTL6d5
+                let maxSize = connection.maxMessageSize
+                let merged = lastQueuedMessage?.merge(from: msg, maxSize: maxSize, sentCallback: nil, ackCallback: ackCallback) ?? false
+                if !merged {
+                    let qm = ARTQueuedMessage(protocolMessage: msg, sentCallback: sentCallback, ackCallback: ackCallback)
+                    queuedMessages.append(qm)
+                    ARTLogDebug(logger, "RT:\(pointer: self) (channel: \(msg.channel ?? "")) protocol message with action '\(msg.action.rawValue) - \(ARTProtocolMessageActionToStr(msg.action))' has been queued (\(msg.messages ?? []))")
+                } else {
+                    ARTLogVerbose(logger, "RT:\(pointer: self) (channel: \(msg.channel ?? "")) message \(msg) has been bundled to \(lastQueuedMessage?.msg ?? ARTProtocolMessage())")
+                }
+            }
+            // RTL6c4
+            else {
+                let error = connection.error_nosync
+                ARTLogDebug(logger, "RT:\(pointer: self) (channel: \(msg.channel ?? "")) protocol message with action '\(msg.action.rawValue) - \(ARTProtocolMessageActionToStr(msg.action))' can't be sent or queued: \(String(describing: error))")
+                sentCallback?(error)
+                ackCallback?(ARTStatus(state: .error, info: error))
+            }
+        } else {
+            ARTLogDebug(logger, "RT:\(pointer: self) (channel: \(msg.channel ?? "")) sending protocol message with action '\(msg.action.rawValue) - \(ARTProtocolMessageActionToStr(msg.action))' was ignored: \(String(describing: connection.error_nosync))")
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1358
+    private func send(_ msg: ARTProtocolMessage, sentCallback: ARTCallback?, ackCallback: ARTStatusCallback?) {
+        send(msg, reuseMsgSerial: false, sentCallback: sentCallback, ackCallback: ackCallback)
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1362
+    private func resendPendingMessagesWithResumed(_ resumed: Bool) {
+        let pendingMessagesCopy = pendingMessages
+        if !pendingMessagesCopy.isEmpty {
+            ARTLogDebug(logger, "RT:\(pointer: self) resending messages waiting for acknowledgment")
+        }
+        pendingMessages = []
+        for pendingMessage in pendingMessagesCopy {
+            let pm = pendingMessage.msg
+            send(pm, reuseMsgSerial: resumed, sentCallback: nil) { status in
+                pendingMessage.ackCallback?(status)
+            }
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1376
+    private func failPendingMessages(_ status: ARTStatus) {
+        let pms = pendingMessages
+        pendingMessages = []
+        for pendingMessage in pms {
+            pendingMessage.ackCallback?(status)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1384
+    private func sendQueuedMessages() {
+        let qms = queuedMessages
+        queuedMessages = []
+        
+        for message in qms {
+            sendImpl(message.msg, reuseMsgSerial: false, sentCallback: message.sentCallback, ackCallback: message.ackCallback)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1393
+    private func failQueuedMessages(_ status: ARTStatus) {
+        let qms = queuedMessages
+        queuedMessages = []
+        for message in qms {
+            message.sentCallback?(status.errorInfo)
+            message.ackCallback?(status)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1402
+    private func ack(_ message: ARTProtocolMessage) {
+        let serial = message.msgSerial?.int64Value ?? 0
+        let count = Int(message.count)
+        var nackMessages: [ARTPendingMessage] = []
+        var ackMessages: [ARTPendingMessage] = []
+        ARTLogVerbose(logger, "R:\(pointer: self) ACK: msgSerial=\(serial), count=\(count)")
+        ARTLogVerbose(logger, "R:\(pointer: self) ACK (before processing): pendingMessageStartSerial=\(pendingMessageStartSerial), pendingMessages=\(pendingMessages.count)")
+        
+        var serialToProcess = serial
+        var countToProcess = count
+        
+        if serial < pendingMessageStartSerial {
+            // This is an error condition and shouldn't happen but
+            // we can handle it gracefully by only processing the
+            // relevant portion of the response
+            countToProcess -= Int(pendingMessageStartSerial - serial)
+            serialToProcess = pendingMessageStartSerial
+        }
+        
+        if serialToProcess > pendingMessageStartSerial {
+            // This counts as a nack of the messages earlier than serial,
+            // as well as an ack
+            let nCount = Int(serialToProcess - pendingMessageStartSerial)
+            let nackCount = min(nCount, pendingMessages.count)
+            if nCount > pendingMessages.count {
+                ARTLogError(logger, "R:\(pointer: self) ACK: receiving a serial greater than expected")
+            }
+            nackMessages = Array(pendingMessages.prefix(nackCount))
+            pendingMessages.removeFirst(nackCount)
+            pendingMessageStartSerial = serialToProcess
+        }
+        
+        if serialToProcess == pendingMessageStartSerial {
+            let ackCount = min(countToProcess, pendingMessages.count)
+            if countToProcess > pendingMessages.count {
+                ARTLogError(logger, "R:\(pointer: self) ACK: count response is greater than the total of pending messages")
+            }
+            ackMessages = Array(pendingMessages.prefix(ackCount))
+            pendingMessages.removeFirst(ackCount)
+            pendingMessageStartSerial += Int64(ackCount)
+        }
+        
+        for msg in nackMessages {
+            msg.ackCallback?(ARTStatus(state: .error, info: message.error))
+        }
+        
+        for msg in ackMessages {
+            msg.ackCallback?(ARTStatus(state: .ok))
+        }
+        
+        ARTLogVerbose(logger, "R:\(pointer: self) ACK (after processing): pendingMessageStartSerial=\(pendingMessageStartSerial), pendingMessages=\(pendingMessages.count)")
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1463
+    private func nack(_ message: ARTProtocolMessage) {
+        let serial = message.msgSerial?.int64Value ?? 0
+        var count = Int(message.count)
+        ARTLogVerbose(logger, "R:\(pointer: self) NACK: msgSerial=\(serial), count=\(count)")
+        ARTLogVerbose(logger, "R:\(pointer: self) NACK (before processing): pendingMessageStartSerial=\(pendingMessageStartSerial), pendingMessages=\(pendingMessages.count)")
+        
+        if serial != pendingMessageStartSerial {
+            // This is an error condition and it shouldn't happen but
+            // we can handle it gracefully by only processing the
+            // relevant portion of the response
+            count -= Int(pendingMessageStartSerial - serial)
+        }
+        
+        let nackCount = min(count, pendingMessages.count)
+        if count > pendingMessages.count {
+            ARTLogError(logger, "R:\(pointer: self) NACK: count response is greater than the total of pending messages")
+        }
+        
+        let nackMessages = Array(pendingMessages.prefix(nackCount))
+        pendingMessages.removeFirst(nackCount)
+        pendingMessageStartSerial += Int64(nackCount)
+        
+        for msg in nackMessages {
+            msg.ackCallback?(ARTStatus(state: .error, info: message.error))
+        }
+        
+        ARTLogVerbose(logger, "R:\(pointer: self) NACK (after processing): pendingMessageStartSerial=\(pendingMessageStartSerial), pendingMessages=\(pendingMessages.count)")
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1497
+    private func reconnectWithFallback() -> Bool {
+        guard let host = _fallbacks?.popFallbackHost() else {
+            ARTLogDebug(logger, "R:\(pointer: self) No fallback hosts left, trying primary one again...")
+            _fallbacks = nil
+            return false
+        }
+        
+        ARTLogDebug(logger, "R:\(pointer: self) checking internet connection and then retrying realtime at \(host)")
+        rest.internetIsUp { isUp in
+            if !isUp { // RTN17c
+                let errorInfo = ARTErrorInfo.create(withCode: 0, message: "no Internet connection")
+                let params = ARTConnectionStateChangeParams(errorInfo: errorInfo)
+                self.performTransitionToState(.disconnected, withParams: params)
+                return
+            }
+            
+            ARTLogDebug(self.logger, "R:\(pointer: self) internet OK; retrying realtime connection at \(host)")
+            self.rest.prioritizedHost = host
+            self.transportReconnectWithHost(host)
+        }
+        return true
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1521
+    private func shouldRetryWithFallbackForError(_ error: ARTRealtimeTransportError, options: ARTClientOptions) -> Bool {
+        if (error.type == .badResponse && error.badResponseCode >= 500 && error.badResponseCode <= 504) ||
+           error.type == .hostUnreachable || error.type == .timeout {
+            // RTN17b3
+            if options.fallbackHostsUseDefault {
+                return true
+            }
+            
+            // RTN17b1
+            if !(options.hasCustomRealtimeHost || options.hasCustomPort || options.hasCustomTlsPort) {
+                return true
+            }
+            
+            // RTN17b2
+            if options.fallbackHosts != nil {
+                return true
+            }
+            
+            // RSC15g2
+            if options.hasEnvironmentDifferentThanProduction {
+                return true
+            }
+        }
+        return false
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1550
+    private func onActivity() {
+        ARTLogVerbose(logger, "R:\(pointer: self) activity")
+        _lastActivity = Date()
+        setIdleTimer()
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1556
+    private func setIdleTimer() {
+        if maxIdleInterval <= 0 {
+            ARTLogVerbose(logger, "R:\(pointer: self) set idle timer had been ignored")
+            return
+        }
+        artDispatchCancel(_idleTimer)
+        
+        _idleTimer = artDispatchScheduled(options.testOptions.realtimeRequestTimeout + maxIdleInterval, rest.queue) {
+            ARTLogError(self.logger, "R:\(pointer: self) No activity seen from realtime in \(Date().timeIntervalSince(self._lastActivity)) seconds; assuming connection has dropped")
+            
+            let idleTimerExpired = ARTErrorInfo.create(withCode: ARTErrorCode.disconnected.rawValue, status: 408, message: "Idle timer expired")
+            let params = ARTConnectionStateChangeParams(errorInfo: idleTimerExpired)
+            self.performTransitionToDisconnectedOrSuspendedWithParams(params)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1572
+    private func stopIdleTimer() {
+        artDispatchCancel(_idleTimer)
+        _idleTimer = nil
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1577
+    internal func setReachabilityClass(_ reachabilityClass: ARTReachability.Type?) {
+        _reachabilityClass = reachabilityClass
+    }
+    
+    // MARK: - ARTRealtimeTransportDelegate implementation
+    
+    // swift-migration: original location ARTRealtime.m, line 1583
+    internal func realtimeTransport(_ transport: ARTRealtimeTransport, didReceiveMessage message: ARTProtocolMessage) {
+        onActivity()
+        
+        guard transport === self.transport else {
+            // Old connection
+            return
+        }
+        
+        if connection.state_nosync == .disconnected {
+            // Already disconnected
+            return
+        }
+        
+        ARTLogVerbose(logger, "R:\(pointer: self) did receive Protocol Message \(ARTProtocolMessageActionToStr(message.action)) (connection state is \(ARTRealtimeConnectionStateToStr(connection.state_nosync)))")
+        
+        if let error = message.error {
+            ARTLogVerbose(logger, "R:\(pointer: self) Protocol Message with error \(error)")
+        }
+        
+        assert(transport === self.transport, "Unexpected transport")
+        
+        switch message.action {
+        case .heartbeat:
+            onHeartbeat()
+        case .error:
+            onError(message)
+        case .connected:
+            // Set Auth#clientId
+            if let connectionDetails = message.connectionDetails {
+                auth.setProtocolClientId(connectionDetails.clientId)
+            }
+            // Event
+            onConnected(message)
+        case .disconnect, .disconnected:
+            onDisconnected(message)
+        case .ack:
+            onAck(message)
+        case .nack:
+            onNack(message)
+        case .closed:
+            onClosed()
+        case .auth:
+            onAuth()
+        default:
+            onChannelMessage(message)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1646
+    internal func realtimeTransportAvailable(_ transport: ARTRealtimeTransport) {
+        // Do nothing
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1650
+    internal func realtimeTransportClosed(_ transport: ARTRealtimeTransport) {
+        guard transport === self.transport else {
+            // Old connection
+            return
+        }
+        
+        if connection.state_nosync == .closing {
+            // Close succeeded. Nothing more to do.
+            performTransitionToState(.closed, withParams: ARTConnectionStateChangeParams())
+        } else if connection.state_nosync != .closed && connection.state_nosync != .failed {
+            // Unexpected closure; recover.
+            performTransitionToDisconnectedOrSuspendedWithParams(ARTConnectionStateChangeParams())
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1665
+    internal func realtimeTransportDisconnected(_ transport: ARTRealtimeTransport, withError error: ARTRealtimeTransportError?) {
+        guard transport === self.transport else {
+            // Old connection
+            return
+        }
+        
+        if connection.state_nosync == .closing {
+            performTransitionToState(.closed, withParams: ARTConnectionStateChangeParams())
+        } else {
+            let errorInfo = error?.error != nil ? ARTErrorInfo.createFromNSError(error!.error!) : nil
+            let params = ARTConnectionStateChangeParams(errorInfo: errorInfo)
+            performTransitionToDisconnectedOrSuspendedWithParams(params)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1680
+    internal func realtimeTransportFailed(_ transport: ARTRealtimeTransport, withError transportError: ARTRealtimeTransportError) {
+        guard transport === self.transport else {
+            // Old connection
+            return
+        }
+        
+        ARTLogDebug(logger, "R:\(pointer: self) realtime transport failed: \(transportError)")
+        
+        let errorInfo = transportError.error != nil ? ARTErrorInfo.createFromNSError(transportError.error!) : nil
+        let params = ARTConnectionStateChangeParams(errorInfo: errorInfo)
+        
+        let clientOptions = getClientOptions()
+        
+        if !isSuspendMode() && shouldRetryWithFallbackForError(transportError, options: clientOptions) {
+            ARTLogDebug(logger, "R:\(pointer: self) host is down; can retry with fallback host")
+            if _fallbacks == nil {
+                let hosts = ARTFallbackHosts.hosts(fromOptions: clientOptions)
+                _fallbacks = ARTFallback(fallbackHosts: hosts, shuffleArray: clientOptions.testOptions.shuffleArray)
+            }
+            if let fallbacks = _fallbacks {
+                if fallbacks.isEmpty {
+                    _fallbacks = nil
+                    ARTLogVerbose(logger, "R:\(pointer: self) No fallback hosts left, will try primary one again...")
+                }
+                performTransitionToDisconnectedOrSuspendedWithParams(params) // RTN14d, RTN17j
+            } else {
+                performTransitionToState(.failed, withParams: params)
+            }
+        } else {
+            performTransitionToDisconnectedOrSuspendedWithParams(params)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1713
+    internal func realtimeTransportNeverConnected(_ transport: ARTRealtimeTransport) {
+        guard transport === self.transport else {
+            // Old connection
+            return
+        }
+        
+        let errorInfo = ARTErrorInfo.create(withCode: ARTClientCodeError.transport.rawValue, message: "Transport never connected")
+        let params = ARTConnectionStateChangeParams(errorInfo: errorInfo)
+        performTransitionToDisconnectedOrSuspendedWithParams(params)
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1724
+    internal func realtimeTransportRefused(_ transport: ARTRealtimeTransport, withError error: ARTRealtimeTransportError?) {
+        guard transport === self.transport else {
+            // Old connection
+            return
+        }
+        
+        if let error = error, error.type == .refused {
+            let errorInfo = ARTErrorInfo.create(withCode: ARTClientCodeError.transport.rawValue, message: "Connection refused using \(error.url?.absoluteString ?? "")")
+            let params = ARTConnectionStateChangeParams(errorInfo: errorInfo)
+            performTransitionToDisconnectedOrSuspendedWithParams(params)
+        } else if let error = error {
+            let errorInfo = error.error != nil ? ARTErrorInfo.createFromNSError(error.error!) : nil
+            let params = ARTConnectionStateChangeParams(errorInfo: errorInfo)
+            performTransitionToDisconnectedOrSuspendedWithParams(params)
+        } else {
+            let params = ARTConnectionStateChangeParams()
+            performTransitionToDisconnectedOrSuspendedWithParams(params)
+        }
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1746
+    internal func realtimeTransportTooBig(_ transport: ARTRealtimeTransport) {
+        guard transport === self.transport else {
+            // Old connection
+            return
+        }
+        
+        let errorInfo = ARTErrorInfo.create(withCode: ARTClientCodeError.transport.rawValue, message: "Transport too big")
+        let params = ARTConnectionStateChangeParams(errorInfo: errorInfo)
+        performTransitionToDisconnectedOrSuspendedWithParams(params)
+    }
+    
+    // swift-migration: original location ARTRealtime.m, line 1757
+    internal func realtimeTransportSetMsgSerial(_ transport: ARTRealtimeTransport, msgSerial: Int64) {
+        guard transport === self.transport else {
+            // Old connection
+            return
+        }
+        
+        self.msgSerial = msgSerial
+    }
 }
