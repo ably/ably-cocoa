@@ -116,7 +116,7 @@ class AblyTests {
         if let testApplication {
             app = testApplication
         } else {
-            let request = NSMutableURLRequest(url: URL(string: "https://\(options.primaryDomain):\(options.tlsPort)/apps")!)
+            let request = NSMutableURLRequest(url: URL(string: "https://sandbox.realtime.ably-nonprod.net/apps")!) // G2
             request.httpMethod = "POST"
             request.httpBody = try JSONUtility.encode(appSetupModel.postApps)
 
