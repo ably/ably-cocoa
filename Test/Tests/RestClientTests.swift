@@ -195,7 +195,7 @@ class RestClientTests: XCTestCase {
 
     func test__018__RestClient__initializer__should_accept_a_token() throws {
         let test = Test()
-        ARTClientOptions.setDefaultEndpoint(getEnvironment())
+        ARTClientOptions.setDefaultEndpoint(getTestEndpoint())
         defer { ARTClientOptions.setDefaultEndpoint(nil) }
 
         let client = ARTRest(token: try getTestToken(for: test))
@@ -621,7 +621,7 @@ class RestClientTests: XCTestCase {
         guard let components = options.key?.components(separatedBy: ":"), let keyName = components.first, let keySecret = components.last else {
             fail("Invalid API key: \(options.key ?? "nil")"); return
         }
-        ARTClientOptions.setDefaultEndpoint(getEnvironment())
+        ARTClientOptions.setDefaultEndpoint(getTestEndpoint())
         defer {
             ARTClientOptions.setDefaultEndpoint(nil)
         }

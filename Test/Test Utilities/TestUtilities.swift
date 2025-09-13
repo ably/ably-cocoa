@@ -143,7 +143,7 @@ class AblyTests {
 
     class func clientOptions(for test: Test, debug: Bool = false, key: String? = nil, requestToken: Bool = false) throws -> ARTClientOptions {
         let options = ARTClientOptions()
-        options.endpoint = getEnvironment()
+        options.endpoint = getTestEndpoint()
         if debug {
             options.logLevel = .verbose
         }
@@ -623,7 +623,7 @@ public func delay(_ seconds: TimeInterval, closure: @escaping () -> Void) {
     DispatchQueue.main.asyncAfter(deadline: .now() + seconds, execute: closure)
 }
 
-public func getEnvironment() -> String {
+public func getTestEndpoint() -> String {
     let bundle = Bundle(for: AblyTests.self)
     if let endpoint = bundle.infoDictionary!["ABLY_ENDPOINT"] as? String, endpoint.count > 0 {
         return endpoint
