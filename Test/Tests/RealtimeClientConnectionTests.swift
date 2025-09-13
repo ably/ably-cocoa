@@ -4025,7 +4025,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         XCTAssertEqual(urlConnections.count, 1)
     }
 
-    // RTN17b2
+    // RTN17b2 -> REC2a2
     func test__089__Connection__Host_Fallback__applies_when_an_array_of_ClientOptions_fallbackHosts_is_provided() {
         let test = Test()
         let options = ARTClientOptions(key: "xxxx:xxxx")
@@ -4067,7 +4067,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
     }
     
-    // RTN17b3
+    // RTN17b3 -> REC2c1
     @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
     func test__089b__Connection__Host_Fallback__applies_when_deprecated_fallbackHostsUseDefault_option_is_set_to_true() {
         let test = Test()
@@ -4181,29 +4181,28 @@ class RealtimeClientConnectionTests: XCTestCase {
         XCTAssertTrue(data.urlConnections.allSatisfy { url in NSRegularExpression.match(url.absoluteString, pattern: "//main.realtime.ably.net") })
     }
 
-    // RTN17a
-    // RTN17b1
+    // RTN17a -> RTN17i
+    // RTN17b1 -> REC2c3, REC2c4, REC2c5
     private func _test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_main_realtime_ably_net(endpoint: String?, test: Test) {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.endpoint = endpoint
         options.autoConnect = false
         options.disconnectedRetryTimeout = 1.0
         options.testOptions.realtimeRequestTimeout = 1.0
-        let transportFactory = TestProxyTransportFactory()
-        options.testOptions.transportFactory = transportFactory
-        let client = ARTRealtime(options: options)
+        let testEnv = AblyTests.newRealtime(options)
+        let client = testEnv.client
         defer { client.dispose(); client.close() }
         client.channels.get(test.uniqueChannelName())
 
-        transportFactory.fakeNetworkResponse = .hostUnreachable
+        testEnv.transportFactory.fakeNetworkResponse = .hostUnreachable
 
         var urlConnections = [URL]()
-        transportFactory.networkConnectEvent = { transport, url in
+        testEnv.transportFactory.networkConnectEvent = { transport, url in
             if client.internal.transport !== transport {
                 return
             }
             urlConnections.append(url)
-            transportFactory.fakeNetworkResponse = nil
+            testEnv.transportFactory.fakeNetworkResponse = nil
         }
 
         waitUntil(timeout: testTimeout) { done in
@@ -4248,8 +4247,13 @@ class RealtimeClientConnectionTests: XCTestCase {
         let test = Test()
         _test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_main_realtime_ably_net(endpoint: "nonprod:sandbox", test: test)
     }
+    
+    func test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_test_realtime_ably_nonprod_net() {
+        let test = Test()
+        _test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_main_realtime_ably_net(endpoint: "test", test: test)
+    }
 
-    // RTN17c TODO: spec?
+    // RTN17c -> RTN17j
     func _test__092__Connection__Host_Fallback__should_retry_hosts_in_random_order_after_checkin_if_an_internet_connection_is_available(endpoint: String?, test: Test) {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
@@ -4333,7 +4337,12 @@ class RealtimeClientConnectionTests: XCTestCase {
     
     func test__092__Connection__Host_Fallback__should_retry_hosts_in_random_order_after_checkin_if_an_internet_connection_is_available_sandbox() {
         let test = Test()
-        _test__092__Connection__Host_Fallback__should_retry_hosts_in_random_order_after_checkin_if_an_internet_connection_is_available(endpoint: "sandbox", test: test)
+        _test__092__Connection__Host_Fallback__should_retry_hosts_in_random_order_after_checkin_if_an_internet_connection_is_available(endpoint: "nonprod:sandbox", test: test)
+    }
+    
+    func test__092__Connection__Host_Fallback__should_retry_hosts_in_random_order_after_checkin_if_an_internet_connection_is_available_test() {
+        let test = Test()
+        _test__092__Connection__Host_Fallback__should_retry_hosts_in_random_order_after_checkin_if_an_internet_connection_is_available(endpoint: "test", test: test)
     }
 
     // RTN17c
@@ -4452,6 +4461,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         XCTAssertEqual(resultFallbackHosts, expectedFallbackHosts)
     }
 
+    // RTN17g
     func test__095__Connection__Host_Fallback__won_t_use_fallback_hosts_feature_if_an_empty_array_is_provided() throws {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false

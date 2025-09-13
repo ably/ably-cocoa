@@ -178,20 +178,6 @@ class RealtimeClientTests: XCTestCase {
         }
     }
 
-    // RTC1e
-    func test__018__RealtimeClient__options__should_modify_both_the_REST_and_realtime_endpoint_if_environment_string_is_assigned() throws {
-        let test = Test()
-        let options = try AblyTests.commonAppSetup(for: test)
-
-        let oldPrimaryDomain = options.primaryDomain
-
-        // Change endpoint hosts
-        options.endpoint = "test"
-
-        XCTAssertEqual(options.primaryDomain, "test.realtime.ably.net")
-        XCTAssertEqual(oldPrimaryDomain, "\(getEnvironment().dropFirst(8)).realtime.ably-nonprod.net") // sandbox.realtime.ably-nonprod.net
-    }
-
     // RTC1f
     func test__019__RealtimeClient__options__url_should_contains_transport_params() throws {
         let test = Test()

@@ -403,10 +403,6 @@ NSString *ARTDefaultEndpoint = nil;
 #pragma clang diagnostic pop
 }
 
-- (BOOL)hasEnvironmentDifferentThanProduction {
-    return self.hasEnvironment && !self.isProductionEnvironment;
-}
-
 // MARK: - Plugins
 
 #ifdef ABLY_SUPPORTS_PLUGINS

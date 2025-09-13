@@ -17,7 +17,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) BOOL hasDefaultPrimaryDomain;
 @property (readonly) BOOL isProductionEnvironment;
 @property (readonly) BOOL hasEnvironment;
-@property (readonly) BOOL hasEnvironmentDifferentThanProduction;
 @property (readonly) BOOL hasCustomRestHost;
 @property (readonly) BOOL hasDefaultRestHost;
 @property (readonly) BOOL hasCustomRealtimeHost;
