@@ -327,7 +327,10 @@ NSString *ARTDefaultEndpoint = nil;
 }
 
 - (BOOL)hasCustomPrimaryDomain {
-    return self.endpoint != nil && ![self.endpoint isEqualToString:ARTDefault.primaryDomain];
+    return (self.endpoint != nil && ![self.endpoint isEqualToString:ARTDefault.primaryDomain]) ||
+            self.environment != nil ||
+            self.restHost != nil ||
+            self.realtimeHost != nil;
 }
 
 - (BOOL)hasDefaultPrimaryDomain {
