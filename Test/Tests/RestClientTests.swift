@@ -325,6 +325,10 @@ class RestClientTests: XCTestCase {
         XCTAssertEqual(options.primaryDomain, "test.realtime.ably.net")
         XCTAssertEqual(oldPrimaryDomain, "main.realtime.ably.net")
     }
+    
+    // REC1d1 TODO: a test
+    
+    // REC1d2 TODO: a test
 
     // REC1a
     func test__028__RestClient__endpoint__should_default_to_https___main_realtime_ably_net() {
@@ -350,13 +354,6 @@ class RestClientTests: XCTestCase {
         publishTestMessage(client, channelName: test.uniqueChannelName(), failOnError: false)
 
         expect(testHTTPExecutor.requests.first?.url?.scheme).toEventually(equal("http"), timeout: testTimeout)
-    }
-
-    // RSC25
-    func test__030__RestClient__endpoint__requests_are_sent_to_primary_domain() {
-        let options = ARTClientOptions(key: "xxxx:xxxx")
-        let client = ARTRest(options: options)
-        XCTAssertEqual(client.internal.options.primaryDomain, ARTDefault.primaryDomain())
     }
 
     // RSC13
@@ -443,6 +440,8 @@ class RestClientTests: XCTestCase {
 
         XCTAssertTrue(authOptions == options)
     }
+    
+    // REC1b1 TODO: a test
 
     // REC1b2
     func test__003__RestClient__endpoint_should_be_configurable_in_the_Client_constructor_with_the_option_endpoint() throws {
@@ -465,6 +464,10 @@ class RestClientTests: XCTestCase {
 
         expect(url.absoluteString).to(contain("//test.realtime.ably.test"))
     }
+    
+    // REC1b3 TODO: a test
+
+    // REC1b4 TODO: a test
 
     // RSC16
 
@@ -843,9 +846,7 @@ class RestClientTests: XCTestCase {
         expect { options.fallbackHosts = ["fake.ably.io"] }.to(raiseException(named: ARTFallbackIncompatibleOptionsException))
     }
 
-    // RSC15m
-
-    // RSC15b1 -> REC2c1
+    // RSC15m, REC2c1
     func test__055__RestClient__if_primary_domain_is_determined_to_default_then_set_of_fallback_domains_is_default_a_e_ably_realtime_com() {
         let test = Test()
         let options = ARTClientOptions(key: "xxxx:xxxx")
@@ -872,7 +873,7 @@ class RestClientTests: XCTestCase {
         XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(2), pattern: "//[a-e].ably-realtime.com"))
     }
 
-    // RSC15b1 -> REC2c2
+    // RSC15m, REC2c2
     func test__056__RestClient__if_primary_domain_is_determined_to_be_an_explicit_domain_then_set_of_fallback_domain_is_empty() {
         let test = Test()
         let options = ARTClientOptions(key: "xxxx:xxxx")
@@ -882,6 +883,7 @@ class RestClientTests: XCTestCase {
         let mockHTTP = MockHTTP(logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
+        
         mockHTTP.setNetworkState(network: .hostUnreachable)
         let channel = client.channels.get(test.uniqueChannelName())
 
@@ -898,7 +900,7 @@ class RestClientTests: XCTestCase {
         XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(0), pattern: "//fake.ably.io"))
     }
 
-    // RSC15b2 -> REC2a2
+    // RSC15n, REC2a2
     func test__059__RestClient__Host_Fallback__Fallback_behavior__should_be_applied_when_ClientOptions_fallbackHosts_is_provided() {
         let test = Test()
         let options = ARTClientOptions(key: "xxxx:xxxx")
@@ -953,29 +955,6 @@ class RestClientTests: XCTestCase {
         XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(2), pattern: "//[a-e].ably-realtime.com"))
     }
 
-    // RSC15m, REC2c2
-    func test__045__RestClient__Host_Fallback__failing_HTTP_requests_with_custom_endpoint_should_result_in_an_error_immediately() {
-        let test = Test()
-        let options = ARTClientOptions(key: "xxxx:xxxx")
-        options.endpoint = "fake.ably.io"
-        let client = ARTRest(options: options)
-        let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
-        testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
-        client.internal.httpExecutor = testHTTPExecutor
-        
-        mockHTTP.setNetworkState(network: .hostUnreachable)
-        
-        let channel = client.channels.get(test.uniqueChannelName())
-        waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "message") { error in
-                expect(error?.message).to(contain("hostname could not be found"))
-                done()
-            }
-        }
-        XCTAssertEqual(testHTTPExecutor.requests.count, 1)
-    }
-
     // RSC15n
 
     // REC2a2
@@ -1014,6 +993,7 @@ class RestClientTests: XCTestCase {
         let mockHTTP = MockHTTP(logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
+        
         mockHTTP.setNetworkState(network: .hostUnreachable, resetAfter: 2)
         let channel = client.channels.get(test.uniqueChannelName())
 
@@ -1120,7 +1100,7 @@ class RestClientTests: XCTestCase {
     }
 
     // REC2c1
-    func test__065__RestClient__Host_Fallback__default_fallback_hosts_should_match__a_e__ably_realtime_com() {
+    func test__065a__RestClient__Host_Fallback__set_of_fallback_domains_is_defined_implicitly() {
         let options = ARTClientOptions(key: "fake:key")
         let fallbackHosts = options.fallbackDomains()
         fallbackHosts.forEach { host in
@@ -1128,9 +1108,17 @@ class RestClientTests: XCTestCase {
         }
         XCTAssertEqual(fallbackHosts.count, 5)
     }
+    
+    // REC2c2
+    func test__065b__RestClient__Host_Fallback__set_of_fallback_domains_is_defined_implicitly() {
+        let options = ARTClientOptions(key: "fake:key")
+        options.endpoint = "test.ably-realtime.com"
+        let fallbackHosts = options.fallbackDomains()
+        XCTAssertEqual(fallbackHosts.count, 0)
+    }
 
     // REC2c3
-    func test__066a__RestClient__Host_Fallback__endpoint_fallback_hosts_have_the_format__routing_policy_a_e_fallback_ably_realtime_nonprod_com() {
+    func test__065c__RestClient__Host_Fallback__set_of_fallback_domains_is_defined_implicitly() {
         let options = ARTClientOptions(key: "fake:key")
         options.endpoint = "nonprod:sandbox"
         let fallbackHosts = options.fallbackDomains()
@@ -1141,7 +1129,7 @@ class RestClientTests: XCTestCase {
     }
 
     // REC2c4
-    func test__066b__RestClient__Host_Fallback__endpoint_fallback_hosts_have_the_format__routing_policy_a_e_fallback_ably_realtime_com() {
+    func test__065d__RestClient__Host_Fallback__set_of_fallback_domains_is_defined_implicitly() {
         let options = ARTClientOptions(key: "fake:key")
         options.endpoint = "sandbox"
         let fallbackHosts = options.fallbackDomains()
@@ -1150,7 +1138,34 @@ class RestClientTests: XCTestCase {
         }
         XCTAssertEqual(fallbackHosts.count, 5)
     }
-
+    
+    // REC2c5
+    func test__065e__RestClient__Host_Fallback__set_of_fallback_domains_is_defined_implicitly() {
+        let options = ARTClientOptions(key: "fake:key")
+        options.environment = "sandbox"
+        let fallbackHosts = options.fallbackDomains()
+        fallbackHosts.forEach { host in
+            expect(host).to(match("sandbox.[a-e].fallback.ably-realtime.com"))
+        }
+        XCTAssertEqual(fallbackHosts.count, 5)
+    }
+    
+    // REC2c6 (restHost)
+    func test__065f__RestClient__Host_Fallback__set_of_fallback_domains_is_defined_implicitly() {
+        let options = ARTClientOptions(key: "fake:key")
+        options.restHost = "test.ably-realtime.com"
+        let fallbackHosts = options.fallbackDomains()
+        XCTAssertEqual(fallbackHosts.count, 0)
+    }
+    
+    // REC2c6 (realtimeHost)
+    func test__065g__RestClient__Host_Fallback__set_of_fallback_domains_is_defined_implicitly() {
+        let options = ARTClientOptions(key: "fake:key")
+        options.realtimeHost = "test.ably-realtime.com"
+        let fallbackHosts = options.fallbackDomains()
+        XCTAssertEqual(fallbackHosts.count, 0)
+    }
+    
     // RSC15a
     func test__067__RestClient__Host_Fallback__retry_hosts_in_random_order__until_httpMaxRetryCount_has_been_reached() {
         let test = Test()

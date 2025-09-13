@@ -4025,7 +4025,9 @@ class RealtimeClientConnectionTests: XCTestCase {
         XCTAssertEqual(urlConnections.count, 1)
     }
 
-    // RTN17b2 -> REC2a2
+    // REC2a1 TODO: a test
+    
+    // RTN17h, REC2a2
     func test__089__Connection__Host_Fallback__applies_when_an_array_of_ClientOptions_fallbackHosts_is_provided() {
         let test = Test()
         let options = ARTClientOptions(key: "xxxx:xxxx")
@@ -4181,8 +4183,8 @@ class RealtimeClientConnectionTests: XCTestCase {
         XCTAssertTrue(data.urlConnections.allSatisfy { url in NSRegularExpression.match(url.absoluteString, pattern: "//main.realtime.ably.net") })
     }
 
-    // RTN17a -> RTN17i
-    // RTN17b1 -> REC2c3, REC2c4, REC2c5
+    // RTN17i
+
     private func _test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_main_realtime_ably_net(endpoint: String?, test: Test) {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.endpoint = endpoint
@@ -4238,22 +4240,26 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
     }
 
+    // REC2c1
     func test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_main_realtime_ably_net() {
         let test = Test()
         _test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_main_realtime_ably_net(endpoint: nil, test: test)
     }
 
+    // REC2c3
     func test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_sandbox_realtime_ably_nonprod_net() {
         let test = Test()
         _test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_main_realtime_ably_net(endpoint: "nonprod:sandbox", test: test)
     }
     
+    // REC2c4
     func test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_test_realtime_ably_nonprod_net() {
         let test = Test()
         _test__091__Connection__Host_Fallback__every_connection_is_first_attempted_to_the_primary_host_main_realtime_ably_net(endpoint: "test", test: test)
     }
 
-    // RTN17c -> RTN17j
+    // RTN17j
+
     func _test__092__Connection__Host_Fallback__should_retry_hosts_in_random_order_after_checkin_if_an_internet_connection_is_available(endpoint: String?, test: Test) {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
@@ -4314,7 +4320,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         var resultFallbackHosts = [String]()
         var gotInternetIsUpCheck = false
         for url in urls {
-            if NSRegularExpression.match(url.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt") {
+            if NSRegularExpression.match(url.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt") { // REC3a
                 gotInternetIsUpCheck = true
             } else if let fallbackHost = extractHostname(url) {
                 if fallbackHost == resultFallbackHosts.last {
