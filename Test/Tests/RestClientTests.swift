@@ -309,8 +309,38 @@ class RestClientTests: XCTestCase {
         expect(testHTTPExecutor.requests.first?.url?.host).toEventually(equal("fake.ably.io"), timeout: testTimeout)
     }
 
+    // REC1b1
+    func test__026a__RestClient__if_endpoint_option_is_specified_and_any_of_deprecated_options_are_also_specified_then_options_are_invalid() {
+        let options = ARTClientOptions(key: "xxxx:xxxx")
+        options.endpoint = "test"
+        expect { options.environment = "sandbox" }.to(raiseException())
+        expect { options.restHost = "fake.ably.net" }.to(raiseException())
+        expect { options.realtimeHost = "fake.ably.net" }.to(raiseException())
+    }
+    
+    // REC1b2
+    func test__026b__RestClient__if_endpoint_option_is_domain_name_then_primary_domain_is_endpoint_value() {
+        let options = ARTClientOptions(key: "xxxx:xxxx")
+        options.endpoint = "test.ably.net"
+        XCTAssertEqual(options.primaryDomain, "test.ably.net")
+    }
+    
+    // REC1b3
+    func test__026c__RestClient__if_endpoint_option_is_non_production_routing_policy_name() {
+        let options = ARTClientOptions(key: "xxxx:xxxx")
+        options.endpoint = "nonprod:sandbox"
+        XCTAssertEqual(options.primaryDomain, "sandbox.realtime.ably-nonprod.net")
+    }
+    
+    // REC1b4
+    func test__026d__RestClient__if_endpoint_option_is_production_routing_policy_name() {
+        let options = ARTClientOptions(key: "xxxx:xxxx")
+        options.endpoint = "test"
+        XCTAssertEqual(options.primaryDomain, "test.realtime.ably.net")
+    }
+    
     // REC1c1
-    func test__026a__RestClient__if_deprecated_environment_option_is_specified_and_other_deprecated_options_are_also_specified_then_options_are_invalid() {
+    func test__027a__RestClient__if_deprecated_environment_option_is_specified_and_other_deprecated_options_are_also_specified_then_options_are_invalid() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.environment = "test"
         expect { options.restHost = "fake.ably.net" }.to(raiseException())
@@ -318,7 +348,7 @@ class RestClientTests: XCTestCase {
     }
     
     // REC1c2
-    func test__026b__RestClient__if_deprecated_environment_option_is_specified_then_the_primary_domain_is_environment_realtime_ably_net() {
+    func test__027b__RestClient__if_deprecated_environment_option_is_specified_then_the_primary_domain_is_environment_realtime_ably_net() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         let oldPrimaryDomain = options.primaryDomain
         options.environment = "test"
@@ -326,11 +356,21 @@ class RestClientTests: XCTestCase {
         XCTAssertEqual(oldPrimaryDomain, "main.realtime.ably.net")
     }
     
-    // REC1d1 TODO: a test
-    
-    // REC1d2 TODO: a test
+    // REC1d1
+    func test__027c__RestClient__if_restHost_option_is_specified_then_its_a_primary_domain() {
+        let options = ARTClientOptions(key: "xxxx:xxxx")
+        options.restHost = "test.realtime.ably.net"
+        XCTAssertEqual(options.primaryDomain, "test.realtime.ably.net")
+    }
 
-    // REC1a
+    // REC1d2
+    func test__027d__RestClient__if_realtimeHost_option_is_specified_then_its_a_primary_domain() {
+        let options = ARTClientOptions(key: "xxxx:xxxx")
+        options.realtimeHost = "test.realtime.ably.net"
+        XCTAssertEqual(options.primaryDomain, "test.realtime.ably.net")
+    }
+    
+    // REC1a (default)
     func test__028__RestClient__endpoint__should_default_to_https___main_realtime_ably_net() {
         let test = Test()
         let options = ARTClientOptions(key: "fake:key")
@@ -441,10 +481,8 @@ class RestClientTests: XCTestCase {
         XCTAssertTrue(authOptions == options)
     }
     
-    // REC1b1 TODO: a test
-
-    // REC1b2
-    func test__003__RestClient__endpoint_should_be_configurable_in_the_Client_constructor_with_the_option_endpoint() throws {
+    // REC1a (overridden)
+    func test__003__RestClient__endpoint_should_be_configurable_in_the_client_constructor_with_the_option_endpoint() throws {
         let test = Test()
         let options = ARTClientOptions(key: "xxxx:xxxx")
         XCTAssertEqual(options.primaryDomain, "main.realtime.ably.net")
@@ -464,10 +502,6 @@ class RestClientTests: XCTestCase {
 
         expect(url.absoluteString).to(contain("//test.realtime.ably.test"))
     }
-    
-    // REC1b3 TODO: a test
-
-    // REC1b4 TODO: a test
 
     // RSC16
 
@@ -829,6 +863,7 @@ class RestClientTests: XCTestCase {
         XCTAssertFalse(options.fallbackHostsUseDefault)
     }
 
+    // REC2a1
     @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
     func test__054__RestClient__Host_Fallback__fallbackHostsUseDefault_option__should_never_accept_to_configure__fallbackHost__and_set__fallbackHostsUseDefault__to__true_() {
         let options = ARTClientOptions(key: "xxxx:xxxx")

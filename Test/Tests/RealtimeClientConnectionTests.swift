@@ -4024,8 +4024,6 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         XCTAssertEqual(urlConnections.count, 1)
     }
-
-    // REC2a1 TODO: a test
     
     // RTN17h, REC2a2
     func test__089__Connection__Host_Fallback__applies_when_an_array_of_ClientOptions_fallbackHosts_is_provided() {
@@ -4069,7 +4067,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
     }
     
-    // RTN17b3 -> REC2c1
+    // RTN17h, REC2c1
     @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
     func test__089b__Connection__Host_Fallback__applies_when_deprecated_fallbackHostsUseDefault_option_is_set_to_true() {
         let test = Test()
