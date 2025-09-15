@@ -80,7 +80,7 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTPushDeviceRegistrations.m | ARTPushDeviceRegistrations.h, ARTPushDeviceRegistrations+Private.h | ARTPushDeviceRegistrations.swift | Completed |
 | ARTQueuedDealloc.m | ARTQueuedDealloc.h | ARTQueuedDealloc.swift | Completed |
 | ARTQueuedMessage.m | ARTQueuedMessage.h | ARTQueuedMessage.swift | Completed |
-| ARTRealtime.m | ARTRealtime.h, ARTRealtime+Private.h, ARTRealtime+WrapperSDKProxy.h | ARTRealtime.swift | In Progress |
+| ARTRealtime.m | ARTRealtime.h, ARTRealtime+Private.h, ARTRealtime+WrapperSDKProxy.h | ARTRealtime.swift | Completed |
 | ARTRealtimeAnnotations.m | ARTRealtimeAnnotations.h, ARTRealtimeAnnotations+Private.h | ARTRealtimeAnnotations.swift | Completed |
 | ARTRealtimeChannel.m | ARTRealtimeChannel.h, ARTRealtimeChannel+Private.h | ARTRealtimeChannel.swift | Completed |
 | ARTRealtimeChannelOptions.m | ARTRealtimeChannelOptions.h | ARTRealtimeChannelOptions.swift | Completed |

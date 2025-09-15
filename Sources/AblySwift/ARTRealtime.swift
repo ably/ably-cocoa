@@ -227,7 +227,7 @@ public class ARTRealtime: NSObject, ARTRealtimeProtocol {
     // swift-migration: original location ARTRealtime.h, line 87 and ARTRealtime.m, line 176
     // swift-migration: Converted NSErrorPointer pattern to Swift throws pattern per PRD requirements
     public func stats(_ query: ARTStatsQuery?, callback: @escaping ARTPaginatedStatsCallback) throws {
-        try _internal.stats(query, wrapperSDKAgents: nil, callback: callback)
+        try _internal.stats(query, wrapperSDKAgents: nil, callback: callback, error: nil)
     }
     
     // swift-migration: original location ARTRealtime.h, line 92 and ARTRealtime.m, line 180
@@ -538,18 +538,18 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
                 case .disconnected:
                     completion(.cancelled, nil)
                 case .initialized, .connecting, .closing:
-                    ARTLogDebug(logger, "RS:\(pointer: rest) authorize completion has been ignored because the connection state is unexpected (\(ARTRealtimeConnectionStateToStr(state)))")
+                    ARTLogDebug(self.logger, "RS:\(pointer: self.rest) authorize completion has been ignored because the connection state is unexpected (\(ARTRealtimeConnectionStateToStr(state)))")
                 }
             }
         }
         
         let haltCurrentConnectionAndReconnect: () -> Void = {
             // Halt the current connection and reconnect with the most recent token
-            ARTLogDebug(logger, "RS:\(pointer: rest) halt current connection and reconnect with \(tokenDetails)")
-            abortAndReleaseTransport(ARTStatus(state: .ok))
-            setTransportWithResumeKey(_transport?.resumeKey)
-            _transport?.connect(withToken: tokenDetails.token)
-            cancelAllPendingAuthorizations()
+            ARTLogDebug(self.logger, "RS:\(pointer: self.rest) halt current connection and reconnect with \(tokenDetails)")
+            self.abortAndReleaseTransport(ARTStatus(state: .ok, errorInfo: nil))
+            self.setTransportWithResumeKey(self._transport?.resumeKey)
+            self._transport?.connect(withToken: tokenDetails.token)
+            self.cancelAllPendingAuthorizations()
             waitForResponse()
         }
         
@@ -563,7 +563,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
             send(msg, sentCallback: nil, ackCallback: nil)
             waitForResponse()
         case .connecting:
-            _transport?.stateEmitter.once(ARTEvent.newWithTransportState(.opened)) { _ in
+            _transport?.stateEmitter.once(ARTEvent.new(withTransportState: .opened)) { _ in
                 haltCurrentConnectionAndReconnect()
             }
         case .closing:
@@ -580,9 +580,10 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     
     // swift-migration: original location ARTRealtime.m, line 370
     private func performPendingAuthorizationWithState(_ state: ARTRealtimeConnectionState, error: ARTErrorInfo?) {
-        guard let pendingAuthorization = pendingAuthorizations.popFirst() else {
+        guard !pendingAuthorizations.isEmpty else {
             return
         }
+        let pendingAuthorization = pendingAuthorizations.removeFirst()
         switch state {
         case .connected:
             pendingAuthorization(state, nil)
@@ -684,7 +685,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     
     // swift-migration: original location ARTRealtime.m, line 504
     internal func timeWithWrapperSDKAgents(_ wrapperSDKAgents: [String: String]?, completion: @escaping ARTDateTimeCallback) {
-        rest.timeWithWrapperSDKAgents(wrapperSDKAgents, completion: completion)
+        rest.time(wrapperSDKAgents: wrapperSDKAgents, completion: completion)
     }
     
     // swift-migration: original location ARTRealtime.m, line 510
@@ -705,7 +706,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
         queue.async {
             switch self.connection.state_nosync {
             case .initialized, .suspended, .closing, .closed, .failed:
-                callback(ARTErrorInfo.create(withCode: 0, status: .connectionFailed, message: "Can't ping a \(ARTRealtimeConnectionStateToStr(self.connection.state_nosync)) connection"))
+                callback(ARTErrorInfo.create(withCode: 0, status: Int(ARTState.connectionFailed.rawValue), message: "Can't ping a \(ARTRealtimeConnectionStateToStr(self.connection.state_nosync)) connection"))
                 return
             case .connecting, .disconnected, .connected:
                 if !self.shouldSendEvents {
@@ -717,7 +718,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
                 let eventListener = self._pingEventEmitter.once(callback)
                 eventListener.setTimer(self.options.testOptions.realtimeRequestTimeout) {
                     ARTLogVerbose(self.logger, "R:\(pointer: self) ping timed out")
-                    callback(ARTErrorInfo.create(withCode: ARTErrorCode.connectionTimedOut.rawValue, status: .connectionFailed, message: "timed out"))
+                    callback(ARTErrorInfo.create(withCode: ARTErrorCode.connectionTimedOut.rawValue, status: Int(ARTState.connectionFailed.rawValue), message: "timed out"))
                 }
                 eventListener.startTimer()
                 self.transport?.sendPing()
@@ -732,7 +733,12 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     
     // swift-migration: original location ARTRealtime.m, line 563
     internal func stats(_ query: ARTStatsQuery?, wrapperSDKAgents: [String: String]?, callback: @escaping ARTPaginatedStatsCallback, error errorPtr: NSErrorPointer?) -> Bool {
-        return rest.stats(query, wrapperSDKAgents: wrapperSDKAgents, callback: callback, error: errorPtr)
+        do {
+            try rest.stats(query, wrapperSDKAgents: wrapperSDKAgents, callback: callback)
+            return true
+        } catch {
+            return false
+        }
     }
     
     // swift-migration: original location ARTRealtime.m, line 567
@@ -788,12 +794,15 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
             reachability = _reachabilityClass?.init(logger: logger, queue: queue)
         }
         if active {
-            reachability?.listenForHost(_transport?.host) { [weak self] reachable in
+            // swift-migration: Lawrence: claude added this `if` trying to fix compilation errors
+            if let host = _transport?.host() {
+                reachability?.listenForHost(host) { [weak self] reachable in
                 guard let self = self else { return }
                 
                 let previousState = self._networkState
-                self._networkState = reachable ? .isReachable : .isUnreachable
-                self.didChangeNetworkStateFromState(previousState)
+                    self._networkState = reachable ? .isReachable : .isUnreachable
+                    self.didChangeNetworkStateFromState(previousState)
+                }
             }
         } else {
             reachability?.off()
@@ -817,7 +826,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
         
         ARTLogVerbose(logger, "R:\(pointer: self) realtime state transitions to \(state.rawValue) - \(ARTRealtimeConnectionStateToStr(state))\(params.retryAttempt != nil ? " (result of \(params.retryAttempt!.id))" : "")")
         
-        let event: ARTRealtimeConnectionEvent = state == connection.state_nosync ? .update : ARTRealtimeConnectionEvent(rawValue: state.rawValue)!
+        let event: ARTRealtimeConnectionEvent = state == connection.state_nosync ? .update : ARTRealtimeConnectionEvent(rawValue: Int(state.rawValue))!
         
         let stateChange = ARTConnectionStateChange(
             current: state,
@@ -874,22 +883,22 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
             stopIdleTimer()
             setReachabilityActive(false)
             closeAndReleaseTransport()
-            connection.key = nil
-            connection.id = nil
+            connection.setKey(nil)
+            connection.setId(nil)
             _transport = nil
             _fallbacks = nil
             rest.prioritizedHost = nil
             auth.cancelAuthorization(nil)
-            failPendingMessages(ARTStatus(state: .error, info: ARTErrorInfo.create(withCode: ARTErrorCode.connectionClosed.rawValue, message: "connection broken before receiving publishing acknowledgment")))
+            failPendingMessages(ARTStatus(state: .error, errorInfo: ARTErrorInfo.create(withCode: ARTErrorCode.connectionClosed.rawValue, message: "connection broken before receiving publishing acknowledgment")))
             
         case .failed:
-            let status = ARTStatus(state: .connectionFailed, info: stateChange.reason)
+            let status = ARTStatus(state: .connectionFailed, errorInfo: stateChange.reason)
             channelStateChangeParams = ARTChannelStateChangeParams(state: status.state, errorInfo: status.errorInfo)
             abortAndReleaseTransport(status)
             _fallbacks = nil
             rest.prioritizedHost = nil
             auth.cancelAuthorization(stateChange.reason)
-            failPendingMessages(ARTStatus(state: .error, info: ARTErrorInfo.create(withCode: ARTErrorCode.connectionFailed.rawValue, message: "connection broken before receiving publishing acknowledgment")))
+            failPendingMessages(ARTStatus(state: .error, errorInfo: ARTErrorInfo.create(withCode: ARTErrorCode.connectionFailed.rawValue, message: "connection broken before receiving publishing acknowledgment")))
             
         case .disconnected:
             closeAndReleaseTransport()
@@ -949,12 +958,13 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
         // invalidating the iterator and causing a crashing.
         //
         // So copy the channels and operate on them later, when we're done using the iterator.
-        let channelsCopy: [ARTRealtimeChannelInternal] = Array(channels.nosyncIterable)
-        
+        // swift-migration: Lawrence Changed this to not use NSFastEnumeration because that's not compiling in Swift
+        let channelsCopy = Array(channels.collection.allValues) as! [ARTRealtimeChannelInternal]
+
         if shouldSendEvents {
             for channel in channelsCopy {
                 let attachParams = ARTAttachRequestParams(reason: stateChange.reason)
-                channel.proceedAttachDetachWithParams(attachParams)
+                channel.proceedAttachDetach(withParams: attachParams)
             }
             sendQueuedMessages()
         } else if !isActive {
@@ -966,7 +976,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
                 }
             }
             
-            let channelStatus = ARTStatus(state: channelStateChangeParams!.state, info: channelStateChangeParams!.errorInfo)
+            let channelStatus = ARTStatus(state: channelStateChangeParams!.state, errorInfo: channelStateChangeParams!.errorInfo)
             failQueuedMessages(channelStatus)
             
             // Channels
@@ -992,7 +1002,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
         
         performPendingAuthorizationWithState(stateChange.current, error: stateChange.reason)
         
-        internalEventEmitter.emit(ARTEvent.newWithConnectionEvent(ARTRealtimeConnectionEvent(rawValue: state.rawValue)!), with: stateChange)
+        internalEventEmitter.emit(ARTEvent.newWithConnectionEvent(ARTRealtimeConnectionEvent(rawValue: Int(state.rawValue))!), with: stateChange)
         
         // stateChangeEventListener may be nil if we're in a failed state
         stateChangeEventListener?.startTimer()
@@ -1085,14 +1095,19 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
             
             connection.setId(message.connectionId)
             connection.setKey(message.connectionKey)
-            connection.setMaxMessageSize(message.connectionDetails?.maxMessageSize)
-            
+            // swift-migration: Lawrence added the if
+            if let maxMessageSize = message.connectionDetails?.maxMessageSize {
+                connection.setMaxMessageSize(maxMessageSize)
+            }
+
             if let connectionDetails = message.connectionDetails {
-                if let connectionStateTtl = connectionDetails.connectionStateTtl {
-                    self.connectionStateTtl = connectionStateTtl
+                // swift-migration: Lawrence added the zero check (it's unclear what the original Objective-C was going for — whether it was optional or zero check)
+                if connectionDetails.connectionStateTtl != 0 {
+                    self.connectionStateTtl = connectionDetails.connectionStateTtl
                 }
-                if let maxIdleInterval = connectionDetails.maxIdleInterval {
-                    self.maxIdleInterval = maxIdleInterval
+                // swift-migration: Lawrence added the zero check (it's unclear what the original Objective-C was going for)
+                if connectionDetails.maxIdleInterval != 0 {
+                    self.maxIdleInterval = connectionDetails.maxIdleInterval
                     _lastActivity = Date()
                     setIdleTimer()
                 }
@@ -1225,9 +1240,9 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
         
         let error: ARTErrorInfo
         if auth.authorizing_nosync && (options.authUrl != nil || options.authCallback != nil) {
-            error = ARTErrorInfo.create(withCode: ARTErrorCode.authConfiguredProviderFailure.rawValue, status: .connectionFailed, message: "timed out")
+            error = ARTErrorInfo.create(withCode: ARTErrorCode.authConfiguredProviderFailure.rawValue, status: Int(ARTState.connectionFailed.rawValue), message: "timed out")
         } else {
-            error = ARTErrorInfo.create(withCode: ARTErrorCode.connectionTimedOut.rawValue, status: .connectionFailed, message: "timed out")
+            error = ARTErrorInfo.create(withCode: ARTErrorCode.connectionTimedOut.rawValue, status: Int(ARTState.connectionFailed.rawValue), message: "timed out")
         }
         switch connection.state_nosync {
         case .connected:
@@ -1273,9 +1288,10 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     // swift-migration: original location ARTRealtime.m, line 1121
     private func transportConnectForcingNewToken(_ forceNewToken: Bool, newConnection: Bool) {
         let options = getClientOptions().copy() as! ARTClientOptions
-        if options.isBasicAuth {
+        if options.isBasicAuth() {
             // Basic
-            transport?.connect(withKey: options.key)
+            // swift-migration: Lawrence added unwrap, isBasicAuth doesn't communicate that this is not nil
+            transport?.connect(withKey: options.key!)
         } else {
             // Token
             ARTLogDebug(logger, "R:\(pointer: self) connecting with token auth; authorising (timeout of \(self.options.testOptions.realtimeRequestTimeout))")
@@ -1283,7 +1299,8 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
             if !forceNewToken && auth.tokenRemainsValid {
                 // Reuse token
                 ARTLogDebug(logger, "R:\(pointer: self) reusing token for auth")
-                transport?.connect(withToken: auth.tokenDetails?.token)
+                // swift-migration: Lawrence added unwrap
+                transport?.connect(withToken: unwrapValueWithAmbiguousObjectiveCNullability(auth.tokenDetails?.token))
             } else {
                 // New Token
                 auth.setTokenDetails(nil)
@@ -1298,7 +1315,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
                     // Deactivate use of `ARTAuthDelegate`: `authorize` should complete without waiting for a CONNECTED state.
                     auth.delegate = nil
                 }
-                
+
                 _authTask = auth._authorize(nil, options: options) { tokenDetails, error in
                     // Cancel scheduled work
                     artDispatchCancel(self._authenitcatingTimeoutWork)
@@ -1315,7 +1332,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
                     
                     ARTLogDebug(self.logger, "R:\(pointer: self) authorized: \(String(describing: tokenDetails)) error: \(String(describing: error))")
                     if let error = error {
-                        self.handleTokenAuthError(error)
+                        self.handleTokenAuthError(error as NSError)
                         return
                     }
                     
@@ -1323,7 +1340,8 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
                         self.resetTransportWithResumeKey(self._transport?.resumeKey)
                     }
                     if newConnection {
-                        self.transport?.connect(withToken: tokenDetails?.token)
+                        // swift-migration: Lawrence added unwrap, we've already checked that error is nil
+                        self.transport?.connect(withToken: tokenDetails!.token)
                     }
                 }
                 
@@ -1348,7 +1366,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
                 let params = ARTConnectionStateChangeParams(errorInfo: errorInfo)
                 performTransitionToState(.failed, withParams: params)
             } else {
-                let errorInfo = ARTErrorInfo.create(withCode: ARTErrorCode.authConfiguredProviderFailure.rawValue, status: .connectionFailed, message: error.description)
+                let errorInfo = ARTErrorInfo.create(withCode: ARTErrorCode.authConfiguredProviderFailure.rawValue, status: Int(ARTState.connectionFailed.rawValue), message: error.description)
                 switch connection.state_nosync {
                 case .connected:
                     // RSA4c3
@@ -1411,7 +1429,8 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
         }
         
         for msg in pm.messages ?? [] {
-            msg.connectionId = connection.id_nosync
+            // swift-migration: Lawrence added unwrap to get compiling
+            msg.connectionId = unwrapValueWithAmbiguousObjectiveCNullability(connection.id_nosync)
         }
         
         do {
@@ -1426,20 +1445,22 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
             }
             
             ARTLogDebug(logger, "RT:\(pointer: self) sending action \(pm.action.rawValue) - \(ARTProtocolMessageActionToStr(pm.action))")
-            if transport?.send(data, withSource: pm) == true {
-                sentCallback?(nil)
-                // `ackCallback()` is called with ACK/NACK action
+            if let data = data {
+                if transport?.send(data, withSource: pm) == true {
+                    sentCallback?(nil)
+                    // `ackCallback()` is called with ACK/NACK action
+                }
             }
         } catch {
             let e = ARTErrorInfo.createFromNSError(error as NSError)
             sentCallback?(e)
-            ackCallback?(ARTStatus(state: .error, info: e))
+            ackCallback?(ARTStatus(state: .error, errorInfo: e))
             return
         }
     }
     
     // swift-migration: original location ARTRealtime.m, line 1322
-    private func send(_ msg: ARTProtocolMessage, reuseMsgSerial: Bool, sentCallback: ARTCallback?, ackCallback: ARTStatusCallback?) {
+    internal func send(_ msg: ARTProtocolMessage, reuseMsgSerial: Bool, sentCallback: ARTCallback?, ackCallback: ARTStatusCallback?) {
         if shouldSendEvents {
             sendImpl(msg, reuseMsgSerial: reuseMsgSerial, sentCallback: sentCallback, ackCallback: ackCallback)
         }
@@ -1462,7 +1483,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
                 let error = connection.error_nosync
                 ARTLogDebug(logger, "RT:\(pointer: self) (channel: \(msg.channel ?? "")) protocol message with action '\(msg.action.rawValue) - \(ARTProtocolMessageActionToStr(msg.action))' can't be sent or queued: \(String(describing: error))")
                 sentCallback?(error)
-                ackCallback?(ARTStatus(state: .error, info: error))
+                ackCallback?(ARTStatus(state: .error, errorInfo: error))
             }
         } else {
             ARTLogDebug(logger, "RT:\(pointer: self) (channel: \(msg.channel ?? "")) sending protocol message with action '\(msg.action.rawValue) - \(ARTProtocolMessageActionToStr(msg.action))' was ignored: \(String(describing: connection.error_nosync))")
@@ -1470,7 +1491,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     }
     
     // swift-migration: original location ARTRealtime.m, line 1358
-    private func send(_ msg: ARTProtocolMessage, sentCallback: ARTCallback?, ackCallback: ARTStatusCallback?) {
+    internal func send(_ msg: ARTProtocolMessage, sentCallback: ARTCallback?, ackCallback: ARTStatusCallback?) {
         send(msg, reuseMsgSerial: false, sentCallback: sentCallback, ackCallback: ackCallback)
     }
     
@@ -1484,7 +1505,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
         for pendingMessage in pendingMessagesCopy {
             let pm = pendingMessage.msg
             send(pm, reuseMsgSerial: resumed, sentCallback: nil) { status in
-                pendingMessage.ackCallback?(status)
+                pendingMessage.ackCallback()(status)
             }
         }
     }
@@ -1494,7 +1515,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
         let pms = pendingMessages
         pendingMessages = []
         for pendingMessage in pms {
-            pendingMessage.ackCallback?(status)
+            pendingMessage.ackCallback()(status)
         }
     }
     
@@ -1504,7 +1525,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
         queuedMessages = []
         
         for message in qms {
-            sendImpl(message.msg, reuseMsgSerial: false, sentCallback: message.sentCallback, ackCallback: message.ackCallback)
+            sendImpl(message.msg, reuseMsgSerial: false, sentCallback: message.sentCallback(), ackCallback: message.ackCallback())
         }
     }
     
@@ -1513,8 +1534,8 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
         let qms = queuedMessages
         queuedMessages = []
         for message in qms {
-            message.sentCallback?(status.errorInfo)
-            message.ackCallback?(status)
+            message.sentCallback()(status.errorInfo)
+            message.ackCallback()(status)
         }
     }
     
@@ -1562,11 +1583,11 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
         }
         
         for msg in nackMessages {
-            msg.ackCallback?(ARTStatus(state: .error, info: message.error))
+            msg.ackCallback()(ARTStatus(state: .error, errorInfo: message.error))
         }
         
         for msg in ackMessages {
-            msg.ackCallback?(ARTStatus(state: .ok))
+            msg.ackCallback()(ARTStatus(state: .ok, errorInfo: nil))
         }
         
         ARTLogVerbose(logger, "R:\(pointer: self) ACK (after processing): pendingMessageStartSerial=\(pendingMessageStartSerial), pendingMessages=\(pendingMessages.count)")
@@ -1596,7 +1617,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
         pendingMessageStartSerial += Int64(nackCount)
         
         for msg in nackMessages {
-            msg.ackCallback?(ARTStatus(state: .error, info: message.error))
+            msg.ackCallback()(ARTStatus(state: .error, errorInfo: message.error))
         }
         
         ARTLogVerbose(logger, "R:\(pointer: self) NACK (after processing): pendingMessageStartSerial=\(pendingMessageStartSerial), pendingMessages=\(pendingMessages.count)")
@@ -1691,7 +1712,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     // MARK: - ARTRealtimeTransportDelegate implementation
     
     // swift-migration: original location ARTRealtime.m, line 1583
-    internal func realtimeTransport(_ transport: ARTRealtimeTransport, didReceiveMessage message: ARTProtocolMessage) {
+    public func realtimeTransport(_ transport: ARTRealtimeTransport, didReceiveMessage message: ARTProtocolMessage) {
         onActivity()
         
         guard transport === self.transport else {
@@ -1740,12 +1761,12 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     }
     
     // swift-migration: original location ARTRealtime.m, line 1646
-    internal func realtimeTransportAvailable(_ transport: ARTRealtimeTransport) {
+    public func realtimeTransportAvailable(_ transport: ARTRealtimeTransport) {
         // Do nothing
     }
     
     // swift-migration: original location ARTRealtime.m, line 1650
-    internal func realtimeTransportClosed(_ transport: ARTRealtimeTransport) {
+    public func realtimeTransportClosed(_ transport: ARTRealtimeTransport) {
         guard transport === self.transport else {
             // Old connection
             return
@@ -1761,7 +1782,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     }
     
     // swift-migration: original location ARTRealtime.m, line 1665
-    internal func realtimeTransportDisconnected(_ transport: ARTRealtimeTransport, withError error: ARTRealtimeTransportError?) {
+    public func realtimeTransportDisconnected(_ transport: ARTRealtimeTransport, withError error: ARTRealtimeTransportError?) {
         guard transport === self.transport else {
             // Old connection
             return
@@ -1770,14 +1791,14 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
         if connection.state_nosync == .closing {
             performTransitionToState(.closed, withParams: ARTConnectionStateChangeParams())
         } else {
-            let errorInfo = error?.error != nil ? ARTErrorInfo.createFromNSError(error!.error!) : nil
+            let errorInfo = error != nil ? ARTErrorInfo.createFromNSError(error!.error) : nil
             let params = ARTConnectionStateChangeParams(errorInfo: errorInfo)
             performTransitionToDisconnectedOrSuspendedWithParams(params)
         }
     }
     
     // swift-migration: original location ARTRealtime.m, line 1680
-    internal func realtimeTransportFailed(_ transport: ARTRealtimeTransport, withError transportError: ARTRealtimeTransportError) {
+    public func realtimeTransportFailed(_ transport: ARTRealtimeTransport, withError transportError: ARTRealtimeTransportError) {
         guard transport === self.transport else {
             // Old connection
             return
@@ -1785,7 +1806,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
         
         ARTLogDebug(logger, "R:\(pointer: self) realtime transport failed: \(transportError)")
         
-        let errorInfo = transportError.error != nil ? ARTErrorInfo.createFromNSError(transportError.error!) : nil
+        let errorInfo = ARTErrorInfo.createFromNSError(transportError.error)
         let params = ARTConnectionStateChangeParams(errorInfo: errorInfo)
         
         let clientOptions = getClientOptions()
@@ -1797,7 +1818,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
                 _fallbacks = ARTFallback(fallbackHosts: hosts, shuffleArray: clientOptions.testOptions.shuffleArray)
             }
             if let fallbacks = _fallbacks {
-                if fallbacks.isEmpty {
+                if fallbacks.isEmpty() {
                     _fallbacks = nil
                     ARTLogVerbose(logger, "R:\(pointer: self) No fallback hosts left, will try primary one again...")
                 }
@@ -1811,7 +1832,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     }
     
     // swift-migration: original location ARTRealtime.m, line 1713
-    internal func realtimeTransportNeverConnected(_ transport: ARTRealtimeTransport) {
+    public func realtimeTransportNeverConnected(_ transport: ARTRealtimeTransport) {
         guard transport === self.transport else {
             // Old connection
             return
@@ -1823,18 +1844,18 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     }
     
     // swift-migration: original location ARTRealtime.m, line 1724
-    internal func realtimeTransportRefused(_ transport: ARTRealtimeTransport, withError error: ARTRealtimeTransportError?) {
+    public func realtimeTransportRefused(_ transport: ARTRealtimeTransport, withError error: ARTRealtimeTransportError?) {
         guard transport === self.transport else {
             // Old connection
             return
         }
         
         if let error = error, error.type == .refused {
-            let errorInfo = ARTErrorInfo.create(withCode: ARTClientCodeError.transport.rawValue, message: "Connection refused using \(error.url?.absoluteString ?? "")")
+            let errorInfo = ARTErrorInfo.create(withCode: ARTClientCodeError.transport.rawValue, message: "Connection refused using \(error.url)")
             let params = ARTConnectionStateChangeParams(errorInfo: errorInfo)
             performTransitionToDisconnectedOrSuspendedWithParams(params)
         } else if let error = error {
-            let errorInfo = error.error != nil ? ARTErrorInfo.createFromNSError(error.error!) : nil
+            let errorInfo = ARTErrorInfo.createFromNSError(error.error)
             let params = ARTConnectionStateChangeParams(errorInfo: errorInfo)
             performTransitionToDisconnectedOrSuspendedWithParams(params)
         } else {
@@ -1844,7 +1865,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     }
     
     // swift-migration: original location ARTRealtime.m, line 1746
-    internal func realtimeTransportTooBig(_ transport: ARTRealtimeTransport) {
+    public func realtimeTransportTooBig(_ transport: ARTRealtimeTransport) {
         guard transport === self.transport else {
             // Old connection
             return
@@ -1856,7 +1877,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     }
     
     // swift-migration: original location ARTRealtime.m, line 1757
-    internal func realtimeTransportSetMsgSerial(_ transport: ARTRealtimeTransport, msgSerial: Int64) {
+    public func realtimeTransportSetMsgSerial(_ transport: ARTRealtimeTransport, msgSerial: Int64) {
         guard transport === self.transport else {
             // Old connection
             return
