@@ -57,61 +57,61 @@ public protocol ARTRestProtocol: ARTRestInstanceMethodsProtocol {
 public class ARTRest: NSObject, ARTRestProtocol {
     
     // swift-migration: original location ARTRest+Private.h, line 121 and ARTRest.m, line 51
-    internal let _internal: ARTRestInternal
+    internal let `internal`: ARTRestInternal
     private var _dealloc: ARTQueuedDealloc
     
     // swift-migration: original location ARTRest.h, line 115 and ARTRest.m, line 128
     public var channels: ARTRestChannels {
-        return ARTRestChannels(internal: _internal.channels, queuedDealloc: _dealloc)
+        return ARTRestChannels(internal: `internal`.channels, queuedDealloc: _dealloc)
     }
     
     // swift-migration: original location ARTRest.h, line 125 and ARTRest.m, line 132
     public var auth: ARTAuth {
-        return ARTAuth(internal: _internal.auth, queuedDealloc: _dealloc)
+        return ARTAuth(internal: `internal`.auth, queuedDealloc: _dealloc)
     }
     
     // swift-migration: original location ARTRest.h, line 120 and ARTRest.m, line 136
     public var push: ARTPush {
-        return ARTPush(internal: _internal.push, queuedDealloc: _dealloc)
+        return ARTPush(internal: `internal`.push, queuedDealloc: _dealloc)
     }
     
     #if os(iOS)
     // swift-migration: original location ARTRest+Private.h, line 28 and ARTRest.m, line 142
     public var device: ARTLocalDevice {
-        return _internal.device
+        return `internal`.device
     }
     #endif
     
     // swift-migration: original location ARTRest+Private.h, line 123 and ARTRest.m, line 55
     internal func internalAsync(_ use: @escaping (ARTRestInternal) -> Void) {
-        _internal.queue.async {
-            use(self._internal)
+        `internal`.queue.async {
+            use(self.`internal`)
         }
     }
     
     // swift-migration: original location ARTRest.m, line 61
     private func initCommon() {
-        _dealloc = ARTQueuedDealloc(ref: _internal, queue: _internal.queue)
+        _dealloc = ARTQueuedDealloc(ref: `internal`, queue: `internal`.queue)
     }
     
     // swift-migration: original location ARTRest.h, line 90 and ARTRest.m, line 65
     public required init(options: ARTClientOptions) {
-        _internal = ARTRestInternal(options: options)
-        _dealloc = ARTQueuedDealloc(ref: _internal, queue: _internal.queue)
+        `internal` = ARTRestInternal(options: options)
+        _dealloc = ARTQueuedDealloc(ref: `internal`, queue: `internal`.queue)
         super.init()
     }
     
     // swift-migration: original location ARTRest.h, line 96 and ARTRest.m, line 74
     public required init(key: String) {
-        _internal = ARTRestInternal(key: key)
-        _dealloc = ARTQueuedDealloc(ref: _internal, queue: _internal.queue)
+        `internal` = ARTRestInternal(key: key)
+        _dealloc = ARTQueuedDealloc(ref: `internal`, queue: `internal`.queue)
         super.init()
     }
     
     // swift-migration: original location ARTRest.h, line 102 and ARTRest.m, line 83
     public required init(token: String) {
-        _internal = ARTRestInternal(token: token)
-        _dealloc = ARTQueuedDealloc(ref: _internal, queue: _internal.queue)
+        `internal` = ARTRestInternal(token: token)
+        _dealloc = ARTQueuedDealloc(ref: `internal`, queue: `internal`.queue)
         super.init()
     }
     
@@ -132,17 +132,17 @@ public class ARTRest: NSObject, ARTRestProtocol {
     
     // swift-migration: original location ARTRest.h, line 29 and ARTRest.m, line 104
     public func time(_ callback: @escaping ARTDateTimeCallback) {
-        _internal.time(wrapperSDKAgents: nil, completion: callback)
+        `internal`.time(wrapperSDKAgents: nil, completion: callback)
     }
     
     // swift-migration: original location ARTRest.h, line 44 and ARTRest.m, line 109 - converted to throwing function per PRD
     public func request(_ method: String, path: String, params: NSStringDictionary?, body: Any?, headers: NSStringDictionary?, callback: @escaping ARTHTTPPaginatedCallback) throws {
-        try _internal.request(method, path: path, params: params, body: body, headers: headers, wrapperSDKAgents: nil, callback: callback)
+        try `internal`.request(method, path: path, params: params, body: body, headers: headers, wrapperSDKAgents: nil, callback: callback)
     }
     
     // swift-migration: original location ARTRest.h, line 53 and ARTRest.m, line 119 - converted to throwing function per PRD
     public func stats(_ callback: @escaping ARTPaginatedStatsCallback) throws {
-        let success = _internal.stats(wrapperSDKAgents: nil, completion: callback)
+        let success = `internal`.stats(wrapperSDKAgents: nil, completion: callback)
         if !success {
             throw NSError(domain: ARTAblyErrorDomain, code: 40003, userInfo: [NSLocalizedDescriptionKey: "Stats request failed"])
         }
@@ -150,7 +150,7 @@ public class ARTRest: NSObject, ARTRestProtocol {
     
     // swift-migration: original location ARTRest.h, line 64 and ARTRest.m, line 124 - converted to throwing function per PRD
     public func stats(_ query: ARTStatsQuery?, callback: @escaping ARTPaginatedStatsCallback) throws {
-        try _internal.stats(query, wrapperSDKAgents: nil, callback: callback)
+        try `internal`.stats(query, wrapperSDKAgents: nil, callback: callback)
     }
 }
 
