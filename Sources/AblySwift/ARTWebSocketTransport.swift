@@ -221,7 +221,7 @@ internal class ARTWebSocketTransport: NSObject, ARTRealtimeTransport, ARTWebSock
         queryItems["v"] = URLQueryItem(name: "v", value: ARTDefault.apiVersion())
         
         // Lib
-        queryItems["agent"] = URLQueryItem(name: "agent", value: ARTClientInformation.agentIdentifierWithAdditionalAgents(options.agents))
+        queryItems["agent"] = URLQueryItem(name: "agent", value: ARTClientInformation.agentIdentifier(withAdditionalAgents: options.agents))
         
         // Transport Params
         if let transportParams = options.transportParams {

@@ -13,7 +13,7 @@ public protocol RetryDelayCalculator {
 
          What constitutes the "first attempt" is for the caller to decide.
      */
-    func delayForRetryNumber(_ retryNumber: Int) -> TimeInterval
+    func delay(forRetryNumber retryNumber: Int) -> TimeInterval
 }
 
 /**
@@ -90,7 +90,7 @@ public class ARTRetrySequence: NSObject {
     // swift-migration: original location ARTRetrySequence.h, line 32 and ARTRetrySequence.m, line 37
     public func addRetryAttempt() -> ARTRetryAttempt {
         retryCount += 1
-        let delay = delayCalculator.delayForRetryNumber(retryCount)
+        let delay = delayCalculator.delay(forRetryNumber: retryCount)
         return ARTRetryAttempt(delay: delay)
     }
 }

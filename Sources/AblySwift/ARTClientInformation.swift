@@ -40,7 +40,7 @@ public class ARTClientInformation: NSObject {
     ///
     /// - Parameter additionalAgents: A set of additional entries for the `Agent` library identifier. Its keys are the names of the agents, and its values are their optional versions. Pass `ARTClientInformationAgentNotVersioned` as the dictionary value for an agent that does not have a version.
     /// - Returns: The `Agent` library identifier.
-    public static func agentIdentifierWithAdditionalAgents(_ additionalAgents: [String: String]?) -> String {
+    public static func agentIdentifier(withAdditionalAgents additionalAgents: [String: String]?) -> String {
         var agents = self.agents
         
         if let additionalAgents = additionalAgents {

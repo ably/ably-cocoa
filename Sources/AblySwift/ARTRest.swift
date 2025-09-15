@@ -841,7 +841,7 @@ public class ARTRestInternal: NSObject {
             }
         }
         
-        return ARTClientInformation.agentIdentifierWithAdditionalAgents(additionalAgents)
+        return ARTClientInformation.agentIdentifier(withAdditionalAgents: additionalAgents)
     }
     
     #if os(iOS)

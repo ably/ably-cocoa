@@ -17,7 +17,7 @@ internal class BackoffRetryDelayCalculator: NSObject, RetryDelayCalculator {
     }
     
     // swift-migration: original location ARTRetryDelayCalculator.h, line 19 and ARTBackoffRetryDelayCalculator.m, line 27
-    internal func delayForRetryNumber(_ retryNumber: Int) -> TimeInterval {
+    internal func delay(forRetryNumber retryNumber: Int) -> TimeInterval {
         let backoffCoefficient = BackoffRetryDelayCalculator.backoffCoefficient(forRetryNumber: retryNumber)
         let jitterCoefficient = jitterCoefficientGenerator.generateJitterCoefficient()
         
