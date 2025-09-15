@@ -35,7 +35,8 @@ class AblyTestsConfiguration: NSObject, XCTestObservation {
 }
 
 func pathForTestResource(_ resourcePath: String) -> String {
-    return Bundle.module.path(forResource: resourcePath, ofType: "")!
+    let moduleBundle = Bundle.module
+    return moduleBundle.path(forResource: resourcePath, ofType: "")!
 }
 
 let appSetupModel: TestAppSetup = {
@@ -116,7 +117,7 @@ class AblyTests {
         if let testApplication {
             app = testApplication
         } else {
-            let request = NSMutableURLRequest(url: URL(string: "https://\(options.restHost):\(options.tlsPort)/apps")!)
+            let request = NSMutableURLRequest(url: URL(string: "https://\(options.restHost!):\(options.tlsPort)/apps")!)
             request.httpMethod = "POST"
             request.httpBody = try JSONUtility.encode(appSetupModel.postApps)
 

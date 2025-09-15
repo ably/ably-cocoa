@@ -982,9 +982,9 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
             apiRequests: statsRequestCountFromDictionary(input["apiRequests"] as? [String: Any]),
             tokenRequests: statsRequestCountFromDictionary(input["tokenRequests"] as? [String: Any]),
             pushes: statsPushCountFromDictionary(input["push"] as? [String: Any]),
-            inProgress: unwrapValueWithAmbiguousObjectiveCNullability(input.artString("inProgress")),
+            inProgress: input.artString("inProgress"),
             count: (input.artNumber("count") ?? NSNumber(value: 0)).uintValue,
-            intervalId: unwrapValueWithAmbiguousObjectiveCNullability(input.artString("intervalId"))
+            intervalId: input.artString("intervalId")
         )
     }
     

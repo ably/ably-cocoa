@@ -277,16 +277,18 @@ public class ARTStats: NSObject {
     public let pushes: ARTStatsPushCount
     
     // swift-migration: original location ARTStats.h, line 363
-    public let inProgress: String
-    
+    // swift-migration: Lawrence made nullable because it was in tests
+    public let inProgress: String?
+
     // swift-migration: original location ARTStats.h, line 366
     public let count: UInt
     
     // swift-migration: original location ARTStats.h, line 371
-    public let intervalId: String
-    
+    // swift-migration: Lawrence made nullable because it was in tests
+    public let intervalId: String?
+
     // swift-migration: original location ARTStats.h, line 377 and ARTStats.m, line 177
-    public init(all: ARTStatsMessageTypes, inbound: ARTStatsMessageTraffic, outbound: ARTStatsMessageTraffic, persisted: ARTStatsMessageTypes, connections: ARTStatsConnectionTypes, channels: ARTStatsResourceCount, apiRequests: ARTStatsRequestCount, tokenRequests: ARTStatsRequestCount, pushes: ARTStatsPushCount, inProgress: String, count: UInt, intervalId: String) {
+    public init(all: ARTStatsMessageTypes, inbound: ARTStatsMessageTraffic, outbound: ARTStatsMessageTraffic, persisted: ARTStatsMessageTypes, connections: ARTStatsConnectionTypes, channels: ARTStatsResourceCount, apiRequests: ARTStatsRequestCount, tokenRequests: ARTStatsRequestCount, pushes: ARTStatsPushCount, inProgress: String?, count: UInt, intervalId: String?) {
         self.all = all
         self.inbound = inbound
         self.outbound = outbound
@@ -343,22 +345,31 @@ public class ARTStats: NSObject {
     
     // swift-migration: original location ARTStats.h, line 393 and ARTStats.m, line 248
     public func intervalTime() -> Date {
-        return ARTStats.dateFromIntervalId(self.intervalId)
+        guard let intervalId else {
+            fatalError("TODO swift-migration: don't know what to do")
+        }
+        return ARTStats.dateFromIntervalId(intervalId)
     }
     
     // swift-migration: original location ARTStats.h, line 398 and ARTStats.m, line 244
     public func intervalGranularity() -> ARTStatsGranularity {
-        return ARTStats.granularityFromIntervalId(self.intervalId)
+        guard let intervalId else {
+            fatalError("TODO swift-migration: don't know what to do")
+        }
+        return ARTStats.granularityFromIntervalId(intervalId)
     }
     
     // swift-migration: original location ARTStats.h, line 401 and ARTStats.m, line 252
     public func dateFromInProgress() -> Date {
+        guard let inProgress else {
+            fatalError("TODO swift-migration: don't know what to do")
+        }
         for format in ARTStats.intervalFormatStrings {
-            if format.count == self.inProgress.count {
+            if format.count == inProgress.count {
                 let formatter = DateFormatter()
                 formatter.dateFormat = format
                 formatter.timeZone = TimeZone(identifier: "UTC")
-                if let date = formatter.date(from: self.inProgress) {
+                if let date = formatter.date(from: inProgress) {
                     return date
                 }
             }
