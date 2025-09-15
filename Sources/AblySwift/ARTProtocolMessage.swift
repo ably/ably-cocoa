@@ -1,4 +1,5 @@
 import Foundation
+import _AblyPluginSupportPrivate
 
 // swift-migration: original location ARTProtocolMessage.h, line 15
 /// :nodoc:
@@ -153,7 +154,7 @@ public class ARTProtocolMessage: NSObject, NSCopying {
     internal var annotations: [ARTAnnotation]?
     
     // swift-migration: original location ARTProtocolMessage.h, line 65
-    internal var state: [any APObjectMessageProtocol]?
+    internal var state: [any _AblyPluginSupportPrivate.ObjectMessageProtocol]?
     
     // swift-migration: original location ARTProtocolMessage.h, line 66 and ARTProtocolMessage.m, line 25
     internal var flags: UInt = 0

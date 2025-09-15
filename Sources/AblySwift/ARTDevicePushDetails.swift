@@ -15,7 +15,7 @@ public class ARTDevicePushDetails: NSObject, NSCopying {
         set { _recipient = newValue }
     }
     internal var _recipient: NSMutableDictionary
-    
+
     // swift-migration: original location ARTDevicePushDetails.h, line 21 and ARTDevicePushDetails+Private.h, line 10
     /**
      * The current state of the push registration.
@@ -47,7 +47,7 @@ public class ARTDevicePushDetails: NSObject, NSCopying {
     public func copy(with zone: NSZone?) -> Any {
         let push = type(of: self).init()
         
-        push.recipient = (self.recipient.copy() as! NSMutableDictionary)
+        push.recipient = recipient.mutableCopy() as! NSMutableDictionary
         push.state = self.state
         push.errorReason = (self.errorReason?.copy(with: zone) as? ARTErrorInfo)
         

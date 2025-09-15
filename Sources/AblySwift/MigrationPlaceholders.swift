@@ -1,4 +1,5 @@
 import Foundation
+import _AblyPluginSupportPrivate
 
 // swift-migration: Placeholder types for unmigrated dependencies
 // These will be replaced with actual implementations as files are migrated
@@ -104,12 +105,12 @@ public protocol APLiveObjectsInternalPluginProtocol {
     // Placeholder protocol
     func nosync_prepareChannel(_ channel: APRealtimeChannel, client: APRealtimeClient)
     func nosync_onChannelAttached(_ channel: APRealtimeChannel, hasObjects: Bool)
-    func nosync_handleObjectProtocolMessage(withObjectMessages objectMessages: [APObjectMessageProtocol], channel: APRealtimeChannel)
-    func nosync_handleObjectSyncProtocolMessage(withObjectMessages objectMessages: [APObjectMessageProtocol], protocolMessageChannelSerial: String?, channel: APRealtimeChannel)
-}
+    func nosync_handleObjectProtocolMessage(withObjectMessages objectMessages: [_AblyPluginSupportPrivate.ObjectMessageProtocol], channel: APRealtimeChannel)
+    func nosync_handleObjectSyncProtocolMessage(withObjectMessages objectMessages: [_AblyPluginSupportPrivate.ObjectMessageProtocol], protocolMessageChannelSerial: String?, channel: APRealtimeChannel)
+    func decodeObjectMessage(_ serialized: [String: Any], context: _AblyPluginSupportPrivate.DecodingContextProtocol, format: _AblyPluginSupportPrivate.EncodingFormat) throws -> _AblyPluginSupportPrivate.ObjectMessageProtocol
+    func encodeObjectMessage(_ objectMessage: _AblyPluginSupportPrivate.ObjectMessageProtocol, format: _AblyPluginSupportPrivate.EncodingFormat) -> [String: Any]
 
-// Placeholder for APObjectMessageProtocol
-public protocol APObjectMessageProtocol {}
+}
 
 // Placeholder types for Plugin architecture (from _AblyPluginSupportPrivate)
 public protocol APPublicRealtimeChannelUnderlyingObjects {

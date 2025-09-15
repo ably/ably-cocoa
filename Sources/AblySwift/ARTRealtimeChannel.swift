@@ -1,4 +1,5 @@
 import Foundation
+import _AblyPluginSupportPrivate
 
 // MARK: - ARTRealtimeChannelProtocol
 
@@ -853,7 +854,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
     }
     
     // swift-migration: original location ARTRealtimeChannel.m, line 418
-    internal func sendObject(withObjectMessages objectMessages: [APObjectMessageProtocol], completion: @escaping ARTCallback) {
+    internal func sendObject(withObjectMessages objectMessages: [_AblyPluginSupportPrivate.ObjectMessageProtocol], completion: @escaping ARTCallback) {
         let pm = ARTProtocolMessage()
         pm.action = .object
         pm.channel = self.name
@@ -1369,7 +1370,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
         }
         
         guard let realtime = self.realtime else { return }
-        realtime.options.liveObjectsPlugin?.nosync_handleObjectProtocolMessage(withObjectMessages: state as? [APObjectMessageProtocol] ?? [], channel: self)
+        realtime.options.liveObjectsPlugin?.nosync_handleObjectProtocolMessage(withObjectMessages: state, channel: self)
     }
     
     // swift-migration: original location ARTRealtimeChannel.m, line 897
@@ -1380,7 +1381,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
         }
         
         guard let realtime = self.realtime else { return }
-        realtime.options.liveObjectsPlugin?.nosync_handleObjectSyncProtocolMessage(withObjectMessages: state as? [APObjectMessageProtocol] ?? [], protocolMessageChannelSerial: pm.channelSerial, channel: self)
+        realtime.options.liveObjectsPlugin?.nosync_handleObjectSyncProtocolMessage(withObjectMessages: state, protocolMessageChannelSerial: pm.channelSerial, channel: self)
     }
     
     // swift-migration: original location ARTRealtimeChannel.m, line 908

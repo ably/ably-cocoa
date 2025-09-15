@@ -1,6 +1,9 @@
 import Foundation
 import _AblyPluginSupportPrivate
 
+// swift-migration: Lawrence: have added a lot of unwrapValueWithAmbiguousObjectiveCNullability just to try and get this thing to compile; our nullabilities are quite a mess. wouldn't be surprised at all if this crashes when we run the tests
+// swift-migration: Lawrence: have added a lot of `uintValue` to get this to compile
+
 // swift-migration: original location ARTJsonLikeEncoder.h, line 10 and ARTJsonLikeEncoder.m, line 21
 internal protocol ARTJsonLikeEncoderDelegate {
     func mimeType() -> String
@@ -252,9 +255,10 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     private func pushChannelSubscriptionToDictionary(_ channelSubscription: ARTPushChannelSubscription) -> [String: Any] {
         var output: [String: Any] = [:]
         
-        if let channel = channelSubscription.channel {
-            output["channel"] = channel
-        }
+//        if let channel = channelSubscription.channel {
+        // swift-migration: Lawrence removed this check of statically non-nil
+        output["channel"] = channelSubscription.channel
+//        }
         
         if let clientId = channelSubscription.clientId {
             output["clientId"] = clientId
@@ -284,13 +288,13 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
                          userInfo: [NSLocalizedDescriptionKey: "clientId and deviceId are both present or both nil"])
         }
         
-        let channelName = input.artString("channel")
-        
+        let channelName = unwrapValueWithAmbiguousObjectiveCNullability(input.artString("channel"))
+
         let channelSubscription: ARTPushChannelSubscription
         if let clientId = clientId {
             channelSubscription = ARTPushChannelSubscription(clientId: clientId, channel: channelName)
         } else {
-            channelSubscription = ARTPushChannelSubscription(deviceId: deviceId, channel: channelName)
+            channelSubscription = ARTPushChannelSubscription(deviceId: unwrapValueWithAmbiguousObjectiveCNullability(deviceId), channel: channelName)
         }
         
         return channelSubscription
@@ -342,15 +346,16 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
         message.extras = input["extras"] as? ARTJsonCompatible
 
         if let operation = input["operation"] as? [String: Any] {
-            message.operation = ARTMessageOperation.create(from: operation)
+            message.operation = ARTMessageOperation.createFromDictionary(operation)
         }
-        message.summary = input["summary"]
-        
+        // swift-migration: Lawrence added as?
+        message.summary = input["summary"] as? ARTJsonCompatible
+
         return message
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.h, line 34 and ARTJsonLikeEncoder.m, line 310
-    private func messagesFromArray(_ input: [Any]?, protocolMessage: ARTProtocolMessage?) -> [ARTMessage]? {
+    func messagesFromArray(_ input: [Any]?, protocolMessage: ARTProtocolMessage?) -> [ARTMessage]? {
         guard let input = input else { return nil }
         
         var output: [ARTMessage] = []
@@ -455,6 +460,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
         // ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: annotationFromDictionary \\(input)")
         
         let action = (input.artNumber("action") ?? NSNumber(value: 0)).intValue
+
         let annotation = ARTAnnotation(
             id: input.artString("id"),
             action: annotationActionFromInt(action),
@@ -463,11 +469,11 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
             count: input.artNumber("count"),
             data: input["data"],
             encoding: input.artString("encoding"),
-            timestamp: input.artTimestamp("timestamp"),
-            serial: input.artString("serial"),
-            messageSerial: input.artString("messageSerial"),
-            type: input.artString("type"),
-            extras: input["extras"]
+            timestamp: unwrapValueWithAmbiguousObjectiveCNullability(input.artTimestamp("timestamp")),
+            serial: unwrapValueWithAmbiguousObjectiveCNullability(input.artString("serial")),
+            messageSerial: unwrapValueWithAmbiguousObjectiveCNullability(input.artString("messageSerial")),
+            type: unwrapValueWithAmbiguousObjectiveCNullability(input.artString("type")),
+            extras: input["extras"] as? ARTJsonCompatible
         )
         return annotation
     }
@@ -536,7 +542,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     // swift-migration: original location ARTJsonLikeEncoder.h, line 51 and ARTJsonLikeEncoder.m, line 489
     private func authDetailsFromDictionary(_ input: [String: Any]?) -> ARTAuthDetails? {
         guard let input = input else { return nil }
-        return ARTAuthDetails(token: input.artString("accessToken"))
+        return ARTAuthDetails(token: unwrapValueWithAmbiguousObjectiveCNullability(input.artString("accessToken")))
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.h, line 40 and ARTJsonLikeEncoder.m, line 496
@@ -657,7 +663,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
         let issuedInterval = input["issued"] as? NSNumber
         let issued = issuedInterval != nil ? Date(timeIntervalSince1970: millisecondsToTimeInterval(issuedInterval!.uint64Value)) : nil
 
-        return ARTTokenDetails(token: token,
+        return ARTTokenDetails(token: unwrapValueWithAmbiguousObjectiveCNullability(token),
                               expires: expires,
                               issued: issued,
                               capability: input.artString("capability"),
@@ -721,9 +727,9 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
         params.timestamp = input.artTimestamp("timestamp")
         
         return ARTTokenRequest(tokenParams: params,
-                              keyName: input.artString("keyName"),
-                              nonce: input.artString("nonce"),
-                              mac: input.artString("mac"))
+                              keyName: unwrapValueWithAmbiguousObjectiveCNullability(input.artString("keyName")),
+                              nonce: unwrapValueWithAmbiguousObjectiveCNullability(input.artString("nonce")),
+                              mac: unwrapValueWithAmbiguousObjectiveCNullability(input.artString("mac")))
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 686
@@ -800,14 +806,14 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
         // ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: deviceIdentityTokenDetailsFromDictionary \\(input)")
         
         let deviceIdentityTokenInput = input["deviceIdentityToken"] as? [String: Any]
-        let token = deviceIdentityTokenInput?.artString("token")
+        let token = unwrapValueWithAmbiguousObjectiveCNullability(deviceIdentityTokenInput?.artString("token"))
         let issuedMsecs = deviceIdentityTokenInput?.artNumber("issued")
-        let issued = issuedMsecs != nil ? Date.art_date(withMillisecondsSince1970: issuedMsecs!.uint64Value) : nil
+        let issued = unwrapValueWithAmbiguousObjectiveCNullability(issuedMsecs != nil ? Date.art_date(withMillisecondsSince1970: issuedMsecs!.uint64Value) : nil)
         let expiresMsecs = deviceIdentityTokenInput?.artNumber("expires")
-        let expires = expiresMsecs != nil ? Date.art_date(withMillisecondsSince1970: expiresMsecs!.uint64Value) : nil
-        let capability = deviceIdentityTokenInput?.artString("capability")
-        let clientId = deviceIdentityTokenInput?.artString("clientId")
-        
+        let expires = unwrapValueWithAmbiguousObjectiveCNullability(expiresMsecs != nil ? Date.art_date(withMillisecondsSince1970: expiresMsecs!.uint64Value) : nil)
+        let capability = unwrapValueWithAmbiguousObjectiveCNullability(deviceIdentityTokenInput?.artString("capability"))
+        let clientId = unwrapValueWithAmbiguousObjectiveCNullability(deviceIdentityTokenInput?.artString("clientId"))
+
         let deviceIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: token, issued: issued, expires: expires, capability: capability, clientId: clientId)
         
         return deviceIdentityTokenDetails
@@ -834,11 +840,13 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
             devicePushDetails.errorReason = ARTErrorInfo.create(
                 withCode: (errorReason.artNumber("code") ?? NSNumber(value: 0)).intValue,
                 status: (errorReason.artNumber("statusCode") ?? NSNumber(value: 0)).intValue,
-                message: errorReason.artString("message")
+                // swift-migration: Lawrence added ?? ""
+                message: errorReason.artString("message") ?? ""
             )
         }
-        devicePushDetails.recipient = input["recipient"]
-        
+        // swift-migration: Lawrence added as? and mutableCopy
+        devicePushDetails.recipient = unwrapValueWithAmbiguousObjectiveCNullability(input["recipient"] as? NSDictionary).mutableCopy() as! NSMutableDictionary
+
         return devicePushDetails
     }
     
@@ -849,7 +857,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
         // ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: protocolMessageFromDictionary \\(input)")
         
         let message = ARTProtocolMessage()
-        message.action = ARTProtocolMessageAction(rawValue: (input.artNumber("action") ?? NSNumber(value: 0)).intValue) ?? .heartbeat
+        message.action = ARTProtocolMessageAction(rawValue: (input.artNumber("action") ?? NSNumber(value: 0)).uintValue) ?? .heartbeat
         message.count = (input.artNumber("count") ?? NSNumber(value: 0)).int32Value
         message.channel = input.artString("channel")
         message.channelSerial = input.artString("channelSerial")
@@ -918,7 +926,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     private func channelOccupancyFromDictionary(_ input: [String: Any]?) -> ARTChannelOccupancy? {
         guard let input = input else { return nil }
         let metricsDict = input["metrics"] as? [String: Any]
-        let metrics = channelMetricsFromDictionary(metricsDict)
+        let metrics = unwrapValueWithAmbiguousObjectiveCNullability(channelMetricsFromDictionary(metricsDict))
         let occupancy = ARTChannelOccupancy(metrics: metrics)
         return occupancy
     }
@@ -927,7 +935,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     private func channelStatusFromDictionary(_ input: [String: Any]?) -> ARTChannelStatus? {
         guard let input = input else { return nil }
         let occupancyDict = input["occupancy"] as? [String: Any]
-        let occupancy = channelOccupancyFromDictionary(occupancyDict)
+        let occupancy = unwrapValueWithAmbiguousObjectiveCNullability(channelOccupancyFromDictionary(occupancyDict))
         let status = ARTChannelStatus(occupancy: occupancy, active: input.artBoolean("isActive"))
         return status
     }
@@ -936,8 +944,8 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     private func channelDetailsFromDictionary(_ input: [String: Any]?) -> ARTChannelDetails? {
         guard let input = input else { return nil }
         let statusDict = input["status"] as? [String: Any]
-        let status = channelStatusFromDictionary(statusDict)
-        let details = ARTChannelDetails(channelId: input.artString("channelId"), status: status)
+        let status = unwrapValueWithAmbiguousObjectiveCNullability(channelStatusFromDictionary(statusDict))
+        let details = ARTChannelDetails(channelId: unwrapValueWithAmbiguousObjectiveCNullability(input.artString("channelId")), status: status)
         return details
     }
     
@@ -974,9 +982,9 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
             apiRequests: statsRequestCountFromDictionary(input["apiRequests"] as? [String: Any]),
             tokenRequests: statsRequestCountFromDictionary(input["tokenRequests"] as? [String: Any]),
             pushes: statsPushCountFromDictionary(input["push"] as? [String: Any]),
-            inProgress: input.artString("inProgress"),
+            inProgress: unwrapValueWithAmbiguousObjectiveCNullability(input.artString("inProgress")),
             count: (input.artNumber("count") ?? NSNumber(value: 0)).uintValue,
-            intervalId: input.artString("intervalId")
+            intervalId: unwrapValueWithAmbiguousObjectiveCNullability(input.artString("intervalId"))
         )
     }
     
@@ -1065,7 +1073,8 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
         return ARTErrorInfo.create(
             withCode: (error["code"] as? Int) ?? 0,
             status: (error["statusCode"] as? Int) ?? 0,
-            message: error["message"] as? String
+            // swift-migration: Lawrence added ?? ""
+            message: error["message"] as? String ?? ""
         )
     }
     
@@ -1186,8 +1195,8 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
             return nil
         }
         
-        var output: [Any] = []
-        
+        var output: [_AblyPluginSupportPrivate.ObjectMessageProtocol] = []
+
         for (i, item) in input.enumerated() {
             guard let itemDict = item as? [String: Any] else { return nil }
             
@@ -1198,17 +1207,15 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
                 indexInParent: i
             )
             
-            var error: _AblyPluginSupportPrivate.PublicErrorInfo?
             let format = apEncodingFormatFromARTEncoderFormat(self.format())
 
-            let objectMessage = liveObjectsPlugin.decodeObjectMessage(itemDict, context: decodingContext, format: format, error: &error)
-            
-            if objectMessage == nil {
+            do {
+                let objectMessage = try liveObjectsPlugin.decodeObjectMessage(itemDict, context: decodingContext, format: format)
+                output.append(objectMessage)
+            } catch {
 //                ARTLogWarn(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: LiveObjects plugin failed to decode ObjectMessage \\(itemDict), error \\(error as Any)")
                 return nil
             }
-            
-            output.append(objectMessage!)
         }
         
         return output
@@ -1218,7 +1225,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     /// Uses the LiveObjects plugin to encode an array of `ObjectMessage`s.
     ///
     /// Returns `nil` if the input is `nil`.
-    private func objectMessagesToArray(_ objectMessages: [Any]?) -> [[String: Any]]? {
+    private func objectMessagesToArray(_ objectMessages: [_AblyPluginSupportPrivate.ObjectMessageProtocol]?) -> [[String: Any]]? {
         guard let objectMessages = objectMessages else { return nil }
         
         guard let liveObjectsPlugin = _rest?.options.liveObjectsPlugin else {
