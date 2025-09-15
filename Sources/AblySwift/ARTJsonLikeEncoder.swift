@@ -265,7 +265,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
             output["deviceId"] = deviceId
         }
         
-        ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: pushChannelSubscriptionToDictionary \\(output)")
+        // ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: pushChannelSubscriptionToDictionary \\(output)")
         return output
     }
     
@@ -273,13 +273,13 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     private func pushChannelSubscriptionFromDictionary(_ input: [String: Any]?) throws -> ARTPushChannelSubscription? {
         guard let input = input else { return nil }
         
-        ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: pushChannelSubscriptionFromDictionary \\(input)")
+        // ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: pushChannelSubscriptionFromDictionary \\(input)")
         
         let clientId = input.artString("clientId")
         let deviceId = input.artString("deviceId")
         
         if (clientId != nil && deviceId != nil) || (clientId == nil && deviceId == nil) {
-            ARTLogError(_logger, "ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: clientId and deviceId are both present or both nil")
+            // ARTLogError(_logger, "ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: clientId and deviceId are both present or both nil")
             throw NSError(domain: ARTAblyErrorDomain,
                          code: ARTErrorCode.incompatibleCredentials.rawValue,
                          userInfo: [NSLocalizedDescriptionKey: "clientId and deviceId are both present or both nil"])
@@ -300,7 +300,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     // swift-migration: original location ARTJsonLikeEncoder.m, line 258
     func decodeTime(_ data: Data) throws -> Date? {
         guard let resp = try decodeArray(data) as? [Any] else { return nil }
-        ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: decodeTime \\(resp)")
+        // ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: decodeTime \\(resp)")
         if resp.count == 1 {
             if let num = resp[0] as? NSNumber {
                 return Date(timeIntervalSince1970: millisecondsToTimeInterval(num.doubleValue))
@@ -319,7 +319,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     private func messageFromDictionary(_ input: [String: Any]?, protocolMessage: ARTProtocolMessage?) -> ARTMessage? {
         guard let input = input else { return nil }
         
-        ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: messageFromDictionary \\(input)")
+        // ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: messageFromDictionary \\(input)")
         
         let message = ARTMessage()
         message.id = input.artString("id")
@@ -379,7 +379,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
         case 4:
             return .update
         default:
-            ARTLogError(_logger, "RS:\\(pointer: _rest) ARTJsonEncoder invalid ARTPresenceAction \\(action)")
+            // ARTLogError(_logger, "RS:\\(pointer: _rest) ARTJsonEncoder invalid ARTPresenceAction \\(action)")
             return .absent
         }
     }
@@ -392,7 +392,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
         case 1:
             return .delete
         default:
-            ARTLogError(_logger, "RS:\\(pointer: _rest) ARTJsonEncoder invalid ARTAnnotationAction \\(action)")
+            // ARTLogError(_logger, "RS:\\(pointer: _rest) ARTJsonEncoder invalid ARTAnnotationAction \\(action)")
             return .create
         }
     }
@@ -417,7 +417,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     private func presenceMessageFromDictionary(_ input: [String: Any]?) -> ARTPresenceMessage? {
         guard let input = input else { return nil }
         
-        ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: presenceMessageFromDictionary \\(input)")
+        // ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: presenceMessageFromDictionary \\(input)")
         
         let message = ARTPresenceMessage()
         message.id = input.artString("id")
@@ -453,7 +453,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     private func annotationFromDictionary(_ input: [String: Any]?) -> ARTAnnotation? {
         guard let input = input else { return nil }
         
-        ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: annotationFromDictionary \\(input)")
+        // ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: annotationFromDictionary \\(input)")
         
         let action = (input.artNumber("action") ?? NSNumber(value: 0)).intValue
         let annotation = ARTAnnotation(
@@ -520,7 +520,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
             output["connectionId"] = connectionId
         }
         
-        ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: messageToDictionary \\(output)")
+        // ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: messageToDictionary \\(output)")
         return output
     }
     
@@ -530,7 +530,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
         
         output["accessToken"] = authDetails.accessToken
         
-        ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: authDetailsToDictionary \\(output)")
+        // ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: authDetailsToDictionary \\(output)")
         return output
     }
     
@@ -575,7 +575,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
         let action = intFromPresenceMessageAction(message.action)
         output["action"] = NSNumber(value: action)
         
-        ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: presenceMessageToDictionary \\(output)")
+        // ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: presenceMessageToDictionary \\(output)")
         return output
     }
     
@@ -631,7 +631,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
             output["state"] = objectMessagesToArray(state)
         }
         
-        ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: protocolMessageToDictionary \\(output)")
+        // ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: protocolMessageToDictionary \\(output)")
         return output
     }
     
@@ -639,10 +639,10 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     private func tokenFromDictionary(_ input: [String: Any]?) throws -> ARTTokenDetails? {
         guard let input = input else { return nil }
         
-        ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: tokenFromDictionary \\(input)")
+        // ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: tokenFromDictionary \\(input)")
         
         if let jsonError = input.artDictionary("error") {
-            ARTLogError(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: tokenFromDictionary error \\(jsonError)")
+            // ARTLogError(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: tokenFromDictionary error \\(jsonError)")
             var details: [String: Any] = [:]
             if let message = jsonError.artString("message") {
                 details[NSLocalizedDescriptionKey] = message
@@ -667,7 +667,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     
     // swift-migration: original location ARTJsonLikeEncoder.h, line 48 and ARTJsonLikeEncoder.m, line 621
     private func tokenRequestToDictionary(_ tokenRequest: ARTTokenRequest) -> [String: Any] {
-        ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: tokenRequestToDictionary \\(tokenRequest)")
+        // ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: tokenRequestToDictionary \\(tokenRequest)")
         
         let timestamp: NSNumber
         if let requestTimestamp = tokenRequest.timestamp {
@@ -700,10 +700,10 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     private func tokenRequestFromDictionary(_ input: [String: Any]?) throws -> ARTTokenRequest? {
         guard let input = input else { return nil }
         
-        ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: tokenRequestFromDictionary \\(input)")
+        // ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: tokenRequestFromDictionary \\(input)")
         
         if let jsonError = input.artDictionary("error") {
-            ARTLogError(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: tokenRequestFromDictionary error \\(jsonError)")
+            // ARTLogError(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: tokenRequestFromDictionary error \\(jsonError)")
             var details: [String: Any] = [:]
             if let message = jsonError.artString("message") {
                 details[NSLocalizedDescriptionKey] = message
@@ -780,7 +780,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     private func deviceDetailsFromDictionary(_ input: [String: Any]?) throws -> ARTDeviceDetails? {
         guard let input = input else { return nil }
         
-        ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: deviceDetailsFromDictionary \\(input)")
+        // ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: deviceDetailsFromDictionary \\(input)")
         
         let deviceDetails = ARTDeviceDetails(id: input.artString("id"))
         deviceDetails.clientId = input.artString("clientId")
@@ -796,7 +796,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     private func deviceIdentityTokenDetailsFromDictionary(_ input: [String: Any]?) throws -> ARTDeviceIdentityTokenDetails? {
         guard let input = input else { return nil }
         
-        ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: deviceIdentityTokenDetailsFromDictionary \\(input)")
+        // ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: deviceIdentityTokenDetailsFromDictionary \\(input)")
         
         let deviceIdentityTokenInput = input["deviceIdentityToken"] as? [String: Any]
         let token = deviceIdentityTokenInput?.artString("token")
@@ -825,7 +825,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     private func devicePushDetailsFromDictionary(_ input: Any?) throws -> ARTDevicePushDetails? {
         guard let input = input as? [String: Any] else { return nil }
         
-        ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: devicePushDetailsFromDictionary \\(input)")
+        // ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: devicePushDetailsFromDictionary \\(input)")
         
         let devicePushDetails = ARTDevicePushDetails()
         devicePushDetails.state = input.artString("state")
@@ -845,7 +845,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     private func protocolMessageFromDictionary(_ input: [String: Any]?) -> ARTProtocolMessage? {
         guard let input = input else { return nil }
         
-        ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: protocolMessageFromDictionary \\(input)")
+        // ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: protocolMessageFromDictionary \\(input)")
         
         let message = ARTProtocolMessage()
         message.action = ARTProtocolMessageAction(rawValue: (input.artNumber("action") ?? NSNumber(value: 0)).intValue) ?? .heartbeat
@@ -959,7 +959,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     private func statsFromDictionary(_ input: [String: Any]?) -> ARTStats? {
         guard let input = input else { return nil }
         
-        ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: statsFromDictionary \\(input)")
+        // ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: statsFromDictionary \\(input)")
         
         return ARTStats(
             all: statsMessageTypesFromDictionary(input["all"] as? [String: Any]),
@@ -1067,7 +1067,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     private func statsRequestCountFromDictionary(_ input: [String: Any]?) -> ARTStatsRequestCount? {
         guard let input = input else { return ARTStatsRequestCount.empty() }
         
-        ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: statsRequestCountFromDictionary \\(input)")
+        // ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: statsRequestCountFromDictionary \\(input)")
         
         let succeeded = input.artTyped(NSNumber.self, key: "succeeded")
         let failed = input.artTyped(NSNumber.self, key: "failed")
@@ -1084,7 +1084,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     private func statsPushCountFromDictionary(_ input: [String: Any]?) -> ARTStatsPushCount? {
         guard let input = input else { return ARTStatsPushCount.empty() }
         
-        ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: statsPushCountFromDictionary \\(input)")
+        // ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: statsPushCountFromDictionary \\(input)")
         
         let messages = input.artNumber("messages")
         let direct = input.artNumber("directPublishes")
@@ -1138,10 +1138,10 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     private func decode(_ data: Data) throws -> Any? {
         do {
             let decoded = try delegate?.decode(data)
-            ARTLogDebug(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")> decoding '\\(data)'; got: \\(decoded as Any)")
+            // ARTLogDebug(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")> decoding '\\(data)'; got: \\(decoded as Any)")
             return decoded
         } catch {
-            ARTLogError(_logger, "failed decoding data \\(data) with, \\(error.localizedDescription) (\\((error as NSError).localizedFailureReason ?? ""))")
+            // ARTLogError(_logger, "failed decoding data \\(data) with, \\(error.localizedDescription) (\\((error as NSError).localizedFailureReason ?? ""))")
             throw error
         }
     }
@@ -1150,10 +1150,10 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     private func encode(_ obj: Any) throws -> Data? {
         do {
             let encoded = try delegate?.encode(obj)
-            ARTLogDebug(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")> encoding '\\(obj)'; got: \\(encoded as Any)")
+            // ARTLogDebug(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")> encoding '\\(obj)'; got: \\(encoded as Any)")
             return encoded
         } catch {
-            ARTLogError(_logger, "failed encoding object \\(obj) with, \\(error.localizedDescription) (\\((error as NSError).localizedFailureReason ?? ""))")
+            // ARTLogError(_logger, "failed encoding object \\(obj) with, \\(error.localizedDescription) (\\((error as NSError).localizedFailureReason ?? ""))")
             throw error
         }
     }
@@ -1198,7 +1198,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
             let objectMessage = liveObjectsPlugin.decodeObjectMessage(itemDict, context: decodingContext, format: format, error: &error)
             
             if objectMessage == nil {
-                ARTLogWarn(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: LiveObjects plugin failed to decode ObjectMessage \\(itemDict), error \\(error as Any)")
+// 1
                 return nil
             }
             
