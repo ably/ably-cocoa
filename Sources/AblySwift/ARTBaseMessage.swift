@@ -105,7 +105,7 @@ public class ARTBaseMessage: NSObject, NSCopying {
         var description = "<\(type(of: self)): \(Unmanaged.passUnretained(self).toOpaque())> {\n"
         description += " id: \(String(describing: id)),\n"
         description += " clientId: \(String(describing: clientId)),\n"
-        description += " connectionId: \(connectionId),\n"
+        description += " connectionId: \(String(describing: connectionId)),\n"
         description += " timestamp: \(String(describing: timestamp)),\n"
         description += " encoding: \(String(describing: encoding)),\n"
         description += " data: \(String(describing: data))\n"

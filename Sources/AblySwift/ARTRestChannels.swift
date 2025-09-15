@@ -28,13 +28,6 @@ public protocol ARTRestChannelsProtocol {
     func iterate() -> any NSFastEnumeration
 }
 
-// swift-migration: Placeholder delegate for initialization workaround
-private class PlaceholderDelegate: ARTChannelsDelegate {
-    func makeChannel(_ channel: String, options: ARTChannelOptions?) -> ARTChannel {
-        fatalError("PlaceholderDelegate should not be called")
-    }
-}
-
 // swift-migration: original location ARTRestChannels.m, lines 9-44
 public class ARTRestChannels: NSObject, ARTRestChannelsProtocol, @unchecked Sendable {
     internal let _internal: ARTRestChannelsInternal
@@ -82,7 +75,7 @@ public class ARTRestChannels: NSObject, ARTRestChannelsProtocol, @unchecked Send
 
 // swift-migration: original location ARTRestChannels.m, lines 60-101
 internal class ARTRestChannelsInternal: NSObject, ARTChannelsDelegate {
-    private let _channels: ARTChannels<ARTRestChannelInternal>
+    private var _channels: ARTChannels<ARTRestChannelInternal>!
     
     // swift-migration: original location ARTRestChannels.m, line 50
     weak var rest: ARTRestInternal? // weak because rest owns self
@@ -94,17 +87,15 @@ internal class ARTRestChannelsInternal: NSObject, ARTChannelsDelegate {
         self.rest = rest
         self.logger = logger
         // swift-migration: Initialize with placeholder delegate 
-        self._channels = ARTChannels<ARTRestChannelInternal>(delegate: PlaceholderDelegate(), dispatchQueue: rest.queue, prefix: rest.options.testOptions.channelNamePrefix)
         super.init()
-        // swift-migration: Replace delegate with self using private property access
-        self._channels.setValue(self, forKey: "delegate")
+        self._channels = ARTChannels<ARTRestChannelInternal>(delegate: self, dispatchQueue: rest.queue, prefix: rest.options.testOptions.channelNamePrefix)
     }
     
     // swift-migration: original location ARTRestChannels.m, line 73
     func makeChannel(_ name: String, options: ARTChannelOptions?) -> ARTChannel {
         // swift-migration: Original Objective-C passes nil directly to initializer when options is nil
         // Using utility function to preserve nil-passing behavior despite missing _Nullable annotation
-        return ARTRestChannelInternal(name: name, withOptions: unwrapValueWithAmbiguousObjectiveCNullability(options), andRest: rest!, logger: logger)
+        return ARTRestChannelInternal(name: name, withOptions: ARTChannelOptions(), andRest: rest!, logger: logger)
     }
     
     // swift-migration: original location ARTRestChannels+Private.h, line 14 and ARTRestChannels.m, line 77

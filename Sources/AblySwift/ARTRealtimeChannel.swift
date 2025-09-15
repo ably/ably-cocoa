@@ -785,7 +785,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
     // MARK: - ARTRealtimeChannelInternal Methods
     
     // swift-migration: original location ARTRealtimeChannel.m, line 366
-    internal func internalPostMessages(_ data: Any, callback: @escaping ARTCallback) {
+    internal override func internalPostMessages(_ data: Any, callback: ARTCallback?) {
         var callbackWrapper: ARTCallback? = callback
         if callbackWrapper != nil {
             let userCallback = callbackWrapper!

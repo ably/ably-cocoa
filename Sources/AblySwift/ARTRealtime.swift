@@ -135,9 +135,11 @@ public class ARTRealtime: NSObject, ARTRealtimeProtocol {
     
     // swift-migration: original location ARTRealtime.h, line 145 and ARTRealtime.m, line 87
     public var channels: ARTRealtimeChannels {
-        // swift-migration: TODO
-        fatalError()
-        //        return ARTRealtimeChannels()
+        return ARTRealtimeChannels(
+            internal: `internal`.channels,
+            realtimeInternal: `internal`,
+            queuedDealloc: _dealloc!
+        )
     }
     
     // swift-migration: original location ARTRealtime.h, line 153 and ARTRealtime.m, line 91

@@ -92,7 +92,7 @@ public class ARTPresenceMessage: ARTBaseMessage {
      * @return A combination of `ARTBaseMessage.clientId` and `ARTBaseMessage.connectionId`.
      */
     public func memberKey() -> String {
-        return "\(self.connectionId):\(self.clientId ?? "")"
+        return "\(self.connectionId ?? ""):\(self.clientId ?? "")"
     }
 
     // swift-migration: original location ARTPresenceMessage.h, line 54 and ARTPresenceMessage.m, line 36

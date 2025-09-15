@@ -351,11 +351,11 @@ internal class ARTRestChannelInternal: ARTChannel {
     }
     
     // swift-migration: original location ARTRestChannel.m, line 279
-    private func internalPostMessages(_ data: Any, callback: @escaping ARTCallback) {
+    internal override func internalPostMessages(_ data: Any, callback: ARTCallback?) {
         let userCallback = callback
         let wrappedCallback: ARTCallback = { error in
             self._userQueue.async {
-                userCallback(error)
+                userCallback?(error)
             }
         }
         

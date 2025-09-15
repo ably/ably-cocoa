@@ -70,7 +70,8 @@ internal class ARTOSReachability: NSObject, ARTReachability {
             },
             release: { info in
                 let unmanaged = Unmanaged<ARTReachabilityCallback>.fromOpaque(info)
-                unmanaged.release()
+                // swift-migration: Lawrence commented out, this is crashing. TODO fix
+                // unmanaged.release()
             },
             copyDescription: nil
         )
