@@ -1,7 +1,8 @@
 import Foundation
 
+// swift-migration: TODO: Lawrence — why has it not copied across the documentation for this type?
 // swift-migration: original location ARTLogAdapter.h, line 15 and ARTLogAdapter.m, line 5
-internal class ARTLogAdapter: NSObject, ARTVersion2Log {
+internal class LogAdapter: NSObject, Version2Log {
     
     // swift-migration: original location ARTLogAdapter+Testing.h, line 9 and ARTLogAdapter.m, line 9
     internal let logger: ARTLog

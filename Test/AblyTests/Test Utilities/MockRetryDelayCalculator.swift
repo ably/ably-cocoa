@@ -1,4 +1,5 @@
 @testable import AblySwift
+import Foundation
 
 /// A mock implementation of `RetryDelayCalculator`, whose `delay(forRetryNumber:)` method returns values from a provided array.
 class MockRetryDelayCalculator: RetryDelayCalculator {

@@ -43,14 +43,14 @@ public class ARTTestClientOptions: NSObject, NSCopying {
     /**
      Initial value is an instance of `ARTDefaultJitterCoefficientGenerator`.
      */
-    public var jitterCoefficientGenerator: ARTJitterCoefficientGenerator
+    public var jitterCoefficientGenerator: JitterCoefficientGenerator
 
     // swift-migration: original location ARTTestClientOptions.m, line 9
     public override init() {
         realtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
         shuffleArray = ARTFallback_shuffleArray
         transportFactory = ARTDefaultRealtimeTransportFactory()
-        jitterCoefficientGenerator = ARTDefaultJitterCoefficientGenerator()
+        jitterCoefficientGenerator = DefaultJitterCoefficientGenerator()
         super.init()
     }
 

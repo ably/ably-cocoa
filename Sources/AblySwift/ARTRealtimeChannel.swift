@@ -615,7 +615,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
         self._attachedEventEmitter = ARTInternalEventEmitter(queue: _queue)
         self._detachedEventEmitter = ARTInternalEventEmitter(queue: _queue)
         self.internalEventEmitter = ARTInternalEventEmitter(queue: _queue)
-        let attachRetryDelayCalculator = ARTBackoffRetryDelayCalculator(initialRetryTimeout: realtime.options.channelRetryTimeout,
+        let attachRetryDelayCalculator = BackoffRetryDelayCalculator(initialRetryTimeout: realtime.options.channelRetryTimeout,
                                                                         jitterCoefficientGenerator: realtime.options.testOptions.jitterCoefficientGenerator)
 
         super.init(name: name, andOptions: options, rest: realtime.rest, logger: logger)

@@ -216,7 +216,7 @@ public class ARTRestInternal: NSObject {
             }
             
             let now = continuousClock.now()
-            _fallbackRetryExpiration = continuousClock.addingDuration(options.fallbackRetryTimeout, toInstant: now)
+            _fallbackRetryExpiration = continuousClock.addingDuration(options.fallbackRetryTimeout, to: now)
         }
     }
     
@@ -567,7 +567,7 @@ public class ARTRestInternal: NSObject {
     
     // swift-migration: original location ARTRest.m, line 492
     private func errorBecauseShouldNotRenewToken(_ error: ARTErrorInfo?) -> ARTErrorInfo? {
-        if let error = error, ARTDefaultErrorChecker().isTokenError(error) {
+        if let error = error, DefaultErrorChecker().isTokenError(error) {
             if auth.tokenIsRenewable {
                 return nil
             }

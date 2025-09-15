@@ -58,8 +58,8 @@ public class ARTInternalLog: NSObject, _AblyPluginSupportPrivate.Logger {
     public static var sharedClassMethodLogger_readDocumentationBeforeUsing: ARTInternalLog = {
         let artLog = ARTLog()
         artLog.logLevel = .none
-        let version2Log: any ARTVersion2Log = ARTLogAdapter(logger: artLog)
-        let core: any ARTInternalLogCore = ARTDefaultInternalLogCore(logger: version2Log)
+        let version2Log: any Version2Log = LogAdapter(logger: artLog)
+        let core: any ARTInternalLogCore = DefaultInternalLogCore(logger: version2Log)
         return ARTInternalLog(core: core)
     }()
     
@@ -76,8 +76,8 @@ public class ARTInternalLog: NSObject, _AblyPluginSupportPrivate.Logger {
     /**
      A convenience initializer which creates a logger whose core is an instance of `ARTDefaultInternalLogCore` wrapping the given logger.
      */
-    public convenience init(logger: any ARTVersion2Log) {
-        let core: any ARTInternalLogCore = ARTDefaultInternalLogCore(logger: logger)
+    public convenience init(logger: any Version2Log) {
+        let core: any ARTInternalLogCore = DefaultInternalLogCore(logger: logger)
         self.init(core: core)
     }
     
@@ -86,7 +86,7 @@ public class ARTInternalLog: NSObject, _AblyPluginSupportPrivate.Logger {
      A convenience initializer which creates a logger whose core is an instance of `ARTDefaultInternalLogCore` initialized with that class's `initWithClientOptions:` initializer.
      */
     public convenience init(clientOptions: ARTClientOptions) {
-        let core: any ARTInternalLogCore = ARTDefaultInternalLogCore(clientOptions: clientOptions)
+        let core: any ARTInternalLogCore = DefaultInternalLogCore(clientOptions: clientOptions)
         self.init(core: core)
     }
     

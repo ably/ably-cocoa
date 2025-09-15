@@ -355,7 +355,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     
     // swift-migration: original location ARTRealtime.m, line 204
     // swift-migration: Lawrence — changed let to var so that this could be implicitly unwrapped optional; TODO make it so writing is fatalError
-    private var connectRetryState: ARTConnectRetryState!
+    private var connectRetryState: ConnectRetryState!
 
     // swift-migration: original location ARTRealtime.m, line 205
     private let logger: ARTInternalLog
@@ -469,11 +469,11 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
 
         connection = ARTConnectionInternal(realtime: self, logger: logger)
 
-        let connectRetryDelayCalculator = ARTBackoffRetryDelayCalculator(
+        let connectRetryDelayCalculator = BackoffRetryDelayCalculator(
             initialRetryTimeout: options.disconnectedRetryTimeout,
             jitterCoefficientGenerator: options.testOptions.jitterCoefficientGenerator
         )
-        connectRetryState = ARTConnectRetryState(
+        connectRetryState = ConnectRetryState(
             retryDelayCalculator: connectRetryDelayCalculator,
             logger: logger,
             logMessagePrefix: "RT: \(Unmanaged.passUnretained(self).toOpaque()) "
@@ -841,7 +841,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
         connection.setState(state)
         connection.setErrorReason(params.errorInfo)
         
-        connectRetryState.connectionWillTransitionToState(stateChange.current)
+        connectRetryState.connectionWillTransition(to: stateChange.current)
         
         switch stateChange.current {
         case .connecting:
@@ -1256,7 +1256,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     // swift-migration: original location ARTRealtime.m, line 1095
     private func isTokenError(_ error: ARTErrorInfo?) -> Bool {
         guard let error = error else { return false }
-        return ARTDefaultErrorChecker().isTokenError(error)
+        return DefaultErrorChecker().isTokenError(error)
     }
     
     // swift-migration: original location ARTRealtime.m, line 1099

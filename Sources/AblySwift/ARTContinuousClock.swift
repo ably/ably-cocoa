@@ -21,7 +21,7 @@ internal class ARTContinuousClock: NSObject {
     /**
      Returns the instant in time that occurs after a given duration has elapsed in relation to a given instant in time.
      */
-    internal func addingDuration(_ duration: TimeInterval, toInstant instant: ARTContinuousClockInstant) -> ARTContinuousClockInstant {
+    internal func addingDuration(_ duration: TimeInterval, to instant: ARTContinuousClockInstant) -> ARTContinuousClockInstant {
         let time = instant.timeInNanosecondsSinceClockReferenceInstant + UInt64(duration * Double(NSEC_PER_SEC))
         return ARTContinuousClockInstant(time: time)
     }

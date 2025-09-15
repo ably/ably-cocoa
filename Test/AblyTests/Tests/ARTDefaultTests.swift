@@ -1,6 +1,6 @@
 import XCTest
 
-@testable import Ably // System under Test
+@testable import AblySwift // System under Test
 
 class ARTDefaultTests: XCTestCase {
     

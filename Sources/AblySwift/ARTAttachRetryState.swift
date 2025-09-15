@@ -9,13 +9,13 @@ public class ARTAttachRetryState: NSObject {
     // swift-migration: original location ARTAttachRetryState.m, line 11
     internal let logMessagePrefix: String
     // swift-migration: original location ARTAttachRetryState.m, line 12
-    internal let retryDelayCalculator: ARTRetryDelayCalculator
+    internal let retryDelayCalculator: RetryDelayCalculator
     // swift-migration: original location ARTAttachRetryState.m, line 13
     internal var retrySequence: ARTRetrySequence?
     
     // swift-migration: original location ARTAttachRetryState.h, line 16
     public init(
-        retryDelayCalculator: ARTRetryDelayCalculator,
+        retryDelayCalculator: RetryDelayCalculator,
         logger: ARTInternalLog,
         logMessagePrefix: String
     ) {

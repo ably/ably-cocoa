@@ -73,7 +73,7 @@ public class ARTPaginatedResult<ItemType>: NSObject {
     public override init() {
         self.initializedViaInit = true
         self.wrapperSDKAgents = nil
-        self.logger = ARTInternalLog(core: ARTDefaultInternalLogCore(logger: ARTLogAdapter(logger: ARTLog())))
+        self.logger = ARTInternalLog(core: DefaultInternalLogCore(logger: LogAdapter(logger: ARTLog())))
         super.init()
     }
     

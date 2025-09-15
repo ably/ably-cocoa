@@ -12,7 +12,7 @@ public protocol ARTInternalLogCore {
     /// - Parameters:
     ///   - fileName: The absolute path of the file from which the log message was emitted (for example, as returned by the `__FILE__` macro).
     // swift-migration: original location ARTInternalLogCore.h, line 25
-    func log(_ message: String, withLevel level: ARTLogLevel, file fileName: UnsafePointer<CChar>, line: Int)
+    func log(_ message: String, with level: ARTLogLevel, file fileName: UnsafePointer<CChar>, line: Int)
     
     // swift-migration: original location ARTInternalLogCore.h, line 27
     var logLevel: ARTLogLevel { get set }
@@ -20,15 +20,15 @@ public protocol ARTInternalLogCore {
 
 // swift-migration: original location ARTInternalLogCore.h, line 35 and ARTInternalLogCore.m, line 7
 /// The implementation of `ARTInternalLogCore` that should be used in non-test code.
-public class ARTDefaultInternalLogCore: NSObject, ARTInternalLogCore {
+public class DefaultInternalLogCore: NSObject, ARTInternalLogCore {
     
     // swift-migration: original location ARTInternalLogCore+Testing.h, line 9
     /// Exposed to test suite so that it can make assertions about how the convenience initializers populate it.
-    public private(set) var logger: ARTVersion2Log
+    public private(set) var logger: Version2Log
     
     // swift-migration: original location ARTInternalLogCore.h, line 40 and ARTInternalLogCore.m, line 9
     /// Creates a logger which forwards its generated messages to the given logger.
-    public init(logger: ARTVersion2Log) {
+    public init(logger: Version2Log) {
         self.logger = logger
         super.init()
     }
@@ -42,7 +42,7 @@ public class ARTDefaultInternalLogCore: NSObject, ARTInternalLogCore {
             clientOptions.logHandler.logLevel = clientOptions.logLevel
         }
         
-        let logger = ARTLogAdapter(logger: clientOptions.logHandler)
+        let logger = LogAdapter(logger: clientOptions.logHandler)
         self.init(logger: logger)
     }
     

@@ -4,7 +4,7 @@ import Foundation
  Consider an operation which can fail. If we attempt to perform the operation and it fails, we may wish to start performing a sequence of retries, until success or some other termination condition is achieved. An `ARTRetryDelayCalculator` describes the amount of time that we wish to wait before performing each retry in this sequence.
  */
 // swift-migration: original location ARTRetryDelayCalculator.h, line 9
-public protocol ARTRetryDelayCalculator {
+public protocol RetryDelayCalculator {
     /**
      Returns the duration that should be waited before performing a retry of the operation.
 
@@ -60,7 +60,7 @@ public class ARTRetrySequence: NSObject {
     public let id: UUID
     
     // swift-migration: original location ARTRetrySequence.m, line 14
-    private let delayCalculator: ARTRetryDelayCalculator
+    private let delayCalculator: RetryDelayCalculator
     
     // swift-migration: original location ARTRetrySequence.m, line 16
     // Starts off as zero, incremented each time -addRetryAttempt is called
@@ -73,7 +73,7 @@ public class ARTRetrySequence: NSObject {
         - delayCalculator: The retry delay calculator used to calculate the duration after which each retry attempt should be performed.
      */
     // swift-migration: original location ARTRetrySequence.h, line 22 and ARTRetrySequence.m, line 24
-    public init(delayCalculator: ARTRetryDelayCalculator) {
+    public init(delayCalculator: RetryDelayCalculator) {
         self.id = UUID()
         self.delayCalculator = delayCalculator
         super.init()

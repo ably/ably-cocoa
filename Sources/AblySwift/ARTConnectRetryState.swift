@@ -4,7 +4,7 @@ import Foundation
 /**
  Maintains the state that an `ARTRealtime` instance needs in order to determine the duration to wait before retrying a connection. Wraps a sequence of `ARTRetrySequence` objects.
  */
-internal class ARTConnectRetryState: NSObject {
+internal class ConnectRetryState: NSObject {
     
     // swift-migration: original location ARTConnectRetryState.m, line 10
     internal let logger: ARTInternalLog
@@ -13,13 +13,13 @@ internal class ARTConnectRetryState: NSObject {
     internal let logMessagePrefix: String
     
     // swift-migration: original location ARTConnectRetryState.m, line 12
-    internal let retryDelayCalculator: ARTRetryDelayCalculator
+    internal let retryDelayCalculator: RetryDelayCalculator
     
     // swift-migration: original location ARTConnectRetryState.m, line 13
     internal var retrySequence: ARTRetrySequence?
     
     // swift-migration: original location ARTConnectRetryState.h, line 16 and ARTConnectRetryState.m, line 21
-    internal init(retryDelayCalculator: ARTRetryDelayCalculator, logger: ARTInternalLog, logMessagePrefix: String) {
+    internal init(retryDelayCalculator: RetryDelayCalculator, logger: ARTInternalLog, logMessagePrefix: String) {
         self.retryDelayCalculator = retryDelayCalculator
         self.logger = logger
         self.logMessagePrefix = logMessagePrefix
@@ -46,7 +46,7 @@ internal class ARTConnectRetryState: NSObject {
     /**
      Resets the retry sequence when the channel leaves the sequence of `DISCONNECTED` <-> `CONNECTING` state changes.
      */
-    internal func connectionWillTransitionToState(_ state: ARTRealtimeConnectionState) {
+    internal func connectionWillTransition(to state: ARTRealtimeConnectionState) {
         // The client library specification doesn't specify when to reset the retry count (see https://github.com/ably/specification/issues/127); have copied the analogous logic in ARTAttachRetryState.
         if state != .connecting && state != .disconnected {
             retrySequence = nil

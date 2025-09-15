@@ -6,7 +6,7 @@ import Foundation
 
  In addition to putting shared error logic in a common place, it allows us to provide a mock instance when testing components that need to perform error checking, without having to worry about creating representative errors in our test cases.
  */
-internal protocol ARTErrorChecker {
+internal protocol ErrorChecker {
     
     // swift-migration: original location ARTErrorChecker.h, line 18
     /**
@@ -19,7 +19,7 @@ internal protocol ARTErrorChecker {
 /**
  The implementation of `ARTErrorChecker` that should be used in non-test code.
  */
-internal class ARTDefaultErrorChecker: NSObject, ARTErrorChecker {
+internal class DefaultErrorChecker: NSObject, ErrorChecker {
     
     // swift-migration: original location ARTErrorChecker.m, line 7
     func isTokenError(_ errorInfo: ARTErrorInfo) -> Bool {

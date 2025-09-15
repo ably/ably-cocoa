@@ -1,16 +1,16 @@
 import Foundation
 
 // swift-migration: original location ARTBackoffRetryDelayCalculator.h, line 12 and ARTBackoffRetryDelayCalculator.m, line 15
-internal class ARTBackoffRetryDelayCalculator: NSObject, ARTRetryDelayCalculator {
+internal class BackoffRetryDelayCalculator: NSObject, RetryDelayCalculator {
     
     // swift-migration: original location ARTBackoffRetryDelayCalculator.m, line 8
     private let initialRetryTimeout: TimeInterval
     
     // swift-migration: original location ARTBackoffRetryDelayCalculator.m, line 9
-    private let jitterCoefficientGenerator: ARTJitterCoefficientGenerator
+    private let jitterCoefficientGenerator: JitterCoefficientGenerator
     
     // swift-migration: original location ARTBackoffRetryDelayCalculator.h, line 23 and ARTBackoffRetryDelayCalculator.m, line 17
-    internal init(initialRetryTimeout: TimeInterval, jitterCoefficientGenerator: ARTJitterCoefficientGenerator) {
+    internal init(initialRetryTimeout: TimeInterval, jitterCoefficientGenerator: JitterCoefficientGenerator) {
         self.initialRetryTimeout = initialRetryTimeout
         self.jitterCoefficientGenerator = jitterCoefficientGenerator
         super.init()
@@ -18,7 +18,7 @@ internal class ARTBackoffRetryDelayCalculator: NSObject, ARTRetryDelayCalculator
     
     // swift-migration: original location ARTRetryDelayCalculator.h, line 19 and ARTBackoffRetryDelayCalculator.m, line 27
     internal func delayForRetryNumber(_ retryNumber: Int) -> TimeInterval {
-        let backoffCoefficient = ARTBackoffRetryDelayCalculator.backoffCoefficient(forRetryNumber: retryNumber)
+        let backoffCoefficient = BackoffRetryDelayCalculator.backoffCoefficient(forRetryNumber: retryNumber)
         let jitterCoefficient = jitterCoefficientGenerator.generateJitterCoefficient()
         
         return initialRetryTimeout * backoffCoefficient * jitterCoefficient
