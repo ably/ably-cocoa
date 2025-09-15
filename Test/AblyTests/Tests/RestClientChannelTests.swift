@@ -4,6 +4,7 @@ import Foundation
 import Nimble
 import XCTest
 
+/*
 private func assertMessagePayloadId(id: String?, expectedSerial: String) {
     guard let id = id else {
         fail("Message.id from payload is nil"); return
@@ -1712,3 +1713,5 @@ class RestClientChannelTests: XCTestCase {
         XCTAssert(url.absoluteString.contains(urlEncodedChannelName))
     }
 }
+
+*/

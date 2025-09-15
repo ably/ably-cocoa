@@ -164,7 +164,7 @@ class DeltaCodecTests: XCTestCase {
                         "format": "vcdiff",
                         "from": "foo:1:0",
                     ],
-                ] as NSDictionary
+                ] as Dictionary
                 transport.setBeforeIncomingMessageModifier(nil)
             }
             return protocolMessage

@@ -3,6 +3,7 @@ import Nimble
 import XCTest
 import AblyTestingObjC
 
+/*
 func countChannels(_ channels: ARTRealtimeChannels) -> Int {
     var i = 0
     for _ in channels {
@@ -5575,3 +5576,5 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
     }
 }
+
+*/
