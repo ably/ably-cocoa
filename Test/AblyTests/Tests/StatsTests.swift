@@ -9,7 +9,7 @@ private let subject: ARTStatsConnectionTypes? = {
         ["connections": ["tls": ["opened": 5], "all": ["peak": 10]]],
     ]
     let rawData = try! JSONUtility.serialize(data)
-    let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+    let stats = try! encoder.decodeStats(rawData)?[0]
     return stats?.connections
 }()
 
@@ -18,7 +18,7 @@ private let channelsTestsSubject: ARTStatsResourceCount? = {
         ["channels": ["opened": 5, "peak": 10]],
     ]
     let rawData = try! JSONUtility.serialize(data)
-    let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+    let stats = try! encoder.decodeStats(rawData)?[0]
     return stats?.channels
 }()
 
@@ -37,7 +37,7 @@ private let pushTestsSubject: ARTStatsPushCount? = {
             ] as [String : Any]],
     ]
     let rawData = try! JSONUtility.serialize(data)
-    let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+    let stats = try! encoder.decodeStats(rawData)?[0]
     return stats?.pushes
 }()
 
@@ -46,7 +46,7 @@ private let inProgressTestsStats: ARTStats? = {
         ["inProgress": "2004-02-01:05:06"],
     ]
     let rawData = try! JSONUtility.serialize(data)
-    return try! encoder.decodeStats(rawData)[0] as? ARTStats
+    return try! encoder.decodeStats(rawData)?[0]
 }()
 
 private let countTestStats: ARTStats? = {
@@ -54,7 +54,7 @@ private let countTestStats: ARTStats? = {
         ["count": 55],
     ]
     let rawData = try! JSONUtility.serialize(data)
-    return try! encoder.decodeStats(rawData)[0] as? ARTStats
+    return try! encoder.decodeStats(rawData)?[0]
 }()
 
 class StatsTests: XCTestCase {
@@ -83,7 +83,7 @@ class StatsTests: XCTestCase {
             [attribute: ["messages": ["count": 5], "all": ["data": 10]]],
         ]
         let rawData = try! JSONUtility.serialize(data)
-        let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+        let stats = try! encoder.decodeStats(rawData)?[0]
         let subject = stats?.value(forKey: attribute) as? ARTStatsMessageTypes
 
         func test__should_return_a_MessagesTypes_object() {
@@ -188,7 +188,7 @@ class StatsTests: XCTestCase {
             ]],
         ]
         let rawData = try! JSONUtility.serialize(data)
-        let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+        let stats = try! encoder.decodeStats(rawData)?[0]
         let subject = stats?.value(forKey: direction) as? ARTStatsMessageTraffic
 
         func test__should_return_a_MessageTraffic_object() {
@@ -309,7 +309,7 @@ class StatsTests: XCTestCase {
             [requestType: ["succeeded": 5, "failed": 10]],
         ]
         let rawData = try! JSONUtility.serialize(data)
-        let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+        let stats = try! encoder.decodeStats(rawData)?[0]
         let subject = stats?.value(forKey: requestType) as? ARTStatsRequestCount
 
         func test__should_return_a_RequestCount_object() {
@@ -383,7 +383,7 @@ class StatsTests: XCTestCase {
             ["intervalId": "2004-02-01:05:06"],
         ]
         let rawData = try! JSONUtility.serialize(data)
-        let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+        let stats = try! encoder.decodeStats(rawData)?[0]
 
         let dateComponents = NSDateComponents()
         dateComponents.year = 2004

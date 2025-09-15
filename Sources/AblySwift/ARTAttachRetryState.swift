@@ -11,7 +11,7 @@ public class ARTAttachRetryState: NSObject {
     // swift-migration: original location ARTAttachRetryState.m, line 12
     internal let retryDelayCalculator: RetryDelayCalculator
     // swift-migration: original location ARTAttachRetryState.m, line 13
-    internal var retrySequence: ARTRetrySequence?
+    internal var retrySequence: RetrySequence?
     
     // swift-migration: original location ARTAttachRetryState.h, line 16
     public init(
@@ -29,7 +29,7 @@ public class ARTAttachRetryState: NSObject {
     /// Calls `addRetryAttempt` on the current retry sequence.
     public func addRetryAttempt() -> ARTRetryAttempt {
         if retrySequence == nil {
-            retrySequence = ARTRetrySequence(delayCalculator: retryDelayCalculator)
+            retrySequence = RetrySequence(delayCalculator: retryDelayCalculator)
             ARTLogDebug(logger, "Created attach retry sequence \(retrySequence!)")
         }
         

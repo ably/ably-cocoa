@@ -16,7 +16,7 @@ internal class ConnectRetryState: NSObject {
     internal let retryDelayCalculator: RetryDelayCalculator
     
     // swift-migration: original location ARTConnectRetryState.m, line 13
-    internal var retrySequence: ARTRetrySequence?
+    internal var retrySequence: RetrySequence?
     
     // swift-migration: original location ARTConnectRetryState.h, line 16 and ARTConnectRetryState.m, line 21
     internal init(retryDelayCalculator: RetryDelayCalculator, logger: InternalLog, logMessagePrefix: String) {
@@ -32,7 +32,7 @@ internal class ConnectRetryState: NSObject {
      */
     internal func addRetryAttempt() -> ARTRetryAttempt {
         if retrySequence == nil {
-            retrySequence = ARTRetrySequence(delayCalculator: retryDelayCalculator)
+            retrySequence = RetrySequence(delayCalculator: retryDelayCalculator)
             ARTLogDebug(logger, "\(logMessagePrefix)Created connect retry sequence \(retrySequence!)")
         }
         

@@ -51,7 +51,7 @@ public class ARTRetryAttempt: NSObject {
  Consider an operation which can fail. If we attempt to perform the operation and it fails, we may wish to start performing a sequence of retries, until success or some other termination condition is achieved. An `ARTRetrySequence` keeps track of the number of retries that have been attempted. Each time its `addRetryAttempt` method is called, it increments its retry count, and returns an `ARTRetryAttempt` which describes the duration that we should wait before performing the retry of the operation.
  */
 // swift-migration: original location ARTRetrySequence.h, line 12 and ARTRetrySequence.m, line 22
-public class ARTRetrySequence: NSObject {
+public class RetrySequence: NSObject {
     
     /**
      A unique identifier for this retry sequence, for logging purposes.

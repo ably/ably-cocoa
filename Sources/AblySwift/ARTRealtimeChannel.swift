@@ -83,7 +83,7 @@ public protocol ARTRealtimeChannelProtocol: ARTChannelProtocol {
      * @return An `ARTEventListener` object.
      */
     @discardableResult
-    func subscribeWithAttachCallback(_ onAttach: ARTCallback?, callback: @escaping ARTMessageCallback) -> ARTEventListener?
+    func subscribe(attachCallback onAttach: ARTCallback?, callback: @escaping ARTMessageCallback) -> ARTEventListener?
     
     // swift-migration: original location ARTRealtimeChannel.h, line 99
     /**
@@ -380,7 +380,7 @@ public class ARTRealtimeChannel: NSObject, ARTRealtimeChannelProtocol, @unchecke
     
     // swift-migration: original location ARTRealtimeChannel.h, line 87 and ARTRealtimeChannel.m, line 169
     @discardableResult
-    public func subscribeWithAttachCallback(_ onAttach: ARTCallback?, callback: @escaping ARTMessageCallback) -> ARTEventListener? {
+    public func subscribe(attachCallback onAttach: ARTCallback?, callback: @escaping ARTMessageCallback) -> ARTEventListener? {
         return `internal`.subscribeWithAttachCallback(onAttach, callback: callback)
     }
     

@@ -260,11 +260,22 @@ public class ARTClientOptions: ARTAuthOptions {
         _ = initDefaults()
     }
 
+    // swift-migration: added by Lawrence because initializers not inherited
+    public override init(key: String?) {
+        super.init(key: key)
+        _ = initDefaults()
+    }
+
+    // swift-migration: added by Lawrence because initializers not inherited
+    public override init(token: String?) {
+        super.init(token: token)
+        _ = initDefaults()
+    }
+
     // swift-migration: original location ARTClientOptions.m, line 67
     public override var description: String {
         return "\(super.description)\n\t clientId: \(clientId ?? "nil");"
     }
-
 
     // swift-migration: original location ARTClientOptions+Private.h, line 20 and ARTClientOptions.m, line 92
     internal func restUrlComponents() -> URLComponents {
