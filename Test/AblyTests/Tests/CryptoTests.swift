@@ -113,17 +113,17 @@ class CryptoTests: XCTestCase {
         let cipher = try ARTCrypto.cipher(with: params, logger: logger)
         let data = "data".data(using: String.Encoding.utf8)!
 
-        var distinctOutputs = Set<NSData>()
-        var output: NSData?
+        var distinctOutputs = Set<Data>()
+        var output: Data?
 
         for _ in 0 ..< 3 {
             cipher.encrypt(data, output: &output)
             distinctOutputs.insert(output!)
 
-            let firstBlock = output!.subdata(with: NSMakeRange(0, Int((cipher as! ARTCbcCipher).blockLength)))
+            let firstBlock = (output! as NSData).subdata(with: NSMakeRange(0, Int((cipher as! ARTCbcCipher).blockLength)))
             let paramsWithIV = ARTCipherParams(algorithm: "aes", key: key as ARTCipherKeyCompatible, iv: firstBlock)
-            var sameOutput: NSData?
-            ARTCrypto.cipher(with: paramsWithIV, logger: logger).encrypt(data, output: &sameOutput)
+            var sameOutput: Data?
+            try ARTCrypto.cipher(with: paramsWithIV, logger: logger).encrypt(data, output: &sameOutput)
 
             XCTAssertEqual(output!, sameOutput!)
         }
@@ -158,7 +158,7 @@ class CryptoTests: XCTestCase {
                 expect(encryptedFixture.encoding).to(endWith("\(cryptoFixture.expectedEncryptedEncoding)/base64"))
 
                 var error: NSError?
-                let decoded = fixture.decode(with: decoder, error: &error) as! ARTMessage
+                let decoded = fixture.decode(with: decoder)
                 XCTAssertNil(error)
                 XCTAssertNotNil(decoded)
 
@@ -181,7 +181,7 @@ class CryptoTests: XCTestCase {
                 expect(encryptedFixture.encoding).to(endWith("\(cryptoFixture.expectedEncryptedEncoding)/base64"))
 
                 var error: NSError?
-                let decoded = fixture.decode(with: decoder, error: &error) as! ARTMessage
+                let decoded = fixture.decode(with: decoder)
                 XCTAssertNil(error)
                 XCTAssertNotNil(decoded)
 
