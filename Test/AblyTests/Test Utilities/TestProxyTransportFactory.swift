@@ -1,4 +1,4 @@
-import Ably.Private
+@testable import AblySwift
 import SocketRocket
 
 class TestProxyTransportFactory: RealtimeTransportFactory {

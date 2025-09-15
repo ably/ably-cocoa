@@ -1,5 +1,5 @@
 import XCTest
-import Ably
+@testable import AblySwift
 
 final class ClientInformationTests: XCTestCase {
     

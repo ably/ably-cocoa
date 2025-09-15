@@ -1,5 +1,4 @@
-import Ably
-import Ably.Private
+@testable import AblySwift
 import Nimble
 import XCTest
 import AblyTestingObjC

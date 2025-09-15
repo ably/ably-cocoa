@@ -1,4 +1,4 @@
-import Ably
+@testable import AblySwift
 import AblyTesting
 import AblyTestingObjC
 import Nimble

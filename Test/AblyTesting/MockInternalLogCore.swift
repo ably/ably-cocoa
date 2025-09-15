@@ -1,4 +1,4 @@
-import Ably.Private
+@testable import AblySwift
 
 @objc(ARTMockInternalLogCore)
 public class MockInternalLogCore: NSObject, InternalLogCore {

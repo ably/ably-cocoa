@@ -1,11 +1,10 @@
-import Ably
+@testable import AblySwift
 import Foundation
 import XCTest
 import Nimble
 import AblyTestingObjC
 import SocketRocket
 
-import Ably.Private
 
 typealias HookToken = AspectToken
 

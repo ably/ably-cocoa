@@ -1,4 +1,4 @@
-import Ably.Private
+@testable import AblySwift
 
 class MockVersion2Log: NSObject, Version2Log {
     var logLevel: ARTLogLevel = .none

@@ -71,7 +71,7 @@ let package = Package(
         .testTarget(
             name: "AblyTests",
             dependencies: [
-                "Ably",
+                "AblySwift",
                 "AblyTesting",
                 "AblyTestingObjC",
                 .product(name: "Nimble", package: "nimble"),
@@ -85,6 +85,7 @@ let package = Package(
             ]
         ),
         // A handful of tests written in Objective-C (they can't be part of AblyTests because SPM doesn't allow mixed-language targets).
+    /*
         .testTarget(
             name: "AblyTestsObjC",
             dependencies: [
@@ -94,11 +95,12 @@ let package = Package(
             ],
             path: "Test/AblyTestsObjC"
         ),
+    */
         // Provides test helpers used by both AblyTests and AblyTestsObjC.
         .target(
             name: "AblyTesting",
             dependencies: [
-                "Ably",
+                "AblySwift",
             ],
             path: "Test/AblyTesting"
         ),

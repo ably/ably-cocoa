@@ -1,4 +1,4 @@
-import Ably.Private
+@testable import AblySwift
 
 /// A mock instance of `JitterCoefficientGenerator`, whose `generateJitterCoefficient()` method returns values from a provided sequence.
 ///

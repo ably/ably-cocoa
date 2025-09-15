@@ -1,5 +1,5 @@
 import XCTest
-import Ably.Private
+@testable import AblySwift
 
 class LogAdapterTests: XCTestCase {
     class MockARTLog: ARTLog {

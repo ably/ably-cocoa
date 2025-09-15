@@ -1,4 +1,4 @@
-import Ably
+@testable import AblySwift
 import Foundation
 import Nimble
 import XCTest
