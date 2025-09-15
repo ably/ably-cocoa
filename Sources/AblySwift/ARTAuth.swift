@@ -868,7 +868,7 @@ public class ARTAuth: NSObject, ARTAuthProtocol {
     }
     
     // swift-migration: original location ARTAuth.h, line 37 and ARTAuth.m, line 55
-    public func requestToken(_ tokenParams: ARTTokenParams?, withOptions authOptions: ARTAuthOptions?, callback: @escaping ARTTokenDetailsCallback) {
+    public func requestToken(_ tokenParams: ARTTokenParams?, with authOptions: ARTAuthOptions?, callback: @escaping ARTTokenDetailsCallback) {
         `internal`.requestToken(tokenParams, withOptions: authOptions, callback: callback)
     }
     
@@ -907,7 +907,7 @@ public protocol ARTAuthProtocol {
     var tokenDetails: ARTTokenDetails? { get }
     
     // swift-migration: original location ARTAuth.h, line 37
-    func requestToken(_ tokenParams: ARTTokenParams?, withOptions authOptions: ARTAuthOptions?, callback: @escaping ARTTokenDetailsCallback)
+    func requestToken(_ tokenParams: ARTTokenParams?, with authOptions: ARTAuthOptions?, callback: @escaping ARTTokenDetailsCallback)
     
     // swift-migration: original location ARTAuth.h, line 46
     func requestToken(_ callback: @escaping ARTTokenDetailsCallback)
