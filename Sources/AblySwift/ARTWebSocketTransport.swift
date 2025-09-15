@@ -175,7 +175,7 @@ internal class ARTWebSocketTransport: NSObject, ARTRealtimeTransport, ARTWebSock
         _state = .opening
         ARTLogDebug(self.logger, "R:\(String(describing: _delegate)) WS:\(self) websocket connect with key")
         let keyParam = URLQueryItem(name: "key", value: key)
-        setupWebSocket([keyParam.name: keyParam], withOptions: options, resumeKey: resumeKey)
+        setupWebSocket([keyParam.name: keyParam], with: options, resumeKey: resumeKey)
         // Connect
         websocket?.open()
     }
@@ -185,14 +185,14 @@ internal class ARTWebSocketTransport: NSObject, ARTRealtimeTransport, ARTWebSock
         _state = .opening
         ARTLogDebug(self.logger, "R:\(String(describing: _delegate)) WS:\(self) websocket connect with token")
         let accessTokenParam = URLQueryItem(name: "accessToken", value: token)
-        setupWebSocket([accessTokenParam.name: accessTokenParam], withOptions: options, resumeKey: resumeKey)
+        setupWebSocket([accessTokenParam.name: accessTokenParam], with: options, resumeKey: resumeKey)
         // Connect
         websocket?.open()
     }
     
     // swift-migration: original location ARTWebSocketTransport+Private.h, line 20 and ARTWebSocketTransport.m, line 138
     @discardableResult
-    internal func setupWebSocket(_ params: [String: URLQueryItem], withOptions options: ARTClientOptions, resumeKey: String?) -> URL {
+    internal func setupWebSocket(_ params: [String: URLQueryItem], with options: ARTClientOptions, resumeKey: String?) -> URL {
         var queryItems = params
         
         // ClientID

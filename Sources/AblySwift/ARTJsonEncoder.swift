@@ -20,13 +20,13 @@ internal class ARTJsonEncoder: NSObject, ARTJsonLikeEncoderDelegate {
     
     // swift-migration: original location ARTJsonEncoder.m, line 17
     // swift-migration: Updated to use Swift throws pattern instead of NSError** pattern (acceptable deviation per PRD)
-    internal func decode(_ data: Data) throws -> Any? {
+    internal func decode(_ data: Data) throws -> Any {
         return try JSONSerialization.jsonObject(with: data, options: [])
     }
     
     // swift-migration: original location ARTJsonEncoder.m, line 21
     // swift-migration: Updated to use Swift throws pattern instead of NSError** pattern (acceptable deviation per PRD)
-    internal func encode(_ obj: Any) throws -> Data? {
+    internal func encode(_ obj: Any) throws -> Data {
         var options: JSONSerialization.WritingOptions = []
         if #available(macOS 10.13, iOS 11.0, tvOS 11.0, *) {
             options = .sortedKeys

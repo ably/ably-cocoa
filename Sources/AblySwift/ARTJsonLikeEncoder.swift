@@ -10,8 +10,8 @@ internal protocol ARTJsonLikeEncoderDelegate {
     func format() -> ARTEncoderFormat
     func formatAsString() -> String
     
-    func decode(_ data: Data) throws -> Any?
-    func encode(_ obj: Any) throws -> Data?
+    func decode(_ data: Data) throws -> Any
+    func encode(_ obj: Any) throws -> Data
 }
 
 // swift-migration: original location ARTJsonLikeEncoder.h, line 21 and ARTJsonLikeEncoder.m, line 34
@@ -1150,11 +1150,12 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 1079
-    func decode(_ data: Data) throws -> Any? {
+    func decode(_ data: Data) throws -> Any {
         do {
             let decoded = try delegate?.decode(data)
             // ARTLogDebug(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")> decoding '\\(data)'; got: \\(decoded as Any)")
-            return decoded
+            // swift-migration: Lawrence added; test suite seemed to expect the Objective-C implementation to throw or return non-nil (not sure what we do if delegate is nil)
+            return unwrapValueWithAmbiguousObjectiveCNullability(decoded)
         } catch {
             // ARTLogError(_logger, "failed decoding data \\(data) with, \\(error.localizedDescription) (\\((error as NSError).localizedFailureReason ?? ""))")
             throw error
@@ -1162,11 +1163,12 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 1092
-    func encode(_ obj: Any) throws -> Data? {
+    func encode(_ obj: Any) throws -> Data {
         do {
             let encoded = try delegate?.encode(obj)
             // ARTLogDebug(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")> encoding '\\(obj)'; got: \\(encoded as Any)")
-            return encoded
+            // swift-migration: Lawrence added; test suite seemed to expect the Objective-C implementation to throw or return non-nil (not sure what we do if delegate is nil)
+            return unwrapValueWithAmbiguousObjectiveCNullability(encoded)
         } catch {
             // ARTLogError(_logger, "failed encoding object \\(obj) with, \\(error.localizedDescription) (\\((error as NSError).localizedFailureReason ?? ""))")
             throw error

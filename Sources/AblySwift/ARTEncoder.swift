@@ -21,10 +21,10 @@ public protocol ARTEncoder {
     func formatAsString() -> String
     
     // swift-migration: original location ARTEncoder.h, line 32
-    func decode(_ data: Data) throws -> Any?
+    func decode(_ data: Data) throws -> Any
     
     // swift-migration: original location ARTEncoder.h, line 33
-    func encode(_ obj: Any) throws -> Data?
+    func encode(_ obj: Any) throws -> Data
     
     // swift-migration: original location ARTEncoder.h, line 35
     /// Decode data to an Array of Dictionaries with AnyObjects.

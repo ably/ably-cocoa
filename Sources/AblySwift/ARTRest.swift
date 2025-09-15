@@ -734,7 +734,7 @@ public class ARTRestInternal: NSObject {
                 mutableRequest.setValue(defaultEncoder.mimeType(), forHTTPHeaderField: "Content-Type")
                 
                 if method.lowercased() == "post" {
-                    mutableRequest.setValue("\(bodyData?.count ?? 0)", forHTTPHeaderField: "Content-Length")
+                    mutableRequest.setValue("\(bodyData.count)", forHTTPHeaderField: "Content-Length")
                 }
             } catch let encodeError {
                 throw encodeError
