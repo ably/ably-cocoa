@@ -9,7 +9,7 @@ extension InternalLog: ARTSRInternalLog {}
 /// A factory for creating an `ARTWebSocket` object.
 public protocol WebSocketFactory {
     // swift-migration: original location ARTWebSocketFactory.h, line 14
-    func createWebSocket(withURLRequest request: URLRequest, logger: InternalLog?) -> ARTWebSocket
+    func createWebSocket(with request: URLRequest, logger: InternalLog?) -> ARTWebSocket
 }
 
 // swift-migration: original location ARTWebSocketFactory.h, line 22 and ARTWebSocketFactory.m, line 4
@@ -17,7 +17,7 @@ public protocol WebSocketFactory {
 public class ARTDefaultWebSocketFactory: NSObject, WebSocketFactory {
     
     // swift-migration: original location ARTWebSocketFactory.m, line 6
-    public func createWebSocket(withURLRequest request: URLRequest, logger: InternalLog?) -> ARTWebSocket {
+    public func createWebSocket(with request: URLRequest, logger: InternalLog?) -> ARTWebSocket {
         return ARTSRWebSocket(urlRequest: request, logger: logger)
     }
 }

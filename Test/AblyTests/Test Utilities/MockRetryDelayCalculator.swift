@@ -13,7 +13,7 @@ class MockRetryDelayCalculator: RetryDelayCalculator {
         self.delays = delays
     }
 
-    func delayForRetryNumber(_ retryNumber: Int) -> TimeInterval {
+    func delay(forRetryNumber retryNumber: Int) -> TimeInterval {
         delays[retryNumber - 1]
     }
 }

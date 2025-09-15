@@ -85,17 +85,17 @@ class CryptoTests: XCTestCase {
     // RSE2
 
     // RSE2a, RSE2b
-    func test__007__Crypto__generateRandomKey__takes_a_single_length_argument_and_returns_a_binary() {
-        var key: NSData = ARTCrypto.generateRandomKey(128) as NSData
+    func test__007__Crypto__generateRandomKey__takes_a_single_length_argument_and_returns_a_binary() throws {
+        var key = try XCTUnwrap(ARTCrypto.generateRandomKey(128)) as NSData
         XCTAssertEqual(key.length, 128 / 8)
 
-        key = ARTCrypto.generateRandomKey(256) as NSData
+        key = try XCTUnwrap(ARTCrypto.generateRandomKey(256)) as NSData
         XCTAssertEqual(key.length, 256 / 8)
     }
 
     // RSE2a, RSE2b
-    func test__008__Crypto__generateRandomKey__takes_no_arguments_and_returns_the_default_algorithm_s_default_length() {
-        let key: NSData = ARTCrypto.generateRandomKey() as NSData
+    func test__008__Crypto__generateRandomKey__takes_no_arguments_and_returns_the_default_algorithm_s_default_length() throws {
+        let key: NSData = try XCTUnwrap(ARTCrypto.generateRandomKey()) as NSData
         XCTAssertEqual(key.length, 256 / 8)
     }
 
@@ -107,10 +107,10 @@ class CryptoTests: XCTestCase {
         XCTAssertEqual(result.hexString, expectedHash)
     }
 
-    func test__010__Crypto__encrypt__should_generate_a_new_IV_every_time_it_s_called__and_should_be_the_first_block_encrypted() {
+    func test__010__Crypto__encrypt__should_generate_a_new_IV_every_time_it_s_called__and_should_be_the_first_block_encrypted() throws {
         let params = ARTCipherParams(algorithm: "aes", key: key as ARTCipherKeyCompatible)
         let logger = InternalLog(core: MockInternalLogCore())
-        let cipher = ARTCrypto.cipher(with: params, logger: logger)
+        let cipher = try ARTCrypto.cipher(with: params, logger: logger)
         let data = "data".data(using: String.Encoding.utf8)!
 
         var distinctOutputs = Set<NSData>()

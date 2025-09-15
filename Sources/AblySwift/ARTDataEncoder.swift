@@ -31,7 +31,7 @@ public class ARTDataEncoder: NSObject {
     public init(cipherParams: ARTCipherParams?, logger: InternalLog) throws {
         if let params = cipherParams {
             do {
-                self.cipher = try ARTCrypto.cipher(params: params, logger: logger)
+                self.cipher = try ARTCrypto.cipher(with: params, logger: logger)
             } catch {
                 let desc = "ARTDataEncoder failed to create cipher with name \(params.algorithm ?? "unknown")"
                 throw NSError(domain: ARTAblyErrorDomain, code: 0, userInfo: [NSLocalizedDescriptionKey: desc])

@@ -392,7 +392,7 @@ public class ARTCrypto: NSObject {
     }
     
     // swift-migration: original location ARTCrypto+Private.h, line 45 and ARTCrypto.m, line 340
-    internal class func cipher(params: ARTCipherParams, logger: InternalLog) throws -> ARTChannelCipher {
+    internal class func cipher(with params: ARTCipherParams, logger: InternalLog) throws -> ARTChannelCipher {
         return try ARTCbcCipher.cbcCipher(params: params, logger: logger)
     }
 }
