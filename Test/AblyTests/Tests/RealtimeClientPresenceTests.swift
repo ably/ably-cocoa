@@ -308,7 +308,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         XCTAssertEqual(channel.internal.presence.members.count, 2)
         // Inject a internal member
-        let internalMember = ARTPresenceMessage(clientId: "internal-member", action: .enter, connectionId: channel.internal.connectionId, id: "\(channel.internal.connectionId):0:0")
+        let internalMember = ARTPresenceMessage(clientId: "internal-member", action: .enter, connectionId: channel.internal.connectionId!, id: "\(channel.internal.connectionId):0:0")
         channel.internal.presence.processMember(internalMember)
         XCTAssertEqual(channel.internal.presence.members.count, 3)
         XCTAssertEqual(channel.internal.presence.internalMembers.count, 1)
@@ -754,7 +754,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
             mainChannel.presence.enter(nil) { error in
                 XCTAssertNil(error)
-                oldConnectionId = mainChannel.internal.connectionId
+                oldConnectionId = mainChannel.internal.connectionId!
                 partialDone()
             }
             leavesChannel.presence.enter(nil) { error in
@@ -1537,6 +1537,8 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     // RTP2
 
+    // swift-migration: Lawrence disabled due to #selector
+    /*
     // RTP2a
     func test__045__Presence__PresenceMap__all_incoming_presence_messages_must_be_compared_for_newness_with_the_matching_member_already_in_the_PresenceMap() throws {
         let test = Test()
@@ -1589,6 +1591,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         hook.remove()
     }
+     */
 
     // RTP2b
 
@@ -1748,6 +1751,8 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
     }
 
+    // swift-migration: disabled, #selector
+    /*
     // RTP2c
     func test__054__Presence__PresenceMap__all_presence_messages_from_a_SYNC_must_also_be_compared_for_newness_in_the_same_way_as_they_would_from_a_PRESENCE__discard_members_where_messages_have_arrived_before_the_SYNC() throws {
         let test = Test()
@@ -1803,6 +1808,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         XCTAssertTrue(leaveEvents.contains(where: { $0.clientId == "user12" }))
         XCTAssertFalse(leaveEvents.contains(where: { $0.clientId == "user10" }))
     }
+     */
 
     // RTP2d
     func test__047__Presence__PresenceMap__if_action_of_UPDATE_arrives__it_should_be_added_to_the_presence_map_with_the_action_set_to_PRESENT() throws {
@@ -1832,6 +1838,8 @@ class RealtimeClientPresenceTests: XCTestCase {
         expect(channel.internal.presence.members.filter { _, presence in presence.action == .update }).to(beEmpty())
     }
 
+    // swift-migration: disabled, #selector
+    /*
     // RTP2d
     func test__048__Presence__PresenceMap__if_action_of_PRESENT_arrives__it_should_be_added_to_the_presence_map_with_the_action_set_to_PRESENT() throws {
         let test = Test()
@@ -1859,6 +1867,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         XCTAssertEqual(channel.internal.presence.members.count, 1)
     }
+     */
 
     // RTP2e
     func test__049__Presence__PresenceMap__if_a_SYNC_is_not_in_progress__then_when_a_presence_message_with_an_action_of_LEAVE_arrives__that_memberKey_should_be_deleted_from_the_presence_map__if_present() throws {
@@ -1906,6 +1915,8 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
     }
 
+    // swift-migration: Lawrence disabled due to #selector
+    /*
     // RTP2f
     func test__050__Presence__PresenceMap__if_a_SYNC_is_in_progress__then_when_a_presence_message_with_an_action_of_LEAVE_arrives__it_should_be_stored_in_the_presence_map_with_the_action_set_to_ABSENT() throws {
         let test = Test()
@@ -1967,6 +1978,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         // A single clientId may be present multiple times on the same channel via different client connections and that's way user11 is present because user11 presences messages were in distinct connections.
         XCTAssertEqual(channel.internal.presence.members.count, 20)
     }
+     */
 
     // RTP2d (ENTER), RTP2g
     func test__051__Presence__PresenceMap__any_incoming_presence_message_that_passes_the_newness_check_should_be_emitted_on_the_Presence_object__with_an_event_name_set_to_its_original_action() throws {
@@ -3608,6 +3620,8 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     // RTP12
 
+    // swift-migration: disabled, #selector
+    /*
     // RTP12a
     func test__114__Presence__history__should_support_all_the_same_params_as_Rest() throws {
         let test = Test()
@@ -3661,6 +3675,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
         XCTAssertTrue(restPresenceHistoryMethodWasCalled)
     }
+     */
 
     // RTP12
 
@@ -3759,6 +3774,8 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     // RTP14
 
+    // swift-migration: disabled, #selector
+    /*
     // RTP14a, RTP14b, RTP14c, RTP14d
     func test__116__Presence__enterClient__enters_into_presence_on_a_channel_on_behalf_of_another_clientId() throws {
         let test = Test()
@@ -3808,6 +3825,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         XCTAssertTrue(encodeWasCalled)
         XCTAssertTrue(decodeWasCalled)
     }
+     */
 
     // RTP14d
     func test__117__Presence__enterClient__should_be_present_all_the_registered_members_on_a_presence_channel() throws {

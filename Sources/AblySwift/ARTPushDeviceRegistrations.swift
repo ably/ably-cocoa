@@ -152,7 +152,7 @@ internal class ARTPushDeviceRegistrationsInternal: NSObject {
             }
             
             ARTLogDebug(self._logger, "save device with request \(request)")
-            _ = rest.executeRequest(request, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
+            _ = rest.execute(request, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
                 if let response {
                     if response.statusCode == 200 {
                         if let data = data {
@@ -213,7 +213,7 @@ internal class ARTPushDeviceRegistrationsInternal: NSObject {
             }
             
             ARTLogDebug(self._logger, "get device with request \(request)")
-            _ = rest.executeRequest(request, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
+            _ = rest.execute(request, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
                 if let response {
                     if response.statusCode == 200 {
                         if let data = data,
@@ -309,7 +309,7 @@ internal class ARTPushDeviceRegistrationsInternal: NSObject {
             request.setValue(rest.defaultEncoder.mimeType(), forHTTPHeaderField: "Content-Type")
             
             ARTLogDebug(self._logger, "remove device with request \(request)")
-            _ = rest.executeRequest(request, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
+            _ = rest.execute(request, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
                 if let response {
                     if response.statusCode == 200 || response.statusCode == 204 {
                         ARTLogDebug(self._logger, "\(String(describing: type(of: self))): save device successfully")
@@ -363,7 +363,7 @@ internal class ARTPushDeviceRegistrationsInternal: NSObject {
             }
             
             ARTLogDebug(self._logger, "remove devices with request \(request)")
-            _ = rest.executeRequest(request, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
+            _ = rest.execute(request, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
                 if let response {
                     if response.statusCode == 200 || response.statusCode == 204 {
                         ARTLogDebug(self._logger, "\(String(describing: type(of: self))): remove devices successfully")

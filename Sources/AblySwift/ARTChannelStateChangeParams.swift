@@ -4,7 +4,7 @@ import Foundation
 /// Provides parameters for a request to perform an operation that may cause an `ARTRealtimeChannelInternal` instance to emit a connection state change.
 ///
 /// `ARTRealtimeChannelInternal` will incorporate some of this data into the `ARTChannelStateChange` object that it emits as a result of the connection state change.
-internal class ARTChannelStateChangeParams: NSObject {
+internal class ChannelStateChangeParams: NSObject {
     
     // swift-migration: original location ARTChannelStateChangeParams.h, line 20
     /// A state that some operations will use when failing pending presence operations.

@@ -685,7 +685,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     
     // swift-migration: original location ARTRealtime.m, line 504
     internal func timeWithWrapperSDKAgents(_ wrapperSDKAgents: [String: String]?, completion: @escaping ARTDateTimeCallback) {
-        rest.time(wrapperSDKAgents: wrapperSDKAgents, completion: completion)
+        rest.time(withWrapperSDKAgents: wrapperSDKAgents, completion: completion)
     }
     
     // swift-migration: original location ARTRealtime.m, line 510
@@ -820,7 +820,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     
     // swift-migration: original location ARTRealtime.m, line 648
     private func performTransitionToState(_ state: ARTRealtimeConnectionState, withParams params: ARTConnectionStateChangeParams) {
-        var channelStateChangeParams: ARTChannelStateChangeParams?
+        var channelStateChangeParams: ChannelStateChangeParams?
         var stateChangeEventListener: ARTEventListener?
         
         ARTLogVerbose(logger, "R:\(pointer: self) realtime state transitions to \(state.rawValue) - \(ARTRealtimeConnectionStateToStr(state))\(params.retryAttempt != nil ? " (result of \(params.retryAttempt!.id))" : "")")
@@ -892,7 +892,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
             
         case .failed:
             let status = ARTStatus(state: .connectionFailed, errorInfo: stateChange.reason)
-            channelStateChangeParams = ARTChannelStateChangeParams(state: status.state, errorInfo: status.errorInfo)
+            channelStateChangeParams = ChannelStateChangeParams(state: status.state, errorInfo: status.errorInfo)
             abortAndReleaseTransport(status)
             _fallbacks = nil
             rest.prioritizedHost = nil
@@ -969,9 +969,9 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
         } else if !isActive {
             if channelStateChangeParams == nil {
                 if let reason = stateChange.reason {
-                    channelStateChangeParams = ARTChannelStateChangeParams(state: .error, errorInfo: reason)
+                    channelStateChangeParams = ChannelStateChangeParams(state: .error, errorInfo: reason)
                 } else {
-                    channelStateChangeParams = ARTChannelStateChangeParams(state: .error)
+                    channelStateChangeParams = ChannelStateChangeParams(state: .error)
                 }
             }
             
@@ -985,7 +985,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
                     // do nothing. Closed state is coming.
                     break
                 case .closed:
-                    let params = ARTChannelStateChangeParams(state: .ok)
+                    let params = ChannelStateChangeParams(state: .ok)
                     channel.detachChannel(params)
                 case .suspended:
                     channel.setSuspended(channelStateChangeParams!)
@@ -1180,7 +1180,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     }
     
     // swift-migration: original location ARTRealtime.m, line 1019
-    private func onError(_ message: ARTProtocolMessage) {
+    internal func onError(_ message: ARTProtocolMessage) {
         if message.channel != nil {
             onChannelMessage(message)
         } else {
@@ -1813,7 +1813,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
         if !isSuspendMode() && shouldRetryWithFallbackForError(transportError, options: clientOptions) {
             ARTLogDebug(logger, "R:\(pointer: self) host is down; can retry with fallback host")
             if _fallbacks == nil {
-                let hosts = ARTFallbackHosts.hosts(fromOptions: clientOptions)
+                let hosts = ARTFallbackHosts.hosts(from: clientOptions)
                 _fallbacks = ARTFallback(fallbackHosts: hosts, shuffleArray: clientOptions.testOptions.shuffleArray)
             }
             if let fallbacks = _fallbacks {

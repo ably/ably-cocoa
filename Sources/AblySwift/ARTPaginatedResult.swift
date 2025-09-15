@@ -165,7 +165,7 @@ public class ARTPaginatedResult<ItemType>: NSObject {
     internal class func executePaginated(_ rest: ARTRestInternal, withRequest request: URLRequest, andResponseProcessor responseProcessor: @escaping ARTPaginatedResultResponseProcessor, wrapperSDKAgents: [String: String]?, logger: InternalLog, callback: @escaping (ARTPaginatedResult?, ARTErrorInfo?) -> Void) {
         ARTLogDebug(logger, "Paginated request: \(request)")
         
-        _ = rest.executeRequest(request, withAuthOption: ARTAuthentication.on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
+        _ = rest.execute(request, withAuthOption: ARTAuthentication.on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
             if let error = error {
                 callback(nil, ARTErrorInfo.createFromNSError(error))
             } else {

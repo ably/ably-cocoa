@@ -197,7 +197,7 @@ internal class ARTAuthInternal {
     }
     
     // swift-migration: original location ARTAuth+Private.h, line 81 and ARTAuth.m, line 231
-    private func buildURL(_ options: ARTAuthOptions, withParams params: ARTTokenParams) -> URL? {
+    internal func buildURL(_ options: ARTAuthOptions, with params: ARTTokenParams) -> URL? {
         guard let authUrl = options.authUrl else { return nil }
         var urlComponents = URLComponents(url: authUrl, resolvingAgainstBaseURL: true)
         
@@ -224,8 +224,8 @@ internal class ARTAuthInternal {
     }
     
     // swift-migration: original location ARTAuth+Private.h, line 82 and ARTAuth.m, line 259
-    private func buildRequest(_ options: ARTAuthOptions, withParams params: ARTTokenParams) -> URLRequest? {
-        guard let url = buildURL(options, withParams: params) else { return nil }
+    internal func buildRequest(_ options: ARTAuthOptions, with params: ARTTokenParams) -> URLRequest? {
+        guard let url = buildURL(options, with: params) else { return nil }
         var request = URLRequest(url: url)
         request.httpMethod = options.authMethod
         
@@ -346,7 +346,7 @@ internal class ARTAuthInternal {
         }
         
         if replacedOptions.authUrl != nil {
-            guard let request = buildRequest(replacedOptions, withParams: currentTokenParams),
+            guard let request = buildRequest(replacedOptions, with: currentTokenParams),
                   let rest = rest else {
                 callback(nil, ARTErrorInfo.create(withCode: ARTState.requestTokenFailed.rawValue, message: "Failed to build request"))
                 return nil
@@ -354,7 +354,7 @@ internal class ARTAuthInternal {
             
             ARTLogDebug(logger, "RS:\(String(describing: rest)) using authUrl (\(request.httpMethod ?? "GET") \(request.url?.absoluteString ?? ""))")
             
-            task = rest.executeRequest(request, withAuthOption: .off, wrapperSDKAgents: nil) { response, data, error in
+            task = rest.execute(request, withAuthOption: .off, wrapperSDKAgents: nil) { response, data, error in
                 if let error = error {
                     checkerCallback(nil, error)
                 } else if let response = response, let data = data {
@@ -496,7 +496,7 @@ internal class ARTAuthInternal {
         request.setValue(encoder.mimeType(), forHTTPHeaderField: "Accept")
         request.setValue(encoder.mimeType(), forHTTPHeaderField: "Content-Type")
         
-        return rest.executeRequest(request, withAuthOption: .off, wrapperSDKAgents: nil) { response, data, error in
+        return rest.execute(request, withAuthOption: .off, wrapperSDKAgents: nil) { response, data, error in
             if let error = error {
                 callback(nil, error)
             } else if let data = data {

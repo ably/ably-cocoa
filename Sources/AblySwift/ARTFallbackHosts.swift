@@ -4,7 +4,7 @@ import Foundation
 internal class ARTFallbackHosts: NSObject {
     
     // swift-migration: original location ARTFallbackHosts.h, line 9 and ARTFallbackHosts.m, line 8
-    internal class func hosts(fromOptions options: ARTClientOptions) -> [String]? {
+    internal class func hosts(from options: ARTClientOptions) -> [String]? {
         if let fallbackHosts = options.fallbackHosts {
             return fallbackHosts
         }
@@ -15,7 +15,7 @@ internal class ARTFallbackHosts: NSObject {
         }
         
         if options.hasEnvironmentDifferentThanProduction {
-            return ARTDefault.fallbackHostsWithEnvironment(options.environment!)
+            return ARTDefault.fallbackHosts(withEnvironment: options.environment!)
         }
         
         if options.hasCustomRestHost || options.hasCustomRealtimeHost || options.hasCustomPort || options.hasCustomTlsPort {

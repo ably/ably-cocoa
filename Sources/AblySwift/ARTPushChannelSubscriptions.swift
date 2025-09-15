@@ -153,7 +153,7 @@ internal class ARTPushChannelSubscriptionsInternal: NSObject {
             }
             
             ARTLogDebug(self._logger, "save channel subscription with request \(request)")
-            _ = rest.executeRequest(request, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
+            _ = rest.execute(request, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
                 if let response {
                     if response.statusCode == 200 || response.statusCode == 201 {
                         ARTLogDebug(self._logger, "channel subscription saved successfully")
@@ -306,7 +306,7 @@ internal class ARTPushChannelSubscriptionsInternal: NSObject {
     #endif
         
         ARTLogDebug(_logger, "remove channel subscription with request \(request)")
-        _ = rest.executeRequest(request, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
+        _ = rest.execute(request, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
             if let response {
                 if response.statusCode == 200 || response.statusCode == 204 {
                     ARTLogDebug(self._logger, "\(String(describing: type(of: self))): channel subscription removed successfully")

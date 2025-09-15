@@ -10,7 +10,7 @@ internal class ARTConnectionDetails: NSObject {
     /**
      * Contains the client ID assigned to the token. If `clientId` is `nil` or omitted, then the client is prohibited from assuming a `clientId` in any operations, however if `clientId` is a wildcard string `*`, then the client is permitted to assume any `clientId`. Any other string value for `clientId` implies that the `clientId` is both enforced and assumed for all operations from this client.
      */
-    internal private(set) var clientId: String?
+    internal var clientId: String?
     
     // swift-migration: original location ARTConnectionDetails.h, line 21
     /**

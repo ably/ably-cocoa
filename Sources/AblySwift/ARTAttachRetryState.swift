@@ -2,7 +2,7 @@ import Foundation
 
 // swift-migration: original location ARTAttachRetryState.h, line 14
 /// Maintains the state that an `ARTRealtimeChannel` instance needs in order to determine the duration to wait before retrying an attach. Wraps a sequence of `ARTRetrySequence` objects.
-public class ARTAttachRetryState: NSObject {
+public class AttachRetryState: NSObject {
     
     // swift-migration: original location ARTAttachRetryState.m, line 10
     internal let logger: InternalLog

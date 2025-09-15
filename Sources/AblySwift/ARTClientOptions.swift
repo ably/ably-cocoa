@@ -246,7 +246,7 @@ public class ARTClientOptions: ARTAuthOptions {
         dispatchQueue = DispatchQueue.main
         internalDispatchQueue = DispatchQueue(label: "io.ably.main", qos: .default)
         pushFullWait = false
-        idempotentRestPublishing = ARTClientOptions.getDefaultIdempotentRestPublishingForVersion(ARTDefault.apiVersion())
+        idempotentRestPublishing = ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: ARTDefault.apiVersion())
         addRequestIds = false
         pushRegistererDelegate = nil
         testOptions = ARTTestClientOptions()
@@ -394,7 +394,7 @@ public class ARTClientOptions: ARTAuthOptions {
     }
 
     // swift-migration: original location ARTClientOptions+Private.h, line 19 and ARTClientOptions.m, line 215
-    internal static func getDefaultIdempotentRestPublishingForVersion(_ version: String) -> Bool {
+    internal static func getDefaultIdempotentRestPublishing(forVersion version: String) -> Bool {
         if "1.2".compare(version, options: .numeric) == .orderedDescending {
             return false
         } else {

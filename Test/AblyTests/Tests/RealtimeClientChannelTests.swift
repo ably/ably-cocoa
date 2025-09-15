@@ -87,7 +87,7 @@ private func testHandlesDecodingErrorInFixture(_ cryptoFixtureFileName: String, 
         channel.subscribe(testMessage.encoded.name) { message in
             XCTAssertEqual(message.data as? NSObject, AblyTests.base64ToData(testMessage.encrypted.data) as NSObject?)
 
-            let logs = options.logHandler.captured
+            let logs = options.logHandler.captured!
             let line = logs.reduce("") { $0 + "; " + $1.toString() } // Reduce in one line
 
             expect(line).to(contain("Failed to decode data: unknown encoding: 'bad_encoding_type'"))

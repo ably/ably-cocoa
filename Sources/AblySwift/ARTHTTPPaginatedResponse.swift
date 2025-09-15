@@ -104,7 +104,7 @@ public class ARTHTTPPaginatedResponse: ARTPaginatedResult<NSDictionary> {
                                            callback: @escaping ARTHTTPPaginatedCallback) {
         ARTLogDebug(logger, "HTTP Paginated request: \(request)")
 
-        _ = rest.executeRequest(request, withAuthOption: ARTAuthentication.on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
+        _ = rest.execute(request, withAuthOption: ARTAuthentication.on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in
             if let error = error, (error as NSError).domain != ARTAblyErrorDomain {
                 callback(nil, ARTErrorInfo.createFromNSError(error))
                 return

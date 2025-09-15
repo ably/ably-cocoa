@@ -183,7 +183,7 @@ internal class ARTPushChannelInternal: NSObject {
                 let authenticatedRequest = request.settingDeviceAuthentication(deviceId ?? "", localDevice: device).mutableCopy() as! NSMutableURLRequest
 
                 ARTLogDebug(self.logger, "subscribe notifications for device \(String(describing: deviceId)) in channel \(channel.name)")
-                _ = rest.executeRequest(authenticatedRequest as URLRequest, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { [weak self] response, data, error in
+                _ = rest.execute(authenticatedRequest as URLRequest, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { [weak self] response, data, error in
                     guard let self = self else { return }
                     if let error = error {
                         ARTLogError(self.logger, "\(type(of: self)): subscribe notifications for device \(String(describing: deviceId)) in channel \(channel.name) failed (\(error.localizedDescription))")
@@ -228,7 +228,7 @@ internal class ARTPushChannelInternal: NSObject {
                 request.setValue(rest.defaultEncoder.mimeType(), forHTTPHeaderField: "Content-Type")
 
                 ARTLogDebug(self.logger, "subscribe notifications for clientId \(clientId) in channel \(channel.name)")
-                _ = rest.executeRequest(request as URLRequest, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { [weak self] response, data, error in
+                _ = rest.execute(request as URLRequest, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { [weak self] response, data, error in
                     guard let self = self else { return }
                     if let error = error {
                         ARTLogError(self.logger, "\(type(of: self)): subscribe notifications for clientId \(clientId) in channel \(channel.name) failed (\(error.localizedDescription))")
@@ -276,7 +276,7 @@ internal class ARTPushChannelInternal: NSObject {
             let authenticatedRequest = request.settingDeviceAuthentication(deviceId ?? "", localDevice: device).mutableCopy() as! NSMutableURLRequest
 
             ARTLogDebug(self.logger, "unsubscribe notifications for device \(String(describing: deviceId)) in channel \(channel.name)")
-            _ = rest.executeRequest(authenticatedRequest as URLRequest, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { [weak self] response, data, error in
+            _ = rest.execute(authenticatedRequest as URLRequest, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { [weak self] response, data, error in
                 guard let self = self else { return }
                 if let error = error {
                     ARTLogError(self.logger, "\(type(of: self)): unsubscribe notifications for device \(String(describing: deviceId)) in channel \(channel.name) failed (\(error.localizedDescription))")
@@ -317,7 +317,7 @@ internal class ARTPushChannelInternal: NSObject {
             request.httpMethod = "DELETE"
 
             ARTLogDebug(self.logger, "unsubscribe notifications for clientId \(clientId) in channel \(channel.name)")
-            _ = rest.executeRequest(request as URLRequest, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { [weak self] response, data, error in
+            _ = rest.execute(request as URLRequest, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { [weak self] response, data, error in
                 guard let self = self else { return }
                 if let error = error {
                     ARTLogError(self.logger, "\(type(of: self)): unsubscribe notifications for clientId \(clientId) in channel \(channel.name) failed (\(error.localizedDescription))")

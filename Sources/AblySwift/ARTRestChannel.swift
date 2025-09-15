@@ -315,7 +315,7 @@ internal class ARTRestChannelInternal: ARTChannel {
             
             ARTLogDebug(self.logger, "RS:\(Unmanaged.passUnretained(self.rest!).toOpaque()) C:\(Unmanaged.passUnretained(self).toOpaque()) (\(self.name)) channel details request \(request)")
             
-            self.rest?.executeRequest(request as URLRequest, withAuthOption: .on, wrapperSDKAgents: nil) { response, data, error in
+            self.rest?.execute(request as URLRequest, withAuthOption: .on, wrapperSDKAgents: nil) { response, data, error in
                 
                 if response?.statusCode == 200 {
                     var decodeError: NSError?
@@ -435,7 +435,7 @@ internal class ARTRestChannelInternal: ARTChannel {
             
             ARTLogDebug(self.logger, "RS:\(Unmanaged.passUnretained(self.rest!).toOpaque()) C:\(Unmanaged.passUnretained(self).toOpaque()) (\(self.name)) post message \(String(data: encodedMessage ?? Data(), encoding: .utf8) ?? "")")
             
-            self.rest?.executeRequest(request as URLRequest, withAuthOption: .on, wrapperSDKAgents: nil) { response, data, error in
+            self.rest?.execute(request as URLRequest, withAuthOption: .on, wrapperSDKAgents: nil) { response, data, error in
                 let errorInfo: ARTErrorInfo?
                 if self.rest?.options.addRequestIds == true {
                     errorInfo = error != nil ? ARTErrorInfo.wrap(ARTErrorInfo.createFromNSError(error!), prepend: "Request '\(request.url!)' failed with ") : nil

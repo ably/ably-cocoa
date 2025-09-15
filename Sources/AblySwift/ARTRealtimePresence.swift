@@ -181,7 +181,7 @@ public protocol ARTRealtimePresenceProtocol {
      *
      * @return An event listener object.
      */
-    func subscribeWithAttachCallback(_ onAttach: ARTCallback?, callback: @escaping ARTPresenceMessageCallback) -> ARTEventListener?
+    func subscribe(attachCallback onAttach: ARTCallback?, callback: @escaping ARTPresenceMessageCallback) -> ARTEventListener?
     
     // swift-migration: original location ARTRealtimePresence.h, line 166
     /**
@@ -348,7 +348,7 @@ public class ARTRealtimePresence: ARTPresence, ARTRealtimePresenceProtocol {
     }
     
     // swift-migration: original location ARTRealtimePresence.m, line 112
-    public func subscribeWithAttachCallback(_ onAttach: ARTCallback?, callback: @escaping ARTPresenceMessageCallback) -> ARTEventListener? {
+    public func subscribe(attachCallback onAttach: ARTCallback?, callback: @escaping ARTPresenceMessageCallback) -> ARTEventListener? {
         return `internal`.subscribeWithAttachCallback(onAttach, callback: callback)
     }
     

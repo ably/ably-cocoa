@@ -41,7 +41,7 @@ public class ARTDefault: NSObject {
     }
     
     // swift-migration: original location ARTDefault.h, line 14 and ARTDefault.m, line 27
-    public static func fallbackHostsWithEnvironment(_ environment: String?) -> [String] {
+    public static func fallbackHosts(withEnvironment environment: String?) -> [String] {
         let fallbacks = ["a", "b", "c", "d", "e"]
         var prefix = ""
         var suffix = ""
@@ -58,7 +58,7 @@ public class ARTDefault: NSObject {
     
     // swift-migration: original location ARTDefault.h, line 13 and ARTDefault.m, line 41
     public static func fallbackHosts() -> [String] {
-        return fallbackHostsWithEnvironment(nil)
+        return fallbackHosts(withEnvironment: nil)
     }
     
     // swift-migration: original location ARTDefault.h, line 15 and ARTDefault.m, line 45

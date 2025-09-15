@@ -132,7 +132,7 @@ public class ARTRest: NSObject, ARTRestProtocol {
     
     // swift-migration: original location ARTRest.h, line 29 and ARTRest.m, line 104
     public func time(_ callback: @escaping ARTDateTimeCallback) {
-        `internal`.time(wrapperSDKAgents: nil, completion: callback)
+        `internal`.time(withWrapperSDKAgents: nil, completion: callback)
     }
     
     // swift-migration: original location ARTRest.h, line 44 and ARTRest.m, line 109 - converted to throwing function per PRD
@@ -354,19 +354,19 @@ public class ARTRestInternal: NSObject {
     
     // swift-migration: original location ARTRest+Private.h, line 74 and ARTRest.m, line 322
     @discardableResult
-    internal func executeRequest(_ request: URLRequest, wrapperSDKAgents: NSStringDictionary?, completion: @escaping ARTURLRequestCallback) -> ARTCancellable? {
+    internal func execute(_ request: URLRequest, wrapperSDKAgents: NSStringDictionary?, completion: @escaping ARTURLRequestCallback) -> ARTCancellable? {
         return executeRequest(request, fallbacks: nil, retries: 0, originalRequestId: nil, wrapperSDKAgents: wrapperSDKAgents, completion: completion)
     }
     
     // swift-migration: original location ARTRest+Private.h, line 80 and ARTRest.m, line 247
     @discardableResult
-    internal func executeRequest(_ request: URLRequest, withAuthOption authOption: ARTAuthentication, wrapperSDKAgents: NSStringDictionary?, completion: @escaping ARTURLRequestCallback) -> ARTCancellable? {
+    internal func execute(_ request: URLRequest, withAuthOption authOption: ARTAuthentication, wrapperSDKAgents: NSStringDictionary?, completion: @escaping ARTURLRequestCallback) -> ARTCancellable? {
         var mutableRequest = request
         mutableRequest.url = URL(string: mutableRequest.url!.relativePath, relativeTo: baseUrl)
         
         switch authOption {
         case .off:
-            return executeRequest(mutableRequest, wrapperSDKAgents: wrapperSDKAgents, completion: completion)
+            return execute(mutableRequest, wrapperSDKAgents: wrapperSDKAgents, completion: completion)
         case .on:
             tokenErrorRetries = 0
             return executeRequestWithAuthentication(mutableRequest, withMethod: auth.method, force: false, wrapperSDKAgents: wrapperSDKAgents, completion: completion)
@@ -399,14 +399,14 @@ public class ARTRestInternal: NSObject {
             var mutableRequest = request
             mutableRequest.setValue(authorization, forHTTPHeaderField: "Authorization")
             ARTLogVerbose(logger, "RS:\(Unmanaged.passUnretained(self).toOpaque()) ARTRest: \(authorization)")
-            task = executeRequest(mutableRequest, wrapperSDKAgents: wrapperSDKAgents, completion: completion)
+            task = execute(mutableRequest, wrapperSDKAgents: wrapperSDKAgents, completion: completion)
         } else {
             if !force && auth.tokenRemainsValid {
                 let authorization = prepareTokenAuthorisationHeader(auth.tokenDetails!.token)
                 ARTLogVerbose(logger, "RS:\(Unmanaged.passUnretained(self).toOpaque()) ARTRestInternal reusing token: authorization bearer in Base64 \(authorization)")
                 var mutableRequest = request
                 mutableRequest.setValue(authorization, forHTTPHeaderField: "Authorization")
-                task = executeRequest(mutableRequest, wrapperSDKAgents: wrapperSDKAgents, completion: completion)
+                task = execute(mutableRequest, wrapperSDKAgents: wrapperSDKAgents, completion: completion)
             } else {
                 task = auth._authorize(nil, options: options) { [weak self] tokenDetails, error in
                     guard let self = self else { return }
@@ -419,7 +419,7 @@ public class ARTRestInternal: NSObject {
                     ARTLogVerbose(self.logger, "RS:\(Unmanaged.passUnretained(self).toOpaque()) ARTRestInternal reissuing token: authorization bearer \(authorization)")
                     var mutableRequest = request
                     mutableRequest.setValue(authorization, forHTTPHeaderField: "Authorization")
-                    task = self.executeRequest(mutableRequest, wrapperSDKAgents: wrapperSDKAgents, completion: completion)
+                    task = self.execute(mutableRequest, wrapperSDKAgents: wrapperSDKAgents, completion: completion)
                 }
             }
         }
@@ -500,7 +500,7 @@ public class ARTRestInternal: NSObject {
                     if errorBecauseShouldNotRenewToken == nil {
                         ARTLogDebug(self.logger, "RS:\(Unmanaged.passUnretained(self).toOpaque()) retry request \(updatedRequest)")
                         if self.tokenErrorRetries < 1 {
-                            _ = self.executeRequest(mutableRequest, withAuthOption: .tokenRetry, wrapperSDKAgents: wrapperSDKAgents, completion: completion)
+                            _ = self.execute(mutableRequest, withAuthOption: .tokenRetry, wrapperSDKAgents: wrapperSDKAgents, completion: completion)
                             return
                         }
                     }
@@ -529,7 +529,7 @@ public class ARTRestInternal: NSObject {
             
             if retries < self.options.httpMaxRetryCount && self.shouldRetryWithFallback(updatedRequest, response: response, error: finalError) {
                 if blockFallbacks == nil {
-                    let hosts = ARTFallbackHosts.hosts(fromOptions: self.options)
+                    let hosts = ARTFallbackHosts.hosts(from: self.options)
                     blockFallbacks = ARTFallback(fallbackHosts: hosts, shuffleArray: self.options.testOptions.shuffleArray)
                 }
                 
@@ -616,7 +616,7 @@ public class ARTRestInternal: NSObject {
     }
     
     // swift-migration: original location ARTRest.m, line 539
-    internal func time(wrapperSDKAgents: NSStringDictionary?, completion: @escaping ARTDateTimeCallback) {
+    internal func time(withWrapperSDKAgents: NSStringDictionary?, completion: @escaping ARTDateTimeCallback) {
         let userCallback = completion
         let wrappedCallback: ARTDateTimeCallback = { time, error in
             self.userQueue.async {
@@ -625,7 +625,7 @@ public class ARTRestInternal: NSObject {
         }
         
         queue.async {
-            self._time(wrapperSDKAgents: wrapperSDKAgents, completion: wrappedCallback)
+            self._time(wrapperSDKAgents: withWrapperSDKAgents, completion: wrappedCallback)
         }
     }
     
@@ -638,7 +638,7 @@ public class ARTRestInternal: NSObject {
         let accept = encoders.values.map { $0.mimeType() }.joined(separator: ",")
         request.setValue(accept, forHTTPHeaderField: "Accept")
         
-        return executeRequest(request, withAuthOption: .off, wrapperSDKAgents: wrapperSDKAgents) { [weak self] response, data, error in
+        return execute(request, withAuthOption: .off, wrapperSDKAgents: wrapperSDKAgents) { [weak self] response, data, error in
             guard let self = self else { return }
             
             if let error = error {

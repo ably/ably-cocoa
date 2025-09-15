@@ -255,7 +255,7 @@ class RestClientTests: XCTestCase {
         client.internal.logger_onlyForUseInClassMethodsAndTests.log("This is a warning", with: .warn, file: "foo.m", line: 10)
 
         XCTAssertEqual(client.internal.logger_onlyForUseInClassMethodsAndTests.logLevel, ARTLogLevel.warn)
-        guard let line = options.logHandler.captured.last else {
+        guard let line = options.logHandler.captured?.last else {
             fail("didn't log line.")
             return
         }
@@ -274,7 +274,7 @@ class RestClientTests: XCTestCase {
         let logTime = NSDate()
         client.internal.logger_onlyForUseInClassMethodsAndTests.log("This is a warning", with: .warn, file: "foo.m", line: 10)
 
-        let logs = options.logHandler.captured.filter { !$0.date.isBefore(logTime as Date) }
+        let logs = options.logHandler.captured?.filter { !$0.date.isBefore(logTime as Date) }
         expect(logs).to(beEmpty())
     }
 
@@ -827,7 +827,7 @@ class RestClientTests: XCTestCase {
     // TO3k7
 
     @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
-    func test__051__RestClient__Host_Fallback__fallbackHostsUseDefault_option__allows_the_default_fallback_hosts_to_be_used_when__environment__is_not_production() {
+    func test__051__RestClient__Host_Fallback__fallbackHostsUseDefault_option__allows_the_default_fallback_hosts_to_be_used_when__environment__is_not_production() throws {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.environment = "not-production"
         options.fallbackHostsUseDefault = true
@@ -839,7 +839,7 @@ class RestClientTests: XCTestCase {
         XCTAssertNotEqual(client.internal.options.environment, "production")
 
         let hosts = ARTFallbackHosts.hosts(from: client.internal.options)
-        let fallback = ARTFallback(fallbackHosts: hosts, shuffleArray: ARTFallback_shuffleArray)
+        let fallback = try XCTUnwrap(ARTFallback(fallbackHosts: hosts, shuffleArray: ARTFallback_shuffleArray))
         XCTAssertEqual(fallback.hosts.count, ARTDefault.fallbackHosts().count)
 
         ARTDefault.fallbackHosts().forEach {
@@ -848,7 +848,7 @@ class RestClientTests: XCTestCase {
     }
 
     @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
-    func test__052__RestClient__Host_Fallback__fallbackHostsUseDefault_option__allows_the_default_fallback_hosts_to_be_used_when_a_custom_Realtime_or_REST_host_endpoint_is_being_used() {
+    func test__052__RestClient__Host_Fallback__fallbackHostsUseDefault_option__allows_the_default_fallback_hosts_to_be_used_when_a_custom_Realtime_or_REST_host_endpoint_is_being_used() throws {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.restHost = "fake1.ably.io"
         options.realtimeHost = "fake2.ably.io"
@@ -861,7 +861,7 @@ class RestClientTests: XCTestCase {
         XCTAssertNotEqual(client.internal.options.realtimeHost, ARTDefault.realtimeHost())
 
         let hosts = ARTFallbackHosts.hosts(from: client.internal.options)
-        let fallback = ARTFallback(fallbackHosts: hosts, shuffleArray: ARTFallback_shuffleArray)
+        let fallback = try XCTUnwrap(ARTFallback(fallbackHosts: hosts, shuffleArray: ARTFallback_shuffleArray))
         XCTAssertEqual(fallback.hosts.count, ARTDefault.fallbackHosts().count)
 
         ARTDefault.fallbackHosts().forEach {

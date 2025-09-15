@@ -550,7 +550,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
     internal var attachResume: Bool = false
 
     // swift-migration: original location ARTRealtimeChannel.m, line 255 (readonly property)
-    private var _attachRetryState: ARTAttachRetryState!
+    private var _attachRetryState: AttachRetryState!
 
     // swift-migration: original location ARTRealtimeChannel.m, line 256 (readonly property)
     private var _pluginData: [String: Any]
@@ -621,7 +621,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
         super.init(name: name, andOptions: options, rest: realtime.rest, logger: logger)
 
         self.restChannel = realtime.rest.channels._getChannel(self.name, options: options, addPrefix: true)
-        self._attachRetryState = ARTAttachRetryState(retryDelayCalculator: attachRetryDelayCalculator,
+        self._attachRetryState = AttachRetryState(retryDelayCalculator: attachRetryDelayCalculator,
                                                      logger: logger,
                                                      logMessagePrefix: String(format: "RT: %p C:%p ", realtime, self))
         self._realtimePresence = ARTRealtimePresenceInternal(channel: self, logger: self.logger)
@@ -736,12 +736,10 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
         return result
     }
 
-    // swift-migration: Lawrence got rid of the connectionId property because wasn't being used and this ?? "" is suspicious
-//    // swift-migration: original location ARTRealtimeChannel+Private.h, line 39 and ARTRealtimeChannel.m, line 1156
-//    internal var connectionId: String {
-//        guard let realtime = self.realtime else { return "" }
-//        return realtime.connection.id ?? ""
-//    }
+    // swift-migration: original location ARTRealtimeChannel+Private.h, line 39 and ARTRealtimeChannel.m, line 1156
+    internal var connectionId: String? {
+        return realtime?.connection.id
+    }
     
     // swift-migration: original location ARTRealtimeChannel+Private.h, line 71 and ARTRealtimeChannel.m, line 1177
     internal var properties: ARTChannelProperties {
@@ -775,7 +773,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
     }
     
     // swift-migration: original location ARTRealtimeChannel.m, line 255
-    internal var attachRetryState: ARTAttachRetryState {
+    internal var attachRetryState: AttachRetryState {
         return _attachRetryState
     }
     
@@ -1034,7 +1032,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
     }
     
     // swift-migration: original location ARTRealtimeChannel.m, line 575
-    internal func performTransitionToState(_ state: ARTRealtimeChannelState, withParams params: ARTChannelStateChangeParams) {
+    internal func performTransitionToState(_ state: ARTRealtimeChannelState, withParams params: ChannelStateChangeParams) {
         guard let realtime = self.realtime else { return }
         
         ARTLogDebug(logger, "RT:\(pointer: realtime) C:\(pointer: self) (\(self.name)) channel state transitions from \(self.state_nosync.rawValue) - \(ARTRealtimeChannelStateToStr(self.state_nosync)) to \(state.rawValue) - \(ARTRealtimeChannelStateToStr(state))\(params.retryAttempt != nil ? " (result of \(params.retryAttempt!.id))" : "")")
@@ -1170,11 +1168,11 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
             return
         }
         
-        let params: ARTChannelStateChangeParams
+        let params: ChannelStateChangeParams
         if let error = message.error {
-            params = ARTChannelStateChangeParams(state: .error, errorInfo: error)
+            params = ChannelStateChangeParams(state: .error, errorInfo: error)
         } else {
-            params = ARTChannelStateChangeParams(state: .ok)
+            params = ChannelStateChangeParams(state: .ok)
         }
         params.resumed = message.resumed
         performTransitionToState(.attached, withParams: params)
@@ -1195,7 +1193,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
         case .attaching:
             ARTLogDebug(logger, "RT:\(pointer: realtime) C:\(pointer: self) (\(self.name)) reattach initiated by DETACHED message but it is currently attaching")
             let state: ARTState = message.error != nil ? .error : .ok
-            let params = ARTChannelStateChangeParams(state: state, errorInfo: message.error, storeErrorInfo: false)
+            let params = ChannelStateChangeParams(state: state, errorInfo: message.error, storeErrorInfo: false)
             setSuspended(params)
             return
         case .failed:
@@ -1207,7 +1205,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
         self.attachSerial = nil
         
         let errorInfo = message.error ?? ARTErrorInfo.create(withCode: 0, message: "channel has detached")
-        let params = ARTChannelStateChangeParams(state: .notAttached, errorInfo: errorInfo)
+        let params = ChannelStateChangeParams(state: .notAttached, errorInfo: errorInfo)
         detachChannel(params)
         _detachedEventEmitter.emit(nil, with: nil)
     }
@@ -1219,7 +1217,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
     }
     
     // swift-migration: original location ARTRealtimeChannel.m, line 767
-    internal func detachChannel(_ params: ARTChannelStateChangeParams) {
+    internal func detachChannel(_ params: ChannelStateChangeParams) {
         if self.state_nosync == .detached {
             return
         }
@@ -1228,13 +1226,13 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
     }
     
     // swift-migration: original location ARTRealtimeChannel.m, line 775
-    internal func setFailed(_ params: ARTChannelStateChangeParams) {
+    internal func setFailed(_ params: ChannelStateChangeParams) {
         failPendingPresence(withState: params.state, info: params.errorInfo) // RTP5a
         performTransitionToState(.failed, withParams: params)
     }
     
     // swift-migration: original location ARTRealtimeChannel.m, line 780
-    internal func setSuspended(_ params: ARTChannelStateChangeParams) {
+    internal func setSuspended(_ params: ChannelStateChangeParams) {
         failPendingPresence(withState: params.state, info: params.errorInfo) // RTP5f
         performTransitionToState(.suspended, withParams: params)
     }
@@ -1352,7 +1350,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
     
     // swift-migration: original location ARTRealtimeChannel.m, line 875
     internal func onError(_ msg: ARTProtocolMessage) {
-        let params = ARTChannelStateChangeParams(state: .error, errorInfo: msg.error)
+        let params = ChannelStateChangeParams(state: .error, errorInfo: msg.error)
         performTransitionToState(.failed, withParams: params)
         failPendingPresence(withState: .error, info: msg.error)
     }
@@ -1483,7 +1481,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
         // Set state: Attaching
         if self.state_nosync != .attaching {
             let state: ARTState = params.reason != nil ? .error : .ok
-            let stateChangeParams = ARTChannelStateChangeParams(state: state, errorInfo: params.reason, storeErrorInfo: false, retryAttempt: params.retryAttempt)
+            let stateChangeParams = ChannelStateChangeParams(state: state, errorInfo: params.reason, storeErrorInfo: false, retryAttempt: params.retryAttempt)
             performTransitionToState(.attaching, withParams: stateChangeParams)
         }
         attachAfterChecks()
@@ -1513,7 +1511,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
             self.unlessStateChangesBefore(realtime.options.testOptions.realtimeRequestTimeout) {
                 // Timeout
                 let errorInfo = ARTErrorInfo.create(withCode: ARTState.attachTimedOut.rawValue, message: "attach timed out")
-                let params = ARTChannelStateChangeParams(state: .attachTimedOut, errorInfo: errorInfo)
+                let params = ChannelStateChangeParams(state: .attachTimedOut, errorInfo: errorInfo)
                 self.setSuspended(params)
             }.startTimer()
         }, ackCallback: nil)
@@ -1557,7 +1555,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
             return
         case .suspended:
             ARTLogDebug(logger, "RT:\(pointer: realtime) C:\(pointer: self) (\(self.name)) transitions immediately to the detached")
-            let params = ARTChannelStateChangeParams(state: .ok)
+            let params = ChannelStateChangeParams(state: .ok)
             performTransitionToState(.detached, withParams: params)
             callback?(nil)
             return
@@ -1604,7 +1602,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
         }
         
         // Set state: Detaching
-        let params = ARTChannelStateChangeParams(state: .ok)
+        let params = ChannelStateChangeParams(state: .ok)
         performTransitionToState(.detaching, withParams: params)
         
         detachAfterChecks()
@@ -1626,7 +1624,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
             }
             // Timeout
             let errorInfo = ARTErrorInfo.create(withCode: ARTState.detachTimedOut.rawValue, message: "detach timed out")
-            let params = ARTChannelStateChangeParams(state: .attachTimedOut, errorInfo: errorInfo)
+            let params = ChannelStateChangeParams(state: .attachTimedOut, errorInfo: errorInfo)
             self.performTransitionToState(.attached, withParams: params)
             self._detachedEventEmitter.emit(nil, with: errorInfo)
         }.startTimer()

@@ -87,7 +87,7 @@ public class ARTLog: NSObject {
     public var logLevel: ARTLogLevel = .warn
     
     // swift-migration: original location ARTLog.m, line 65
-    private var captured: [ARTLogLine]?
+    internal var captured: [ARTLogLine]?
     // swift-migration: original location ARTLog.m, line 66
     internal var history: [ARTLogLine]
     // swift-migration: original location ARTLog.m, line 67

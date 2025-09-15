@@ -111,7 +111,7 @@ internal class ARTPushAdminInternal: NSObject {
                 request.setValue(rest.defaultEncoder.mimeType(), forHTTPHeaderField: "Content-Type")
 
                 ARTLogDebug(self.logger, "push notification to a single device \(request)")
-                _ = rest.executeRequest(request as URLRequest, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { [weak self] response, data, error in
+                _ = rest.execute(request as URLRequest, withAuthOption: .on, wrapperSDKAgents: wrapperSDKAgents) { [weak self] response, data, error in
                     guard let self = self else { return }
                     if let error = error {
                         ARTLogError(self.logger, "\(type(of: self)): push notification to a single device failed (\(error.localizedDescription))")
