@@ -126,7 +126,7 @@ public class ARTLog: NSObject {
     }
     
     // swift-migration: original location ARTLog.h, line 22 and ARTLog.m, line 93
-    public func log(_ message: String, withLevel level: ARTLogLevel) {
+    public func log(_ message: String, with level: ARTLogLevel) {
         queue.sync {
             let logLine = ARTLogLine(date: Date(), level: level, message: message)
             if level.rawValue >= self.logLevel.rawValue {
@@ -144,7 +144,7 @@ public class ARTLog: NSObject {
     
     // swift-migration: original location ARTLog.h, line 25 and ARTLog.m, line 111
     public func log(withError error: ARTErrorInfo) {
-        log(error.message, withLevel: .error)
+        log(error.message, with: .error)
     }
     
     // swift-migration: original location ARTLog+Private.h, line 20 and ARTLog.m, line 115
@@ -199,7 +199,7 @@ public class ARTLog: NSObject {
     public func verbose(_ format: String, _ arguments: CVarArg...) {
         if self.logLevel.rawValue <= ARTLogLevel.verbose.rawValue {
             let message = String(format: format, arguments: arguments)
-            log(message, withLevel: .verbose)
+            log(message, with: .verbose)
         }
     }
     
@@ -209,7 +209,7 @@ public class ARTLog: NSObject {
             let formattedMessage = String(format: message, arguments: arguments)
             let fileBasename = URL(fileURLWithPath: fileName).lastPathComponent
             let fullMessage = "(\(fileBasename):\(line)) \(formattedMessage)"
-            log(fullMessage, withLevel: .verbose)
+            log(fullMessage, with: .verbose)
         }
     }
     
@@ -217,7 +217,7 @@ public class ARTLog: NSObject {
     public func debug(_ format: String, _ arguments: CVarArg...) {
         if self.logLevel.rawValue <= ARTLogLevel.debug.rawValue {
             let message = String(format: format, arguments: arguments)
-            log(message, withLevel: .debug)
+            log(message, with: .debug)
         }
     }
     
@@ -227,7 +227,7 @@ public class ARTLog: NSObject {
             let formattedMessage = String(format: message, arguments: arguments)
             let fileBasename = URL(fileURLWithPath: fileName).lastPathComponent
             let fullMessage = "(\(fileBasename):\(line)) \(formattedMessage)"
-            log(fullMessage, withLevel: .debug)
+            log(fullMessage, with: .debug)
         }
     }
     
@@ -235,7 +235,7 @@ public class ARTLog: NSObject {
     public func info(_ format: String, _ arguments: CVarArg...) {
         if self.logLevel.rawValue <= ARTLogLevel.info.rawValue {
             let message = String(format: format, arguments: arguments)
-            log(message, withLevel: .info)
+            log(message, with: .info)
         }
     }
     
@@ -243,7 +243,7 @@ public class ARTLog: NSObject {
     public func warn(_ format: String, _ arguments: CVarArg...) {
         if self.logLevel.rawValue <= ARTLogLevel.warn.rawValue {
             let message = String(format: format, arguments: arguments)
-            log(message, withLevel: .warn)
+            log(message, with: .warn)
         }
     }
     
@@ -251,7 +251,7 @@ public class ARTLog: NSObject {
     public func error(_ format: String, _ arguments: CVarArg...) {
         if self.logLevel.rawValue <= ARTLogLevel.error.rawValue {
             let message = String(format: format, arguments: arguments)
-            log(message, withLevel: .error)
+            log(message, with: .error)
         }
     }
 }

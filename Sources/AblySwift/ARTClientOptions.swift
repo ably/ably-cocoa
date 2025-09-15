@@ -288,18 +288,20 @@ public class ARTClientOptions: ARTAuthOptions {
 
     // swift-migration: original location ARTClientOptions.h, line 195 and ARTClientOptions.m, line 100
     /// :nodoc:
-    public func restUrl() -> URL? {
-        return restUrlComponents().url
+    public func restUrl() -> URL {
+        // swift-migration: Lawrence added force-unwrap to satisfy tests
+        return restUrlComponents().url!
     }
 
     // swift-migration: original location ARTClientOptions.h, line 198 and ARTClientOptions.m, line 104
     /// :nodoc:
     public func realtimeUrl() -> URL? {
+        // swift-migration: Lawrence added force-unwrap to satisfy tests
         var components = URLComponents()
         components.scheme = tls ? "wss" : "ws"
         components.host = realtimeHost
         components.port = tls ? tlsPort : port
-        return components.url
+        return components.url!
     }
 
     // swift-migration: original location ARTClientOptions.m, line 112

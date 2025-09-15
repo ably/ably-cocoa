@@ -21,7 +21,7 @@ internal class LogAdapter: NSObject, Version2Log {
     // swift-migration: original location ARTLogAdapter.m, line 15
     func log(_ message: String, with level: ARTLogLevel, file fileName: String, line: Int) {
         let augmentedMessage = "(\(fileName):\(line)) \(message)"
-        logger.log(augmentedMessage, withLevel: level)
+        logger.log(augmentedMessage, with: level)
     }
     
     // swift-migration: original location ARTLogAdapter.h, line 30 and ARTLogAdapter.m, line 20

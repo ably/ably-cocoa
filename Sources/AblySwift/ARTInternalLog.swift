@@ -6,32 +6,32 @@ import _AblyPluginSupportPrivate
 
 public func ARTLogVerbose(_ logger: InternalLog, _ format: String, _ args: CVarArg..., fileID: String = #fileID, line: Int = #line) {
     let message = String(format: format, arguments: args)
-    logger.log(message, withLevel: .verbose, file: fileID, line: line)
+    logger.log(message, with: .verbose, file: fileID, line: line)
 }
 
 public func ARTLogDebug(_ logger: InternalLog, _ format: String, _ args: CVarArg..., fileID: String = #fileID, line: Int = #line) {
     let message = String(format: format, arguments: args)
-    logger.log(message, withLevel: .debug, file: fileID, line: line)
+    logger.log(message, with: .debug, file: fileID, line: line)
 }
 
 public func ARTLogInfo(_ logger: InternalLog, _ format: String, _ args: CVarArg..., fileID: String = #fileID, line: Int = #line) {
     let message = String(format: format, arguments: args)
-    logger.log(message, withLevel: .info, file: fileID, line: line)
+    logger.log(message, with: .info, file: fileID, line: line)
 }
 
 public func ARTLogWarn(_ logger: InternalLog, _ format: String, _ args: CVarArg..., fileID: String = #fileID, line: Int = #line) {
     let message = String(format: format, arguments: args)
-    logger.log(message, withLevel: .warn, file: fileID, line: line)
+    logger.log(message, with: .warn, file: fileID, line: line)
 }
 
 public func ARTLogError(_ logger: InternalLog, _ format: String, _ args: CVarArg..., fileID: String = #fileID, line: Int = #line) {
     let message = String(format: format, arguments: args)
-    logger.log(message, withLevel: .error, file: fileID, line: line)
+    logger.log(message, with: .error, file: fileID, line: line)
 }
 
 public func ARTPrint(_ logger: InternalLog, _ format: String, _ args: CVarArg..., fileID: String = #fileID, line: Int = #line) {
     let message = String(format: format, arguments: args)
-    logger.log(message, withLevel: .none, file: fileID, line: line)
+    logger.log(message, with: .none, file: fileID, line: line)
 }
 
 // swift-migration: original location ARTInternalLog.h, line 37 and ARTInternalLog.m, line 7
@@ -101,7 +101,7 @@ public class InternalLog: NSObject, _AblyPluginSupportPrivate.Logger {
      - some of our Swift tests (which can't access the variadic method below), which want to be able to call a logging method on an instance of `ARTInternalLog`
      - `ARTPluginAPI`, to implement its conformance to the `APPluginAPIProtocol` protocol, which is used by plugins written in Swift
     */
-    public func log(_ message: String, withLevel level: ARTLogLevel, file fileName: String, line: Int) {
+    public func log(_ message: String, with level: ARTLogLevel, file fileName: String, line: Int) {
         core.log(message, with: level, file: fileName, line: line)
     }
     
@@ -110,7 +110,7 @@ public class InternalLog: NSObject, _AblyPluginSupportPrivate.Logger {
     public func log(withLevel level: ARTLogLevel, file fileName: String, line: UInt, format: String, _ args: CVarArg...) {
         if self.logLevel.rawValue <= level.rawValue {
             let message = String(format: format, arguments: args)
-            log(message, withLevel: level, file: fileName, line: Int(line))
+            log(message, with: level, file: fileName, line: Int(line))
         }
     }
     

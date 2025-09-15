@@ -5,7 +5,7 @@ class LogAdapterTests: XCTestCase {
     class MockARTLog: ARTLog {
         var lastReceivedLogMessageArguments: (message: String, level: ARTLogLevel)?
 
-        override func log(_ message: String, withLevel level: ARTLogLevel) {
+        override func log(_ message: String, with level: ARTLogLevel) {
             lastReceivedLogMessageArguments = (message: message, level: level)
         }
     }
