@@ -1,5 +1,5 @@
 import Foundation
-@_implementationOnly import _AblyPluginSupportPrivate
+import _AblyPluginSupportPrivate
 
 // swift-migration: original location ARTJsonLikeEncoder.h, line 10 and ARTJsonLikeEncoder.m, line 21
 internal protocol ARTJsonLikeEncoderDelegate {
@@ -12,7 +12,7 @@ internal protocol ARTJsonLikeEncoderDelegate {
 }
 
 // swift-migration: original location ARTJsonLikeEncoder.h, line 21 and ARTJsonLikeEncoder.m, line 34
-internal class ARTJsonLikeEncoder: ARTEncoder {
+internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     
     // swift-migration: original location ARTJsonLikeEncoder.h, line 23
     internal var delegate: ARTJsonLikeEncoderDelegate?
@@ -55,130 +55,130 @@ internal class ARTJsonLikeEncoder: ARTEncoder {
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 70
-    override func mimeType() -> String {
+    func mimeType() -> String {
         return delegate?.mimeType() ?? ""
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 74
-    override func format() -> ARTEncoderFormat {
+    func format() -> ARTEncoderFormat {
         return delegate?.format() ?? ARTEncoderFormat.json
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 78
-    override func formatAsString() -> String {
+    func formatAsString() -> String {
         return delegate?.formatAsString() ?? ""
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 82
-    override func decodeMessage(_ data: Data) throws -> ARTMessage? {
+    func decodeMessage(_ data: Data) throws -> ARTMessage? {
         let dictionary = try decodeDictionary(data)
         return messageFromDictionary(dictionary, protocolMessage: nil)
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 86
-    override func decodeMessages(_ data: Data) throws -> [ARTMessage]? {
+    func decodeMessages(_ data: Data) throws -> [ARTMessage]? {
         let array = try decodeArray(data)
         return messagesFromArray(array, protocolMessage: nil)
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 90
-    override func encodeMessage(_ message: ARTMessage) throws -> Data? {
+    func encodeMessage(_ message: ARTMessage) throws -> Data? {
         let dictionary = messageToDictionary(message)
         return try encode(dictionary)
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 94
-    override func encodeMessages(_ messages: [ARTMessage]) throws -> Data? {
+    func encodeMessages(_ messages: [ARTMessage]) throws -> Data? {
         let array = messagesToArray(messages)
         return try encode(array)
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 98
-    override func decodePresenceMessage(_ data: Data) throws -> ARTPresenceMessage? {
+    func decodePresenceMessage(_ data: Data) throws -> ARTPresenceMessage? {
         let dictionary = try decodeDictionary(data)
         return presenceMessageFromDictionary(dictionary)
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 102
-    override func decodePresenceMessages(_ data: Data) throws -> [ARTPresenceMessage]? {
+    func decodePresenceMessages(_ data: Data) throws -> [ARTPresenceMessage]? {
         let array = try decodeArray(data)
         return presenceMessagesFromArray(array)
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 106
-    override func encodePresenceMessage(_ message: ARTPresenceMessage) throws -> Data? {
+    func encodePresenceMessage(_ message: ARTPresenceMessage) throws -> Data? {
         let dictionary = presenceMessageToDictionary(message)
         return try encode(dictionary)
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 110
-    override func encodePresenceMessages(_ messages: [ARTPresenceMessage]) throws -> Data? {
+    func encodePresenceMessages(_ messages: [ARTPresenceMessage]) throws -> Data? {
         let array = presenceMessagesToArray(messages)
         return try encode(array)
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 114
-    override func encodeProtocolMessage(_ message: ARTProtocolMessage) throws -> Data? {
+    func encodeProtocolMessage(_ message: ARTProtocolMessage) throws -> Data? {
         let dictionary = protocolMessageToDictionary(message)
         return try encode(dictionary)
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 118
-    override func decodeProtocolMessage(_ data: Data) throws -> ARTProtocolMessage? {
+    func decodeProtocolMessage(_ data: Data) throws -> ARTProtocolMessage? {
         let dictionary = try decodeDictionary(data)
         return protocolMessageFromDictionary(dictionary)
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 122
-    override func decodeTokenDetails(_ data: Data) throws -> ARTTokenDetails? {
+    func decodeTokenDetails(_ data: Data) throws -> ARTTokenDetails? {
         let dictionary = try decodeDictionary(data)
         return try tokenFromDictionary(dictionary)
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 126
-    override func decodeTokenRequest(_ data: Data) throws -> ARTTokenRequest? {
+    func decodeTokenRequest(_ data: Data) throws -> ARTTokenRequest? {
         let dictionary = try decodeDictionary(data)
         return try tokenRequestFromDictionary(dictionary)
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 130
-    override func encodeTokenRequest(_ request: ARTTokenRequest) throws -> Data? {
+    func encodeTokenRequest(_ request: ARTTokenRequest) throws -> Data? {
         let dictionary = tokenRequestToDictionary(request)
         return try encode(dictionary)
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 134
-    override func encodeTokenDetails(_ tokenDetails: ARTTokenDetails) throws -> Data? {
+    func encodeTokenDetails(_ tokenDetails: ARTTokenDetails) throws -> Data? {
         let dictionary = tokenDetailsToDictionary(tokenDetails)
         return try encode(dictionary)
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 138
-    override func encodeDeviceDetails(_ deviceDetails: ARTDeviceDetails) throws -> Data? {
+    func encodeDeviceDetails(_ deviceDetails: ARTDeviceDetails) throws -> Data? {
         let dictionary = deviceDetailsToDictionary(deviceDetails)
         return try encode(dictionary)
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 142
-    override func encodeLocalDevice(_ device: ARTLocalDevice) throws -> Data? {
+    func encodeLocalDevice(_ device: ARTLocalDevice) throws -> Data? {
         let dictionary = localDeviceToDictionary(device)
         return try encode(dictionary)
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 146
-    override func decodeDeviceDetails(_ data: Data) throws -> ARTDeviceDetails? {
+    func decodeDeviceDetails(_ data: Data) throws -> ARTDeviceDetails? {
         let dictionary = try decodeDictionary(data)
         return try deviceDetailsFromDictionary(dictionary)
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 150
-    override func decodeChannelDetails(_ data: Data) throws -> ARTChannelDetails? {
+    func decodeChannelDetails(_ data: Data) throws -> ARTChannelDetails? {
         let dictionary = try decodeDictionary(data)
         return channelDetailsFromDictionary(dictionary)
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 154
-    override func decodeDevicesDetails(_ data: Data) throws -> [ARTDeviceDetails]? {
+    func decodeDevicesDetails(_ data: Data) throws -> [ARTDeviceDetails]? {
         let array = try decodeArray(data)
         return try devicesDetailsFromArray(array)
     }
@@ -199,37 +199,37 @@ internal class ARTJsonLikeEncoder: ARTEncoder {
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 170
-    override func decodeDeviceIdentityTokenDetails(_ data: Data) throws -> ARTDeviceIdentityTokenDetails? {
+    func decodeDeviceIdentityTokenDetails(_ data: Data) throws -> ARTDeviceIdentityTokenDetails? {
         let dictionary = try decodeDictionary(data)
         return try deviceIdentityTokenDetailsFromDictionary(dictionary)
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 174
-    override func encodeDevicePushDetails(_ devicePushDetails: ARTDevicePushDetails) throws -> Data? {
+    func encodeDevicePushDetails(_ devicePushDetails: ARTDevicePushDetails) throws -> Data? {
         let dictionary = devicePushDetailsToDictionary(devicePushDetails)
         return try encode(dictionary)
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 178
-    override func decodeDevicePushDetails(_ data: Data) throws -> ARTDevicePushDetails? {
+    func decodeDevicePushDetails(_ data: Data) throws -> ARTDevicePushDetails? {
         let decoded = try decode(data)
         return try devicePushDetailsFromDictionary(decoded)
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 182
-    override func encodePushChannelSubscription(_ channelSubscription: ARTPushChannelSubscription) throws -> Data? {
+    func encodePushChannelSubscription(_ channelSubscription: ARTPushChannelSubscription) throws -> Data? {
         let dictionary = pushChannelSubscriptionToDictionary(channelSubscription)
         return try encode(dictionary)
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 186
-    override func decodePushChannelSubscription(_ data: Data) throws -> ARTPushChannelSubscription? {
+    func decodePushChannelSubscription(_ data: Data) throws -> ARTPushChannelSubscription? {
         let dictionary = try decodeDictionary(data)
         return try pushChannelSubscriptionFromDictionary(dictionary)
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 190
-    override func decodePushChannelSubscriptions(_ data: Data) throws -> [ARTPushChannelSubscription]? {
+    func decodePushChannelSubscriptions(_ data: Data) throws -> [ARTPushChannelSubscription]? {
         let array = try decodeArray(data)
         return try pushChannelSubscriptionsFromArray(array)
     }
@@ -298,7 +298,7 @@ internal class ARTJsonLikeEncoder: ARTEncoder {
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 258
-    override func decodeTime(_ data: Data) throws -> Date? {
+    func decodeTime(_ data: Data) throws -> Date? {
         guard let resp = try decodeArray(data) as? [Any] else { return nil }
         ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: decodeTime \\(resp)")
         if resp.count == 1 {
@@ -310,7 +310,7 @@ internal class ARTJsonLikeEncoder: ARTEncoder {
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 270
-    override func decodeStats(_ data: Data) throws -> [ARTStats]? {
+    func decodeStats(_ data: Data) throws -> [ARTStats]? {
         let array = try decodeArray(data)
         return statsFromArray(array)
     }
@@ -1053,7 +1053,7 @@ internal class ARTJsonLikeEncoder: ARTEncoder {
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 999
-    override func decodeErrorInfo(_ artError: Data) throws -> ARTErrorInfo? {
+    func decodeErrorInfo(_ artError: Data) throws -> ARTErrorInfo? {
         let decodedError = try decodeDictionary(artError)
         guard let error = decodedError?["error"] as? [String: Any] else { return nil }
         return ARTErrorInfo.create(
@@ -1126,7 +1126,7 @@ internal class ARTJsonLikeEncoder: ARTEncoder {
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 1068
-    override func decodeToArray(_ data: Data) throws -> [[String: Any]]? {
+    func decodeToArray(_ data: Data) throws -> [[String: Any]]? {
         let obj = try decode(data)
         if let dict = obj as? [String: Any] {
             return [dict]
@@ -1160,12 +1160,12 @@ internal class ARTJsonLikeEncoder: ARTEncoder {
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 1105
     /// Converts an `ARTEncoderFormat` to an `APEncodingFormat`.
-    private func apEncodingFormatFromARTEncoderFormat(_ format: ARTEncoderFormat) -> APEncodingFormat {
+    private func apEncodingFormatFromARTEncoderFormat(_ format: ARTEncoderFormat) -> _AblyPluginSupportPrivate.EncodingFormat {
         switch format {
         case .json:
-            return .JSON
+            return .json
         case .msgPack:
-            return .MessagePack
+            return .messagePack
         }
     }
     

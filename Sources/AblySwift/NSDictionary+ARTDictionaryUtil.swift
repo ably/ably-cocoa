@@ -35,7 +35,7 @@ internal extension Dictionary where Key == String, Value == Any {
     }
     
     // swift-migration: original location NSDictionary+ARTDictionaryUtil.h, line 13 and NSDictionary+ARTDictionaryUtil.m, line 34
-    private func artTyped<T>(_ type: T.Type, key: String) -> T? {
+    func artTyped<T>(_ type: T.Type, key: String) -> T? {
         return self[key] as? T
     }
     
