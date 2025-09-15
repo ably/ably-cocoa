@@ -30,7 +30,7 @@ public class ARTTestClientOptions: NSObject, NSCopying {
     /**
      Initial value is an instance of `ARTDefaultRealtimeTransportFactory`.
      */
-    public var transportFactory: ARTRealtimeTransportFactory
+    public var transportFactory: RealtimeTransportFactory
 
     // swift-migration: original location ARTTestClientOptions.h, line 39
     /**

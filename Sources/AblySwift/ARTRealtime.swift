@@ -111,26 +111,26 @@ public protocol ARTRealtimeProtocol: ARTRealtimeInstanceMethodsProtocol {
 
 // swift-migration: original location ARTRealtime.h, line 136 and ARTRealtime.m, line 67
 public class ARTRealtime: NSObject, ARTRealtimeProtocol {
-    private var _internal: ARTRealtimeInternal
+    internal var `internal`: ARTRealtimeInternal
     private var _dealloc: ARTQueuedDealloc?
     
     // swift-migration: original location ARTRealtime.m, line 71
     internal func internalAsync(_ use: @escaping (ARTRealtimeInternal) -> Void) {
-        _internal.queue.async {
-            use(self._internal)
+        `internal`.queue.async {
+            use(self.`internal`)
         }
     }
     
     // swift-migration: original location ARTRealtime.m, line 77
     internal func internalSync(_ use: (ARTRealtimeInternal) -> Void) {
-        _internal.queue.sync {
-            use(self._internal)
+        `internal`.queue.sync {
+            use(self.`internal`)
         }
     }
     
     // swift-migration: original location ARTRealtime.h, line 141 and ARTRealtime.m, line 83
     public var connection: ARTConnection {
-        return ARTConnection(internal: _internal.connection, queuedDealloc: _dealloc!)
+        return ARTConnection(internal: `internal`.connection, queuedDealloc: _dealloc!)
     }
     
     // swift-migration: original location ARTRealtime.h, line 145 and ARTRealtime.m, line 87
@@ -142,12 +142,12 @@ public class ARTRealtime: NSObject, ARTRealtimeProtocol {
     
     // swift-migration: original location ARTRealtime.h, line 153 and ARTRealtime.m, line 91
     public var auth: ARTAuth {
-        return ARTAuth(internal: _internal.auth, queuedDealloc: _dealloc!)
+        return ARTAuth(internal: `internal`.auth, queuedDealloc: _dealloc!)
     }
     
     // swift-migration: original location ARTRealtime.h, line 149 and ARTRealtime.m, line 95
     public var push: ARTPush {
-        return ARTPush(internal: _internal.push, queuedDealloc: _dealloc!)
+        return ARTPush(internal: `internal`.push, queuedDealloc: _dealloc!)
     }
     
     #if os(iOS)
@@ -159,31 +159,31 @@ public class ARTRealtime: NSObject, ARTRealtimeProtocol {
     
     // swift-migration: original location ARTRealtime.h, line 42 and ARTRealtime.m, line 105
     public var clientId: String? {
-        return _internal.clientId
+        return `internal`.clientId
     }
     
     // swift-migration: original location ARTRealtime.m, line 109
     private func initCommon() {
-        _dealloc = ARTQueuedDealloc(ref: _internal, queue: _internal.queue)
+        _dealloc = ARTQueuedDealloc(ref: `internal`, queue: `internal`.queue)
     }
     
     // swift-migration: original location ARTRealtime.h, line 114 and ARTRealtime.m, line 113
     public required init(options: ARTClientOptions) {
-        _internal = ARTRealtimeInternal(options: options)
+        `internal` = ARTRealtimeInternal(options: options)
         super.init()
         initCommon()
     }
     
     // swift-migration: original location ARTRealtime.h, line 121 and ARTRealtime.m, line 122
     public required init(key: String) {
-        _internal = ARTRealtimeInternal(key: key)
+        `internal` = ARTRealtimeInternal(key: key)
         super.init()
         initCommon()
     }
     
     // swift-migration: original location ARTRealtime.h, line 127 and ARTRealtime.m, line 131
     public required init(token: String) {
-        _internal = ARTRealtimeInternal(token: token)
+        `internal` = ARTRealtimeInternal(token: token)
         super.init()
         initCommon()
     }
@@ -205,39 +205,39 @@ public class ARTRealtime: NSObject, ARTRealtimeProtocol {
     
     // swift-migration: original location ARTRealtime.h, line 49 and ARTRealtime.m, line 152
     public func time(_ cb: @escaping ARTDateTimeCallback) {
-        _internal.timeWithWrapperSDKAgents(nil, completion: cb)
+        `internal`.timeWithWrapperSDKAgents(nil, completion: cb)
     }
     
     // swift-migration: original location ARTRealtime.h, line 64 and ARTRealtime.m, line 157
     // swift-migration: Converted NSErrorPointer pattern to Swift throws pattern per PRD requirements
     public func request(_ method: String, path: String, params: [String: String]?, body: Any?, headers: [String: String]?, callback: @escaping ARTHTTPPaginatedCallback) throws {
-        try _internal.request(method, path: path, params: params, body: body, headers: headers, wrapperSDKAgents: nil, callback: callback)
+        try `internal`.request(method, path: path, params: params, body: body, headers: headers, wrapperSDKAgents: nil, callback: callback)
     }
     
     // swift-migration: original location ARTRealtime.h, line 73 and ARTRealtime.m, line 167
     public func ping(_ cb: @escaping ARTCallback) {
-        _internal.ping(cb)
+        `internal`.ping(cb)
     }
     
     // swift-migration: original location ARTRealtime.h, line 76 and ARTRealtime.m, line 171
     public func stats(_ callback: @escaping ARTPaginatedStatsCallback) {
-        _internal.statsWithWrapperSDKAgents(nil, callback: callback)
+        `internal`.statsWithWrapperSDKAgents(nil, callback: callback)
     }
     
     // swift-migration: original location ARTRealtime.h, line 87 and ARTRealtime.m, line 176
     // swift-migration: Converted NSErrorPointer pattern to Swift throws pattern per PRD requirements
     public func stats(_ query: ARTStatsQuery?, callback: @escaping ARTPaginatedStatsCallback) throws {
-        try _internal.stats(query, wrapperSDKAgents: nil, callback: callback)
+        try `internal`.stats(query, wrapperSDKAgents: nil, callback: callback)
     }
     
     // swift-migration: original location ARTRealtime.h, line 92 and ARTRealtime.m, line 180
     public func connect() {
-        _internal.connect()
+        `internal`.connect()
     }
     
     // swift-migration: original location ARTRealtime.h, line 97 and ARTRealtime.m, line 184
     public func close() {
-        _internal.close()
+        `internal`.close()
     }
 }
 

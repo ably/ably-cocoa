@@ -80,7 +80,7 @@ internal class ARTWebSocketTransport: NSObject, ARTRealtimeTransport, ARTWebSock
     public let resumeKey: String?
     
     // swift-migration: original location ARTWebSocketTransport.m, line 45
-    private let webSocketFactory: ARTWebSocketFactory
+    private let webSocketFactory: WebSocketFactory
     
     // swift-migration: original location ARTWebSocketTransport.m, line 61
     public var _stateEmitter: ARTInternalEventEmitter<ARTEvent, Any>
@@ -100,7 +100,7 @@ internal class ARTWebSocketTransport: NSObject, ARTRealtimeTransport, ARTWebSock
     }
     
     // swift-migration: original location ARTWebSocketTransport.h, line 15 and ARTWebSocketTransport.m, line 63
-    public init(rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, logger: InternalLog, webSocketFactory: ARTWebSocketFactory) {
+    public init(rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, logger: InternalLog, webSocketFactory: WebSocketFactory) {
         self._workQueue = rest.queue
         self.websocket = nil
         self._state = .closed

@@ -197,7 +197,7 @@ public protocol ARTRealtimeChannelProtocol: ARTChannelProtocol {
 public class ARTRealtimeChannel: NSObject, ARTRealtimeChannelProtocol, @unchecked Sendable {
 
     // MARK: - Private Properties
-    private let _internal: ARTRealtimeChannelInternal
+    internal let `internal`: ARTRealtimeChannelInternal
     private let _realtimeInternal: ARTRealtimeInternal
     private let _dealloc: ARTQueuedDealloc
     
@@ -205,7 +205,7 @@ public class ARTRealtimeChannel: NSObject, ARTRealtimeChannelProtocol, @unchecke
     
     // swift-migration: original location ARTRealtimeChannel+Private.h, line 162 and ARTRealtimeChannel.m, line 59
     internal init(internal: ARTRealtimeChannelInternal, realtimeInternal: ARTRealtimeInternal, queuedDealloc: ARTQueuedDealloc) {
-        self._internal = `internal`
+        self.`internal` = `internal`
         self._realtimeInternal = realtimeInternal
         self._dealloc = queuedDealloc
         super.init()
@@ -215,15 +215,15 @@ public class ARTRealtimeChannel: NSObject, ARTRealtimeChannelProtocol, @unchecke
     
     // swift-migration: original location ARTRealtimeChannel+Private.h, line 159 and ARTRealtimeChannel.m, line 47
     internal func internalAsync(_ use: @escaping (ARTRealtimeChannelInternal) -> Void) {
-        _internal.queue.async {
-            use(self._internal)
+        `internal`.queue.async {
+            use(self.`internal`)
         }
     }
     
     // swift-migration: original location ARTRealtimeChannel+Private.h, line 160 and ARTRealtimeChannel.m, line 53  
     internal func internalSync(_ use: @escaping (ARTRealtimeChannelInternal) -> Void) {
-        _internal.queue.sync {
-            use(self._internal)
+        `internal`.queue.sync {
+            use(self.`internal`)
         }
     }
     
@@ -231,17 +231,17 @@ public class ARTRealtimeChannel: NSObject, ARTRealtimeChannelProtocol, @unchecke
     
     // swift-migration: original location ARTRealtimeChannel.h, line 28 and ARTRealtimeChannel.m, line 73
     public var state: ARTRealtimeChannelState {
-        return _internal.state
+        return `internal`.state
     }
     
     // swift-migration: original location ARTRealtimeChannel.h, line 33 and ARTRealtimeChannel.m, line 77
     public var properties: ARTChannelProperties {
-        return _internal.properties
+        return `internal`.properties
     }
     
     // swift-migration: original location ARTRealtimeChannel.h, line 38 and ARTRealtimeChannel.m, line 81
     public var errorReason: ARTErrorInfo? {
-        return _internal.errorReason
+        return `internal`.errorReason
     }
     
     // swift-migration: original location ARTRealtimeChannel.h, line 41 and ARTRealtimeChannel.m, line 225
@@ -253,19 +253,19 @@ public class ARTRealtimeChannel: NSObject, ARTRealtimeChannelProtocol, @unchecke
     
     // swift-migration: original location ARTRealtimeChannel.m, line 69
     public var name: String {
-        return _internal.name
+        return `internal`.name
     }
     
     // MARK: - Associated Objects
     
     // swift-migration: original location ARTRealtimeChannel.h, line 197 and ARTRealtimeChannel.m, line 85
     public var presence: ARTRealtimePresence {
-        return ARTRealtimePresence(internal: _internal.presence, queuedDealloc: _dealloc)
+        return ARTRealtimePresence(internal: `internal`.presence, queuedDealloc: _dealloc)
     }
     
     // swift-migration: original location ARTRealtimeChannel.h, line 202 and ARTRealtimeChannel.m, line 89
     public var annotations: ARTRealtimeAnnotations {
-        return ARTRealtimeAnnotations(internal: _internal.annotations, queuedDealloc: _dealloc)
+        return ARTRealtimeAnnotations(internal: `internal`.annotations, queuedDealloc: _dealloc)
     }
     
     #if os(iOS)
@@ -279,81 +279,81 @@ public class ARTRealtimeChannel: NSObject, ARTRealtimeChannelProtocol, @unchecke
     
     // swift-migration: original location ARTRealtimeChannel.h, line 46 and ARTRealtimeChannel.m, line 149
     public func attach() {
-        _internal.attach()
+        `internal`.attach()
     }
     
     // swift-migration: original location ARTRealtimeChannel.h, line 53 and ARTRealtimeChannel.m, line 153
     public func attach(_ callback: ARTCallback?) {
-        _internal.attach(callback)
+        `internal`.attach(callback)
     }
     
     // swift-migration: original location ARTRealtimeChannel.h, line 58 and ARTRealtimeChannel.m, line 157
     public func detach() {
-        _internal.detach()
+        `internal`.detach()
     }
     
     // swift-migration: original location ARTRealtimeChannel.h, line 65 and ARTRealtimeChannel.m, line 161
     public func detach(_ callback: ARTCallback?) {
-        _internal.detach(callback)
+        `internal`.detach(callback)
     }
     
     // MARK: - Publishing Methods
     
     // swift-migration: original location ARTRealtimeChannel.m, line 101
     public func publish(_ name: String?, data: Any?) {
-        _internal.publish(name, data: data)
+        `internal`.publish(name, data: data)
     }
     
     // swift-migration: original location ARTRealtimeChannel.m, line 105
     public func publish(_ name: String?, data: Any?, callback: ARTCallback?) {
-        _internal.publish(name, data: data, callback: callback)
+        `internal`.publish(name, data: data, callback: callback)
     }
     
     // swift-migration: original location ARTRealtimeChannel.m, line 109
     public func publish(_ name: String?, data: Any?, clientId: String) {
-        _internal.publish(name, data: data, clientId: clientId)
+        `internal`.publish(name, data: data, clientId: clientId)
     }
     
     // swift-migration: original location ARTRealtimeChannel.m, line 113
     public func publish(_ name: String?, data: Any?, clientId: String, callback: ARTCallback?) {
-        _internal.publish(name, data: data, clientId: clientId, callback: callback)
+        `internal`.publish(name, data: data, clientId: clientId, callback: callback)
     }
     
     // swift-migration: original location ARTRealtimeChannel.m, line 117
     public func publish(_ name: String?, data: Any?, extras: ARTJsonCompatible?) {
-        _internal.publish(name, data: data, extras: extras)
+        `internal`.publish(name, data: data, extras: extras)
     }
     
     // swift-migration: original location ARTRealtimeChannel.m, line 121
     public func publish(_ name: String?, data: Any?, extras: ARTJsonCompatible?, callback: ARTCallback?) {
-        _internal.publish(name, data: data, extras: extras, callback: callback)
+        `internal`.publish(name, data: data, extras: extras, callback: callback)
     }
     
     // swift-migration: original location ARTRealtimeChannel.m, line 125
     public func publish(_ name: String?, data: Any?, clientId: String, extras: ARTJsonCompatible?) {
-        _internal.publish(name, data: data, clientId: clientId, extras: extras)
+        `internal`.publish(name, data: data, clientId: clientId, extras: extras)
     }
     
     // swift-migration: original location ARTRealtimeChannel.m, line 129
     public func publish(_ name: String?, data: Any?, clientId: String, extras: ARTJsonCompatible?, callback: ARTCallback?) {
-        _internal.publish(name, data: data, clientId: clientId, extras: extras, callback: callback)
+        `internal`.publish(name, data: data, clientId: clientId, extras: extras, callback: callback)
     }
     
     // swift-migration: original location ARTRealtimeChannel.m, line 133
     public func publish(_ messages: [ARTMessage]) {
-        _internal.publish(messages)
+        `internal`.publish(messages)
     }
     
     // swift-migration: original location ARTRealtimeChannel.m, line 137
     public func publish(_ messages: [ARTMessage], callback: ARTCallback?) {
-        _internal.publish(messages, callback: callback)
+        `internal`.publish(messages, callback: callback)
     }
     
     // MARK: - History Methods
     
     // swift-migration: original location ARTRealtimeChannel.m, line 141
     public func history(_ callback: @escaping ARTPaginatedMessagesCallback) {
-        _internal.historyWithWrapperSDKAgents(nil, completion: callback)
+        `internal`.historyWithWrapperSDKAgents(nil, completion: callback)
     }
     
     // swift-migration: original location ARTRealtimeChannel.m, line 141
@@ -375,40 +375,40 @@ public class ARTRealtimeChannel: NSObject, ARTRealtimeChannelProtocol, @unchecke
     // swift-migration: original location ARTRealtimeChannel.h, line 76 and ARTRealtimeChannel.m, line 165
     @discardableResult
     public func subscribe(_ callback: @escaping ARTMessageCallback) -> ARTEventListener? {
-        return _internal.subscribe(callback)
+        return `internal`.subscribe(callback)
     }
     
     // swift-migration: original location ARTRealtimeChannel.h, line 87 and ARTRealtimeChannel.m, line 169
     @discardableResult
     public func subscribeWithAttachCallback(_ onAttach: ARTCallback?, callback: @escaping ARTMessageCallback) -> ARTEventListener? {
-        return _internal.subscribeWithAttachCallback(onAttach, callback: callback)
+        return `internal`.subscribeWithAttachCallback(onAttach, callback: callback)
     }
     
     // swift-migration: original location ARTRealtimeChannel.h, line 99 and ARTRealtimeChannel.m, line 173
     @discardableResult
     public func subscribe(_ name: String, callback: @escaping ARTMessageCallback) -> ARTEventListener? {
-        return _internal.subscribe(name, callback: callback)
+        return `internal`.subscribe(name, callback: callback)
     }
     
     // swift-migration: original location ARTRealtimeChannel.h, line 109 and ARTRealtimeChannel.m, line 177
     @discardableResult
     public func subscribe(_ name: String, onAttach: ARTCallback?, callback: @escaping ARTMessageCallback) -> ARTEventListener? {
-        return _internal.subscribe(name, onAttach: onAttach, callback: callback)
+        return `internal`.subscribe(name, onAttach: onAttach, callback: callback)
     }
     
     // swift-migration: original location ARTRealtimeChannel.h, line 114 and ARTRealtimeChannel.m, line 181
     public func unsubscribe() {
-        _internal.unsubscribe()
+        `internal`.unsubscribe()
     }
     
     // swift-migration: original location ARTRealtimeChannel.h, line 121 and ARTRealtimeChannel.m, line 185
     public func unsubscribe(_ listener: ARTEventListener?) {
-        _internal.unsubscribe(listener)
+        `internal`.unsubscribe(listener)
     }
     
     // swift-migration: original location ARTRealtimeChannel.h, line 129 and ARTRealtimeChannel.m, line 189
     public func unsubscribe(_ name: String, listener: ARTEventListener?) {
-        _internal.unsubscribe(name, listener: listener)
+        `internal`.unsubscribe(name, listener: listener)
     }
     
     // MARK: - Event Emitter Methods
@@ -416,59 +416,59 @@ public class ARTRealtimeChannel: NSObject, ARTRealtimeChannelProtocol, @unchecke
     // swift-migration: original location ARTRealtimeChannel.h, line 156 and ARTRealtimeChannel.m, line 197
     @discardableResult
     public func on(_ cb: @escaping ARTChannelStateCallback) -> ARTEventListener {
-        return _internal.on(cb)
+        return `internal`.on(cb)
     }
     
     // swift-migration: original location ARTRealtimeChannel.h, line 156 and ARTRealtimeChannel.m, line 221
     @discardableResult
     public func on(_ event: ARTChannelEvent, callback cb: @escaping ARTChannelStateCallback) -> ARTEventListener {
-        return _internal.on(event, callback: cb)
+        return `internal`.on(event, callback: cb)
     }
     
     // swift-migration: original location ARTRealtimeChannel.h, line 159 and ARTRealtimeChannel.m, line 201
     @discardableResult
     public func once(_ event: ARTChannelEvent, callback cb: @escaping ARTChannelStateCallback) -> ARTEventListener {
-        return _internal.once(event, callback: cb)
+        return `internal`.once(event, callback: cb)
     }
     
     // swift-migration: original location ARTRealtimeChannel.h, line 160 and ARTRealtimeChannel.m, line 205
     @discardableResult  
     public func once(_ cb: @escaping ARTChannelStateCallback) -> ARTEventListener {
-        return _internal.once(cb)
+        return `internal`.once(cb)
     }
     
     // swift-migration: original location ARTRealtimeChannel.h, line 162 and ARTRealtimeChannel.m, line 209
     public func off(_ event: ARTChannelEvent, listener: ARTEventListener) {
-        _internal.off(event, listener: listener)
+        `internal`.off(event, listener: listener)
     }
     
     // swift-migration: original location ARTRealtimeChannel.h, line 163 and ARTRealtimeChannel.m, line 213
     public func off(_ listener: ARTEventListener) {
-        _internal.off(listener)
+        `internal`.off(listener)
     }
     
     // swift-migration: original location ARTRealtimeChannel.h, line 164 and ARTRealtimeChannel.m, line 217
     public func off() {
-        _internal.off()
+        `internal`.off()
     }
     
     // MARK: - Options Methods
     
     // swift-migration: original location ARTRealtimeChannel.m, line 225
     public func getOptions() -> ARTRealtimeChannelOptions? {
-        return _internal.getOptions()
+        return `internal`.getOptions()
     }
     
     // swift-migration: original location ARTRealtimeChannel.h, line 148 and ARTRealtimeChannel.m, line 229
     public func setOptions(_ options: ARTRealtimeChannelOptions?, callback: ARTCallback?) {
-        _internal.setOptions(options, callback: callback)
+        `internal`.setOptions(options, callback: callback)
     }
     
     // MARK: - Utility Methods
     
     // swift-migration: original location ARTRealtimeChannel.m, line 145
     public func exceedMaxSize(_ messages: [ARTBaseMessage]) -> Bool {
-        return _internal.exceedMaxSize(messages)
+        return `internal`.exceedMaxSize(messages)
     }
 }
 
