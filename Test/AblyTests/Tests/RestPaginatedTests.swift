@@ -40,7 +40,7 @@ class RestPaginatedTests: XCTestCase {
             fail("First link is missing from extracted links"); return
         }
 
-        guard let firstRequest = NSMutableURLRequest(path: firstLink, relativeTo: request) else {
+        guard let firstRequest = URLRequest.requestWithPath(firstLink, relativeTo: request) else {
             fail("First link isn't a valid URL"); return
         }
 
