@@ -1126,7 +1126,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     }
     
     // swift-migration: original location ARTRealtime.m, line 961
-    private func onDisconnected() {
+    internal func onDisconnected() {
         onDisconnected(nil)
     }
     
@@ -1404,7 +1404,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     }
     
     // swift-migration: original location ARTRealtime.m, line 1242
-    private func onSuspended() {
+    internal func onSuspended() {
         performTransitionToState(.suspended, withParams: ARTConnectionStateChangeParams())
     }
     
