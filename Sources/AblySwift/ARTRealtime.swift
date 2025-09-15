@@ -54,7 +54,7 @@ public protocol ARTRealtimeInstanceMethodsProtocol: NSObjectProtocol {
     
     // swift-migration: original location ARTRealtime.h, line 76
     /// :nodoc: TODO: docstring
-    func stats(_ callback: @escaping ARTPaginatedStatsCallback) -> Bool
+    func stats(_ callback: @escaping ARTPaginatedStatsCallback)
     
     // swift-migration: original location ARTRealtime.h, line 87
     /**
@@ -220,14 +220,14 @@ public class ARTRealtime: NSObject, ARTRealtimeProtocol {
     }
     
     // swift-migration: original location ARTRealtime.h, line 76 and ARTRealtime.m, line 171
-    public func stats(_ callback: @escaping ARTPaginatedStatsCallback) -> Bool {
-        return _internal.statsWithWrapperSDKAgents(nil, callback: callback)
+    public func stats(_ callback: @escaping ARTPaginatedStatsCallback) {
+        _internal.statsWithWrapperSDKAgents(nil, callback: callback)
     }
     
     // swift-migration: original location ARTRealtime.h, line 87 and ARTRealtime.m, line 176
     // swift-migration: Converted NSErrorPointer pattern to Swift throws pattern per PRD requirements
     public func stats(_ query: ARTStatsQuery?, callback: @escaping ARTPaginatedStatsCallback) throws {
-        try _internal.stats(query, wrapperSDKAgents: nil, callback: callback, error: nil)
+        try _internal.stats(query, wrapperSDKAgents: nil, callback: callback)
     }
     
     // swift-migration: original location ARTRealtime.h, line 92 and ARTRealtime.m, line 180
@@ -727,18 +727,17 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     }
     
     // swift-migration: original location ARTRealtime.m, line 558
-    internal func statsWithWrapperSDKAgents(_ wrapperSDKAgents: [String: String]?, callback: @escaping ARTPaginatedStatsCallback) -> Bool {
-        return stats(ARTStatsQuery(), wrapperSDKAgents: wrapperSDKAgents, callback: callback, error: nil)
+    internal func statsWithWrapperSDKAgents(_ wrapperSDKAgents: [String: String]?, callback: @escaping ARTPaginatedStatsCallback) {
+        do {
+            try stats(ARTStatsQuery(), wrapperSDKAgents: wrapperSDKAgents, callback: callback)
+        } catch {
+            // swift-migration: Lawrence: absorb error
+        }
     }
     
     // swift-migration: original location ARTRealtime.m, line 563
-    internal func stats(_ query: ARTStatsQuery?, wrapperSDKAgents: [String: String]?, callback: @escaping ARTPaginatedStatsCallback, error errorPtr: NSErrorPointer?) -> Bool {
-        do {
-            try rest.stats(query, wrapperSDKAgents: wrapperSDKAgents, callback: callback)
-            return true
-        } catch {
-            return false
-        }
+    internal func stats(_ query: ARTStatsQuery?, wrapperSDKAgents: [String: String]?, callback: @escaping ARTPaginatedStatsCallback) throws {
+        try rest.stats(query, wrapperSDKAgents: wrapperSDKAgents, callback: callback)
     }
     
     // swift-migration: original location ARTRealtime.m, line 567
