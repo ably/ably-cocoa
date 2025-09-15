@@ -19,6 +19,12 @@ public class ARTRealtimePresenceQuery: ARTPresenceQuery {
         waitForSync = true
         super.init(limit: limit, clientId: clientId, connectionId: connectionId)
     }
+
+    // swift-migration: Lawrence added (initializers not inherited in Swift)
+    public override init() {
+        waitForSync = true
+        super.init()
+    }
 }
 
 // MARK: - ARTRealtimePresenceProtocol
