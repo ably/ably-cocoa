@@ -52,7 +52,7 @@ This file tracks the migration progress of all 115 `.m` files in alphabetical or
 | ARTInternalLogCore.m | ARTInternalLogCore.h, ARTInternalLogCore+Testing.h | ARTInternalLogCore.swift | Completed |
 | ARTJitterCoefficientGenerator.m | ARTJitterCoefficientGenerator.h | ARTJitterCoefficientGenerator.swift | Completed |
 | ARTJsonEncoder.m | ARTJsonEncoder.h | ARTJsonEncoder.swift | Completed |
-| ARTJsonLikeEncoder.m | ARTJsonLikeEncoder.h | ARTJsonLikeEncoder.swift | Deferred |
+| ARTJsonLikeEncoder.m | ARTJsonLikeEncoder.h | ARTJsonLikeEncoder.swift | Completed |
 | ARTLocalDevice.m | ARTLocalDevice.h, ARTLocalDevice+Private.h | ARTLocalDevice.swift | Completed |
 | ARTLocalDeviceStorage.m | ARTLocalDeviceStorage.h | ARTLocalDeviceStorage.swift | Completed |
 | ARTLog.m | ARTLog.h, ARTLog+Private.h | ARTLog.swift | Completed |

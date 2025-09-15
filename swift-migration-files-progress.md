@@ -441,9 +441,17 @@ This file tracks detailed progress, decisions, and notes for each migrated file 
 
 ### ARTJsonLikeEncoder.m → ARTJsonLikeEncoder.swift
 - **Headers**: ARTJsonLikeEncoder.h
-- **Status**: Deferred
+- **Status**: Completed ✅
 - **Notes**: 
-  - **Migration Decision**: This file contains complex multi-format encoder/decoder logic with extensive protocol definitions. Deferred to end of migration to implement with proper understanding of all dependencies and usage patterns. Using placeholder for now. 
+  - **Migration Completed**: Successfully migrated complex encoder/decoder with all conversion methods
+  - **Key Migration Points**:
+    - Converted protocol and class to Swift with proper delegation pattern
+    - Migrated all encoding/decoding methods for various Ably types (Messages, PresenceMessages, ProtocolMessages, etc.)
+    - Preserved complex dictionary conversion logic for stats, device details, push subscriptions
+    - Maintained error handling patterns with proper Swift error throwing
+    - Converted LiveObjects plugin integration with proper type safety
+    - Used proper Swift string interpolation for logging with pointer formatting support
+  - **No Build Issues**: File compiles cleanly in Swift 
 
 ### ARTLocalDevice.m → ARTLocalDevice.swift
 - **Headers**: ARTLocalDevice.h, ARTLocalDevice+Private.h
