@@ -158,7 +158,7 @@ public class ARTRest: NSObject, ARTRestProtocol {
 public class ARTRestInternal: NSObject {
     
     // swift-migration: original location ARTRest+Private.h, line 158 and ARTRest.m, line 166
-    private let _logger: ARTInternalLog
+    private let _logger: InternalLog
     
     // swift-migration: original location ARTRest+Private.h, line 24 and ARTRest.m, line 205
     internal var channels: ARTRestChannelsInternal!
@@ -231,7 +231,7 @@ public class ARTRestInternal: NSObject {
     public let userQueue: DispatchQueue
     
     // swift-migration: original location ARTRest+Private.h, line 61 and ARTRest.m, line 226
-    public var logger_onlyForUseInClassMethodsAndTests: ARTInternalLog {
+    public var logger_onlyForUseInClassMethodsAndTests: InternalLog {
         return logger
     }
     
@@ -272,7 +272,7 @@ public class ARTRestInternal: NSObject {
     
     // swift-migration: original location ARTRest+Private.h, line 67 and ARTRest.m, line 172
     public init(options: ARTClientOptions) {
-        let logger = ARTInternalLog(clientOptions: options)
+        let logger = InternalLog(clientOptions: options)
         self._logger = logger
         self.options = options.copy() as! ARTClientOptions
         self.continuousClock = ARTContinuousClock()
@@ -308,7 +308,7 @@ public class ARTRestInternal: NSObject {
     }
     
     // swift-migration: original location ARTRest+Private.h, line 177 and ARTRest.m, line 177
-    internal convenience init(options: ARTClientOptions, realtime: ARTRealtimeInternal?, logger: ARTInternalLog) {
+    internal convenience init(options: ARTClientOptions, realtime: ARTRealtimeInternal?, logger: InternalLog) {
         self.init(options: options)
         self.realtime = realtime
     }
@@ -328,7 +328,7 @@ public class ARTRestInternal: NSObject {
     }
     
     // swift-migration: original location ARTRest.m, line 170
-    public var logger: ARTInternalLog {
+    public var logger: InternalLog {
         return _logger
     }
     

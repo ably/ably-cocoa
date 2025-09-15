@@ -71,7 +71,7 @@ internal class ARTRealtimeChannelsInternal: NSObject, ARTChannelsDelegate {
     private let _userQueue: DispatchQueue
     
     // swift-migration: original location ARTRealtimeChannels.m, line 54
-    internal let logger: ARTInternalLog
+    internal let logger: InternalLog
     // swift-migration: original location ARTRealtimeChannels.m, line 55
     internal weak var realtime: ARTRealtimeInternal? // weak because realtime owns self
     
@@ -79,7 +79,7 @@ internal class ARTRealtimeChannelsInternal: NSObject, ARTChannelsDelegate {
     internal var queue: DispatchQueue
     
     // swift-migration: original location ARTRealtimeChannels+Private.h, line 20 and ARTRealtimeChannels.m, line 67
-    internal init(realtime: ARTRealtimeInternal, logger: ARTInternalLog) {
+    internal init(realtime: ARTRealtimeInternal, logger: InternalLog) {
         self.realtime = realtime
         self._userQueue = realtime.rest.userQueue
         self.queue = realtime.rest.queue

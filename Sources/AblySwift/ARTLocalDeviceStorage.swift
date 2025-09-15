@@ -5,16 +5,16 @@ import Security
 internal class ARTLocalDeviceStorage: NSObject, ARTDeviceStorage {
     
     // swift-migration: original location ARTLocalDeviceStorage.m, line 6
-    private let logger: ARTInternalLog
+    private let logger: InternalLog
     
     // swift-migration: original location ARTLocalDeviceStorage.h, line 11 and ARTLocalDeviceStorage.m, line 9
-    internal init(logger: ARTInternalLog) {
+    internal init(logger: InternalLog) {
         self.logger = logger
         super.init()
     }
     
     // swift-migration: original location ARTLocalDeviceStorage.h, line 13 and ARTLocalDeviceStorage.m, line 16
-    internal static func new(withLogger logger: ARTInternalLog) -> ARTLocalDeviceStorage {
+    internal static func new(withLogger logger: InternalLog) -> ARTLocalDeviceStorage {
         return ARTLocalDeviceStorage(logger: logger)
     }
     

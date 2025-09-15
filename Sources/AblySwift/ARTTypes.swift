@@ -552,7 +552,7 @@ internal class ARTCancellableFromCallback: NSObject, ARTCancellable {
 extension NSObject {
     
     // swift-migration: original location ARTTypes.m, line 449
-    public func art_archive(withLogger logger: ARTInternalLog?) -> Data? {
+    public func art_archive(withLogger logger: InternalLog?) -> Data? {
         do {
             let data = try NSKeyedArchiver.archivedData(withRootObject: self, requiringSecureCoding: false)
             return data
@@ -565,7 +565,7 @@ extension NSObject {
     }
 
     // swift-migration: original location ARTTypes.m, line 458
-    public static func art_unarchive(fromData data: Data, withLogger logger: ARTInternalLog?) -> Any? {
+    public static func art_unarchive(fromData data: Data, withLogger logger: InternalLog?) -> Any? {
         do {
             let result = try NSKeyedUnarchiver.unarchivedObject(ofClasses: [NSArray.self, NSDictionary.self, NSObject.self], from: data)
             return result

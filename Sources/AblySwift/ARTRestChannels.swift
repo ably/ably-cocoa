@@ -87,10 +87,10 @@ internal class ARTRestChannelsInternal: NSObject, ARTChannelsDelegate {
     // swift-migration: original location ARTRestChannels.m, line 50
     weak var rest: ARTRestInternal? // weak because rest owns self
     // swift-migration: original location ARTRestChannels.m, line 51
-    let logger: ARTInternalLog
+    let logger: InternalLog
     
     // swift-migration: original location ARTRestChannels+Private.h, line 16 and ARTRestChannels.m, line 64
-    internal init(rest: ARTRestInternal, logger: ARTInternalLog) {
+    internal init(rest: ARTRestInternal, logger: InternalLog) {
         self.rest = rest
         self.logger = logger
         // swift-migration: Initialize with placeholder delegate 

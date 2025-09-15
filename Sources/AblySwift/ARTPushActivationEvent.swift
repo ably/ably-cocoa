@@ -36,13 +36,13 @@ internal class ARTPushActivationEvent: NSObject, NSSecureCoding {
     // MARK: - Archive/Unarchive
 
     // swift-migration: original location ARTPushActivationEvent.h, line 12 and ARTPushActivationEvent.m, line 35
-    internal func archiveWithLogger(_ logger: ARTInternalLog?) -> Data {
+    internal func archiveWithLogger(_ logger: InternalLog?) -> Data {
         return self.art_archive(withLogger: logger) ?? Data()
     }
 
     // swift-migration: original location ARTPushActivationEvent.h, line 13 and ARTPushActivationEvent.m, line 39
     // swift-migration: Fixed return type from ARTPushActivationState to ARTPushActivationEvent (header error)
-    internal static func unarchive(_ data: Data, withLogger logger: ARTInternalLog?) -> ARTPushActivationEvent? {
+    internal static func unarchive(_ data: Data, withLogger logger: InternalLog?) -> ARTPushActivationEvent? {
         return self.art_unarchive(fromData: data, withLogger: logger) as? ARTPushActivationEvent
     }
 

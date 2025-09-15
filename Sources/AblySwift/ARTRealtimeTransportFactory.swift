@@ -5,7 +5,7 @@ import Foundation
  */
 // swift-migration: original location ARTRealtimeTransportFactory.h, line 14
 public protocol ARTRealtimeTransportFactory {
-    func transport(withRest rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, logger: ARTInternalLog) -> ARTRealtimeTransport
+    func transport(withRest rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, logger: InternalLog) -> ARTRealtimeTransport
 }
 
 /**
@@ -15,7 +15,7 @@ public protocol ARTRealtimeTransportFactory {
 public class ARTDefaultRealtimeTransportFactory: NSObject, ARTRealtimeTransportFactory {
     
     // swift-migration: original location ARTRealtimeTransportFactory.m, line 7
-    public func transport(withRest rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, logger: ARTInternalLog) -> ARTRealtimeTransport {
+    public func transport(withRest rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, logger: InternalLog) -> ARTRealtimeTransport {
         let webSocketFactory: ARTWebSocketFactory = ARTDefaultWebSocketFactory()
         return ARTWebSocketTransport(rest: rest, options: options, resumeKey: resumeKey, logger: logger, webSocketFactory: webSocketFactory)
     }

@@ -66,19 +66,19 @@ public class ARTPaginatedResult<ItemType>: NSObject {
     internal let wrapperSDKAgents: [String: String]?
     
     // swift-migration: original location ARTPaginatedResult+Subclass.h, line 9
-    internal let logger: ARTInternalLog
+    internal let logger: InternalLog
     
     // swift-migration: original location ARTPaginatedResult.h, line 30 and ARTPaginatedResult.m, line 35
     /// If you use this initializer, trying to call any of the methods or properties in ARTPaginatedResult will throw an exception; you must provide your own implementation in a subclass. This initializer exists purely to allow you to provide a mock implementation of this class in your tests.
     public override init() {
         self.initializedViaInit = true
         self.wrapperSDKAgents = nil
-        self.logger = ARTInternalLog(core: DefaultInternalLogCore(logger: LogAdapter(logger: ARTLog())))
+        self.logger = InternalLog(core: DefaultInternalLogCore(logger: LogAdapter(logger: ARTLog())))
         super.init()
     }
     
     // swift-migration: original location ARTPaginatedResult+Private.h, line 19 and ARTPaginatedResult.m, line 43
-    internal init(items: [Any], rest: ARTRestInternal, relFirst: URLRequest?, relCurrent: URLRequest?, relNext: URLRequest?, responseProcessor: @escaping ARTPaginatedResultResponseProcessor, wrapperSDKAgents: [String: String]?, logger: ARTInternalLog) {
+    internal init(items: [Any], rest: ARTRestInternal, relFirst: URLRequest?, relCurrent: URLRequest?, relNext: URLRequest?, responseProcessor: @escaping ARTPaginatedResultResponseProcessor, wrapperSDKAgents: [String: String]?, logger: InternalLog) {
         self.initializedViaInit = false
         
         self.items = items as! [ItemType]
@@ -162,7 +162,7 @@ public class ARTPaginatedResult<ItemType>: NSObject {
     }
     
     // swift-migration: original location ARTPaginatedResult+Private.h, line 28 and ARTPaginatedResult.m, line 146
-    internal class func executePaginated(_ rest: ARTRestInternal, withRequest request: URLRequest, andResponseProcessor responseProcessor: @escaping ARTPaginatedResultResponseProcessor, wrapperSDKAgents: [String: String]?, logger: ARTInternalLog, callback: @escaping (ARTPaginatedResult?, ARTErrorInfo?) -> Void) {
+    internal class func executePaginated(_ rest: ARTRestInternal, withRequest request: URLRequest, andResponseProcessor responseProcessor: @escaping ARTPaginatedResultResponseProcessor, wrapperSDKAgents: [String: String]?, logger: InternalLog, callback: @escaping (ARTPaginatedResult?, ARTErrorInfo?) -> Void) {
         ARTLogDebug(logger, "Paginated request: \(request)")
         
         _ = rest.executeRequest(request, withAuthOption: ARTAuthentication.on, wrapperSDKAgents: wrapperSDKAgents) { response, data, error in

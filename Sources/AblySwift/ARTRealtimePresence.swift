@@ -441,7 +441,7 @@ internal class ARTRealtimePresenceInternal {
     private var _beforeSyncMembers: [String: ARTPresenceMessage]?
     
     // swift-migration: original location ARTRealtimePresence+Private.h, line 154 and ARTRealtimePresence.m, line 198
-    private let logger: ARTInternalLog
+    private let logger: InternalLog
     
     // MARK: - Properties
     
@@ -516,7 +516,7 @@ internal class ARTRealtimePresenceInternal {
     // MARK: - Initialization (placeholder for now as per user request)
     
     // swift-migration: original location ARTRealtimePresence+Private.h, line 11 and ARTRealtimePresence.m, line 191
-    internal init(channel: ARTRealtimeChannelInternal, logger: ARTInternalLog) {
+    internal init(channel: ARTRealtimeChannelInternal, logger: InternalLog) {
         // swift-migration: Preserving original initialization logic from line 192-206
         self._channel = channel
         self._realtime = channel.realtime

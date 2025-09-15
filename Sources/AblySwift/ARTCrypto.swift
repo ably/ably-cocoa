@@ -156,12 +156,12 @@ internal class ARTCbcCipher: NSObject, ARTChannelCipher {
     // swift-migration: original location ARTCrypto+Private.h, line 32
     internal let blockLength: UInt
     // swift-migration: original location ARTCrypto+Private.h, line 29
-    internal let logger: ARTInternalLog
+    internal let logger: InternalLog
     // swift-migration: original location ARTCrypto.m, line 16
     private let algorithm: CCAlgorithm
     
     // swift-migration: original location ARTCrypto+Private.h, line 25 and ARTCrypto.m, line 115
-    internal init(cipherParams: ARTCipherParams, logger: ARTInternalLog) throws {
+    internal init(cipherParams: ARTCipherParams, logger: InternalLog) throws {
         self.keySpec = cipherParams.key
         self.iv = cipherParams.iv
         self.blockLength = UInt(cbcBlockLength)
@@ -180,7 +180,7 @@ internal class ARTCbcCipher: NSObject, ARTChannelCipher {
     }
     
     // swift-migration: original location ARTCrypto+Private.h, line 26 and ARTCrypto.m, line 134
-    class func cbcCipher(params: ARTCipherParams, logger: ARTInternalLog) throws -> ARTCbcCipher {
+    class func cbcCipher(params: ARTCipherParams, logger: InternalLog) throws -> ARTCbcCipher {
         return try ARTCbcCipher(cipherParams: params, logger: logger)
     }
     
@@ -392,7 +392,7 @@ public class ARTCrypto: NSObject {
     }
     
     // swift-migration: original location ARTCrypto+Private.h, line 45 and ARTCrypto.m, line 340
-    internal class func cipher(params: ARTCipherParams, logger: ARTInternalLog) throws -> ARTChannelCipher {
+    internal class func cipher(params: ARTCipherParams, logger: InternalLog) throws -> ARTChannelCipher {
         return try ARTCbcCipher.cbcCipher(params: params, logger: logger)
     }
 }

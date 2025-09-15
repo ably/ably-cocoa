@@ -115,12 +115,12 @@ internal class ARTPushChannelInternal: NSObject {
     // swift-migration: original location ARTPushChannel.m, line 73
     private weak var rest: ARTRestInternal? // weak because rest may own self and always outlives it
     // swift-migration: original location ARTPushChannel.m, line 74
-    private let logger: ARTInternalLog
+    private let logger: InternalLog
     // swift-migration: original location ARTPushChannel.m, line 75
     private weak var channel: ARTChannel? // weak because channel owns self
 
     // swift-migration: original location ARTPushChannel+Private.h, line 12 and ARTPushChannel.m, line 78
-    internal init(rest: ARTRestInternal, withChannel channel: ARTChannel, logger: ARTInternalLog) {
+    internal init(rest: ARTRestInternal, withChannel channel: ARTChannel, logger: InternalLog) {
         self.rest = rest
         self.queue = rest.queue
         self.userQueue = rest.userQueue

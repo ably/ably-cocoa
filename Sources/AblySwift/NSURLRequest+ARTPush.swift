@@ -9,7 +9,7 @@ internal extension URLRequest {
     }
     
     // swift-migration: original location NSURLRequest+ARTPush.h, line 13 and NSURLRequest+ARTPush.m, line 14
-    func settingDeviceAuthentication(_ deviceId: ARTDeviceId, localDevice: ARTLocalDevice, logger: ARTInternalLog?) -> URLRequest {
+    func settingDeviceAuthentication(_ deviceId: ARTDeviceId, localDevice: ARTLocalDevice, logger: InternalLog?) -> URLRequest {
         var mutableRequest = self
         
         if localDevice.id == deviceId {
@@ -35,7 +35,7 @@ internal extension URLRequest {
     }
     
     // swift-migration: original location NSURLRequest+ARTPush.h, line 15 and NSURLRequest+ARTPush.m, line 35
-    func settingDeviceAuthentication(_ localDevice: ARTLocalDevice, logger: ARTInternalLog?) -> URLRequest {
+    func settingDeviceAuthentication(_ localDevice: ARTLocalDevice, logger: InternalLog?) -> URLRequest {
         return settingDeviceAuthentication(localDevice.id ?? "", localDevice: localDevice, logger: logger)
     }
 }
@@ -49,7 +49,7 @@ internal extension NSMutableURLRequest {
         return result as NSURLRequest
     }
     
-    func settingDeviceAuthentication(_ deviceId: ARTDeviceId, localDevice: ARTLocalDevice, logger: ARTInternalLog?) -> NSURLRequest {
+    func settingDeviceAuthentication(_ deviceId: ARTDeviceId, localDevice: ARTLocalDevice, logger: InternalLog?) -> NSURLRequest {
         let urlRequest = self as URLRequest
         let result = urlRequest.settingDeviceAuthentication(deviceId, localDevice: localDevice, logger: logger)
         return result as NSURLRequest
@@ -61,7 +61,7 @@ internal extension NSMutableURLRequest {
         return result as NSURLRequest
     }
     
-    func settingDeviceAuthentication(_ localDevice: ARTLocalDevice, logger: ARTInternalLog?) -> NSURLRequest {
+    func settingDeviceAuthentication(_ localDevice: ARTLocalDevice, logger: InternalLog?) -> NSURLRequest {
         let urlRequest = self as URLRequest
         let result = urlRequest.settingDeviceAuthentication(localDevice, logger: logger)
         return result as NSURLRequest

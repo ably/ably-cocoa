@@ -23,13 +23,13 @@ func ARTOSReachability_Callback(target: SCNetworkReachability, flags: SCNetworkR
 
 // swift-migration: original location ARTOSReachability+Private.h, line 3 and ARTOSReachability.m, line 20
 internal class ARTOSReachability: NSObject, ARTReachability {
-    private let logger: ARTInternalLog
+    private let logger: InternalLog
     private var host: String?
     private var reachabilityRef: SCNetworkReachability?
     private let queue: DispatchQueue
     
     // swift-migration: original location ARTOSReachability.m, line 27
-    required init(logger: ARTInternalLog, queue: DispatchQueue) {
+    required init(logger: InternalLog, queue: DispatchQueue) {
         self.logger = logger
         self.queue = queue
         super.init()

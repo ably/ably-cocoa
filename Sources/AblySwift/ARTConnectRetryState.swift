@@ -7,7 +7,7 @@ import Foundation
 internal class ConnectRetryState: NSObject {
     
     // swift-migration: original location ARTConnectRetryState.m, line 10
-    internal let logger: ARTInternalLog
+    internal let logger: InternalLog
     
     // swift-migration: original location ARTConnectRetryState.m, line 11
     internal let logMessagePrefix: String
@@ -19,7 +19,7 @@ internal class ConnectRetryState: NSObject {
     internal var retrySequence: ARTRetrySequence?
     
     // swift-migration: original location ARTConnectRetryState.h, line 16 and ARTConnectRetryState.m, line 21
-    internal init(retryDelayCalculator: RetryDelayCalculator, logger: ARTInternalLog, logMessagePrefix: String) {
+    internal init(retryDelayCalculator: RetryDelayCalculator, logger: InternalLog, logMessagePrefix: String) {
         self.retryDelayCalculator = retryDelayCalculator
         self.logger = logger
         self.logMessagePrefix = logMessagePrefix

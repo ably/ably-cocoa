@@ -138,7 +138,7 @@ internal class ARTConnectionInternal: NSObject {
         // swift-migration: Using placeholder values - full implementation would handle circular dependencies properly
         let placeholderOptions = ARTClientOptions()
         let placeholderRest = ARTRestInternal(options: placeholderOptions)
-        let placeholderLogger = ARTInternalLog(clientOptions: placeholderOptions)
+        let placeholderLogger = InternalLog(clientOptions: placeholderOptions)
         
         self.eventEmitter = ARTPublicEventEmitter(rest: placeholderRest, logger: placeholderLogger)
         self.realtime = nil
@@ -147,7 +147,7 @@ internal class ARTConnectionInternal: NSObject {
     }
     
     // swift-migration: original location ARTConnection+Private.h, line 34 and ARTConnection.m, line 115
-    internal init(realtime: ARTRealtimeInternal, logger: ARTInternalLog) {
+    internal init(realtime: ARTRealtimeInternal, logger: InternalLog) {
         self.eventEmitter = ARTPublicEventEmitter(rest: realtime.rest, logger: logger)
         self.realtime = realtime
         self._queue = realtime.rest.queue

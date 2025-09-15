@@ -358,7 +358,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     private var connectRetryState: ConnectRetryState!
 
     // swift-migration: original location ARTRealtime.m, line 205
-    private let logger: ARTInternalLog
+    private let logger: InternalLog
     
     // swift-migration: original location ARTRealtime.m, line 219
     private var _renewingToken: Bool = false
@@ -437,7 +437,7 @@ public class ARTRealtimeInternal: NSObject, APRealtimeClient, ARTRealtimeTranspo
     internal init(options: ARTClientOptions) {
         // swift-migration: Lawrence — some things moved around here so that we can avoid circular initialization problems (i.e. referring to self before super init called), which Swift is more strict about; we also make some properties implicitly-unwrapped optionals for the same reason
 
-        logger = ARTInternalLog(clientOptions: options)
+        logger = InternalLog(clientOptions: options)
 
         _transport = nil
         _networkState = .isUnknown

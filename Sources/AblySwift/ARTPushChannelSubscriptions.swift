@@ -97,12 +97,12 @@ public class ARTPushChannelSubscriptions: NSObject, ARTPushChannelSubscriptionsP
 internal class ARTPushChannelSubscriptionsInternal: NSObject {
     
     private weak var _rest: ARTRestInternal? // weak because rest owns self
-    private let _logger: ARTInternalLog
+    private let _logger: InternalLog
     private let _queue: DispatchQueue
     private let _userQueue: DispatchQueue
     
     // swift-migration: original location ARTPushChannelSubscriptions.m, line 55
-    internal init(rest: ARTRestInternal, logger: ARTInternalLog) {
+    internal init(rest: ARTRestInternal, logger: InternalLog) {
         self._rest = rest
         self._logger = logger
         self._queue = rest.queue

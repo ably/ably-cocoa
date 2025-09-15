@@ -139,7 +139,7 @@ internal class ARTPushInternal: NSObject {
     private weak var rest: ARTRestInternal? // weak because rest owns self
     
     // swift-migration: original location ARTPush.m, line 86
-    private let logger: ARTInternalLog
+    private let logger: InternalLog
     
     // swift-migration: original location ARTPush.m, line 87
     private var activationMachine: ARTPushActivationStateMachine?
@@ -151,7 +151,7 @@ internal class ARTPushInternal: NSObject {
     internal let admin: ARTPushAdminInternal
     
     // swift-migration: original location ARTPush+Private.h, line 16 and ARTPush.m, line 91
-    internal init(rest: ARTRestInternal, logger: ARTInternalLog) {
+    internal init(rest: ARTRestInternal, logger: InternalLog) {
         self.rest = rest
         self.logger = logger
         self.admin = ARTPushAdminInternal(rest: rest, logger: logger)

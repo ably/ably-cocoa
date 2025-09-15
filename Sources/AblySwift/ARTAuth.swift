@@ -37,7 +37,7 @@ internal class ARTAuthInternal {
     internal weak var delegate: ARTAuthDelegate?
     
     // swift-migration: original location ARTAuth+Private.h, line 91
-    private let logger: ARTInternalLog
+    private let logger: InternalLog
     
     // swift-migration: original location ARTAuth.m, line 98
     private weak var rest: ARTRestInternal? // weak because rest owns auth
@@ -58,7 +58,7 @@ internal class ARTAuthInternal {
     private let cancelationEventEmitter: ARTEventEmitter<ARTEvent, ARTErrorInfo>
     
     // swift-migration: original location ARTAuth+Private.h, line 76 and ARTAuth.m, line 107
-    internal init(_ rest: ARTRestInternal, withOptions options: ARTClientOptions, logger: ARTInternalLog) {
+    internal init(_ rest: ARTRestInternal, withOptions options: ARTClientOptions, logger: InternalLog) {
         self.rest = rest
         self.userQueue = rest.userQueue
         self.queue = rest.queue

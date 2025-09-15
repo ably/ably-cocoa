@@ -61,7 +61,7 @@ public class ARTLocalDevice: ARTDeviceDetails {
     internal var storage: ARTDeviceStorage
     
     // swift-migration: original location ARTLocalDevice+Private.h, line 45 and ARTLocalDevice.m, line 54
-    private let logger: ARTInternalLog?
+    private let logger: InternalLog?
     
     // swift-migration: original location ARTLocalDevice.m, line 97
     private var _identityTokenDetails: ARTDeviceIdentityTokenDetails?
@@ -72,7 +72,7 @@ public class ARTLocalDevice: ARTDeviceDetails {
     }
     
     // swift-migration: original location ARTLocalDevice.m, line 51
-    internal init(storage: ARTDeviceStorage, logger: ARTInternalLog?) {
+    internal init(storage: ARTDeviceStorage, logger: InternalLog?) {
         self.storage = storage
         self.logger = logger
         super.init()
@@ -88,7 +88,7 @@ public class ARTLocalDevice: ARTDeviceDetails {
     }
     
     // swift-migration: original location ARTLocalDevice+Private.h, line 24 and ARTLocalDevice.m, line 67
-    internal static func device(withStorage storage: ARTDeviceStorage, logger: ARTInternalLog?) -> ARTLocalDevice {
+    internal static func device(withStorage storage: ARTDeviceStorage, logger: InternalLog?) -> ARTLocalDevice {
         let device = ARTLocalDevice(storage: storage, logger: logger)
         device.platform = ARTDevicePlatform
         

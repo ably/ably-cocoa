@@ -154,10 +154,10 @@ internal class ARTRestPresenceInternal: NSObject {
     private let _queue: DispatchQueue
     
     // swift-migration: original location ARTRestPresence.m, line 93
-    let logger: ARTInternalLog
+    let logger: InternalLog
     
     // swift-migration: original location ARTRestPresence+Private.h, line 11 and ARTRestPresence.m, line 105
-    internal init(channel: ARTRestChannelInternal, logger: ARTInternalLog) {
+    internal init(channel: ARTRestChannelInternal, logger: InternalLog) {
         self._channel = channel
         self._userQueue = channel.rest?.userQueue ?? DispatchQueue.main
         self._queue = channel.rest?.queue ?? DispatchQueue.main

@@ -10,7 +10,7 @@ import Foundation
  2. Requirements for the data emitted by the SDK's logging system — see issues #1618 and #1625.
  */
 // swift-migration: original location ARTVersion2Log.h, line 16
-public protocol ARTVersion2Log: NSObjectProtocol {
+public protocol Version2Log: NSObjectProtocol {
     
     // swift-migration: original location ARTVersion2Log.h, line 18
     var logLevel: ARTLogLevel { get set }
@@ -20,5 +20,5 @@ public protocol ARTVersion2Log: NSObjectProtocol {
        - fileName: The base name (e.g. given an absolute path `/foo/bar/baz`, its base name is `baz`) of the file from which the log message was emitted.
      */
     // swift-migration: original location ARTVersion2Log.h, line 24
-    func log(_ message: String, withLevel level: ARTLogLevel, file fileName: String, line: Int)
+    func log(_ message: String, with level: ARTLogLevel, file fileName: String, line: Int)
 }

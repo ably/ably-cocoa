@@ -412,7 +412,7 @@ public class ARTPublicEventEmitter<EventType: ARTEventIdentification, ItemType>:
     private let _userQueue: DispatchQueue?
     
     // swift-migration: original location ARTEventEmitter+Private.h, line 46 and ARTEventEmitter.m, line 319
-    public init(rest: ARTRestInternal, logger: ARTInternalLog) {
+    public init(rest: ARTRestInternal, logger: InternalLog) {
         self._rest = rest
         self._queue = rest.queue
         self._userQueue = rest.userQueue

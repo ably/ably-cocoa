@@ -108,7 +108,7 @@ internal class ARTRealtimeAnnotationsInternal: NSObject, ARTRealtimeAnnotationsP
     internal var queue: DispatchQueue
     
     // swift-migration: original location ARTRealtimeAnnotations.m, line 57
-    private let logger: ARTInternalLog
+    private let logger: InternalLog
     
     // swift-migration: original location ARTRealtimeAnnotations.m, line 62
     private weak var channel: ARTRealtimeChannelInternal? // weak because channel owns self
@@ -117,7 +117,7 @@ internal class ARTRealtimeAnnotationsInternal: NSObject, ARTRealtimeAnnotationsP
     private let dataEncoder: ARTDataEncoder
     
     // swift-migration: original location ARTRealtimeAnnotations+Private.h, line 10 and ARTRealtimeAnnotations.m, line 69
-    internal init(channel: ARTRealtimeChannelInternal, logger: ARTInternalLog) {
+    internal init(channel: ARTRealtimeChannelInternal, logger: InternalLog) {
         self.channel = channel
         self.realtime = channel.realtime
         // swift-migration: Lawrence added these two unwraps

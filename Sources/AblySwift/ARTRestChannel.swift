@@ -173,7 +173,7 @@ internal class ARTRestChannelInternal: ARTChannel {
     // swift-migration: original location ARTRestChannel.m, line 119 - @dynamic options indicates computed property
     
     // swift-migration: original location ARTRestChannel.m, line 121
-    internal init(name: String, withOptions options: ARTChannelOptions, andRest rest: ARTRestInternal, logger: ARTInternalLog) {
+    internal init(name: String, withOptions options: ARTChannelOptions, andRest rest: ARTRestInternal, logger: InternalLog) {
         self._userQueue = rest.userQueue
         self.rest = rest
         self.queue = rest.queue

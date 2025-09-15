@@ -1,7 +1,7 @@
 @testable import AblySwift
 import Foundation
 
-public class MockInternalLogCore: NSObject, ARTInternalLogCore {
+public class MockInternalLogCore: NSObject, InternalLogCore {
     public var logLevel: ARTLogLevel = .none
 
     var lastReceivedLogMessageArguments: (message: String, level: ARTLogLevel, fileName: UnsafePointer<CChar>, line: Int)?

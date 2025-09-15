@@ -8,7 +8,7 @@ import Foundation
 /// This protocol exists to give internal SDK components access to a rich and useful logging interface, whilst minimising the complexity (and hence the implementation burden for users of the SDK) of the `ARTVersion2Log` protocol. It also allows us to evolve the logging interface used internally without introducing breaking changes for users of the SDK.
 ///
 /// The initial interface of `ARTInternalLogCore` more or less mirrors that of the `ARTLog` class, for compatibility with existing internal SDK code. However, it will evolve as we gather requirements for the information logged by the SDK — see issues #1623 and #1624.
-public protocol ARTInternalLogCore {
+public protocol InternalLogCore {
     /// - Parameters:
     ///   - fileName: The absolute path of the file from which the log message was emitted (for example, as returned by the `__FILE__` macro).
     // swift-migration: original location ARTInternalLogCore.h, line 25
@@ -20,7 +20,7 @@ public protocol ARTInternalLogCore {
 
 // swift-migration: original location ARTInternalLogCore.h, line 35 and ARTInternalLogCore.m, line 7
 /// The implementation of `ARTInternalLogCore` that should be used in non-test code.
-public class DefaultInternalLogCore: NSObject, ARTInternalLogCore {
+public class DefaultInternalLogCore: NSObject, InternalLogCore {
     
     // swift-migration: original location ARTInternalLogCore+Testing.h, line 9
     /// Exposed to test suite so that it can make assertions about how the convenience initializers populate it.
@@ -49,10 +49,10 @@ public class DefaultInternalLogCore: NSObject, ARTInternalLogCore {
     // MARK: Logging
     
     // swift-migration: original location ARTInternalLogCore.h, line 25 and ARTInternalLogCore.m, line 28
-    public func log(_ message: String, withLevel level: ARTLogLevel, file fileName: UnsafePointer<CChar>, line: Int) {
+    public func log(_ message: String, with level: ARTLogLevel, file fileName: UnsafePointer<CChar>, line: Int) {
         let fileNameNSString = String(cString: fileName)
         let lastPathComponent = (fileNameNSString as NSString).lastPathComponent
-        logger.log(message, withLevel: level, file: lastPathComponent, line: line)
+        logger.log(message, with: level, file: lastPathComponent, line: line)
     }
     
     // MARK: Log level

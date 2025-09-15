@@ -130,12 +130,12 @@ public protocol APRealtimeChannel {
 
 // Placeholder logger core
 // Lawrence: Yeah, this does indeed need to exist; there's an NSCoding implementation that just calls the wrong initializer
-public class PlaceholderLogCore: ARTInternalLogCore {
+public class PlaceholderLogCore: InternalLogCore {
     public var logLevel: ARTLogLevel = .debug
 
     public init() {}
 
-    public func log(_ message: String, withLevel level: ARTLogLevel, file fileName: UnsafePointer<CChar>, line: Int) {
+    public func log(_ message: String, with level: ARTLogLevel, file fileName: UnsafePointer<CChar>, line: Int) {
         // swift-migration: Placeholder implementation
     }
 }

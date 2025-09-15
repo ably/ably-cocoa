@@ -28,7 +28,7 @@ public class ARTDataEncoder: NSObject {
     
     // swift-migration: original location ARTDataEncoder.h, line 31 and ARTDataEncoder.m, line 25
     // swift-migration: Changed from inout Error? parameter to throws pattern per PRD requirements
-    public init(cipherParams: ARTCipherParams?, logger: ARTInternalLog) throws {
+    public init(cipherParams: ARTCipherParams?, logger: InternalLog) throws {
         if let params = cipherParams {
             do {
                 self.cipher = try ARTCrypto.cipher(params: params, logger: logger)

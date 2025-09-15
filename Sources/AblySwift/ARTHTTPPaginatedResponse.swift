@@ -15,7 +15,7 @@ public class ARTHTTPPaginatedResponse: ARTPaginatedResult<NSDictionary> {
                  relNext: URLRequest?,
                  responseProcessor: @escaping ARTPaginatedResultResponseProcessor,
                  wrapperSDKAgents: [String: String]?,
-                 logger: ARTInternalLog) {
+                 logger: InternalLog) {
         self.response = response
         super.init(items: items, rest: rest, relFirst: relFirst, relCurrent: relCurrent, relNext: relNext, responseProcessor: responseProcessor, wrapperSDKAgents: wrapperSDKAgents, logger: logger)
     }
@@ -100,7 +100,7 @@ public class ARTHTTPPaginatedResponse: ARTPaginatedResult<NSDictionary> {
     public class func executePaginated(_ rest: ARTRestInternal,
                                            withRequest request: URLRequest,
                                            wrapperSDKAgents: [String: String]?,
-                                           logger: ARTInternalLog,
+                                           logger: InternalLog,
                                            callback: @escaping ARTHTTPPaginatedCallback) {
         ARTLogDebug(logger, "HTTP Paginated request: \(request)")
 

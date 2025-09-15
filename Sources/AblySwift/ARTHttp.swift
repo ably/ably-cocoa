@@ -18,7 +18,7 @@ internal class ARTHttp: NSObject, ARTHTTPExecutor {
     internal let urlSession: any ARTURLSession
     
     // swift-migration: original location ARTHttp.m, line 17
-    private let _logger: ARTInternalLog
+    private let _logger: InternalLog
     
     // swift-migration: original location ARTHttp.h, line 24 and ARTHttp.m, line 20
     internal class func setURLSessionClass(_ urlSessionClass: AnyClass) {
@@ -26,7 +26,7 @@ internal class ARTHttp: NSObject, ARTHTTPExecutor {
     }
     
     // swift-migration: original location ARTHttp.h, line 27 and ARTHttp.m, line 24
-    internal init(queue: DispatchQueue, logger: ARTInternalLog) {
+    internal init(queue: DispatchQueue, logger: InternalLog) {
         let urlSessionClass = configuredUrlSessionClass ?? ARTURLSessionServerTrust.self
         self.urlSession = (urlSessionClass as! ARTURLSession.Type).init(queue)
         self._logger = logger
@@ -34,7 +34,7 @@ internal class ARTHttp: NSObject, ARTHTTPExecutor {
     }
     
     // swift-migration: original location ARTHttp.m, line 34
-    internal var logger: ARTInternalLog {
+    internal var logger: InternalLog {
         return _logger
     }
     

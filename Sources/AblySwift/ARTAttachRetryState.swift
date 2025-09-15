@@ -5,7 +5,7 @@ import Foundation
 public class ARTAttachRetryState: NSObject {
     
     // swift-migration: original location ARTAttachRetryState.m, line 10
-    internal let logger: ARTInternalLog
+    internal let logger: InternalLog
     // swift-migration: original location ARTAttachRetryState.m, line 11
     internal let logMessagePrefix: String
     // swift-migration: original location ARTAttachRetryState.m, line 12
@@ -16,7 +16,7 @@ public class ARTAttachRetryState: NSObject {
     // swift-migration: original location ARTAttachRetryState.h, line 16
     public init(
         retryDelayCalculator: RetryDelayCalculator,
-        logger: ARTInternalLog,
+        logger: InternalLog,
         logMessagePrefix: String
     ) {
         self.retryDelayCalculator = retryDelayCalculator

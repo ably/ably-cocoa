@@ -7,17 +7,17 @@ internal class ARTPushActivationState: NSObject, NSSecureCoding {
     internal weak var machine: ARTPushActivationStateMachine?
     
     // swift-migration: original location ARTPushActivationState.m, line 17
-    internal let logger: ARTInternalLog
+    internal let logger: InternalLog
 
     // swift-migration: original location ARTPushActivationState.h, line 12 and ARTPushActivationState.m, line 25
-    internal required init(machine: ARTPushActivationStateMachine?, logger: ARTInternalLog) {
+    internal required init(machine: ARTPushActivationStateMachine?, logger: InternalLog) {
         self.machine = machine
         self.logger = logger
         super.init()
     }
 
     // swift-migration: original location ARTPushActivationState.h, line 14 and ARTPushActivationState.m, line 33
-    internal static func new(withMachine machine: ARTPushActivationStateMachine?, logger: ARTInternalLog) -> Self {
+    internal static func new(withMachine machine: ARTPushActivationStateMachine?, logger: InternalLog) -> Self {
         return self.init(machine: machine, logger: logger)
     }
 
@@ -44,7 +44,7 @@ internal class ARTPushActivationState: NSObject, NSSecureCoding {
         // swift-migration: Note - logger and machine cannot be decoded from archive, will need to be set after unarchiving
         // Create a placeholder logger - this will be replaced when the state is actually used
         let placeholderCore = PlaceholderLogCore()
-        self.logger = ARTInternalLog(core: placeholderCore)
+        self.logger = InternalLog(core: placeholderCore)
         super.init()
     }
 
@@ -68,7 +68,7 @@ internal class ARTPushActivationState: NSObject, NSSecureCoding {
     }
 
     // swift-migration: original location ARTPushActivationState.h, line 21 and ARTPushActivationState.m, line 74
-    internal static func unarchive(_ data: Data, withLogger logger: ARTInternalLog?) -> ARTPushActivationState? {
+    internal static func unarchive(_ data: Data, withLogger logger: InternalLog?) -> ARTPushActivationState? {
         return self.art_unarchive(fromData: data, withLogger: logger) as? ARTPushActivationState
     }
 }
@@ -82,7 +82,7 @@ internal class ARTPushActivationPersistentState: ARTPushActivationState {
 // MARK: - Helper function
 
 // swift-migration: original location ARTPushActivationState.m, line 87
-private func validateAndSync(_ machine: ARTPushActivationStateMachine, _ event: ARTPushActivationEvent, _ logger: ARTInternalLog) -> ARTPushActivationState {
+private func validateAndSync(_ machine: ARTPushActivationStateMachine, _ event: ARTPushActivationEvent, _ logger: InternalLog) -> ARTPushActivationState {
     #if os(iOS)
     let local = machine.rest.device_nosync
     
@@ -223,19 +223,19 @@ internal class ARTPushActivationStateWaitingForRegistrationSync: ARTPushActivati
     private let fromEvent: ARTPushActivationEvent
 
     // swift-migration: original location ARTPushActivationState.h, line 48 and ARTPushActivationState.m, line 220
-    internal init(machine: ARTPushActivationStateMachine, logger: ARTInternalLog, fromEvent: ARTPushActivationEvent) {
+    internal init(machine: ARTPushActivationStateMachine, logger: InternalLog, fromEvent: ARTPushActivationEvent) {
         self.fromEvent = fromEvent
         super.init(machine: machine, logger: logger)
     }
     
     // swift-migration: Required initializer
-    internal required init(machine: ARTPushActivationStateMachine?, logger: ARTInternalLog) {
+    internal required init(machine: ARTPushActivationStateMachine?, logger: InternalLog) {
         self.fromEvent = ARTPushActivationEvent()
         super.init(machine: machine, logger: logger)
     }
 
     // swift-migration: original location ARTPushActivationState.h, line 49 and ARTPushActivationState.m, line 227
-    internal static func new(withMachine machine: ARTPushActivationStateMachine, logger: ARTInternalLog, fromEvent: ARTPushActivationEvent) -> ARTPushActivationStateWaitingForRegistrationSync {
+    internal static func new(withMachine machine: ARTPushActivationStateMachine, logger: InternalLog, fromEvent: ARTPushActivationEvent) -> ARTPushActivationStateWaitingForRegistrationSync {
         return ARTPushActivationStateWaitingForRegistrationSync(machine: machine, logger: logger, fromEvent: fromEvent)
     }
 

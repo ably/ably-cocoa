@@ -22,7 +22,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     // swift-migration: original location ARTJsonLikeEncoder.m, line 35
     private weak var _rest: ARTRestInternal? // weak because rest owns self
     // swift-migration: original location ARTJsonLikeEncoder.m, line 36
-    private var _logger: ARTInternalLog?
+    private var _logger: InternalLog?
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 39
     override init() {
@@ -41,7 +41,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.h, line 26 and ARTJsonLikeEncoder.m, line 52
-    init(logger: ARTInternalLog, delegate: ARTJsonLikeEncoderDelegate?) {
+    init(logger: InternalLog, delegate: ARTJsonLikeEncoderDelegate?) {
         super.init()
         self._rest = nil
         self._logger = logger
@@ -49,7 +49,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.h, line 27 and ARTJsonLikeEncoder.m, line 61
-    init(rest: ARTRestInternal, delegate: ARTJsonLikeEncoderDelegate?, logger: ARTInternalLog) {
+    init(rest: ARTRestInternal, delegate: ARTJsonLikeEncoderDelegate?, logger: InternalLog) {
         super.init()
         self._rest = rest
         self._logger = logger

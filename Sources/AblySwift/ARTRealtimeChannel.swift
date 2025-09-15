@@ -601,7 +601,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
     internal var messagesEventEmitter: ARTEventEmitter<String, ARTMessage>
 
     // swift-migration: original location ARTRealtimeChannel+Private.h, line 59 and ARTRealtimeChannel.m, line 268
-    init(realtime: ARTRealtimeInternal, name: String, options: ARTRealtimeChannelOptions, logger: ARTInternalLog) {
+    init(realtime: ARTRealtimeInternal, name: String, options: ARTRealtimeChannelOptions, logger: InternalLog) {
         // swift-migration: Lawrence — some things moved around here so that we can avoid circular initialization problems (i.e. referring to self before super init called), which Swift is more strict about; we also make some properties implicitly-unwrapped optionals for the same reason
 
         self.realtime = realtime

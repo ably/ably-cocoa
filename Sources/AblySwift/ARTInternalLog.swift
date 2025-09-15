@@ -4,32 +4,32 @@ import _AblyPluginSupportPrivate
 // swift-migration: Implement the logging macro functionality as Swift functions
 // swift-migration: Using default arguments to inject #fileID and #line values
 
-public func ARTLogVerbose(_ logger: ARTInternalLog, _ format: String, _ args: CVarArg..., fileID: String = #fileID, line: Int = #line) {
+public func ARTLogVerbose(_ logger: InternalLog, _ format: String, _ args: CVarArg..., fileID: String = #fileID, line: Int = #line) {
     let message = String(format: format, arguments: args)
     logger.log(message, withLevel: .verbose, file: fileID, line: line)
 }
 
-public func ARTLogDebug(_ logger: ARTInternalLog, _ format: String, _ args: CVarArg..., fileID: String = #fileID, line: Int = #line) {
+public func ARTLogDebug(_ logger: InternalLog, _ format: String, _ args: CVarArg..., fileID: String = #fileID, line: Int = #line) {
     let message = String(format: format, arguments: args)
     logger.log(message, withLevel: .debug, file: fileID, line: line)
 }
 
-public func ARTLogInfo(_ logger: ARTInternalLog, _ format: String, _ args: CVarArg..., fileID: String = #fileID, line: Int = #line) {
+public func ARTLogInfo(_ logger: InternalLog, _ format: String, _ args: CVarArg..., fileID: String = #fileID, line: Int = #line) {
     let message = String(format: format, arguments: args)
     logger.log(message, withLevel: .info, file: fileID, line: line)
 }
 
-public func ARTLogWarn(_ logger: ARTInternalLog, _ format: String, _ args: CVarArg..., fileID: String = #fileID, line: Int = #line) {
+public func ARTLogWarn(_ logger: InternalLog, _ format: String, _ args: CVarArg..., fileID: String = #fileID, line: Int = #line) {
     let message = String(format: format, arguments: args)
     logger.log(message, withLevel: .warn, file: fileID, line: line)
 }
 
-public func ARTLogError(_ logger: ARTInternalLog, _ format: String, _ args: CVarArg..., fileID: String = #fileID, line: Int = #line) {
+public func ARTLogError(_ logger: InternalLog, _ format: String, _ args: CVarArg..., fileID: String = #fileID, line: Int = #line) {
     let message = String(format: format, arguments: args)
     logger.log(message, withLevel: .error, file: fileID, line: line)
 }
 
-public func ARTPrint(_ logger: ARTInternalLog, _ format: String, _ args: CVarArg..., fileID: String = #fileID, line: Int = #line) {
+public func ARTPrint(_ logger: InternalLog, _ format: String, _ args: CVarArg..., fileID: String = #fileID, line: Int = #line) {
     let message = String(format: format, arguments: args)
     logger.log(message, withLevel: .none, file: fileID, line: line)
 }
@@ -40,10 +40,10 @@ public func ARTPrint(_ logger: ARTInternalLog, _ format: String, _ args: CVarArg
 
  - Note: It would be great if we could make `ARTInternalLog` a protocol (with a default implementation) instead of a class, since this would make it easier to test the logging behaviour of the SDK. However, since its interface currently makes heavy use of variadic Objective-C methods, which cannot be represented in Swift, we would be unable to write mocks for this protocol in our Swift test suite. As the `ARTInternalLog` interface evolves we may end up removing these variadic methods, in which case we can reconsider.
  */
-public class ARTInternalLog: NSObject, _AblyPluginSupportPrivate.Logger {
+public class InternalLog: NSObject, _AblyPluginSupportPrivate.Logger {
 
     // swift-migration: original location ARTInternalLog+Testing.h, line 9
-    public var core: any ARTInternalLogCore
+    public var core: any InternalLogCore
     
     // swift-migration: original location ARTInternalLog.h, line 48 and ARTInternalLog.m, line 9
     /**
@@ -55,19 +55,19 @@ public class ARTInternalLog: NSObject, _AblyPluginSupportPrivate.Logger {
 
      Currently, this returns a logger that will not actually output any log messages, but I've created https://github.com/ably/ably-cocoa/issues/1652 for us to revisit this.
      */
-    public static var sharedClassMethodLogger_readDocumentationBeforeUsing: ARTInternalLog = {
+    public static var sharedClassMethodLogger_readDocumentationBeforeUsing: InternalLog = {
         let artLog = ARTLog()
         artLog.logLevel = .none
         let version2Log: any Version2Log = LogAdapter(logger: artLog)
-        let core: any ARTInternalLogCore = DefaultInternalLogCore(logger: version2Log)
-        return ARTInternalLog(core: core)
+        let core: any InternalLogCore = DefaultInternalLogCore(logger: version2Log)
+        return InternalLog(core: core)
     }()
     
     // swift-migration: original location ARTInternalLog.h, line 53 and ARTInternalLog.m, line 23
     /**
      Creates a logger which forwards its generated messages to the given core object.
      */
-    public init(core: any ARTInternalLogCore) {
+    public init(core: any InternalLogCore) {
         self.core = core
         super.init()
     }
@@ -77,7 +77,7 @@ public class ARTInternalLog: NSObject, _AblyPluginSupportPrivate.Logger {
      A convenience initializer which creates a logger whose core is an instance of `ARTDefaultInternalLogCore` wrapping the given logger.
      */
     public convenience init(logger: any Version2Log) {
-        let core: any ARTInternalLogCore = DefaultInternalLogCore(logger: logger)
+        let core: any InternalLogCore = DefaultInternalLogCore(logger: logger)
         self.init(core: core)
     }
     
@@ -86,7 +86,7 @@ public class ARTInternalLog: NSObject, _AblyPluginSupportPrivate.Logger {
      A convenience initializer which creates a logger whose core is an instance of `ARTDefaultInternalLogCore` initialized with that class's `initWithClientOptions:` initializer.
      */
     public convenience init(clientOptions: ARTClientOptions) {
-        let core: any ARTInternalLogCore = DefaultInternalLogCore(clientOptions: clientOptions)
+        let core: any InternalLogCore = DefaultInternalLogCore(clientOptions: clientOptions)
         self.init(core: core)
     }
     
@@ -102,7 +102,7 @@ public class ARTInternalLog: NSObject, _AblyPluginSupportPrivate.Logger {
      - `ARTPluginAPI`, to implement its conformance to the `APPluginAPIProtocol` protocol, which is used by plugins written in Swift
     */
     public func log(_ message: String, withLevel level: ARTLogLevel, file fileName: String, line: Int) {
-        core.log(message, withLevel: level, file: fileName, line: line)
+        core.log(message, with: level, file: fileName, line: line)
     }
     
     // swift-migration: original location ARTInternalLog.h, line 76 and ARTInternalLog.m, line 47

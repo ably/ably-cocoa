@@ -1,7 +1,7 @@
 import Foundation
 import SocketRocket
 
-extension ARTInternalLog: ARTSRInternalLog {}
+extension InternalLog: ARTSRInternalLog {}
 
 // TODO these line numbers are now out of sync because I added some stuff to the .m file
 
@@ -9,7 +9,7 @@ extension ARTInternalLog: ARTSRInternalLog {}
 /// A factory for creating an `ARTWebSocket` object.
 public protocol ARTWebSocketFactory {
     // swift-migration: original location ARTWebSocketFactory.h, line 14
-    func createWebSocket(withURLRequest request: URLRequest, logger: ARTInternalLog?) -> ARTWebSocket
+    func createWebSocket(withURLRequest request: URLRequest, logger: InternalLog?) -> ARTWebSocket
 }
 
 // swift-migration: original location ARTWebSocketFactory.h, line 22 and ARTWebSocketFactory.m, line 4
@@ -17,7 +17,7 @@ public protocol ARTWebSocketFactory {
 public class ARTDefaultWebSocketFactory: NSObject, ARTWebSocketFactory {
     
     // swift-migration: original location ARTWebSocketFactory.m, line 6
-    public func createWebSocket(withURLRequest request: URLRequest, logger: ARTInternalLog?) -> ARTWebSocket {
+    public func createWebSocket(withURLRequest request: URLRequest, logger: InternalLog?) -> ARTWebSocket {
         return ARTSRWebSocket(urlRequest: request, logger: logger)
     }
 }

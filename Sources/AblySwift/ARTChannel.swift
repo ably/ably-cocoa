@@ -12,10 +12,10 @@ public class ARTChannel: NSObject {
     internal var dataEncoder: ARTDataEncoder!
     
     // swift-migration: original location ARTChannel+Private.h, line 18
-    internal let logger: ARTInternalLog
+    internal let logger: InternalLog
     
     // swift-migration: original location ARTChannel+Private.h, line 11 and ARTChannel.m, line 19
-    internal init(name: String, andOptions options: ARTChannelOptions, rest: ARTRestInternal, logger: ARTInternalLog) {
+    internal init(name: String, andOptions options: ARTChannelOptions, rest: ARTRestInternal, logger: InternalLog) {
         self.name = name
         self.logger = logger
         self.queue = rest.queue

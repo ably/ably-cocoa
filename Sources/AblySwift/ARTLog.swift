@@ -89,7 +89,7 @@ public class ARTLog: NSObject {
     // swift-migration: original location ARTLog.m, line 65
     private var captured: [ARTLogLine]?
     // swift-migration: original location ARTLog.m, line 66
-    private var history: [ARTLogLine]
+    internal var history: [ARTLogLine]
     // swift-migration: original location ARTLog.m, line 67
     private let historyLines: Int
     // swift-migration: original location ARTLog.m, line 68

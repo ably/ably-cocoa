@@ -26,7 +26,7 @@ internal class ARTPushActivationStateMachine: NSObject {
     internal var onEvent: ((ARTPushActivationEvent, ARTPushActivationState) -> Void)?
     
     // swift-migration: original location ARTPushActivationStateMachine.m, line 29
-    private let logger: ARTInternalLog
+    private let logger: InternalLog
     
     // swift-migration: original location ARTPushActivationStateMachine.m, line 36
     private var lastHandledEvent: ARTPushActivationEvent?
@@ -40,7 +40,7 @@ internal class ARTPushActivationStateMachine: NSObject {
     private var pendingEvents: [ARTPushActivationEvent]
 
     // swift-migration: original location ARTPushActivationStateMachine+Private.h, line 16 and ARTPushActivationStateMachine.m, line 43
-    internal init(rest: ARTRestInternal, delegate: (ARTPushRegistererDelegate & NSObjectProtocol), logger: ARTInternalLog) {
+    internal init(rest: ARTRestInternal, delegate: (ARTPushRegistererDelegate & NSObjectProtocol), logger: InternalLog) {
         self.rest = rest
         self.delegate = delegate
         self.queue = rest.queue

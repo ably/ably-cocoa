@@ -104,12 +104,12 @@ public class ARTDeviceIdentityTokenDetails: NSObject, NSSecureCoding, NSCopying 
     // MARK: - Archive/Unarchive
     
     // swift-migration: original location ARTDeviceIdentityTokenDetails+Private.h, line 7 and ARTDeviceIdentityTokenDetails.m, line 69
-    internal func archive(withLogger logger: ARTInternalLog?) -> Data {
+    internal func archive(withLogger logger: InternalLog?) -> Data {
         return art_archive(withLogger: logger) ?? Data()
     }
     
     // swift-migration: original location ARTDeviceIdentityTokenDetails+Private.h, line 9 and ARTDeviceIdentityTokenDetails.m, line 73
-    internal static func unarchive(_ data: Data, withLogger logger: ARTInternalLog?) -> ARTDeviceIdentityTokenDetails? {
+    internal static func unarchive(_ data: Data, withLogger logger: InternalLog?) -> ARTDeviceIdentityTokenDetails? {
         return art_unarchive(fromData: data, withLogger: logger) as? ARTDeviceIdentityTokenDetails
     }
 }

@@ -188,7 +188,7 @@ extension ARTMessage {
         // swift-migration: Updated to use try/catch instead of inout error parameter per PRD requirements
         let decoder: ARTDataEncoder
         do {
-            decoder = try ARTDataEncoder(cipherParams: options.cipher, logger: ARTInternalLog.sharedClassMethodLogger_readDocumentationBeforeUsing)
+            decoder = try ARTDataEncoder(cipherParams: options.cipher, logger: InternalLog.sharedClassMethodLogger_readDocumentationBeforeUsing)
         } catch {
             let errorInfo = ARTErrorInfo.wrap(
                 ARTErrorInfo.createWithCode(Int(ARTErrorCode.ARTErrorUnableToDecodeMessage.rawValue), message: error.localizedDescription),
@@ -227,7 +227,7 @@ extension ARTMessage {
         // swift-migration: Updated to use try/catch instead of inout error parameter per PRD requirements
         let decoder: ARTDataEncoder
         do {
-            decoder = try ARTDataEncoder(cipherParams: options.cipher, logger: ARTInternalLog.sharedClassMethodLogger_readDocumentationBeforeUsing)
+            decoder = try ARTDataEncoder(cipherParams: options.cipher, logger: InternalLog.sharedClassMethodLogger_readDocumentationBeforeUsing)
         } catch {
             let errorInfo = ARTErrorInfo.wrap(
                 ARTErrorInfo.createWithCode(Int(ARTErrorCode.ARTErrorUnableToDecodeMessage.rawValue), message: error.localizedDescription),

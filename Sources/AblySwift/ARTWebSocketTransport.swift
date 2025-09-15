@@ -65,7 +65,7 @@ internal class ARTWebSocketTransport: NSObject, ARTRealtimeTransport, ARTWebSock
     internal var encoder: ARTEncoder
     
     // swift-migration: original location ARTWebSocketTransport+Private.h, line 14
-    internal let logger: ARTInternalLog
+    internal let logger: InternalLog
     
     // swift-migration: original location ARTWebSocketTransport+Private.h, line 15
     internal let options: ARTClientOptions
@@ -100,7 +100,7 @@ internal class ARTWebSocketTransport: NSObject, ARTRealtimeTransport, ARTWebSock
     }
     
     // swift-migration: original location ARTWebSocketTransport.h, line 15 and ARTWebSocketTransport.m, line 63
-    public init(rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, logger: ARTInternalLog, webSocketFactory: ARTWebSocketFactory) {
+    public init(rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, logger: InternalLog, webSocketFactory: ARTWebSocketFactory) {
         self._workQueue = rest.queue
         self.websocket = nil
         self._state = .closed
