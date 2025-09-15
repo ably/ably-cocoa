@@ -290,8 +290,8 @@ public class ARTRestInternal: NSObject {
         
         super.init()
         
-        let jsonEncoder = ARTJsonLikeEncoderPlaceholder(rest: self, delegate: ARTJsonEncoder(), logger: logger)
-        let msgPackEncoder = ARTJsonLikeEncoderPlaceholder(rest: self, delegate: ARTMsgPackEncoder(), logger: logger)
+        let jsonEncoder = ARTJsonLikeEncoder(rest: self, delegate: ARTJsonEncoder(), logger: logger)
+        let msgPackEncoder = ARTJsonLikeEncoder(rest: self, delegate: ARTMsgPackEncoder(), logger: logger)
         
         self.encoders = [
             jsonEncoder.mimeType(): jsonEncoder,
@@ -728,7 +728,7 @@ public class ARTRestInternal: NSObject {
         
         if let body = body {
             do {
-                let bodyData = try defaultEncoder.encode(any: body)
+                let bodyData = try defaultEncoder.encode(body)
                 
                 mutableRequest.httpBody = bodyData
                 mutableRequest.setValue(defaultEncoder.mimeType(), forHTTPHeaderField: "Content-Type")

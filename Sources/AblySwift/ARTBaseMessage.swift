@@ -25,9 +25,10 @@ public class ARTBaseMessage: NSObject, NSCopying {
         }
     }
     
+    // swift-migration: Lawrence made this nullable
     // swift-migration: original location ARTBaseMessage.h, line 29
     /// The connection ID of the publisher of this message.
-    public var connectionId: String = ""
+    public var connectionId: String?
     
     // swift-migration: original location ARTBaseMessage.h, line 34
     /// This is typically empty, as all messages received from Ably are automatically decoded client-side using this value. However, if the message encoding cannot be processed, this attribute contains the remaining transformations not applied to the `data` payload.

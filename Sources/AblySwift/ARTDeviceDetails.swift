@@ -47,15 +47,16 @@ public class ARTDeviceDetails: NSObject, NSCopying {
     internal var _formFactor: String
     
     // swift-migration: original location ARTDeviceDetails.h, line 37 and ARTDeviceDetails+Private.h, line 14
+    // swift-migration: Lawrence made this optional as part of JsonLikeEncoder migration
     /**
      * A JSON object of key-value pairs that contains metadata for the device.
      */
-    public var metadata: [String: String] {
+    public var metadata: [String: String]? {
         get { return _metadata }
         set { _metadata = newValue }
     }
-    internal var _metadata: [String: String]
-    
+    internal var _metadata: [String: String]?
+
     // swift-migration: original location ARTDeviceDetails.h, line 42 and ARTDeviceDetails+Private.h, line 15
     /**
      * The `ARTDevicePushDetails` object associated with the device. Describes the details of the push registration of the device.

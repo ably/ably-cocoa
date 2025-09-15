@@ -301,7 +301,7 @@ extension ARTPushActivationStateMachine {
                     "recipient": local.push.recipient
                 ]
             ]
-            request.httpBody = try rest.defaultEncoder.encode(any: body)
+            request.httpBody = try rest.defaultEncoder.encode(body)
             request.setValue(rest.defaultEncoder.mimeType(), forHTTPHeaderField: "Content-Type")
             let authenticatedRequest = request.settingDeviceAuthentication(local).mutableCopy() as! NSMutableURLRequest
 

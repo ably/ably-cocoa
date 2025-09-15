@@ -126,10 +126,10 @@ public class ARTPresenceMessage: ARTBaseMessage {
      Returns whether this presenceMessage is synthesized, i.e. was not actually sent by the connection (usually means a leave event sent 15s after a disconnection). This is useful because synthesized messages cannot be compared for newness by id lexicographically - RTP2b1.
      */
     internal func isSynthesized() -> Bool {
-        guard let id = self.id else {
+        guard let id = self.id, let connectionId else {
             return false
         }
-        return !id.hasPrefix(self.connectionId)
+        return !id.hasPrefix(connectionId)
     }
 
     // swift-migration: original location ARTPresenceMessage+Private.h, line 11 and ARTPresenceMessage.m, line 62
@@ -161,7 +161,7 @@ public class ARTPresenceMessage: ARTBaseMessage {
 
     // swift-migration: original location ARTPresenceMessage.m, line 86
     public override var hash: Int {
-        return connectionId.hash ^ (clientId?.hash ?? 0)
+        return (connectionId?.hash ?? 0) ^ (clientId?.hash ?? 0)
     }
 }
 

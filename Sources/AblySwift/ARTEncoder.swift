@@ -24,7 +24,7 @@ public protocol ARTEncoder {
     func decode(_ data: Data) throws -> Any?
     
     // swift-migration: original location ARTEncoder.h, line 33
-    func encode(any obj: Any) throws -> Data?
+    func encode(_ obj: Any) throws -> Data?
     
     // swift-migration: original location ARTEncoder.h, line 35
     /// Decode data to an Array of Dictionaries with AnyObjects.
@@ -126,5 +126,5 @@ public protocol ARTEncoder {
     func decodeErrorInfo(_ error: Data) throws -> ARTErrorInfo?
     
     // swift-migration: original location ARTEncoder.h, line 92
-    func decodeStats(_ data: Data) throws -> [Any]?
+    func decodeStats(_ data: Data) throws -> [ARTStats]?
 }

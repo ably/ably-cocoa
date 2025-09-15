@@ -13,7 +13,6 @@ internal protocol ARTJsonLikeEncoderDelegate {
 
 // swift-migration: original location ARTJsonLikeEncoder.h, line 21 and ARTJsonLikeEncoder.m, line 34
 internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
-    
     // swift-migration: original location ARTJsonLikeEncoder.h, line 23
     internal var delegate: ARTJsonLikeEncoderDelegate?
     
@@ -281,7 +280,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
         if (clientId != nil && deviceId != nil) || (clientId == nil && deviceId == nil) {
             // ARTLogError(_logger, "ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: clientId and deviceId are both present or both nil")
             throw NSError(domain: ARTAblyErrorDomain,
-                         code: ARTErrorCode.incompatibleCredentials.rawValue,
+                         code: Int(ARTErrorCode.incompatibleCredentials.rawValue),
                          userInfo: [NSLocalizedDescriptionKey: "clientId and deviceId are both present or both nil"])
         }
         
@@ -303,7 +302,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
         // ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: decodeTime \\(resp)")
         if resp.count == 1 {
             if let num = resp[0] as? NSNumber {
-                return Date(timeIntervalSince1970: millisecondsToTimeInterval(num.doubleValue))
+                return Date(timeIntervalSince1970: millisecondsToTimeInterval(num.uint64Value))
             }
         }
         return nil
@@ -316,7 +315,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.h, line 33 and ARTJsonLikeEncoder.m, line 274
-    private func messageFromDictionary(_ input: [String: Any]?, protocolMessage: ARTProtocolMessage?) -> ARTMessage? {
+    func messageFromDictionary(_ input: [String: Any]?, protocolMessage: ARTProtocolMessage?) -> ARTMessage? {
         guard let input = input else { return nil }
         
         // ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: messageFromDictionary \\(input)")
@@ -324,7 +323,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
         let message = ARTMessage()
         message.id = input.artString("id")
         message.name = input.artString("name")
-        message.action = ARTMessageAction(rawValue: (input.artNumber("action") ?? NSNumber(value: ARTMessageAction.create.rawValue)).intValue) ?? .create
+        message.action = ARTMessageAction(rawValue: (input.artNumber("action") ?? NSNumber(value: ARTMessageAction.create.rawValue)).uintValue) ?? .create
         message.version = input.artString("version") // TM2p
         message.serial = input.artString("serial")
         if message.serial == nil && message.version != nil && message.action == .create { // TM2k
@@ -340,8 +339,8 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
             message.createdAt = message.timestamp
         }
         message.connectionId = input.artString("connectionId")
-        message.extras = input["extras"]
-        
+        message.extras = input["extras"] as? ARTJsonCompatible
+
         if let operation = input["operation"] as? [String: Any] {
             message.operation = ARTMessageOperation.create(from: operation)
         }
@@ -654,10 +653,10 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
         
         let token = input.artString("token")
         let expiresTimeInterval = input["expires"] as? NSNumber
-        let expires = expiresTimeInterval != nil ? Date(timeIntervalSince1970: millisecondsToTimeInterval(expiresTimeInterval!.doubleValue)) : nil
+        let expires = expiresTimeInterval != nil ? Date(timeIntervalSince1970: millisecondsToTimeInterval(expiresTimeInterval!.uint64Value)) : nil
         let issuedInterval = input["issued"] as? NSNumber
-        let issued = issuedInterval != nil ? Date(timeIntervalSince1970: millisecondsToTimeInterval(issuedInterval!.doubleValue)) : nil
-        
+        let issued = issuedInterval != nil ? Date(timeIntervalSince1970: millisecondsToTimeInterval(issuedInterval!.uint64Value)) : nil
+
         return ARTTokenDetails(token: token,
                               expires: expires,
                               issued: issued,
@@ -716,7 +715,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
         let params = ARTTokenParams(clientId: input.artString("clientId"), nonce: input.artString("nonce"))
         let millisecondsTtl = input.artInteger("ttl")
         if millisecondsTtl != 0 {
-            params.ttl = NSNumber(value: millisecondsToTimeInterval(Double(millisecondsTtl)))
+            params.ttl = NSNumber(value: millisecondsToTimeInterval(UInt64(millisecondsTtl)))
         }
         params.capability = input.artString("capability")
         params.timestamp = input.artTimestamp("timestamp")
@@ -784,11 +783,13 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
         
         let deviceDetails = ARTDeviceDetails(id: input.artString("id"))
         deviceDetails.clientId = input.artString("clientId")
-        deviceDetails.platform = input.artString("platform")
-        deviceDetails.formFactor = input.artString("formFactor")
-        deviceDetails.metadata = input["metadata"]
-        deviceDetails.push = try devicePushDetailsFromDictionary(input["push"])
-        
+        // swift-migration: Lawrence added these force-unwraps
+        deviceDetails.platform = input.artString("platform")!
+        deviceDetails.formFactor = input.artString("formFactor")!
+        // swift-migration: Lawrence added `as?`
+        deviceDetails.metadata = input["metadata"] as? [String: String]
+        deviceDetails.push = try devicePushDetailsFromDictionary(input["push"])!
+
         return deviceDetails
     }
     
@@ -801,9 +802,9 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
         let deviceIdentityTokenInput = input["deviceIdentityToken"] as? [String: Any]
         let token = deviceIdentityTokenInput?.artString("token")
         let issuedMsecs = deviceIdentityTokenInput?.artNumber("issued")
-        let issued = issuedMsecs != nil ? Date.art_date(withMillisecondsSince1970: issuedMsecs!.doubleValue) : nil
+        let issued = issuedMsecs != nil ? Date.art_date(withMillisecondsSince1970: issuedMsecs!.uint64Value) : nil
         let expiresMsecs = deviceIdentityTokenInput?.artNumber("expires")
-        let expires = expiresMsecs != nil ? Date.art_date(withMillisecondsSince1970: expiresMsecs!.doubleValue) : nil
+        let expires = expiresMsecs != nil ? Date.art_date(withMillisecondsSince1970: expiresMsecs!.uint64Value) : nil
         let capability = deviceIdentityTokenInput?.artString("capability")
         let clientId = deviceIdentityTokenInput?.artString("clientId")
         
@@ -849,7 +850,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
         
         let message = ARTProtocolMessage()
         message.action = ARTProtocolMessageAction(rawValue: (input.artNumber("action") ?? NSNumber(value: 0)).intValue) ?? .heartbeat
-        message.count = (input.artNumber("count") ?? NSNumber(value: 0)).intValue
+        message.count = (input.artNumber("count") ?? NSNumber(value: 0)).int32Value
         message.channel = input.artString("channel")
         message.channelSerial = input.artString("channelSerial")
         message.connectionId = input.artString("connectionId")
@@ -857,16 +858,18 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
         message.msgSerial = input.artNumber("msgSerial")
         message.timestamp = input.artTimestamp("timestamp")
         message.connectionKey = input.artString("connectionKey")
-        message.flags = (input.artNumber("flags") ?? NSNumber(value: 0)).longLongValue
+        message.flags = (input.artNumber("flags") ?? NSNumber(value: 0)).uintValue
         message.connectionDetails = connectionDetailsFromDictionary(input["connectionDetails"] as? [String: Any])
         message.auth = authDetailsFromDictionary(input["auth"] as? [String: Any])
-        message.params = input["params"]
-        
+        // swift-migration: Lawrence added `as?`
+        message.params = input["params"] as? [String: String]
+
         if let error = input["error"] as? [String: Any] {
             message.error = ARTErrorInfo.create(
                 withCode: (error.artNumber("code") ?? NSNumber(value: 0)).intValue,
                 status: (error.artNumber("statusCode") ?? NSNumber(value: 0)).intValue,
-                message: error.artString("message")
+                // swift-migration: Lawrence added ?? ""
+                message: error.artString("message") ?? ""
             )
         }
         
@@ -890,9 +893,9 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
             maxMessageSize: input.artInteger("maxMessageSize"),
             maxFrameSize: input.artInteger("maxFrameSize"),
             maxInboundRate: input.artInteger("maxInboundRate"),
-            connectionStateTtl: millisecondsToTimeInterval(Double(input.artInteger("connectionStateTtl"))),
+            connectionStateTtl: millisecondsToTimeInterval(UInt64(input.artInteger("connectionStateTtl"))),
             serverId: input.artString("serverId"),
-            maxIdleInterval: millisecondsToTimeInterval(Double(input.artInteger("maxIdleInterval")))
+            maxIdleInterval: millisecondsToTimeInterval(UInt64(input.artInteger("maxIdleInterval")))
         )
     }
     
@@ -979,8 +982,8 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     
     // swift-migration: original location ARTJsonLikeEncoder.h, line 55 and ARTJsonLikeEncoder.m, line 918
     private func statsMessageTypesFromDictionary(_ input: [String: Any]?) -> ARTStatsMessageTypes {
-        guard let input = input else { return ARTStatsMessageTypes.empty() }
-        
+        guard let input = input else { return ARTStatsMessageTypes.empty }
+
         let all = statsMessageCountFromDictionary(input["all"] as? [String: Any])
         let messages = statsMessageCountFromDictionary(input["messages"] as? [String: Any])
         let presence = statsMessageCountFromDictionary(input["presence"] as? [String: Any])
@@ -989,39 +992,42 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
             return ARTStatsMessageTypes(all: all, messages: messages, presence: presence)
         }
         
-        return ARTStatsMessageTypes.empty()
+        return ARTStatsMessageTypes.empty
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.h, line 56 and ARTJsonLikeEncoder.m, line 934
-    private func statsMessageCountFromDictionary(_ input: [String: Any]?) -> ARTStatsMessageCount? {
-        guard let input = input else { return ARTStatsMessageCount.empty() }
-        
+    private func statsMessageCountFromDictionary(_ input: [String: Any]?) -> ARTStatsMessageCount {
+        guard let input = input else { return ARTStatsMessageCount.empty }
+
         let count = input.artTyped(NSNumber.self, key: "count")
         let data = input.artTyped(NSNumber.self, key: "data")
         
-        return ARTStatsMessageCount(count: count?.doubleValue ?? 0, data: data?.doubleValue ?? 0)
+        return ARTStatsMessageCount(count: count?.uintValue ?? 0, data: data?.uintValue ?? 0)
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.h, line 57 and ARTJsonLikeEncoder.m, line 945
     private func statsMessageTrafficFromDictionary(_ input: [String: Any]?) -> ARTStatsMessageTraffic {
-        guard let input = input else { return ARTStatsMessageTraffic.empty() }
-        
+        guard let input = input else { return ARTStatsMessageTraffic.empty }
+
         let all = statsMessageTypesFromDictionary(input["all"] as? [String: Any])
         let realtime = statsMessageTypesFromDictionary(input["realtime"] as? [String: Any])
         let rest = statsMessageTypesFromDictionary(input["rest"] as? [String: Any])
         let webhook = statsMessageTypesFromDictionary(input["webhook"] as? [String: Any])
-        
+
+        // swift-migration: Lawrence removed this check that Claude mis-migrated
+        /*
         if all.isEmpty && realtime.isEmpty && rest.isEmpty && webhook.isEmpty {
-            return ARTStatsMessageTraffic.empty()
+            return ARTStatsMessageTraffic.empty
         }
-        
+         */
+
         return ARTStatsMessageTraffic(all: all, realtime: realtime, rest: rest, webhook: webhook)
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.h, line 58 and ARTJsonLikeEncoder.m, line 965
     private func statsConnectionTypesFromDictionary(_ input: [String: Any]?) -> ARTStatsConnectionTypes {
-        guard let input = input else { return ARTStatsConnectionTypes.empty() }
-        
+        guard let input = input else { return ARTStatsConnectionTypes.empty }
+
         let all = statsResourceCountFromDictionary(input["all"] as? [String: Any])
         let plain = statsResourceCountFromDictionary(input["plain"] as? [String: Any])
         let tls = statsResourceCountFromDictionary(input["tls"] as? [String: Any])
@@ -1030,12 +1036,12 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
             return ARTStatsConnectionTypes(all: all, plain: plain, tls: tls)
         }
         
-        return ARTStatsConnectionTypes.empty()
+        return ARTStatsConnectionTypes.empty
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.h, line 59 and ARTJsonLikeEncoder.m, line 981
-    private func statsResourceCountFromDictionary(_ input: [String: Any]?) -> ARTStatsResourceCount? {
-        guard let input = input else { return ARTStatsResourceCount.empty() }
+    private func statsResourceCountFromDictionary(_ input: [String: Any]?) -> ARTStatsResourceCount {
+        guard let input = input else { return ARTStatsResourceCount.empty }
         
         let opened = input.artTyped(NSNumber.self, key: "opened")
         let peak = input.artTyped(NSNumber.self, key: "peak")
@@ -1044,11 +1050,11 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
         let refused = input.artTyped(NSNumber.self, key: "refused")
         
         return ARTStatsResourceCount(
-            opened: opened?.doubleValue ?? 0,
-            peak: peak?.doubleValue ?? 0,
-            mean: mean?.doubleValue ?? 0,
-            min: min?.doubleValue ?? 0,
-            refused: refused?.doubleValue ?? 0
+            opened: opened?.uintValue ?? 0,
+            peak: peak?.uintValue ?? 0,
+            mean: mean?.uintValue ?? 0,
+            min: min?.uintValue ?? 0,
+            refused: refused?.uintValue ?? 0
         )
     }
     
@@ -1064,9 +1070,9 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.h, line 60 and ARTJsonLikeEncoder.m, line 1007
-    private func statsRequestCountFromDictionary(_ input: [String: Any]?) -> ARTStatsRequestCount? {
-        guard let input = input else { return ARTStatsRequestCount.empty() }
-        
+    private func statsRequestCountFromDictionary(_ input: [String: Any]?) -> ARTStatsRequestCount {
+        guard let input = input else { return ARTStatsRequestCount.empty }
+
         // ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: statsRequestCountFromDictionary \\(input)")
         
         let succeeded = input.artTyped(NSNumber.self, key: "succeeded")
@@ -1074,15 +1080,15 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
         let refused = input.artTyped(NSNumber.self, key: "refused")
         
         return ARTStatsRequestCount(
-            succeeded: succeeded?.doubleValue ?? 0,
-            failed: failed?.doubleValue ?? 0,
-            refused: refused?.doubleValue ?? 0
+            succeeded: succeeded?.uintValue ?? 0,
+            failed: failed?.uintValue ?? 0,
+            refused: refused?.uintValue ?? 0
         )
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 1022
-    private func statsPushCountFromDictionary(_ input: [String: Any]?) -> ARTStatsPushCount? {
-        guard let input = input else { return ARTStatsPushCount.empty() }
+    private func statsPushCountFromDictionary(_ input: [String: Any]?) -> ARTStatsPushCount {
+        guard let input = input else { return ARTStatsPushCount.empty }
         
         // ARTLogVerbose(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: statsPushCountFromDictionary \\(input)")
         
@@ -1096,12 +1102,12 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
         let failed = notifications?.artNumber("failed")
         
         return ARTStatsPushCount(
-            succeeded: succeeded?.intValue ?? 0,
-            invalid: invalid?.intValue ?? 0,
-            attempted: attempted?.intValue ?? 0,
-            failed: failed?.intValue ?? 0,
-            messages: messages?.intValue ?? 0,
-            direct: direct?.intValue ?? 0
+            succeeded: succeeded?.uintValue ?? 0,
+            invalid: invalid?.uintValue ?? 0,
+            attempted: attempted?.uintValue ?? 0,
+            failed: failed?.uintValue ?? 0,
+            messages: messages?.uintValue ?? 0,
+            direct: direct?.uintValue ?? 0
         )
     }
     
@@ -1135,7 +1141,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 1079
-    private func decode(_ data: Data) throws -> Any? {
+    func decode(_ data: Data) throws -> Any? {
         do {
             let decoded = try delegate?.decode(data)
             // ARTLogDebug(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")> decoding '\\(data)'; got: \\(decoded as Any)")
@@ -1147,7 +1153,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     }
     
     // swift-migration: original location ARTJsonLikeEncoder.m, line 1092
-    private func encode(_ obj: Any) throws -> Data? {
+    func encode(_ obj: Any) throws -> Data? {
         do {
             let encoded = try delegate?.encode(obj)
             // ARTLogDebug(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")> encoding '\\(obj)'; got: \\(encoded as Any)")
@@ -1173,7 +1179,7 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
     /// Uses the LiveObjects plugin to decode an array of `ObjectMessage`s.
     ///
     /// Returns `nil` if the LiveObjects plugin has not been supplied, or if we fail to decode any of the `ObjectMessage`s.
-    private func objectMessagesFromArray(_ input: [Any]?, protocolMessage: ARTProtocolMessage?) -> [Any]? {
+    private func objectMessagesFromArray(_ input: [Any]?, protocolMessage: ARTProtocolMessage?) -> [_AblyPluginSupportPrivate.ObjectMessageProtocol]? {
         guard let input = input else { return nil }
         
         guard let liveObjectsPlugin = _rest?.options.liveObjectsPlugin else {
@@ -1192,13 +1198,13 @@ internal class ARTJsonLikeEncoder: NSObject, ARTEncoder {
                 indexInParent: i
             )
             
-            var error: APPublicErrorInfo?
+            var error: _AblyPluginSupportPrivate.PublicErrorInfo?
             let format = apEncodingFormatFromARTEncoderFormat(self.format())
-            
+
             let objectMessage = liveObjectsPlugin.decodeObjectMessage(itemDict, context: decodingContext, format: format, error: &error)
             
             if objectMessage == nil {
-// 1
+//                ARTLogWarn(_logger, "RS:\\(pointer: _rest) ARTJsonLikeEncoder<\\(delegate?.formatAsString() ?? "")>: LiveObjects plugin failed to decode ObjectMessage \\(itemDict), error \\(error as Any)")
                 return nil
             }
             
