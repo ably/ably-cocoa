@@ -161,8 +161,8 @@ public class ARTMessage: ARTBaseMessage {
     }
     
     // Override encode method to return ARTMessage instead of ARTBaseMessage
-    internal override func encode(withEncoder encoder: ARTDataEncoder) throws -> ARTMessage {
-        let encoded = try super.encode(withEncoder: encoder) as! ARTMessage
+    internal override func encode(with encoder: ARTDataEncoder) throws -> ARTMessage {
+        let encoded = try super.encode(with: encoder) as! ARTMessage
         return encoded
     }
     

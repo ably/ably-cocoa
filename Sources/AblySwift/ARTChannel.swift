@@ -192,7 +192,7 @@ public class ARTChannel: NSObject {
     // swift-migration: Changed from inout Error? parameter to throws pattern per PRD requirements
     private func encodeMessageIfNeeded(_ message: ARTMessage) throws -> ARTMessage {
         do {
-            return try message.encode(withEncoder: dataEncoder)
+            return try message.encode(with: dataEncoder)
         } catch {
             ARTLogError(self.logger, "ARTChannel: error encoding data: \(error)")
             throw error

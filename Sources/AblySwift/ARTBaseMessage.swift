@@ -86,7 +86,7 @@ public class ARTBaseMessage: NSObject, NSCopying {
     }
     
     // swift-migration: original location ARTBaseMessage+Private.h, line 13 and ARTBaseMessage.m, line 40
-    internal func encode(withEncoder encoder: ARTDataEncoder) throws -> ARTBaseMessage {
+    internal func encode(with encoder: ARTDataEncoder) throws -> ARTBaseMessage {
         let encoded = encoder.encode(self.data)
         if let errorInfo = encoded.errorInfo {
             throw NSError(domain: ARTAblyErrorDomain, code: 0, userInfo: [

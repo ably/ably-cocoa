@@ -139,9 +139,9 @@ class CryptoTests: XCTestCase {
     func reusableTestsTestFixture(_ cryptoFixture: (fileName: String, expectedEncryptedEncoding: String, keyLength: UInt), testCase: TestCase_ReusableTestsTestFixture, beforeEach contextBeforeEach: (() -> Void)? = nil, afterEach contextAfterEach: (() -> Void)? = nil) throws {
         let (key, iv, items) = AblyTests.loadCryptoTestData(cryptoFixture.fileName)
         let logger = InternalLog(core: MockInternalLogCore())
-        let decoder = ARTDataEncoder(cipherParams: nil, logger: logger, error: nil)
+        let decoder = try ARTDataEncoder(cipherParams: nil, logger: logger)
         let cipherParams = ARTCipherParams(algorithm: "aes", key: key as ARTCipherKeyCompatible, iv: iv)
-        let encrypter = ARTDataEncoder(cipherParams: cipherParams, logger: logger, error: nil)
+        let encrypter = try ARTDataEncoder(cipherParams: cipherParams, logger: logger)
 
         func extractMessage(_ fixture: AblyTests.CryptoTestItem.TestMessage) -> ARTMessage {
             let msg = ARTMessage(name: fixture.name, data: fixture.data)
@@ -157,15 +157,9 @@ class CryptoTests: XCTestCase {
                 let encryptedFixture = extractMessage(item.encrypted)
                 expect(encryptedFixture.encoding).to(endWith("\(cryptoFixture.expectedEncryptedEncoding)/base64"))
 
-                var error: NSError?
-                let decoded = fixture.decode(with: decoder)
-                XCTAssertNil(error)
-                XCTAssertNotNil(decoded)
+                let decoded = try fixture.decode(with: decoder)
+                let encrypted = try decoded.encode(with: encrypter)
 
-                let encrypted = try XCTUnwrap(decoded.encode(with: encrypter, error: &error) as? ARTMessage)
-                XCTAssertNil(error)
-                XCTAssertNotNil(encrypted)
-                
                 XCTAssertEqual(encrypted, encryptedFixture)
             }
 
@@ -180,14 +174,8 @@ class CryptoTests: XCTestCase {
                 let encryptedFixture = extractMessage(item.encrypted)
                 expect(encryptedFixture.encoding).to(endWith("\(cryptoFixture.expectedEncryptedEncoding)/base64"))
 
-                var error: NSError?
-                let decoded = fixture.decode(with: decoder)
-                XCTAssertNil(error)
-                XCTAssertNotNil(decoded)
-
-                let decrypted = try XCTUnwrap(encryptedFixture.decode(with: encrypter, error: &error) as? ARTMessage)
-                XCTAssertNil(error)
-                XCTAssertNotNil(decrypted)
+                let decoded = try fixture.decode(with: decoder)
+                let decrypted = try encryptedFixture.decode(with: encrypter)
 
                 XCTAssertEqual(decrypted, decoded)
             }
@@ -205,7 +193,7 @@ class CryptoTests: XCTestCase {
     
     func reusableTestsTestManualDecryption(fileName: String, expectedEncryptedEncoding: String, keyLength: UInt) throws {
         let (key, iv, jsonItems) = AblyTests.loadCryptoTestRawData(fileName)
-        let decoder = ARTDataEncoder(cipherParams: nil, logger: .init(core: MockInternalLogCore()), error: nil)
+        let decoder = try ARTDataEncoder(cipherParams: nil, logger: .init(core: MockInternalLogCore()))
         let cipherParams = ARTCipherParams(algorithm: "aes", key: key as ARTCipherKeyCompatible, iv: iv)
         let channelOptions = ARTChannelOptions(cipher: cipherParams)
         
@@ -221,15 +209,11 @@ class CryptoTests: XCTestCase {
             let encryptedFixture = jsonItem.encrypted
             expect(encryptedFixture.encoding).to(endWith("\(expectedEncryptedEncoding)/base64"))
             
-            var error: NSError?
-            let decoded = fixture.decode(with: decoder, error: &error) as! ARTMessage
-            XCTAssertNil(error)
-            XCTAssertNotNil(decoded)
-            
+            let decoded = try fixture.decode(with: decoder)
+
             let rawDictionary = try XCTUnwrap(JSONUtility.codableToDictionary(encryptedFixture))
-            let decrypted = try XCTUnwrap(ARTMessage.fromEncoded(rawDictionary, channelOptions: channelOptions))
-            XCTAssertNotNil(decrypted)
-            
+            let decrypted = try ARTMessage.fromEncoded(rawDictionary, channelOptions: channelOptions)
+
             XCTAssertEqual(decrypted, decoded)
         }
         
@@ -242,10 +226,7 @@ class CryptoTests: XCTestCase {
         for i in 0..<jsonItems.count {
             let fixture = extractMessage(jsonItems[i].encoded)
 
-            var error: NSError?
-            let decoded = fixture.decode(with: decoder, error: &error) as! ARTMessage
-            XCTAssertNil(error)
-            XCTAssertNotNil(decoded)
+            let decoded = try fixture.decode(with: decoder)
             
             let decrypted = decryptedArray[i]
             XCTAssertEqual(decrypted, decoded)
