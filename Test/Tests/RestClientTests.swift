@@ -296,6 +296,7 @@ class RestClientTests: XCTestCase {
     // RSC11
 
     // RSC11a
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.restHost property. Remove this deprecation when removing the property.")
     func test__025__RestClient__endpoint__should_accept_a_custom_host_and_send_requests_to_the_specified_host() {
         let test = Test()
         let options = ARTClientOptions(key: "fake:key")
@@ -310,6 +311,7 @@ class RestClientTests: XCTestCase {
     }
 
     // REC1b1
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.environment property. Remove this deprecation when removing the property.")
     func test__026a__RestClient__if_endpoint_option_is_specified_and_any_of_deprecated_options_are_also_specified_then_options_are_invalid() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.endpoint = "test"
@@ -340,6 +342,7 @@ class RestClientTests: XCTestCase {
     }
     
     // REC1c1
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.environment property. Remove this deprecation when removing the property.")
     func test__027a__RestClient__if_deprecated_environment_option_is_specified_and_other_deprecated_options_are_also_specified_then_options_are_invalid() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.environment = "test"
@@ -348,6 +351,7 @@ class RestClientTests: XCTestCase {
     }
     
     // REC1c2
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.environment property. Remove this deprecation when removing the property.")
     func test__027b__RestClient__if_deprecated_environment_option_is_specified_then_the_primary_domain_is_environment_realtime_ably_net() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         let oldPrimaryDomain = options.primaryDomain
@@ -357,6 +361,7 @@ class RestClientTests: XCTestCase {
     }
     
     // REC1d1
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.restHost property. Remove this deprecation when removing the property.")
     func test__027c__RestClient__if_restHost_option_is_specified_then_its_a_primary_domain() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.restHost = "test.realtime.ably.net"
@@ -364,6 +369,7 @@ class RestClientTests: XCTestCase {
     }
 
     // REC1d2
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.realtimeHost property. Remove this deprecation when removing the property.")
     func test__027d__RestClient__if_realtimeHost_option_is_specified_then_its_a_primary_domain() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.realtimeHost = "test.realtime.ably.net"
@@ -1175,6 +1181,7 @@ class RestClientTests: XCTestCase {
     }
     
     // REC2c5
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.environment property. Remove this deprecation when removing the property.")
     func test__065e__RestClient__Host_Fallback__set_of_fallback_domains_is_defined_implicitly() {
         let options = ARTClientOptions(key: "fake:key")
         options.environment = "sandbox"
@@ -1186,6 +1193,7 @@ class RestClientTests: XCTestCase {
     }
     
     // REC2c6 (restHost)
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.restHost property. Remove this deprecation when removing the property.")
     func test__065f__RestClient__Host_Fallback__set_of_fallback_domains_is_defined_implicitly() {
         let options = ARTClientOptions(key: "fake:key")
         options.restHost = "test.ably-realtime.com"
@@ -1194,6 +1202,7 @@ class RestClientTests: XCTestCase {
     }
     
     // REC2c6 (realtimeHost)
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.realtimeHost property. Remove this deprecation when removing the property.")
     func test__065g__RestClient__Host_Fallback__set_of_fallback_domains_is_defined_implicitly() {
         let options = ARTClientOptions(key: "fake:key")
         options.realtimeHost = "test.ably-realtime.com"

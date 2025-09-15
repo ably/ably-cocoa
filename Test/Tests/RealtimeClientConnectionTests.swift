@@ -3839,6 +3839,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     // RTN17
 
     // RTN17b1 (host)
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.realtimeHost property. Remove this deprecation when removing the property.")
     func test__086a__Connection__Host_Fallback__failing_connections_with_custom_endpoint_should_result_in_an_error_immediately() {
         let test = Test()
         let options = ARTClientOptions(key: "xxxx:xxxx")
@@ -3986,6 +3987,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     }
 
     // RTN17b
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.realtimeHost property. Remove this deprecation when removing the property.")
     func test__087__Connection__Host_Fallback__failing_connections_with_custom_endpoint_should_result_in_time_outs() {
         let test = Test()
         let options = ARTClientOptions(key: "xxxx:xxxx")

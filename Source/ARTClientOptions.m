@@ -327,10 +327,13 @@ NSString *ARTDefaultEndpoint = nil;
 }
 
 - (BOOL)hasCustomPrimaryDomain {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     return (self.endpoint != nil && ![self.endpoint isEqualToString:ARTDefault.primaryDomain]) ||
             self.environment != nil ||
             self.restHost != nil ||
             self.realtimeHost != nil;
+#pragma clang diagnostic pop
 }
 
 - (BOOL)hasDefaultPrimaryDomain {

@@ -153,6 +153,7 @@ class RealtimeClientTests: XCTestCase {
     }
 
     // RTC1d
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.realtimeHost property. Remove this deprecation when removing the property.")
     func test__017__RealtimeClient__options__should_modify_the_realtime_endpoint_host_if_realtimeHost_is_assigned() {
         let options = ARTClientOptions(key: "secret:key")
         options.realtimeHost = "fake.ably.io"
