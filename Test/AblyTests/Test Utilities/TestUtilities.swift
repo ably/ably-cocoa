@@ -1916,7 +1916,7 @@ extension String {
         self.queue = queue
     }
 
-    func listen(forHost host: String, callback: @escaping (Bool) -> Void) {
+    func listenForHost(_ host: String, callback: @escaping (Bool) -> Void) {
         self.host = host
         self.callback = callback
     }

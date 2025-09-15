@@ -157,7 +157,7 @@ internal class ARTWebSocketTransport: NSObject, ARTRealtimeTransport, ARTWebSock
     
     // swift-migration: original location ARTWebSocketTransport.m, line 114
     @discardableResult
-    internal func receive(withData data: Data) -> ARTProtocolMessage? {
+    internal func receive(with data: Data) -> ARTProtocolMessage? {
         do {
             let pm = try encoder.decodeProtocolMessage(data)
             if let pm = pm {
@@ -410,14 +410,14 @@ internal class ARTWebSocketTransport: NSObject, ARTRealtimeTransport, ARTWebSock
         ARTLogDebug(self.logger, "R:\(String(describing: _delegate)) WS:\(self) websocket in \(WebSocketStateToStr(websocket?.readyState ?? .closed)) state did receive message \(text)")
         
         guard let data = text.data(using: .utf8) else { return }
-        receive(withData: data)
+        receive(with: data)
     }
     
     // swift-migration: original location ARTWebSocketTransport.m, line 363
     private func webSocketMessageData(_ data: Data) {
         ARTLogVerbose(self.logger, "R:\(String(describing: _delegate)) WS:\(self) websocket in \(WebSocketStateToStr(websocket?.readyState ?? .closed)) state did receive data \(data)")
         
-        receive(withData: data)
+        receive(with: data)
     }
     
     // swift-migration: original location ARTWebSocketTransport.m, line 369

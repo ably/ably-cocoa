@@ -105,7 +105,7 @@ public protocol ARTRealtimeTransport: AnyObject {
     
     func send(_ data: Data, withSource decodedObject: Any) -> Bool
     func receive(_ msg: ARTProtocolMessage)
-    func receive(withData data: Data) -> ARTProtocolMessage?
+    func receive(with data: Data) -> ARTProtocolMessage?
     func connect(withKey key: String)
     func connect(withToken token: String)
     func sendClose()

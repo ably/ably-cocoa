@@ -468,7 +468,7 @@ public class ARTRestInternal: NSObject {
         
         ARTLogDebug(logger, "RS:\(Unmanaged.passUnretained(self).toOpaque()) executing request \(updatedRequest)")
         
-        let task = httpExecutor.executeRequest(updatedRequest) { [weak self] response, data, error in
+        let task = httpExecutor.execute(updatedRequest) { [weak self] response, data, error in
             guard let self = self else { return }
             
             var finalError = error
@@ -756,7 +756,7 @@ public class ARTRestInternal: NSObject {
         var request = URLRequest(url: requestUrl)
         request.httpMethod = "GET"
         
-        return httpExecutor.executeRequest(request) { response, data, error in
+        return httpExecutor.execute(request) { response, data, error in
             if error != nil {
                 callback(false)
                 return

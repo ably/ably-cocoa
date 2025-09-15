@@ -4,7 +4,7 @@ import Foundation
 /// :nodoc:
 internal protocol ARTHTTPExecutor {
     // swift-migration: original location ARTHttp.h, line 16
-    func executeRequest(_ request: URLRequest, completion: ARTURLRequestCallback?) -> (any ARTCancellable)?
+    func execute(_ request: URLRequest, completion: ARTURLRequestCallback?) -> (any ARTCancellable)?
 }
 
 // swift-migration: original location ARTHttp.m, line 12
@@ -49,7 +49,7 @@ internal class ARTHttp: NSObject, ARTHTTPExecutor {
     }
     
     // swift-migration: original location ARTHttp.h, line 16 and ARTHttp.m, line 46
-    internal func executeRequest(_ request: URLRequest, completion callback: ARTURLRequestCallback?) -> (any ARTCancellable)? {
+    internal func execute(_ request: URLRequest, completion callback: ARTURLRequestCallback?) -> (any ARTCancellable)? {
         let bodyString = debugDescriptionOfBody(with: request.httpBody)
         ARTLogDebug(self.logger, "--> \(request.httpMethod ?? "") \(request.url?.absoluteString ?? "")\n  Body: \(bodyString ?? "")\n  Headers: \(request.allHTTPHeaderFields ?? [:])")
         
