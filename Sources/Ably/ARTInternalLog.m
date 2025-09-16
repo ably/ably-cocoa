@@ -40,8 +40,8 @@
 
 // MARK: Logging
 
-- (void)log:(NSString *)message with:(ARTLogLevel)level file:(const char *)fileName line:(NSInteger)line {
-    [self.core log:message with:level file:fileName line:line];
+- (void)log:(NSString *)message withLevel:(ARTLogLevel)level file:(const char *)fileName line:(NSInteger)line {
+    [self.core log:message withLevel:level file:fileName line:line];
 }
 
 - (void)logWithLevel:(ARTLogLevel)level file:(const char *)fileName line:(NSUInteger)line format:(NSString *)format, ... {

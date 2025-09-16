@@ -11,7 +11,7 @@
 
 #import "ARTSRSecurityPolicy.h"
 
-@protocol ARTSRInternalLog;
+@class ARTInternalLog;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface ARTSRPinningSecurityPolicy : ARTSRSecurityPolicy
 
-- (instancetype)initWithCertificates:(NSArray *)pinnedCertificates logger:(nullable id<ARTSRInternalLog>)logger;
+- (instancetype)initWithCertificates:(NSArray *)pinnedCertificates logger:(nullable ARTInternalLog *)logger;
 
 @end
 

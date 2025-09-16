@@ -39,6 +39,7 @@ public class ARTChannel: NSObject {
     // swift-migration: original location ARTChannel+Private.h, line 23 and ARTChannel.m, line 36
     internal var options: ARTChannelOptions? {
         var ret: ARTChannelOptions? = nil
+        dispatchPrecondition(condition: .notOnQueue(queue))
         queue.sync {
             ret = options_nosync
         }

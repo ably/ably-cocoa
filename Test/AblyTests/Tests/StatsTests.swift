@@ -70,6 +70,25 @@ class StatsTests: XCTestCase {
         return super.defaultTestSuite
     }
 
+    private func attributeNameForKeyPath<T>(_ keyPath: KeyPath<ARTStats, T>) -> String {
+        switch keyPath {
+        case \ARTStats.all:
+            return "all"
+        case \ARTStats.persisted:
+            return "persisted"
+        case \ARTStats.inbound:
+            return "inbound"
+        case \ARTStats.outbound:
+            return "outbound"
+        case \ARTStats.apiRequests:
+            return "apiRequests"
+        case \ARTStats.tokenRequests:
+            return "tokenRequests"
+        default:
+            fatalError("Unsupported keyPath")
+        }
+    }
+
     enum TestCase_ReusableTestsTestAttribute {
         case should_return_a_MessagesTypes_object
         case should_return_value_for_message_counts
@@ -78,13 +97,14 @@ class StatsTests: XCTestCase {
     }
 
     // TS6
-    func reusableTestsTestAttribute(_ attribute: String, testCase: TestCase_ReusableTestsTestAttribute, beforeEach contextBeforeEach: (() -> Void)? = nil, afterEach contextAfterEach: (() -> Void)? = nil) {
+    func reusableTestsTestAttribute<T>(_ keyPath: KeyPath<ARTStats, T>, testCase: TestCase_ReusableTestsTestAttribute, beforeEach contextBeforeEach: (() -> Void)? = nil, afterEach contextAfterEach: (() -> Void)? = nil) where T == ARTStatsMessageTypes {
+        let attributeName = attributeNameForKeyPath(keyPath)
         let data: [[String: Any]] = [
-            [attribute: ["messages": ["count": 5], "all": ["data": 10]]],
+            [attributeName: ["messages": ["count": 5], "all": ["data": 10]]],
         ]
         let rawData = try! JSONUtility.serialize(data)
         let stats = try! encoder.decodeStats(rawData)?[0]
-        let subject = stats?.value(forKey: attribute) as? ARTStatsMessageTypes
+        let subject = stats?[keyPath: keyPath]
 
         func test__should_return_a_MessagesTypes_object() {
             contextBeforeEach?()
@@ -134,7 +154,7 @@ class StatsTests: XCTestCase {
     }
 
     func reusableTestsWrapper__Stats__all__reusableTestsTestAttribute(testCase: TestCase_ReusableTestsTestAttribute) {
-        reusableTestsTestAttribute("all", testCase: testCase)
+        reusableTestsTestAttribute(\.all, testCase: testCase)
     }
 
     func test__001__Stats__all__should_return_a_MessagesTypes_object() {
@@ -154,7 +174,7 @@ class StatsTests: XCTestCase {
     }
 
     func reusableTestsWrapper__Stats__persisted__reusableTestsTestAttribute(testCase: TestCase_ReusableTestsTestAttribute) {
-        reusableTestsTestAttribute("persisted", testCase: testCase)
+        reusableTestsTestAttribute(\.persisted, testCase: testCase)
     }
 
     func test__005__Stats__persisted__should_return_a_MessagesTypes_object() {
@@ -180,16 +200,17 @@ class StatsTests: XCTestCase {
     }
 
     // TS7
-    func reusableTestsTestDirection(_ direction: String, testCase: TestCase_ReusableTestsTestDirection, beforeEach contextBeforeEach: (() -> Void)? = nil, afterEach contextAfterEach: (() -> Void)? = nil) {
+    func reusableTestsTestDirection<T>(_ keyPath: KeyPath<ARTStats, T>, testCase: TestCase_ReusableTestsTestDirection, beforeEach contextBeforeEach: (() -> Void)? = nil, afterEach contextAfterEach: (() -> Void)? = nil) where T == ARTStatsMessageTraffic {
+        let directionName = attributeNameForKeyPath(keyPath)
         let data: [[String: Any]] = [
-            [direction: [
+            [directionName: [
                 "realtime": ["messages": ["count": 5]],
                 "all": ["messages": ["count": 25], "presence": ["data": 210]],
             ]],
         ]
         let rawData = try! JSONUtility.serialize(data)
         let stats = try! encoder.decodeStats(rawData)?[0]
-        let subject = stats?.value(forKey: direction) as? ARTStatsMessageTraffic
+        let subject = stats?[keyPath: keyPath]
 
         func test__should_return_a_MessageTraffic_object() {
             contextBeforeEach?()
@@ -228,7 +249,7 @@ class StatsTests: XCTestCase {
     }
 
     func reusableTestsWrapper__Stats__inbound__reusableTestsTestDirection(testCase: TestCase_ReusableTestsTestDirection) {
-        reusableTestsTestDirection("inbound", testCase: testCase)
+        reusableTestsTestDirection(\.inbound, testCase: testCase)
     }
 
     func test__009__Stats__inbound__should_return_a_MessageTraffic_object() {
@@ -244,7 +265,7 @@ class StatsTests: XCTestCase {
     }
 
     func reusableTestsWrapper__Stats__outbound__reusableTestsTestDirection(testCase: TestCase_ReusableTestsTestDirection) {
-        reusableTestsTestDirection("outbound", testCase: testCase)
+        reusableTestsTestDirection(\.outbound, testCase: testCase)
     }
 
     func test__012__Stats__outbound__should_return_a_MessageTraffic_object() {
@@ -304,13 +325,14 @@ class StatsTests: XCTestCase {
     }
 
     // TS8
-    func reusableTestsTestRequestType(_ requestType: String, testCase: TestCase_ReusableTestsTestRequestType, beforeEach contextBeforeEach: (() -> Void)? = nil, afterEach contextAfterEach: (() -> Void)? = nil) {
+    func reusableTestsTestRequestType(_ keyPath: KeyPath<ARTStats, ARTStatsRequestCount>, testCase: TestCase_ReusableTestsTestRequestType, beforeEach contextBeforeEach: (() -> Void)? = nil, afterEach contextAfterEach: (() -> Void)? = nil) {
+        let requestTypeName = attributeNameForKeyPath(keyPath)
         let data: [[String: Any]] = [
-            [requestType: ["succeeded": 5, "failed": 10]],
+            [requestTypeName: ["succeeded": 5, "failed": 10]],
         ]
         let rawData = try! JSONUtility.serialize(data)
         let stats = try! encoder.decodeStats(rawData)?[0]
-        let subject = stats?.value(forKey: requestType) as? ARTStatsRequestCount
+        let subject = stats?[keyPath: keyPath]
 
         func test__should_return_a_RequestCount_object() {
             contextBeforeEach?()
@@ -347,7 +369,7 @@ class StatsTests: XCTestCase {
     }
 
     func reusableTestsWrapper__Stats__apiRequests__reusableTestsTestRequestType(testCase: TestCase_ReusableTestsTestRequestType) {
-        reusableTestsTestRequestType("apiRequests", testCase: testCase)
+        reusableTestsTestRequestType(\.apiRequests, testCase: testCase)
     }
 
     func test__023__Stats__apiRequests__should_return_a_RequestCount_object() {
@@ -363,7 +385,7 @@ class StatsTests: XCTestCase {
     }
 
     func reusableTestsWrapper__Stats__tokenRequests__reusableTestsTestRequestType(testCase: TestCase_ReusableTestsTestRequestType) {
-        reusableTestsTestRequestType("tokenRequests", testCase: testCase)
+        reusableTestsTestRequestType(\.tokenRequests, testCase: testCase)
     }
 
     func test__026__Stats__tokenRequests__should_return_a_RequestCount_object() {
