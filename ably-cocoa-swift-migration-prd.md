@@ -1,0 +1,1058 @@
+# Ably Cocoa Swift Migration - Product Requirements Document
+
+## Overview
+
+This document outlines the requirements and approach for migrating the Ably Cocoa SDK from Objective-C to Swift, maintaining full API compatibility while leveraging Swift's type safety and modern language features.
+
+# ⚠️ CRITICAL MIGRATION RULES - READ FIRST ⚠️
+
+**NEVER CHANGE THESE WITHOUT EXPLICIT USER APPROVAL:**
+- ❌ **Queue/threading behavior** (e.g., `_userQueue` → `DispatchQueue.main`)
+- ❌ **Callback patterns or timing** 
+- ❌ **Property storage and getter behavior** (remove storage, change custom getter logic)
+- ❌ **Any runtime behavior differences**
+- ❌ **Memory management patterns**
+- ❌ **State machine transitions**
+- ❌ **Creating fallback objects for missing parameters** (e.g., `param ?? DefaultObject()` changes nil-passing behavior)
+
+**WHEN IN DOUBT: STOP MIGRATION AND ASK USER FOR GUIDANCE**
+
+## Pre-Migration Behavioral Safety Checklist
+
+Before making any change, ask yourself:
+- [ ] Will this change any queue/threading behavior? → **STOP, ASK USER**
+- [ ] Will this change callback timing? → **STOP, ASK USER**  
+- [ ] Will this remove property storage or change getter logic? → **STOP, ASK USER**
+- [ ] Will this change runtime behavior? → **STOP, ASK USER**
+- [ ] Will this change when/how objects are deallocated? → **STOP, ASK USER**
+- [ ] Will this create a fallback object where original code passes nil? → **STOP, ASK USER**
+
+## Pre-Migration Documentation Checklist
+
+Before writing `swift-migration:` comments for each method/property/class:
+- [ ] Have I checked the main header (.h) for this entity's declaration?
+- [ ] Have I checked the private header (+Private.h) for this entity's declaration?  
+- [ ] If found in headers, did I include BOTH header line AND implementation line in my comment?
+- [ ] Does my comment follow the exact format: `// swift-migration: original location Header.h, line X and Implementation.m, line Y`?
+
+## ⚠️ Critical: Property Custom Getters
+
+**ALWAYS check if properties have custom getters in the .m file before migrating:**
+
+### Property Migration Checklist
+
+Before migrating any property, ALWAYS check if it has a custom getter in the .m file:
+
+1. **Search the .m file** for `- (PropertyType *)propertyName {`
+2. **Look for thread-safety patterns**:
+   - `dispatch_sync(_queue, ^{ ... })`  
+   - `dispatch_async`
+   - `@synchronized`
+3. **Check for companion methods** like `propertyName_nosync`
+4. **Check for complex logic**: Environment handling, fallback values, validation
+
+### Two Critical Property Patterns
+
+#### Pattern 1: Thread-Safe Property with Custom Logic
+```objective-c
+// Header declares simple property
+@property (readonly) NSString *clientId;
+
+// But implementation has custom thread-safe getter!
+- (NSString *)clientId {
+    __block NSString *clientId;
+    dispatch_sync(_queue, ^{
+        clientId = self.clientId_nosync;
+    });
+    return clientId;
+}
+```
+
+**Swift Migration Must Preserve This:**
+```swift
+internal var clientId: String? {
+    var result: String?
+    queue.sync {
+        result = clientId_nosync()
+    }
+    return result
+}
+```
+
+#### Pattern 2: Property with Storage AND Custom Getter Logic
+```objective-c
+// Header declares property
+@property (readwrite, nonatomic) NSString *restHost;
+
+// Implementation has custom getter with fallback logic
+- (NSString*)restHost {
+    if (_restHost != nil) {
+        return _restHost;
+    }
+    if ([_environment isEqualToString:ARTDefaultProduction]) {
+        return [ARTDefault restHost];
+    }
+    return self.hasEnvironment ? [self host:[ARTDefault restHost] forEnvironment:_environment] : [ARTDefault restHost];
+}
+// Automatic setter: - (void)setRestHost:(NSString*)value { _restHost = value; }
+```
+
+**Swift Migration Must Preserve Storage AND Logic:**
+```swift
+public var restHost: String? {
+    get {
+        // swift-migration: exact logic from original getter
+        if let restHost = _restHost {
+            return restHost
+        }
+        if environment == ARTDefaultProduction {
+            return ARTDefault.restHost()
+        }
+        return hasEnvironment ? host(ARTDefault.restHost(), forEnvironment: environment!) : ARTDefault.restHost()
+    }
+    set { _restHost = newValue }  // Must preserve ability to store values
+}
+private var _restHost: String?  // Must have backing storage
+```
+
+### Common Migration Pitfalls
+
+#### ❌ DON'T: Remove storage when custom getter exists
+```swift
+// WRONG - removes storage, changes behavior completely
+var restHost: String? {
+    if environment == ARTDefaultProduction {
+        return ARTDefault.restHost()
+    }
+    return defaultHost  // Can never be set to a custom value!
+}
+```
+
+#### ❌ DON'T: Create helper methods instead of proper getters
+```swift
+// WRONG - changes the property access pattern
+private var _restHost: String?
+public var restHost: String? {
+    get { restHost_computed }  // Wrong!
+    set { _restHost = newValue }
+}
+private var restHost_computed: String {
+    // logic here - but this breaks the storage pattern
+}
+```
+
+#### ✅ DO: Preserve both storage and custom getter logic
+```swift
+// CORRECT - maintains storage AND custom logic
+public var restHost: String? {
+    get {
+        // Check stored value first
+        if let restHost = _restHost {
+            return restHost
+        }
+        // Then apply custom logic for defaults
+        return computeDefaultValue()
+    }
+    set { _restHost = newValue }  // Still allows storing custom values
+}
+private var _restHost: String?  // Backing storage preserved
+```
+
+### Key Principle: Objective-C Properties Can Store AND Compute
+
+**Remember**: Objective-C properties with custom getters can:
+1. **Store** values when assigned (`obj.restHost = @"custom"`)
+2. **Compute** default values when not set (`obj.restHost` returns computed default)
+
+**Swift migration must preserve both capabilities.**
+
+## Critical Examples: Threading Behavior
+
+### ❌ WRONG - Changes Threading Behavior
+```objective-c
+// Original Objective-C
+dispatch_async(self->_userQueue, ^{
+    userCallback(result, error);
+});
+```
+
+```swift
+// ❌ WRONG - Changes from user-configured queue to main queue
+DispatchQueue.main.async {
+    userCallback(result, error)  
+}
+```
+
+### ✅ CORRECT - Preserves Original Behavior
+```swift
+// ✅ CORRECT - Preserves original threading behavior  
+self.userQueue.async {
+    userCallback(result, error)
+}
+```
+
+### Why This Matters
+The original code uses `_userQueue` because it allows `ARTRestInternal` to configure which queue should handle user callbacks. Changing to `DispatchQueue.main` breaks this configurability and could cause threading issues in production apps.
+
+## Critical Examples: Callback Patterns
+
+### ❌ WRONG - Changes Callback Timing
+```objective-c
+// Original: Immediate callback
+if (error) {
+    callback(nil, error);
+    return;
+}
+```
+
+```swift
+// ❌ WRONG - Adds async delay that wasn't there before
+if let error = error {
+    DispatchQueue.main.async {
+        callback(nil, error)
+    }
+    return
+}
+```
+
+### ✅ CORRECT - Preserves Callback Timing
+```swift
+// ✅ CORRECT - Immediate callback preserved
+if let error = error {
+    callback(nil, error)
+    return
+}
+```
+
+---
+
+## Background
+
+The current Ably Cocoa SDK consists of approximately 100+ Objective-C implementation files (.m) with corresponding header files (.h), representing a mature, production-ready codebase that handles real-time messaging, REST API interactions, push notifications, and complex connection management.
+
+### Current Architecture Analysis
+
+**Core Components:**
+- **Foundation Extensions**: 15+ utility categories (NSString, NSDate, NSDictionary, etc.)
+- **Core Types**: Complex enum definitions, state machines, callback typedefs (579-line ARTTypes.h)
+- **Authentication**: Token-based auth with callback patterns
+- **Networking**: HTTP client with fallback hosts, custom SSL handling
+- **Messaging**: Message encoding/decoding with multiple formats (JSON, MsgPack, Delta Codec)
+- **Real-time**: WebSocket transport with connection state management
+- **Channels**: REST and Realtime channel implementations with presence
+- **Push Notifications**: iOS-specific push registration and device management
+- **Client Classes**: ARTRest and ARTRealtime main entry points
+
+**External Dependencies:**
+- SocketRocket (WebSocket implementation)
+- msgpack-objective-c (Binary encoding)
+- delta-codec-cocoa (Message compression)
+- ably-cocoa-plugin-support (Plugin architecture)
+
+## Migration Strategy
+
+### Approach: Mechanical Carbon-Copy Translation
+
+**Rationale:**
+- **Low Risk**: Preserve existing battle-tested logic and behavior
+- **Fast Execution**: Direct syntax translation vs architectural redesign
+- **High Confidence**: Existing test suite validates correctness
+- **Reviewability**: Clear 1:1 mapping between old and new code
+
+### Implementation Approach: Alphabetical Migration
+
+**Rationale for Alphabetical Order:**
+- **Simplified Planning**: Eliminates complex dependency analysis and ordering decisions
+- **Predictable Progress**: Clear, linear progression through the codebase
+- **Reduced Risk**: No dependency-related blocking issues or ordering mistakes
+- **Easy Tracking**: Simple to monitor progress and identify remaining work
+
+### Complete Migration Table
+
+The following table shows all 115 `.m` files to be migrated in alphabetical order, along with their associated header files and resulting Swift file names:
+
+| .m File | Associated .h Files | Resulting .swift File |
+|---------|-------------------|---------------------|
+| ARTAnnotation.m | ARTAnnotation.h, ARTAnnotation+Private.h | ARTAnnotation.swift |
+| ARTAttachRequestParams.m | ARTAttachRequestParams.h | ARTAttachRequestParams.swift |
+| ARTAttachRetryState.m | ARTAttachRetryState.h | ARTAttachRetryState.swift |
+| ARTAuth.m | ARTAuth.h, ARTAuth+Private.h | ARTAuth.swift |
+| ARTAuthDetails.m | ARTAuthDetails.h | ARTAuthDetails.swift |
+| ARTAuthOptions.m | ARTAuthOptions.h, ARTAuthOptions+Private.h | ARTAuthOptions.swift |
+| ARTBackoffRetryDelayCalculator.m | ARTBackoffRetryDelayCalculator.h | ARTBackoffRetryDelayCalculator.swift |
+| ARTBaseMessage.m | ARTBaseMessage.h, ARTBaseMessage+Private.h | ARTBaseMessage.swift |
+| ARTChannel.m | ARTChannel.h, ARTChannel+Private.h | ARTChannel.swift |
+| ARTChannelOptions.m | ARTChannelOptions.h, ARTChannelOptions+Private.h | ARTChannelOptions.swift |
+| ARTChannelProtocol.m | ARTChannelProtocol.h | ARTChannelProtocol.swift |
+| ARTChannelStateChangeParams.m | ARTChannelStateChangeParams.h | ARTChannelStateChangeParams.swift |
+| ARTChannels.m | ARTChannels.h, ARTChannels+Private.h | ARTChannels.swift |
+| ARTClientInformation.m | ARTClientInformation.h, ARTClientInformation+Private.h | ARTClientInformation.swift |
+| ARTClientOptions.m | ARTClientOptions.h, ARTClientOptions+Private.h | ARTClientOptions.swift |
+| ARTConnectRetryState.m | ARTConnectRetryState.h | ARTConnectRetryState.swift |
+| ARTConnection.m | ARTConnection.h, ARTConnection+Private.h | ARTConnection.swift |
+| ARTConnectionDetails.m | ARTConnectionDetails.h, ARTConnectionDetails+Private.h | ARTConnectionDetails.swift |
+| ARTConnectionStateChangeParams.m | ARTConnectionStateChangeParams.h | ARTConnectionStateChangeParams.swift |
+| ARTConstants.m | ARTConstants.h | ARTConstants.swift |
+| ARTContinuousClock.m | ARTContinuousClock.h | ARTContinuousClock.swift |
+| ARTCrypto.m | ARTCrypto.h, ARTCrypto+Private.h | ARTCrypto.swift |
+| ARTDataEncoder.m | ARTDataEncoder.h | ARTDataEncoder.swift |
+| ARTDataQuery.m | ARTDataQuery.h, ARTDataQuery+Private.h | ARTDataQuery.swift |
+| ARTDefault.m | ARTDefault.h, ARTDefault+Private.h | ARTDefault.swift |
+| ARTDeviceDetails.m | ARTDeviceDetails.h, ARTDeviceDetails+Private.h | ARTDeviceDetails.swift |
+| ARTDeviceIdentityTokenDetails.m | ARTDeviceIdentityTokenDetails.h, ARTDeviceIdentityTokenDetails+Private.h | ARTDeviceIdentityTokenDetails.swift |
+| ARTDevicePushDetails.m | ARTDevicePushDetails.h, ARTDevicePushDetails+Private.h | ARTDevicePushDetails.swift |
+| ARTErrorChecker.m | ARTErrorChecker.h | ARTErrorChecker.swift |
+| ARTEventEmitter.m | ARTEventEmitter.h, ARTEventEmitter+Private.h | ARTEventEmitter.swift |
+| ARTFallback.m | ARTFallback.h, ARTFallback+Private.h | ARTFallback.swift |
+| ARTFallbackHosts.m | ARTFallbackHosts.h | ARTFallbackHosts.swift |
+| ARTFormEncode.m | ARTFormEncode.h | ARTFormEncode.swift |
+| ARTGCD.m | ARTGCD.h | ARTGCD.swift |
+| ARTHTTPPaginatedResponse.m | ARTHTTPPaginatedResponse.h, ARTHTTPPaginatedResponse+Private.h | ARTHTTPPaginatedResponse.swift |
+| ARTHttp.m | ARTHttp.h, ARTHttp+Private.h | ARTHttp.swift |
+| ARTInternalLog.m | ARTInternalLog.h, ARTInternalLog+Testing.h | ARTInternalLog.swift |
+| ARTInternalLogCore.m | ARTInternalLogCore.h, ARTInternalLogCore+Testing.h | ARTInternalLogCore.swift |
+| ARTJitterCoefficientGenerator.m | ARTJitterCoefficientGenerator.h | ARTJitterCoefficientGenerator.swift |
+| ARTJsonEncoder.m | ARTJsonEncoder.h | ARTJsonEncoder.swift |
+| ARTJsonLikeEncoder.m | ARTJsonLikeEncoder.h | ARTJsonLikeEncoder.swift |
+| ARTLocalDevice.m | ARTLocalDevice.h, ARTLocalDevice+Private.h | ARTLocalDevice.swift |
+| ARTLocalDeviceStorage.m | ARTLocalDeviceStorage.h | ARTLocalDeviceStorage.swift |
+| ARTLog.m | ARTLog.h, ARTLog+Private.h | ARTLog.swift |
+| ARTLogAdapter.m | ARTLogAdapter.h, ARTLogAdapter+Testing.h | ARTLogAdapter.swift |
+| ARTMessage.m | ARTMessage.h | ARTMessage.swift |
+| ARTMessageOperation.m | ARTMessageOperation.h, ARTMessageOperation+Private.h | ARTMessageOperation.swift |
+| ARTMsgPackEncoder.m | ARTMsgPackEncoder.h | ARTMsgPackEncoder.swift |
+| ARTOSReachability.m | ARTOSReachability.h | ARTOSReachability.swift |
+| ARTPaginatedResult.m | ARTPaginatedResult.h, ARTPaginatedResult+Private.h, ARTPaginatedResult+Subclass.h | ARTPaginatedResult.swift |
+| ARTPendingMessage.m | ARTPendingMessage.h | ARTPendingMessage.swift |
+| ARTPluginAPI.m | ARTPluginAPI.h | ARTPluginAPI.swift |
+| ARTPluginDecodingContext.m | ARTPluginDecodingContext.h | ARTPluginDecodingContext.swift |
+| ARTPresence.m | ARTPresence.h, ARTPresence+Private.h | ARTPresence.swift |
+| ARTPresenceMessage.m | ARTPresenceMessage.h, ARTPresenceMessage+Private.h | ARTPresenceMessage.swift |
+| ARTProtocolMessage.m | ARTProtocolMessage.h, ARTProtocolMessage+Private.h | ARTProtocolMessage.swift |
+| ARTPublicRealtimeChannelUnderlyingObjects.m | ARTPublicRealtimeChannelUnderlyingObjects.h | ARTPublicRealtimeChannelUnderlyingObjects.swift |
+| ARTPush.m | ARTPush.h, ARTPush+Private.h | ARTPush.swift |
+| ARTPushActivationEvent.m | ARTPushActivationEvent.h | ARTPushActivationEvent.swift |
+| ARTPushActivationState.m | ARTPushActivationState.h | ARTPushActivationState.swift |
+| ARTPushActivationStateMachine.m | ARTPushActivationStateMachine.h, ARTPushActivationStateMachine+Private.h | ARTPushActivationStateMachine.swift |
+| ARTPushAdmin.m | ARTPushAdmin.h, ARTPushAdmin+Private.h | ARTPushAdmin.swift |
+| ARTPushChannel.m | ARTPushChannel.h, ARTPushChannel+Private.h | ARTPushChannel.swift |
+| ARTPushChannelSubscription.m | ARTPushChannelSubscription.h | ARTPushChannelSubscription.swift |
+| ARTPushChannelSubscriptions.m | ARTPushChannelSubscriptions.h, ARTPushChannelSubscriptions+Private.h | ARTPushChannelSubscriptions.swift |
+| ARTPushDeviceRegistrations.m | ARTPushDeviceRegistrations.h, ARTPushDeviceRegistrations+Private.h | ARTPushDeviceRegistrations.swift |
+| ARTQueuedDealloc.m | ARTQueuedDealloc.h | ARTQueuedDealloc.swift |
+| ARTQueuedMessage.m | ARTQueuedMessage.h | ARTQueuedMessage.swift |
+| ARTRealtime.m | ARTRealtime.h, ARTRealtime+Private.h, ARTRealtime+WrapperSDKProxy.h | ARTRealtime.swift |
+| ARTRealtimeAnnotations.m | ARTRealtimeAnnotations.h, ARTRealtimeAnnotations+Private.h | ARTRealtimeAnnotations.swift |
+| ARTRealtimeChannel.m | ARTRealtimeChannel.h, ARTRealtimeChannel+Private.h | ARTRealtimeChannel.swift |
+| ARTRealtimeChannelOptions.m | ARTRealtimeChannelOptions.h | ARTRealtimeChannelOptions.swift |
+| ARTRealtimeChannels.m | ARTRealtimeChannels.h, ARTRealtimeChannels+Private.h | ARTRealtimeChannels.swift |
+| ARTRealtimePresence.m | ARTRealtimePresence.h, ARTRealtimePresence+Private.h | ARTRealtimePresence.swift |
+| ARTRealtimeTransport.m | ARTRealtimeTransport.h | ARTRealtimeTransport.swift |
+| ARTRealtimeTransportFactory.m | ARTRealtimeTransportFactory.h | ARTRealtimeTransportFactory.swift |
+| ARTRest.m | ARTRest.h, ARTRest+Private.h | ARTRest.swift |
+| ARTRestChannel.m | ARTRestChannel.h, ARTRestChannel+Private.h | ARTRestChannel.swift |
+| ARTRestChannels.m | ARTRestChannels.h, ARTRestChannels+Private.h | ARTRestChannels.swift |
+| ARTRestPresence.m | ARTRestPresence.h, ARTRestPresence+Private.h | ARTRestPresence.swift |
+| ARTRetrySequence.m | ARTRetrySequence.h | ARTRetrySequence.swift |
+| ARTStats.m | ARTStats.h | ARTStats.swift |
+| ARTStatus.m | ARTStatus.h | ARTStatus.swift |
+| ARTStringifiable.m | ARTStringifiable.h, ARTStringifiable+Private.h | ARTStringifiable.swift |
+| ARTTestClientOptions.m | ARTTestClientOptions.h | ARTTestClientOptions.swift |
+| ARTTokenDetails.m | ARTTokenDetails.h | ARTTokenDetails.swift |
+| ARTTokenParams.m | ARTTokenParams.h, ARTTokenParams+Private.h | ARTTokenParams.swift |
+| ARTTokenRequest.m | ARTTokenRequest.h | ARTTokenRequest.swift |
+| ARTTypes.m | ARTTypes.h, ARTTypes+Private.h | ARTTypes.swift |
+| ARTURLSessionServerTrust.m | ARTURLSessionServerTrust.h | ARTURLSessionServerTrust.swift |
+| ARTWebSocketFactory.m | ARTWebSocketFactory.h | ARTWebSocketFactory.swift |
+| ARTWebSocketTransport.m | ARTWebSocketTransport.h, ARTWebSocketTransport+Private.h | ARTWebSocketTransport.swift |
+| ARTWrapperSDKProxyOptions.m | ARTWrapperSDKProxyOptions.h | ARTWrapperSDKProxyOptions.swift |
+| ARTWrapperSDKProxyPush.m | ARTWrapperSDKProxyPush.h, ARTWrapperSDKProxyPush+Private.h | ARTWrapperSDKProxyPush.swift |
+| ARTWrapperSDKProxyPushAdmin.m | ARTWrapperSDKProxyPushAdmin.h, ARTWrapperSDKProxyPushAdmin+Private.h | ARTWrapperSDKProxyPushAdmin.swift |
+| ARTWrapperSDKProxyPushChannel.m | ARTWrapperSDKProxyPushChannel.h, ARTWrapperSDKProxyPushChannel+Private.h | ARTWrapperSDKProxyPushChannel.swift |
+| ARTWrapperSDKProxyPushChannelSubscriptions.m | ARTWrapperSDKProxyPushChannelSubscriptions.h, ARTWrapperSDKProxyPushChannelSubscriptions+Private.h | ARTWrapperSDKProxyPushChannelSubscriptions.swift |
+| ARTWrapperSDKProxyPushDeviceRegistrations.m | ARTWrapperSDKProxyPushDeviceRegistrations.h, ARTWrapperSDKProxyPushDeviceRegistrations+Private.h | ARTWrapperSDKProxyPushDeviceRegistrations.swift |
+| ARTWrapperSDKProxyRealtime.m | ARTWrapperSDKProxyRealtime.h, ARTWrapperSDKProxyRealtime+Private.h | ARTWrapperSDKProxyRealtime.swift |
+| ARTWrapperSDKProxyRealtimeAnnotations.m | ARTWrapperSDKProxyRealtimeAnnotations.h, ARTWrapperSDKProxyRealtimeAnnotations+Private.h | ARTWrapperSDKProxyRealtimeAnnotations.swift |
+| ARTWrapperSDKProxyRealtimeChannel.m | ARTWrapperSDKProxyRealtimeChannel.h, ARTWrapperSDKProxyRealtimeChannel+Private.h | ARTWrapperSDKProxyRealtimeChannel.swift |
+| ARTWrapperSDKProxyRealtimeChannels.m | ARTWrapperSDKProxyRealtimeChannels.h, ARTWrapperSDKProxyRealtimeChannels+Private.h | ARTWrapperSDKProxyRealtimeChannels.swift |
+| ARTWrapperSDKProxyRealtimePresence.m | ARTWrapperSDKProxyRealtimePresence.h, ARTWrapperSDKProxyRealtimePresence+Private.h | ARTWrapperSDKProxyRealtimePresence.swift |
+| NSArray+ARTFunctional.m | NSArray+ARTFunctional.h | NSArray+ARTFunctional.swift |
+| NSDate+ARTUtil.m | NSDate+ARTUtil.h | NSDate+ARTUtil.swift |
+| NSDictionary+ARTDictionaryUtil.m | NSDictionary+ARTDictionaryUtil.h | NSDictionary+ARTDictionaryUtil.swift |
+| NSError+ARTUtils.m | NSError+ARTUtils.h | NSError+ARTUtils.swift |
+| NSHTTPURLResponse+ARTPaginated.m | NSHTTPURLResponse+ARTPaginated.h | NSHTTPURLResponse+ARTPaginated.swift |
+| NSString+ARTUtil.m | NSString+ARTUtil.h | NSString+ARTUtil.swift |
+| NSURL+ARTUtils.m | NSURL+ARTUtils.h | NSURL+ARTUtils.swift |
+| NSURLQueryItem+Stringifiable.m | NSURLQueryItem+Stringifiable.h | NSURLQueryItem+Stringifiable.swift |
+| NSURLRequest+ARTPaginated.m | NSURLRequest+ARTPaginated.h | NSURLRequest+ARTPaginated.swift |
+| NSURLRequest+ARTPush.m | NSURLRequest+ARTPush.h | NSURLRequest+ARTPush.swift |
+| NSURLRequest+ARTRest.m | NSURLRequest+ARTRest.h | NSURLRequest+ARTRest.swift |
+| NSURLRequest+ARTUtils.m | NSURLRequest+ARTUtils.h | NSURLRequest+ARTUtils.swift |
+
+### Implementation Phases
+
+With alphabetical ordering, the migration can be approached in manageable batches of 10-15 files each:
+
+**Batch 1: ARTAnnotation - ARTChannels (13 files)**
+**Batch 2: ARTClientInformation - ARTDefault (11 files)**  
+**Batch 3: ARTDeviceDetails - ARTInternalLogCore (12 files)**
+**Batch 4: ARTJitterCoefficientGenerator - ARTPluginDecodingContext (14 files)**
+**Batch 5: ARTPresence - ARTRealtimeChannelOptions (15 files)**
+**Batch 6: ARTRealtimeChannels - ARTWrapperSDKProxyOptions (10 files)**
+**Batch 7: ARTWrapperSDKProxy* files (15 files)**
+**Batch 8: Foundation Extensions (NS* files) (12 files)**
+**Batch 9: Build System & Testing**
+
+**Batch Completion Criteria:**
+1. All files in batch migrated to Swift
+2. `swift build` runs without compilation errors
+3. Warnings handled according to error handling rules
+4. Progress tracking files updated
+5. Placeholder types created/updated as needed
+
+**Swift Adaptations Example:**
+```objective-c
+// Objective-C
+typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
+    ARTRealtimeInitialized,
+    ARTRealtimeConnecting,
+    ARTRealtimeConnected,
+    // ...
+};
+
+// Swift
+public enum ARTRealtimeConnectionState: UInt, Sendable {
+    case initialized = 0
+    case connecting = 1
+    case connected = 2
+    // ...
+}
+```
+
+**Callback Pattern Translation:**
+```objective-c
+// Objective-C
+typedef void (^ARTTokenDetailsCallback)(ARTTokenDetails *_Nullable result, NSError *_Nullable error);
+
+// Swift  
+public typealias ARTTokenDetailsCallback = (ARTTokenDetails?, Error?) -> Void
+```
+
+## Technical Requirements
+
+### API Compatibility
+
+**Must Preserve:**
+- All class names and method signatures
+- All callback-based async patterns
+- All enum values and constants
+- Platform-specific conditional compilation
+- **No Objective-C Interoperability Required**: Swift implementation does not need `@objc` annotations since it won't be called from Objective-C
+
+### Current Objective-C Test Files Analysis
+The following Objective-C tests need to be converted to Swift:
+- **`ARTArchiveTests.m`**: Tests NSKeyedArchiver/Unarchiver functionality for push activation states
+- **`ARTInternalLogTests.m`**: Tests internal logging mechanisms
+- **`CryptoTest.m`**: Tests AES encryption/decryption with varying data lengths
+- **`ObjcppTest.mm`**: Mixed Objective-C++ test (likely can be pure Swift)
+
+### Swift Migration Requirements
+
+The following technical patterns MUST be implemented during migration to ensure proper Swift functionality:
+
+#### 1. Exception Handling
+```objective-c
+// Current Objective-C pattern
+@throw [NSException exceptionWithName:@"InvalidArgument" reason:@"..." userInfo:nil];
+```
+
+Swift replacement:
+
+```swift
+fatalError("InvalidArgument: ...")
+```
+
+#### 2. Error Handling Pattern
+```objective-c
+// Objective-C NSError** pattern
+- (id)methodWithError:(NSError **)error {
+    // implementation
+}
+```
+
+Swift replacement:
+
+```swift
+// Swift throws pattern
+func method() throws -> SomeType {
+    // implementation
+}
+```
+
+#### 2. Atomic Properties
+```objective-c
+// Current usage (found in ARTGCD.m)
+@property (atomic, copy, nullable) dispatch_block_t block;
+```
+
+Swift equivalent:
+
+```swift
+// Lock that implements the equivalent of Objective-C `atomic` for the `block` property
+private let _blockLock = NSLock()
+private var _block: DispatchWorkItem?
+var block: DispatchWorkItem? {
+    get { _blockLock.withLock { _block } }
+    set { _blockLock.withLock { _block = newValue } }
+}
+```
+
+#### 3. Logging Macros Migration
+
+Current extensive usage of logging macros throughout codebase:
+
+```objective-c
+ARTLogError(logger, @"Error message: %@", error);
+ARTLogWarn(logger, @"Warning: %@", message);
+ARTLogInfo(logger, @"Info: %@", info);
+ARTLogDebug(logger, @"Debug: %@", debug);
+ARTLogVerbose(logger, @"Verbose: %@", verbose);
+```
+
+We will implement these Objective-C macros as Swift functions, injecting the `#fileID` and `#line` values using default arguments:
+
+```swift
+func ARTLogError(_ logger: ARTInternalLog, _ message: String, fileID: String = #fileID, line: Int = #line)
+    logger.log(level: .error, file: fileID, line: line, message: message)
+}
+```
+
+At the call site, instead of using varargs, we will use Swift string interpolation to pass a single message string to the logger.
+
+**CRITICAL REQUIREMENT: Pointer Formatting Support**
+
+For log statements that use `%p` format specifiers in Objective-C (to log pointer addresses), create a custom string interpolation extension:
+
+```swift
+// StringInterpolationExtensions.swift
+extension String.StringInterpolation {
+    mutating func appendInterpolation<T: AnyObject>(pointer: T) {
+        let address = Unmanaged.passUnretained(pointer).toOpaque()
+        appendLiteral(String(format: "%p", Int(bitPattern: address)))
+    }
+    
+    mutating func appendInterpolation<T: AnyObject>(pointer: T?) {
+        if let pointer = pointer {
+            let address = Unmanaged.passUnretained(pointer).toOpaque()
+            appendLiteral(String(format: "%p", Int(bitPattern: address)))
+        } else {
+            appendLiteral("(null)")
+        }
+    }
+}
+```
+
+**Migration Pattern for Logging:**
+
+```objective-c
+// Objective-C
+ARTLogDebug(self.logger, @"R:%p C:%p (%@) received message %tu", _realtime, self, self.name, message.action);
+```
+
+```swift
+// Swift - use string interpolation with pointer support
+ARTLogDebug(logger, "R:\(pointer: realtime) C:\(pointer: self) (\(self.name)) received message \(message.action.rawValue)")
+```
+
+**Key Points:**
+- **NO varargs**: Never use variadic arguments in Swift logging calls
+- **Single string parameter**: Always pass a single interpolated string to logging functions
+- **Pointer formatting**: Use `\(pointer: obj)` for objects that were logged with `%p` in Objective-C
+- **String interpolation**: Use Swift's native string interpolation for all other format specifiers
+
+#### 4. Nullability Analysis Required
+- **Header Interfaces**: Some may have incorrect nullability annotations
+- **Local Variables**: Need to determine proper optionals for local vars
+- **Generic Collections**: Need to resolve generic type arguments for dictionaries/arrays
+
+#### 5. Foundation Type Migration
+
+Objective-C:
+
+```objective-c
+NSString *name;
+NSMutableDictionary *dict;
+NSDate *timestamp;
+```
+
+```swift
+var name: String
+var dict: [String: Any] // as an example — in reality, use whichever generic arguments are appropriate
+var timestamp: Date
+```
+
+### Access Control Mapping
+
+**Current Objective-C Structure:**
+- **`Sources/Ably/include/`**: Public headers forming the public API
+- **`Sources/Ably/PrivateHeaders/`**: Private headers with internal declarations
+- **`.m` implementation files**: Implementation-only declarations
+
+**Swift Access Control Decision Rule:**
+
+All declarations (classes, methods, properties, types, etc.) inherit their access level from their original declaration location:
+
+- **Declarations from `Sources/Ably/include/`** → `public`
+- **Declarations from `Sources/Ably/PrivateHeaders/`** → `internal`
+- **Declarations only in `.m` files** → `private`
+
+**Swift Access Control Examples:**
+```swift
+// Example 1: Public API (from Sources/Ably/include/ARTRealtime.h)
+public class ARTRealtime {
+    public func connect() { }  // Declared in include/ header
+}
+
+// Example 2: Internal API (from Sources/Ably/PrivateHeaders/ARTRealtime+Private.h)
+extension ARTRealtime {
+    internal func internalConnect() { }  // Declared in PrivateHeaders/
+}
+
+// Example 3: Private implementation (from ARTRealtime.m only)
+extension ARTRealtime {
+    private func helperMethod() { }  // Only exists in .m file
+}
+
+// Example 4: Internal types (from Sources/Ably/PrivateHeaders/ARTInternalHelper.h)
+internal class ARTInternalHelper { }  // Declared in PrivateHeaders/
+```
+
+**Decision Algorithm for LLM Implementation:**
+1. **Check declaration location**: Look up where each method/property/type is originally declared
+2. **Apply access level**: Use the location-based rule above
+3. **Consistency check**: Ensure all members of a type follow the same pattern based on their original declaration location
+
+### Swift-Specific Requirements
+
+#### 1. Interface Priority
+- **Favor header declarations over implementation** - headers more likely to have correct nullability and be accurate
+- Use header interfaces as the source of truth for method signatures
+
+### Low-Hanging Swift Improvements
+
+While maintaining carbon-copy behavior, these Swift idioms can be adopted:
+
+#### 1. Foundation Type Modernization
+```objective-c
+// Avoid in Swift
+var items: NSMutableArray
+var properties: NSMutableDictionary
+var identifier: NSString
+
+// Use instead
+var items: [SomeType]
+var properties: [String: Any]
+var identifier: String
+```
+
+#### 2. Functional Programming Patterns
+```objective-c
+// Replace manual array building
+NSMutableArray *results = [NSMutableArray new];
+for (Item *item in items) {
+    [results addObject:[self processItem:item]];
+}
+
+// With functional equivalent
+let results = items.map { processItem($0) }
+```
+
+
+### File Organization
+
+**Proposed Structure:**
+```
+Sources/
+├── Ably/                    # Existing Objective-C (keep during transition)
+├── AblySwift/              # New Swift implementation
+│   ├── MigrationPlaceholders.swift  # Temporary placeholder types
+│   ├── ARTAnnotation.swift
+│   ├── ARTAttachRequestParams.swift
+│   ├── ARTAuth.swift
+│   ├── ... (all other migrated .swift files in single directory)
+│   └── NSURLRequest+ARTUtils.swift
+└── SocketRocket/          # Unchanged C/ObjC dependency
+```
+
+**File Organization Rules:**
+- All migrated `.swift` files go directly into the `Sources/AblySwift/` directory
+- No subdirectories or categorization - keep all Swift files in a flat structure
+- `MigrationPlaceholders.swift` is the only special file for temporary placeholder types
+
+## Migration Implementation Rules
+
+> **⚠️ IMPORTANT:** Before reading this section, ensure you've reviewed the **[Critical Migration Rules](#️-critical-migration-rules---read-first-️)** at the top of this document.
+
+### Error and Warning Handling
+
+**Testing Requirement:** `swift build` must be run before considering any batch of files complete.
+
+**Compilation Errors:**
+
+**ACCEPTABLE immediate fixes (with `swift-migration:` comment):**
+- Syntax translation (e.g., `@selector` → `#selector`)
+- Import statement changes
+- Type annotation fixes that don't change logic
+- Property access syntax (`obj.property` → `obj.property`)
+- Simple placeholder type additions to support dependencies
+
+**UNACCEPTABLE without user guidance:**
+- **Changing queue/threading behavior** (e.g., replacing `_userQueue` with `DispatchQueue.main`)
+- **Replacing configured objects with new empty instances** (e.g., `options` → `ARTAuthOptions()`)
+- **Changing callback patterns or timing**
+- **Any change that alters runtime behavior**
+- **Missing class inheritance relationships in placeholder types**
+
+**When in doubt:** Stop migration and ask user for guidance
+
+**Compilation Warnings:**
+- **Obvious fixes**: Fix immediately and document in `swift-migration-files-progress.md`
+- **Significant deviations**: Leave code as-is and document decision in `swift-migration-files-progress.md`
+
+**Ignored Warnings:**
+- Unused method call results
+- Concurrency safety warnings (e.g., `Capture of 'callback' with non-sendable type`)
+
+### Placeholder Type Management
+
+**Purpose:** Handle dependencies on unmigrated types to prevent build failures.
+
+**Placeholder File:** All placeholder types go in `Sources/AblySwift/MigrationPlaceholders.swift`
+
+**Placeholder Creation Rules:**
+1. **Enums**: Create the full enum definition
+2. **Protocols**: Create the full protocol interface for method calls  
+3. **Classes**: Create class with `fatalError()` implementations for all methods/properties
+4. **Extensions**: Create extension with `fatalError()` implementations for all methods/properties
+5. **CRITICAL - Inheritance**: Always check if placeholder classes should inherit from other types
+   - Example: `ARTClientOptions` inherits from `ARTAuthOptions` in original code
+   - Missing inheritance relationships will cause type errors during migration
+
+**Placeholder Removal:** Remove placeholder types from `MigrationPlaceholders.swift` once proper implementation exists
+
+### Code Comment Guidelines
+
+**Migration Comments:** All migration-related code comments MUST start with `swift-migration: ` so that a human reviewer can distinguish them from the original Objective-C comments
+
+**Required Comments:**
+- **Source Location**: Before each migrated entity (class, method, property, enum, etc.), add a comment indicating its original location: `// swift-migration: original location Foo.m, line 123`
+  - **IMPORTANT**: This comment must appear BEFORE any documentation comments or original Objective-C comments
+  - **CRITICAL REQUIREMENT - For entities with both declaration and definition**: Include both locations: `// swift-migration: original location Foo.h, line 45 and Foo.m, line 123`
+  - **How to Check**: Before writing the comment, search both the header files (.h, +Private.h) and implementation file (.m) to verify if the entity is declared in headers
+  - **Examples**:
+    - Method declared in ARTAuth+Private.h line 106 and implemented in ARTAuth.m line 798: `// swift-migration: original location ARTAuth+Private.h, line 106 and ARTAuth.m, line 798`
+    - Method only in .m file: `// swift-migration: original location ARTAuth.m, line 456`
+    - Public method from ARTAuth.h: `// swift-migration: original location ARTAuth.h, line 37 and ARTAuth.m, line 55`
+- Any code modifications or skips during migration
+- Decisions documented in both code and `swift-migration-files-progress.md`
+
+**Original Comments:** Preserve all existing Objective-C comments unchanged
+
+**CRITICAL: Implementation Rule**
+- **ONLY implement methods/properties that exist in the .m file being migrated**
+- **DO NOT implement methods/properties that are only declared in headers** - these may be inherited from parent classes or implemented elsewhere
+- **If a header declares something not implemented in the .m file**: Document this in migration notes, do not implement it
+- **ALL explanatory comments about what you're doing must have `swift-migration:` prefix**
+
+**Source Location Comment Format:**
+```swift
+// swift-migration: original location ARTAuth.m, line 45
+/// Authenticates the user with the given callback
+/// - Parameter callback: The callback to invoke when authentication completes
+func authenticate(callback: @escaping ARTAuthCallback) {
+    // ... implementation
+}
+
+// swift-migration: original location ARTAuth.h, line 23
+/// The ARTAuth class handles authentication for Ably connections
+/// This class manages token-based authentication and callback patterns
+public class ARTAuth {
+    // ... implementation
+}
+
+// swift-migration: original location ARTTypes.h, line 156
+/// Connection state enumeration
+public enum ARTConnectionState: UInt {
+    // ... cases
+}
+```
+
+### Special Translation Rules
+
+**Handling Objective-C Nullability Mismatch Issues:**
+
+**ALWAYS follow this sequence:**
+
+1. **First attempt: Direct port the Objective-C code as-is**
+   ```swift
+   // Try direct translation first
+   func someMethod(_ param: ParamType?) -> ReturnType {
+       return originalMethod(param: param)
+   }
+   ```
+
+2. **If compilation fails with nullability mismatch:**
+   - Identify conflicting nullability assumptions between different Objective-C declarations
+   - Confirm original Objective-C code was designed to handle nil for that parameter
+   - Only then use the utility function:
+
+   ```swift
+   // ONLY when direct port fails due to conflicting nullability assumptions
+   func someMethod(_ param: ParamType?) -> ReturnType {
+       // swift-migration: Using utility due to conflicting nullability assumptions in original code
+       return originalMethod(param: unwrapValueWithAmbiguousObjectiveCNullability(param))
+   }
+   ```
+
+3. **NEVER create fallback objects** (e.g., `param ?? DefaultObject()`) as this changes runtime behavior
+
+**Common nullability assumption conflicts:**
+- Protocol declares parameter as `nullable` but implementing method is in `NS_ASSUME_NONNULL_BEGIN/END`
+- One part of API explicitly allows nil, another part assumes non-null via compiler directives
+- Method signature assumptions conflict with actual usage patterns in the codebase
+
+**Requirements for using `unwrapValueWithAmbiguousObjectiveCNullability`:**
+- ✅ Direct porting attempt failed with compilation error
+- ✅ Identified conflicting nullability assumptions in original Objective-C
+- ✅ Your Swift method correctly accepts optional parameter
+- ✅ Original Objective-C code was designed to handle nil despite assumptions
+- ✅ Must document the specific conflict with `swift-migration:` comment
+
+**Platform Conditionals:**
+```objective-c
+// Objective-C
+#if TARGET_OS_IOS
+
+// Swift
+#if os(iOS)
+```
+
+**NSMutableArray Queue Operations:**
+
+Do not migrate the following methods; instead just use the following at the call sites in `ARTRealtime`:
+
+- `NSMutableArray.art_enqueue` → `Array.append`
+- `NSMutableArray.art_dequeue` → `Array.popFirst`
+- `NSMutableArray.art_peek` → `Array.first`
+
+**NSMutableDictionary Parameters:**
+- Methods accepting `NSMutableDictionary` → Accept `inout Dictionary` in Swift
+- Examples: `ARTMessageOperation.writeToDictionary:`, `ARTJsonLikeEncoder.writeData:…`
+
+**Enum Value Migration:**
+
+When migrating Objective-C constant references to Swift enum cases, use the proper Swift enum syntax:
+
+```objective-c
+// Objective-C constants
+ARTStateRequestTokenFailed
+ARTErrorTokenErrorUnspecified  
+ARTErrorIncompatibleCredentials
+```
+
+```swift
+// Swift enum cases
+ARTState.requestTokenFailed.rawValue
+ARTErrorCode.tokenErrorUnspecified.rawValue
+ARTErrorCode.incompatibleCredentials.rawValue
+```
+
+**Migration Pattern:**
+- `ARTState*` constants → `ARTState.camelCase.rawValue`
+- `ARTError*` constants → `ARTErrorCode.camelCase.rawValue`  
+- Always use `.rawValue` to get the underlying integer value
+- Convert PascalCase to camelCase for Swift enum cases
+
+### NSCopying Protocol Translation
+
+**The Challenge:**
+Objective-C's `NSCopying` protocol requires implementing `copyWithZone:` which returns `id`. In Swift, the `copy(with:)` method returns `Any`, requiring type casting at usage sites.
+
+**Swift Implementation Pattern:**
+```swift
+// Objective-C
+- (id)copyWithZone:(NSZone *)zone {
+    ARTAuthOptions *options = [[[self class] allocWithZone:zone] init];
+    // ... copy properties
+    return options;
+}
+
+// Swift
+public func copy(with zone: NSZone?) -> Any {
+    let options = type(of: self).init()
+    // ... copy properties
+    return options
+}
+```
+
+**Usage Pattern:**
+```swift
+// At call sites, force casting is acceptable and expected
+let copiedOptions = (originalOptions.copy() as! ARTAuthOptions)
+```
+
+**Required Initializer:**
+Classes implementing NSCopying that use `type(of: self).init()` must mark their default initializer as `required`:
+
+```swift
+public class ARTAuthOptions: NSObject, NSCopying {
+    public required override init() {  // Note: required keyword
+        super.init()
+        _ = initDefaults()
+    }
+}
+```
+
+### Callback Escaping Requirements
+
+**The Challenge:**
+Swift has stricter escaping rules for closures compared to Objective-C blocks. Callbacks that are stored or called asynchronously must be marked as `@escaping`.
+
+**Common Patterns Requiring @escaping:**
+
+1. **Typealias Definitions:**
+```swift
+// ❌ INCORRECT - callback will be captured in async contexts
+public typealias ARTAuthCallback = (ARTTokenParams?, ARTTokenDetailsCompatibleCallback) -> Void
+
+// ✅ CORRECT - mark nested callback as @escaping
+public typealias ARTAuthCallback = (ARTTokenParams?, @escaping ARTTokenDetailsCompatibleCallback) -> Void
+```
+
+2. **Method Parameters:**
+```swift
+// Methods that store or async-dispatch callbacks need @escaping
+internal func authenticate(_ callback: @escaping ARTTokenDetailsCallback) {
+    userQueue.async {
+        // callback used in async context - needs @escaping
+        callback(result, error)
+    }
+}
+```
+
+3. **Nested Callback Scenarios:**
+```swift
+// When callbacks are passed to user code that may store them
+let userCallback: ARTAuthCallback = { tokenParams, callback in
+    self.userQueue.async {
+        // callback parameter needs @escaping in typealias
+        authCallback(tokenParams, callback)
+    }
+}
+```
+
+**Migration Strategy:**
+- **Immediate Fix**: Add `@escaping` to callback typealiases and method parameters as compilation errors arise
+- **Retroactive Updates**: Previously migrated files may need `@escaping` additions when new migrations depend on them
+- **Document Changes**: Use `swift-migration:` comments when adding `@escaping` to existing signatures
+
+**Example Retroactive Fix:**
+```swift
+// Original migration
+internal func authorize(_ callback: ARTTokenDetailsCallback) // Missing @escaping
+
+// Fixed after compilation error in dependent file
+// swift-migration: Added @escaping for callback compatibility with new migrations
+internal func authorize(_ callback: @escaping ARTTokenDetailsCallback)
+```
+
+## Risk Assessment & Mitigation
+
+### High-Risk Areas
+
+1. **State Machine Complexity**
+   - **Risk**: Connection/channel state logic bugs
+   - **Mitigation**: Line-by-line translation, extensive state testing
+
+2. **Callback Pattern Translation** 
+   - **Risk**: Memory leaks, retain cycles in closures
+   - **Mitigation**: Careful weak reference management, cancellation patterns
+
+3. **Platform-Specific Code**
+   - **Risk**: iOS/macOS conditional compilation issues
+   - **Mitigation**: Preserve exact `#if` patterns, platform-specific testing
+
+4. **C Interop**  
+   - **Risk**: Loss of C function compatibility
+   - **Mitigation**: Maintain C functions, add Swift wrappers where needed
+
+### Medium-Risk Areas
+
+1. **External Dependencies**
+   - **Risk**: Breaking changes in SocketRocket/msgpack integration  
+   - **Mitigation**: Maintain existing integration patterns
+
+2. **Build System Changes**
+   - **Risk**: SPM configuration issues
+   - **Mitigation**: Incremental build testing, dual-target approach
+
+## Success Criteria
+
+### Functional Requirements
+- [ ] All existing tests pass against Swift implementation
+- [ ] No behavioral changes in client-facing APIs
+- [ ] Memory usage comparable to current implementation
+
+### Quality Requirements  
+- [ ] 100% API compatibility maintained
+- [ ] Zero breaking changes for existing Swift/ObjC clients
+- [ ] Clean Swift idioms where possible without breaking compatibility
+- [ ] Comprehensive documentation updates
+
+### Timeline
+- **Total Duration:** 24-30 weeks (6-7 months) 
+- **Team Size:** 2-3 senior developers
+- **Batch Size:** 10-15 files per batch (2-3 weeks each)
+- **Total Batches:** 9 batches + build system work
+- **Testing:** Continuous compilation and testing after each batch
+
+## Project Management & Review Process
+
+### Migration Progress Documentation **[REQUIRED]**
+
+**Progress Tracking Files:**
+- **[`swift-migration-overall-progress.md`](swift-migration-overall-progress.md)**: Master table tracking migration status of all 115 files with progress column
+- **[`swift-migration-files-progress.md`](swift-migration-files-progress.md)**: Detailed file-by-file progress with batch organization, compilation notes, and migration decisions
+- **Update Frequency**: Both files must be updated as each file is migrated and each batch is completed
+
+**CRITICAL: Progress File Format Preservation**
+- **NEVER completely rewrite or change the structure** of these progress tracking files
+- **ONLY update the relevant entries** (Progress column in overall file, Notes sections in detailed file)
+- **PRESERVE the original table structure, headers, and file organization**
+- When updating files, make minimal changes to only the relevant sections - this ensures clean Git diffs for human reviewers
+- The files have established formats that must be maintained for proper tracking
+
+**Documentation Standards:**
+- Document **why** certain translation approaches were chosen
+- Record patterns that can be reused for similar code
+- Track deviations from mechanical translation with reasoning
+- Maintain architectural decision records (ADRs) for significant choices
+- Include code examples showing Objective-C → Swift transformations
+- **All migration comments in code must start with `swift-migration: `**
+
+## Conclusion
+
+This mechanical migration approach prioritizes reliability and speed over Swift modernization. The result will be a Swift-native codebase that behaves identically to the current Objective-C implementation, providing a solid foundation for future Swift-idiomatic enhancements.
+
+### ⚠️ Final Reminder: Behavioral Preservation is Paramount
+
+The single most critical aspect of this migration is **preserving exact runtime behavior**. This means:
+
+- **Threading/queue behavior must remain identical**
+- **Callback patterns and timing must be preserved** 
+- **Memory management semantics must be maintained**
+- **State transitions must occur exactly as before**
+
+**Remember:** A Swift file that compiles but changes behavior is worse than no migration at all, because it introduces subtle bugs that may only surface in production.
+
+The phased approach allows for incremental validation and reduces risk by tackling components in dependency order, ensuring each layer is stable before building upon it. The comprehensive process management ensures both quality assurance and maintainability throughout the migration lifecycle.

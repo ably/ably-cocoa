@@ -1,5 +1,5 @@
 #if os(iOS)
-import Ably
+@testable import AblySwift
 
 class MockDeviceStorage: NSObject, ARTDeviceStorage {
     

@@ -1,4 +1,4 @@
-import Ably.Private
+@testable import AblySwift
 import SocketRocket
 
 class TestProxyTransportFactory: RealtimeTransportFactory {
@@ -29,7 +29,7 @@ class TestProxyTransportFactory: RealtimeTransportFactory {
         return testProxyTransport
     }
 
-    private class WebSocketFactory: Ably.WebSocketFactory {
+    private class WebSocketFactory: AblySwift.WebSocketFactory {
         weak var testProxyTransport: TestProxyTransport?
 
         func createWebSocket(with request: URLRequest, logger: InternalLog?) -> ARTWebSocket {

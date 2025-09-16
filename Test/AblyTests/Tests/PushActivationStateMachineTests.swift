@@ -1,5 +1,5 @@
 #if os(iOS)
-import Ably
+@testable import AblySwift
 import AblyTesting
 import Nimble
 import XCTest

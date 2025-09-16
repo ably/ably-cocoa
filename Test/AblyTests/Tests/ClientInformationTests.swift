@@ -1,5 +1,5 @@
 import XCTest
-import Ably
+@testable import AblySwift
 
 final class ClientInformationTests: XCTestCase {
     
@@ -30,7 +30,7 @@ final class ClientInformationTests: XCTestCase {
             "ably-cocoa/1.2.44",
             ARTDefault.platformAgent()
         ].sorted().joined(separator: " ")
-        
+
         XCTAssertEqual(ARTClientInformation.agentIdentifier(withAdditionalAgents: nil), expectedIdentifier)
     }
     

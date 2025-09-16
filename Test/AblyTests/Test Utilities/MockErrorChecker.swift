@@ -1,4 +1,4 @@
-import Ably.Private
+@testable import AblySwift
 
 class MockErrorChecker: ErrorChecker {
     var isTokenError: Bool!

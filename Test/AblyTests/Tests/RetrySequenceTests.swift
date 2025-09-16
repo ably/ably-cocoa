@@ -1,5 +1,5 @@
 import XCTest
-import Ably.Private
+@testable import AblySwift
 
 class RetrySequenceTests: XCTestCase {
     func test_addRetryAttempt() {

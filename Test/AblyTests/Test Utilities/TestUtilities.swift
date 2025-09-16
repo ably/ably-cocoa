@@ -1,11 +1,10 @@
-import Ably
+@testable import AblySwift
 import Foundation
 import XCTest
 import Nimble
 import AblyTestingObjC
 import SocketRocket
 
-import Ably.Private
 
 typealias HookToken = AspectToken
 
@@ -36,7 +35,8 @@ class AblyTestsConfiguration: NSObject, XCTestObservation {
 }
 
 func pathForTestResource(_ resourcePath: String) -> String {
-    return Bundle.module.path(forResource: resourcePath, ofType: "")!
+    let moduleBundle = Bundle.module
+    return moduleBundle.path(forResource: resourcePath, ofType: "")!
 }
 
 let appSetupModel: TestAppSetup = {
@@ -117,7 +117,7 @@ class AblyTests {
         if let testApplication {
             app = testApplication
         } else {
-            let request = NSMutableURLRequest(url: URL(string: "https://\(options.restHost):\(options.tlsPort)/apps")!)
+            let request = NSMutableURLRequest(url: URL(string: "https://\(options.restHost!):\(options.tlsPort)/apps")!)
             request.httpMethod = "POST"
             request.httpBody = try JSONUtility.encode(appSetupModel.postApps)
 
@@ -420,7 +420,7 @@ func ==(lhs: ARTJsonCompatible?, rhs: ARTJsonCompatible?) -> Bool {
         return false
     }
     do {
-        return NSDictionary(dictionary: try lhs.toJSON()).isEqual(to: try rhs.toJSON())
+        return try lhs.toJSON() == rhs.toJSON()
     } catch {
         return false
     }
@@ -830,7 +830,7 @@ class MockHTTP: ARTHttp {
         }
     }
 
-    override public func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) -> (ARTCancellable & NSObjectProtocol)? {
+    override public func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) -> ARTCancellable? {
         queue.async {
             switch self.rule {
             case .none:
@@ -918,7 +918,7 @@ class MockHTTPExecutor: NSObject, ARTHTTPExecutor {
     private(set) var logger = InternalLog(logger: MockVersion2Log())
     var requests: [URLRequest] = []
 
-    func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) -> (ARTCancellable & NSObjectProtocol)? {
+    func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) -> ARTCancellable? {
         self.requests.append(request)
         
         if let simulatedError = errorSimulator, var _ = request.url {
@@ -1007,7 +1007,7 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
         }
     }
 
-    public func execute(_ request: URLRequest, completion callback: HTTPExecutorCallback? = nil) -> (ARTCancellable & NSObjectProtocol)? {
+    public func execute(_ request: URLRequest, completion callback: HTTPExecutorCallback? = nil) -> ARTCancellable? {
         self._requests.append(request)
 
         if let performEvent = callbackBeforeRequest {
@@ -1917,7 +1917,7 @@ extension String {
         self.queue = queue
     }
 
-    func listen(forHost host: String, callback: @escaping (Bool) -> Void) {
+    func listenForHost(_ host: String, callback: @escaping (Bool) -> Void) {
         self.host = host
         self.callback = callback
     }
