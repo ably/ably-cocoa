@@ -769,7 +769,7 @@ internal class ARTRealtimeChannelInternal: ARTChannel, APRealtimeChannel {
     
     // swift-migration: original location ARTRealtimeChannel+Private.h, line 38 and ARTRealtimeChannel.m, line 1173
     internal func getOptions_nosync() -> ARTRealtimeChannelOptions? {
-        return super.options as? ARTRealtimeChannelOptions
+        return super.options_nosync as? ARTRealtimeChannelOptions
     }
     
     // swift-migration: original location ARTRealtimeChannel.m, line 255

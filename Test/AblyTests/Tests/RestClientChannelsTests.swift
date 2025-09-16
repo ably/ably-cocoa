@@ -20,8 +20,11 @@ extension ARTRestChannels: Sequence {
 private func beAChannel(named expectedValue: String) -> Nimble.Predicate<ARTChannel> {
     return Predicate.define("be a channel with name \"\(expectedValue)\"") { actualExpression, msg -> PredicateResult in
         let actualValue = try actualExpression.evaluate()
-        let m = msg.appended(details: "\"\(actualValue?.name ?? "nil")\" instead")
-        return PredicateResult(status: PredicateStatus(bool: actualValue?.name == expectedValue), message: m)
+        guard let actualValue else {
+            return PredicateResult(bool: false, message: msg.appended(message: "nil channel instead"))
+        }
+        let m = msg.appended(details: "\"\(actualValue.name)\" instead")
+        return PredicateResult(status: PredicateStatus(bool: actualValue.name == expectedValue), message: m)
     }
 }
 
