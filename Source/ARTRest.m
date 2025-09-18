@@ -351,7 +351,10 @@ NS_ASSUME_NONNULL_END
         NSMutableURLRequest *mutableRequest = (NSMutableURLRequest *)request;
         [mutableRequest setAcceptHeader:self.defaultEncoder encoders:self.encoders];
         [mutableRequest setTimeoutInterval:_options.httpRequestTimeout];
-        [mutableRequest setValue:[ARTDefault apiVersion] forHTTPHeaderField:@"X-Ably-Version"];
+        // Only set X-Ably-Version if it's not already set (allows override for specific methods like stats)
+        if (![mutableRequest valueForHTTPHeaderField:@"X-Ably-Version"]) {
+            [mutableRequest setValue:[ARTDefault apiVersion] forHTTPHeaderField:@"X-Ably-Version"];
+        }
         [mutableRequest setValue:[self agentIdentifierWithWrapperSDKAgents:wrapperSDKAgents] forHTTPHeaderField:@"Ably-Agent"];
         if (_options.clientId && !self.auth.isTokenAuth) {
             [mutableRequest setValue:encodeBase64(_options.clientId) forHTTPHeaderField:@"X-Ably-ClientId"];
@@ -724,7 +727,10 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         return NO;
     }
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[requestUrl URLRelativeToURL:self.baseUrl]];
-    
+
+    // Override X-Ably-Version header to use protocol version 2 for stats
+    [request setValue:@"2" forHTTPHeaderField:@"X-Ably-Version"];
+
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
         return [self.encoders[response.MIMEType] decodeStats:data error:errorPtr];
     };
