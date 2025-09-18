@@ -6,6 +6,10 @@
 #import "ARTPresence.h"
 #import "ARTPresenceMessage.h"
 #import "ARTAnnotation.h"
+#import "ARTMessageVersion.h"
+#import "ARTMessageAnnotations.h"
+#import "ARTMessageVersion+Private.h"
+#import "ARTMessageAnnotations+Private.h"
 #import "ARTProtocolMessage.h"
 #import "ARTProtocolMessage+Private.h"
 #import "ARTNSDictionary+ARTDictionaryUtil.h"
@@ -26,7 +30,6 @@
 #import "ARTRest+Private.h"
 #import "ARTJsonEncoder.h"
 #import "ARTPushChannelSubscription.h"
-#import "ARTMessageOperation+Private.h"
 #import "ARTClientOptions+Private.h"
 
 #ifdef ABLY_SUPPORTS_PLUGINS
@@ -284,28 +287,42 @@
     message.id = [input artString:@"id"];
     message.name = [input artString:@"name"];
     message.action = ([input artNumber:@"action"] ?: [[NSNumber alloc] initWithInt:ARTMessageActionCreate]).integerValue;
-    message.version = [input artString:@"version"]; // TM2p
     message.serial = [input artString:@"serial"];
-    if (!message.serial && message.version && message.action == ARTMessageActionCreate) { // TM2k
-        message.serial = message.version;
-    }
     message.clientId = [input artString:@"clientId"];
     message.data = [input objectForKey:@"data"];
     message.encoding = [input artString:@"encoding"];
     message.timestamp = [input artTimestamp:@"timestamp"];
-    message.createdAt = [input artTimestamp:@"createdAt"];
-    message.updatedAt = [input artTimestamp:@"updatedAt"];
-    if (!message.createdAt && message.action == ARTMessageActionCreate) { // TM2o
-        message.createdAt = message.timestamp;
-    }
     message.connectionId = [input artString:@"connectionId"];
     message.extras = [input objectForKey:@"extras"];
-    
-    id operation = input[@"operation"];
-    if (operation && [operation isKindOfClass:[NSDictionary class]]) {
-        message.operation = [ARTMessageOperation createFromDictionary:operation];
+
+    id version = input[@"version"];
+    if ([version isKindOfClass:[NSDictionary class]]) {
+        message.version = [ARTMessageVersion createFromDictionary:version];
+    } else {
+        // TM2s
+        message.version = [[ARTMessageVersion alloc] init];
     }
-    message.summary = [input objectForKey:@"summary"];
+
+    if (!message.version.serial) { // TM2s1
+        message.version.serial = message.serial;
+    }
+
+    if (!message.version.timestamp) { // TM2s2
+        message.version.timestamp = message.timestamp;
+    }
+    
+    id annotations = input[@"annotations"];
+    if (annotations && [annotations isKindOfClass:[NSDictionary class]]) {
+        message.annotations = [ARTMessageAnnotations createFromDictionary:annotations];
+    } else {
+        // TM2u
+        message.annotations = [[ARTMessageAnnotations alloc] init];
+    }
+
+    if (!message.annotations.summary) {
+        // TM8a
+        message.annotations.summary = @{};
+    }
     
     return message;
 }
@@ -459,11 +476,11 @@
     if (message.clientId) {
         [output setObject:message.clientId forKey:@"clientId"];
     }
-    
+
     if (message.data) {
         [self writeData:message.data encoding:message.encoding toDictionary:output];
     }
-    
+
     if (message.name) {
         [output setObject:message.name forKey:@"name"];
     }
@@ -474,6 +491,29 @@
 
     if (message.connectionId) {
         [output setObject:message.connectionId forKey:@"connectionId"];
+    }
+
+    // Handle serial field
+    if (message.serial) {
+        [output setObject:message.serial forKey:@"serial"];
+    }
+
+    // Handle version field - encode as object
+    if (message.version) {
+        NSMutableDictionary *versionDict = [NSMutableDictionary dictionary];
+        [message.version writeToDictionary:versionDict];
+        if (versionDict.count > 0) {
+            [output setObject:versionDict forKey:@"version"];
+        }
+    }
+
+    // Handle annotations field
+    if (message.annotations) {
+        NSMutableDictionary *annotationsDict = [NSMutableDictionary dictionary];
+        [message.annotations writeToDictionary:annotationsDict];
+        if (annotationsDict.count > 0) {
+            [output setObject:annotationsDict forKey:@"annotations"];
+        }
     }
 
     ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: messageToDictionary %@", _rest, [_delegate formatAsString], output);

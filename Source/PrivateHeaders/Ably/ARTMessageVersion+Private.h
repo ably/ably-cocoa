@@ -1,14 +1,14 @@
 @import Foundation;
-#import <Ably/ARTMessageOperation.h>
+#import <Ably/ARTMessageVersion.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTMessageOperation ()
+@interface ARTMessageVersion ()
 
-// Serialize the Operation object
+// Serialize the MessageVersion object
 - (void)writeToDictionary:(NSMutableDictionary<NSString *, id> *)dictionary;
 
-// Deserialize an Operation object from a NSDictionary object
+// Deserialize a MessageVersion object from a NSDictionary object
 + (instancetype)createFromDictionary:(NSDictionary<NSString *, id> *)jsonObject;
 
 @end
