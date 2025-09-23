@@ -3,6 +3,8 @@
 #import <Ably/ARTBaseMessage.h>
 #import <Ably/ARTTypes.h>
 #import <Ably/ARTChannelOptions.h>
+#import <Ably/ARTMessageVersion.h>
+#import <Ably/ARTMessageAnnotations.h>
 
 /**
  * The namespace containing the different types of message actions.
@@ -39,7 +41,8 @@ NSString *_Nonnull ARTMessageActionToStr(ARTMessageAction action);
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class ARTMessageOperation;
+@class ARTMessageVersion;
+@class ARTMessageAnnotations;
 
 /**
  * Contains an individual message that is sent to, or received from, Ably.
@@ -52,33 +55,14 @@ NS_ASSUME_NONNULL_BEGIN
 /// The action type of the message, one of the `ARTMessageAction` enum values.
 @property (readwrite, nonatomic) ARTMessageAction action;
 
-/// The version of the message, lexicographically-comparable with other versions (that share the same serial).
-/// Will differ from the serial only if the message has been updated or deleted.
-@property (nullable, readwrite, nonatomic) NSString *version;
-
 /// This message's unique serial (an identifier that will be the same in all future updates of this message).
 @property (nullable, readwrite, nonatomic) NSString *serial;
 
-/// The serial of the operation that updated this message.
-@property (nullable, readwrite, nonatomic) NSString *updateSerial;
+/// The version information for the message, containing serial, timestamp, and operation metadata.
+@property (nullable, readwrite, nonatomic) ARTMessageVersion *version;
 
-/// The timestamp of the very first version of a given message.
-@property (nonatomic, nullable) NSDate *createdAt;
-
-/// The timestamp of the most recent update to this message.
-@property (nonatomic, nullable) NSDate *updatedAt;
-
-/// An opaque string that uniquely identifies some referenced message.
-@property (nonatomic, nullable) NSString *refSerial;
-
-/// An opaque string that identifies the type of this reference.
-@property (nonatomic, nullable) NSString *refType;
-
-/// An object containing some optional values for the operation performed.
-@property (nonatomic, strong, nullable) ARTMessageOperation *operation;
-
-/// An annotations summary for the message. The keys of the dict are annotation types, and the values are aggregated summaries for that annotation type.
-@property (nonatomic, copy, nullable) ARTJsonObject *summary;
+/// Contains annotations for the message, including summary data.
+@property (nullable, readwrite, nonatomic) ARTMessageAnnotations *annotations;
 
 /**
  * Construct an `ARTMessage` object with an event name and payload.

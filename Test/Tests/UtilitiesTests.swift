@@ -484,16 +484,19 @@ class UtilitiesTests: XCTestCase {
         let expectedSize = "{\"test\":\"test\"}".count + "{\"push\":{\"key\":\"value\"}}".count + clientId.count + message.name!.count
         XCTAssertEqual(message.messageSize(), expectedSize)
     }
-    
-    // TM2k
-    func test__025_Utilities__message_received_with_action_create_does_not_contain_a_serial_takes_it_from_version() throws {
+
+    /// - TM2s
+    /// - TM2s1
+    /// - TM2s2
+    func test__025_Utilities__message_should_populate_serial_timestamp_to_version() throws {
         beforeEach__Utilities__JSON_Encoder()
         var json = """
         {
             "messages": [
                 {
                     "action": 0,
-                    "version": "123"
+                    "timestamp": 12345,
+                    "serial": "123"
                 }
             ]
         }
@@ -502,16 +505,45 @@ class UtilitiesTests: XCTestCase {
         var pm = try jsonEncoder.decodeProtocolMessage(data)
         var messages = try XCTUnwrap(pm.messages)
         XCTAssert(messages[0].action == .create)
-        XCTAssert(messages[0].version == "123")
         XCTAssert(messages[0].serial == "123")
-        
-        // should only apply to creates
+        XCTAssert(messages[0].version?.serial == "123")
+        XCTAssert(messages[0].timestamp == Date(timeIntervalSince1970: 12.345))
+        XCTAssert(messages[0].version?.timestamp == Date(timeIntervalSince1970: 12.345))
+
+        // for update
+        json = """
+        {
+           "messages": [
+               {
+                   "action": 1,
+                   "timestamp": 12345,
+                   "serial": "123"
+               }
+           ]
+        }
+        """
+        data = json.data(using: .utf8)!
+        pm = try jsonEncoder.decodeProtocolMessage(data)
+        messages = try XCTUnwrap(pm.messages)
+        XCTAssert(messages[0].action == .update)
+        XCTAssert(messages[0].serial == "123")
+        XCTAssert(messages[0].version?.serial == "123")
+        XCTAssert(messages[0].timestamp == Date(timeIntervalSince1970: 12.345))
+        XCTAssert(messages[0].version?.timestamp == Date(timeIntervalSince1970: 12.345))
+
+        // partial
         json = """
         {
             "messages": [
                 {
-                    "action": 1,
-                    "version": "123"
+                    "action": 0,
+                    "timestamp": 12345,
+                    "serial": "123",
+                    "version": {
+                       "serial": "124",
+                       "clientId": "testClient",
+                       "description": "test operation"
+                    }
                 }
             ]
         }
@@ -519,46 +551,172 @@ class UtilitiesTests: XCTestCase {
         data = json.data(using: .utf8)!
         pm = try jsonEncoder.decodeProtocolMessage(data)
         messages = try XCTUnwrap(pm.messages)
-        XCTAssert(messages[0].action == .update)
-        XCTAssert(messages[0].version == "123")
-        XCTAssertNil(messages[0].serial)
+        XCTAssert(messages[0].action == .create)
+        XCTAssert(messages[0].serial == "123")
+        XCTAssert(messages[0].version?.serial == "124")
+        XCTAssert(messages[0].version?.clientId == "testClient")
+        XCTAssert(messages[0].version?.descriptionText == "test operation")
+        XCTAssert(messages[0].timestamp == Date(timeIntervalSince1970: 12.345))
+        XCTAssert(messages[0].version?.timestamp == Date(timeIntervalSince1970: 12.345))
     }
     
-    // TM2o
-    func test__027_Utilities__message_received_with_action_create_does_not_contain_createdAt() throws {
+    /// - TM8a
+    /// - TM2u
+    func test__026_Utilities__message_should_always_populate_annotations_and_summary_when_decoding() throws {
         beforeEach__Utilities__JSON_Encoder()
-        var json = """
+
+        // Test with minimal message - no annotations field
+        let json1 = """
         {
             "messages": [
                 {
                     "action": 0,
-                    "timestamp": "1234512345",
+                    "serial": "123"
                 }
             ]
         }
         """
-        var data = json.data(using: .utf8)!
-        var pm = try jsonEncoder.decodeProtocolMessage(data)
-        var messages = try XCTUnwrap(pm.messages)
-        XCTAssert(messages[0].action == .create)
-        XCTAssertNotNil(messages[0].createdAt)
-        XCTAssertEqual(messages[0].createdAt, messages[0].timestamp)
-        
-        // should only apply to creates
-        json = """
+        let data1 = json1.data(using: .utf8)!
+        let pm1 = try jsonEncoder.decodeProtocolMessage(data1)
+        let messages1 = try XCTUnwrap(pm1.messages)
+        let message1 = messages1[0]
+
+        // Verify annotations are always populated
+        XCTAssertNotNil(message1.annotations, "message.annotations should always be populated")
+        XCTAssertNotNil(message1.annotations?.summary, "message.annotations.summary should always be populated")
+
+        // Test with empty annotations object
+        let json2 = """
         {
             "messages": [
                 {
-                    "action": 1,
-                    "timestamp": "1234512345",
+                    "action": 0,
+                    "serial": "456",
+                    "annotations": {}
                 }
             ]
         }
         """
-        data = json.data(using: .utf8)!
-        pm = try jsonEncoder.decodeProtocolMessage(data)
-        messages = try XCTUnwrap(pm.messages)
-        XCTAssert(messages[0].action == .update)
-        XCTAssertNil(messages[0].createdAt)
+        let data2 = json2.data(using: .utf8)!
+        let pm2 = try jsonEncoder.decodeProtocolMessage(data2)
+        let messages2 = try XCTUnwrap(pm2.messages)
+        let message2 = messages2[0]
+
+        // Verify annotations are always populated even with empty annotations object
+        XCTAssertNotNil(message2.annotations, "message.annotations should always be populated")
+        XCTAssertNotNil(message2.annotations?.summary, "message.annotations.summary should always be populated when not provided")
+
+        // Test with annotations containing summary
+        let json3 = """
+        {
+            "messages": [
+                {
+                    "action": 0,
+                    "serial": "789",
+                    "annotations": {
+                        "summary": {"count": 5, "type": "test"}
+                    }
+                }
+            ]
+        }
+        """
+        let data3 = json3.data(using: .utf8)!
+        let pm3 = try jsonEncoder.decodeProtocolMessage(data3)
+        let messages3 = try XCTUnwrap(pm3.messages)
+        let message3 = messages3[0]
+
+        // Verify annotations and summary are properly decoded
+        XCTAssertNotNil(message3.annotations, "message.annotations should be populated")
+        XCTAssertNotNil(message3.annotations?.summary, "message.annotations.summary should be populated")
+        if let summary = message3.annotations?.summary as? [String: Any] {
+            XCTAssertEqual(summary["count"] as? Int, 5)
+            XCTAssertEqual(summary["type"] as? String, "test")
+        } else {
+            XCTFail("summary should be a dictionary with expected values")
+        }
+    }
+
+    /// TM2s
+    func test__027_Utilities__message_received_with_new_version_structure() throws {
+        beforeEach__Utilities__JSON_Encoder()
+        let json = """
+        {
+            "messages": [
+                {
+                    "action": 0,
+                    "serial": "123",
+                    "timestamp": 1234512340,
+                    "version": {
+                        "serial": "124",
+                        "timestamp": 1234512345,
+                        "clientId": "testClient",
+                        "description": "test operation",
+                        "metadata": {"key": "value"}
+                    }
+                }
+            ]
+        }
+        """
+        let data = json.data(using: .utf8)!
+        let pm = try jsonEncoder.decodeProtocolMessage(data)
+        let messages = try XCTUnwrap(pm.messages)
+        let message = messages[0]
+
+        XCTAssert(message.action == .create)
+        XCTAssertNotNil(message.version)
+        XCTAssert(message.serial == "123")
+        XCTAssert(message.timestamp == Date(timeIntervalSince1970: 1234512.340))
+        XCTAssert(message.version?.serial == "124")
+        XCTAssert(message.version?.timestamp == Date(timeIntervalSince1970: 1234512.345))
+        XCTAssert(message.version?.clientId == "testClient")
+        XCTAssert(message.version?.descriptionText == "test operation")
+        XCTAssertNotNil(message.version?.metadata)
+        if let metadata = message.version?.metadata as? [String: Any] {
+            XCTAssertEqual(metadata["key"] as? String, "value")
+        } else {
+            XCTFail("metadata should be a dictionary with expected values")
+        }
+        XCTAssertNotNil(message.annotations)
+        XCTAssertNotNil(message.annotations?.summary)
+    }
+
+    /// TM2s
+    /// TM8a
+    /// TM2u
+    func test__028_Utilities__message_encoding_with_version_and_annotations() throws {
+        beforeEach__Utilities__JSON_Encoder()
+
+        // Create a message with version and annotations
+        let message = ARTMessage()
+        message.action = .create
+        message.serial = "123"
+        message.timestamp = Date(timeIntervalSince1970: 1234512340)
+
+        // Create version with all fields
+        let version = ARTMessageVersion()
+        version.serial = "124"
+        version.timestamp = Date(timeIntervalSince1970: 1234512345)
+        version.clientId = "testClient"
+        version.descriptionText = "test operation"
+        version.metadata = ["key": "value"]
+        message.version = version
+
+        // Create annotations with summary
+        let annotations = ARTMessageAnnotations()
+        annotations.summary = ["count": 5, "type": "test"]
+        message.annotations = annotations
+
+        // Encode the message
+        let encodedDict = jsonEncoder.message(toDictionary: message)
+        let data = try JSONSerialization.data(withJSONObject: encodedDict, options: [])
+        let jsonObject = try JSONSerialization.jsonObject(with: data, options: []) as! [String: Any]
+
+        XCTAssertEqual(jsonObject["serial"] as? String, "123")
+        let encodedVersion = jsonObject["version"] as! [String: Any]
+        XCTAssertEqual(encodedVersion["serial"] as? String, "124")
+        XCTAssertEqual(encodedVersion["clientId"] as? String, "testClient")
+        XCTAssertEqual(encodedVersion["description"] as? String, "test operation")
+        let encodedMetadata = encodedVersion["metadata"] as! [String: Any]
+        XCTAssertEqual(encodedMetadata["key"] as? String, "value")
     }
 }

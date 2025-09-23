@@ -32,14 +32,8 @@
     [description appendFormat:@" name: %@\n", self.name];
     [description appendFormat:@" action: %@\n", ARTMessageActionToStr(self.action)];
     [description appendFormat:@" serial: %@\n", self.serial];
-    [description appendFormat:@" updateSerial: %@\n", self.updateSerial];
     [description appendFormat:@" version: %@\n", self.version];
-    [description appendFormat:@" createdAt: %@\n", self.createdAt];
-    [description appendFormat:@" updatedAt: %@\n", self.updatedAt];
-    [description appendFormat:@" refType: %@\n", self.refType];
-    [description appendFormat:@" refSerial: %@\n", self.refSerial];
-    [description appendFormat:@" operation: %@\n", self.operation];
-    [description appendFormat:@" summary: %@\n", self.summary];
+    [description appendFormat:@" annotations: %@\n", self.annotations];
     [description appendFormat:@"}"];
     return description;
 }
@@ -49,14 +43,8 @@
     message.name = self.name;
     message.action = self.action;
     message.serial = self.serial;
-    message.updateSerial = self.updateSerial;
     message.version = self.version;
-    message.createdAt = self.createdAt;
-    message.updatedAt = self.updatedAt;
-    message.operation = self.operation;
-    message.refType = self.refType;
-    message.refSerial = self.refSerial;
-    message.summary = self.summary;
+    message.annotations = self.annotations;
     return message;
 }
 

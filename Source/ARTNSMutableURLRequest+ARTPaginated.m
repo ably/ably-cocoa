@@ -7,7 +7,12 @@
         return nil;
     }
     NSURL *url = [NSURL URLWithString:path relativeToURL:request.URL];
-    return [NSMutableURLRequest requestWithURL:url];
+    NSMutableURLRequest *newRequest = [NSMutableURLRequest requestWithURL:url];
+
+    // Copy headers from the original request to preserve custom headers (like X-Ably-Version)
+    [newRequest setAllHTTPHeaderFields:[request allHTTPHeaderFields]];
+
+    return newRequest;
 }
 
 @end

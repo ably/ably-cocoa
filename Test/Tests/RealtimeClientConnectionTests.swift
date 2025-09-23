@@ -341,7 +341,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
                 // This test should not directly validate version against ARTDefault.version(), as
                 // ultimately the version header has been derived from that value.
-                expect(webSocketTransport.websocketURL?.query).to(haveParam("v", withValue: "2"))
+                expect(webSocketTransport.websocketURL?.query).to(haveParam("v", withValue: "4"))
 
                 done()
             }

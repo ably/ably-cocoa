@@ -162,7 +162,7 @@ class RestClientTests: XCTestCase {
 
                 // This test should not directly validate version against ARTDefault.version(), as
                 // ultimately the version header has been derived from that value.
-                XCTAssertEqual(version, "2")
+                XCTAssertEqual(version, "4")
 
                 done()
             }
@@ -1713,7 +1713,7 @@ class RestClientTests: XCTestCase {
 
                 // This test should not directly validate version against ARTDefault.version(), as
                 // ultimately the version header has been derived from that value.
-                XCTAssertEqual(headerAblyVersion, "2")
+                XCTAssertEqual(headerAblyVersion, "4")
 
                 done()
             }
