@@ -148,11 +148,6 @@ extern const ARTPluginName ARTPluginNameLiveObjects;
 @property (nonatomic) BOOL fallbackHostsUseDefault DEPRECATED_MSG_ATTRIBUTE("Future library releases will ignore any supplied value.");
 
 /**
- * DEPRECATED: this property is deprecated and will be removed in a future version. Defaults to a string value for an Ably error reporting DSN (Data Source Name), which is typically a URL in the format `https://[KEY]:[SECRET]@errors.ably.io/[ID]`. When set to `nil` exception reporting is disabled.
- */
-@property (readwrite, nonatomic, nullable) NSString *logExceptionReportingUrl;
-
-/**
  The queue to which all calls to user-provided callbacks will be dispatched
  asynchronously. It will be used as target queue for an internal, serial queue.
 
