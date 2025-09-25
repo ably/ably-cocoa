@@ -65,7 +65,7 @@ struct ObjectCreationHelpersTests {
             #expect(deserializedInitialValue == [
                 "map": [
                     // RTO11f4a
-                    "semantics": .number(ObjectsMapSemantics.lww.rawValue as NSNumber),
+                    "semantics": .number(Double(ObjectsMapSemantics.lww.rawValue)),
                     "entries": [
                         // RTO11f4c1a
                         "mapRef": [

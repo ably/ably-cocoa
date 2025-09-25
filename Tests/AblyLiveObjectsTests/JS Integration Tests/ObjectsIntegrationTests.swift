@@ -131,6 +131,9 @@ private let objectsFixturesChannel = "objects_fixtures"
 
 // MARK: - Top-level fixtures (ported from JS objects.test.js)
 
+// The value of JS's `Number.MAX_SAFE_INTEGER` — the maximum integer that a `Double` can represent exactly.
+private let maxSafeInteger = Double((1 << 53) - 1)
+
 // Primitive key data fixture used across multiple test scenarios
 // liveMapValue field contains the value as LiveMapValue for use in map operations
 private let primitiveKeyData: [(key: String, data: [String: JSONValue], liveMapValue: LiveMapValue)] = [
@@ -156,13 +159,13 @@ private let primitiveKeyData: [(key: String, data: [String: JSONValue], liveMapV
     ),
     (
         key: "maxSafeIntegerKey",
-        data: ["number": .number(.init(value: Int.max))],
-        liveMapValue: .number(Double(Int.max))
+        data: ["number": .number(maxSafeInteger)],
+        liveMapValue: .number(maxSafeInteger)
     ),
     (
         key: "negativeMaxSafeIntegerKey",
-        data: ["number": .number(.init(value: -Int.max))],
-        liveMapValue: .number(-Double(Int.max))
+        data: ["number": .number(-maxSafeInteger)],
+        liveMapValue: .number(-maxSafeInteger)
     ),
     (
         key: "numberKey",
@@ -854,7 +857,7 @@ private struct ObjectsIntegrationTests {
                                         let expectedData = Data(base64Encoded: bytesString)
                                         #expect(try mapObj.get(key: key)?.dataValue == expectedData, "Check map \"\(mapKey)\" has correct value for \"\(key)\" key")
                                     } else if let numberValue = data["number"]?.numberValue {
-                                        #expect(try mapObj.get(key: key)?.numberValue == numberValue.doubleValue, "Check map \"\(mapKey)\" has correct value for \"\(key)\" key")
+                                        #expect(try mapObj.get(key: key)?.numberValue == numberValue, "Check map \"\(mapKey)\" has correct value for \"\(key)\" key")
                                     } else if let stringValue = data["string"]?.stringValue {
                                         #expect(try mapObj.get(key: key)?.stringValue == stringValue, "Check map \"\(mapKey)\" has correct value for \"\(key)\" key")
                                     } else if let boolValue = data["boolean"]?.boolValue {
@@ -1070,7 +1073,7 @@ private struct ObjectsIntegrationTests {
                                 let expectedData = Data(base64Encoded: bytesString)
                                 #expect(try mapValue.get(key: "value")?.dataValue == expectedData, "Check root has correct value for \"\(keyData.key)\" key after MAP_SET op")
                             } else if let numberValue = keyData.data["number"]?.numberValue {
-                                #expect(try mapValue.get(key: "value")?.numberValue == numberValue.doubleValue, "Check root has correct value for \"\(keyData.key)\" key after MAP_SET op")
+                                #expect(try mapValue.get(key: "value")?.numberValue == numberValue, "Check root has correct value for \"\(keyData.key)\" key after MAP_SET op")
                             } else if let stringValue = keyData.data["string"]?.stringValue {
                                 #expect(try mapValue.get(key: "value")?.stringValue == stringValue, "Check root has correct value for \"\(keyData.key)\" key after MAP_SET op")
                             } else if let boolValue = keyData.data["boolean"]?.boolValue {
@@ -2047,7 +2050,7 @@ private struct ObjectsIntegrationTests {
                                     }
                                 } else if let numberValue = keyData.data["number"] {
                                     if case let .number(expectedNumber) = numberValue {
-                                        #expect(try #require(root.get(key: keyData.key)?.numberValue) == expectedNumber.doubleValue, "Check root has correct value for \"\(keyData.key)\" key after OBJECT_SYNC has ended and buffered operations are applied")
+                                        #expect(try #require(root.get(key: keyData.key)?.numberValue) == expectedNumber, "Check root has correct value for \"\(keyData.key)\" key after OBJECT_SYNC has ended and buffered operations are applied")
                                     }
                                 } else if let boolValue = keyData.data["boolean"] {
                                     if case let .bool(expectedBool) = boolValue {
@@ -2347,7 +2350,7 @@ private struct ObjectsIntegrationTests {
                                     }
                                 } else if let numberValue = keyData.data["number"] {
                                     if case let .number(expectedNumber) = numberValue {
-                                        #expect(try #require(root.get(key: keyData.key)?.numberValue) == expectedNumber.doubleValue, "Check root has correct value for \"\(keyData.key)\" key after OBJECT_SYNC has ended and buffered operations are applied")
+                                        #expect(try #require(root.get(key: keyData.key)?.numberValue) == expectedNumber, "Check root has correct value for \"\(keyData.key)\" key after OBJECT_SYNC has ended and buffered operations are applied")
                                     }
                                 } else if let boolValue = keyData.data["boolean"] {
                                     if case let .bool(expectedBool) = boolValue {
