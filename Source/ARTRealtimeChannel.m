@@ -1001,6 +1001,17 @@ dispatch_sync(_queue, ^{
     [self attachAfterChecks];
 }
 
+- (BOOL)shouldUseAttachResume {
+    // Check if channel options explicitly override attach resume behavior
+    NSNumber *channelAttachResume = self.options_nosync.attachResume;
+    if (channelAttachResume != nil) {
+        return [channelAttachResume boolValue];
+    }
+    
+    // Use default behavior based on current channel state
+    return self.attachResume;
+}
+
 - (void)attachAfterChecks {
     ARTProtocolMessage *attachMessage = [[ARTProtocolMessage alloc] init];
     attachMessage.action = ARTProtocolMessageAttach;
@@ -1009,7 +1020,7 @@ dispatch_sync(_queue, ^{
     attachMessage.params = self.options_nosync.params;
     attachMessage.flags = self.options_nosync.modes;
 
-    if (self.attachResume) {
+    if ([self shouldUseAttachResume]) {
         attachMessage.flags = attachMessage.flags | ARTProtocolMessageFlagAttachResume;
     }
 

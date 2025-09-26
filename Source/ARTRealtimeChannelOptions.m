@@ -5,6 +5,7 @@
     NSStringDictionary *_params;
     ARTChannelMode _modes;
     BOOL _attachOnSubscribe;
+    NSNumber *_attachResume;
 }
 
 - (instancetype)init {
@@ -27,6 +28,7 @@
     copied->_params = _params;
     copied->_modes = _modes;
     copied->_attachOnSubscribe = _attachOnSubscribe;
+    copied->_attachResume = _attachResume;
 
     return copied;
 }
@@ -68,6 +70,19 @@
                                      userInfo:nil];
     }
     _attachOnSubscribe = value;
+}
+
+- (NSNumber *)attachResume {
+    return _attachResume;
+}
+
+- (void)setAttachResume:(NSNumber *)value {
+    if (self.isFrozen) {
+        @throw [NSException exceptionWithName:NSObjectInaccessibleException
+                                       reason:[NSString stringWithFormat:@"%@: You can't change options after you've passed it to receiver.", self.class]
+                                     userInfo:nil];
+    }
+    _attachResume = value;
 }
 
 @end
