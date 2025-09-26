@@ -1,5 +1,15 @@
 # Change Log
 
+## [1.2.45](https://github.com/ably/ably-cocoa/tree/1.2.45)
+
+## What's Changed
+
+* [ECO-5377] Adopt new plugin APIs with improved threading by @lawrence-forooghian in https://github.com/ably/ably-cocoa/pull/2100
+* Add additional user info param to `ARTErrorInfo` creation by @lawrence-forooghian in https://github.com/ably/ably-cocoa/pull/2101
+* Implement a nested message structure based on protocol v4 by @ttypic in https://github.com/ably/ably-cocoa/pull/2112
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.44...1.2.45
+
 ## [1.2.44](https://github.com/ably/ably-cocoa/tree/1.2.44)
 
 ## What's Changed
