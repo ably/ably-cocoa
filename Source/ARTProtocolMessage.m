@@ -193,12 +193,8 @@
     return _connectionDetails;
 }
 
-+ (ARTChannelMode)allChannelModes {
-    return ARTChannelModePresence | ARTChannelModePublish | ARTChannelModeSubscribe | ARTChannelModePresenceSubscribe | ARTChannelModeAnnotationPublish | ARTChannelModeAnnotationSubscribe;
-}
-
 - (ARTChannelMode)channelModes {
-    return self.flags & [self.class allChannelModes];
+    return self.flags & 0xFFFFFF00; // remove flags that are not modes (less then 1UL << 16) per TB2d
 }
 
 @end

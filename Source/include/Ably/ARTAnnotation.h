@@ -74,9 +74,40 @@ NS_SWIFT_SENDABLE
                       type:(NSString *)type
                     extras:(nullable id<ARTJsonCompatible>)extras;
 
-/// :nodoc:
-- (NSInteger)annotationSize;
++ (instancetype)annotationForMessageSerial:(NSString *)messageSerial
+                                      type:(NSString *)type;
 
++ (instancetype)annotationForMessageSerial:(NSString *)messageSerial
+                                      type:(NSString *)type
+                                    action:(ARTAnnotationAction)action;
+
++ (instancetype)annotationForMessageSerial:(NSString *)messageSerial
+                                      type:(NSString *)type
+                                    action:(ARTAnnotationAction)action
+                                  clientId:(nullable NSString *)clientId;
+
++ (instancetype)annotationForMessageSerial:(NSString *)messageSerial
+                                      type:(NSString *)type
+                                    action:(ARTAnnotationAction)action
+                                  clientId:(nullable NSString *)clientId
+                                      name:(nullable NSString *)name
+                                      data:(nullable id)data;
+
++ (instancetype)annotationForMessageSerial:(NSString *)messageSerial
+                                      type:(NSString *)type
+                                    action:(ARTAnnotationAction)action
+                                  clientId:(nullable NSString *)clientId
+                                      name:(nullable NSString *)name
+                                     count:(NSUInteger)count;
+
++ (instancetype)annotationForMessageSerial:(NSString *)messageSerial
+                                      type:(NSString *)type
+                                    action:(ARTAnnotationAction)action
+                                  clientId:(nullable NSString *)clientId
+                                      name:(nullable NSString *)name
+                                     count:(NSUInteger)count
+                                      data:(nullable id)data
+                                    extras:(nullable id<ARTJsonCompatible>)extras;
 @end
 
 #pragma mark - ARTEvent

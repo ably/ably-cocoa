@@ -51,21 +51,15 @@ class RealtimeAnnotationsTests: XCTestCase {
                     }
 
                     // When message is received, create and publish annotation via realtime
-                    let annotation = ARTAnnotation(
-                        id: nil,
+                    let annotation = ARTAnnotation.init(
+                        forMessageSerial: messageSerial,
+                        type: "reaction:multiple.v1",
                         action: .create,
                         clientId: nil,
                         name: "👍",
-                        count: NSNumber(value: 10),
-                        data: nil,
-                        encoding: nil,
-                        timestamp: Date(),
-                        serial: "",
-                        messageSerial: messageSerial,
-                        type: "reaction:multiple.v1",
-                        extras: nil
+                        count: 10
                     )
-                    
+
                     // RTAN1
                     realtimeChannel.annotations.publish(for: message, annotation: annotation) { error in
                         XCTAssertNil(error)

@@ -134,6 +134,119 @@
     return self.id == nil || [self.id isEqualToString:@""];
 }
 
++ (instancetype)annotationForMessageSerial:(NSString *)messageSerial
+                                      type:(NSString *)type {
+    return [[ARTAnnotation alloc] initWithId:nil
+                                      action:ARTAnnotationCreate
+                                    clientId:nil
+                                        name:nil
+                                       count:nil
+                                        data:nil
+                                    encoding:nil
+                                   timestamp:NSDate.date
+                                      serial:@""
+                               messageSerial:messageSerial
+                                        type:type
+                                      extras:nil];
+}
+
++ (instancetype)annotationForMessageSerial:(NSString *)messageSerial
+                                      type:(NSString *)type
+                                    action:(ARTAnnotationAction)action {
+    return [[ARTAnnotation alloc] initWithId:nil
+                                      action:action
+                                    clientId:nil
+                                        name:nil
+                                       count:nil
+                                        data:nil
+                                    encoding:nil
+                                   timestamp:NSDate.date
+                                      serial:@""
+                               messageSerial:messageSerial
+                                        type:type
+                                      extras:nil];
+}
+
++ (instancetype)annotationForMessageSerial:(NSString *)messageSerial
+                                      type:(NSString *)type
+                                    action:(ARTAnnotationAction)action
+                                  clientId:(NSString *)clientId {
+    return [[ARTAnnotation alloc] initWithId:nil
+                                      action:action
+                                    clientId:clientId
+                                        name:nil
+                                       count:nil
+                                        data:nil
+                                    encoding:nil
+                                   timestamp:NSDate.date
+                                      serial:@""
+                               messageSerial:messageSerial
+                                        type:type
+                                      extras:nil];
+}
+
++ (instancetype)annotationForMessageSerial:(NSString *)messageSerial
+                                      type:(NSString *)type
+                                    action:(ARTAnnotationAction)action
+                                  clientId:(NSString *)clientId
+                                      name:(NSString *)name
+                                      data:(id)data {
+    return [[ARTAnnotation alloc] initWithId:nil
+                                      action:action
+                                    clientId:clientId
+                                        name:name
+                                       count:nil
+                                        data:data
+                                    encoding:nil
+                                   timestamp:NSDate.date
+                                      serial:@""
+                               messageSerial:messageSerial
+                                        type:type
+                                      extras:nil];
+}
+
++ (instancetype)annotationForMessageSerial:(NSString *)messageSerial
+                                      type:(NSString *)type
+                                    action:(ARTAnnotationAction)action
+                                  clientId:(NSString *)clientId
+                                      name:(NSString *)name
+                                     count:(NSUInteger)count {
+    return [[ARTAnnotation alloc] initWithId:nil
+                                      action:action
+                                    clientId:clientId
+                                        name:name
+                                       count:@(count)
+                                        data:nil
+                                    encoding:nil
+                                   timestamp:NSDate.date
+                                      serial:@""
+                               messageSerial:messageSerial
+                                        type:type
+                                      extras:nil];
+}
+
++ (instancetype)annotationForMessageSerial:(NSString *)messageSerial
+                                      type:(NSString *)type
+                                    action:(ARTAnnotationAction)action
+                                  clientId:(nullable NSString *)clientId
+                                      name:(nullable NSString *)name
+                                     count:(NSUInteger)count
+                                      data:(nullable id)data
+                                    extras:(nullable id<ARTJsonCompatible>)extras {
+    return [[ARTAnnotation alloc] initWithId:nil
+                                      action:action
+                                    clientId:clientId
+                                        name:name
+                                       count:@(count)
+                                        data:data
+                                    encoding:nil
+                                   timestamp:NSDate.date
+                                      serial:@""
+                               messageSerial:messageSerial
+                                        type:type
+                                      extras:extras];
+}
+
 @end
 
 NSString *ARTAnnotationActionToStr(ARTAnnotationAction action) {
