@@ -9,12 +9,13 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  This object is used for providing parameters into `ARTRestAnnotations`'s methods with paginated results.
  */
+NS_SWIFT_SENDABLE
 @interface ARTAnnotationsQuery : NSObject
 
 /**
  * An upper limit on the number of annotations returned.
  */
-@property (nonatomic, readwrite) NSUInteger limit;
+@property (nonatomic, readonly) NSUInteger limit;
 
 /// :nodoc:
 - (instancetype)initWithLimit:(NSUInteger)limit;

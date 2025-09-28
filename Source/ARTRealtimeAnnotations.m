@@ -139,7 +139,7 @@
                                               type:annotation.type
                                             extras:annotation.extras];
 dispatch_sync(_queue, ^{
-    if (!self.realtime.connection.isActive_nosync) {
+    if (!self.realtime.connection.isActive_nosync) { // RTAN1b
         if (callback) {
             callback(self.realtime.connection.error_nosync);
         }
@@ -173,7 +173,7 @@ dispatch_sync(_queue, ^{
     pm.channel = _channel.name;
     pm.annotations = @[annotationToPublish];
     
-    switch (_channel.state_nosync) {
+    switch (_channel.state_nosync) { // RTAN1b
         case ARTRealtimeChannelSuspended:
         case ARTRealtimeChannelFailed: {
             if (callback) {
@@ -220,14 +220,17 @@ dispatch_sync(_queue, ^{
         return;
     }
     if (attachOnSubscribe) {
+        NSString *warningTemplate = @"R:%p C:%p (%@) You are trying to add an annotation listener, but you haven't requested the annotation_subscribe channel mode in ChannelOptions, so this won't do anything (we only deliver annotations to clients who have explicitly requested them).";
         if (self->_channel.shouldAttach) { // RTP6c
             [self->_channel _attach:onAttach];
+            [self->_channel.internalEventEmitter once:^(ARTChannelStateChange *stateChange) {
+                if (stateChange.current == ARTRealtimeChannelAttached && !self->_channel.isAnnotationSubscribeGranted) { // RTAN4e
+                    ARTLogWarn(self.logger, warningTemplate, self->_realtime, self->_channel, self->_channel.name);
+                }
+            }];
+        } else if (self->_channel.state_nosync == ARTRealtimeChannelAttached && !self->_channel.isAnnotationSubscribeGranted) {
+            ARTLogWarn(self.logger, warningTemplate, self->_realtime, self->_channel, self->_channel.name);
         }
-        [self->_channel.internalEventEmitter once:^(ARTChannelStateChange *stateChange) {
-            if (stateChange.current == ARTRealtimeChannelAttached && !self->_channel.isAnnotationSubscribeGranted) { // RTAN4e
-                ARTLogWarn(self.logger, @"R:%p C:%p (%@) You are trying to add an annotation listener, but you haven't requested the annotation_subscribe channel mode in ChannelOptions, so this won't do anything (we only deliver annotations to clients who have explicitly requested them).", self->_realtime, self->_channel, self->_channel.name);
-            }
-        }];
     }
     listener = type == nil ? [_eventEmitter on:cb] : [_eventEmitter on:[ARTEvent newWithAnnotationType:type] callback:cb];
     ARTLogVerbose(self.logger, @"R:%p C:%p (%@) annotation subscribe to '%@' action(s)", self->_realtime, self->_channel, self->_channel.name, type == nil ? @"all" : type);

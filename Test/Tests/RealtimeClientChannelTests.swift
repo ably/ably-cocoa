@@ -4988,14 +4988,18 @@ class RealtimeClientChannelTests: XCTestCase {
         let protocolMessage = ARTProtocolMessage()
         protocolMessage.action = ARTProtocolMessageAction.attached
         protocolMessage.channel = "test"
-        protocolMessage.flags = Int64(ARTProtocolMessageFlag.hasBacklog.rawValue | ARTProtocolMessageFlag.resumed.rawValue | ARTChannelMode.publish.rawValue | ARTChannelMode.subscribe.rawValue) // adding flags which are not modes
+        // adding flags which are not modes
+        protocolMessage.flags = Int64(
+            ARTProtocolMessageFlag.hasBacklog.rawValue | // not mode
+            ARTProtocolMessageFlag.resumed.rawValue | // not mode
+            ARTChannelMode.publish.rawValue | // mode
+            ARTChannelMode.subscribe.rawValue // mode
+        )
         
         // When: setAttached is called with the protocol message
         channel.internal.setAttached(protocolMessage)
         
-        // Then: The modes property should be set from the protocol message and contain only channel modes flags
-        let expectedModes = ARTChannelMode.publish.rawValue | ARTChannelMode.subscribe.rawValue
-        XCTAssertEqual(channel.modes, ARTChannelMode(rawValue: expectedModes))
-        XCTAssertNotEqual(channel.modes, ARTChannelMode(rawValue: UInt(protocolMessage.flags)))
+        // Then: The modes property should be set from the protocol message and contain only channel modes
+        XCTAssertEqual(channel.modes, [.publish, .subscribe])
     }
 }

@@ -27,9 +27,10 @@
 }
 
 - (instancetype)initWithLimit:(NSUInteger)limit {
+    NSAssert(limit > 0, @"Limit should be greater than 0.");
     self = [super init];
     if (self) {
-        _limit = limit > 0 ? limit : 100;
+        _limit = limit;
     }
     return self;
 }
