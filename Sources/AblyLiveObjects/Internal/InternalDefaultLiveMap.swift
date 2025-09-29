@@ -150,66 +150,50 @@ internal final class InternalDefaultLiveMap: Sendable {
     }
 
     internal func set(key: String, value: InternalLiveMapValue, coreSDK: CoreSDK) async throws(ARTErrorInfo) {
-        do throws(InternalError) {
-            let objectMessage = try mutableStateMutex.withSync { mutableState throws(InternalError) in
-                // RTLM20c
-                do throws(ARTErrorInfo) {
-                    try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: "LiveMap.set")
-                } catch {
-                    throw error.toInternalError()
-                }
+        let objectMessage = try mutableStateMutex.withSync { mutableState throws(ARTErrorInfo) in
+            // RTLM20c
+            try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: "LiveMap.set")
 
-                return OutboundObjectMessage(
-                    operation: .init(
-                        // RTLM20e2
-                        action: .known(.mapSet),
-                        // RTLM20e3
-                        objectId: mutableState.liveObjectMutableState.objectID,
-                        mapOp: .init(
-                            // RTLM20e4
-                            key: key,
-                            // RTLM20e5
-                            data: value.nosync_toObjectData,
-                        ),
+            return OutboundObjectMessage(
+                operation: .init(
+                    // RTLM20e2
+                    action: .known(.mapSet),
+                    // RTLM20e3
+                    objectId: mutableState.liveObjectMutableState.objectID,
+                    mapOp: .init(
+                        // RTLM20e4
+                        key: key,
+                        // RTLM20e5
+                        data: value.nosync_toObjectData,
                     ),
-                )
-            }
-
-            try await coreSDK.publish(objectMessages: [objectMessage])
-        } catch {
-            throw error.toARTErrorInfo()
+                ),
+            )
         }
+
+        try await coreSDK.publish(objectMessages: [objectMessage])
     }
 
     internal func remove(key: String, coreSDK: CoreSDK) async throws(ARTErrorInfo) {
-        do throws(InternalError) {
-            let objectMessage = try mutableStateMutex.withSync { mutableState throws(InternalError) in
-                // RTLM21c
-                do throws(ARTErrorInfo) {
-                    try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: "LiveMap.remove")
-                } catch {
-                    throw error.toInternalError()
-                }
+        let objectMessage = try mutableStateMutex.withSync { mutableState throws(ARTErrorInfo) in
+            // RTLM21c
+            try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: "LiveMap.remove")
 
-                return OutboundObjectMessage(
-                    operation: .init(
-                        // RTLM21e2
-                        action: .known(.mapRemove),
-                        // RTLM21e3
-                        objectId: mutableState.liveObjectMutableState.objectID,
-                        mapOp: .init(
-                            // RTLM21e4
-                            key: key,
-                        ),
+            return OutboundObjectMessage(
+                operation: .init(
+                    // RTLM21e2
+                    action: .known(.mapRemove),
+                    // RTLM21e3
+                    objectId: mutableState.liveObjectMutableState.objectID,
+                    mapOp: .init(
+                        // RTLM21e4
+                        key: key,
                     ),
-                )
-            }
-
-            // RTLM21f
-            try await coreSDK.publish(objectMessages: [objectMessage])
-        } catch {
-            throw error.toARTErrorInfo()
+                ),
+            )
         }
+
+        // RTLM21f
+        try await coreSDK.publish(objectMessages: [objectMessage])
     }
 
     @discardableResult

@@ -9,6 +9,7 @@ internal enum LiveObjectsError {
     case objectsOperationFailedInvalidChannelState(operationDescription: String, channelState: _AblyPluginSupportPrivate.RealtimeChannelState)
     case counterInitialValueInvalid(value: Double)
     case counterIncrementAmountInvalid(amount: Double)
+    case other(Error)
 
     /// The ``ARTErrorInfo/code`` that should be returned for this error.
     internal var code: ARTErrorCode {
@@ -18,6 +19,8 @@ internal enum LiveObjectsError {
         case .counterInitialValueInvalid, .counterIncrementAmountInvalid:
             // RTO12f1, RTLC12e1
             .invalidParameterValue
+        case .other:
+            .badRequest
         }
     }
 
@@ -26,7 +29,8 @@ internal enum LiveObjectsError {
         switch self {
         case .objectsOperationFailedInvalidChannelState,
              .counterInitialValueInvalid,
-             .counterIncrementAmountInvalid:
+             .counterIncrementAmountInvalid,
+             .other:
             400
         }
     }
@@ -40,6 +44,8 @@ internal enum LiveObjectsError {
             "Invalid counter initial value (must be a finite number): \(value)"
         case let .counterIncrementAmountInvalid(amount: amount):
             "Invalid counter increment amount (must be a finite number): \(amount)"
+        case let .other(error):
+            "\(error)"
         }
     }
 
@@ -48,6 +54,91 @@ internal enum LiveObjectsError {
             withCode: Int(code.rawValue),
             status: statusCode,
             message: localizedDescription,
+            additionalUserInfo: [liveObjectsErrorUserInfoKey: self],
         )
+    }
+}
+
+// MARK: - ConvertibleToLiveObjectsError Protocol
+
+/// Protocol for types that can be converted to a `LiveObjectsError`.
+///
+/// We deliberately do not conform `ARTErrorInfo` (or its parent types `NSError` or `Error`) to this protocol, so that we do not accidentally end up flattening an `ARTErrorInfo` into the `.other` `LiveObjectsError` case; if we have an `ARTErrorInfo` then it should just be thrown directly.
+///
+/// If you need to convert a non-specific `NSError` or `Error` to a `LiveObjects` error, then do so explicitly using `LiveObjectsError.other`.
+internal protocol ConvertibleToLiveObjectsError {
+    func toLiveObjectsError() -> LiveObjectsError
+}
+
+internal extension ConvertibleToLiveObjectsError {
+    /// Convenience method to convert directly to an `ARTErrorInfo`.
+    func toARTErrorInfo() -> ARTErrorInfo {
+        toLiveObjectsError().toARTErrorInfo()
+    }
+}
+
+// MARK: - Conversion Extensions
+
+extension DecodingError: ConvertibleToLiveObjectsError {
+    internal func toLiveObjectsError() -> LiveObjectsError {
+        .other(self)
+    }
+}
+
+extension WireValueDecodingError: ConvertibleToLiveObjectsError {
+    internal func toLiveObjectsError() -> LiveObjectsError {
+        .other(self)
+    }
+}
+
+extension WireValue.ConversionError: ConvertibleToLiveObjectsError {
+    internal func toLiveObjectsError() -> LiveObjectsError {
+        .other(self)
+    }
+}
+
+extension SyncCursor.Error: ConvertibleToLiveObjectsError {
+    internal func toLiveObjectsError() -> LiveObjectsError {
+        .other(self)
+    }
+}
+
+extension InboundWireObjectMessage.DecodingError: ConvertibleToLiveObjectsError {
+    internal func toLiveObjectsError() -> LiveObjectsError {
+        .other(self)
+    }
+}
+
+extension StringOrData.DecodingError: ConvertibleToLiveObjectsError {
+    internal func toLiveObjectsError() -> LiveObjectsError {
+        .other(self)
+    }
+}
+
+extension JSONObjectOrArray.ConversionError: ConvertibleToLiveObjectsError {
+    internal func toLiveObjectsError() -> LiveObjectsError {
+        .other(self)
+    }
+}
+
+// MARK: - ARTErrorInfo Extension
+
+/// The `ARTErrorInfo.userInfo` key under which we store the underlying `LiveObjectsError`. Used by `testsOnly_underlyingLiveObjectsError`.
+private let liveObjectsErrorUserInfoKey = "LiveObjectsError"
+
+internal extension ARTErrorInfo {
+    /// Retrieves the underlying `LiveObjectsError` from this `ARTErrorInfo` if it was generated from a `LiveObjectsError`.
+    ///
+    /// - Returns: The underlying `LiveObjectsError` if this error was generated from one, `nil` otherwise.
+    var testsOnly_underlyingLiveObjectsError: LiveObjectsError? {
+        guard let userInfoEntry = userInfo[liveObjectsErrorUserInfoKey] else {
+            return nil
+        }
+
+        guard let liveObjectsError = userInfoEntry as? LiveObjectsError else {
+            preconditionFailure("Expected a LiveObjectsError, got \(userInfoEntry)")
+        }
+
+        return liveObjectsError
     }
 }

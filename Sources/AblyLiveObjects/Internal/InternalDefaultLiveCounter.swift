@@ -104,42 +104,34 @@ internal final class InternalDefaultLiveCounter: Sendable {
     }
 
     internal func increment(amount: Double, coreSDK: CoreSDK) async throws(ARTErrorInfo) {
-        do throws(InternalError) {
-            let objectMessage = try mutableStateMutex.withSync { mutableState throws(InternalError) in
-                // RTLC12c
-                do throws(ARTErrorInfo) {
-                    try coreSDK.nosync_validateChannelState(
-                        notIn: [.detached, .failed, .suspended],
-                        operationDescription: "LiveCounter.increment",
-                    )
-                } catch {
-                    throw error.toInternalError()
-                }
+        let objectMessage = try mutableStateMutex.withSync { mutableState throws(ARTErrorInfo) in
+            // RTLC12c
+            try coreSDK.nosync_validateChannelState(
+                notIn: [.detached, .failed, .suspended],
+                operationDescription: "LiveCounter.increment",
+            )
 
-                // RTLC12e1
-                if !amount.isFinite {
-                    throw LiveObjectsError.counterIncrementAmountInvalid(amount: amount).toARTErrorInfo().toInternalError()
-                }
-
-                return OutboundObjectMessage(
-                    operation: .init(
-                        // RTLC12e2
-                        action: .known(.counterInc),
-                        // RTLC12e3
-                        objectId: mutableState.liveObjectMutableState.objectID,
-                        counterOp: .init(
-                            // RTLC12e4
-                            amount: .init(value: amount),
-                        ),
-                    ),
-                )
+            // RTLC12e1
+            if !amount.isFinite {
+                throw LiveObjectsError.counterIncrementAmountInvalid(amount: amount).toARTErrorInfo()
             }
 
-            // RTLC12f
-            try await coreSDK.publish(objectMessages: [objectMessage])
-        } catch {
-            throw error.toARTErrorInfo()
+            return OutboundObjectMessage(
+                operation: .init(
+                    // RTLC12e2
+                    action: .known(.counterInc),
+                    // RTLC12e3
+                    objectId: mutableState.liveObjectMutableState.objectID,
+                    counterOp: .init(
+                        // RTLC12e4
+                        amount: .init(value: amount),
+                    ),
+                ),
+            )
         }
+
+        // RTLC12f
+        try await coreSDK.publish(objectMessages: [objectMessage])
     }
 
     internal func decrement(amount: Double, coreSDK: CoreSDK) async throws(ARTErrorInfo) {

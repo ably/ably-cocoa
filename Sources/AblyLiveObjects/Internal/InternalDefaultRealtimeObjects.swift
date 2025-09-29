@@ -172,39 +172,31 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
     }
 
     internal func createMap(entries: [String: InternalLiveMapValue], coreSDK: CoreSDK) async throws(ARTErrorInfo) -> InternalDefaultLiveMap {
-        do throws(InternalError) {
-            let creationOperation = try mutableStateMutex.withSync { _ throws(InternalError) in
-                // RTO11d
-                do throws(ARTErrorInfo) {
-                    try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: "RealtimeObjects.createMap")
-                } catch {
-                    throw error.toInternalError()
-                }
+        let creationOperation = try mutableStateMutex.withSync { _ throws(ARTErrorInfo) in
+            // RTO11d
+            try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: "RealtimeObjects.createMap")
 
-                // RTO11f
-                // TODO: This is a stopgap; change to use server time per RTO11f5 (https://github.com/ably/ably-liveobjects-swift-plugin/issues/50)
-                let timestamp = clock.now
-                return ObjectCreationHelpers.nosync_creationOperationForLiveMap(
-                    entries: entries,
-                    timestamp: timestamp,
-                )
-            }
+            // RTO11f
+            // TODO: This is a stopgap; change to use server time per RTO11f5 (https://github.com/ably/ably-liveobjects-swift-plugin/issues/50)
+            let timestamp = clock.now
+            return ObjectCreationHelpers.nosync_creationOperationForLiveMap(
+                entries: entries,
+                timestamp: timestamp,
+            )
+        }
 
-            // RTO11g
-            try await coreSDK.publish(objectMessages: [creationOperation.objectMessage])
+        // RTO11g
+        try await coreSDK.publish(objectMessages: [creationOperation.objectMessage])
 
-            // RTO11h
-            return mutableStateMutex.withSync { mutableState in
-                mutableState.objectsPool.nosync_getOrCreateMap(
-                    creationOperation: creationOperation,
-                    logger: logger,
-                    internalQueue: mutableStateMutex.dispatchQueue,
-                    userCallbackQueue: userCallbackQueue,
-                    clock: clock,
-                )
-            }
-        } catch {
-            throw error.toARTErrorInfo()
+        // RTO11h
+        return mutableStateMutex.withSync { mutableState in
+            mutableState.objectsPool.nosync_getOrCreateMap(
+                creationOperation: creationOperation,
+                logger: logger,
+                internalQueue: mutableStateMutex.dispatchQueue,
+                userCallbackQueue: userCallbackQueue,
+                clock: clock,
+            )
         }
     }
 
@@ -214,45 +206,37 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
     }
 
     internal func createCounter(count: Double, coreSDK: CoreSDK) async throws(ARTErrorInfo) -> InternalDefaultLiveCounter {
-        do throws(InternalError) {
-            // RTO12d
-            do throws(ARTErrorInfo) {
-                try mutableStateMutex.withSync { _ throws(ARTErrorInfo) in
-                    try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: "RealtimeObjects.createCounter")
-                }
-            } catch {
-                throw error.toInternalError()
-            }
+        // RTO12d
+        try mutableStateMutex.withSync { _ throws(ARTErrorInfo) in
+            try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: "RealtimeObjects.createCounter")
+        }
 
-            // RTO12f1
-            if !count.isFinite {
-                throw LiveObjectsError.counterInitialValueInvalid(value: count).toARTErrorInfo().toInternalError()
-            }
+        // RTO12f1
+        if !count.isFinite {
+            throw LiveObjectsError.counterInitialValueInvalid(value: count).toARTErrorInfo()
+        }
 
-            // RTO12f
+        // RTO12f
 
-            // TODO: This is a stopgap; change to use server time per RTO12f5 (https://github.com/ably/ably-liveobjects-swift-plugin/issues/50)
-            let timestamp = clock.now
-            let creationOperation = ObjectCreationHelpers.creationOperationForLiveCounter(
-                count: count,
-                timestamp: timestamp,
+        // TODO: This is a stopgap; change to use server time per RTO12f5 (https://github.com/ably/ably-liveobjects-swift-plugin/issues/50)
+        let timestamp = clock.now
+        let creationOperation = ObjectCreationHelpers.creationOperationForLiveCounter(
+            count: count,
+            timestamp: timestamp,
+        )
+
+        // RTO12g
+        try await coreSDK.publish(objectMessages: [creationOperation.objectMessage])
+
+        // RTO12h
+        return mutableStateMutex.withSync { mutableState in
+            mutableState.objectsPool.nosync_getOrCreateCounter(
+                creationOperation: creationOperation,
+                logger: logger,
+                internalQueue: mutableStateMutex.dispatchQueue,
+                userCallbackQueue: userCallbackQueue,
+                clock: clock,
             )
-
-            // RTO12g
-            try await coreSDK.publish(objectMessages: [creationOperation.objectMessage])
-
-            // RTO12h
-            return mutableStateMutex.withSync { mutableState in
-                mutableState.objectsPool.nosync_getOrCreateCounter(
-                    creationOperation: creationOperation,
-                    logger: logger,
-                    internalQueue: mutableStateMutex.dispatchQueue,
-                    userCallbackQueue: userCallbackQueue,
-                    clock: clock,
-                )
-            }
-        } catch {
-            throw error.toARTErrorInfo()
         }
     }
 
@@ -356,7 +340,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectPool
     // MARK: - Sending `OBJECT` ProtocolMessage
 
     // This is currently exposed so that we can try calling it from the tests in the early days of the SDK to check that we can send an OBJECT ProtocolMessage. We'll probably make it private later on.
-    internal func testsOnly_publish(objectMessages: [OutboundObjectMessage], coreSDK: CoreSDK) async throws(InternalError) {
+    internal func testsOnly_publish(objectMessages: [OutboundObjectMessage], coreSDK: CoreSDK) async throws(ARTErrorInfo) {
         try await coreSDK.publish(objectMessages: objectMessages)
     }
 

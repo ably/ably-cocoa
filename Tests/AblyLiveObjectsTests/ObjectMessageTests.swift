@@ -1,4 +1,5 @@
 import _AblyPluginSupportPrivate
+import Ably
 @testable import AblyLiveObjects
 import Foundation
 import Testing
@@ -278,7 +279,7 @@ struct ObjectMessageTests {
                     let wireData = WireObjectData(json: invalidJsonString)
 
                     // Should throw when JSON parsing fails, even in MessagePack format
-                    #expect(throws: InternalError.self) {
+                    #expect(throws: ARTErrorInfo.self) {
                         _ = try ObjectData(wireObjectData: wireData, format: .messagePack)
                     }
                 }
@@ -301,7 +302,7 @@ struct ObjectMessageTests {
                     let wireData = WireObjectData(json: jsonString)
 
                     // Should throw when JSON is valid but not an object or array
-                    #expect(throws: InternalError.self) {
+                    #expect(throws: ARTErrorInfo.self) {
                         _ = try ObjectData(wireObjectData: wireData, format: .messagePack)
                     }
                 }
@@ -375,7 +376,7 @@ struct ObjectMessageTests {
                     let wireData = WireObjectData(bytes: .string(invalidBase64String))
 
                     // Should throw when Base64 decoding fails
-                    #expect(throws: InternalError.self) {
+                    #expect(throws: ARTErrorInfo.self) {
                         _ = try ObjectData(wireObjectData: wireData, format: .json)
                     }
                 }
@@ -402,7 +403,7 @@ struct ObjectMessageTests {
                     let wireData = WireObjectData(json: invalidJsonString)
 
                     // Should throw when JSON parsing fails
-                    #expect(throws: InternalError.self) {
+                    #expect(throws: ARTErrorInfo.self) {
                         _ = try ObjectData(wireObjectData: wireData, format: .json)
                     }
                 }
@@ -425,7 +426,7 @@ struct ObjectMessageTests {
                     let wireData = WireObjectData(json: jsonString)
 
                     // Should throw when JSON is valid but not an object or array
-                    #expect(throws: InternalError.self) {
+                    #expect(throws: ARTErrorInfo.self) {
                         _ = try ObjectData(wireObjectData: wireData, format: .json)
                     }
                 }

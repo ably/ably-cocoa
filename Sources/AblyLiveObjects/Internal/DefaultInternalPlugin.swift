@@ -87,7 +87,7 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
             )
             return ObjectMessageBox(objectMessage: objectMessage)
         } catch {
-            errorPtr?.pointee = error.toARTErrorInfo().asPluginPublicErrorInfo
+            errorPtr?.pointee = error.asPluginPublicErrorInfo
             return nil
         }
     }
@@ -140,10 +140,10 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
         channel: _AblyPluginSupportPrivate.RealtimeChannel,
         client: _AblyPluginSupportPrivate.RealtimeClient,
         pluginAPI: PluginAPIProtocol,
-    ) async throws(InternalError) {
+    ) async throws(ARTErrorInfo) {
         let objectMessageBoxes: [ObjectMessageBox<OutboundObjectMessage>] = objectMessages.map { .init(objectMessage: $0) }
 
-        try await withCheckedContinuation { (continuation: CheckedContinuation<Result<Void, InternalError>, _>) in
+        try await withCheckedContinuation { (continuation: CheckedContinuation<Result<Void, ARTErrorInfo>, _>) in
             let internalQueue = pluginAPI.internalQueue(for: client)
 
             internalQueue.async {
@@ -155,7 +155,7 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
                     dispatchPrecondition(condition: .onQueue(internalQueue))
 
                     if let error {
-                        continuation.resume(returning: .failure(error.toInternalError()))
+                        continuation.resume(returning: .failure(ARTErrorInfo.castPluginPublicErrorInfo(error)))
                     } else {
                         continuation.resume(returning: .success(()))
                     }

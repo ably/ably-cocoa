@@ -1409,8 +1409,8 @@ struct InternalDefaultLiveMapTests {
             let map = InternalDefaultLiveMap.createZeroValued(objectID: "map:test@123", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
 
-            coreSDK.setPublishHandler { _ throws(InternalError) in
-                throw NSError(domain: "test", code: 0, userInfo: [NSLocalizedDescriptionKey: "Publish failed"]).toInternalError()
+            coreSDK.setPublishHandler { _ throws(ARTErrorInfo) in
+                throw LiveObjectsError.other(NSError(domain: "test", code: 0, userInfo: [NSLocalizedDescriptionKey: "Publish failed"])).toARTErrorInfo()
             }
 
             await #expect {
@@ -1490,8 +1490,8 @@ struct InternalDefaultLiveMapTests {
             let map = InternalDefaultLiveMap.createZeroValued(objectID: "map:test@123", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
 
-            coreSDK.setPublishHandler { _ throws(InternalError) in
-                throw NSError(domain: "test", code: 0, userInfo: [NSLocalizedDescriptionKey: "Publish failed"]).toInternalError()
+            coreSDK.setPublishHandler { _ throws(ARTErrorInfo) in
+                throw LiveObjectsError.other(NSError(domain: "test", code: 0, userInfo: [NSLocalizedDescriptionKey: "Publish failed"])).toARTErrorInfo()
             }
 
             await #expect {

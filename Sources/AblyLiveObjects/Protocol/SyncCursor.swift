@@ -1,3 +1,4 @@
+import Ably
 import Foundation
 
 /// The `OBJECT_SYNC` sync cursor, as extracted from a `channelSerial` per RTO5a1 and RTO5a4.
@@ -11,7 +12,7 @@ internal struct SyncCursor {
     }
 
     /// Creates a `SyncCursor` from the `channelSerial` of an `OBJECT_SYNC` `ProtocolMessage`.
-    internal init(channelSerial: String) throws(InternalError) {
+    internal init(channelSerial: String) throws(ARTErrorInfo) {
         let scanner = Scanner(string: channelSerial)
         scanner.charactersToBeSkipped = nil
 
@@ -20,7 +21,7 @@ internal struct SyncCursor {
 
         // Check if we have a colon
         guard scanner.scanString(":") != nil else {
-            throw Error.channelSerialDoesNotMatchExpectedFormat(channelSerial).toInternalError()
+            throw Error.channelSerialDoesNotMatchExpectedFormat(channelSerial).toARTErrorInfo()
         }
 
         // Everything after the colon (if anything) is the cursor value

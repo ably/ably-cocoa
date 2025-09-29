@@ -9,10 +9,10 @@ internal enum DecodingError: Error, Equatable {
 internal extension Data {
     /// Initialize Data from a Base64-encoded string, throwing an error if decoding fails.
     /// - Parameter base64String: The Base64-encoded string to decode
-    /// - Throws: `DecodingError.invalidBase64String` if the string cannot be decoded as Base64
-    static func fromBase64Throwing(_ base64String: String) throws(InternalError) -> Data {
+    /// - Throws: `ARTErrorInfo` if the string cannot be decoded as Base64
+    static func fromBase64Throwing(_ base64String: String) throws(ARTErrorInfo) -> Data {
         guard let data = Data(base64Encoded: base64String) else {
-            throw DecodingError.invalidBase64String(base64String).toInternalError()
+            throw DecodingError.invalidBase64String(base64String).toARTErrorInfo()
         }
         return data
     }

@@ -1,3 +1,4 @@
+import Ably
 @testable import AblyLiveObjects
 import Testing
 
@@ -42,9 +43,8 @@ struct SyncCursorTests {
             _ = try SyncCursor(channelSerial: channelSerial)
             Issue.record("Expected error was not thrown")
         } catch {
-            guard case let .other(.generic(underlyingError)) = error,
-                  let syncError = underlyingError as? SyncCursor.Error,
-                  case .channelSerialDoesNotMatchExpectedFormat = syncError
+            guard let liveObjectsError = error.testsOnly_underlyingLiveObjectsError,
+                  case .other(SyncCursor.Error.channelSerialDoesNotMatchExpectedFormat) = liveObjectsError
             else {
                 Issue.record("Expected channelSerialDoesNotMatchExpectedFormat error")
                 return
@@ -62,9 +62,8 @@ struct SyncCursorTests {
             _ = try SyncCursor(channelSerial: channelSerial)
             Issue.record("Expected error was not thrown")
         } catch {
-            guard case let .other(.generic(underlyingError)) = error,
-                  let syncError = underlyingError as? SyncCursor.Error,
-                  case .channelSerialDoesNotMatchExpectedFormat = syncError
+            guard let liveObjectsError = error.testsOnly_underlyingLiveObjectsError,
+                  case .other(SyncCursor.Error.channelSerialDoesNotMatchExpectedFormat) = liveObjectsError
             else {
                 Issue.record("Expected channelSerialDoesNotMatchExpectedFormat error")
                 return
