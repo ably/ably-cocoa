@@ -65,6 +65,8 @@ ably-cocoa allows users to pass in Ably-authored plugins via the `ARTClientOptio
 
 For each release, the following needs to be done:
 
+* Confirm that none of our `Package.swift` dependencies are specified using a fixed `.revision`.
+    * The dependency that is most likely to be using a fixed revision is [ably-cocoa-plugin-support](https://github.com/ably/ably-cocoa-plugin-support); make a new release of that library if needed.
 * Create a new branch `release/x.x.x` (where `x.x.x` is the new version number) from the `main` branch
 * Run `make bump_[major|minor|patch]` to bump the new version number. This will create a Git commit, push it to origin: `git push -u origin release/x.x.x`
 * Go to [Github releases](https://github.com/ably/ably-cocoa/releases) and press the `Draft a new release` button. Choose your new branch as a target
