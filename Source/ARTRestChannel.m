@@ -17,6 +17,9 @@
 #import "ARTClientOptions.h"
 #import "ARTNSError+ARTUtils.h"
 #import "ARTInternalLog.h"
+#import "ARTRestAnnotations.h"
+#import "ARTRestAnnotations+Private.h"
+#import "ARTConstants.h"
 
 @implementation ARTRestChannel {
     ARTQueuedDealloc *_dealloc;
@@ -33,6 +36,10 @@
 
 - (ARTRestPresence*) presence {
     return [[ARTRestPresence alloc] initWithInternal:_internal.presence queuedDealloc:_dealloc];
+}
+
+- (ARTRestAnnotations *)annotations {
+    return [[ARTRestAnnotations alloc] initWithInternal:_internal.annotations queuedDealloc:_dealloc];
 }
 
 - (ARTPushChannel *)push {
@@ -105,12 +112,11 @@
 
 @end
 
-static const NSUInteger kIdempotentLibraryGeneratedIdLength = 9; //bytes
-
 @implementation ARTRestChannelInternal {
 @private
     dispatch_queue_t _userQueue;
     ARTRestPresenceInternal *_presence;
+    ARTRestAnnotationsInternal *_annotations;
     ARTPushChannelInternal *_pushChannel;
 @public
     NSString *_basePath;
@@ -123,6 +129,7 @@ static const NSUInteger kIdempotentLibraryGeneratedIdLength = 9; //bytes
         _rest = rest;
         _queue = rest.queue;
         _userQueue = rest.userQueue;
+        _annotations = [[ARTRestAnnotationsInternal alloc] initWithChannel:self logger:self.logger];
         _basePath = [NSString stringWithFormat:@"/channels/%@", [name stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]]]; // Using URLHostAllowedCharacterSet, because it doesn't include '/', which can be used in channel names across other platforms.
         ARTLogDebug(self.logger, @"RS:%p instantiating under '%@'", self, name);
     }
@@ -138,6 +145,10 @@ static const NSUInteger kIdempotentLibraryGeneratedIdLength = 9; //bytes
         _presence = [[ARTRestPresenceInternal alloc] initWithChannel:self logger:self.logger];
     }
     return _presence;
+}
+
+- (ARTRestAnnotationsInternal *)annotations {
+    return _annotations;
 }
 
 - (ARTPushChannelInternal *)push {
@@ -294,7 +305,7 @@ dispatch_sync(_queue, ^{
             
             NSString *baseId = nil;
             if (self.rest.options.idempotentRestPublishing && message.isIdEmpty) {
-                NSData *baseIdData = [ARTCrypto generateSecureRandomData:kIdempotentLibraryGeneratedIdLength];
+                NSData *baseIdData = [ARTCrypto generateSecureRandomData:ARTIdempotentLibraryGeneratedIdLength];
                 baseId = [baseIdData base64EncodedStringWithOptions:0];
                 message.id = [NSString stringWithFormat:@"%@:0", baseId];
             }
@@ -318,7 +329,7 @@ dispatch_sync(_queue, ^{
             if (self.rest.options.idempotentRestPublishing) {
                 BOOL messagesHaveEmptyId = [messages artFilter:^BOOL(ARTMessage *m) { return !m.isIdEmpty; }].count <= 0;
                 if (messagesHaveEmptyId) {
-                    NSData *baseIdData = [ARTCrypto generateSecureRandomData:kIdempotentLibraryGeneratedIdLength];
+                    NSData *baseIdData = [ARTCrypto generateSecureRandomData:ARTIdempotentLibraryGeneratedIdLength];
                     baseId = [baseIdData base64EncodedStringWithOptions:0];
                 }
             }
