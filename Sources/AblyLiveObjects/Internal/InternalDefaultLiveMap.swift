@@ -2,9 +2,9 @@ internal import _AblyPluginSupportPrivate
 import Ably
 
 /// Protocol for accessing objects from the ObjectsPool. This is used by a LiveMap when it needs to return an object given an object ID.
-internal protocol LiveMapObjectPoolDelegate: AnyObject, Sendable {
-    /// Fetches an object from the pool by its ID
-    func nosync_getObjectFromPool(id: String) -> ObjectsPool.Entry?
+internal protocol LiveMapObjectsPoolDelegate: AnyObject, Sendable {
+    /// A snapshot of the objects pool.
+    var nosync_objectsPool: ObjectsPool { get }
 }
 
 /// This provides the implementation behind ``PublicDefaultLiveMap``, via internal versions of the ``LiveMap`` API.
@@ -121,30 +121,40 @@ internal final class InternalDefaultLiveMap: Sendable {
     // MARK: - Internal methods that back LiveMap conformance
 
     /// Returns the value associated with a given key, following RTLM5d specification.
-    internal func get(key: String, coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> InternalLiveMapValue? {
+    internal func get(key: String, coreSDK: CoreSDK, delegate: LiveMapObjectsPoolDelegate) throws(ARTErrorInfo) -> InternalLiveMapValue? {
         try mutableStateMutex.withSync { mutableState throws(ARTErrorInfo) in
-            try mutableState.nosync_get(key: key, coreSDK: coreSDK, delegate: delegate)
+            try mutableState.nosync_get(
+                key: key,
+                coreSDK: coreSDK,
+                objectsPool: delegate.nosync_objectsPool,
+            )
         }
     }
 
-    internal func size(coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> Int {
+    internal func size(coreSDK: CoreSDK, delegate: LiveMapObjectsPoolDelegate) throws(ARTErrorInfo) -> Int {
         try mutableStateMutex.withSync { mutableState throws(ARTErrorInfo) in
-            try mutableState.nosync_size(coreSDK: coreSDK, delegate: delegate)
+            try mutableState.nosync_size(
+                coreSDK: coreSDK,
+                objectsPool: delegate.nosync_objectsPool,
+            )
         }
     }
 
-    internal func entries(coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> [(key: String, value: InternalLiveMapValue)] {
+    internal func entries(coreSDK: CoreSDK, delegate: LiveMapObjectsPoolDelegate) throws(ARTErrorInfo) -> [(key: String, value: InternalLiveMapValue)] {
         try mutableStateMutex.withSync { mutableState throws(ARTErrorInfo) in
-            try mutableState.nosync_entries(coreSDK: coreSDK, delegate: delegate)
+            try mutableState.nosync_entries(
+                coreSDK: coreSDK,
+                objectsPool: delegate.nosync_objectsPool,
+            )
         }
     }
 
-    internal func keys(coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> [String] {
+    internal func keys(coreSDK: CoreSDK, delegate: LiveMapObjectsPoolDelegate) throws(ARTErrorInfo) -> [String] {
         // RTLM12b: Identical to LiveMap#entries, except that it returns only the keys from the internal data map
         try entries(coreSDK: coreSDK, delegate: delegate).map(\.key)
     }
 
-    internal func values(coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> [InternalLiveMapValue] {
+    internal func values(coreSDK: CoreSDK, delegate: LiveMapObjectsPoolDelegate) throws(ARTErrorInfo) -> [InternalLiveMapValue] {
         // RTLM13b: Identical to LiveMap#entries, except that it returns only the values from the internal data map
         try entries(coreSDK: coreSDK, delegate: delegate).map(\.value)
     }
@@ -859,7 +869,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         }
 
         /// Returns the value associated with a given key, following RTLM5d specification.
-        internal func nosync_get(key: String, coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> InternalLiveMapValue? {
+        internal func nosync_get(key: String, coreSDK: CoreSDK, objectsPool: ObjectsPool) throws(ARTErrorInfo) -> InternalLiveMapValue? {
             // RTLM5c: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
             try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveMap.get")
 
@@ -874,20 +884,20 @@ internal final class InternalDefaultLiveMap: Sendable {
             }
 
             // RTLM5d2: If a ObjectsMapEntry exists at the key, convert it using the shared logic
-            return nosync_convertEntryToLiveMapValue(entry, delegate: delegate)
+            return nosync_convertEntryToLiveMapValue(entry, objectsPool: objectsPool)
         }
 
-        internal func nosync_size(coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> Int {
+        internal func nosync_size(coreSDK: CoreSDK, objectsPool: ObjectsPool) throws(ARTErrorInfo) -> Int {
             // RTLM10c: If the channel is in the DETACHED or FAILED state, the library should throw an ErrorInfo error with statusCode 400 and code 90001
             try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveMap.size")
 
             // RTLM10d: Returns the number of non-tombstoned entries (per RTLM14) in the internal data map
             return data.values.count { entry in
-                !Self.nosync_isEntryTombstoned(entry, delegate: delegate)
+                !Self.nosync_isEntryTombstoned(entry, objectsPool: objectsPool)
             }
         }
 
-        internal func nosync_entries(coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> [(key: String, value: InternalLiveMapValue)] {
+        internal func nosync_entries(coreSDK: CoreSDK, objectsPool: ObjectsPool) throws(ARTErrorInfo) -> [(key: String, value: InternalLiveMapValue)] {
             // RTLM11c: If the channel is in the DETACHED or FAILED state, the library should throw an ErrorInfo error with statusCode 400 and code 90001
             try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveMap.entries")
 
@@ -895,9 +905,9 @@ internal final class InternalDefaultLiveMap: Sendable {
             // RTLM11d1: Pairs with tombstoned entries (per RTLM14) are not returned
             var result: [(key: String, value: InternalLiveMapValue)] = []
 
-            for (key, entry) in data where !Self.nosync_isEntryTombstoned(entry, delegate: delegate) {
+            for (key, entry) in data where !Self.nosync_isEntryTombstoned(entry, objectsPool: objectsPool) {
                 // Convert entry to LiveMapValue using the same logic as get(key:)
-                if let value = nosync_convertEntryToLiveMapValue(entry, delegate: delegate) {
+                if let value = nosync_convertEntryToLiveMapValue(entry, objectsPool: objectsPool) {
                     result.append((key: key, value: value))
                 }
             }
@@ -908,7 +918,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         // MARK: - Helper Methods
 
         /// Returns whether a map entry should be considered tombstoned, per the check described in RTLM14.
-        private static func nosync_isEntryTombstoned(_ entry: InternalObjectsMapEntry, delegate: LiveMapObjectPoolDelegate) -> Bool {
+        private static func nosync_isEntryTombstoned(_ entry: InternalObjectsMapEntry, objectsPool: ObjectsPool) -> Bool {
             // RTLM14a
             if entry.tombstone {
                 return true
@@ -916,7 +926,7 @@ internal final class InternalDefaultLiveMap: Sendable {
 
             // RTLM14c
             if let objectId = entry.data?.objectId {
-                if let poolEntry = delegate.nosync_getObjectFromPool(id: objectId), poolEntry.nosync_isTombstone {
+                if let poolEntry = objectsPool.entries[objectId], poolEntry.nosync_isTombstone {
                     return true
                 }
             }
@@ -927,7 +937,7 @@ internal final class InternalDefaultLiveMap: Sendable {
 
         /// Converts an InternalObjectsMapEntry to LiveMapValue using the same logic as get(key:)
         /// This is used by entries to ensure consistent value conversion
-        private func nosync_convertEntryToLiveMapValue(_ entry: InternalObjectsMapEntry, delegate: LiveMapObjectPoolDelegate) -> InternalLiveMapValue? {
+        private func nosync_convertEntryToLiveMapValue(_ entry: InternalObjectsMapEntry, objectsPool: ObjectsPool) -> InternalLiveMapValue? {
             // RTLM5d2a: If ObjectsMapEntry.tombstone is true, return undefined/null
             if entry.tombstone == true {
                 return nil
@@ -968,7 +978,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             // RTLM5d2f: If ObjectsMapEntry.data.objectId exists, get the object stored at that objectId from the internal ObjectsPool
             if let objectId = entry.data?.objectId {
                 // RTLM5d2f1: If an object with id objectId does not exist, return undefined/null
-                guard let poolEntry = delegate.nosync_getObjectFromPool(id: objectId) else {
+                guard let poolEntry = objectsPool.entries[objectId] else {
                     return nil
                 }
 

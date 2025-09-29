@@ -10,10 +10,10 @@ internal final class PublicDefaultLiveMap: LiveMap {
     // MARK: - Dependencies that hold a strong reference to `proxied`
 
     private let coreSDK: CoreSDK
-    private let delegate: LiveMapObjectPoolDelegate
+    private let delegate: LiveMapObjectsPoolDelegate
     private let logger: Logger
 
-    internal init(proxied: InternalDefaultLiveMap, coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate, logger: Logger) {
+    internal init(proxied: InternalDefaultLiveMap, coreSDK: CoreSDK, delegate: LiveMapObjectsPoolDelegate, logger: Logger) {
         self.proxied = proxied
         self.coreSDK = coreSDK
         self.delegate = delegate
