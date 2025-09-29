@@ -6,3 +6,7 @@ This is an Ably-internal library that defines the private APIs that the [Ably Pu
 > This library is an implementation detail of the Ably SDK and should not be used directly by end users of the SDK.
 
 Further documentation will be added in the future.
+
+## Conventions
+
+- Methods whose names begin with `nosync_` must always be called on the client's internal queue.
