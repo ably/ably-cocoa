@@ -1,5 +1,17 @@
 # Change Log
 
+## [1.2.46](https://github.com/ably/ably-cocoa/tree/1.2.46)
+
+## What's Changed
+
+This release fixes an issue in version 1.2.45 which causes package resolution in Swift packages that depend on ably-cocoa to fail with this error:
+
+> 'ably-cocoa' >= 1.2.45 cannot be used because package 'ably-cocoa' is required using a stable-version but 'ably-cocoa' depends on an unstable-version package 'ably-cocoa-plugin-support' and no versions of 'ably-cocoa' match the requirement 1.2.46..<2.0.0.
+
+* Unpin ably-cocoa-plugin-support by @lawrence-forooghian in https://github.com/ably/ably-cocoa/pull/2115
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.45...1.2.46
+
 ## [1.2.45](https://github.com/ably/ably-cocoa/tree/1.2.45)
 
 ## What's Changed
