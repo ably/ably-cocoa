@@ -531,6 +531,7 @@ struct InternalDefaultLiveCounterTests {
         // @spec RTLC12e3
         // @spec RTLC12e4
         // @spec RTLC12f
+        @Test
         func publishesCorrectObjectMessage() async throws {
             let logger = TestLogger()
             let internalQueue = TestFactories.createInternalQueue()
