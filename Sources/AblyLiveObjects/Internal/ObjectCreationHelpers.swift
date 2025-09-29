@@ -100,13 +100,13 @@ internal enum ObjectCreationHelpers {
     /// - Parameters:
     ///   - entries: The initial entries for the new LiveMap object
     ///   - timestamp: The timestamp to use for the generated object ID.
-    internal static func creationOperationForLiveMap(
+    internal static func nosync_creationOperationForLiveMap(
         entries: [String: InternalLiveMapValue],
         timestamp: Date,
     ) -> MapCreationOperation {
         // RTO11f4: Create initial value for the new LiveMap
         let mapEntries = entries.mapValues { liveMapValue -> ObjectsMapEntry in
-            ObjectsMapEntry(data: liveMapValue.toObjectData)
+            ObjectsMapEntry(data: liveMapValue.nosync_toObjectData)
         }
 
         let initialValue = PartialObjectOperation(

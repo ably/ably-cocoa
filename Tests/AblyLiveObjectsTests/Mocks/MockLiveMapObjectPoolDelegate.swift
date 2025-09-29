@@ -3,23 +3,22 @@ import Foundation
 
 /// A mock delegate that can return predefined objects
 final class MockLiveMapObjectPoolDelegate: LiveMapObjectPoolDelegate {
-    private let mutex = NSLock()
-    private nonisolated(unsafe) var _objects: [String: ObjectsPool.Entry] = [:]
+    private let objectsMutex: DispatchQueueMutex<[String: ObjectsPool.Entry]>
+
+    init(internalQueue: DispatchQueue) {
+        objectsMutex = DispatchQueueMutex(dispatchQueue: internalQueue, initialValue: [:])
+    }
+
     var objects: [String: ObjectsPool.Entry] {
         get {
-            mutex.withLock {
-                _objects
-            }
+            objectsMutex.withSync { $0 }
         }
-
         set {
-            mutex.withLock {
-                _objects = newValue
-            }
+            objectsMutex.withSync { $0 = newValue }
         }
     }
 
-    func getObjectFromPool(id: String) -> ObjectsPool.Entry? {
-        objects[id]
+    func nosync_getObjectFromPool(id: String) -> ObjectsPool.Entry? {
+        objectsMutex.withoutSync { $0[id] }
     }
 }

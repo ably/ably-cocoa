@@ -11,8 +11,9 @@ struct InternalDefaultLiveCounterTests {
         @Test(arguments: [.detached, .failed] as [_AblyPluginSupportPrivate.RealtimeChannelState])
         func valueThrowsIfChannelIsDetachedOrFailed(channelState: _AblyPluginSupportPrivate.RealtimeChannelState) async throws {
             let logger = TestLogger()
-            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: channelState)
+            let internalQueue = TestFactories.createInternalQueue()
+            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: channelState, internalQueue: internalQueue)
 
             #expect {
                 _ = try counter.value(coreSDK: coreSDK)
@@ -29,11 +30,14 @@ struct InternalDefaultLiveCounterTests {
         @Test
         func valueReturnsCurrentDataWhenChannelIsValid() throws {
             let logger = TestLogger()
-            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: .attached)
+            let internalQueue = TestFactories.createInternalQueue()
+            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
 
             // Set some test data
-            _ = counter.replaceData(using: TestFactories.counterObjectState(count: 42), objectMessageSerialTimestamp: nil)
+            internalQueue.ably_syncNoDeadlock {
+                _ = counter.nosync_replaceData(using: TestFactories.counterObjectState(count: 42), objectMessageSerialTimestamp: nil)
+            }
 
             #expect(try counter.value(coreSDK: coreSDK) == 42)
         }
@@ -45,11 +49,14 @@ struct InternalDefaultLiveCounterTests {
         @Test
         func replacesSiteTimeserials() {
             let logger = TestLogger()
-            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let internalQueue = TestFactories.createInternalQueue()
+            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             let state = TestFactories.counterObjectState(
                 siteTimeserials: ["site1": "ts1"], // Test value
             )
-            _ = counter.replaceData(using: state, objectMessageSerialTimestamp: nil)
+            internalQueue.ably_syncNoDeadlock {
+                _ = counter.nosync_replaceData(using: state, objectMessageSerialTimestamp: nil)
+            }
             #expect(counter.testsOnly_siteTimeserials == ["site1": "ts1"])
         }
 
@@ -60,15 +67,18 @@ struct InternalDefaultLiveCounterTests {
             func setsCreateOperationIsMergedToFalse() {
                 // Given: A counter whose createOperationIsMerged is true
                 let logger = TestLogger()
+                let internalQueue = TestFactories.createInternalQueue()
                 let counter = {
-                    let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+                    let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
                     // Test setup: Manipulate counter so that its createOperationIsMerged gets set to true (we need to do this since we want to later assert that it gets set to false, but the default is false).
                     let state = TestFactories.counterObjectState(
                         createOp: TestFactories.objectOperation(
                             action: .known(.counterCreate),
                         ),
                     )
-                    _ = counter.replaceData(using: state, objectMessageSerialTimestamp: nil)
+                    internalQueue.ably_syncNoDeadlock {
+                        _ = counter.nosync_replaceData(using: state, objectMessageSerialTimestamp: nil)
+                    }
                     #expect(counter.testsOnly_createOperationIsMerged)
 
                     return counter
@@ -78,7 +88,9 @@ struct InternalDefaultLiveCounterTests {
                 let state = TestFactories.counterObjectState(
                     createOp: nil, // Test value - must be nil to test RTLC6b
                 )
-                _ = counter.replaceData(using: state, objectMessageSerialTimestamp: nil)
+                internalQueue.ably_syncNoDeadlock {
+                    _ = counter.nosync_replaceData(using: state, objectMessageSerialTimestamp: nil)
+                }
 
                 // Then:
                 #expect(!counter.testsOnly_createOperationIsMerged)
@@ -88,12 +100,15 @@ struct InternalDefaultLiveCounterTests {
             @Test
             func setsDataToCounterCount() throws {
                 let logger = TestLogger()
-                let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-                let coreSDK = MockCoreSDK(channelState: .attaching)
+                let internalQueue = TestFactories.createInternalQueue()
+                let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+                let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
                 let state = TestFactories.counterObjectState(
                     count: 42, // Test value
                 )
-                _ = counter.replaceData(using: state, objectMessageSerialTimestamp: nil)
+                internalQueue.ably_syncNoDeadlock {
+                    _ = counter.nosync_replaceData(using: state, objectMessageSerialTimestamp: nil)
+                }
                 #expect(try counter.value(coreSDK: coreSDK) == 42)
             }
 
@@ -101,11 +116,14 @@ struct InternalDefaultLiveCounterTests {
             @Test
             func setsDataToZeroWhenCounterCountDoesNotExist() throws {
                 let logger = TestLogger()
-                let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-                let coreSDK = MockCoreSDK(channelState: .attaching)
-                _ = counter.replaceData(using: TestFactories.counterObjectState(
-                    count: nil, // Test value - must be nil
-                ), objectMessageSerialTimestamp: nil)
+                let internalQueue = TestFactories.createInternalQueue()
+                let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+                let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+                internalQueue.ably_syncNoDeadlock {
+                    _ = counter.nosync_replaceData(using: TestFactories.counterObjectState(
+                        count: nil, // Test value - must be nil
+                    ), objectMessageSerialTimestamp: nil)
+                }
 
                 #expect(try counter.value(coreSDK: coreSDK) == 0)
             }
@@ -117,13 +135,16 @@ struct InternalDefaultLiveCounterTests {
             @Test
             func mergesInitialValueWhenCreateOpPresent() throws {
                 let logger = TestLogger()
-                let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-                let coreSDK = MockCoreSDK(channelState: .attaching)
+                let internalQueue = TestFactories.createInternalQueue()
+                let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+                let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
                 let state = TestFactories.counterObjectState(
                     createOp: TestFactories.counterCreateOperation(count: 10), // Test value - must exist
                     count: 5, // Test value - must exist
                 )
-                _ = counter.replaceData(using: state, objectMessageSerialTimestamp: nil)
+                internalQueue.ably_syncNoDeadlock {
+                    _ = counter.nosync_replaceData(using: state, objectMessageSerialTimestamp: nil)
+                }
                 #expect(try counter.value(coreSDK: coreSDK) == 15) // First sets to 5 (RTLC6c) then adds 10 (RTLC10a)
                 #expect(counter.testsOnly_createOperationIsMerged)
             }
@@ -137,16 +158,21 @@ struct InternalDefaultLiveCounterTests {
         @Test
         func addsCounterCountToData() throws {
             let logger = TestLogger()
-            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: .attaching)
+            let internalQueue = TestFactories.createInternalQueue()
+            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
 
             // Set initial data
-            _ = counter.replaceData(using: TestFactories.counterObjectState(count: 5), objectMessageSerialTimestamp: nil)
+            internalQueue.ably_syncNoDeadlock {
+                _ = counter.nosync_replaceData(using: TestFactories.counterObjectState(count: 5), objectMessageSerialTimestamp: nil)
+            }
             #expect(try counter.value(coreSDK: coreSDK) == 5)
 
             // Apply merge operation
             let operation = TestFactories.counterCreateOperation(count: 10) // Test value - must exist
-            let update = counter.mergeInitialValue(from: operation)
+            let update = internalQueue.ably_syncNoDeadlock {
+                counter.nosync_mergeInitialValue(from: operation)
+            }
 
             #expect(try counter.value(coreSDK: coreSDK) == 15) // 5 + 10
 
@@ -159,11 +185,14 @@ struct InternalDefaultLiveCounterTests {
         @Test
         func doesNotModifyDataWhenCounterCountDoesNotExist() throws {
             let logger = TestLogger()
-            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: .attaching)
+            let internalQueue = TestFactories.createInternalQueue()
+            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
 
             // Set initial data
-            _ = counter.replaceData(using: TestFactories.counterObjectState(count: 5), objectMessageSerialTimestamp: nil)
+            internalQueue.ably_syncNoDeadlock {
+                _ = counter.nosync_replaceData(using: TestFactories.counterObjectState(count: 5), objectMessageSerialTimestamp: nil)
+            }
             #expect(try counter.value(coreSDK: coreSDK) == 5)
 
             // Apply merge operation with no count
@@ -171,7 +200,9 @@ struct InternalDefaultLiveCounterTests {
                 action: .known(.counterCreate),
                 counter: nil, // Test value - must be nil
             )
-            let update = counter.mergeInitialValue(from: operation)
+            let update = internalQueue.ably_syncNoDeadlock {
+                counter.nosync_mergeInitialValue(from: operation)
+            }
 
             #expect(try counter.value(coreSDK: coreSDK) == 5) // Unchanged
 
@@ -183,11 +214,14 @@ struct InternalDefaultLiveCounterTests {
         @Test
         func setsCreateOperationIsMergedToTrue() {
             let logger = TestLogger()
-            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            let internalQueue = TestFactories.createInternalQueue()
+            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Apply merge operation
             let operation = TestFactories.counterCreateOperation(count: 10) // Test value - must exist
-            _ = counter.mergeInitialValue(from: operation)
+            internalQueue.ably_syncNoDeadlock {
+                _ = counter.nosync_mergeInitialValue(from: operation)
+            }
 
             #expect(counter.testsOnly_createOperationIsMerged)
         }
@@ -199,12 +233,15 @@ struct InternalDefaultLiveCounterTests {
         @Test
         func discardsOperationWhenCreateOperationIsMerged() throws {
             let logger = TestLogger()
-            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: .attaching)
+            let internalQueue = TestFactories.createInternalQueue()
+            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
 
             // Set initial data and mark create operation as merged
-            _ = counter.replaceData(using: TestFactories.counterObjectState(count: 5), objectMessageSerialTimestamp: nil)
-            _ = counter.mergeInitialValue(from: TestFactories.counterCreateOperation(count: 10))
+            internalQueue.ably_syncNoDeadlock {
+                _ = counter.nosync_replaceData(using: TestFactories.counterObjectState(count: 5), objectMessageSerialTimestamp: nil)
+                _ = counter.nosync_mergeInitialValue(from: TestFactories.counterCreateOperation(count: 10))
+            }
             #expect(counter.testsOnly_createOperationIsMerged)
 
             // Try to apply another COUNTER_CREATE operation
@@ -223,11 +260,14 @@ struct InternalDefaultLiveCounterTests {
         @Test
         func mergesInitialValue() throws {
             let logger = TestLogger()
-            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: .attaching)
+            let internalQueue = TestFactories.createInternalQueue()
+            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
 
             // Set initial data but don't mark create operation as merged
-            _ = counter.replaceData(using: TestFactories.counterObjectState(count: 5), objectMessageSerialTimestamp: nil)
+            internalQueue.ably_syncNoDeadlock {
+                _ = counter.nosync_replaceData(using: TestFactories.counterObjectState(count: 5), objectMessageSerialTimestamp: nil)
+            }
             #expect(!counter.testsOnly_createOperationIsMerged)
 
             // Apply COUNTER_CREATE operation
@@ -264,11 +304,14 @@ struct InternalDefaultLiveCounterTests {
         )
         func addsAmountToData(operation: WireObjectsCounterOp?, expectedValue: Double, expectedUpdate: LiveObjectUpdate<DefaultLiveCounterUpdate>) throws {
             let logger = TestLogger()
-            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: .attaching)
+            let internalQueue = TestFactories.createInternalQueue()
+            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
 
             // Set initial data
-            _ = counter.replaceData(using: TestFactories.counterObjectState(count: 5), objectMessageSerialTimestamp: nil)
+            internalQueue.ably_syncNoDeadlock {
+                _ = counter.nosync_replaceData(using: TestFactories.counterObjectState(count: 5), objectMessageSerialTimestamp: nil)
+            }
             #expect(try counter.value(coreSDK: coreSDK) == 5)
 
             // Apply COUNTER_INC operation
@@ -288,29 +331,34 @@ struct InternalDefaultLiveCounterTests {
         @Test
         func discardsOperationWhenCannotBeApplied() throws {
             let logger = TestLogger()
-            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: .attaching)
+            let internalQueue = TestFactories.createInternalQueue()
+            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
 
             // Set up the counter with an existing site timeserial that will cause the operation to be discarded
-            _ = counter.replaceData(using: TestFactories.counterObjectState(
-                siteTimeserials: ["site1": "ts2"], // Existing serial "ts2"
-                count: 5,
-            ), objectMessageSerialTimestamp: nil)
+            internalQueue.ably_syncNoDeadlock {
+                _ = counter.nosync_replaceData(using: TestFactories.counterObjectState(
+                    siteTimeserials: ["site1": "ts2"], // Existing serial "ts2"
+                    count: 5,
+                ), objectMessageSerialTimestamp: nil)
+            }
 
             let operation = TestFactories.objectOperation(
                 action: .known(.counterInc),
                 counterOp: TestFactories.counterOp(amount: 10),
             )
-            var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Apply operation with serial "ts1" which is lexicographically less than existing "ts2" and thus will be applied per RTLO4a (this is a non-pathological case of RTOL4a, that spec point being fully tested elsewhere)
-            counter.apply(
-                operation,
-                objectMessageSerial: "ts1", // Less than existing "ts2"
-                objectMessageSiteCode: "site1",
-                objectMessageSerialTimestamp: nil,
-                objectsPool: &pool,
-            )
+            internalQueue.ably_syncNoDeadlock {
+                counter.nosync_apply(
+                    operation,
+                    objectMessageSerial: "ts1", // Less than existing "ts2"
+                    objectMessageSiteCode: "site1",
+                    objectMessageSerialTimestamp: nil,
+                    objectsPool: &pool,
+                )
+            }
 
             // Check that the COUNTER_INC side-effects didn't happen:
             // Verify the operation was discarded - data unchanged (should still be 5 from creation)
@@ -326,23 +374,26 @@ struct InternalDefaultLiveCounterTests {
         @Test
         func appliesCounterCreateOperation() async throws {
             let logger = TestLogger()
-            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: .attaching)
+            let internalQueue = TestFactories.createInternalQueue()
+            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
 
             let subscriber = Subscriber<DefaultLiveCounterUpdate, SubscribeResponse>(callbackQueue: .main)
             try counter.subscribe(listener: subscriber.createListener(), coreSDK: coreSDK)
 
             let operation = TestFactories.counterCreateOperation(count: 15)
-            var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Apply COUNTER_CREATE operation
-            counter.apply(
-                operation,
-                objectMessageSerial: "ts1",
-                objectMessageSiteCode: "site1",
-                objectMessageSerialTimestamp: nil,
-                objectsPool: &pool,
-            )
+            internalQueue.ably_syncNoDeadlock {
+                counter.nosync_apply(
+                    operation,
+                    objectMessageSerial: "ts1",
+                    objectMessageSiteCode: "site1",
+                    objectMessageSerialTimestamp: nil,
+                    objectsPool: &pool,
+                )
+            }
 
             // Verify the operation was applied - initial value merged (the full logic of RTLC8 is tested elsewhere; we just check for some of its side effects here)
             #expect(try counter.value(coreSDK: coreSDK) == 15)
@@ -362,30 +413,35 @@ struct InternalDefaultLiveCounterTests {
         @Test
         func appliesCounterIncOperation() async throws {
             let logger = TestLogger()
-            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: .attaching)
+            let internalQueue = TestFactories.createInternalQueue()
+            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
 
             let subscriber = Subscriber<DefaultLiveCounterUpdate, SubscribeResponse>(callbackQueue: .main)
             try counter.subscribe(listener: subscriber.createListener(), coreSDK: coreSDK)
 
             // Set initial data
-            _ = counter.replaceData(using: TestFactories.counterObjectState(siteTimeserials: [:], count: 5), objectMessageSerialTimestamp: nil)
+            internalQueue.ably_syncNoDeadlock {
+                _ = counter.nosync_replaceData(using: TestFactories.counterObjectState(siteTimeserials: [:], count: 5), objectMessageSerialTimestamp: nil)
+            }
             #expect(try counter.value(coreSDK: coreSDK) == 5)
 
             let operation = TestFactories.objectOperation(
                 action: .known(.counterInc),
                 counterOp: TestFactories.counterOp(amount: 10),
             )
-            var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Apply COUNTER_INC operation
-            counter.apply(
-                operation,
-                objectMessageSerial: "ts1",
-                objectMessageSiteCode: "site1",
-                objectMessageSerialTimestamp: nil,
-                objectsPool: &pool,
-            )
+            internalQueue.ably_syncNoDeadlock {
+                counter.nosync_apply(
+                    operation,
+                    objectMessageSerial: "ts1",
+                    objectMessageSiteCode: "site1",
+                    objectMessageSerialTimestamp: nil,
+                    objectsPool: &pool,
+                )
+            }
 
             // Verify the operation was applied - amount added to data (the full logic of RTLC9 is tested elsewhere; we just check for some of its side effects here)
             #expect(try counter.value(coreSDK: coreSDK) == 15) // 5 + 10
@@ -402,21 +458,24 @@ struct InternalDefaultLiveCounterTests {
         @Test
         func noOpForOtherOperation() async throws {
             let logger = TestLogger()
-            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: .attaching)
+            let internalQueue = TestFactories.createInternalQueue()
+            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
 
             let subscriber = Subscriber<DefaultLiveCounterUpdate, SubscribeResponse>(callbackQueue: .main)
             try counter.subscribe(listener: subscriber.createListener(), coreSDK: coreSDK)
 
             // Try to apply a MAP_CREATE to the counter (not supported)
-            var pool = ObjectsPool(logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            counter.apply(
-                TestFactories.mapCreateOperation(),
-                objectMessageSerial: "ts1",
-                objectMessageSiteCode: "site1",
-                objectMessageSerialTimestamp: nil,
-                objectsPool: &pool,
-            )
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            internalQueue.ably_syncNoDeadlock {
+                counter.nosync_apply(
+                    TestFactories.mapCreateOperation(),
+                    objectMessageSerial: "ts1",
+                    objectMessageSiteCode: "site1",
+                    objectMessageSerialTimestamp: nil,
+                    objectsPool: &pool,
+                )
+            }
 
             // Check no update was emitted
             let subscriberInvocations = await subscriber.getInvocations()
@@ -430,8 +489,9 @@ struct InternalDefaultLiveCounterTests {
         @Test(arguments: [.detached, .failed, .suspended] as [_AblyPluginSupportPrivate.RealtimeChannelState])
         func throwsErrorForInvalidChannelState(channelState: _AblyPluginSupportPrivate.RealtimeChannelState) async throws {
             let logger = TestLogger()
-            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: channelState)
+            let internalQueue = TestFactories.createInternalQueue()
+            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: channelState, internalQueue: internalQueue)
 
             await #expect {
                 try await counter.increment(amount: 10, coreSDK: coreSDK)
@@ -452,8 +512,9 @@ struct InternalDefaultLiveCounterTests {
         ] as [Double])
         func throwsErrorForInvalidAmount(amount: Double) async throws {
             let logger = TestLogger()
-            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: .attached)
+            let internalQueue = TestFactories.createInternalQueue()
+            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
 
             await #expect {
                 try await counter.increment(amount: amount, coreSDK: coreSDK)
@@ -470,10 +531,12 @@ struct InternalDefaultLiveCounterTests {
         // @spec RTLC12e3
         // @spec RTLC12e4
         // @spec RTLC12f
+        @Test
         func publishesCorrectObjectMessage() async throws {
             let logger = TestLogger()
-            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "counter:test@123", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: .attached)
+            let internalQueue = TestFactories.createInternalQueue()
+            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "counter:test@123", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
 
             var publishedMessages: [OutboundObjectMessage] = []
             coreSDK.setPublishHandler { messages in
@@ -500,8 +563,9 @@ struct InternalDefaultLiveCounterTests {
         @Test
         func throwsErrorWhenPublishFails() async throws {
             let logger = TestLogger()
-            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "counter:test@123", logger: logger, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: .attached)
+            let internalQueue = TestFactories.createInternalQueue()
+            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "counter:test@123", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
 
             coreSDK.setPublishHandler { _ throws(InternalError) in
                 throw InternalError.other(.generic(NSError(domain: "test", code: 0, userInfo: [NSLocalizedDescriptionKey: "Publish failed"])))
@@ -524,8 +588,9 @@ struct InternalDefaultLiveCounterTests {
         @Test
         func isOppositeOfIncrement() async throws {
             // This is just a smoke test; we assume that this just calls `increment`, which is tested elsewhere.
-            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "counter:test@123", logger: TestLogger(), userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: .attached)
+            let internalQueue = TestFactories.createInternalQueue()
+            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "counter:test@123", logger: TestLogger(), internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
 
             var publishedMessages: [OutboundObjectMessage] = []
             coreSDK.setPublishHandler { messages in

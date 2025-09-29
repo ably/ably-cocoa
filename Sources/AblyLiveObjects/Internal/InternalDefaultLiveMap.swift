@@ -4,36 +4,33 @@ import Ably
 /// Protocol for accessing objects from the ObjectsPool. This is used by a LiveMap when it needs to return an object given an object ID.
 internal protocol LiveMapObjectPoolDelegate: AnyObject, Sendable {
     /// Fetches an object from the pool by its ID
-    func getObjectFromPool(id: String) -> ObjectsPool.Entry?
+    func nosync_getObjectFromPool(id: String) -> ObjectsPool.Entry?
 }
 
 /// This provides the implementation behind ``PublicDefaultLiveMap``, via internal versions of the ``LiveMap`` API.
 internal final class InternalDefaultLiveMap: Sendable {
-    // Used for synchronizing access to all of this instance's mutable state. This is a temporary solution just to allow us to implement `Sendable`, and we'll revisit it in https://github.com/ably/ably-liveobjects-swift-plugin/issues/3.
-    private let mutex = NSLock()
-
-    private nonisolated(unsafe) var mutableState: MutableState
+    private let mutableStateMutex: DispatchQueueMutex<MutableState>
 
     internal var testsOnly_data: [String: InternalObjectsMapEntry] {
-        mutex.withLock {
+        mutableStateMutex.withSync { mutableState in
             mutableState.data
         }
     }
 
     internal var testsOnly_semantics: WireEnum<ObjectsMapSemantics>? {
-        mutex.withLock {
+        mutableStateMutex.withSync { mutableState in
             mutableState.semantics
         }
     }
 
     internal var testsOnly_siteTimeserials: [String: String] {
-        mutex.withLock {
+        mutableStateMutex.withSync { mutableState in
             mutableState.liveObjectMutableState.siteTimeserials
         }
     }
 
     internal var testsOnly_createOperationIsMerged: Bool {
-        mutex.withLock {
+        mutableStateMutex.withSync { mutableState in
             mutableState.liveObjectMutableState.createOperationIsMerged
         }
     }
@@ -49,6 +46,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         objectID: String,
         testsOnly_semantics semantics: WireEnum<ObjectsMapSemantics>? = nil,
         logger: Logger,
+        internalQueue: DispatchQueue,
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock,
     ) {
@@ -57,6 +55,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             objectID: objectID,
             semantics: semantics,
             logger: logger,
+            internalQueue: internalQueue,
             userCallbackQueue: userCallbackQueue,
             clock: clock,
         )
@@ -67,10 +66,14 @@ internal final class InternalDefaultLiveMap: Sendable {
         objectID: String,
         semantics: WireEnum<ObjectsMapSemantics>?,
         logger: Logger,
+        internalQueue: DispatchQueue,
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock,
     ) {
-        mutableState = .init(liveObjectMutableState: .init(objectID: objectID), data: data, semantics: semantics)
+        mutableStateMutex = .init(
+            dispatchQueue: internalQueue,
+            initialValue: .init(liveObjectMutableState: .init(objectID: objectID), data: data, semantics: semantics),
+        )
         self.logger = logger
         self.userCallbackQueue = userCallbackQueue
         self.clock = clock
@@ -85,6 +88,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         objectID: String,
         semantics: WireEnum<ObjectsMapSemantics>? = nil,
         logger: Logger,
+        internalQueue: DispatchQueue,
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock,
     ) -> Self {
@@ -93,6 +97,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             objectID: objectID,
             semantics: semantics,
             logger: logger,
+            internalQueue: internalQueue,
             userCallbackQueue: userCallbackQueue,
             clock: clock,
         )
@@ -100,8 +105,15 @@ internal final class InternalDefaultLiveMap: Sendable {
 
     // MARK: - Data access
 
-    internal var objectID: String {
-        mutex.withLock {
+    internal var nosync_objectID: String {
+        mutableStateMutex.withoutSync { mutableState in
+            mutableState.liveObjectMutableState.objectID
+        }
+    }
+
+    /// Test-only accessor for objectID that handles locking internally.
+    internal var testsOnly_objectID: String {
+        mutableStateMutex.withSync { mutableState in
             mutableState.liveObjectMutableState.objectID
         }
     }
@@ -110,20 +122,20 @@ internal final class InternalDefaultLiveMap: Sendable {
 
     /// Returns the value associated with a given key, following RTLM5d specification.
     internal func get(key: String, coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> InternalLiveMapValue? {
-        try mutex.ablyLiveObjects_withLockWithTypedThrow { () throws(ARTErrorInfo) in
-            try mutableState.get(key: key, coreSDK: coreSDK, delegate: delegate)
+        try mutableStateMutex.withSync { mutableState throws(ARTErrorInfo) in
+            try mutableState.nosync_get(key: key, coreSDK: coreSDK, delegate: delegate)
         }
     }
 
     internal func size(coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> Int {
-        try mutex.ablyLiveObjects_withLockWithTypedThrow { () throws(ARTErrorInfo) in
-            try mutableState.size(coreSDK: coreSDK, delegate: delegate)
+        try mutableStateMutex.withSync { mutableState throws(ARTErrorInfo) in
+            try mutableState.nosync_size(coreSDK: coreSDK, delegate: delegate)
         }
     }
 
     internal func entries(coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> [(key: String, value: InternalLiveMapValue)] {
-        try mutex.ablyLiveObjects_withLockWithTypedThrow { () throws(ARTErrorInfo) in
-            try mutableState.entries(coreSDK: coreSDK, delegate: delegate)
+        try mutableStateMutex.withSync { mutableState throws(ARTErrorInfo) in
+            try mutableState.nosync_entries(coreSDK: coreSDK, delegate: delegate)
         }
     }
 
@@ -139,27 +151,29 @@ internal final class InternalDefaultLiveMap: Sendable {
 
     internal func set(key: String, value: InternalLiveMapValue, coreSDK: CoreSDK) async throws(ARTErrorInfo) {
         do throws(InternalError) {
-            // RTLM20c
-            do {
-                try coreSDK.validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: "LiveMap.set")
-            } catch {
-                throw error.toInternalError()
-            }
+            let objectMessage = try mutableStateMutex.withSync { mutableState throws(InternalError) in
+                // RTLM20c
+                do throws(ARTErrorInfo) {
+                    try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: "LiveMap.set")
+                } catch {
+                    throw error.toInternalError()
+                }
 
-            let objectMessage = OutboundObjectMessage(
-                operation: .init(
-                    // RTLM20e2
-                    action: .known(.mapSet),
-                    // RTLM20e3
-                    objectId: objectID,
-                    mapOp: .init(
-                        // RTLM20e4
-                        key: key,
-                        // RTLM20e5
-                        data: value.toObjectData,
+                return OutboundObjectMessage(
+                    operation: .init(
+                        // RTLM20e2
+                        action: .known(.mapSet),
+                        // RTLM20e3
+                        objectId: mutableState.liveObjectMutableState.objectID,
+                        mapOp: .init(
+                            // RTLM20e4
+                            key: key,
+                            // RTLM20e5
+                            data: value.nosync_toObjectData,
+                        ),
                     ),
-                ),
-            )
+                )
+            }
 
             try await coreSDK.publish(objectMessages: [objectMessage])
         } catch {
@@ -169,25 +183,27 @@ internal final class InternalDefaultLiveMap: Sendable {
 
     internal func remove(key: String, coreSDK: CoreSDK) async throws(ARTErrorInfo) {
         do throws(InternalError) {
-            // RTLM21c
-            do {
-                try coreSDK.validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: "LiveMap.remove")
-            } catch {
-                throw error.toInternalError()
-            }
+            let objectMessage = try mutableStateMutex.withSync { mutableState throws(InternalError) in
+                // RTLM21c
+                do throws(ARTErrorInfo) {
+                    try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: "LiveMap.remove")
+                } catch {
+                    throw error.toInternalError()
+                }
 
-            let objectMessage = OutboundObjectMessage(
-                operation: .init(
-                    // RTLM21e2
-                    action: .known(.mapRemove),
-                    // RTLM21e3
-                    objectId: objectID,
-                    mapOp: .init(
-                        // RTLM21e4
-                        key: key,
+                return OutboundObjectMessage(
+                    operation: .init(
+                        // RTLM21e2
+                        action: .known(.mapRemove),
+                        // RTLM21e3
+                        objectId: mutableState.liveObjectMutableState.objectID,
+                        mapOp: .init(
+                            // RTLM21e4
+                            key: key,
+                        ),
                     ),
-                ),
-            )
+                )
+            }
 
             // RTLM21f
             try await coreSDK.publish(objectMessages: [objectMessage])
@@ -198,14 +214,14 @@ internal final class InternalDefaultLiveMap: Sendable {
 
     @discardableResult
     internal func subscribe(listener: @escaping LiveObjectUpdateCallback<DefaultLiveMapUpdate>, coreSDK: CoreSDK) throws(ARTErrorInfo) -> any SubscribeResponse {
-        try mutex.ablyLiveObjects_withLockWithTypedThrow { () throws(ARTErrorInfo) in
+        try mutableStateMutex.withSync { mutableState throws(ARTErrorInfo) in
             // swiftlint:disable:next trailing_closure
-            try mutableState.liveObjectMutableState.subscribe(listener: listener, coreSDK: coreSDK, updateSelfLater: { [weak self] action in
+            try mutableState.liveObjectMutableState.nosync_subscribe(listener: listener, coreSDK: coreSDK, updateSelfLater: { [weak self] action in
                 guard let self else {
                     return
                 }
 
-                mutex.withLock {
+                mutableStateMutex.withSync { mutableState in
                     action(&mutableState.liveObjectMutableState)
                 }
             })
@@ -213,28 +229,29 @@ internal final class InternalDefaultLiveMap: Sendable {
     }
 
     internal func unsubscribeAll() {
-        mutex.withLock {
+        mutableStateMutex.withSync { mutableState in
             mutableState.liveObjectMutableState.unsubscribeAll()
         }
     }
 
     @discardableResult
     internal func on(event: LiveObjectLifecycleEvent, callback: @escaping LiveObjectLifecycleEventCallback) -> any OnLiveObjectLifecycleEventResponse {
-        mutex.withLock {
-            mutableState.liveObjectMutableState.on(event: event, callback: callback) { [weak self] action in
+        mutableStateMutex.withSync { mutableState in
+            // swiftlint:disable:next trailing_closure
+            mutableState.liveObjectMutableState.on(event: event, callback: callback, updateSelfLater: { [weak self] action in
                 guard let self else {
                     return
                 }
 
-                mutex.withLock {
+                mutableStateMutex.withSync { mutableState in
                     action(&mutableState.liveObjectMutableState)
                 }
-            }
+            })
         }
     }
 
     internal func offAll() {
-        mutex.withLock {
+        mutableStateMutex.withSync { mutableState in
             mutableState.liveObjectMutableState.offAll()
         }
     }
@@ -244,8 +261,8 @@ internal final class InternalDefaultLiveMap: Sendable {
     /// Emit an event from this `LiveMap`.
     ///
     /// This is used to instruct this map to emit updates during an `OBJECT_SYNC`.
-    internal func emit(_ update: LiveObjectUpdate<DefaultLiveMapUpdate>) {
-        mutex.withLock {
+    internal func nosync_emit(_ update: LiveObjectUpdate<DefaultLiveMapUpdate>) {
+        mutableStateMutex.withoutSync { mutableState in
             mutableState.liveObjectMutableState.emit(update, on: userCallbackQueue)
         }
     }
@@ -257,30 +274,32 @@ internal final class InternalDefaultLiveMap: Sendable {
     /// - Parameters:
     ///   - objectsPool: The pool into which should be inserted any objects created by a `MAP_SET` operation.
     ///   - objectMessageSerialTimestamp: The `serialTimestamp` of the containing `ObjectMessage`. Used if we need to tombstone this map.
-    internal func replaceData(
+    internal func nosync_replaceData(
         using state: ObjectState,
         objectMessageSerialTimestamp: Date?,
         objectsPool: inout ObjectsPool,
     ) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
-        mutex.withLock {
+        mutableStateMutex.withoutSync { mutableState in
             mutableState.replaceData(
                 using: state,
                 objectMessageSerialTimestamp: objectMessageSerialTimestamp,
                 objectsPool: &objectsPool,
                 logger: logger,
                 clock: clock,
+                internalQueue: mutableStateMutex.dispatchQueue,
                 userCallbackQueue: userCallbackQueue,
             )
         }
     }
 
     /// Merges the initial value from an ObjectOperation into this LiveMap, per RTLM17.
-    internal func mergeInitialValue(from operation: ObjectOperation, objectsPool: inout ObjectsPool) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
-        mutex.withLock {
+    internal func nosync_mergeInitialValue(from operation: ObjectOperation, objectsPool: inout ObjectsPool) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
+        mutableStateMutex.withoutSync { mutableState in
             mutableState.mergeInitialValue(
                 from: operation,
                 objectsPool: &objectsPool,
                 logger: logger,
+                internalQueue: mutableStateMutex.dispatchQueue,
                 userCallbackQueue: userCallbackQueue,
                 clock: clock,
             )
@@ -289,11 +308,12 @@ internal final class InternalDefaultLiveMap: Sendable {
 
     /// Test-only method to apply a MAP_CREATE operation, per RTLM16.
     internal func testsOnly_applyMapCreateOperation(_ operation: ObjectOperation, objectsPool: inout ObjectsPool) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
-        mutex.withLock {
+        mutableStateMutex.withSync { mutableState in
             mutableState.applyMapCreateOperation(
                 operation,
                 objectsPool: &objectsPool,
                 logger: logger,
+                internalQueue: mutableStateMutex.dispatchQueue,
                 userCallbackQueue: userCallbackQueue,
                 clock: clock,
             )
@@ -301,14 +321,14 @@ internal final class InternalDefaultLiveMap: Sendable {
     }
 
     /// Attempts to apply an operation from an inbound `ObjectMessage`, per RTLM15.
-    internal func apply(
+    internal func nosync_apply(
         _ operation: ObjectOperation,
         objectMessageSerial: String?,
         objectMessageSiteCode: String?,
         objectMessageSerialTimestamp: Date?,
         objectsPool: inout ObjectsPool,
     ) {
-        mutex.withLock {
+        mutableStateMutex.withoutSync { mutableState in
             mutableState.apply(
                 operation,
                 objectMessageSerial: objectMessageSerial,
@@ -316,6 +336,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                 objectMessageSerialTimestamp: objectMessageSerialTimestamp,
                 objectsPool: &objectsPool,
                 logger: logger,
+                internalQueue: mutableStateMutex.dispatchQueue,
                 userCallbackQueue: userCallbackQueue,
                 clock: clock,
             )
@@ -331,13 +352,14 @@ internal final class InternalDefaultLiveMap: Sendable {
         operationData: ObjectData,
         objectsPool: inout ObjectsPool,
     ) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
-        mutex.withLock {
+        mutableStateMutex.withSync { mutableState in
             mutableState.applyMapSetOperation(
                 key: key,
                 operationTimeserial: operationTimeserial,
                 operationData: operationData,
                 objectsPool: &objectsPool,
                 logger: logger,
+                internalQueue: mutableStateMutex.dispatchQueue,
                 userCallbackQueue: userCallbackQueue,
                 clock: clock,
             )
@@ -348,7 +370,7 @@ internal final class InternalDefaultLiveMap: Sendable {
     ///
     /// This is currently exposed just so that the tests can test RTLM8 without having to go through a convoluted replaceData(…) call, but I _think_ that it's going to be used in further contexts when we introduce the handling of incoming object operations in a future spec PR.
     internal func testsOnly_applyMapRemoveOperation(key: String, operationTimeserial: String?, operationSerialTimestamp: Date?) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
-        mutex.withLock {
+        mutableStateMutex.withSync { mutableState in
             mutableState.applyMapRemoveOperation(
                 key: key,
                 operationTimeserial: operationTimeserial,
@@ -360,15 +382,15 @@ internal final class InternalDefaultLiveMap: Sendable {
     }
 
     /// Resets the map's data, per RTO4b2. This is to be used when an `ATTACHED` ProtocolMessage indicates that the only object in a channel is an empty root map.
-    internal func resetData() {
-        mutex.withLock {
+    internal func nosync_resetData() {
+        mutableStateMutex.withoutSync { mutableState in
             mutableState.resetData(userCallbackQueue: userCallbackQueue)
         }
     }
 
     /// Releases entries that were tombstoned more than `gracePeriod` ago, per RTLM19.
-    internal func releaseTombstonedEntries(gracePeriod: TimeInterval, clock: SimpleClock) {
-        mutex.withLock {
+    internal func nosync_releaseTombstonedEntries(gracePeriod: TimeInterval, clock: SimpleClock) {
+        mutableStateMutex.withoutSync { mutableState in
             mutableState.releaseTombstonedEntries(gracePeriod: gracePeriod, logger: logger, clock: clock)
         }
     }
@@ -376,15 +398,29 @@ internal final class InternalDefaultLiveMap: Sendable {
     // MARK: - LiveObject
 
     /// Returns the object's RTLO3d `isTombstone` property.
-    internal var isTombstone: Bool {
-        mutex.withLock {
+    internal var nosync_isTombstone: Bool {
+        mutableStateMutex.withoutSync { mutableState in
+            mutableState.liveObjectMutableState.isTombstone
+        }
+    }
+
+    /// Test-only accessor for isTombstone that handles locking internally.
+    internal var testsOnly_isTombstone: Bool {
+        mutableStateMutex.withSync { mutableState in
             mutableState.liveObjectMutableState.isTombstone
         }
     }
 
     /// Returns the object's RTLO3e `tombstonedAt` property.
-    internal var tombstonedAt: Date? {
-        mutex.withLock {
+    internal var nosync_tombstonedAt: Date? {
+        mutableStateMutex.withoutSync { mutableState in
+            mutableState.liveObjectMutableState.tombstonedAt
+        }
+    }
+
+    /// Test-only accessor for tombstonedAt that handles locking internally.
+    internal var testsOnly_tombstonedAt: Date? {
+        mutableStateMutex.withSync { mutableState in
             mutableState.liveObjectMutableState.tombstonedAt
         }
     }
@@ -412,6 +448,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             objectsPool: inout ObjectsPool,
             logger: Logger,
             clock: SimpleClock,
+            internalQueue: DispatchQueue,
             userCallbackQueue: DispatchQueue,
         ) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
             // RTLM6a: Replace the private siteTimeserials with the value from ObjectState.siteTimeserials
@@ -467,6 +504,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                     from: createOp,
                     objectsPool: &objectsPool,
                     logger: logger,
+                    internalQueue: internalQueue,
                     userCallbackQueue: userCallbackQueue,
                     clock: clock,
                 )
@@ -481,6 +519,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             from operation: ObjectOperation,
             objectsPool: inout ObjectsPool,
             logger: Logger,
+            internalQueue: DispatchQueue,
             userCallbackQueue: DispatchQueue,
             clock: SimpleClock,
         ) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
@@ -506,6 +545,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                             operationData: entry.data,
                             objectsPool: &objectsPool,
                             logger: logger,
+                            internalQueue: internalQueue,
                             userCallbackQueue: userCallbackQueue,
                             clock: clock,
                         )
@@ -543,6 +583,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             objectMessageSerialTimestamp: Date?,
             objectsPool: inout ObjectsPool,
             logger: Logger,
+            internalQueue: DispatchQueue,
             userCallbackQueue: DispatchQueue,
             clock: SimpleClock,
         ) {
@@ -568,6 +609,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                     operation,
                     objectsPool: &objectsPool,
                     logger: logger,
+                    internalQueue: internalQueue,
                     userCallbackQueue: userCallbackQueue,
                     clock: clock,
                 )
@@ -590,6 +632,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                     operationData: data,
                     objectsPool: &objectsPool,
                     logger: logger,
+                    internalQueue: internalQueue,
                     userCallbackQueue: userCallbackQueue,
                     clock: clock,
                 )
@@ -636,6 +679,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             operationData: ObjectData?,
             objectsPool: inout ObjectsPool,
             logger: Logger,
+            internalQueue: DispatchQueue,
             userCallbackQueue: DispatchQueue,
             clock: SimpleClock,
         ) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
@@ -664,7 +708,13 @@ internal final class InternalDefaultLiveMap: Sendable {
             // RTLM7c: If the operation has a non-empty ObjectData.objectId attribute
             if let objectId = operationData?.objectId, !objectId.isEmpty {
                 // RTLM7c1: Create a zero-value LiveObject in the internal ObjectsPool per RTO6
-                _ = objectsPool.createZeroValueObject(forObjectID: objectId, logger: logger, userCallbackQueue: userCallbackQueue, clock: clock)
+                _ = objectsPool.createZeroValueObject(
+                    forObjectID: objectId,
+                    logger: logger,
+                    internalQueue: internalQueue,
+                    userCallbackQueue: userCallbackQueue,
+                    clock: clock,
+                )
             }
 
             // RTLM7f
@@ -759,6 +809,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             _ operation: ObjectOperation,
             objectsPool: inout ObjectsPool,
             logger: Logger,
+            internalQueue: DispatchQueue,
             userCallbackQueue: DispatchQueue,
             clock: SimpleClock,
         ) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
@@ -775,6 +826,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                 from: operation,
                 objectsPool: &objectsPool,
                 logger: logger,
+                internalQueue: internalQueue,
                 userCallbackQueue: userCallbackQueue,
                 clock: clock,
             )
@@ -823,9 +875,9 @@ internal final class InternalDefaultLiveMap: Sendable {
         }
 
         /// Returns the value associated with a given key, following RTLM5d specification.
-        internal func get(key: String, coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> InternalLiveMapValue? {
+        internal func nosync_get(key: String, coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> InternalLiveMapValue? {
             // RTLM5c: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
-            try coreSDK.validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveMap.get")
+            try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveMap.get")
 
             // RTLM5e - Return nil if self is tombstone
             if liveObjectMutableState.isTombstone {
@@ -838,30 +890,30 @@ internal final class InternalDefaultLiveMap: Sendable {
             }
 
             // RTLM5d2: If a ObjectsMapEntry exists at the key, convert it using the shared logic
-            return convertEntryToLiveMapValue(entry, delegate: delegate)
+            return nosync_convertEntryToLiveMapValue(entry, delegate: delegate)
         }
 
-        internal func size(coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> Int {
+        internal func nosync_size(coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> Int {
             // RTLM10c: If the channel is in the DETACHED or FAILED state, the library should throw an ErrorInfo error with statusCode 400 and code 90001
-            try coreSDK.validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveMap.size")
+            try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveMap.size")
 
             // RTLM10d: Returns the number of non-tombstoned entries (per RTLM14) in the internal data map
             return data.values.count { entry in
-                !Self.isEntryTombstoned(entry, delegate: delegate)
+                !Self.nosync_isEntryTombstoned(entry, delegate: delegate)
             }
         }
 
-        internal func entries(coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> [(key: String, value: InternalLiveMapValue)] {
+        internal func nosync_entries(coreSDK: CoreSDK, delegate: LiveMapObjectPoolDelegate) throws(ARTErrorInfo) -> [(key: String, value: InternalLiveMapValue)] {
             // RTLM11c: If the channel is in the DETACHED or FAILED state, the library should throw an ErrorInfo error with statusCode 400 and code 90001
-            try coreSDK.validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveMap.entries")
+            try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveMap.entries")
 
             // RTLM11d: Returns key-value pairs from the internal data map
             // RTLM11d1: Pairs with tombstoned entries (per RTLM14) are not returned
             var result: [(key: String, value: InternalLiveMapValue)] = []
 
-            for (key, entry) in data where !Self.isEntryTombstoned(entry, delegate: delegate) {
+            for (key, entry) in data where !Self.nosync_isEntryTombstoned(entry, delegate: delegate) {
                 // Convert entry to LiveMapValue using the same logic as get(key:)
-                if let value = convertEntryToLiveMapValue(entry, delegate: delegate) {
+                if let value = nosync_convertEntryToLiveMapValue(entry, delegate: delegate) {
                     result.append((key: key, value: value))
                 }
             }
@@ -872,7 +924,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         // MARK: - Helper Methods
 
         /// Returns whether a map entry should be considered tombstoned, per the check described in RTLM14.
-        private static func isEntryTombstoned(_ entry: InternalObjectsMapEntry, delegate: LiveMapObjectPoolDelegate) -> Bool {
+        private static func nosync_isEntryTombstoned(_ entry: InternalObjectsMapEntry, delegate: LiveMapObjectPoolDelegate) -> Bool {
             // RTLM14a
             if entry.tombstone {
                 return true
@@ -880,7 +932,7 @@ internal final class InternalDefaultLiveMap: Sendable {
 
             // RTLM14c
             if let objectId = entry.data?.objectId {
-                if let poolEntry = delegate.getObjectFromPool(id: objectId), poolEntry.isTombstone {
+                if let poolEntry = delegate.nosync_getObjectFromPool(id: objectId), poolEntry.nosync_isTombstone {
                     return true
                 }
             }
@@ -891,7 +943,7 @@ internal final class InternalDefaultLiveMap: Sendable {
 
         /// Converts an InternalObjectsMapEntry to LiveMapValue using the same logic as get(key:)
         /// This is used by entries to ensure consistent value conversion
-        private func convertEntryToLiveMapValue(_ entry: InternalObjectsMapEntry, delegate: LiveMapObjectPoolDelegate) -> InternalLiveMapValue? {
+        private func nosync_convertEntryToLiveMapValue(_ entry: InternalObjectsMapEntry, delegate: LiveMapObjectPoolDelegate) -> InternalLiveMapValue? {
             // RTLM5d2a: If ObjectsMapEntry.tombstone is true, return undefined/null
             if entry.tombstone == true {
                 return nil
@@ -932,12 +984,12 @@ internal final class InternalDefaultLiveMap: Sendable {
             // RTLM5d2f: If ObjectsMapEntry.data.objectId exists, get the object stored at that objectId from the internal ObjectsPool
             if let objectId = entry.data?.objectId {
                 // RTLM5d2f1: If an object with id objectId does not exist, return undefined/null
-                guard let poolEntry = delegate.getObjectFromPool(id: objectId) else {
+                guard let poolEntry = delegate.nosync_getObjectFromPool(id: objectId) else {
                     return nil
                 }
 
                 // RTLM5d2f3: If referenced object is tombstoned, return nil
-                if poolEntry.isTombstone {
+                if poolEntry.nosync_isTombstone {
                     return nil
                 }
 

@@ -82,9 +82,9 @@ internal struct LiveObjectMutableState<Update: Sendable> {
     internal typealias UpdateLiveObject = @Sendable (_ action: (inout Self) -> Void) -> Void
 
     @discardableResult
-    internal mutating func subscribe(listener: @escaping LiveObjectUpdateCallback<Update>, coreSDK: CoreSDK, updateSelfLater: @escaping UpdateLiveObject) throws(ARTErrorInfo) -> any AblyLiveObjects.SubscribeResponse {
+    internal mutating func nosync_subscribe(listener: @escaping LiveObjectUpdateCallback<Update>, coreSDK: CoreSDK, updateSelfLater: @escaping UpdateLiveObject) throws(ARTErrorInfo) -> any AblyLiveObjects.SubscribeResponse {
         // RTLO4b2
-        try coreSDK.validateChannelState(notIn: [.detached, .failed], operationDescription: "subscribe")
+        try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed], operationDescription: "subscribe")
 
         let updateSubscriptionStorage: SubscriptionStorage<EventName, Update>.UpdateSubscriptionStorage = { action in
             updateSelfLater { liveObject in

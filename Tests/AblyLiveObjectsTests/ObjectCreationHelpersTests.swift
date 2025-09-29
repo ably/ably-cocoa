@@ -25,30 +25,33 @@ struct ObjectCreationHelpersTests {
             let timestamp = Date(timeIntervalSince1970: 1_754_042_434)
             let logger = TestLogger()
             let clock = MockSimpleClock()
-            let referencedMap = InternalDefaultLiveMap.createZeroValued(objectID: "referencedMapID", logger: logger, userCallbackQueue: .main, clock: clock)
-            let referencedCounter = InternalDefaultLiveCounter.createZeroValued(objectID: "referencedCounterID", logger: logger, userCallbackQueue: .main, clock: clock)
+            let internalQueue = TestFactories.createInternalQueue()
+            let referencedMap = InternalDefaultLiveMap.createZeroValued(objectID: "referencedMapID", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: clock)
+            let referencedCounter = InternalDefaultLiveCounter.createZeroValued(objectID: "referencedCounterID", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: clock)
 
             // When
-            let creationOperation = ObjectCreationHelpers.creationOperationForLiveMap(
-                entries: [
-                    // RTO11f4c1a
-                    "mapRef": .liveMap(referencedMap),
-                    // RTO11f4c1a
-                    "counterRef": .liveCounter(referencedCounter),
-                    // RTO11f4c1b
-                    "jsonArrayKey": .jsonArray([.string("arrayItem1"), .string("arrayItem2")]),
-                    "jsonObjectKey": .jsonObject(["nestedKey": .string("nestedValue")]),
-                    // RTO11f4c1c
-                    "stringKey": .string("stringValue"),
-                    // RTO11f4c1d
-                    "numberKey": .number(42.5),
-                    // RTO11f4c1e
-                    "booleanKey": .bool(true),
-                    // RTO11f4c1f
-                    "dataKey": .data(Data([0x01, 0x02, 0x03])),
-                ],
-                timestamp: timestamp,
-            )
+            let creationOperation = internalQueue.ably_syncNoDeadlock {
+                ObjectCreationHelpers.nosync_creationOperationForLiveMap(
+                    entries: [
+                        // RTO11f4c1a
+                        "mapRef": .liveMap(referencedMap),
+                        // RTO11f4c1a
+                        "counterRef": .liveCounter(referencedCounter),
+                        // RTO11f4c1b
+                        "jsonArrayKey": .jsonArray([.string("arrayItem1"), .string("arrayItem2")]),
+                        "jsonObjectKey": .jsonObject(["nestedKey": .string("nestedValue")]),
+                        // RTO11f4c1c
+                        "stringKey": .string("stringValue"),
+                        // RTO11f4c1d
+                        "numberKey": .number(42.5),
+                        // RTO11f4c1e
+                        "booleanKey": .bool(true),
+                        // RTO11f4c1f
+                        "dataKey": .data(Data([0x01, 0x02, 0x03])),
+                    ],
+                    timestamp: timestamp,
+                )
+            }
 
             // Then
 

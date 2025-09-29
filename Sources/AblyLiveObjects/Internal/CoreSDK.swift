@@ -14,7 +14,7 @@ internal protocol CoreSDK: AnyObject, Sendable {
     func testsOnly_overridePublish(with newImplementation: @escaping ([OutboundObjectMessage]) async throws(InternalError) -> Void)
 
     /// Returns the current state of the Realtime channel that this wraps.
-    var channelState: _AblyPluginSupportPrivate.RealtimeChannelState { get }
+    var nosync_channelState: _AblyPluginSupportPrivate.RealtimeChannelState { get }
 }
 
 internal final class DefaultCoreSDK: CoreSDK {
@@ -81,8 +81,8 @@ internal final class DefaultCoreSDK: CoreSDK {
         }
     }
 
-    internal var channelState: _AblyPluginSupportPrivate.RealtimeChannelState {
-        pluginAPI.state(for: channel)
+    internal var nosync_channelState: _AblyPluginSupportPrivate.RealtimeChannelState {
+        pluginAPI.nosync_state(for: channel)
     }
 }
 
@@ -96,11 +96,11 @@ internal extension CoreSDK {
     ///   - invalidStates: Array of channel states that are considered invalid for the operation
     ///   - operationDescription: A description of the operation being performed, used in error messages
     /// - Throws: `ARTErrorInfo` with code 90001 and statusCode 400 if the channel is in any of the invalid states
-    func validateChannelState(
+    func nosync_validateChannelState(
         notIn invalidStates: [_AblyPluginSupportPrivate.RealtimeChannelState],
         operationDescription: String,
     ) throws(ARTErrorInfo) {
-        let currentChannelState = channelState
+        let currentChannelState = nosync_channelState
         if invalidStates.contains(currentChannelState) {
             throw LiveObjectsError.objectsOperationFailedInvalidChannelState(
                 operationDescription: operationDescription,

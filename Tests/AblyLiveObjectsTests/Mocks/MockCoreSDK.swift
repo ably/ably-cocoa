@@ -3,14 +3,14 @@ import Ably
 @testable import AblyLiveObjects
 
 final class MockCoreSDK: CoreSDK {
-    /// Synchronizes access to all of this instance's mutable state.
+    /// Synchronizes access to `_publishHandler`.
     private let mutex = NSLock()
-
-    private nonisolated(unsafe) var _channelState: _AblyPluginSupportPrivate.RealtimeChannelState
     private nonisolated(unsafe) var _publishHandler: (([OutboundObjectMessage]) async throws(InternalError) -> Void)?
 
-    init(channelState: _AblyPluginSupportPrivate.RealtimeChannelState) {
-        _channelState = channelState
+    private let channelStateMutex: DispatchQueueMutex<_AblyPluginSupportPrivate.RealtimeChannelState>
+
+    init(channelState: _AblyPluginSupportPrivate.RealtimeChannelState, internalQueue: DispatchQueue) {
+        channelStateMutex = DispatchQueueMutex(dispatchQueue: internalQueue, initialValue: channelState)
     }
 
     func publish(objectMessages: [OutboundObjectMessage]) async throws(InternalError) {
@@ -25,17 +25,8 @@ final class MockCoreSDK: CoreSDK {
         protocolRequirementNotImplemented()
     }
 
-    var channelState: _AblyPluginSupportPrivate.RealtimeChannelState {
-        get {
-            mutex.withLock {
-                _channelState
-            }
-        }
-        set {
-            mutex.withLock {
-                _channelState = newValue
-            }
-        }
+    var nosync_channelState: _AblyPluginSupportPrivate.RealtimeChannelState {
+        channelStateMutex.withoutSync { $0 }
     }
 
     /// Sets a custom publish handler for testing

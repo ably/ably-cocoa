@@ -4,19 +4,16 @@ import Foundation
 
 /// This provides the implementation behind ``PublicDefaultLiveCounter``, via internal versions of the ``LiveCounter`` API.
 internal final class InternalDefaultLiveCounter: Sendable {
-    // Used for synchronizing access to all of this instance's mutable state. This is a temporary solution just to allow us to implement `Sendable`, and we'll revisit it in https://github.com/ably/ably-liveobjects-swift-plugin/issues/3.
-    private let mutex = NSLock()
-
-    private nonisolated(unsafe) var mutableState: MutableState
+    private let mutableStateMutex: DispatchQueueMutex<MutableState>
 
     internal var testsOnly_siteTimeserials: [String: String] {
-        mutex.withLock {
+        mutableStateMutex.withSync { mutableState in
             mutableState.liveObjectMutableState.siteTimeserials
         }
     }
 
     internal var testsOnly_createOperationIsMerged: Bool {
-        mutex.withLock {
+        mutableStateMutex.withSync { mutableState in
             mutableState.liveObjectMutableState.createOperationIsMerged
         }
     }
@@ -31,20 +28,32 @@ internal final class InternalDefaultLiveCounter: Sendable {
         testsOnly_data data: Double,
         objectID: String,
         logger: Logger,
+        internalQueue: DispatchQueue,
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock
     ) {
-        self.init(data: data, objectID: objectID, logger: logger, userCallbackQueue: userCallbackQueue, clock: clock)
+        self.init(
+            data: data,
+            objectID: objectID,
+            logger: logger,
+            internalQueue: internalQueue,
+            userCallbackQueue: userCallbackQueue,
+            clock: clock,
+        )
     }
 
     private init(
         data: Double,
         objectID: String,
         logger: Logger,
+        internalQueue: DispatchQueue,
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock
     ) {
-        mutableState = .init(liveObjectMutableState: .init(objectID: objectID), data: data)
+        mutableStateMutex = .init(
+            dispatchQueue: internalQueue,
+            initialValue: .init(liveObjectMutableState: .init(objectID: objectID), data: data),
+        )
         self.logger = logger
         self.userCallbackQueue = userCallbackQueue
         self.clock = clock
@@ -57,6 +66,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
     internal static func createZeroValued(
         objectID: String,
         logger: Logger,
+        internalQueue: DispatchQueue,
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock,
     ) -> Self {
@@ -64,6 +74,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
             data: 0,
             objectID: objectID,
             logger: logger,
+            internalQueue: internalQueue,
             userCallbackQueue: userCallbackQueue,
             clock: clock,
         )
@@ -71,8 +82,15 @@ internal final class InternalDefaultLiveCounter: Sendable {
 
     // MARK: - Data access
 
-    internal var objectID: String {
-        mutex.withLock {
+    internal var nosync_objectID: String {
+        mutableStateMutex.withoutSync { mutableState in
+            mutableState.liveObjectMutableState.objectID
+        }
+    }
+
+    /// Test-only accessor for objectID that handles locking internally.
+    internal var testsOnly_objectID: String {
+        mutableStateMutex.withSync { mutableState in
             mutableState.liveObjectMutableState.objectID
         }
     }
@@ -80,40 +98,42 @@ internal final class InternalDefaultLiveCounter: Sendable {
     // MARK: - Internal methods that back LiveCounter conformance
 
     internal func value(coreSDK: CoreSDK) throws(ARTErrorInfo) -> Double {
-        try mutex.ablyLiveObjects_withLockWithTypedThrow { () throws(ARTErrorInfo) in
-            try mutableState.value(coreSDK: coreSDK)
+        try mutableStateMutex.withSync { mutableState throws(ARTErrorInfo) in
+            try mutableState.nosync_value(coreSDK: coreSDK)
         }
     }
 
     internal func increment(amount: Double, coreSDK: CoreSDK) async throws(ARTErrorInfo) {
         do throws(InternalError) {
-            // RTLC12c
-            do {
-                try coreSDK.validateChannelState(
-                    notIn: [.detached, .failed, .suspended],
-                    operationDescription: "LiveCounter.increment",
-                )
-            } catch {
-                throw error.toInternalError()
-            }
+            let objectMessage = try mutableStateMutex.withSync { mutableState throws(InternalError) in
+                // RTLC12c
+                do throws(ARTErrorInfo) {
+                    try coreSDK.nosync_validateChannelState(
+                        notIn: [.detached, .failed, .suspended],
+                        operationDescription: "LiveCounter.increment",
+                    )
+                } catch {
+                    throw error.toInternalError()
+                }
 
-            // RTLC12e1
-            if !amount.isFinite {
-                throw LiveObjectsError.counterIncrementAmountInvalid(amount: amount).toARTErrorInfo().toInternalError()
-            }
+                // RTLC12e1
+                if !amount.isFinite {
+                    throw LiveObjectsError.counterIncrementAmountInvalid(amount: amount).toARTErrorInfo().toInternalError()
+                }
 
-            let objectMessage = OutboundObjectMessage(
-                operation: .init(
-                    // RTLC12e2
-                    action: .known(.counterInc),
-                    // RTLC12e3
-                    objectId: objectID,
-                    counterOp: .init(
-                        // RTLC12e4
-                        amount: .init(value: amount),
+                return OutboundObjectMessage(
+                    operation: .init(
+                        // RTLC12e2
+                        action: .known(.counterInc),
+                        // RTLC12e3
+                        objectId: mutableState.liveObjectMutableState.objectID,
+                        counterOp: .init(
+                            // RTLC12e4
+                            amount: .init(value: amount),
+                        ),
                     ),
-                ),
-            )
+                )
+            }
 
             // RTLC12f
             try await coreSDK.publish(objectMessages: [objectMessage])
@@ -129,14 +149,14 @@ internal final class InternalDefaultLiveCounter: Sendable {
 
     @discardableResult
     internal func subscribe(listener: @escaping LiveObjectUpdateCallback<DefaultLiveCounterUpdate>, coreSDK: CoreSDK) throws(ARTErrorInfo) -> any SubscribeResponse {
-        try mutex.ablyLiveObjects_withLockWithTypedThrow { () throws(ARTErrorInfo) in
+        try mutableStateMutex.withSync { mutableState throws(ARTErrorInfo) in
             // swiftlint:disable:next trailing_closure
-            try mutableState.liveObjectMutableState.subscribe(listener: listener, coreSDK: coreSDK, updateSelfLater: { [weak self] action in
+            try mutableState.liveObjectMutableState.nosync_subscribe(listener: listener, coreSDK: coreSDK, updateSelfLater: { [weak self] action in
                 guard let self else {
                     return
                 }
 
-                mutex.withLock {
+                mutableStateMutex.withSync { mutableState in
                     action(&mutableState.liveObjectMutableState)
                 }
             })
@@ -144,28 +164,29 @@ internal final class InternalDefaultLiveCounter: Sendable {
     }
 
     internal func unsubscribeAll() {
-        mutex.withLock {
+        mutableStateMutex.withSync { mutableState in
             mutableState.liveObjectMutableState.unsubscribeAll()
         }
     }
 
     @discardableResult
     internal func on(event: LiveObjectLifecycleEvent, callback: @escaping LiveObjectLifecycleEventCallback) -> any OnLiveObjectLifecycleEventResponse {
-        mutex.withLock {
-            mutableState.liveObjectMutableState.on(event: event, callback: callback) { [weak self] action in
+        mutableStateMutex.withSync { mutableState in
+            // swiftlint:disable:next trailing_closure
+            mutableState.liveObjectMutableState.on(event: event, callback: callback, updateSelfLater: { [weak self] action in
                 guard let self else {
                     return
                 }
 
-                mutex.withLock {
+                mutableStateMutex.withSync { mutableState in
                     action(&mutableState.liveObjectMutableState)
                 }
-            }
+            })
         }
     }
 
     internal func offAll() {
-        mutex.withLock {
+        mutableStateMutex.withSync { mutableState in
             mutableState.liveObjectMutableState.offAll()
         }
     }
@@ -175,8 +196,8 @@ internal final class InternalDefaultLiveCounter: Sendable {
     /// Emit an event from this `LiveCounter`.
     ///
     /// This is used to instruct this counter to emit updates during an `OBJECT_SYNC`.
-    internal func emit(_ update: LiveObjectUpdate<DefaultLiveCounterUpdate>) {
-        mutex.withLock {
+    internal func nosync_emit(_ update: LiveObjectUpdate<DefaultLiveCounterUpdate>) {
+        mutableStateMutex.withoutSync { mutableState in
             mutableState.liveObjectMutableState.emit(update, on: userCallbackQueue)
         }
     }
@@ -187,11 +208,11 @@ internal final class InternalDefaultLiveCounter: Sendable {
     ///
     /// - Parameters:
     ///   - objectMessageSerialTimestamp: The `serialTimestamp` of the containing `ObjectMessage`. Used if we need to tombstone this counter.
-    internal func replaceData(
+    internal func nosync_replaceData(
         using state: ObjectState,
         objectMessageSerialTimestamp: Date?,
     ) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
-        mutex.withLock {
+        mutableStateMutex.withoutSync { mutableState in
             mutableState.replaceData(
                 using: state,
                 objectMessageSerialTimestamp: objectMessageSerialTimestamp,
@@ -203,35 +224,35 @@ internal final class InternalDefaultLiveCounter: Sendable {
     }
 
     /// Merges the initial value from an ObjectOperation into this LiveCounter, per RTLC10.
-    internal func mergeInitialValue(from operation: ObjectOperation) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
-        mutex.withLock {
+    internal func nosync_mergeInitialValue(from operation: ObjectOperation) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
+        mutableStateMutex.withoutSync { mutableState in
             mutableState.mergeInitialValue(from: operation)
         }
     }
 
     /// Test-only method to apply a COUNTER_CREATE operation, per RTLC8.
     internal func testsOnly_applyCounterCreateOperation(_ operation: ObjectOperation) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
-        mutex.withLock {
+        mutableStateMutex.withSync { mutableState in
             mutableState.applyCounterCreateOperation(operation, logger: logger)
         }
     }
 
     /// Test-only method to apply a COUNTER_INC operation, per RTLC9.
     internal func testsOnly_applyCounterIncOperation(_ operation: WireObjectsCounterOp?) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
-        mutex.withLock {
+        mutableStateMutex.withSync { mutableState in
             mutableState.applyCounterIncOperation(operation)
         }
     }
 
     /// Attempts to apply an operation from an inbound `ObjectMessage`, per RTLC7.
-    internal func apply(
+    internal func nosync_apply(
         _ operation: ObjectOperation,
         objectMessageSerial: String?,
         objectMessageSiteCode: String?,
         objectMessageSerialTimestamp: Date?,
         objectsPool: inout ObjectsPool,
     ) {
-        mutex.withLock {
+        mutableStateMutex.withoutSync { mutableState in
             mutableState.apply(
                 operation,
                 objectMessageSerial: objectMessageSerial,
@@ -248,15 +269,29 @@ internal final class InternalDefaultLiveCounter: Sendable {
     // MARK: - LiveObject
 
     /// Returns the object's RTLO3d `isTombstone` property.
-    internal var isTombstone: Bool {
-        mutex.withLock {
+    internal var nosync_isTombstone: Bool {
+        mutableStateMutex.withoutSync { mutableState in
+            mutableState.liveObjectMutableState.isTombstone
+        }
+    }
+
+    /// Test-only accessor for isTombstone that handles locking internally.
+    internal var testsOnly_isTombstone: Bool {
+        mutableStateMutex.withSync { mutableState in
             mutableState.liveObjectMutableState.isTombstone
         }
     }
 
     /// Returns the object's RTLO3e `tombstonedAt` property.
-    internal var tombstonedAt: Date? {
-        mutex.withLock {
+    internal var nosync_tombstonedAt: Date? {
+        mutableStateMutex.withoutSync { mutableState in
+            mutableState.liveObjectMutableState.tombstonedAt
+        }
+    }
+
+    /// Test-only accessor for tombstonedAt that handles locking internally.
+    internal var testsOnly_tombstonedAt: Date? {
+        mutableStateMutex.withSync { mutableState in
             mutableState.liveObjectMutableState.tombstonedAt
         }
     }
@@ -432,9 +467,9 @@ internal final class InternalDefaultLiveCounter: Sendable {
             data = 0
         }
 
-        internal func value(coreSDK: CoreSDK) throws(ARTErrorInfo) -> Double {
+        internal func nosync_value(coreSDK: CoreSDK) throws(ARTErrorInfo) -> Double {
             // RTLC5b: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
-            try coreSDK.validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveCounter.value")
+            try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveCounter.value")
 
             // RTLC5c
             return data
