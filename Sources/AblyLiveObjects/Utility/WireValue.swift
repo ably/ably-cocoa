@@ -3,7 +3,7 @@ import Foundation
 
 /// A wire value that can be represents the kinds of data that we expect to find inside a deserialized wire object received from `_AblyPluginSupportPrivate`, or which we may put inside a serialized wire object that we send to `_AblyPluginSupportPrivate`.
 ///
-/// Its cases are a superset of those of ``JSONValue``, adding a further `data` case for binary data (we expect to be able to send and receive binary data in the case where ably-cocoa is using the MessagePack format).
+/// Its cases are a superset of those of ``JSONValue``, adding a further `data` case for binary data (we expect to be able to send and receive binary data in the case where ably-cocoa is using the MessagePack format). Also, its `number` case is `NSNumber` instead of `Double`, to allow us to communicate to ably-cocoa's MessagePack encoder that it should encode certain values (e.g. enums) as integers, not doubles.
 internal indirect enum WireValue: Sendable, Equatable {
     case object([String: WireValue])
     case array([WireValue])
@@ -122,8 +122,7 @@ internal extension WireValue {
     ///
     /// Specifically, `pluginSupportData` can be a value that was passed to `LiveObjectsPlugin.decodeObjectMessage:…`.
     init(pluginSupportData: Any) {
-        // swiftlint:disable:next trailing_closure
-        let extendedJSONValue = ExtendedJSONValue<ExtraValue>(deserialized: pluginSupportData, createExtraValue: { deserializedExtraValue in
+        let extendedJSONValue = ExtendedJSONValue<NSNumber, ExtraValue>(deserialized: pluginSupportData, createNumberValue: { $0 }, createExtraValue: { deserializedExtraValue in
             // We support binary data (used for MessagePack format) in addition to JSON values
             if let data = deserializedExtraValue as? Data {
                 return .data(data)
@@ -150,8 +149,7 @@ internal extension WireValue {
     ///
     /// Used by `[String: WireValue].toPluginSupportDataDictionary`.
     var toPluginSupportData: Any {
-        // swiftlint:disable:next trailing_closure
-        toExtendedJSONValue.serialized(serializeExtraValue: { extendedValue in
+        toExtendedJSONValue.serialized(serializeNumberValue: { $0 }, serializeExtraValue: { extendedValue in
             switch extendedValue {
             case let .data(data):
                 data
@@ -176,7 +174,7 @@ internal extension WireValue {
         case data(Data)
     }
 
-    init(extendedJSONValue: ExtendedJSONValue<ExtraValue>) {
+    init(extendedJSONValue: ExtendedJSONValue<NSNumber, ExtraValue>) {
         switch extendedJSONValue {
         case let .object(underlying):
             self = .object(underlying.mapValues { .init(extendedJSONValue: $0) })
@@ -198,7 +196,7 @@ internal extension WireValue {
         }
     }
 
-    var toExtendedJSONValue: ExtendedJSONValue<ExtraValue> {
+    var toExtendedJSONValue: ExtendedJSONValue<NSNumber, ExtraValue> {
         switch self {
         case let .object(underlying):
             .object(underlying.mapValues(\.toExtendedJSONValue))
@@ -223,8 +221,9 @@ internal extension WireValue {
 internal extension WireValue {
     /// Converts a `JSONValue` to its corresponding `WireValue`.
     init(jsonValue: JSONValue) {
-        // swiftlint:disable:next array_init
-        self.init(extendedJSONValue: jsonValue.toExtendedJSONValue.map { (extra: Never) in extra })
+        self.init(extendedJSONValue: jsonValue.toExtendedJSONValue.map(number: { (number: Double) -> NSNumber in
+            number as NSNumber
+        }, extra: { (extra: Never) in extra }))
     }
 
     enum ConversionError: Error {
@@ -236,12 +235,14 @@ internal extension WireValue {
     /// - Throws: `ConversionError.dataCannotBeConvertedToJSONValue` if `WireValue` represents binary data.
     var toJSONValue: JSONValue {
         get throws(ARTErrorInfo) {
-            let neverExtended = try toExtendedJSONValue.map { extra throws(ARTErrorInfo) -> Never in
+            let neverExtended = try toExtendedJSONValue.map(number: { (number: NSNumber) throws(ARTErrorInfo) -> Double in
+                number.doubleValue
+            }, extra: { (extra: ExtraValue) throws(ARTErrorInfo) -> Never in
                 switch extra {
                 case .data:
                     throw ConversionError.dataCannotBeConvertedToJSONValue.toARTErrorInfo()
                 }
-            }
+            })
 
             return .init(extendedJSONValue: neverExtended)
         }

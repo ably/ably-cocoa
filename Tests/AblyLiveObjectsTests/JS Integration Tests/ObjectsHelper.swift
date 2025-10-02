@@ -451,7 +451,7 @@ final class ObjectsHelper: Sendable {
         ]
 
         if let number {
-            opBody["data"] = .object(["number": .number(NSNumber(value: number))])
+            opBody["data"] = .object(["number": .number(number)])
         }
 
         if let objectId {
@@ -467,7 +467,7 @@ final class ObjectsHelper: Sendable {
         [
             "operation": .string(Actions.counterInc.stringValue),
             "objectId": .string(objectId),
-            "data": .object(["number": .number(NSNumber(value: number))]),
+            "data": .object(["number": .number(number)]),
         ]
     }
 

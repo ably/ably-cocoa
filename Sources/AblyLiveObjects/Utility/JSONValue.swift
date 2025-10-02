@@ -29,7 +29,7 @@ public indirect enum JSONValue: Sendable, Equatable {
     case object([String: JSONValue])
     case array([JSONValue])
     case string(String)
-    case number(NSNumber)
+    case number(Double)
     case bool(Bool)
     case null
 
@@ -63,7 +63,7 @@ public indirect enum JSONValue: Sendable, Equatable {
     }
 
     /// If this `JSONValue` has case `number`, this returns the associated value. Else, it returns `nil`.
-    public var numberValue: NSNumber? {
+    public var numberValue: Double? {
         if case let .number(numberValue) = self {
             numberValue
         } else {
@@ -110,13 +110,13 @@ extension JSONValue: ExpressibleByStringLiteral {
 
 extension JSONValue: ExpressibleByIntegerLiteral {
     public init(integerLiteral value: Int) {
-        self = .number(value as NSNumber)
+        self = .number(Double(value))
     }
 }
 
 extension JSONValue: ExpressibleByFloatLiteral {
     public init(floatLiteral value: Double) {
-        self = .number(value as NSNumber)
+        self = .number(value)
     }
 }
 
@@ -136,8 +136,7 @@ internal extension JSONValue {
     /// - The result of serializing an array or dictionary using `JSONSerialization`
     /// - Some nested element of the result of serializing such an array or dictionary
     init(jsonSerializationOutput: Any) {
-        // swiftlint:disable:next trailing_closure
-        let extended = ExtendedJSONValue<Never>(deserialized: jsonSerializationOutput, createExtraValue: { deserializedExtraValue in
+        let extended = ExtendedJSONValue<Double, Never>(deserialized: jsonSerializationOutput, createNumberValue: { $0.doubleValue }, createExtraValue: { deserializedExtraValue in
             // JSONSerialization is not conforming to our assumptions; our assumptions are probably wrong. Either way, bring this loudly to our attention instead of trying to carry on
             preconditionFailure("JSONValue(jsonSerializationOutput:) was given unsupported value \(deserializedExtraValue)")
         })
@@ -152,7 +151,7 @@ internal extension JSONValue {
     /// - All cases: An object which we can put inside an array or dictionary that we ask `JSONSerialization` to serialize
     /// - Additionally, if case `object` or `array`: An object which we can ask `JSONSerialization` to serialize
     var toJSONSerializationInputElement: Any {
-        toExtendedJSONValue.serialized
+        toExtendedJSONValue.serialized(serializeNumberValue: { $0 as NSNumber }, serializeExtraValue: { _ in })
     }
 }
 
@@ -226,7 +225,7 @@ internal extension [JSONValue] {
 // MARK: - Conversion to/from ExtendedJSONValue
 
 internal extension JSONValue {
-    init(extendedJSONValue: ExtendedJSONValue<Never>) {
+    init(extendedJSONValue: ExtendedJSONValue<Double, Never>) {
         switch extendedJSONValue {
         case let .object(underlying):
             self = .object(underlying.mapValues { .init(extendedJSONValue: $0) })
@@ -243,7 +242,7 @@ internal extension JSONValue {
         }
     }
 
-    var toExtendedJSONValue: ExtendedJSONValue<Never> {
+    var toExtendedJSONValue: ExtendedJSONValue<Double, Never> {
         switch self {
         case let .object(underlying):
             .object(underlying.mapValues(\.toExtendedJSONValue))
