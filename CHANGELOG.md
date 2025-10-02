@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.2.47](https://github.com/ably/ably-cocoa/tree/1.2.47)
+
+### What's Changed
+
+This release contains an internal change intended to avoid potential SPM dependency resolution failure when new versions of the LiveObjects plugin are released ([#2118](https://github.com/ably/ably-cocoa/pull/2118)).
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.46...1.2.47
+
 ## [1.2.46](https://github.com/ably/ably-cocoa/tree/1.2.46)
 
 ### What's Changed
