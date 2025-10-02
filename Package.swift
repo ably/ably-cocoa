@@ -24,7 +24,8 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/ably/ably-cocoa-plugin-support",
-            from: "0.2.0",
+            // Be sure to use `exact` here and not `from`; SPM does not have any special handling of 0.x versions and will resolve 'from: "0.2.0"' to anything less than 1.0.0.
+            exact: "0.2.0",
         ),
         .package(
             url: "https://github.com/apple/swift-argument-parser",
