@@ -19,7 +19,8 @@ let package = Package(
         .package(name: "msgpack", url: "https://github.com/rvi/msgpack-objective-C", from: "0.4.0"),
         .package(name: "AblyDeltaCodec", url: "https://github.com/ably/delta-codec-cocoa", from: "1.3.3"),
         .package(name: "Nimble", url: "https://github.com/quick/nimble", from: "11.2.2"),
-        .package(name: "ably-cocoa-plugin-support", url: "https://github.com/ably/ably-cocoa-plugin-support", from: "0.2.0"),
+        // Be sure to use `exact` here and not `from`; SPM does not have any special handling of 0.x versions and will resolve 'from: "0.2.0"' to anything less than 1.0.0. (BTW, our version of SPM manifest doesn't seem to have `exact`; this closed range equivalent is what Claude says I should use.)
+        .package(name: "ably-cocoa-plugin-support", url: "https://github.com/ably/ably-cocoa-plugin-support", "0.2.0"..."0.2.0"),
     ],
     targets: [
         .target(
