@@ -150,9 +150,6 @@ If you use edit mode, Xcode will not let you edit ably-cocoa from _within_ `./Pa
 For each release, the following needs to be done:
 
 - Create a new branch `release/x.x.x` (where `x.x.x` is the new version number) from the `main` branch
-- Update the following (we have https://github.com/ably/ably-chat-swift/issues/277 for adding a script to do this):
-  - the `version` constant in [`Sources/AblyLiveObjects/Version.swift`](Sources/AblyLiveObjects/Version.swift)
-  - the `from: "…"` in the SPM installation instructions in [`README.md`](README.md)
 - Go to [Github releases](https://github.com/ably/ably-liveobjects-swift-plugin/releases) and press the `Draft a new release` button. Choose your new branch as a target
 - Press the `Choose a tag` dropdown and start typing a new tag, Github will suggest the `Create new tag x.x.x on publish` option. After you select it Github will unveil the `Generate release notes` button
 - From the newly generated changes remove everything that don't make much sense to the library user
