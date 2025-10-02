@@ -1,0 +1,33 @@
+{
+  "configurations" : [
+    {
+      "id" : "1D9DE6FE-6E89-4989-AC97-7DE3BA810C74",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false,
+    "language" : "en",
+    "region" : "US"
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "AblyTests",
+        "name" : "AblyTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "AblyTestsObjC",
+        "name" : "AblyTestsObjC"
+      }
+    }
+  ],
+  "version" : 1
+}
