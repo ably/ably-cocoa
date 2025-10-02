@@ -1,8 +1,16 @@
 # Change Log
 
+## [1.2.47](https://github.com/ably/ably-cocoa/tree/1.2.47)
+
+### What's Changed
+
+This release contains an internal change intended to avoid potential SPM dependency resolution failure when new versions of the LiveObjects plugin are released ([#2118](https://github.com/ably/ably-cocoa/pull/2118)).
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.46...1.2.47
+
 ## [1.2.46](https://github.com/ably/ably-cocoa/tree/1.2.46)
 
-## What's Changed
+### What's Changed
 
 This release fixes an issue in version 1.2.45 which causes package resolution in Swift packages that depend on ably-cocoa to fail with this error:
 
@@ -14,7 +22,7 @@ This release fixes an issue in version 1.2.45 which causes package resolution in
 
 ## [1.2.45](https://github.com/ably/ably-cocoa/tree/1.2.45)
 
-## What's Changed
+### What's Changed
 
 * [ECO-5377] Adopt new plugin APIs with improved threading by @lawrence-forooghian in https://github.com/ably/ably-cocoa/pull/2100
 * Add additional user info param to `ARTErrorInfo` creation by @lawrence-forooghian in https://github.com/ably/ably-cocoa/pull/2101
@@ -24,7 +32,7 @@ This release fixes an issue in version 1.2.45 which causes package resolution in
 
 ## [1.2.44](https://github.com/ably/ably-cocoa/tree/1.2.44)
 
-## What's Changed
+### What's Changed
 
 * Introduces support for our new LiveObjects Swift Plugin. LiveObjects provides a simple way to build collaborative applications with synchronized state across multiple clients in real-time.
 
@@ -38,7 +46,7 @@ Learn [about Ably LiveObjects.](https://ably.com/docs/liveobjects)
 
 ## [1.2.43](https://github.com/ably/ably-cocoa/tree/1.2.43)
 
-## What's Changed
+### What's Changed
 
 * Fixes an issue in which missing Sendable annotations caused Swift 6 errors
 
@@ -46,7 +54,7 @@ Learn [about Ably LiveObjects.](https://ably.com/docs/liveobjects)
 
 ## [1.2.42](https://github.com/ably/ably-cocoa/tree/1.2.42)
 
-## What's Changed
+### What's Changed
 
 * Fix bugs with decoding of delta messages (https://github.com/ably/ably-cocoa/pull/2083) in the following scenarios:
   * JSON-valued message data
@@ -56,7 +64,7 @@ Learn [about Ably LiveObjects.](https://ably.com/docs/liveobjects)
 
 ## [1.2.41](https://github.com/ably/ably-cocoa/tree/1.2.41)
 
-## What's Changed
+### What's Changed
 
 * Make some classes private by @lawrence-forooghian in https://github.com/ably/ably-cocoa/pull/2038
 * Implemented connection sequence for RTN14d by @maratal in https://github.com/ably/ably-cocoa/pull/2041
@@ -88,7 +96,7 @@ Learn [about Ably LiveObjects.](https://ably.com/docs/liveobjects)
 
 ## [1.2.38](https://github.com/ably/ably-cocoa/tree/1.2.38)
 
-## What's Changed
+### What's Changed
 
 * Add `NSCopying` support to `ART*ChannelOptions` by @lawrence-forooghian in https://github.com/ably/ably-cocoa/pull/2018
 * Introduction of a new API intended for use by Ably-authored SDKs by @lawrence-forooghian in https://github.com/ably/ably-cocoa/pull/2014
@@ -99,7 +107,7 @@ Learn [about Ably LiveObjects.](https://ably.com/docs/liveobjects)
 
 **Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.36...1.2.37
 
-## What's Changed
+### What's Changed
 
 * Reverts a breaking change by moving `presence` back to `ARTRealtime` https://github.com/ably/ably-cocoa/pull/2015
 
@@ -107,7 +115,7 @@ Learn [about Ably LiveObjects.](https://ably.com/docs/liveobjects)
 
 **Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.35...1.2.36
 
-## What's Changed
+### What's Changed
 
 * Updated fields within `ARTMessage` to support upcoming chat SDK features https://github.com/ably/ably-cocoa/pull/2005
 
@@ -115,7 +123,7 @@ Learn [about Ably LiveObjects.](https://ably.com/docs/liveobjects)
 
 **Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.34...1.2.35
 
-## What's Changed
+### What's Changed
 
 * Added new fields to the `ARTMessage` to support upcoming chat SDK https://github.com/ably/ably-cocoa/pull/1998
 
