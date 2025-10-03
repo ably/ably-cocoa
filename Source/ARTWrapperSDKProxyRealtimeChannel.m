@@ -9,7 +9,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTWrapperSDKProxyRealtimeChannel ()
 
-@property (nonatomic, readonly) ARTRealtimeChannel *underlyingChannel;
 @property (nonatomic, readonly) ARTWrapperSDKProxyOptions *proxyOptions;
 
 @end

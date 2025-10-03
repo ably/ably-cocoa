@@ -18,6 +18,9 @@ NS_SWIFT_SENDABLE
 
 - (instancetype)init NS_UNAVAILABLE;
 
+/// The channel that this `ARTWrapperSDKProxyRealtimeChannel` proxies.
+@property (nonatomic, readonly) ARTRealtimeChannel *underlyingChannel;
+
 @property (readonly) ARTWrapperSDKProxyRealtimePresence *presence;
 
 @property (readonly) ARTWrapperSDKProxyRealtimeAnnotations *annotations;
