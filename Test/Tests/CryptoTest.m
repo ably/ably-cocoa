@@ -3,6 +3,8 @@
 #import <Ably/ARTCrypto+Private.h>
 #import "Ably_Tests-Swift.h"
 
+#define MaxMessageLength 70
+
 @interface CryptoTest : XCTestCase
 @end
 
@@ -30,15 +32,14 @@
     id<ARTChannelCipher> cipher = [ARTCrypto cipherWithParams:params logger:logger];
     
     // Prepare message data.
-    const NSUInteger maxLength = 70;
-    UInt8 messageData[maxLength];
-    for (NSUInteger i = 1; i <= maxLength; i++) {
+    UInt8 messageData[MaxMessageLength];
+    for (NSUInteger i = 1; i <= MaxMessageLength; i++) {
         messageData[i - 1] = i;
     }
 
     // Perform encrypt and decrypt on message data trimmed at all lengths up
     // to and including maxLength.
-    for (NSUInteger i = 1; i <= maxLength; i++) {
+    for (NSUInteger i = 1; i <= MaxMessageLength; i++) {
         // Encrypt i bytes from the start of the message data.
         NSData *const dIn = [NSData dataWithBytes:&messageData length:i];
         NSData * dOut;
