@@ -33,11 +33,17 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable ARTMessage *)messageFromDictionary:(NSDictionary *)input protocolMessage:(nullable ARTProtocolMessage *)protocolMessage;
 - (nullable NSArray *)messagesFromArray:(NSArray *)input protocolMessage:(nullable ARTProtocolMessage *)protocolMessage;
 
+- (nullable ARTAnnotation *)annotationFromDictionary:(NSDictionary *)input;
+- (nullable NSArray *)annotationsFromArray:(NSArray *)input;
+
 - (nullable ARTPresenceMessage *)presenceMessageFromDictionary:(NSDictionary *)input;
 - (nullable NSArray *)presenceMessagesFromArray:(NSArray *)input;
 
 - (NSDictionary *)messageToDictionary:(ARTMessage *)message;
 - (NSArray *)messagesToArray:(NSArray *)messages;
+
+- (NSDictionary *)annotationToDictionary:(ARTAnnotation *)annotation;
+- (NSArray *)annotationsToArray:(NSArray *)annotations;
 
 - (NSDictionary *)presenceMessageToDictionary:(ARTPresenceMessage *)message;
 - (NSArray *)presenceMessagesToArray:(NSArray *)messages;

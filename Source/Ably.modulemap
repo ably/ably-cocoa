@@ -48,6 +48,7 @@ framework module Ably {
         header "ARTRealtimeAnnotations+Private.h"
         header "ARTMessageVersion+Private.h"
         header "ARTMessageAnnotations+Private.h"
+        header "ARTRestAnnotations+Private.h"
         header "ARTFallback+Private.h"
         header "ARTFallbackHosts.h"
         header "ARTLocalDevice+Private.h"
@@ -138,5 +139,6 @@ framework module Ably {
         header "ARTPluginAPI.h"
         header "ARTPublicRealtimeChannelUnderlyingObjects.h"
         header "ARTErrorInfo+Private.h"
+        header "ARTSummaryTypes+Private.h"
     }
 }

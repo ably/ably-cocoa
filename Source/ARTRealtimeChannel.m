@@ -364,6 +364,10 @@ dispatch_sync(_queue, ^{
     }
 }
 
+- (BOOL)isAnnotationSubscribeGranted {
+    return self.modes_nosync & ARTChannelModeAnnotationSubscribe;
+}
+
 - (ARTErrorInfo *)errorReason_nosync {
     return _errorReason;
 }

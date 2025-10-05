@@ -4,6 +4,7 @@
 @class ARTMessage;
 @class ARTPresenceMessage;
 @class ARTProtocolMessage;
+@class ARTAnnotation;
 @class ARTTokenDetails;
 @class ARTTokenRequest;
 @class ARTDeviceDetails;
@@ -48,9 +49,17 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSData *)encodeMessage:(ARTMessage *)message error:(NSError *_Nullable *_Nullable)error;
 - (nullable ARTMessage *)decodeMessage:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
 
+// Annotation
+- (nullable NSData *)encodeAnnotation:(ARTAnnotation *)annotation error:(NSError *_Nullable *_Nullable)error;
+- (nullable ARTAnnotation *)decodeAnnotation:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
+
 // Message list
 - (nullable NSData *)encodeMessages:(NSArray<ARTMessage *> *)messages error:(NSError *_Nullable *_Nullable)error;
 - (nullable NSArray<ARTMessage *> *)decodeMessages:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
+
+// Annotation list
+- (nullable NSData *)encodeAnnotations:(NSArray<ARTAnnotation *> *)annotations error:(NSError *_Nullable *_Nullable)error;
+- (nullable NSArray<ARTAnnotation *> *)decodeAnnotations:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
 
 // PresenceMessage
 - (nullable NSData *)encodePresenceMessage:(ARTPresenceMessage *)message error:(NSError *_Nullable *_Nullable)error;

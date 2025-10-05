@@ -93,12 +93,28 @@
     return [self messagesFromArray:[self decodeArray:data error:error] protocolMessage:nil];
 }
 
+- (NSArray<ARTAnnotation *> *)decodeAnnotations:(NSData *)data error:(NSError **)error {
+    return [self annotationsFromArray:[self decodeArray:data error:error]];
+}
+
 - (NSData *)encodeMessage:(ARTMessage *)message error:(NSError **)error {
     return [self encode:[self messageToDictionary:message] error:error];
 }
 
+- (NSData *)encodeAnnotation:(ARTAnnotation *)annotation error:(NSError **)error {
+    return [self encode:[self annotationToDictionary:annotation] error:error];
+}
+
+- (ARTAnnotation *)decodeAnnotation:(NSData *)data error:(NSError **)error {
+    return [self annotationFromDictionary:[self decodeDictionary:data error:error]];
+}
+
 - (NSData *)encodeMessages:(NSArray *)messages error:(NSError **)error {
     return [self encode:[self messagesToArray:messages] error:error];
+}
+
+- (NSData *)encodeAnnotations:(NSArray<ARTAnnotation *> *)annotations error:(NSError **)error {
+    return [self encode:[self annotationsToArray:annotations] error:error];
 }
 
 - (ARTPresenceMessage *)decodePresenceMessage:(NSData *)data error:(NSError **)error {
@@ -520,6 +536,48 @@
     return output;
 }
 
+- (NSDictionary *)annotationToDictionary:(ARTAnnotation *)annotation {
+    NSMutableDictionary *output = [NSMutableDictionary dictionary];
+    
+    // Only encode fields that exist in ARTOutboundAnnotation (RSAN1a2)
+    if (annotation.id) {
+        [output setObject:annotation.id forKey:@"id"];
+    }
+
+    [output setObject:@(annotation.action) forKey:@"action"];
+
+    if (annotation.messageSerial) {
+        [output setObject:annotation.messageSerial forKey:@"messageSerial"];
+    }
+
+    if (annotation.type) {
+        [output setObject:annotation.type forKey:@"type"];
+    }
+
+    if (annotation.count != nil) {
+        [output setObject:annotation.count forKey:@"count"];
+    }
+
+    if (annotation.clientId) {
+        [output setObject:annotation.clientId forKey:@"clientId"];
+    }
+    
+    if (annotation.data) {
+        [self writeData:annotation.data encoding:annotation.encoding toDictionary:output];
+    }
+    
+    if (annotation.name) {
+        [output setObject:annotation.name forKey:@"name"];
+    }
+
+    if (annotation.extras) {
+        [output setObject:annotation.extras forKey:@"extras"];
+    }
+
+    ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: annotationToDictionary %@", _rest, [_delegate formatAsString], output);
+    return output;
+}
+
 - (NSDictionary *)authDetailsToDictionary:(ARTAuthDetails *)authDetails {
     NSMutableDictionary *output = [NSMutableDictionary dictionary];
 
@@ -541,6 +599,17 @@
     
     for (ARTMessage *message in messages) {
         NSDictionary *item = [self messageToDictionary:message];
+        [output addObject:item];
+    }
+    
+    return output;
+}
+
+- (NSArray *)annotationsToArray:(NSArray *)annotations {
+    NSMutableArray *output = [NSMutableArray array];
+    
+    for (ARTAnnotation *annotation in annotations) {
+        NSDictionary *item = [self annotationToDictionary:annotation];
         [output addObject:item];
     }
     
@@ -604,6 +673,10 @@
     
     if (message.presence) {
         output[@"presence"] = [self presenceMessagesToArray:message.presence];
+    }
+
+    if (message.annotations) {
+        output[@"annotations"] = [self annotationsToArray:message.annotations];
     }
 
     if (message.auth) {

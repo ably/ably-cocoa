@@ -12,4 +12,11 @@
 
 - (id)artTyped:(Class)cls key:(id)key;
 
+/**
+ * Maps dictionary values using the provided block function.
+ * @param f Block function that transforms each value
+ * @return New dictionary with transformed values
+ */
+- (NSDictionary *)artMap:(id(^)(id key, id value))f;
+
 @end

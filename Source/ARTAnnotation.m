@@ -73,7 +73,7 @@
     return annotation;
 }
 
-- (id)decodeWithEncoder:(ARTDataEncoder*)encoder error:(NSError **)error {
+- (id)decodeDataWithEncoder:(ARTDataEncoder*)encoder error:(NSError **)error {
     ARTDataEncoderOutput *decoded = [encoder decode:self.data encoding:self.encoding];
     if (decoded.errorInfo && error) {
         *error = [NSError errorWithDomain:ARTAblyErrorDomain code:decoded.errorInfo.code userInfo:@{NSLocalizedDescriptionKey: @"decoding failed",
@@ -85,7 +85,7 @@
     return ret;
 }
 
-- (id)encodeWithEncoder:(ARTDataEncoder*)encoder error:(NSError **)error {
+- (id)encodeDataWithEncoder:(ARTDataEncoder*)encoder error:(NSError **)error {
     ARTDataEncoderOutput *encoded = [encoder encode:self.data];
     if (encoded.errorInfo && error) {
         *error = [NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:@{NSLocalizedDescriptionKey: @"encoding failed",
@@ -95,6 +95,43 @@
     ((ARTAnnotation *)ret)->_data = encoded.data;
     ((ARTAnnotation *)ret)->_encoding = [NSString artAddEncoding:encoded.encoding toString:self.encoding];
     return ret;
+}
+
+- (NSInteger)annotationSize {
+    // TO3l8*
+    NSInteger finalResult = 0;
+    finalResult += [self.name lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+    finalResult += [[self.extras toJSONString] lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+    finalResult += [self.clientId lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+    if (self.data) {
+        if ([self.data isKindOfClass:[NSString class]]) {
+            finalResult += [self.data lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+        }
+        else if ([self.data isKindOfClass:[NSData class]]) {
+            finalResult += [self.data length];
+        }
+        else {
+            NSError *error = nil;
+            NSJSONWritingOptions options;
+            if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
+                options = NSJSONWritingWithoutEscapingSlashes; // Copied from `ARTBaseMessage.messageSize`
+            }
+            else {
+                options = 0; //no specific format
+            }
+            NSData *jsonData = [NSJSONSerialization dataWithJSONObject:self.data
+                                                               options:options
+                                                                 error:&error];
+            if (!error) {
+                finalResult += [jsonData length];
+            }
+        }
+    }
+    return finalResult;
+}
+
+- (BOOL)isIdEmpty {
+    return self.id == nil || [self.id isEqualToString:@""];
 }
 
 @end
