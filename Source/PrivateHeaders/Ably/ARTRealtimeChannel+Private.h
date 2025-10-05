@@ -51,9 +51,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (ARTChannelMode)modes_nosync;
 - (ARTErrorInfo *)errorReason_nosync;
 - (NSString * _Nullable)clientId_nosync;
+- (ARTChannelProperties *)properties_nosync;
 - (BOOL)canBeReattached;
 - (BOOL)shouldAttach;
-- (ARTChannelProperties *)properties_nosync;
+- (BOOL)isAnnotationSubscribeGranted;
 
 @property (readonly, weak, nonatomic) ARTRealtimeInternal *realtime; // weak because realtime owns self
 @property (readonly, nonatomic) ARTRestChannelInternal *restChannel;

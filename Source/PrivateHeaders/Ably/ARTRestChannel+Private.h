@@ -12,11 +12,13 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class ARTRestInternal;
+@class ARTRestAnnotationsInternal;
 @class ARTInternalLog;
 
 @interface ARTRestChannelInternal : ARTChannel
 
 @property (readonly) ARTRestPresenceInternal *presence;
+@property (readonly) ARTRestAnnotationsInternal *annotations;
 @property (readonly) ARTPushChannelInternal *push;
 
 - (instancetype)initWithName:(NSString *)name withOptions:(ARTChannelOptions *)options andRest:(ARTRestInternal *)rest logger:(ARTInternalLog *)logger;
