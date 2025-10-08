@@ -416,8 +416,8 @@ typedef NS_ENUM(NSUInteger, ARTNetworkState) {
 }
 
 - (NSString *)clientId {
-    // Doesn't need synchronization since it's immutable.
-    return _rest.options.clientId;
+    // RTC17
+    return _rest.auth.clientId;
 }
 
 - (NSString *)description {

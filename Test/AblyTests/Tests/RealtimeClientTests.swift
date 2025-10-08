@@ -1650,4 +1650,28 @@ class RealtimeClientTests: XCTestCase {
             }
         })
     }
+
+    // RTC17
+    func test_clientId() throws {
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        options.autoConnect = false
+        options.token = try getTestToken(for: test, clientId: "tester")
+        let realtime = ARTRealtime(options: options)
+        defer { realtime.dispose(); realtime.close() }
+        XCTAssertNil(realtime.auth.clientId)
+
+        waitUntil(timeout: testTimeout) { done in
+            realtime.connection.once(.connecting) { stateChange in
+                XCTAssertNil(stateChange.reason)
+                XCTAssertNil(realtime.clientId)
+            }
+            realtime.connection.once(.connected) { stateChange in
+                XCTAssertNil(stateChange.reason)
+                XCTAssertEqual(realtime.clientId, "tester")
+                done()
+            }
+            realtime.connect()
+        }
+    }
 }
