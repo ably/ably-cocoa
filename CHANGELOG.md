@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.2.48](https://github.com/ably/ably-cocoa/tree/1.2.48)
+
+## What's Changed
+
+* Fixes a bug where `ARTRealtime`'s `clientId` property would be `nil` when using token-based auth ([#2122](https://github.com/ably/ably-cocoa/pull/2122)).
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.47...1.2.48
+
 ## [1.2.47](https://github.com/ably/ably-cocoa/tree/1.2.47)
 
 ### What's Changed
