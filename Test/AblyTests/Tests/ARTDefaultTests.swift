@@ -6,6 +6,6 @@ class ARTDefaultTests: XCTestCase {
     
     func testVersions() {
         XCTAssertEqual(ARTDefault.apiVersion(), "4")
-        XCTAssertEqual(ARTDefault.libraryVersion(), "1.2.47")
+        XCTAssertEqual(ARTDefault.libraryVersion(), "1.2.48")
     }
 }
