@@ -55,4 +55,15 @@
     return [self artInteger:key] != 0;
 }
 
+- (NSDictionary *)artMap:(id(^)(id key, id value))f {
+    NSMutableDictionary *result = [NSMutableDictionary dictionaryWithCapacity:self.count];
+    for (id key in self) {
+        id transformedValue = f(key, self[key]);
+        if (transformedValue) {
+            result[key] = transformedValue;
+        }
+    }
+    return [result copy];
+}
+
 @end

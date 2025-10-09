@@ -43,6 +43,7 @@ extension TestAppSetup.PostApps {
         let id: String
         let persisted: Bool?
         let pushEnabled: Bool?
+        let mutableMessages: Bool?
     }
 }
 

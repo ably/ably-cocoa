@@ -4970,4 +4970,37 @@ class RealtimeClientChannelTests: XCTestCase {
         let receivedMessage = try receivedMessageDataGatherer.waitForData(timeout: testTimeout)
         XCTAssertEqual(receivedMessage.name, "foo")
     }
+    
+    // RTL4m
+    func test__141__ChannelOptions__on_ATTACHED_should_decode_flags_into_array_of_channel_modes() throws {
+        // Given: A realtime channel and a protocol message with channel modes
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        options.autoConnect = false
+        let realtime = AblyTests.newRealtime(options).client
+        defer { realtime.dispose(); realtime.close() }
+
+        let channel = realtime.channels.get("test")
+        
+        // Then: The modes property should be accessible and initially 0
+        XCTAssertEqual(channel.modes, ARTChannelMode(rawValue: 0))
+
+        // Create a protocol message with channel modes
+        let protocolMessage = ARTProtocolMessage()
+        protocolMessage.action = ARTProtocolMessageAction.attached
+        protocolMessage.channel = "test"
+        // adding flags which are not modes
+        protocolMessage.flags = Int64(
+            ARTProtocolMessageFlag.hasBacklog.rawValue | // not mode
+            ARTProtocolMessageFlag.resumed.rawValue | // not mode
+            ARTChannelMode.publish.rawValue | // mode
+            ARTChannelMode.subscribe.rawValue // mode
+        )
+        
+        // When: setAttached is called with the protocol message
+        channel.internal.setAttached(protocolMessage)
+        
+        // Then: The modes property should be set from the protocol message and contain only channel modes
+        XCTAssertEqual(channel.modes, [.publish, .subscribe])
+    }
 }
