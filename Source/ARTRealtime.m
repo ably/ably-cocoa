@@ -297,22 +297,31 @@ typedef NS_ENUM(NSUInteger, ARTNetworkState) {
 #pragma mark - ARTAuthDelegate
 
 - (void)auth:(ARTAuthInternal *)auth didAuthorize:(ARTTokenDetails *)tokenDetails completion:(void (^)(ARTAuthorizationState, ARTErrorInfo *_Nullable))completion {
+    ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p auth:didAuthorize called with token: %@, connection state: %@", self.rest, tokenDetails.token, ARTRealtimeConnectionStateToStr(self.connection.state_nosync));
+    
     void (^waitForResponse)(void) = ^{
+        ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p Enqueueing pending authorization, current count: %lu", self.rest, (unsigned long)self.pendingAuthorizations.count);
         [self.pendingAuthorizations art_enqueue:^(ARTRealtimeConnectionState state, ARTErrorInfo *_Nullable error){
+            ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p Pending authorization callback invoked with state: %@, error: %@", self.rest, ARTRealtimeConnectionStateToStr(state), error);
             switch (state) {
                 case ARTRealtimeConnected:
+                    ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p Calling completion with ARTAuthorizationSucceeded", self.rest);
                     completion(ARTAuthorizationSucceeded, nil);
                     break;
                 case ARTRealtimeFailed:
+                    ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p Calling completion with ARTAuthorizationFailed: %@", self.rest, error);
                     completion(ARTAuthorizationFailed, error);
                     break;
                 case ARTRealtimeSuspended:
+                    ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p Calling completion with ARTAuthorizationFailed (suspended)", self.rest);
                     completion(ARTAuthorizationFailed, [ARTErrorInfo createWithCode:ARTStateAuthorizationFailed message:@"Connection has been suspended"]);
                     break;
                 case ARTRealtimeClosed:
+                    ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p Calling completion with ARTAuthorizationFailed (closed)", self.rest);
                     completion(ARTAuthorizationFailed, [ARTErrorInfo createWithCode:ARTStateAuthorizationFailed message:@"Connection has been closed"]);
                     break;
                 case ARTRealtimeDisconnected:
+                    ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p Calling completion with ARTAuthorizationCancelled", self.rest);
                     completion(ARTAuthorizationCancelled, nil);
                     break;
                 case ARTRealtimeInitialized:
@@ -322,6 +331,7 @@ typedef NS_ENUM(NSUInteger, ARTNetworkState) {
                     break;
             }
         }];
+        ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p After enqueue, pending authorization count: %lu", self.rest, (unsigned long)self.pendingAuthorizations.count);
     };
     
     void (^haltCurrentConnectionAndReconnect)(void) = ^{
@@ -337,7 +347,7 @@ typedef NS_ENUM(NSUInteger, ARTNetworkState) {
     switch (self.connection.state_nosync) {
         case ARTRealtimeConnected: {
             // Update (send AUTH message)
-            ARTLogDebug(self.logger, @"RS:%p AUTH message using %@", self.rest, tokenDetails);
+            ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p Connection is CONNECTED, sending AUTH message using %@", self.rest, tokenDetails);
             
             // Store previous clientId for comparison
             NSString *previousClientId = self.auth.clientId_nosync;
@@ -351,7 +361,15 @@ typedef NS_ENUM(NSUInteger, ARTNetworkState) {
             ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
             msg.action = ARTProtocolMessageAuth;
             msg.auth = [[ARTAuthDetails alloc] initWithToken:tokenDetails.token];
-            [self send:msg sentCallback:nil ackCallback:nil];
+            ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p About to send AUTH protocol message", self.rest);
+            [self send:msg sentCallback:^(ARTErrorInfo *error) {
+                if (error) {
+                    ARTLogError(self.logger, @"[AUTH_FLOW] RS:%p Failed to send AUTH message: %@", self.rest, error);
+                } else {
+                    ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p AUTH message sent successfully", self.rest);
+                }
+            } ackCallback:nil];
+            ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p About to call waitForResponse()", self.rest);
             waitForResponse();
             break;
         }
@@ -378,18 +396,26 @@ typedef NS_ENUM(NSUInteger, ARTNetworkState) {
 }
 
 - (void)performPendingAuthorizationWithState:(ARTRealtimeConnectionState)state error:(nullable ARTErrorInfo *)error {
+    ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p performPendingAuthorizationWithState called with state: %@, error: %@, pending count: %lu",
+               self.rest, ARTRealtimeConnectionStateToStr(state), error, (unsigned long)self.pendingAuthorizations.count);
+    
     void (^pendingAuthorization)(ARTRealtimeConnectionState, ARTErrorInfo *_Nullable) = [self.pendingAuthorizations art_dequeue];
     if (!pendingAuthorization) {
+        ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p No pending authorization to process", self.rest);
         return;
     }
+    ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p Found pending authorization, invoking callback", self.rest);
     switch (state) {
         case ARTRealtimeConnected:
+            ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p Invoking pending authorization with CONNECTED state", self.rest);
             pendingAuthorization(state, nil);
             break;
         case ARTRealtimeFailed:
+            ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p Invoking pending authorization with FAILED state: %@", self.rest, error);
             pendingAuthorization(state, error);
             break;
         default:
+            ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p Discarding pending authorizations and invoking with state: %@", self.rest, ARTRealtimeConnectionStateToStr(state));
             [self discardPendingAuthorizations];
             pendingAuthorization(state, error);
             break;
@@ -915,6 +941,8 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 }
 
 - (void)onConnected:(ARTProtocolMessage *)message {
+    ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p onConnected called, renewingToken: %@, connection state: %@",
+               self.rest, _renewingToken ? @"YES" : @"NO", ARTRealtimeConnectionStateToStr(self.connection.state_nosync));
     _renewingToken = false;
     
     switch (self.connection.state_nosync) {
@@ -959,6 +987,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         }
         case ARTRealtimeConnected: {
             // Renewing token.
+            ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p Received CONNECTED message while already CONNECTED (token renewal), error: %@", self.rest, message.error);
             [self updateWithErrorInfo:message.error];
         }
         default:
@@ -1624,9 +1653,11 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
             [self onError:message];
             break;
         case ARTProtocolMessageConnected:
+            ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p Received CONNECTED protocol message", self.rest);
             // Set Auth#clientId
             if (message.connectionDetails) {
                 NSString *previousClientId = self.auth.clientId_nosync;
+                ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p Setting protocol clientId to: %@", self.rest, message.connectionDetails.clientId);
                 [self.auth setProtocolClientId:message.connectionDetails.clientId];
                 
                 // Check if clientId changed after AUTH message
@@ -1644,6 +1675,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
                 }
             }
             // Event
+            ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p Calling onConnected", self.rest);
             [self onConnected:message];
             break;
         case ARTProtocolMessageDisconnect:

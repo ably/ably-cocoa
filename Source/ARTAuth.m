@@ -577,11 +577,14 @@ dispatch_async(_queue, ^{
     NSString *authorizeId = [[NSUUID new] UUIDString];
     __block BOOL hasBeenExplicitlyCanceled = NO;
     // Request always a new token
-    ARTLogVerbose(self.logger, @"RS:%p ARTAuthInternal [authorize.%@, delegate=%@]: requesting new token", _rest, authorizeId, lastDelegate ? @"YES" : @"NO");
+    ARTLogVerbose(self.logger, @"[AUTH_FLOW] RS:%p ARTAuthInternal [authorize.%@, delegate=%@]: requesting new token", _rest, authorizeId, lastDelegate ? @"YES" : @"NO");
     NSObject<ARTCancellable> *task;
     self->_authorizationsCount += 1;
+    ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p [authorize.%@]: Requesting token, authorizationsCount: %ld", self->_rest, authorizeId, (long)self->_authorizationsCount);
     task = [self _requestToken:currentTokenParams withOptions:replacedOptions callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
         self->_authorizationsCount -= 1;
+        ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p [authorize.%@]: Token request completed with error: %@, tokenDetails: %@, authorizationsCount: %ld",
+                   self->_rest, authorizeId, error, tokenDetails, (long)self->_authorizationsCount);
 
         void (^const successCallbackBlock)(void) = ^{
             ARTLogVerbose(self.logger, @"RS:%p ARTAuthInternal [authorize.%@]: success callback: %@", self->_rest, authorizeId, tokenDetails);
@@ -651,10 +654,14 @@ dispatch_async(_queue, ^{
         }
 
         if (!tokenDetails) {
+            ARTLogError(self.logger, @"[AUTH_FLOW] RS:%p [authorize.%@]: Token details are empty", self->_rest, authorizeId);
             failureCallbackBlock([ARTErrorInfo createWithCode:0 message:@"Token details are empty"]);
         }
         else if (lastDelegate) {
+            ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p [authorize.%@]: Calling delegate auth:didAuthorize:completion", self->_rest, authorizeId);
             [lastDelegate auth:self didAuthorize:tokenDetails completion:^(ARTAuthorizationState state, ARTErrorInfo *error) {
+                ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p [authorize.%@]: Delegate completion called with state: %tu, error: %@",
+                           self->_rest, authorizeId, state, error);
                 switch (state) {
                     case ARTAuthorizationSucceeded:
                         if (hasBeenExplicitlyCanceled) {
@@ -678,6 +685,7 @@ dispatch_async(_queue, ^{
             }];
         }
         else {
+            ARTLogDebug(self.logger, @"[AUTH_FLOW] RS:%p [authorize.%@]: No delegate, calling success callback directly", self->_rest, authorizeId);
             successCallbackBlock();
         }
     }];
