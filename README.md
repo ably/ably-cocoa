@@ -60,7 +60,7 @@ To install the `ably-cocoa` package in your Xcode project:
 To install the `ably-cocoa` package in another Swift package, add the following to your `Package.Swift`:
 
 ```swift
- .package(url: "https://github.com/ably/ably-cocoa", from: "1.2.48"),
+ .package(url: "https://github.com/ably/ably-cocoa", from: "1.2.49"),
 ```
 
 See Apple's [adding package dependencies to your app](https://developer.apple.com/documentation/swift_packages/adding_package_dependencies_to_your_app) guide for more detail.
