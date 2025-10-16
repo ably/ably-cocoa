@@ -1806,7 +1806,7 @@ class RestClientTests: XCTestCase {
                     fail("Error is nil"); done(); return
                 }
                 XCTAssertEqual(error.statusCode, 200)
-                XCTAssertEqual(error.message.lengthOfBytes(using: String.Encoding.utf8), 1000)
+                XCTAssertTrue(error.message.contains("<title>Example Domain</title>"))
                 done()
             })
         }
