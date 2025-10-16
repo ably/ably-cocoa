@@ -68,11 +68,12 @@ NS_SWIFT_SENDABLE
                      count:(nullable NSNumber *)count
                       data:(nullable id)data
                   encoding:(nullable NSString *)encoding
-                 timestamp:(NSDate *)timestamp
-                    serial:(NSString *)serial
+                 timestamp:(nullable NSDate *)timestamp
+                    serial:(nullable NSString *)serial
              messageSerial:(NSString *)messageSerial
                       type:(NSString *)type
                     extras:(nullable id<ARTJsonCompatible>)extras;
+
 @end
 
 #pragma mark - ARTEvent

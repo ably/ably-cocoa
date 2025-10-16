@@ -4,6 +4,7 @@
 
 @class ARTRest;
 @class ARTRestPresence;
+@class ARTRestAnnotations;
 @class ARTPushChannel;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -53,6 +54,11 @@ NS_SWIFT_SENDABLE
  * A `ARTRestPresence` object.
  */
 @property (readonly) ARTRestPresence *presence;
+
+/**
+ * An `ARTRestAnnotations` object.
+ */
+@property (readonly) ARTRestAnnotations *annotations;
 
 /**
  * A `ARTPushChannel` object.

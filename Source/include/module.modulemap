@@ -48,6 +48,7 @@ module Ably {
         header "../PrivateHeaders/Ably/ARTRealtimeAnnotations+Private.h"
         header "../PrivateHeaders/Ably/ARTMessageVersion+Private.h"
         header "../PrivateHeaders/Ably/ARTMessageAnnotations+Private.h"
+        header "../PrivateHeaders/Ably/ARTRestAnnotations+Private.h"
         header "../PrivateHeaders/Ably/ARTFallback+Private.h"
         header "../PrivateHeaders/Ably/ARTFallbackHosts.h"
         header "../PrivateHeaders/Ably/ARTLocalDevice+Private.h"
@@ -138,5 +139,6 @@ module Ably {
         header "../PrivateHeaders/Ably/ARTPluginAPI.h"
         header "../PrivateHeaders/Ably/ARTPublicRealtimeChannelUnderlyingObjects.h"
         header "../PrivateHeaders/Ably/ARTErrorInfo+Private.h"
+        header "../PrivateHeaders/Ably/ARTSummaryTypes+Private.h"
     }
 }

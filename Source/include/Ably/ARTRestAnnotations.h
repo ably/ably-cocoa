@@ -1,17 +1,31 @@
 #import <Foundation/Foundation.h>
-#import <Ably/ARTAnnotation.h>
-#import <Ably/ARTOutboundAnnotation.h>
-#import <Ably/ARTRestAnnotations.h>
 #import <Ably/ARTDataQuery.h>
-#import <Ably/ARTEventEmitter.h>
-#import <Ably/ARTRealtimeChannel.h>
+#import <Ably/ARTPaginatedResult.h>
+
+@class ARTRestChannel, ARTAnnotation, ARTOutboundAnnotation, ARTMessage, ARTErrorInfo;
 
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- The protocol upon which the `ARTRealtimeAnnotations` is implemented.
+ This object is used for providing parameters into `ARTRestAnnotations`'s methods with paginated results.
  */
-@protocol ARTRealtimeAnnotationsProtocol
+NS_SWIFT_SENDABLE
+@interface ARTAnnotationsQuery : NSObject
+
+/**
+ * An upper limit on the number of annotations returned.
+ */
+@property (nonatomic, readonly) NSUInteger limit;
+
+/// :nodoc:
+- (instancetype)initWithLimit:(NSUInteger)limit;
+
+@end
+
+/**
+ The protocol upon which the `ARTRestAnnotations` is implemented.
+ */
+@protocol ARTRestAnnotationsProtocol
 
 /**
  * Publish a new annotation for a message.
@@ -59,7 +73,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)getForMessage:(ARTMessage *)message query:(ARTAnnotationsQuery *)query callback:(ARTPaginatedAnnotationsCallback)callback;
 
  /**
-  * Get all annotations for a given message (as a paginated result) (alternative form where you only have the serial of the message, not a complete Message object).
+  * Get all annotations for a given message (as a paginated result).
   *
   * @param messageSerial The `serial` of the message to get annotations for.
   * @param query Restrictions on which annotations to get (such as a `limit` on the size of the result page).
@@ -67,56 +81,15 @@ NS_ASSUME_NONNULL_BEGIN
   */
 - (void)getForMessageSerial:(NSString *)messageSerial query:(ARTAnnotationsQuery *)query callback:(ARTPaginatedAnnotationsCallback)callback;
 
-/**
- * Registers a listener that is called each time an `ARTAnnotation` is received on the channel.
- *
- * Note that if you want to receive individual realtime annotations (instead of just the rolled-up summaries), you will need to request the `ARTChannelModeAnnotationSubscribe`  in `ARTChannelOptions`, since they are not delivered by default. In general, most clients will not bother with subscribing to individual annotations, and will instead just look at the summary updates.
- *
- * @param callback  A callback containing received annotation.
- *
- * @return An event listener object.
- */
-- (ARTEventListener *_Nullable)subscribe:(ARTAnnotationCallback)callback;
-
-/**
- * Registers a listener that is called each time an `ARTAnnotation` matching a given `type` is received on the channel.
- *
- * Note that if you want to receive individual realtime annotations (instead of just the rolled-up summaries), you will need to request the `ARTChannelModeAnnotationSubscribe` in `ARTChannelOptions`, since they are not delivered by default. In general, most clients will not bother with subscribing to individual annotations, and will instead just look at the summary updates.
- *
- * @param type A type of the `ARTAnnotation` to register the listener for.
- * @param callback  A callback containing received annotation.
- *
- * @return An event listener object.
- */
-- (ARTEventListener *_Nullable)subscribe:(NSString *)type callback:(ARTAnnotationCallback)callback;
-
-/**
- * Deregisters all listeners currently receiving `ARTAnnotation` for the channel.
- */
-- (void)unsubscribe;
-
-/**
- * Deregisters a specific listener that is registered to receive `ARTAnnotation` on the channel.
- *
- * @param listener An event listener to unsubscribe.
- */
-- (void)unsubscribe:(ARTEventListener *)listener;
-
-/**
- * Deregisters a specific listener that is registered to receive `ARTAnnotation` on the channel for a given type.
- *
- * @param type A specific annotation type to deregister the listeners for.
- * @param listener An event listener to unsubscribe.
- */
-- (void)unsubscribe:(NSString *)type listener:(ARTEventListener *)listener;
-
 @end
 
 /**
- * @see See `ARTRealtimeAnnotationsProtocol` for details.
+ * Functionality for annotating messages with small pieces of data, such as emoji reactions, that the server will roll up into the message as a summary.
+ *
+ * @see See `ARTRestAnnotationsProtocol` for details.
  */
 NS_SWIFT_SENDABLE
-@interface ARTRealtimeAnnotations : NSObject <ARTRealtimeAnnotationsProtocol>
+@interface ARTRestAnnotations : NSObject <ARTRestAnnotationsProtocol>
 @end
 
 NS_ASSUME_NONNULL_END

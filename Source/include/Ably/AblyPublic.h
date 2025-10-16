@@ -21,6 +21,7 @@
 #import <Ably/ARTRest.h>
 #import <Ably/ARTRestChannel.h>
 #import <Ably/ARTRestPresence.h>
+#import <Ably/ARTRestAnnotations.h>
 #import <Ably/ARTRealtime.h>
 #import <Ably/ARTRealtimeChannel.h>
 #import <Ably/ARTRealtimeChannelOptions.h>
@@ -44,3 +45,6 @@
 #import <Ably/ARTChannelProtocol.h>
 #import <Ably/ARTMessageVersion.h>
 #import <Ably/ARTMessageAnnotations.h>
+#import <Ably/ARTAnnotation.h>
+#import <Ably/ARTOutboundAnnotation.h>
+#import <Ably/ARTSummaryTypes.h>
