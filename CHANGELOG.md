@@ -442,7 +442,7 @@ for a single Ably client instance.
 History REST requests were incorrectly returning encrypted payloads,
 despite encryption having been enabled via the Realtime channel `setOptions` API.
 
-- **Bug**: Updating `ARTRealtimeChannel`’s options doesn’t update the options of its `ARTRestChannelInternal` [\#1265](https://github.com/ably/ably-cocoa/issues/1265)
+- **Bug**: Updating `ARTRealtimeChannel`'s options doesn't update the options of its `ARTRestChannelInternal` [\#1265](https://github.com/ably/ably-cocoa/issues/1265)
 - **Fix**: When setting realtime channel options, pass through to REST channel [\#1266](https://github.com/ably/ably-cocoa/pull/1266) ([lawrence-forooghian](https://github.com/lawrence-forooghian))
 
 ## [1.2.8](https://github.com/ably/ably-cocoa/tree/1.2.8)
@@ -493,7 +493,7 @@ despite encryption having been enabled via the Realtime channel `setOptions` API
 - Improve error message for invalid state operations [\#843](https://github.com/ably/ably-cocoa/issues/843)
 - Finish implementing TI3 [\#760](https://github.com/ably/ably-cocoa/issues/760)
 - Update Stats fields with latest MessageTraffic types [\#732](https://github.com/ably/ably-cocoa/issues/732)
-- Address issues raised by Xcode’s static analyzer [\#694](https://github.com/ably/ably-cocoa/issues/694)
+- Address issues raised by Xcode's static analyzer [\#694](https://github.com/ably/ably-cocoa/issues/694)
 - Quick Documentation: add headerdoc comments [\#298](https://github.com/ably/ably-cocoa/issues/298)
 
 **Fixed bugs:**

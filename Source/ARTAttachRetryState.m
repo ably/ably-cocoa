@@ -43,7 +43,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)channelWillTransitionToState:(ARTRealtimeChannelState)state {
-    // The client library specification doesn’t specify when to reset the retry count (see https://github.com/ably/specification/issues/127); have taken the logic from ably-js: https://github.com/ably/ably-js/blob/404c4128316cc5f735e3bf95a25e654e3fedd166/src/common/lib/client/realtimechannel.ts#L804-L806 (see discussion https://github.com/ably/ably-js/pull/1008/files#r925898316)
+    // The client library specification doesn't specify when to reset the retry count (see https://github.com/ably/specification/issues/127); have taken the logic from ably-js: https://github.com/ably/ably-js/blob/404c4128316cc5f735e3bf95a25e654e3fedd166/src/common/lib/client/realtimechannel.ts#L804-L806 (see discussion https://github.com/ably/ably-js/pull/1008/files#r925898316)
     if (state != ARTRealtimeChannelAttaching && state != ARTRealtimeChannelSuspended) {
         self.retrySequence = nil;
     }

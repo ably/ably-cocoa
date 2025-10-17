@@ -6,7 +6,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- Provides parameters for a request to perform an operation that may ultimately call `ARTChannelRealtimeInternal`’s `internalAttach:callback:` method.
+ Provides parameters for a request to perform an operation that may ultimately call `ARTChannelRealtimeInternal`'s `internalAttach:callback:` method.
  */
 NS_SWIFT_NAME(AttachRequestParams)
 @interface ARTAttachRequestParams: NSObject
@@ -17,7 +17,7 @@ NS_SWIFT_NAME(AttachRequestParams)
 @property (nullable, nonatomic, readonly) ARTErrorInfo *reason;
 
 /**
- The value to set for the `ATTACH` `ProtocolMessage`’s `channelSerial` property.
+ The value to set for the `ATTACH` `ProtocolMessage`'s `channelSerial` property.
  */
 @property (nullable, nonatomic, readonly) NSString *channelSerial;
 
