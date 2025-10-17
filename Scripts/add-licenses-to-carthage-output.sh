@@ -6,7 +6,7 @@ ZIP_NAME="Ably.framework.zip"
 TEMPDIR=`mktemp -d`
 BUILD_DIR=`pwd`
 
-# Unzip Carthage’s output into a temporary directory.
+# Unzip Carthage's output into a temporary directory.
 cp "${ZIP_NAME}" "${TEMPDIR}"
 unzip "${TEMPDIR}/${ZIP_NAME}" -d "${TEMPDIR}"
 

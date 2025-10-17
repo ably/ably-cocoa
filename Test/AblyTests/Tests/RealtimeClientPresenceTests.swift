@@ -447,7 +447,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let channel1 = client1.channels.get(channelName)
         // We want to make sure that the ENTER presence action that we publish
         // gets sent by Realtime as a PRESENCE protocol message, and not in the
-        // channel’s initial post-attach SYNC. So, we wait for any initial SYNC
+        // channel's initial post-attach SYNC. So, we wait for any initial SYNC
         // to complete before publishing any presence actions.
         attachAndWaitForInitialPresenceSyncToComplete(client: client1, channel: channel1)
 
@@ -817,7 +817,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
         
         // Same can be achieved with sleep for more than 15 seconds for the Realtime to send synthesised presence LEAVE
-        // for the mainClient’s original connection after not receiving a heartbeat.
+        // for the mainClient's original connection after not receiving a heartbeat.
         transport.receive(AblyTests.newPresenceProtocolMessage(id: "\(mainChannel.internal.connectionId):0:0", channel: mainChannel.name, action: .leave, clientId: mainClient.clientId!, connectionId: oldConnectionId))
         
         waitUntil(timeout: testTimeout) { done in
@@ -1125,7 +1125,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
         // We want to make sure that the ENTER presence action that we publish
         // gets sent by Realtime as a PRESENCE protocol message, and not in the
-        // channel’s initial post-attach SYNC. So, we wait for any initial SYNC
+        // channel's initial post-attach SYNC. So, we wait for any initial SYNC
         // to complete before publishing any presence actions.
         attachAndWaitForInitialPresenceSyncToComplete(client: client, channel: channel)
 
@@ -1269,7 +1269,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
         // We want to make sure that the ENTER presence action that we publish
         // gets sent by Realtime as a PRESENCE protocol message, and not in the
-        // channel’s initial post-attach SYNC. So, we wait for any initial SYNC
+        // channel's initial post-attach SYNC. So, we wait for any initial SYNC
         // to complete before publishing any presence actions.
         attachAndWaitForInitialPresenceSyncToComplete(client: client, channel: channel)
 
@@ -2447,7 +2447,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let channel1 = client1.channels.get(channelName)
         // We want to make sure that the ENTER presence action that we publish
         // gets sent by Realtime as a PRESENCE protocol message, and not in the
-        // channel’s initial post-attach SYNC. So, we wait for any initial SYNC
+        // channel's initial post-attach SYNC. So, we wait for any initial SYNC
         // to complete before publishing any presence actions.
         attachAndWaitForInitialPresenceSyncToComplete(client: client1, channel: channel1)
 

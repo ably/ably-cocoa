@@ -11,7 +11,7 @@ class DefaultInternalLogCoreTests: XCTestCase {
         // When: we create a DefaultInternalLogCore from these client options
         let core = DefaultInternalLogCore(clientOptions: clientOptions)
 
-        // Then: the created object wraps a LogAdapter instance, which wraps the client options’ logHandler, and the client options’s logHandler’s logLevel gets set to match the client options’ logLevel
+        // Then: the created object wraps a LogAdapter instance, which wraps the client options' logHandler, and the client options's logHandler's logLevel gets set to match the client options' logLevel
         let adapter = try XCTUnwrap(core.logger as? LogAdapter)
         let logger = adapter.logger
         XCTAssertEqual(logger, clientOptions.logHandler)
@@ -28,7 +28,7 @@ class DefaultInternalLogCoreTests: XCTestCase {
         // When: we create a DefaultInternalLogCore from these client options
         let core = DefaultInternalLogCore(clientOptions: clientOptions)
 
-        // Then: the created object wraps a LogAdapter instance, which wraps the client options’ logHandler, and the client options’s logHandler’s logLevel does not get changed
+        // Then: the created object wraps a LogAdapter instance, which wraps the client options' logHandler, and the client options's logHandler's logLevel does not get changed
         let adapter = try XCTUnwrap(core.logger as? LogAdapter)
         let logger = adapter.logger
         XCTAssertEqual(logger, clientOptions.logHandler)

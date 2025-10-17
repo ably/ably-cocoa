@@ -61,7 +61,7 @@ To run tests, do any of the following:
 - run `swift test` to run on your Mac
 - run `make test_[iOS|tvOS|macOS]` to run on any platform
 
-The `make test_*` commands are used by CI and expect you to have a simulator device of a specific model and OS version. See [`Fastfile`](./fastlane/Fastfile) for these values. If you don’t have a matching simulator, you can create one using `simctl`. For example, `xcrun simctl create "iPhone 12 (14.4)" "iPhone 12" "com.apple.CoreSimulator.SimRuntime.iOS-14-4"`.
+The `make test_*` commands are used by CI and expect you to have a simulator device of a specific model and OS version. See [`Fastfile`](./fastlane/Fastfile) for these values. If you don't have a matching simulator, you can create one using `simctl`. For example, `xcrun simctl create "iPhone 12 (14.4)" "iPhone 12" "com.apple.CoreSimulator.SimRuntime.iOS-14-4"`.
 
 ## Plugins
 

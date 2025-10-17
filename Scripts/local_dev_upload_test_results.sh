@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Allows us to upload test results to an instance of the test
-# observability server running locally on a developer’s machine.
+# observability server running locally on a developer's machine.
 
 export TEST_OBSERVABILITY_SERVER_AUTH_KEY="abc123"
 export GITHUB_SHA="fakesha"

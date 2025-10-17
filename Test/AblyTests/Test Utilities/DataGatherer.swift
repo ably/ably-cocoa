@@ -9,7 +9,7 @@ import XCTest
 class DataGatherer<T> {
     private let expectation: XCTestExpectation
 
-    // The value that the initializer’s `gather` block passed to its `submit` argument.
+    // The value that the initializer's `gather` block passed to its `submit` argument.
     private var value: T?
     // Synchronises access to `value`.
     private let semaphore = DispatchSemaphore(value: 1)
@@ -31,7 +31,7 @@ class DataGatherer<T> {
     }
 
     /**
-     Waits for the initializer’s `gather` function to submit data and then returns the submitted data. If data has already been submitted then it is returned immediately. This method can be safely called from any thread.
+     Waits for the initializer's `gather` function to submit data and then returns the submitted data. If data has already been submitted then it is returned immediately. This method can be safely called from any thread.
      */
     func waitForData(timeout: TimeInterval) throws -> T {
         semaphore.wait()
@@ -57,7 +57,7 @@ class DataGatherer<T> {
     }
 
     /**
-     Waits for the initializer’s `gather` function to submit data and then returns the submitted data. If data has already been submitted then it is returned immediately. This method can be safely called from any thread.
+     Waits for the initializer's `gather` function to submit data and then returns the submitted data. If data has already been submitted then it is returned immediately. This method can be safely called from any thread.
      */
     func waitForData(timeout: DispatchTimeInterval) throws -> T {
         return try waitForData(timeout: timeout.toTimeInterval())

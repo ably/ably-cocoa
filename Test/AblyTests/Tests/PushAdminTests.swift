@@ -104,7 +104,7 @@ class PushAdminTests: XCTestCase {
 
     override class func setUp() {
         super.setUp()
-        let test = Test() // a slight abuse of the meaning of Test, but we only have one instance of +setUp so doesn’t seem worth worrying over
+        let test = Test() // a slight abuse of the meaning of Test, but we only have one instance of +setUp so doesn't seem worth worrying over
         let options: ARTClientOptions
         do {
             options = try AblyTests.commonAppSetup(for: test)
@@ -138,7 +138,7 @@ class PushAdminTests: XCTestCase {
     }
 
     override class func tearDown() {
-        let test = Test() // a slight abuse of the meaning of Test, but we only have one instance of +tearDown so doesn’t seem worth worrying over
+        let test = Test() // a slight abuse of the meaning of Test, but we only have one instance of +tearDown so doesn't seem worth worrying over
         let options: ARTClientOptions
         do {
             options = try AblyTests.commonAppSetup(for: test)

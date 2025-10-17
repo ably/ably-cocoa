@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 NS_SWIFT_NAME(InternalLog)
 /**
- `ARTInternalLog` is the logging class used internally by the SDK. It provides a thin wrapper over `ARTInternalLogCore`, providing variadic versions of that protocol’s methods.
+ `ARTInternalLog` is the logging class used internally by the SDK. It provides a thin wrapper over `ARTInternalLogCore`, providing variadic versions of that protocol's methods.
 
  - Note: It would be great if we could make `ARTInternalLog` a protocol (with a default implementation) instead of a class, since this would make it easier to test the logging behaviour of the SDK. However, since its interface currently makes heavy use of variadic Objective-C methods, which cannot be represented in Swift, we would be unable to write mocks for this protocol in our Swift test suite. As the `ARTInternalLog` interface evolves we may end up removing these variadic methods, in which case we can reconsider.
  */
@@ -50,7 +50,7 @@ NS_SWIFT_NAME(InternalLog)
  - they do not have access to any more appropriate logger
  - their signature is already locked since they are part of the public API of the library
 
- Currently, this returns a logger that will not actually output any log messages, but I’ve created https://github.com/ably/ably-cocoa/issues/1652 for us to revisit this.
+ Currently, this returns a logger that will not actually output any log messages, but I've created https://github.com/ably/ably-cocoa/issues/1652 for us to revisit this.
  */
 @property (nonatomic, readonly, class) ARTInternalLog *sharedClassMethodLogger_readDocumentationBeforeUsing;
 
@@ -64,17 +64,17 @@ NS_SWIFT_NAME(InternalLog)
  */
 - (instancetype)initWithLogger:(id<ARTVersion2Log>)logger;
 /**
- A convenience initializer which creates a logger whose core is an instance of `ARTDefaultInternalLogCore` initialized with that class’s `initWithClientOptions:` initializer.
+ A convenience initializer which creates a logger whose core is an instance of `ARTDefaultInternalLogCore` initialized with that class's `initWithClientOptions:` initializer.
  */
 - (instancetype)initWithClientOptions:(ARTClientOptions *)clientOptions;
 - (instancetype)init NS_UNAVAILABLE;
 
 /**
- Passes the arguments through to the logger’s core object.
+ Passes the arguments through to the logger's core object.
 
  It is not directly used by the internals of the `Ably` library, but it is used by:
 
- - some of our Swift tests (which can’t access the variadic method below), which want to be able to call a logging method on an instance of `ARTInternalLog`
+ - some of our Swift tests (which can't access the variadic method below), which want to be able to call a logging method on an instance of `ARTInternalLog`
  - `ARTPluginAPI`, to implement its conformance to the `APPluginAPIProtocol` protocol, which is used by plugins written in Swift
 */
 - (void)log:(NSString *)message withLevel:(ARTLogLevel)level file:(const char *)fileName line:(NSInteger)line;

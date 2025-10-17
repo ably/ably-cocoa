@@ -43,7 +43,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)connectionWillTransitionToState:(ARTRealtimeConnectionState)state {
-    // The client library specification doesn’t specify when to reset the retry count (see https://github.com/ably/specification/issues/127); have copied the analogous logic in ARTAttachRetryState.
+    // The client library specification doesn't specify when to reset the retry count (see https://github.com/ably/specification/issues/127); have copied the analogous logic in ARTAttachRetryState.
     if (state != ARTRealtimeConnecting && state != ARTRealtimeDisconnected) {
         self.retrySequence = nil;
     }
