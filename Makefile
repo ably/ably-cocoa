@@ -92,7 +92,7 @@ carthage_package:
 	# https://github.com/Carthage/Carthage#archive-prebuilt-frameworks-into-one-zip-file
 	# From `carthage help build` we are told that `--archive` implies `--no-skip-current`.
 	./Scripts/carthage-with-workaround-for-issue-3019.sh build --archive --no-use-binaries --platform iOS,macOS,tvOS
-	# Add LICENSE files (ours and SocketRocket’s).
+	# Add LICENSE files (ours and SocketRocket's).
 	./Scripts/add-licenses-to-carthage-output.sh
 
 ## [Carthage] Clear Carthage caches. Helps with Carthage update issues

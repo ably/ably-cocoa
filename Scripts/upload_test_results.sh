@@ -227,7 +227,7 @@ done
 
 # 9. Fetch the details of the current GitHub job, so that we can add a link to it in the upload.
 #
-# It’s a bit surprising that there’s no built-in functionality for this (see e.g. https://stackoverflow.com/questions/71240338/obtain-job-id-from-a-workflow-run-using-contexts or https://github.com/orgs/community/discussions/8945).
+# It's a bit surprising that there's no built-in functionality for this (see e.g. https://stackoverflow.com/questions/71240338/obtain-job-id-from-a-workflow-run-using-contexts or https://github.com/orgs/community/discussions/8945).
 
 if [[ ! -z $GITHUB_TOKEN ]]
 then
@@ -248,7 +248,7 @@ then
 
     if [[ $number_of_jobs -gt 1 ]]
     then
-      echo -e "Got ${number_of_jobs} jobs from GitHub API but don’t know which one to pick. You need to provide a --job-name argument." >&2
+      echo -e "Got ${number_of_jobs} jobs from GitHub API but don't know which one to pick. You need to provide a --job-name argument." >&2
       exit 1
     fi
 

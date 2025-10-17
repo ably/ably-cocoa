@@ -17,7 +17,7 @@ class AttachRetryStateTests: XCTestCase {
         let secondRetryAttempt = retryState.addRetryAttempt()
         let thirdRetryAttempt = retryState.addRetryAttempt()
 
-        // Then: the list of `delay` properties of the returned RetryAttempt objects matches those returned by the calculator’s `delay(forRetryNumber: x)` method for x = 1, ... , n.
+        // Then: the list of `delay` properties of the returned RetryAttempt objects matches those returned by the calculator's `delay(forRetryNumber: x)` method for x = 1, ... , n.
         XCTAssertEqual(firstRetryAttempt.delay, delays[0])
         XCTAssertEqual(secondRetryAttempt.delay, delays[1])
         XCTAssertEqual(thirdRetryAttempt.delay, delays[2])
@@ -37,7 +37,7 @@ class AttachRetryStateTests: XCTestCase {
         retryState.channelWillTransition(to: .attached)
         let retryAttempt = retryState.addRetryAttempt()
 
-        // Then: the `delay` property of the post-channelWillTransition(to:) returned RetryAttempt object matches that returned by the calculator’s `delay(forRetryNumber: 1)` method.
+        // Then: the `delay` property of the post-channelWillTransition(to:) returned RetryAttempt object matches that returned by the calculator's `delay(forRetryNumber: 1)` method.
         XCTAssertEqual(retryAttempt.delay, delays[0])
     }
 
@@ -56,7 +56,7 @@ class AttachRetryStateTests: XCTestCase {
         retryState.channelWillTransition(to: .attaching)
         let retryAttempt = retryState.addRetryAttempt()
 
-        // Then: the `delay` property of the post-channelWillTransition(to:) returned RetryAttempt object matches that returned by the calculator’s `delay(forRetryNumber: n + 1)` method.
+        // Then: the `delay` property of the post-channelWillTransition(to:) returned RetryAttempt object matches that returned by the calculator's `delay(forRetryNumber: n + 1)` method.
         XCTAssertEqual(retryAttempt.delay, delays[3])
     }
 }

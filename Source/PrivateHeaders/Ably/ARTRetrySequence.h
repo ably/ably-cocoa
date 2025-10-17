@@ -27,7 +27,7 @@ NS_SWIFT_NAME(RetrySequence)
 @property (nonatomic, readonly) NSUUID *id;
 
 /**
- Informs the receiver that we intend to schedule another retry of the operation. Increments the sequence’s retry count and returns an `ARTRetryAttempt` object which describes how long we should wait before performing this retry.
+ Informs the receiver that we intend to schedule another retry of the operation. Increments the sequence's retry count and returns an `ARTRetryAttempt` object which describes how long we should wait before performing this retry.
  */
 - (ARTRetryAttempt *)addRetryAttempt;
 

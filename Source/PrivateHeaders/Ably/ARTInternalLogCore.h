@@ -9,7 +9,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  `ARTInternalLogCore` is the type underlying `ARTInternalLog`, and defines the logging functionality available to components of the SDK.
 
- It’s responsible for receiving log messages from SDK components, performing additional processing on these messages, and forwarding the result to an object conforming to the `ARTVersion2Log` protocol.
+ It's responsible for receiving log messages from SDK components, performing additional processing on these messages, and forwarding the result to an object conforming to the `ARTVersion2Log` protocol.
 
  This protocol exists to give internal SDK components access to a rich and useful logging interface, whilst minimising the complexity (and hence the implementation burden for users of the SDK) of the `ARTVersion2Log` protocol. It also allows us to evolve the logging interface used internally without introducing breaking changes for users of the SDK.
 
@@ -39,9 +39,9 @@ NS_SWIFT_NAME(DefaultInternalLogCore)
  */
 - (instancetype)initWithLogger:(id<ARTVersion2Log>)logger NS_DESIGNATED_INITIALIZER;
 /**
- A convenience initializer which creates a logger initialized with an instance of `ARTLogAdapter` which wraps the given client options’ `logHandler`.
+ A convenience initializer which creates a logger initialized with an instance of `ARTLogAdapter` which wraps the given client options' `logHandler`.
 
- Also, if the client options’ `logLevel` is anything other than `ARTLogLevelNone`, this initializer will set the client options’ `logHandler`’s `logLevel` such that it matches the client options’ `logLevel`. (We offer no judgement here on whether this is the right thing to do or the right place to do it; this is pre-existing behaviour simply moved from elsewhere in the codebase.)
+ Also, if the client options' `logLevel` is anything other than `ARTLogLevelNone`, this initializer will set the client options' `logHandler`'s `logLevel` such that it matches the client options' `logLevel`. (We offer no judgement here on whether this is the right thing to do or the right place to do it; this is pre-existing behaviour simply moved from elsewhere in the codebase.)
  */
 - (instancetype)initWithClientOptions:(ARTClientOptions *)clientOptions;
 - (instancetype)init NS_UNAVAILABLE;

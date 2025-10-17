@@ -4,9 +4,9 @@
 
 # Ably Pub/Sub Cocoa SDK
 
-Build any realtime experience using Ably’s Pub/Sub Cocoa SDK. Supported on all popular platforms and frameworks, including Swift and Objective-C.
+Build any realtime experience using Ably's Pub/Sub Cocoa SDK. Supported on all popular platforms and frameworks, including Swift and Objective-C.
 
-Ably Pub/Sub provides flexible APIs that deliver features such as pub-sub messaging, message history, presence, and push notifications. Utilizing Ably’s realtime messaging platform, applications benefit from its highly performant, reliable, and scalable infrastructure.
+Ably Pub/Sub provides flexible APIs that deliver features such as pub-sub messaging, message history, presence, and push notifications. Utilizing Ably's realtime messaging platform, applications benefit from its highly performant, reliable, and scalable infrastructure.
 
 Find out more:
 
@@ -114,7 +114,7 @@ And then run one of the following commands required for your platform:
 | macOS | `carthage update --use-xcframeworks --platform macOS --no-use-binaries`|
 | tvOS | `carthage update --use-xcframeworks --platform tvOS --no-use-binaries` |
 
-After building the framework (located in `[PROJECT_ROOT]/Carthage/Build`), drag the following files into the **Frameworks**, **Libraries**, and **Embedded content** section of your Xcode target’s **General** tab:
+After building the framework (located in `[PROJECT_ROOT]/Carthage/Build`), drag the following files into the **Frameworks**, **Libraries**, and **Embedded content** section of your Xcode target's **General** tab:
 
 * `Ably.xcframework`
 * `AblyDeltaCodec.xcframework`
@@ -122,7 +122,7 @@ After building the framework (located in `[PROJECT_ROOT]/Carthage/Build`), drag 
 * For applications, select **Embed & Sign**
 * For other targets, select **Do Not Embed**
 
-If you encounter an error similar to the following, you’ve likely missed adding one or more required dependencies:
+If you encounter an error similar to the following, you've likely missed adding one or more required dependencies:
 
 ```
 dyld: Library not loaded: @rpath/AblyDeltaCodec.framework/AblyDeltaCodec

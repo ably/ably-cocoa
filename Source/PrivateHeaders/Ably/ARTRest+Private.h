@@ -48,7 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) dispatch_queue_t userQueue;
 
 /**
- Provides access to the instance’s logger. As the name says, this property should only be used in the following cases:
+ Provides access to the instance's logger. As the name says, this property should only be used in the following cases:
 
  - When writing class methods meeting the following criteria:
    - they wish to perform logging
@@ -56,7 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
    - their signature is already locked since they are part of the public API of the library
    - they have access to an ARTRest instance
 
- - When writing tests which wish to perform actions on this instance’s logger (for making assertions about how the logger was set up).
+ - When writing tests which wish to perform actions on this instance's logger (for making assertions about how the logger was set up).
  */
 @property (nonatomic, readonly) ARTInternalLog *logger_onlyForUseInClassMethodsAndTests;
 
