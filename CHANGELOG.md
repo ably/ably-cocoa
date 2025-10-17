@@ -1,8 +1,16 @@
 # Change Log
 
+## [1.2.49](https://github.com/ably/ably-cocoa/tree/1.2.49)
+
+### What's Changed
+
+This release introduces experimental support for the Pub/Sub annotations feature. For more information, see the [blog post](https://ably.com/blog/introducing-annotations).
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.48...1.2.49
+
 ## [1.2.48](https://github.com/ably/ably-cocoa/tree/1.2.48)
 
-## What's Changed
+### What's Changed
 
 * Fixes a bug where `ARTRealtime`'s `clientId` property would be `nil` when using token-based auth ([#2122](https://github.com/ably/ably-cocoa/pull/2122)).
 
