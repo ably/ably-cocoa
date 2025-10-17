@@ -2,7 +2,7 @@ internal import _AblyPluginSupportPrivate
 
 /// A reference to a line within a source code file.
 internal struct CodeLocation: Equatable {
-    /// A file identifier in the format used by Swift’s `#fileID` macro. For example, `"AblyChat/Room.swift"`.
+    /// A file identifier in the format used by Swift's `#fileID` macro. For example, `"AblyChat/Room.swift"`.
     internal var fileID: String
     /// The line number in the source code file referred to by ``fileID``.
     internal var line: Int

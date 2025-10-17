@@ -101,7 +101,7 @@ struct JSONValueTests {
         #expect(resultAsNSObject == expectedResultAsNSObject)
     }
 
-    // Tests that it creates an object that can be serialized by `JSONSerialization`, and that the result of this serialization is what we’d expect.
+    // Tests that it creates an object that can be serialized by `JSONSerialization`, and that the result of this serialization is what we'd expect.
     @Test
     func toJSONSerializationInput_endToEnd() throws {
         let value: [String: JSONValue] = [
