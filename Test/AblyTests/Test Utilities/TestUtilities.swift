@@ -1208,10 +1208,6 @@ class TestProxyTransport: ARTWebSocketTransport {
         if let fakeResponse = factory.fakeNetworkResponse {
             // Skip calling -open on the underlying ARTWebSocket and instead simulate an error
 
-            if self.factory.fakeNetworkResponse == nil {
-                return
-            }
-
             func performFakeConnectionError(_ secondsForDelay: TimeInterval, error: ARTRealtimeTransportError) {
                 self.queue.asyncAfter(deadline: .now() + secondsForDelay) {
                     self.delegate?.realtimeTransportFailed(self, withError: error)
