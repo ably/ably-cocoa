@@ -10,45 +10,16 @@ class TestProxyTransportFactory: RealtimeTransportFactory {
     var transportCreatedEvent: ((ARTRealtimeTransport) -> Void)?
 
     func transport(withRest rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, logger: InternalLog) -> ARTRealtimeTransport {
-        let webSocketFactory = WebSocketFactory()
-
         let testProxyTransport = TestProxyTransport(
             factory: self,
             rest: rest,
             options: options,
             resumeKey: resumeKey,
-            logger: logger,
-            webSocketFactory: webSocketFactory
+            logger: logger
         )
-
-        webSocketFactory.testProxyTransport = testProxyTransport
 
         transportCreatedEvent?(testProxyTransport)
         
         return testProxyTransport
-    }
-
-    private class WebSocketFactory: Ably.WebSocketFactory {
-        weak var testProxyTransport: TestProxyTransport?
-
-        func createWebSocket(with request: URLRequest, logger: InternalLog?) -> ARTWebSocket {
-            let webSocket = WebSocket(urlRequest: request, logger: logger)
-            webSocket.testProxyTransport = testProxyTransport
-
-            return webSocket
-        }
-    }
-
-    private class WebSocket: ARTSRWebSocket {
-        weak var testProxyTransport: TestProxyTransport?
-
-        override func open() {
-            guard let testProxyTransport else {
-                preconditionFailure("Tried to fetch testProxyTransport but it's already been deallocated")
-            }
-            if !testProxyTransport.handleWebSocketOpen() {
-                super.open()
-            }
-        }
     }
 }
