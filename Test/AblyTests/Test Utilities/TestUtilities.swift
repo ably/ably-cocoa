@@ -1218,7 +1218,7 @@ class TestProxyTransport: ARTWebSocketTransport {
 
     override func connect(withKey key: String) {
         if let fakeResponse = factory.fakeNetworkResponse {
-            setupFakeNetworkResponse(fakeResponse)
+            setWebSocketOpenHook(forFakeNetworkResponse: fakeResponse)
         }
         super.connect(withKey: key)
         performNetworkConnectEvent()
@@ -1226,13 +1226,13 @@ class TestProxyTransport: ARTWebSocketTransport {
 
     override func connect(withToken token: String) {
         if let fakeResponse = factory.fakeNetworkResponse {
-            setupFakeNetworkResponse(fakeResponse)
+            setWebSocketOpenHook(forFakeNetworkResponse: fakeResponse)
         }
         super.connect(withToken: token)
         performNetworkConnectEvent()
     }
 
-    private func addWebSocketOpenHook(withImplementation implementation: @escaping () -> Void) -> Hook {
+    private func setWebSocketOpenHook(withImplementation implementation: @escaping () -> Void) -> Hook {
         webSocketOpenHookSempahore.wait()
         let hook = Hook(implementation: implementation)
         webSocketOpenHook = hook
@@ -1263,9 +1263,9 @@ class TestProxyTransport: ARTWebSocketTransport {
         }
     }
 
-    private func setupFakeNetworkResponse(_ networkResponse: FakeNetworkResponse) {
+    private func setWebSocketOpenHook(forFakeNetworkResponse networkResponse: FakeNetworkResponse) {
         var hook: Hook?
-        hook = addWebSocketOpenHook {
+        hook = setWebSocketOpenHook {
             if self.factory.fakeNetworkResponse == nil {
                 return
             }
