@@ -1216,19 +1216,11 @@ class TestProxyTransport: ARTWebSocketTransport {
 
     // MARK: ARTWebSocket
 
-    override func connect(withKey key: String) {
+    override func openWebSocket() {
         if let fakeResponse = factory.fakeNetworkResponse {
             setWebSocketOpenHook(forFakeNetworkResponse: fakeResponse)
         }
-        super.connect(withKey: key)
-        performNetworkConnectEvent()
-    }
-
-    override func connect(withToken token: String) {
-        if let fakeResponse = factory.fakeNetworkResponse {
-            setWebSocketOpenHook(forFakeNetworkResponse: fakeResponse)
-        }
-        super.connect(withToken: token)
+        super.openWebSocket()
         performNetworkConnectEvent()
     }
 

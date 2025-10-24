@@ -20,6 +20,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setState:(ARTRealtimeTransportState)state;
 
+/// Calls `-open` on the underlying `ARTWebSocket`.
+///
+/// Exposed so that test subclasses can override and wrap in additional logic.
+- (void)openWebSocket;
+
 @end
 
 #pragma mark - ARTEvent

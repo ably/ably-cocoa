@@ -123,7 +123,7 @@ NS_ASSUME_NONNULL_END
     NSURLQueryItem *keyParam = [NSURLQueryItem queryItemWithName:@"key" value:key];
     [self setupWebSocket:@{keyParam.name: keyParam} withOptions:self.options resumeKey:self.resumeKey];
     // Connect
-    [self.websocket open];
+    [self openWebSocket];
 }
 
 - (void)connectWithToken:(NSString *)token {
@@ -132,7 +132,7 @@ NS_ASSUME_NONNULL_END
     NSURLQueryItem *accessTokenParam = [NSURLQueryItem queryItemWithName:@"accessToken" value:token];
     [self setupWebSocket:@{accessTokenParam.name: accessTokenParam} withOptions:self.options resumeKey:self.resumeKey];
     // Connect
-    [self.websocket open];
+    [self openWebSocket];
 }
 
 - (NSURL *)setupWebSocket:(NSDictionary<NSString *, NSURLQueryItem *> *)params withOptions:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey {
@@ -190,6 +190,10 @@ NS_ASSUME_NONNULL_END
     self.websocket.delegate = self;
     self.websocketURL = url;
     return url;
+}
+
+- (void)openWebSocket {
+    [self.websocket open];
 }
 
 - (void)sendClose {
