@@ -22,8 +22,6 @@ NS_ASSUME_NONNULL_BEGIN
  */
 + (NSRunLoop *)ARTSR_networkRunLoop;
 
-+ (void)ARTSR_waitForNetworkRunLoop;
-
 @end
 
 NS_ASSUME_NONNULL_END

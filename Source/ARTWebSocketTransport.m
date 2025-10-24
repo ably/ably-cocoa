@@ -55,6 +55,16 @@ NS_ASSUME_NONNULL_END
       The dispatch queue for firing the events. Must be the same for the whole library.
      */
     _Nonnull dispatch_queue_t _workQueue;
+
+    /**
+      The dispatch queue on which we call `-open` on our `ARTWebSocket`.
+
+      The important thing here is that it has a fixed QoS class (of `QOS_CLASS_DEFAULT`). This is so that, regardless of from which thread or dispatch queue we try to start an `ARTWebSocketTransport`, apps do not get an Xcode Thread Performance Checker runtime warning of the form "Thread running at User-initiated quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions". These errors are caused by a lower-priority thread being blocked by one of the following in `ARTSRProxyConnect`:
+
+      - the fetch of `+[NSRunLoop ARTSR_networkRunLoop]`
+      - the calls to `-[NSStream open]` (it's not clear to me what exactly is blocking here but it triggers an Xcode warning so let's avoid it)
+     */
+    _Nonnull dispatch_queue_t _websocketOpenQueue;
 }
 
 @synthesize delegate = _delegate;
@@ -64,6 +74,7 @@ NS_ASSUME_NONNULL_END
     self = [super init];
     if (self) {
         _workQueue = rest.queue;
+        _websocketOpenQueue = dispatch_queue_create("io.ably.websocketOpen", dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_DEFAULT, 0));
         _websocket = nil;
         _state = ARTRealtimeTransportStateClosed;
         _encoder = rest.defaultEncoder;
@@ -123,7 +134,7 @@ NS_ASSUME_NONNULL_END
     NSURLQueryItem *keyParam = [NSURLQueryItem queryItemWithName:@"key" value:key];
     [self setupWebSocket:@{keyParam.name: keyParam} withOptions:self.options resumeKey:self.resumeKey];
     // Connect
-    [self.websocket open];
+    [self openWebSocket];
 }
 
 - (void)connectWithToken:(NSString *)token {
@@ -132,7 +143,7 @@ NS_ASSUME_NONNULL_END
     NSURLQueryItem *accessTokenParam = [NSURLQueryItem queryItemWithName:@"accessToken" value:token];
     [self setupWebSocket:@{accessTokenParam.name: accessTokenParam} withOptions:self.options resumeKey:self.resumeKey];
     // Connect
-    [self.websocket open];
+    [self openWebSocket];
 }
 
 - (NSURL *)setupWebSocket:(NSDictionary<NSString *, NSURLQueryItem *> *)params withOptions:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey {
@@ -190,6 +201,13 @@ NS_ASSUME_NONNULL_END
     self.websocket.delegate = self;
     self.websocketURL = url;
     return url;
+}
+
+- (void)openWebSocket {
+    __weak ARTWebSocketTransport *weakSelf = self;
+    dispatch_async(_websocketOpenQueue, ^{
+        [weakSelf.websocket open];
+    });
 }
 
 - (void)sendClose {
