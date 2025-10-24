@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Calls `-open` on the underlying `ARTWebSocket`.
 ///
-/// Exposed so that test subclasses can override and wrap in additional logic.
+/// Exposed so that test subclasses can override and replace or wrap in additional logic.
 - (void)openWebSocket;
 
 @end
