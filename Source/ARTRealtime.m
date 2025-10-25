@@ -1598,8 +1598,12 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         return;
     }
     
+    ARTLogVerbose(self.logger, @"Test log line 0");
+
     ARTLogVerbose(self.logger, @"R:%p did receive Protocol Message %@ (connection state is %@)", self, ARTProtocolMessageActionToStr(message.action), ARTRealtimeConnectionStateToStr(self.connection.state_nosync));
-    
+
+    ARTLogVerbose(self.logger, @"Test log line 1");
+
     if (message.error) {
         ARTLogVerbose(self.logger, @"R:%p Protocol Message with error %@", self, message.error);
     }
@@ -1608,6 +1612,8 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         ARTLogError(self.logger, @"Unexpected transport: R:%p != R:%p", transport, self.transport);
         return;
     }
+
+    ARTLogVerbose(self.logger, @"Test log line 2");
 
     switch (message.action) {
         case ARTProtocolMessageHeartbeat:
@@ -1644,6 +1650,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
             [self onChannelMessage:message];
             break;
     }
+    ARTLogVerbose(self.logger, @"Test log line 3");
 }
 
 - (void)realtimeTransportAvailable:(id<ARTRealtimeTransport>)transport {
