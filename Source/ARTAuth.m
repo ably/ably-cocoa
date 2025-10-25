@@ -826,16 +826,23 @@ dispatch_sync(_queue, ^{
 
 #if TARGET_OS_IOS
 - (void)setLocalDeviceClientId_nosync:(NSString *)clientId {
+    ARTLogVerbose(self.logger, @"BEGIN setLocalDeviceClientId_nosync");
     if (clientId == nil || [clientId isEqualToString:@"*"] || [clientId isEqualToString:_rest.device_nosync.clientId]) {
         return;
     }
+    ARTLogVerbose(self.logger, @"DO 1 setLocalDeviceClientId_nosync");
     [_rest.device_nosync setClientId:clientId];
+    ARTLogVerbose(self.logger, @"DO 2 setLocalDeviceClientId_nosync");
     [_rest.storage setObject:clientId forKey:ARTClientIdKey];
+    ARTLogVerbose(self.logger, @"DO 3 setLocalDeviceClientId_nosync");
     [_rest.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
+        ARTLogVerbose(self.logger, @"DO 4 setLocalDeviceClientId_nosync");
         if (![stateMachine.current_nosync isKindOfClass:[ARTPushActivationStateNotActivated class]]) {
+            ARTLogVerbose(self.logger, @"DO 5 setLocalDeviceClientId_nosync");
             [stateMachine sendEvent:[[ARTPushActivationEventGotPushDeviceDetails alloc] init]];
         }
     }];
+    ARTLogVerbose(self.logger, @"END setLocalDeviceClientId_nosync");
 }
 #endif
 
