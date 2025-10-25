@@ -735,7 +735,7 @@ dispatch_async(_queue, ^{
     ARTLogVerbose(self.logger, @"BEGIN setProtocolClientId");
     _protocolClientId = clientId;
     #if TARGET_OS_IOS
-    [self setLocalDeviceClientId_nosync:_protocolClientId];
+//    [self setLocalDeviceClientId_nosync:_protocolClientId];
     #endif
     ARTLogVerbose(self.logger, @"END setProtocolClientId");
 }
