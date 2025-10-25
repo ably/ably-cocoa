@@ -1625,9 +1625,11 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         case ARTProtocolMessageConnected:
             // Set Auth#clientId
             if (message.connectionDetails) {
+                ARTLogVerbose(self.logger, @"Calling [self.auth setProtocolClientId:message.connectionDetails.clientId]");
                 [self.auth setProtocolClientId:message.connectionDetails.clientId];
             }
             // Event
+            ARTLogVerbose(self.logger, @"Calling [self onConnected:message]");
             [self onConnected:message];
             break;
         case ARTProtocolMessageDisconnect:

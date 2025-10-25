@@ -732,10 +732,12 @@ dispatch_async(_queue, ^{
 }
 
 - (void)setProtocolClientId:(NSString *)clientId {
+    ARTLogVerbose(self.logger, @"BEGIN setProtocolClientId");
     _protocolClientId = clientId;
     #if TARGET_OS_IOS
     [self setLocalDeviceClientId_nosync:_protocolClientId];
     #endif
+    ARTLogVerbose(self.logger, @"END setProtocolClientId");
 }
 
 - (NSString *)clientId {
