@@ -834,14 +834,14 @@ dispatch_sync(_queue, ^{
     [_rest.device_nosync setClientId:clientId];
 //    ARTLogVerbose(self.logger, @"DO 2 setLocalDeviceClientId_nosync");
 //    [_rest.storage setObject:clientId forKey:ARTClientIdKey];
-//    ARTLogVerbose(self.logger, @"DO 3 setLocalDeviceClientId_nosync");
-//    [_rest.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
-//        ARTLogVerbose(self.logger, @"DO 4 setLocalDeviceClientId_nosync");
-//        if (![stateMachine.current_nosync isKindOfClass:[ARTPushActivationStateNotActivated class]]) {
-//            ARTLogVerbose(self.logger, @"DO 5 setLocalDeviceClientId_nosync");
-//            [stateMachine sendEvent:[[ARTPushActivationEventGotPushDeviceDetails alloc] init]];
-//        }
-//    }];
+    ARTLogVerbose(self.logger, @"DO 3 setLocalDeviceClientId_nosync");
+    [_rest.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
+        ARTLogVerbose(self.logger, @"DO 4 setLocalDeviceClientId_nosync");
+        if (![stateMachine.current_nosync isKindOfClass:[ARTPushActivationStateNotActivated class]]) {
+            ARTLogVerbose(self.logger, @"DO 5 setLocalDeviceClientId_nosync");
+            [stateMachine sendEvent:[[ARTPushActivationEventGotPushDeviceDetails alloc] init]];
+        }
+    }];
     ARTLogVerbose(self.logger, @"END setLocalDeviceClientId_nosync");
 }
 #endif
