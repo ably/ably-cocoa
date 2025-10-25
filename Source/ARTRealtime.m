@@ -1604,7 +1604,10 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         ARTLogVerbose(self.logger, @"R:%p Protocol Message with error %@", self, message.error);
     }
     
-    NSAssert(transport == self.transport, @"Unexpected transport");
+    if (transport != self.transport) {
+        ARTLogError(self.logger, @"Unexpected transport: R:%p != R:%p", transport, self.transport);
+        return;
+    }
 
     switch (message.action) {
         case ARTProtocolMessageHeartbeat:
