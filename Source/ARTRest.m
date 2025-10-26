@@ -780,9 +780,11 @@ dispatch_async(_queue, ^{
 
 - (ARTLocalDevice *)device_nosync {
     __block ARTLocalDevice *ret;
+    ARTLogVerbose(self.logger, @"BEGIN device_nosync");
     dispatch_sync([ARTRestInternal deviceAccessQueue], ^{
         ret = [self sharedDevice_onlyCallOnDeviceAccessQueue];
     });
+    ARTLogVerbose(self.logger, @"END device_nosync");
     return ret;
 }
 
