@@ -83,20 +83,41 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     ARTLogVerbose(logger, @"BEGIN [[ARTLocalDevice alloc] initWithStorage:storage logger:logger]");
     ARTLocalDevice *device = [[ARTLocalDevice alloc] initWithStorage:storage logger:logger];
     ARTLogVerbose(logger, @"END [[ARTLocalDevice alloc] initWithStorage:storage logger:logger]");
+    ARTLogVerbose(logger, @"BEGIN device.platform = ARTDevicePlatform");
     device.platform = ARTDevicePlatform;
+    ARTLogVerbose(logger, @"END device.platform = ARTDevicePlatform");
     #if TARGET_OS_IOS
-    switch ([[UIDevice currentDevice] userInterfaceIdiom]) {
+    ARTLogVerbose(logger, @"BEGIN [UIDevice currentDevice]");
+    UIDevice *currentDevice = [UIDevice currentDevice];
+    ARTLogVerbose(logger, @"END [UIDevice currentDevice]");
+    ARTLogVerbose(logger, @"BEGIN [currentDevice userInterfaceIdiom]");
+    UIUserInterfaceIdiom idiom = [currentDevice userInterfaceIdiom];
+    ARTLogVerbose(logger, @"END [currentDevice userInterfaceIdiom]");
+    switch (idiom) {
         case UIUserInterfaceIdiomPad:
+            ARTLogVerbose(logger, @"BEGIN device.formFactor = @\"tablet\"");
             device.formFactor = @"tablet";
+            ARTLogVerbose(logger, @"END device.formFactor = @\"tablet\"");
+            break;
         case UIUserInterfaceIdiomCarPlay:
+            ARTLogVerbose(logger, @"BEGIN device.formFactor = @\"car\"");
             device.formFactor = @"car";
+            ARTLogVerbose(logger, @"END device.formFactor = @\"car\"");
+            break;
         default:
+            ARTLogVerbose(logger, @"BEGIN device.formFactor = ARTDeviceFormFactor");
             device.formFactor = ARTDeviceFormFactor;
+            ARTLogVerbose(logger, @"END device.formFactor = ARTDeviceFormFactor");
+            break;
     }
     #else
+    ARTLogVerbose(logger, @"BEGIN device.formFactor = ARTDeviceFormFactor");
     device.formFactor = ARTDeviceFormFactor;
+    ARTLogVerbose(logger, @"END device.formFactor = ARTDeviceFormFactor");
     #endif
+    ARTLogVerbose(logger, @"BEGIN device.push.recipient[@\"transportType\"] = ARTDevicePushTransportType");
     device.push.recipient[@"transportType"] = ARTDevicePushTransportType;
+    ARTLogVerbose(logger, @"END device.push.recipient[@\"transportType\"] = ARTDevicePushTransportType");
 
     ARTLogVerbose(logger, @"BEGIN [storage objectForKey:ARTDeviceIdKey]");
     NSString *deviceId = [storage objectForKey:ARTDeviceIdKey];
