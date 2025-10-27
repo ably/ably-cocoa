@@ -157,6 +157,7 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
         ARTLogVerbose(logger, @"BEGIN inside formFactorWithLogger dispatch_once");
         // We expect not to be on the main queue (else the dispatch_sync below would cause deadlock)
         dispatch_assert_queue_not(dispatch_get_main_queue());
+        assert(![NSThread isMainThread]);
 
         ARTLogVerbose(logger, @"BEGIN outside formFactorWithLogger dispatch_sync");
         dispatch_sync(dispatch_get_main_queue(), ^{
