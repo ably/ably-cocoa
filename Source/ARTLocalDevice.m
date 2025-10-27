@@ -86,36 +86,9 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     ARTLogVerbose(logger, @"BEGIN device.platform = ARTDevicePlatform");
     device.platform = ARTDevicePlatform;
     ARTLogVerbose(logger, @"END device.platform = ARTDevicePlatform");
-    #if TARGET_OS_IOS
-    ARTLogVerbose(logger, @"BEGIN [UIDevice currentDevice]");
-    UIDevice *currentDevice = [UIDevice currentDevice];
-    ARTLogVerbose(logger, @"END [UIDevice currentDevice]");
-    ARTLogVerbose(logger, @"BEGIN [currentDevice userInterfaceIdiom]");
-    UIUserInterfaceIdiom idiom = [currentDevice userInterfaceIdiom];
-    ARTLogVerbose(logger, @"END [currentDevice userInterfaceIdiom]");
-    switch (idiom) {
-        case UIUserInterfaceIdiomPad:
-            ARTLogVerbose(logger, @"BEGIN device.formFactor = @\"tablet\"");
-            device.formFactor = @"tablet";
-            ARTLogVerbose(logger, @"END device.formFactor = @\"tablet\"");
-            break;
-        case UIUserInterfaceIdiomCarPlay:
-            ARTLogVerbose(logger, @"BEGIN device.formFactor = @\"car\"");
-            device.formFactor = @"car";
-            ARTLogVerbose(logger, @"END device.formFactor = @\"car\"");
-            break;
-        default:
-            ARTLogVerbose(logger, @"BEGIN device.formFactor = ARTDeviceFormFactor");
-            device.formFactor = ARTDeviceFormFactor;
-            ARTLogVerbose(logger, @"END device.formFactor = ARTDeviceFormFactor");
-            break;
-    }
-    #else
-    ARTLogVerbose(logger, @"BEGIN device.formFactor = ARTDeviceFormFactor");
-    device.formFactor = ARTDeviceFormFactor;
-    ARTLogVerbose(logger, @"END device.formFactor = ARTDeviceFormFactor");
-    #endif
-    ARTLogVerbose(logger, @"BEGIN device.push.recipient[@\"transportType\"] = ARTDevicePushTransportType");
+    ARTLogVerbose(logger, @"BEGIN device.formFactor = [self formFactor]");
+    device.formFactor = [self formFactorWithLogger:logger];
+    ARTLogVerbose(logger, @"END device.formFactor = [self formFactor]");
     device.push.recipient[@"transportType"] = ARTDevicePushTransportType;
     ARTLogVerbose(logger, @"END device.push.recipient[@\"transportType\"] = ARTDevicePushTransportType");
 
@@ -170,6 +143,43 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     }
     ARTLogVerbose(logger, @"END ARTLocalDevice deviceWithStorage:logger:");
     return device;
+}
+
+/// Returns the value to use for the `ARTLocalDevice` instance's `formFactor` property.
+///
+/// - Warning: This method expects to be called from a queue other than the main queue.
++ (NSString *)formFactorWithLogger:(nullable ARTInternalLog *)logger {
+#if TARGET_OS_IOS
+    static NSString *result;
+    static dispatch_once_t onceToken;
+    ARTLogVerbose(logger, @"BEGIN outside formFactorWithLogger dispatch_once");
+    dispatch_once(&onceToken, ^{
+        ARTLogVerbose(logger, @"BEGIN inside formFactorWithLogger dispatch_once");
+        // We expect not to be on the main queue (else the dispatch_sync below would cause deadlock)
+        dispatch_assert_queue_not(dispatch_get_main_queue());
+
+        ARTLogVerbose(logger, @"BEGIN outside formFactorWithLogger dispatch_sync");
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            ARTLogVerbose(logger, @"BEGIN inside formFactorWithLogger dispatch_sync");
+            switch ([[UIDevice currentDevice] userInterfaceIdiom]) {
+                case UIUserInterfaceIdiomPad:
+                    result = @"tablet";
+                case UIUserInterfaceIdiomCarPlay:
+                    result = @"car";
+                default:
+                    result = ARTDeviceFormFactor;
+            }
+            ARTLogVerbose(logger, @"END inside formFactorWithLogger dispatch_sync");
+        });
+        ARTLogVerbose(logger, @"END outside formFactorWithLogger dispatch_sync");
+        ARTLogVerbose(logger, @"END inside formFactorWithLogger dispatch_once");
+    });
+    ARTLogVerbose(logger, @"END outside formFactorWithLogger dispatch_once");
+
+    return result;
+#else
+    return ARTDeviceFormFactor;
+#endif
 }
 
 - (void)setupDetailsWithClientId:(NSString *)clientId {
