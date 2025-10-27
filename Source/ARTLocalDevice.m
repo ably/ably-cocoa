@@ -67,18 +67,7 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
 + (instancetype)deviceWithStorage:(id<ARTDeviceStorage>)storage logger:(nullable ARTInternalLog *)logger {
     ARTLocalDevice *device = [[ARTLocalDevice alloc] initWithStorage:storage logger:logger];
     device.platform = ARTDevicePlatform;
-    #if TARGET_OS_IOS
-    switch ([[UIDevice currentDevice] userInterfaceIdiom]) {
-        case UIUserInterfaceIdiomPad:
-            device.formFactor = @"tablet";
-        case UIUserInterfaceIdiomCarPlay:
-            device.formFactor = @"car";
-        default:
-            device.formFactor = ARTDeviceFormFactor;
-    }
-    #else
-    device.formFactor = ARTDeviceFormFactor;
-    #endif
+    device.formFactor = [self formFactor];
     device.push.recipient[@"transportType"] = ARTDevicePushTransportType;
 
     NSString *deviceId = [storage objectForKey:ARTDeviceIdKey];
@@ -113,6 +102,35 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
         [device setAPNSDeviceToken:token tokenType:tokenType];
     }
     return device;
+}
+
+/// Returns the value to use for the `ARTLocalDevice` instance's `formFactor` property.
+///
+/// - Warning: This method expects to be called from a queue other than the main queue.
++ (NSString *)formFactor {
+#if TARGET_OS_IOS
+    static NSString *result;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        // We expect not to be on the main queue (else the dispatch_sync below would cause deadlock)
+        dispatch_assert_queue_not(dispatch_get_main_queue());
+
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            switch ([[UIDevice currentDevice] userInterfaceIdiom]) {
+                case UIUserInterfaceIdiomPad:
+                    result = @"tablet";
+                case UIUserInterfaceIdiomCarPlay:
+                    result = @"car";
+                default:
+                    result = ARTDeviceFormFactor;
+            }
+        });
+    });
+
+    return result;
+#else
+    return ARTDeviceFormFactor;
+#endif
 }
 
 - (void)setupDetailsWithClientId:(NSString *)clientId {
