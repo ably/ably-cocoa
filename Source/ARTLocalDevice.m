@@ -149,6 +149,8 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
 ///
 /// - Warning: This method expects to be called from a queue other than the main queue.
 + (NSString *)formFactorWithLogger:(nullable ARTInternalLog *)logger {
+    return ARTDeviceFormFactor;
+    /*
 #if TARGET_OS_IOS
     static NSString *result;
     static dispatch_once_t onceToken;
@@ -181,6 +183,7 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
 #else
     return ARTDeviceFormFactor;
 #endif
+     */
 }
 
 - (void)setupDetailsWithClientId:(NSString *)clientId {
