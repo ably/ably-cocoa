@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.2.50](https://github.com/ably/ably-cocoa/tree/1.2.50)
+
+### What's Changed
+
+Fixes a thread priority inversion issue reported by Xcode's Thread Performance Checker when using ably-cocoa from the main thread. ([#2128](https://github.com/ably/ably-cocoa/pull/2128))
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.49...1.2.50
+
 ## [1.2.49](https://github.com/ably/ably-cocoa/tree/1.2.49)
 
 ### What's Changed
