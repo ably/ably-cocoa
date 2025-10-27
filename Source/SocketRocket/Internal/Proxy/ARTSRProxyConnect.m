@@ -160,7 +160,7 @@
     NSArray *proxies = CFBridgingRelease(CFNetworkCopyProxiesForURL((__bridge CFURLRef)httpURL, (__bridge CFDictionaryRef)proxySettings));
     if (proxies.count == 0) {
         ARTSRDebugLog(self.logger, @"configureProxy no proxies");
-        [self openConnection];
+        [self _openConnection];
         return;                 // no proxy
     }
     NSDictionary *settings = [proxies objectAtIndex:0];
@@ -181,7 +181,7 @@
     }
     [self _readProxySettingWithType:proxyType settings:settings];
 
-    [self openConnection];
+    [self _openConnection];
 }
 
 - (void)_readProxySettingWithType:(NSString *)proxyType settings:(NSDictionary *)settings
@@ -222,7 +222,7 @@
                                                        error:&error];
 
         if (error) {
-            [self openConnection];
+            [self _openConnection];
         } else {
             [self _runPACScript:script withProxySettings:proxySettings];
         }
@@ -233,7 +233,7 @@
     if (![scheme isEqualToString:@"http"] && ![scheme isEqualToString:@"https"]) {
         // Don't know how to read data from this URL, we'll have to give up
         // We'll simply assume no proxies, and start the request as normal
-        [self openConnection];
+        [self _openConnection];
         return;
     }
     __weak typeof(self) wself = self;
@@ -255,7 +255,7 @@
             NSString *script = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
             [sself _runPACScript:script withProxySettings:proxySettings];
         } else {
-            [sself openConnection];
+            [sself _openConnection];
         }
     }] resume];
 }
@@ -263,7 +263,7 @@
 - (void)_runPACScript:(NSString *)script withProxySettings:(NSDictionary *)proxySettings
 {
     if (!script) {
-        [self openConnection];
+        [self _openConnection];
         return;
     }
     ARTSRDebugLog(self.logger, @"runPACScript");
@@ -289,30 +289,7 @@
         NSString *proxyType = settings[(NSString *)kCFProxyTypeKey];
         [self _readProxySettingWithType:proxyType settings:settings];
     }
-    [self openConnection];
-}
-
-- (void)openConnection
-{
-    if ([NSRunLoop ARTSR_networkRunLoop] != nil) {
-        [self _openConnection];
-    }
-    else {
-        if ([NSThread isMainThread]) {
-            dispatch_async(_writeQueue, ^{
-                [NSRunLoop ARTSR_waitForNetworkRunLoop];
-                // Dispatch back to main:
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [self _openConnection];
-                });
-            });
-        }
-        else {
-            // Here goes some background thread in which we can call `ARTSR_waitForNetworkRunLoop` without blocking the main thread (in case user decided to call `ARTRealtime` methods from not the main thread).
-            [NSRunLoop ARTSR_waitForNetworkRunLoop];
-            [self _openConnection];
-        }
-    }
+    [self _openConnection];
 }
 
 - (void)_openConnection
