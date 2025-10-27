@@ -30,10 +30,10 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString * _Nullable tokenType);
 - (void)resetDetails;
 - (void)setupDetailsWithClientId:(nullable NSString *)clientId;
 
-+ (NSString *)generateId;
-+ (NSString *)generateSecret;
++ (NSString *)generateIdWithLogger:(nullable ARTInternalLog *)logger;
++ (NSString *)generateSecretWithLogger:(nullable ARTInternalLog *)logger;
 
-+ (nullable NSString *)apnsDeviceTokenOfType:(nullable NSString *)tokenType fromStorage:(id<ARTDeviceStorage>)storage;
++ (nullable NSString *)apnsDeviceTokenOfType:(nullable NSString *)tokenType fromStorage:(id<ARTDeviceStorage>)storage logger:(nullable ARTInternalLog *)logger;
 
 @end
 

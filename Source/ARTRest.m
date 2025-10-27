@@ -860,8 +860,8 @@ static BOOL sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = YES;
 - (void)setAndPersistAPNSDeviceTokenData:(NSData *)deviceTokenData tokenType:(NSString *)tokenType {
     NSString *deviceToken = deviceTokenData.deviceTokenString;
     ARTLogInfo(self.logger, @"ARTRest: device token: %@ of type: `%@`", deviceToken, tokenType);
-    
-    NSString *currentDeviceToken = [ARTLocalDevice apnsDeviceTokenOfType:tokenType fromStorage:self.storage];
+
+    NSString *currentDeviceToken = [ARTLocalDevice apnsDeviceTokenOfType:tokenType fromStorage:self.storage logger:self.logger];
     if ([currentDeviceToken isEqualToString:deviceToken]) {
         // Already stored.
         return;
