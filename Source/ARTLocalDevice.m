@@ -65,6 +65,7 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
 }
 
 + (instancetype)deviceWithStorage:(id<ARTDeviceStorage>)storage logger:(nullable ARTInternalLog *)logger {
+    ARTLogVerbose(logger, @"BEGIN ARTLocalDevice deviceWithStorage:logger:");
     ARTLocalDevice *device = [[ARTLocalDevice alloc] initWithStorage:storage logger:logger];
     device.platform = ARTDevicePlatform;
     #if TARGET_OS_IOS
@@ -112,6 +113,7 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
         NSString *token = [ARTLocalDevice apnsDeviceTokenOfType:tokenType fromStorage:storage];
         [device setAPNSDeviceToken:token tokenType:tokenType];
     }
+    ARTLogVerbose(logger, @"END ARTLocalDevice deviceWithStorage:logger:");
     return device;
 }
 

@@ -779,10 +779,26 @@ dispatch_async(_queue, ^{
 }
 
 - (ARTLocalDevice *)device_nosync {
+    /*
+     scenario:
+
+     rxClient
+     txClient
+
+     they both call device_nosync at a similar moment
+
+     - rxClient.workQueue does dispatch_sync (from thread "A") to deviceAccessQueue
+     - the system schedules this block on thread "B"
+
+     - txClient.workQueue does dispatch_sync (which happens to be executing on thread "B") to deviceAccessQueue
+
+     */
     __block ARTLocalDevice *ret;
     ARTLogVerbose(self.logger, @"BEGIN device_nosync");
     dispatch_sync([ARTRestInternal deviceAccessQueue], ^{
+        ARTLogVerbose(self.logger, @"BEGIN inside device_nosync dispatch_sync");
         ret = [self sharedDevice_onlyCallOnDeviceAccessQueue];
+        ARTLogVerbose(self.logger, @"END inside device_nosync dispatch_sync");
     });
     ARTLogVerbose(self.logger, @"END device_nosync");
     return ret;
@@ -802,6 +818,7 @@ dispatch_async(_queue, ^{
 static BOOL sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = YES;
 
 - (ARTLocalDevice *)sharedDevice_onlyCallOnDeviceAccessQueue {
+    ARTLogVerbose(self.logger, @"BEGIN sharedDevice_onlyCallOnDeviceAccessQueue");
     // The device is shared in a static variable because it's a reflection
     // of what's persisted. Having a device instance per ARTRest instance
     // could leave some instances in a stale state, if, through another
@@ -815,6 +832,7 @@ static BOOL sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = YES;
         device = [ARTLocalDevice deviceWithStorage:self.storage logger:self.logger];
         sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = NO;
     }
+    ARTLogVerbose(self.logger, @"END sharedDevice_onlyCallOnDeviceAccessQueue");
     return device;
 }
 
