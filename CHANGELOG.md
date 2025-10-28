@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.2.51](https://github.com/ably/ably-cocoa/tree/1.2.51)
+
+### What's Changed
+
+Fixes an intermittent hang when using ably-cocoa from the main thread. ([#2133](https://github.com/ably/ably-cocoa/pull/2133))
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.50...1.2.51
+
 ## [1.2.50](https://github.com/ably/ably-cocoa/tree/1.2.50)
 
 ### What's Changed
