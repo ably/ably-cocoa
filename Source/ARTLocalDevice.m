@@ -67,18 +67,8 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
 + (instancetype)deviceWithStorage:(id<ARTDeviceStorage>)storage logger:(nullable ARTInternalLog *)logger {
     ARTLocalDevice *device = [[ARTLocalDevice alloc] initWithStorage:storage logger:logger];
     device.platform = ARTDevicePlatform;
-    #if TARGET_OS_IOS
-    switch ([[UIDevice currentDevice] userInterfaceIdiom]) {
-        case UIUserInterfaceIdiomPad:
-            device.formFactor = @"tablet";
-        case UIUserInterfaceIdiomCarPlay:
-            device.formFactor = @"car";
-        default:
-            device.formFactor = ARTDeviceFormFactor;
-    }
-    #else
+    // TODO: Set this based on the UIDevice's userInterfaceIdiom (https://github.com/ably/ably-cocoa/issues/2132)
     device.formFactor = ARTDeviceFormFactor;
-    #endif
     device.push.recipient[@"transportType"] = ARTDevicePushTransportType;
 
     NSString *deviceId = [storage objectForKey:ARTDeviceIdKey];
