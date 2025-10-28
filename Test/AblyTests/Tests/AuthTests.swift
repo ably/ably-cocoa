@@ -2435,7 +2435,7 @@ class AuthTests: XCTestCase {
                 guard let error = error as? NSError else {
                     XCTFail("Error is nil"); return
                 }
-                XCTAssertTrue(error.code == 3840) // Capability: The data couldn’t be read because it isn’t in the correct format.
+                XCTAssertTrue(error.code == 3840) // Capability: The data couldn't be read because it isn't in the correct format.
                 XCTAssertNil(tokenRequest?.capability)
             })
         }

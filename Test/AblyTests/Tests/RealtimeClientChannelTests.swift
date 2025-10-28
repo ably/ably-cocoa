@@ -4107,8 +4107,8 @@ class RealtimeClientChannelTests: XCTestCase {
 
            ## Motivation
 
-           1. So that the initial attach attempt triggered in (A) doesn’t complete, and hence we are sure that when the client receives the DETACHED ProtocolMessage injected in (B), the channel is still in the ATTACHING state, thus satisfying one of the preconditions of RTL13b;
-           2. (C) So that none of the client’s subsequent re-attach attempts (as described by the "repeated, indefinitely" of RTL13b) succeed, since they will each time out after realtimeRequestTimeout, hence creating conditions for the RTL13b retry sequence to indeed repeat indefinitely
+           1. So that the initial attach attempt triggered in (A) doesn't complete, and hence we are sure that when the client receives the DETACHED ProtocolMessage injected in (B), the channel is still in the ATTACHING state, thus satisfying one of the preconditions of RTL13b;
+           2. (C) So that none of the client's subsequent re-attach attempts (as described by the "repeated, indefinitely" of RTL13b) succeed, since they will each time out after realtimeRequestTimeout, hence creating conditions for the RTL13b retry sequence to indeed repeat indefinitely
         */
         let transport = client.internal.transport as! TestProxyTransport
         transport.actionsIgnored += [.attached]

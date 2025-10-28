@@ -41,10 +41,10 @@ jobs:
       - name: Validate pod
         run: pod lib lint
         # We move Ably.framework.zip into a directory. This is because, by
-        # default, macOS’s Archive Utility unzips directly-nested zip files, so
+        # default, macOS's Archive Utility unzips directly-nested zip files, so
         # if Ably.framework.zip were at the top level of the zip file that
         # actions/upload-artifact creates, then Archive Utility would unzip
-        # Ably.framework.zip too, which we don’t want, since we want this file
+        # Ably.framework.zip too, which we don't want, since we want this file
         # to be kept intact so that we can upload it to GitHub releases as
         # described in CONTRIBUTING.md.
       - name: Prepare built framework for archiving

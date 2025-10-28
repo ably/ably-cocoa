@@ -7,7 +7,7 @@ class MockRetryDelayCalculator: RetryDelayCalculator {
     /// Creates a retry delay calculator whose `delay(forRetryNumber:)` method returns values from a provided sequence.
     ///
     /// - Parameters:
-    ///     - delays: A sequence of time intervals. The created retry delay calculator’s `delay(forRetryNumber:)` method will return the `(retryNumber - 1)`-th element of this array.
+    ///     - delays: A sequence of time intervals. The created retry delay calculator's `delay(forRetryNumber:)` method will return the `(retryNumber - 1)`-th element of this array.
     init(delays: [TimeInterval]) {
         self.delays = delays
     }
