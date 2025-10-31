@@ -6,6 +6,7 @@
 #import "ARTRealtimePresence+Private.h"
 #import "ARTClientOptions+TestConfiguration.h"
 #import "ARTTestClientOptions.h"
+#import "ARTGCD.h"
 
 @implementation ARTRealtimeChannels {
     ARTQueuedDealloc *_dealloc;
@@ -101,13 +102,13 @@
     if (cb) {
         ARTCallback userCallback = cb;
         cb = ^(ARTErrorInfo *error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
     }
 
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     if (![self->_channels _exists:name]) {
         if (cb) cb(nil);
         return;

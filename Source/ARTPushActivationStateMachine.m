@@ -14,6 +14,7 @@
 #import "ARTDeviceIdentityTokenDetails.h"
 #import "ARTNSMutableRequest+ARTPush.h"
 #import "ARTAuth+Private.h"
+#import "ARTGCD.h"
 
 #if TARGET_OS_IOS
 
@@ -79,7 +80,7 @@ NS_ASSUME_NONNULL_END
 
 - (NSArray<ARTPushActivationEvent *> *)pendingEvents {
     __block NSArray<ARTPushActivationEvent *> *ret;
-    dispatch_sync(_queue, ^{
+    art_dispatch_sync(_queue, ^{
         ret = [self->_pendingEvents copy];
     });
     return ret;
@@ -87,7 +88,7 @@ NS_ASSUME_NONNULL_END
 
 - (ARTPushActivationEvent *)lastEvent {
     __block ARTPushActivationEvent *ret;
-    dispatch_sync(_queue, ^{
+    art_dispatch_sync(_queue, ^{
         ret = [self lastEvent_nosync];
     });
     return ret;
@@ -99,7 +100,7 @@ NS_ASSUME_NONNULL_END
 
 - (ARTPushActivationState *)current {
     __block ARTPushActivationState *ret;
-    dispatch_sync(_queue, ^{
+    art_dispatch_sync(_queue, ^{
         ret = [self current_nosync];
     });
     return ret;
@@ -110,7 +111,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)sendEvent:(ARTPushActivationEvent *)event {
-dispatch_async(_queue, ^{
+art_dispatch_async(_queue, ^{
     [self handleEvent:event];
 });
 }
@@ -169,7 +170,7 @@ dispatch_async(_queue, ^{
 
     // Custom register
     if ([delegate respondsToSelector:@selector(ablyPushCustomRegister:deviceDetails:callback:)]) {
-        dispatch_async(_userQueue, ^{
+        art_dispatch_async(_userQueue, ^{
             [delegate ablyPushCustomRegister:error deviceDetails:local callback:^(ARTDeviceIdentityTokenDetails *identityTokenDetails, ARTErrorInfo *error) {
                 if (error) {
                     // Failed
@@ -232,7 +233,7 @@ dispatch_async(_queue, ^{
 
     // Custom register
     if ([delegate respondsToSelector:@selector(ablyPushCustomRegister:deviceDetails:callback:)]) {
-        dispatch_async(_userQueue, ^{
+        art_dispatch_async(_userQueue, ^{
             [delegate ablyPushCustomRegister:error deviceDetails:local callback:^(ARTDeviceIdentityTokenDetails *identityTokenDetails, ARTErrorInfo *error) {
                 if (error) {
                     // Failed
@@ -281,7 +282,7 @@ dispatch_async(_queue, ^{
 
     // Custom register
     if ([delegate respondsToSelector:@selector(ablyPushCustomRegister:deviceDetails:callback:)]) {
-        dispatch_async(_userQueue, ^{
+        art_dispatch_async(_userQueue, ^{
             [delegate ablyPushCustomRegister:nil deviceDetails:local callback:^(ARTDeviceIdentityTokenDetails *identityTokenDetails, ARTErrorInfo *error) {
                 if (error) {
                     // Failed
@@ -340,7 +341,7 @@ dispatch_async(_queue, ^{
     // Custom register
     SEL customDeregisterMethodSelector = @selector(ablyPushCustomDeregister:deviceId:callback:);
     if ([delegate respondsToSelector:customDeregisterMethodSelector]) {
-        dispatch_async(_userQueue, ^{
+        art_dispatch_async(_userQueue, ^{
             [delegate ablyPushCustomDeregister:error deviceId:local.id callback:^(ARTErrorInfo *error) {
                 if (error) {
                     // RSH3d2c1: ignore unauthorized or invalid credentials errors
@@ -385,7 +386,7 @@ dispatch_async(_queue, ^{
 
 - (void)callActivatedCallback:(ARTErrorInfo *)error {
     #if TARGET_OS_IOS
-    dispatch_async(_userQueue, ^{
+    art_dispatch_async(_userQueue, ^{
         const id<ARTPushRegistererDelegate, NSObject> delegate = self.delegate;
         if ([delegate respondsToSelector:@selector(didActivateAblyPush:)]) {
             [delegate didActivateAblyPush:error];
@@ -396,7 +397,7 @@ dispatch_async(_queue, ^{
 
 - (void)callDeactivatedCallback:(ARTErrorInfo *)error {
     #if TARGET_OS_IOS
-    dispatch_async(_userQueue, ^{
+    art_dispatch_async(_userQueue, ^{
         const id<ARTPushRegistererDelegate, NSObject> delegate = self.delegate;
         if ([delegate respondsToSelector:@selector(didDeactivateAblyPush:)]) {
             [delegate didDeactivateAblyPush:error];
@@ -407,7 +408,7 @@ dispatch_async(_queue, ^{
 
 - (void)callUpdatedCallback:(nullable ARTErrorInfo *)error {
     #if TARGET_OS_IOS
-    dispatch_async(_userQueue, ^{
+    art_dispatch_async(_userQueue, ^{
         const id<ARTPushRegistererDelegate, NSObject> delegate = self.delegate;
         if ([delegate respondsToSelector:@selector(didUpdateAblyPush:)]) {
             [delegate didUpdateAblyPush:error];
@@ -420,7 +421,7 @@ dispatch_async(_queue, ^{
 }
 
 - (void)registerForAPNS {
-    dispatch_async(dispatch_get_main_queue(), ^{
+    art_dispatch_async(dispatch_get_main_queue(), ^{
         [[UIApplication sharedApplication] registerForRemoteNotifications];
     });
 }

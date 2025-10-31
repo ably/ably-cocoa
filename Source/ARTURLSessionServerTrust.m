@@ -1,4 +1,5 @@
 #import "ARTURLSessionServerTrust.h"
+#import "ARTGCD.h"
 
 @interface ARTURLSessionServerTrust() {
     NSURLSession *_session;
@@ -37,7 +38,7 @@
 
 - (NSObject<ARTCancellable> *)get:(NSURLRequest *)request completion:(ARTURLRequestCallback)callback {
     NSURLSessionDataTask *task = [_session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-        dispatch_async(self->_queue, ^{
+        art_dispatch_async(self->_queue, ^{
             callback((NSHTTPURLResponse *)response, data, error);
         });
     }];

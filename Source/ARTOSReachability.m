@@ -8,6 +8,7 @@
 
 #import "ARTOSReachability.h"
 #import "ARTInternalLog.h"
+#import "ARTGCD.h"
 
 typedef const void * __nonnull (* __nullable ARTNetworkReachabilityContextRetain)(const void * _Nullable info);
 
@@ -45,7 +46,7 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
         if (strongSelf) {
             BOOL reachable = (flags & kSCNetworkReachabilityFlagsReachable) != 0;
             ARTLogInfo(strongSelf->_logger, @"Reachability: host %@ is reachable: %@", strongSelf->_host, reachable ? @"true" : @"false");
-            dispatch_async(strongSelf->_queue, ^{
+            art_dispatch_async(strongSelf->_queue, ^{
                 if (callback) {
                     callback(reachable);
                 }
