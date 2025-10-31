@@ -85,6 +85,7 @@
 @implementation ARTPushInternal {
     __weak ARTRestInternal *_rest; // weak because rest owns self
     ARTInternalLog *_logger;
+    dispatch_queue_t _queue;
     ARTPushActivationStateMachine *_activationMachine;
     NSLock *_activationMachineLock;
 }
@@ -93,16 +94,13 @@
     if (self = [super init]) {
         _rest = rest;
         _logger = logger;
+        _queue = rest.queue;
         _admin = [[ARTPushAdminInternal alloc] initWithRest:rest logger:logger];
         _activationMachine = nil;
         _activationMachineLock = [[NSLock alloc] init];
         _activationMachineLock.name = @"ActivationMachineLock";
     }
     return self;
-}
-
-- (dispatch_queue_t)queue {
-    return _rest.queue;
 }
 
 #if TARGET_OS_IOS
@@ -146,7 +144,7 @@
 
 - (void)createActivationStateMachineWithDelegate:(const id<ARTPushRegistererDelegate, NSObject>)delegate
                                completionHandler:(void (^const)(ARTPushActivationStateMachine *_Nonnull))block {
-    art_dispatch_async(self.queue, ^{
+    art_dispatch_async(_queue, ^{
         block([self createActivationStateMachineWithDelegate:delegate]);
     });
 }
