@@ -829,7 +829,11 @@ art_dispatch_sync(_queue, ^{
     }
     [_rest.device_nosync setClientId:clientId];
     [_rest.storage setObject:clientId forKey:ARTClientIdKey];
-    [_rest.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
+    [_rest.push getActivationMachine:^(ARTPushActivationStateMachine *_Nullable stateMachine) {
+        if (!stateMachine) {
+            return;
+        }
+
         if (![stateMachine.current_nosync isKindOfClass:[ARTPushActivationStateNotActivated class]]) {
             [stateMachine sendEvent:[[ARTPushActivationEventGotPushDeviceDetails alloc] init]];
         }

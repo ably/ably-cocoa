@@ -850,7 +850,7 @@ static BOOL sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = YES;
     [self.device_nosync setAndPersistAPNSDeviceToken:deviceToken tokenType:tokenType];
     ARTLogDebug(self.logger, @"ARTRest: device token stored");
     
-    [self.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
+    [self.push getActivationMachine:^(ARTPushActivationStateMachine *_Nullable stateMachine) {
         [stateMachine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
     }];
 }
