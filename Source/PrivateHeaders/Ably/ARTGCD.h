@@ -1,5 +1,7 @@
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface ARTScheduledBlockHandle : NSObject
 - (instancetype)initWithDelay:(NSTimeInterval)delay queue:(dispatch_queue_t)queue block:(dispatch_block_t)block;
 - (void)cancel;
@@ -11,3 +13,5 @@ static inline void artDispatchCancel(ARTScheduledBlockHandle *handle) {
         [handle cancel];
     }
 }
+
+NS_ASSUME_NONNULL_END
