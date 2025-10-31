@@ -127,12 +127,23 @@
             callbackWithUnlock([self createActivationStateMachineWithDelegate:delegate]);
         }
         else {
+            __block id extendedLifetimeRest = _rest;
+
+            if (!extendedLifetimeRest) {
+                // My understanding is that this shouldn't be possible: either getActivationMachine is being invoked as a result of a user's interaction with an ARTPush public method, in which case our ARTQueuedDealloc mechanism should have kept _rest alive, or it's being invoked _by_ _rest (upon fetching a token) or it's being invoked by ARTRealtimeInternal, which is keeping _rest alive.
+                ARTLogWarn(_logger, @"_rest has already been deallocated in getActivationMachine:, skipping creation of machine and will not call callback");
+                return;
+            }
+
             art_dispatch_async(dispatch_get_main_queue(), ^{
                 // -[UIApplication delegate] is an UI API call, so needs to be called from main thread.
                 const id legacyDelegate = UIApplication.sharedApplication.delegate;
 
+                // After this dispatch to the main queue, I believe there is no longer any mechanism guaranteed to be keeping _rest alive, hence our extendedLifetimeRest variable, which keeps _rest alive for long enough to ensure that when createActivationStateMachineWithDelegate creates the state machine, it passes it a non-nil _rest, as its initializer's contract requires.
+
                 art_dispatch_async(self->_queue, ^{
-                    callbackWithUnlock([self createActivationStateMachineWithDelegate:legacyDelegate]);
+                    callbackWithUnlock([self createActivationStateMachineWithDelegate:delegate]);
+                    extendedLifetimeRest = nil;
                 });
             });
         }
