@@ -130,23 +130,16 @@
             art_dispatch_async(dispatch_get_main_queue(), ^{
                 // -[UIApplication delegate] is an UI API call, so needs to be called from main thread.
                 const id legacyDelegate = UIApplication.sharedApplication.delegate;
-                [self createActivationStateMachineWithDelegate:legacyDelegate
-                                             completionHandler:^(ARTPushActivationStateMachine *const machine) {
-                    callbackWithUnlock(machine);
-                }];
+
+                art_dispatch_async(self->_queue, ^{
+                    callbackWithUnlock([self createActivationStateMachineWithDelegate:legacyDelegate]);
+                });
             });
         }
     }
     else {
         callbackWithUnlock(_activationMachine);
     }
-}
-
-- (void)createActivationStateMachineWithDelegate:(const id<ARTPushRegistererDelegate, NSObject>)delegate
-                               completionHandler:(void (^const)(ARTPushActivationStateMachine *_Nonnull))block {
-    art_dispatch_async(_queue, ^{
-        block([self createActivationStateMachineWithDelegate:delegate]);
-    });
 }
 
 - (ARTPushActivationStateMachine *)createActivationStateMachineWithDelegate:(const id<ARTPushRegistererDelegate, NSObject>)delegate {
