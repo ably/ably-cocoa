@@ -9,6 +9,7 @@
 #import "ARTChannel+Private.h"
 #import "ARTLocalDevice+Private.h"
 #import "ARTNSMutableRequest+ARTPush.h"
+#import "ARTGCD.h"
 
 @implementation ARTPushChannel {
     ARTQueuedDealloc *_dealloc;
@@ -106,13 +107,13 @@ const NSUInteger ARTDefaultLimit = 100;
     if (callback) {
         ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *_Nullable error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
     }
 
-dispatch_async(_queue, ^{
+art_dispatch_async(_queue, ^{
     ARTLocalDevice *device = [self getDevice:callback];
     if (![device isRegistered]) {
         return;
@@ -142,13 +143,13 @@ dispatch_async(_queue, ^{
     if (callback) {
         ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *_Nullable error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
     }
 
-dispatch_async(_queue, ^{
+art_dispatch_async(_queue, ^{
     NSString *clientId = [self getClientId:callback];
     if (!clientId) {
         return;
@@ -176,13 +177,13 @@ dispatch_async(_queue, ^{
     if (callback) {
         ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *_Nullable error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
     }
 
-dispatch_async(_queue, ^{
+art_dispatch_async(_queue, ^{
     ARTLocalDevice *device = [self getDevice:callback];
     if (![device isRegistered]) {
         return;
@@ -213,13 +214,13 @@ dispatch_async(_queue, ^{
     if (callback) {
         ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *_Nullable error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
     }
 
-dispatch_async(_queue, ^{
+art_dispatch_async(_queue, ^{
     NSString *clientId = [self getClientId:callback];
     if (!clientId) {
         return;
@@ -251,14 +252,14 @@ dispatch_async(_queue, ^{
     if (callback) {
         ARTPaginatedPushChannelCallback userCallback = callback;
         callback = ^(ARTPaginatedResult<ARTPushChannelSubscription *> *result, ARTErrorInfo *error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(result, error);
             });
         };
     }
 
     __block BOOL ret;
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     NSMutableDictionary<NSString *, NSString *> *mutableParams = params ? [NSMutableDictionary dictionaryWithDictionary:params] : [[NSMutableDictionary alloc] init];
 
     if (!mutableParams[@"deviceId"] && !mutableParams[@"clientId"]) {

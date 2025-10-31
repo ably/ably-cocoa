@@ -85,7 +85,7 @@
     }
     [self invalidate];
     if (_eventHandler && _eventHandler.userQueue) {
-        dispatch_async(_eventHandler.userQueue, ^{
+        art_dispatch_async(_eventHandler.userQueue, ^{
             [self->_center removeObserver:self->_observer];
             self->_observer = nil;
         });
@@ -342,14 +342,14 @@
     if (cb) {
         void (^userCallback)(id _Nullable) = cb;
         cb = ^(id _Nullable v) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(v);
             });
         };
     }
     
     __block ARTEventListener *listener;
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     listener = [super on:event callback:cb];
 });
     return listener;
@@ -359,14 +359,14 @@ dispatch_sync(_queue, ^{
     if (cb) {
         void (^userCallback)(id _Nullable) = cb;
         cb = ^(id _Nullable v) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(v);
             });
         };
     }
     
     __block ARTEventListener *listener;
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     listener = [super on:cb];
 });
     return listener;
@@ -376,14 +376,14 @@ dispatch_sync(_queue, ^{
     if (cb) {
         void (^userCallback)(id _Nullable) = cb;
         cb = ^(id _Nullable v) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(v);
             });
         };
     }
 
     __block ARTEventListener *listener;
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     listener = [super once:event callback:cb];
 });
     return listener;
@@ -393,33 +393,33 @@ dispatch_sync(_queue, ^{
     if (cb) {
         void (^userCallback)(id _Nullable) = cb;
         cb = ^(id _Nullable v) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(v);
             });
         };
     }
 
     __block ARTEventListener *listener;
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     listener = [super once:cb];
 });
     return listener;
 }
 
 - (void)off:(id<ARTEventIdentification>)event listener:(ARTEventListener *)listener {
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     [super off:event listener:listener];
 });
 }
 
 - (void)off:(ARTEventListener *)listener {
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     [super off:listener];
 });
 }
 
 - (void)off {
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     [super off];
 });
 }

@@ -16,6 +16,7 @@
 #import "ARTDefault.h"
 #import "ARTCrypto+Private.h"
 #import "ARTConstants.h"
+#import "ARTGCD.h"
 
 @implementation ARTAnnotationsQuery
 
@@ -120,7 +121,7 @@ NS_ASSUME_NONNULL_END
     if (callback) {
         ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
@@ -154,7 +155,7 @@ NS_ASSUME_NONNULL_END
                                                     messageSerial:messageSerial // RSAN1c2
                                                              type:outboundAnnotation.type
                                                            extras:outboundAnnotation.extras];
-dispatch_async(_queue, ^{
+art_dispatch_async(_queue, ^{
     // RSAN1c3: encode annotation data
     NSError *encodeError = nil;
     ARTAnnotation *annotationToPublish = self->_dataEncoder ? [annotation encodeDataWithEncoder:self->_dataEncoder error:&encodeError] : annotation;
@@ -229,7 +230,7 @@ dispatch_async(_queue, ^{
     if (callback) {
         ARTPaginatedAnnotationsCallback userCallback = callback;
         callback = ^(ARTPaginatedResult<ARTAnnotation *> *result, ARTErrorInfo *error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(result, error);
             });
         };
@@ -243,7 +244,7 @@ dispatch_async(_queue, ^{
         return;
     }
     
-dispatch_async(_queue, ^{
+art_dispatch_async(_queue, ^{
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString: [NSString stringWithFormat:@"%@/messages/%@/annotations", [self->_channel getBasePath], [messageSerial stringByAddingPercentEncodingWithAllowedCharacters:NSCharacterSet.URLPathAllowedCharacterSet]]] resolvingAgainstBaseURL:YES];
     
     // Add query parameters

@@ -10,6 +10,7 @@
 #import "ARTEncoder.h"
 #import "ARTConstants.h"
 #import "ARTInternalLog.h"
+#import "ARTGCD.h"
 
 @implementation ARTHTTPPaginatedResponse
 
@@ -55,7 +56,7 @@
     if (callback) {
         void (^userCallback)(ARTHTTPPaginatedResponse *_Nullable result, ARTErrorInfo *_Nullable error) = callback;
         callback = ^(ARTHTTPPaginatedResponse *_Nullable result, ARTErrorInfo *_Nullable error) {
-            dispatch_async(self.userQueue, ^{
+            art_dispatch_async(self.userQueue, ^{
                 userCallback(result, error);
             });
         };
@@ -68,7 +69,7 @@
     if (callback) {
         void (^userCallback)(ARTHTTPPaginatedResponse *_Nullable result, ARTErrorInfo *_Nullable error) = callback;
         callback = ^(ARTHTTPPaginatedResponse *_Nullable result, ARTErrorInfo *_Nullable error) {
-            dispatch_async(self.userQueue, ^{
+            art_dispatch_async(self.userQueue, ^{
                 userCallback(result, error);
             });
         };

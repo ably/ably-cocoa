@@ -53,7 +53,7 @@
 }
 
 - (void)internalAsync:(void (^)(ARTRestInternal * _Nonnull))use {
-    dispatch_async(_internal.queue, ^{
+    art_dispatch_async(_internal.queue, ^{
         use(self->_internal);
     });
 }
@@ -535,12 +535,12 @@ NS_ASSUME_NONNULL_END
     if (callback) {
         ARTDateTimeCallback userCallback = callback;
         callback = ^(NSDate *time, NSError *error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(time, error);
             });
         };
     }
-    dispatch_async(_queue, ^{
+    art_dispatch_async(_queue, ^{
         [self _timeWithWrapperSDKAgents:wrapperSDKAgents
                              completion:callback];
     });
@@ -582,7 +582,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     if (callback) {
         void (^userCallback)(ARTHTTPPaginatedResponse *, ARTErrorInfo *) = callback;
         callback = ^(ARTHTTPPaginatedResponse *r, ARTErrorInfo *e) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(r, e);
             });
         };
@@ -664,7 +664,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     [request setAcceptHeader:self.defaultEncoder encoders:self.encoders];
 
     ARTLogDebug(self.logger, @"request %@ %@", method, path);
-    dispatch_async(_queue, ^{
+    art_dispatch_async(_queue, ^{
         [ARTHTTPPaginatedResponse executePaginated:self withRequest:request wrapperSDKAgents:wrapperSDKAgents logger:self.logger callback:callback];
     });
     return YES;
@@ -694,7 +694,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     if (callback) {
         ARTPaginatedStatsCallback userCallback = callback;
         callback = ^(ARTPaginatedResult<ARTStats *> *r, ARTErrorInfo *e) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(r, e);
             });
         };
@@ -735,7 +735,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         return [self.encoders[response.MIMEType] decodeStats:data error:errorPtr];
     };
     
-dispatch_async(_queue, ^{
+art_dispatch_async(_queue, ^{
     [ARTPaginatedResult executePaginated:self withRequest:request andResponseProcessor:responseProcessor wrapperSDKAgents:wrapperSDKAgents logger:self.logger callback:callback];
 });
     return YES;
@@ -772,7 +772,7 @@ dispatch_async(_queue, ^{
 #if TARGET_OS_IOS
 - (ARTLocalDevice *)device {
     __block ARTLocalDevice *ret;
-    dispatch_sync(_queue, ^{
+    art_dispatch_sync(_queue, ^{
         ret = [self device_nosync];
     });
     return ret;
@@ -780,7 +780,7 @@ dispatch_async(_queue, ^{
 
 - (ARTLocalDevice *)device_nosync {
     __block ARTLocalDevice *ret;
-    dispatch_sync([ARTRestInternal deviceAccessQueue], ^{
+    art_dispatch_sync([ARTRestInternal deviceAccessQueue], ^{
         ret = [self sharedDevice_onlyCallOnDeviceAccessQueue];
     });
     return ret;
@@ -819,20 +819,20 @@ static BOOL sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = YES;
 - (void)setupLocalDevice_nosync {
     ARTLocalDevice *device = [self device_nosync];
     NSString *clientId = self.auth.clientId_nosync;
-    dispatch_sync([ARTRestInternal deviceAccessQueue], ^{
+    art_dispatch_sync([ARTRestInternal deviceAccessQueue], ^{
         [device setupDetailsWithClientId:clientId];
     });
 }
 
 - (void)resetLocalDevice_nosync {
     ARTLocalDevice *device = [self device_nosync];
-    dispatch_sync([ARTRestInternal deviceAccessQueue], ^{
+    art_dispatch_sync([ARTRestInternal deviceAccessQueue], ^{
         [device resetDetails];
     });
 }
 
 - (void)resetDeviceSingleton {
-    dispatch_sync([ARTRestInternal deviceAccessQueue], ^{
+    art_dispatch_sync([ARTRestInternal deviceAccessQueue], ^{
         sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = YES;
     });
 }

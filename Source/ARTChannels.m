@@ -4,6 +4,7 @@
 #import "ARTChannel+Private.h"
 #import "ARTChannelOptions.h"
 #import "ARTRestChannel.h"
+#import "ARTGCD.h"
 
 @interface ARTChannels() {
     __weak id<ARTChannelsDelegate> _delegate; // weak because delegates outlive their counterpart
@@ -26,7 +27,7 @@
 
 - (id<NSFastEnumeration>)copyIntoIteratorWithMapper:(id (^)(id))mapper {
     __block id<NSFastEnumeration>ret;
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     NSMutableArray *channels = [[NSMutableArray alloc] init];
     for (id internalChannel in [self getNosyncIterable]) {
         [channels addObject:mapper(internalChannel)];
@@ -42,7 +43,7 @@ dispatch_sync(_queue, ^{
 
 - (BOOL)exists:(NSString *)name {
     __block BOOL ret;
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     ret = [self _exists:name];
 });
     return ret;
@@ -61,7 +62,7 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)release:(NSString *)name {
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     [self _release:name];
 });
 }
@@ -72,7 +73,7 @@ dispatch_sync(_queue, ^{
 
 - (ARTRestChannel *)getChannel:(NSString *)name options:(ARTChannelOptions *)options {
     __block ARTRestChannel *channel;
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     channel = [self _getChannel:name options:options addPrefix:true];
 });
     return channel;

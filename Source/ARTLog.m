@@ -1,5 +1,6 @@
 #import "ARTLog+Private.h"
 #import "ARTNSDate+ARTUtil.h"
+#import "ARTGCD.h"
 
 static const char *logLevelName(ARTLogLevel level) {
     switch(level) {
@@ -91,7 +92,7 @@ static const char *logLevelName(ARTLogLevel level) {
 }
 
 - (void)log:(NSString *const)message withLevel:(const ARTLogLevel)level {
-    dispatch_sync(_queue, ^{
+    art_dispatch_sync(_queue, ^{
         ARTLogLine *logLine = [[ARTLogLine alloc] initWithDate:[NSDate date] level:level message:message];
         if (level >= self.logLevel) {
             NSLog(@"%@", [logLine toString]);

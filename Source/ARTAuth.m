@@ -39,7 +39,7 @@
 }
 
 - (void)internalAsync:(void (^)(ARTAuthInternal * _Nonnull))use {
-    dispatch_async(_internal.queue, ^{
+    art_dispatch_async(_internal.queue, ^{
         use(self->_internal);
     });
 }
@@ -324,13 +324,13 @@ NS_ASSUME_NONNULL_END
     if (callback) {
         const ARTTokenDetailsCallback userCallback = callback;
         callback = ^(ARTTokenDetails *t, NSError *e) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(t, e);
             });
         };
     }
 
-dispatch_async(_queue, ^{
+art_dispatch_async(_queue, ^{
     [self _requestToken:tokenParams withOptions:authOptions callback:callback];
 });
 }
@@ -402,14 +402,14 @@ dispatch_async(_queue, ^{
             }, &safeCallback);
             
             const ARTAuthCallback userCallback = ^(ARTTokenParams *tokenParams, ARTTokenDetailsCompatibleCallback callback) {
-                dispatch_async(self->_userQueue, ^{
+                art_dispatch_async(self->_userQueue, ^{
                     replacedOptions.authCallback(tokenParams, callback);
                 });
             };
             
             tokenDetailsFactory = ^(ARTTokenParams *tokenParams, ARTTokenDetailsCallback callback) {
                 userCallback(tokenParams, ^(id<ARTTokenDetailsCompatible> tokenDetailsCompat, NSError *error) {
-                    dispatch_async(self->_queue, ^{
+                    art_dispatch_async(self->_queue, ^{
                         // safeCallback is declared weak above so could be nil at this point.
                         ARTTokenDetailsCompatibleCallback callback = safeCallback;
                         if (callback) {
@@ -525,7 +525,7 @@ dispatch_async(_queue, ^{
 
 - (BOOL)authorizing {
     __block NSInteger count;
-    dispatch_sync(_queue, ^{
+    art_dispatch_sync(_queue, ^{
         count = self->_authorizationsCount;
     });
     return count > 0;
@@ -545,13 +545,13 @@ dispatch_async(_queue, ^{
     if (callback) {
         ARTTokenDetailsCallback userCallback = callback;
         callback = ^(ARTTokenDetails *t, NSError *e) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(t, e);
             });
         };
     }
 
-dispatch_async(_queue, ^{
+art_dispatch_async(_queue, ^{
     [self _authorize:tokenParams options:authOptions callback:callback];
 });
 }
@@ -666,13 +666,13 @@ dispatch_async(_queue, ^{
     if (callback) {
         void (^userCallback)(ARTTokenRequest *, NSError *) = callback;
         callback = ^(ARTTokenRequest *t, NSError *e) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(t, e);
             });
         };
     }
 
-dispatch_async(_queue, ^{
+art_dispatch_async(_queue, ^{
     [self _createTokenRequest:tokenParams options:options callback:callback];
 });
 }
@@ -740,7 +740,7 @@ dispatch_async(_queue, ^{
 
 - (NSString *)clientId {
     __block NSString *clientId;
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     clientId = self.clientId_nosync;
 });
     return clientId;
@@ -783,7 +783,7 @@ dispatch_sync(_queue, ^{
     }
 
 // Called from NSNotificationCenter, so must put change in the queue.
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     [self clearTimeOffset];
 });
 }

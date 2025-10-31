@@ -10,6 +10,7 @@
 #import "ARTDefault.h"
 #import "ARTClientOptions+Private.h"
 #import "ARTInternalLog.h"
+#import "ARTGCD.h"
 
 @implementation ARTChannel {
     dispatch_queue_t _queue;
@@ -35,7 +36,7 @@
 
 - (ARTChannelOptions *)options {
     __block ARTChannelOptions *ret;
-    dispatch_sync(_queue, ^{
+    art_dispatch_sync(_queue, ^{
         ret = [self options_nosync];
     });
     return ret;
@@ -46,7 +47,7 @@
 }
 
 - (void)setOptions:(ARTChannelOptions *)options {
-    dispatch_sync(_queue, ^{
+    art_dispatch_sync(_queue, ^{
         [self setOptions_nosync:options];
     });
 }

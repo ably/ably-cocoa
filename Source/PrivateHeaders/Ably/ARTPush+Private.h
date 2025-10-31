@@ -11,7 +11,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTPushInternal : NSObject
 
 @property (nonatomic, readonly) ARTPushAdminInternal *admin;
-@property (readonly) dispatch_queue_t queue;
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest logger:(ARTInternalLog *)logger;
 

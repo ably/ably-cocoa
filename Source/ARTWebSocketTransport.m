@@ -205,7 +205,7 @@ NS_ASSUME_NONNULL_END
 
 - (void)openWebSocket {
     __weak ARTWebSocketTransport *weakSelf = self;
-    dispatch_async(_websocketOpenQueue, ^{
+    art_dispatch_async(_websocketOpenQueue, ^{
         [weakSelf.websocket open];
     });
 }

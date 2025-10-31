@@ -7,6 +7,7 @@
 #import "ARTRealtimeChannel+Private.h"
 #import "ARTDefault+Private.h"
 #import "ARTClientOptions+Private.h"
+#import "ARTGCD.h"
 
 #define IsInactiveConnectionState(state) (state == ARTRealtimeClosing || state == ARTRealtimeClosed || state == ARTRealtimeFailed || state == ARTRealtimeSuspended)
 
@@ -133,7 +134,7 @@
 
 - (NSString *)id {
     __block NSString *ret;   
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     ret = [self id_nosync];
 });
     return ret;
@@ -141,7 +142,7 @@ dispatch_sync(_queue, ^{
 
 - (NSString *)key {
     __block NSString *ret;   
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     ret = [self key_nosync];
 });
     return ret;
@@ -149,7 +150,7 @@ dispatch_sync(_queue, ^{
 
 - (ARTRealtimeConnectionState)state {
     __block ARTRealtimeConnectionState ret;   
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     ret = [self state_nosync];
 });
     return ret;
@@ -157,7 +158,7 @@ dispatch_sync(_queue, ^{
 
 - (ARTErrorInfo *)errorReason {
     __block ARTErrorInfo *ret;   
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     ret = [self errorReason_nosync];
 });
     return ret;
@@ -291,7 +292,7 @@ dispatch_sync(_queue, ^{
 
 - (NSString *)createRecoveryKey {
     __block NSString *ret;
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     ret = [self createRecoveryKey_nosync];
 });
     return ret;

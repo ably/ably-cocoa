@@ -67,6 +67,10 @@ The `make test_*` commands are used by CI and expect you to have a simulator dev
 
 ably-cocoa allows users to pass in Ably-authored plugins via the `ARTClientOptions.plugins` property. These plugins extend the functionality of the SDK. For more information on the implementation of the plugins mechanism, see [`Docs/plugins.md`](Docs/plugins.md).
 
+## Coding standards
+
+- In Objective-C code, use `art_dispatch_sync` and `art_dispatch_async` instead of `dispatch_sync` and `dispatch_async`, for more debuggable handling of the case in which we accidentally submit to a `nil` queue.
+
 ## Release Process
 
 For each release, the following needs to be done:

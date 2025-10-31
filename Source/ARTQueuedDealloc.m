@@ -1,4 +1,5 @@
 #import "ARTQueuedDealloc.h"
+#import "ARTGCD.h"
 
 @implementation ARTQueuedDealloc {
     id _ref;
@@ -16,7 +17,7 @@
 
 - (void)dealloc {
     __block id ref = _ref;
-    dispatch_async(_queue, ^{
+    art_dispatch_async(_queue, ^{
         ref = nil;
     });
 }

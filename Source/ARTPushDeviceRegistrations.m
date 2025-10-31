@@ -10,6 +10,7 @@
 #import "ARTRest+Private.h"
 #import "ARTLocalDevice.h"
 #import "ARTNSMutableRequest+ARTPush.h"
+#import "ARTGCD.h"
 
 @implementation ARTPushDeviceRegistrations {
     ARTQueuedDealloc *_dealloc;
@@ -67,7 +68,7 @@
     if (callback) {
         ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
@@ -79,7 +80,7 @@
     ARTLocalDevice *local = nil;
     #endif
 
-dispatch_async(_queue, ^{
+art_dispatch_async(_queue, ^{
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:deviceDetails.id] resolvingAgainstBaseURL:NO];
     if (self->_rest.options.pushFullWait) {
         components.queryItems = @[[NSURLQueryItem queryItemWithName:@"fullWait" value:@"true"]];
@@ -121,7 +122,7 @@ dispatch_async(_queue, ^{
     if (callback) {
         void (^userCallback)(ARTDeviceDetails *, ARTErrorInfo *error) = callback;
         callback = ^(ARTDeviceDetails *device, ARTErrorInfo *error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(device, error);
             });
         };
@@ -133,7 +134,7 @@ dispatch_async(_queue, ^{
     ARTLocalDevice *local = nil;
     #endif
 
-dispatch_async(_queue, ^{
+art_dispatch_async(_queue, ^{
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:deviceId]];
     request.HTTPMethod = @"GET";
     [request setDeviceAuthentication:deviceId localDevice:local logger:self->_logger];
@@ -173,13 +174,13 @@ dispatch_async(_queue, ^{
     if (callback) {
         void (^userCallback)(ARTPaginatedResult *, ARTErrorInfo *error) = callback;
         callback = ^(ARTPaginatedResult *result, ARTErrorInfo *error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(result, error);
             });
         };
     }
 
-dispatch_async(_queue, ^{
+art_dispatch_async(_queue, ^{
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"] resolvingAgainstBaseURL:NO];
     components.queryItems = [params art_asURLQueryItems];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
@@ -196,13 +197,13 @@ dispatch_async(_queue, ^{
     if (callback) {
         ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
     }
 
-dispatch_async(_queue, ^{
+art_dispatch_async(_queue, ^{
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:deviceId] resolvingAgainstBaseURL:NO];
         if (self->_rest.options.pushFullWait) {
         components.queryItems = @[[NSURLQueryItem queryItemWithName:@"fullWait" value:@"true"]];
@@ -234,7 +235,7 @@ dispatch_async(_queue, ^{
     if (callback) {
         ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
@@ -246,7 +247,7 @@ dispatch_async(_queue, ^{
     ARTLocalDevice *local = nil;
     #endif
 
-dispatch_async(_queue, ^{
+art_dispatch_async(_queue, ^{
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"] resolvingAgainstBaseURL:NO];
     components.queryItems = [params art_asURLQueryItems];
     if (self->_rest.options.pushFullWait) {

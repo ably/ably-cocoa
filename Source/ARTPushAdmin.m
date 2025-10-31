@@ -6,6 +6,7 @@
 #import "ARTInternalLog.h"
 #import "ARTJsonEncoder.h"
 #import "ARTJsonLikeEncoder.h"
+#import "ARTGCD.h"
 
 @implementation ARTPushAdmin {
     ARTQueuedDealloc *_dealloc;
@@ -57,13 +58,13 @@
     if (callback) {
         ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
     }
 
-    dispatch_async(_queue, ^{
+    art_dispatch_async(_queue, ^{
             if (![[recipient allKeys] count]) {
                 if (callback) callback([ARTErrorInfo createWithCode:0 message:@"Recipient is missing"]);
                 return;
