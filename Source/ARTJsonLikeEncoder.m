@@ -1116,12 +1116,27 @@
                                                  refused:refused.doubleValue];
 }
 
-- (ARTErrorInfo *)decodeErrorInfo:(NSData *)artError error:(NSError **)error {
-    NSDictionary *decodedError = [[self decodeDictionary:artError error:error] valueForKey:@"error"];
-    if (!decodedError) {
+- (ARTErrorInfo *)decodeErrorInfo:(NSData *)artError statusCode:(NSInteger)statusCode error:(NSError **)error {
+    id decodedError = [[self decodeDictionary:artError error:error] valueForKey:@"error"];
+    if ([decodedError isKindOfClass:NSString.class]) {
+        // Return error with HTTP StatusCode if ARTErrorStatusCode does not exist
+        return [ARTErrorInfo createWithCode:statusCode * 100
+                                     status:statusCode
+                                    message:decodedError];
+    }
+    else if ([decodedError isKindOfClass:NSDictionary.class]) {
+        NSDictionary *errorDict = decodedError;
+        NSNumber *codeNumber = [errorDict artNumber:@"code"];
+        NSNumber *statusNumber = [errorDict artNumber:@"statusCode"];
+        NSString *message = [errorDict artString:@"message"];
+        return [ARTErrorInfo createWithCode:[(codeNumber ?: @(statusCode * 100)) intValue]
+                                     status:[(statusNumber ?: @(statusCode)) intValue]
+                                    message:message ?: @"<Error message was not provided>"];
+    }
+    else {
+        ARTLogDebug(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: `decodeErrorInfo:statusCode:error:` was unable to extract error from data: %@", _rest, [_delegate formatAsString], decodedError);
         return nil;
     }
-    return [ARTErrorInfo createWithCode:[decodedError[@"code"] intValue] status:[decodedError[@"statusCode"] intValue] message:decodedError[@"message"]];
 }
 
 - (ARTStatsRequestCount *)statsRequestCountFromDictionary:(NSDictionary *)input {
