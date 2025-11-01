@@ -886,8 +886,37 @@ struct ErrorSimulator {
     let serverId = "server-test-suite"
     var statusCode: Int = 401
     var shouldPerformRequest: Bool = false
-
-    mutating func stubResponse(_ url: URL) -> HTTPURLResponse? {
+    let stubData: Data?
+    
+    init(value: Int, description: String, statusCode: Int, shouldPerformRequest: Bool, stubData: Data?) {
+        self.value = value
+        self.description = description
+        self.statusCode = statusCode
+        self.shouldPerformRequest = shouldPerformRequest
+        self.stubData = stubData
+    }
+    
+    init(value: Int, description: String, statusCode: Int, shouldPerformRequest: Bool, stubDataDict: [String: Any]? = nil) {
+        self.value = value
+        self.description = description
+        self.statusCode = statusCode
+        self.shouldPerformRequest = shouldPerformRequest
+        if let stubDataDict {
+            self.stubData = stubDataDict.data()
+        } else {
+            let jsonObject: [String: Any] = [
+                "error": [
+                    "statusCode": self.statusCode,
+                    "code": self.value,
+                    "message": self.description,
+                    "serverId": self.serverId,
+                ]
+            ]
+            self.stubData = jsonObject.data()
+        }
+    }
+    
+    func stubResponse(_ url: URL) -> HTTPURLResponse? {
         return HTTPURLResponse(url: url, statusCode: statusCode, httpVersion: "HTTP/1.1", headerFields: [
             "Content-Length": String(stubData?.count ?? 0),
             "Content-Type": "application/json",
@@ -897,17 +926,12 @@ struct ErrorSimulator {
             ]
         )
     }
+}
 
-    lazy var stubData: Data? = {
-        let jsonObject: [String: Any] = ["error": [
-            "statusCode": modf(Float(self.value)/100).0, //whole number part
-            "code": self.value,
-            "message": self.description,
-            "serverId": self.serverId,
-        ] as [String: Any]
-        ]
-        return try? JSONSerialization.data(withJSONObject: jsonObject, options: JSONSerialization.WritingOptions.init(rawValue: 0))
-    }()
+extension [String: Any] {
+    func data() -> Data? {
+        try? JSONSerialization.data(withJSONObject: self, options: JSONSerialization.WritingOptions.init(rawValue: 0))
+    }
 }
 
 class MockHTTPExecutor: NSObject, ARTHTTPExecutor {
@@ -1015,7 +1039,7 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
             }
         }
 
-        if var simulatedError = errorSimulator, let requestURL = request.url {
+        if let simulatedError = errorSimulator, let requestURL = request.url {
             defer {
                 errorSimulator = nil
             }
@@ -1058,9 +1082,9 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
         return task
     }
 
-    func simulateIncomingServerErrorOnNextRequest(_ errorValue: Int, description: String) {
+    func simulateIncomingServerErrorOnNextRequest(_ errorValue: Int, statusCode: Int = 401, description: String, data: [String: Any]? = nil) {
         http.queue.sync {
-            errorSimulator = ErrorSimulator(value: errorValue, description: description, statusCode: 401, shouldPerformRequest: false, stubData: nil)
+            errorSimulator = ErrorSimulator(value: errorValue, description: description, statusCode: statusCode, shouldPerformRequest: false, stubDataDict: data)
         }
     }
 
@@ -1075,7 +1099,6 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
             errorSimulator = ErrorSimulator(value: 0, description: "", statusCode: 200, shouldPerformRequest: false, stubData: data)
         }
     }
-
 }
 
 /// Records each message for test purpose.
