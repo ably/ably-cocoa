@@ -7,6 +7,7 @@
 #import "ARTNSMutableURLRequest+ARTPaginated.h"
 #import "ARTNSHTTPURLResponse+ARTPaginated.h"
 #import "ARTInternalLog.h"
+#import "ARTGCD.h"
 
 @implementation ARTPaginatedResult {
     BOOL _initializedViaInit;
@@ -112,7 +113,7 @@
     if (callback) {
         void (^userCallback)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) = callback;
         callback = ^(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(result, error);
             });
         };
@@ -127,7 +128,7 @@
     if (callback) {
         void (^userCallback)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) = callback;
         callback = ^(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(result, error);
             });
         };

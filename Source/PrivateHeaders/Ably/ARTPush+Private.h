@@ -11,12 +11,12 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTPushInternal : NSObject
 
 @property (nonatomic, readonly) ARTPushAdminInternal *admin;
-@property (readonly) dispatch_queue_t queue;
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest logger:(ARTInternalLog *)logger;
 
 #if TARGET_OS_IOS
-- (void)getActivationMachine:(void (^)(ARTPushActivationStateMachine *))block;
+/// Note that in certain edge cases (if the related ARTRestInternal instance is being deallocated and the UIApplication delegate is being used as the push registerer delegate) this callback may be called with nil.
+- (void)getActivationMachine:(void (^)(ARTPushActivationStateMachine * _Nullable))block;
 
 /// Direct access to _activationMachine var for internal testing.
 /// Throws an exception if there is no activation machine or it could not be locked immediately.

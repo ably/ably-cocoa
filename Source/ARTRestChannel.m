@@ -20,6 +20,7 @@
 #import "ARTRestAnnotations.h"
 #import "ARTRestAnnotations+Private.h"
 #import "ARTConstants.h"
+#import "ARTGCD.h"
 
 @implementation ARTRestChannel {
     ARTQueuedDealloc *_dealloc;
@@ -166,14 +167,14 @@
     if (callback) {
         void (^userCallback)(ARTPaginatedResult<ARTMessage *> *result, ARTErrorInfo *error) = callback;
         callback = ^(ARTPaginatedResult<ARTMessage *> *result, ARTErrorInfo *error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(result, error);
             });
         };
     }
 
     __block BOOL ret;
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     if (query.limit > 1000) {
         if (errorPtr) {
             *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
@@ -230,12 +231,12 @@ dispatch_sync(_queue, ^{
     if (callback) {
         ARTChannelDetailsCallback userCallback = callback;
         callback = ^(ARTChannelDetails *details, ARTErrorInfo *_Nullable error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(details, error);
             });
         };
     }
-    dispatch_async(_queue, ^{
+    art_dispatch_async(_queue, ^{
         NSURL *url = [NSURL URLWithString:self->_basePath];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
         
@@ -291,13 +292,13 @@ dispatch_sync(_queue, ^{
     if (callback) {
         ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *__nullable error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
     }
     
-    dispatch_async(_queue, ^{
+    art_dispatch_async(_queue, ^{
         NSData *encodedMessage = nil;
         
         if ([data isKindOfClass:[ARTMessage class]]) {

@@ -16,6 +16,7 @@
 #import "ARTClientOptions.h"
 #import "ARTRealtimeChannelOptions.h"
 #import "ARTRestAnnotations+Private.h"
+#import "ARTGCD.h"
 
 @implementation ARTRealtimeAnnotations {
     ARTQueuedDealloc *_dealloc;
@@ -112,7 +113,7 @@
     if (callback) {
         ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *_Nullable error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
@@ -139,7 +140,7 @@
                                                     messageSerial:messageSerial // RSAN1c2
                                                              type:outboundAnnotation.type
                                                            extras:outboundAnnotation.extras];
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     if (!self.realtime.connection.isActive_nosync) { // RTAN1b
         if (callback) {
             callback(self.realtime.connection.error_nosync);
@@ -202,7 +203,7 @@ dispatch_sync(_queue, ^{
     if (cb) {
         ARTAnnotationCallback userCallback = cb;
         cb = ^(ARTAnnotation *_Nullable m) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(m);
             });
         };
@@ -210,7 +211,7 @@ dispatch_sync(_queue, ^{
 
     __block ARTEventListener *listener = nil;
     
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     ARTRealtimeChannelOptions *options = self->_channel.getOptions_nosync;
     BOOL attachOnSubscribe = options != nil ? options.attachOnSubscribe : true;
     if (self->_channel.state_nosync == ARTRealtimeChannelFailed) {
@@ -274,7 +275,7 @@ dispatch_sync(_queue, ^{
 // RTP7
 
 - (void)unsubscribe {
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     [self _unsubscribe];
     ARTLogVerbose(self.logger, @"R:%p C:%p (%@) annotations unsubscribe to all types", self->_realtime, self->_channel, self->_channel.name);
 });
@@ -285,14 +286,14 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)unsubscribe:(ARTEventListener *)listener {
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     [_eventEmitter off:listener];
     ARTLogVerbose(self.logger, @"R:%p C:%p (%@) annotations unsubscribe to all types", self->_realtime, self->_channel, self->_channel.name);
 });
 }
 
 - (void)unsubscribe:(NSString *)type listener:(ARTEventListener *)listener {
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     [_eventEmitter off:[ARTEvent newWithAnnotationType:type] listener:listener];
     ARTLogVerbose(self.logger, @"R:%p C:%p (%@) annotations unsubscribe to type '%@'", self->_realtime, self->_channel, self->_channel.name, type);
 });

@@ -69,13 +69,13 @@
 }
 
 - (void)internalAsync:(void (^)(ARTRealtimeInternal * _Nonnull))use {
-    dispatch_async(_internal.queue, ^{
+    art_dispatch_async(_internal.queue, ^{
         use(self->_internal);
     });
 }
 
 - (void)internalSync:(void (^)(ARTRealtimeInternal * _Nonnull))use {
-    dispatch_sync(_internal.queue, ^{
+    art_dispatch_sync(_internal.queue, ^{
         use(self->_internal);
     });
 }
@@ -452,7 +452,7 @@ typedef NS_ENUM(NSUInteger, ARTNetworkState) {
 }
 
 - (void)connect {
-    dispatch_sync(_queue, ^{
+    art_dispatch_sync(_queue, ^{
         [self _connect];
     });
 }
@@ -470,7 +470,7 @@ typedef NS_ENUM(NSUInteger, ARTNetworkState) {
 }
 
 - (void)close {
-    dispatch_sync(_queue, ^{
+    art_dispatch_sync(_queue, ^{
         [self _close];
     });
 }
@@ -522,13 +522,13 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     if (cb) {
         ARTCallback userCallback = cb;
         cb = ^(ARTErrorInfo *_Nullable error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
     }
     
-    dispatch_async(_queue, ^{
+    art_dispatch_async(_queue, ^{
         switch (self.connection.state_nosync) {
             case ARTRealtimeInitialized:
             case ARTRealtimeSuspended:

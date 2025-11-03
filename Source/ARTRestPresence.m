@@ -10,6 +10,7 @@
 #import "ARTChannel+Private.h"
 #import "ARTBaseMessage+Private.h"
 #import "ARTInternalLog.h"
+#import "ARTGCD.h"
 
 #import "ARTChannel.h"
 #import "ARTDataQuery.h"
@@ -124,7 +125,7 @@ NS_ASSUME_NONNULL_END
     if (callback) {
         ARTPaginatedPresenceCallback userCallback = callback;
         callback = ^(ARTPaginatedResult<ARTPresenceMessage *> *m, ARTErrorInfo *e) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(m, e);
             });
         };
@@ -155,7 +156,7 @@ NS_ASSUME_NONNULL_END
         }];
     };
 
-dispatch_async(_queue, ^{
+art_dispatch_async(_queue, ^{
     [ARTPaginatedResult executePaginated:self->_channel.rest withRequest:request andResponseProcessor:responseProcessor wrapperSDKAgents:nil logger:self->_logger callback:callback];
 });
     return YES;
@@ -170,7 +171,7 @@ dispatch_async(_queue, ^{
     if (callback) {
         void (^userCallback)(ARTPaginatedResult<ARTPresenceMessage *> *result, ARTErrorInfo *error) = callback;
         callback = ^(ARTPaginatedResult<ARTPresenceMessage *> *result, ARTErrorInfo *error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(result, error);
             });
         };
@@ -217,7 +218,7 @@ dispatch_async(_queue, ^{
         }];
     };
 
-dispatch_async(_queue, ^{
+art_dispatch_async(_queue, ^{
     [ARTPaginatedResult executePaginated:self->_channel.rest withRequest:request andResponseProcessor:responseProcessor wrapperSDKAgents:wrapperSDKAgents logger:self->_logger callback:callback];
 });
     return YES;

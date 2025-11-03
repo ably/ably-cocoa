@@ -17,6 +17,7 @@
 #import "ARTEventEmitter+Private.h"
 #import "ARTClientOptions.h"
 #import "ARTRealtimeChannelOptions.h"
+#import "ARTGCD.h"
 
 #pragma mark - ARTRealtimePresenceQuery
 
@@ -216,13 +217,13 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
     if (callback) {
         ARTPresenceMessagesCallback userCallback = callback;
         callback = ^(NSArray<ARTPresenceMessage *> *m, ARTErrorInfo *e) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(m, e);
             });
         };
     }
 
-dispatch_async(_queue, ^{
+art_dispatch_async(_queue, ^{
     switch (self->_channel.state_nosync) {
         case ARTRealtimeChannelDetached:
         case ARTRealtimeChannelFailed:
@@ -292,13 +293,13 @@ dispatch_async(_queue, ^{
     if (cb) {
         ARTCallback userCallback = cb;
         cb = ^(ARTErrorInfo *_Nullable error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
     }
 
-dispatch_async(_queue, ^{
+art_dispatch_async(_queue, ^{
     [self enterOrUpdateAfterChecks:ARTPresenceEnter messageId:nil clientId:nil data:data callback:cb];
 });
 }
@@ -313,13 +314,13 @@ dispatch_async(_queue, ^{
     if (cb) {
         ARTCallback userCallback = cb;
         cb = ^(ARTErrorInfo *_Nullable error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
     }
 
-dispatch_async(_queue, ^{
+art_dispatch_async(_queue, ^{
     [self enterOrUpdateAfterChecks:ARTPresenceEnter messageId:nil clientId:clientId data:data callback:cb];
 });
 }
@@ -328,12 +329,12 @@ dispatch_async(_queue, ^{
     if (cb) {
         ARTCallback userCallback = cb;
         cb = ^(ARTErrorInfo *_Nullable error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
     }
-    dispatch_async(_queue, ^{
+    art_dispatch_async(_queue, ^{
         [self enterOrUpdateAfterChecks:ARTPresenceEnter messageId:messageId clientId:clientId data:data callback:cb];
     });
 }
@@ -348,13 +349,13 @@ dispatch_async(_queue, ^{
     if (cb) {
         ARTCallback userCallback = cb;
         cb = ^(ARTErrorInfo *_Nullable error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
     }
 
-dispatch_async(_queue, ^{
+art_dispatch_async(_queue, ^{
     [self enterOrUpdateAfterChecks:ARTPresenceUpdate messageId:nil clientId:nil data:data callback:cb];
 });
 }
@@ -369,13 +370,13 @@ dispatch_async(_queue, ^{
     if (cb) {
         ARTCallback userCallback = cb;
         cb = ^(ARTErrorInfo *_Nullable error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
     }
 
-dispatch_async(_queue, ^{
+art_dispatch_async(_queue, ^{
     [self enterOrUpdateAfterChecks:ARTPresenceUpdate messageId:nil clientId:clientId data:data callback:cb];
 });
 }
@@ -414,14 +415,14 @@ dispatch_async(_queue, ^{
     if (cb) {
         ARTCallback userCallback = cb;
         cb = ^(ARTErrorInfo *_Nullable error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
     }
 
     __block ARTException *exception = nil;
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
 @try {
     [self leaveAfterChecks:nil data:data callback:cb];
 } @catch (ARTException *e) {
@@ -443,13 +444,13 @@ dispatch_sync(_queue, ^{
     if (cb) {
         ARTCallback userCallback = cb;
         cb = ^(ARTErrorInfo *_Nullable error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
     }
 
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     [self leaveAfterChecks:clientId data:data callback:cb];
 });
 }
@@ -465,7 +466,7 @@ dispatch_sync(_queue, ^{
 
 - (BOOL)syncComplete {
     __block BOOL ret;
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     ret = [self syncComplete_nosync];
 });
     return ret;
@@ -483,7 +484,7 @@ dispatch_sync(_queue, ^{
     if (cb) {
         ARTPresenceMessageCallback userCallback = cb;
         cb = ^(ARTPresenceMessage *_Nullable m) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(m);
             });
         };
@@ -491,14 +492,14 @@ dispatch_sync(_queue, ^{
     if (onAttach) {
         ARTCallback userOnAttach = onAttach;
         onAttach = ^(ARTErrorInfo *_Nullable m) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userOnAttach(m);
             });
         };
     }
 
     __block ARTEventListener *listener = nil;
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     ARTRealtimeChannelOptions *options = self->_channel.getOptions_nosync;
     BOOL attachOnSubscribe = options != nil ? options.attachOnSubscribe : true;
     if (self->_channel.state_nosync == ARTRealtimeChannelFailed) {
@@ -536,7 +537,7 @@ dispatch_sync(_queue, ^{
 // RTP7
 
 - (void)unsubscribe {
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     [self _unsubscribe];
     ARTLogVerbose(self.logger, @"R:%p C:%p (%@) presence unsubscribe to all actions", self->_realtime, self->_channel, self->_channel.name);
 });
@@ -547,14 +548,14 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)unsubscribe:(ARTEventListener *)listener {
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     [_eventEmitter off:listener];
     ARTLogVerbose(self.logger, @"R:%p C:%p (%@) presence unsubscribe to all actions", self->_realtime, self->_channel, self->_channel.name);
 });
 }
 
 - (void)unsubscribe:(ARTPresenceAction)action listener:(ARTEventListener *)listener {
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     [_eventEmitter off:[ARTEvent newWithPresenceAction:action] listener:listener];
     ARTLogVerbose(self.logger, @"R:%p C:%p (%@) presence unsubscribe to action %@", self->_realtime, self->_channel, self->_channel.name, ARTPresenceActionToStr(action));
 });
@@ -645,7 +646,7 @@ dispatch_sync(_queue, ^{
 
 - (NSMutableArray<ARTQueuedMessage *> *)pendingPresence {
     __block NSMutableArray<ARTQueuedMessage *> *ret;
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     ret = _pendingPresence;
 });
     return ret;
@@ -968,7 +969,7 @@ dispatch_sync(_queue, ^{
 
 - (BOOL)syncInProgress {
     __block BOOL ret;
-    dispatch_sync(_queue, ^{
+    art_dispatch_sync(_queue, ^{
         ret = [self syncInProgress_nosync];
     });
     return ret;

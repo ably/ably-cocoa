@@ -47,13 +47,13 @@
 }
 
 - (void)internalAsync:(void (^)(ARTRealtimeChannelInternal * _Nonnull))use {
-    dispatch_async(_internal.queue, ^{
+    art_dispatch_async(_internal.queue, ^{
         use(self->_internal);
     });
 }
 
 - (void)internalSync:(void (^)(ARTRealtimeChannelInternal * _Nonnull))use {
-    dispatch_sync(_internal.queue, ^{
+    art_dispatch_sync(_internal.queue, ^{
         use(self->_internal);
     });
 }
@@ -312,7 +312,7 @@ NS_ASSUME_NONNULL_END
 
 - (ARTRealtimeChannelState)state {
     __block ARTRealtimeChannelState ret;
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     ret = [self state_nosync];
 });
     return ret;
@@ -320,7 +320,7 @@ dispatch_sync(_queue, ^{
 
 - (ARTErrorInfo *)errorReason {
     __block ARTErrorInfo * ret;
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     ret = [self errorReason_nosync];
 });
     return ret;
@@ -328,7 +328,7 @@ dispatch_sync(_queue, ^{
 
 - (ARTChannelMode)modes {
     __block ARTChannelMode ret;
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     ret = [self modes_nosync];
 });
     return ret;
@@ -393,7 +393,7 @@ dispatch_sync(_queue, ^{
     if (callback) {
         ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *__nullable error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
@@ -403,7 +403,7 @@ dispatch_sync(_queue, ^{
         data = @[data];
     }
 
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     if ([data isKindOfClass:[ARTMessage class]]) {
         ARTMessage *message = (ARTMessage *)data;
         if (message.clientId && self->_realtime.rest.auth.clientId_nosync && ![message.clientId isEqualToString:self->_realtime.rest.auth.clientId_nosync]) {
@@ -487,7 +487,7 @@ dispatch_sync(_queue, ^{
             if (self.state_nosync != ARTRealtimeChannelAttached) { // RTL17
                 return;
             }
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(m);
             });
         };
@@ -495,14 +495,14 @@ dispatch_sync(_queue, ^{
     if (onAttach) {
         ARTCallback userOnAttach = onAttach;
         onAttach = ^(ARTErrorInfo *_Nullable e) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userOnAttach(e);
             });
         };
     }
 
     __block ARTEventListener *listener = nil;
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     ARTRealtimeChannelOptions *options = self.getOptions_nosync;
     BOOL attachOnSubscribe = options != nil ? options.attachOnSubscribe : true;
     if (self.state_nosync == ARTRealtimeChannelFailed) {
@@ -538,7 +538,7 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)unsubscribe {
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     [self _unsubscribe];
     ARTLogVerbose(self.logger, @"R:%p C:%p (%@) unsubscribe to all events", self->_realtime, self, self.name);
 });
@@ -549,14 +549,14 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)unsubscribe:(ARTEventListener *)listener {
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     [self.messagesEventEmitter off:listener];
     ARTLogVerbose(self.logger, @"RT:%p C:%p (%@) unsubscribe to all events", self->_realtime, self, self.name);
 });
 }
 
 - (void)unsubscribe:(NSString *)name listener:(ARTEventListener *)listener {
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     [self.messagesEventEmitter off:name listener:listener];
     ARTLogVerbose(self.logger, @"RT:%p C:%p (%@) unsubscribe to event '%@'", self->_realtime, self, self.name, name);
 });
@@ -951,12 +951,12 @@ dispatch_sync(_queue, ^{
     if (callback) {
         ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *__nullable error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
     }
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     [self _attach:callback];
 });
 }
@@ -1058,12 +1058,12 @@ dispatch_sync(_queue, ^{
     if (callback) {
         ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *__nullable error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
     }
-dispatch_sync(_queue, ^{
+art_dispatch_sync(_queue, ^{
     [self _detach:callback];
 });
 }
@@ -1214,7 +1214,7 @@ dispatch_sync(_queue, ^{
 
 - (ARTChannelProperties *)properties {
     __block ARTChannelProperties *ret;
-    dispatch_sync(_queue, ^{
+    art_dispatch_sync(_queue, ^{
         ret = [self properties_nosync];
     });
     return ret;
@@ -1228,12 +1228,12 @@ dispatch_sync(_queue, ^{
     if (callback) {
         ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *_Nullable error) {
-            dispatch_async(self->_userQueue, ^{
+            art_dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
     }
-    dispatch_sync(_queue, ^{
+    art_dispatch_sync(_queue, ^{
         [self setOptions_nosync:options callback:callback];
     });
 }
