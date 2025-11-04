@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.2.52](https://github.com/ably/ably-cocoa/tree/1.2.52)
+
+### What's Changed
+
+Fixes an infrequent crash that resulted from dispatching to a `nil` queue ([#2138](https://github.com/ably/ably-cocoa/pull/2138)).
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.51...1.2.52
+
 ## [1.2.51](https://github.com/ably/ably-cocoa/tree/1.2.51)
 
 ### What's Changed
