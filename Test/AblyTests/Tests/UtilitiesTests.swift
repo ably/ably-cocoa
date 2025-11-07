@@ -239,6 +239,73 @@ class UtilitiesTests: XCTestCase {
         }
     }
 
+    func test__Utilities__JSON_Encoder__should_decode_rest_error_response_with_only_error_field() throws {
+        let test = Test()
+        beforeEach__Utilities__JSON_Encoder()
+
+        let options = try AblyTests.commonAppSetup(for: test)
+        let rest = ARTRest(options: options)
+        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        rest.internal.httpExecutor = testHTTPExecutor
+        
+        testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(
+            40400,
+            statusCode: 404,
+            description: "Not found",
+            data: [
+                "err": "Error that shouldn't be parsed"
+            ]
+        )
+        
+        let request = URLRequest(url: URL(string: "https://www.example.com")!)
+        waitUntil(timeout: testTimeout) { done in
+            rest.internal.execute(request, wrapperSDKAgents:nil, completion: { response, _, error in
+                guard let error = error as? ARTErrorInfo else {
+                    fail("Should be ARTErrorInfo"); done(); return
+                }
+                XCTAssertTrue(error.code == 40400)
+                XCTAssertTrue(error.statusCode == 404)
+                XCTAssertTrue(error.message == "HTTP request failed with status code 404")
+                done()
+            })
+        }
+    }
+
+    func test__Utilities__JSON_Encoder__should_decode_rest_error_response_with_complete_error_info() throws {
+        let test = Test()
+        beforeEach__Utilities__JSON_Encoder()
+
+        let options = try AblyTests.commonAppSetup(for: test)
+        let rest = ARTRest(options: options)
+        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        rest.internal.httpExecutor = testHTTPExecutor
+        
+        testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(
+            40400,
+            statusCode: 404,
+            description: "Not found",
+            data: [
+                "error": [
+                    "code": 40400,
+                    "message": "Object not found"
+                ]
+            ]
+        )
+        
+        let request = URLRequest(url: URL(string: "https://www.example.com")!)
+        waitUntil(timeout: testTimeout) { done in
+            rest.internal.execute(request, wrapperSDKAgents:nil, completion: { response, _, error in
+                guard let error = error as? ARTErrorInfo else {
+                    fail("Should be ARTErrorInfo"); done(); return
+                }
+                XCTAssertTrue(error.code == 40400)
+                XCTAssertTrue(error.statusCode == 404)
+                XCTAssertTrue(error.message == "Object not found")
+                done()
+            })
+        }
+    }
+
     func beforeEach__Utilities__EventEmitter() {
         eventEmitter = ARTInternalEventEmitter(queue: AblyTests.queue)
         receivedFoo1 = nil

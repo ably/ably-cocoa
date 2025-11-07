@@ -1116,12 +1116,25 @@
                                                  refused:refused.doubleValue];
 }
 
-- (ARTErrorInfo *)decodeErrorInfo:(NSData *)artError error:(NSError **)error {
-    NSDictionary *decodedError = [[self decodeDictionary:artError error:error] valueForKey:@"error"];
-    if (!decodedError) {
-        return nil;
+- (ARTErrorInfo *)decodeErrorInfo:(NSData *)artError statusCode:(NSInteger)statusCode error:(NSError **)error {
+    NSDictionary *dict = [self decodeDictionary:artError error:error];
+    id decodedError = [dict valueForKey:@"error"];
+
+    if ([decodedError isKindOfClass:NSDictionary.class]) {
+        NSDictionary *errorDict = decodedError;
+        NSNumber *codeNumber = [errorDict artNumber:@"code"];
+        NSNumber *statusNumber = [errorDict artNumber:@"statusCode"];
+        NSString *message = [errorDict artString:@"message"];
+        return [ARTErrorInfo createWithCode:[(codeNumber ?: @(statusCode * 100)) intValue]
+                                     status:[(statusNumber ?: @(statusCode)) intValue]
+                                    message:message ?: [NSString stringWithFormat:@"HTTP request failed with status code %ld", statusCode]];
+    } else {
+        // We expect `decodedError` as a dictionary from Ably REST API, but in case user sets custom authUrl in the auth options, it can be anything
+        // We'll address this in an upcoming proper fix for https://github.com/ably/ably-cocoa/issues/2135
+        return [ARTErrorInfo createWithCode:statusCode * 100
+                                     status:statusCode
+                                    message:[NSString stringWithFormat:@"HTTP request failed with status code %ld", statusCode]];
     }
-    return [ARTErrorInfo createWithCode:[decodedError[@"code"] intValue] status:[decodedError[@"statusCode"] intValue] message:decodedError[@"message"]];
 }
 
 - (ARTStatsRequestCount *)statsRequestCountFromDictionary:(NSDictionary *)input {
