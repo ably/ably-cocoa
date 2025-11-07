@@ -402,7 +402,9 @@ NS_ASSUME_NONNULL_END
             if (!validContentType) {
                 NSString *plain = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
                 // Construct artificial error
-                error = [ARTErrorInfo createWithCode:response.statusCode * 100 status:response.statusCode message:[plain art_shortString] requestId:requestId];
+                error = [ARTErrorInfo createWithCode:response.statusCode * 100
+                                              status:response.statusCode
+                                             message:[plain art_shortString] requestId:requestId];
                 data = nil; // Discard data; format is unreliable.
                 ARTLogError(self.logger, @"Request %@ failed with %@", request, error);
             }
@@ -411,7 +413,9 @@ NS_ASSUME_NONNULL_END
         if (response.statusCode >= 400) {
             if (data) {
                 NSError *decodeError = nil;
-                ARTErrorInfo *dataError = [self->_encoders[response.MIMEType] decodeErrorInfo:data error:&decodeError];
+                ARTErrorInfo *dataError = [self->_encoders[response.MIMEType] decodeErrorInfo:data
+                                                                                   statusCode:response.statusCode
+                                                                                        error:&decodeError];
                 if ([self shouldRenewToken:&dataError] && [request isKindOfClass:[NSMutableURLRequest class]]) {
                     ARTLogDebug(self.logger, @"RS:%p retry request %@", self, request);
                     // Make a single attempt to reissue the token and resend the request
@@ -429,11 +433,10 @@ NS_ASSUME_NONNULL_END
             }
             if (!error) {
                 // Return error with HTTP StatusCode if ARTErrorStatusCode does not exist
-                error = [ARTErrorInfo
-                         createWithCode:response.statusCode*100
-                         status:response.statusCode
-                         message:[[NSString alloc] initWithData:data ?: [NSData data] encoding:NSUTF8StringEncoding]
-                         requestId:requestId];
+                error = [ARTErrorInfo createWithCode:response.statusCode * 100
+                                              status:response.statusCode
+                                             message:[[NSString alloc] initWithData:data ?: [NSData data] encoding:NSUTF8StringEncoding]
+                                           requestId:requestId];
             }
             
         } else {
@@ -561,7 +564,9 @@ NS_ASSUME_NONNULL_END
         }
         NSError *decodeError = nil;
         if (response.statusCode >= 400) {
-            ARTErrorInfo *dataError = [self->_encoders[response.MIMEType] decodeErrorInfo:data error:&decodeError];
+            ARTErrorInfo *dataError = [self->_encoders[response.MIMEType] decodeErrorInfo:data
+                                                                               statusCode:response.statusCode
+                                                                                    error:&decodeError];
             callback(nil, dataError ? dataError : decodeError);
         } else {
             NSDate *time = [self->_encoders[response.MIMEType] decodeTime:data error:&decodeError];

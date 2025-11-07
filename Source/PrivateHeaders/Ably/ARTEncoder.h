@@ -97,7 +97,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Others
 - (nullable NSDate *)decodeTime:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
-- (nullable ARTErrorInfo *)decodeErrorInfo:(NSData *)error error:(NSError *_Nullable *_Nullable)error;
+- (nullable ARTErrorInfo *)decodeErrorInfo:(NSData *)error statusCode:(NSInteger)statusCode error:(NSError *_Nullable *_Nullable)error;
 - (nullable NSArray *)decodeStats:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
 
 @end
