@@ -32,9 +32,9 @@
         "package": "AblyDeltaCodec",
         "repositoryURL": "https://github.com/ably/delta-codec-cocoa",
         "state": {
-          "branch": null,
-          "revision": "3ee62ea40a63996b55818d44b3f0e56d8753be88",
-          "version": "1.3.3"
+          "branch": "link-Foundation",
+          "revision": "50e731fced005cd2762dba4b5ebf1c6eb58d87e3",
+          "version": null
         }
       },
       {
