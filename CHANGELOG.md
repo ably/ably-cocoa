@@ -1,5 +1,14 @@
 # Change Log
 
+## [1.2.53](https://github.com/ably/ably-cocoa/tree/1.2.53)
+
+## What's Changed
+
+- Fixes a crash that resulted from the mishandling of non-success `authUrl` responses ([#2136](https://github.com/ably/ably-cocoa/pull/2136)).
+- Bumps the AblyDeltaCodec dependency version ([#2140](https://github.com/ably/ably-cocoa/pull/2140)).
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.52...1.2.53
+
 ## [1.2.52](https://github.com/ably/ably-cocoa/tree/1.2.52)
 
 ### What's Changed
