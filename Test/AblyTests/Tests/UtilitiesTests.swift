@@ -239,7 +239,7 @@ class UtilitiesTests: XCTestCase {
         }
     }
 
-    func test__Utilities__JSON_Encoder__should_decode_rest_error_response_with_only_error_field() throws {
+    func test__Utilities__JSON_Encoder__should_not_decode_rest_http_error_if_it_doesnt_contains_error_dictionary_under_error_key() throws {
         let test = Test()
         beforeEach__Utilities__JSON_Encoder()
 
@@ -263,15 +263,14 @@ class UtilitiesTests: XCTestCase {
                 guard let error = error as? ARTErrorInfo else {
                     fail("Should be ARTErrorInfo"); done(); return
                 }
-                XCTAssertTrue(error.code == 40400)
-                XCTAssertTrue(error.statusCode == 404)
-                XCTAssertTrue(error.message == "HTTP request failed with status code 404")
+                XCTAssertTrue(error.code == ARTClientCodeError.invalidType.rawValue)
+                XCTAssertTrue(error.message == "Failed to decode error dictionary from the provided error data.")
                 done()
             })
         }
     }
 
-    func test__Utilities__JSON_Encoder__should_decode_rest_error_response_with_complete_error_info() throws {
+    func test__Utilities__JSON_Encoder__should_decode_rest_http_error_if_it_contains_error_dictionary_under_error_key() throws {
         let test = Test()
         beforeEach__Utilities__JSON_Encoder()
 

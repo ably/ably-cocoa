@@ -12,4 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 #endif
 
+// Gets an HTTP status code from error code by taking first three digits. Doesn't perform any checks if the result is a valid status code.
+NSInteger ARTHttpStatusCodeFromErrorCode(ARTErrorCode errorCode);
+
 NS_ASSUME_NONNULL_END

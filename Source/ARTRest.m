@@ -1,5 +1,5 @@
 #import "ARTRest+Private.h"
-
+#import "ARTErrorInfo+Private.h"
 #import "ARTChannel+Private.h"
 #import "ARTRestChannels+Private.h"
 #import "ARTDataQuery+Private.h"
@@ -335,6 +335,32 @@ NS_ASSUME_NONNULL_END
     return [ARTClientInformation agentIdentifierWithAdditionalAgents:additionalAgents];
 }
 
+// Checks if the response contains any Ably header
+- (BOOL)isAblyResponse:(NSHTTPURLResponse *)response {
+    for (NSString* key in response.allHeaderFields) {
+        if ([key.lowercaseString containsString:@"-ably"]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Checks if the response contains any expected content type
+- (BOOL)hasValidContentType:(NSHTTPURLResponse *)response {
+    NSString *contentType = [response.allHeaderFields objectForKey:@"Content-Type"];
+    for (NSString *mimeType in [self->_encoders.allValues valueForKeyPath:@"mimeType"]) {
+        if ([contentType containsString:mimeType]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Checks if the auth request was made with the user's authUrl
+- (BOOL)isCustomAuthRequest:(NSURLRequest *)request {
+    return [request.URL.host isEqualToString:self.options.authUrl.host];
+}
+
 /**
  originalRequestId is used only for fallback requests. It should never be used to execute request by yourself, it's passed from within below method.
  */
@@ -383,40 +409,34 @@ NS_ASSUME_NONNULL_END
         }
     }
 
-
     ARTLogDebug(self.logger, @"RS:%p executing request %@", self, request);
     __block NSObject<ARTCancellable> *task;
     task = [self.httpExecutor executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         // Error messages in plaintext and HTML format (only if the URL request is different than `options.authUrl` and we don't have an error already)
-        if (error == nil && data != nil && data.length != 0 && ![request.URL.host isEqualToString:[self.options.authUrl host]]) {
-            NSString *contentType = [response.allHeaderFields objectForKey:@"Content-Type"];
-
-            BOOL validContentType = NO;
-            for (NSString *mimeType in [self->_encoders.allValues valueForKeyPath:@"mimeType"]) {
-                if ([contentType containsString:mimeType]) {
-                    validContentType = YES;
-                    break;
-                }
-            }
-
-            if (!validContentType) {
-                NSString *plain = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        if (error == nil && data != nil && data.length != 0 && ![self isCustomAuthRequest:request]) {
+            if (![self hasValidContentType:response]) {
                 // Construct artificial error
+                NSString *plain = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
                 error = [ARTErrorInfo createWithCode:response.statusCode * 100
                                               status:response.statusCode
-                                             message:[plain art_shortString] requestId:requestId];
+                                             message:[plain art_shortString]
+                                           requestId:requestId];
                 data = nil; // Discard data; format is unreliable.
                 ARTLogError(self.logger, @"Request %@ failed with %@", request, error);
             }
         }
 
         if (response.statusCode >= 400) {
-            if (data) {
+            if (data && data.length != 0) {
                 NSError *decodeError = nil;
-                ARTErrorInfo *dataError = [self->_encoders[response.MIMEType] decodeErrorInfo:data
-                                                                                   statusCode:response.statusCode
-                                                                                        error:&decodeError];
-                if ([self shouldRenewToken:&dataError] && [request isKindOfClass:[NSMutableURLRequest class]]) {
+                ARTErrorInfo *dataError = nil;
+                id<ARTEncoder> encoder = self->_encoders[response.MIMEType];
+                
+                if (encoder && [self isAblyResponse:response]) {
+                    dataError = [encoder decodeErrorInfo:data statusCode:response.statusCode error:&decodeError];
+                }
+                
+                if (dataError && [self shouldRenewToken:&dataError] && [request isKindOfClass:[NSMutableURLRequest class]]) {
                     ARTLogDebug(self.logger, @"RS:%p retry request %@", self, request);
                     // Make a single attempt to reissue the token and resend the request
                     if (self->_tokenErrorRetries < 1) {
@@ -432,10 +452,11 @@ NS_ASSUME_NONNULL_END
                 }
             }
             if (!error) {
-                // Return error with HTTP StatusCode if ARTErrorStatusCode does not exist
+                // Construct artificial error
+                NSString *plain = data != nil && data.length != 0 ? [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] : [NSString stringWithFormat:@"HTTP request failed with status code %ld", response.statusCode];
                 error = [ARTErrorInfo createWithCode:response.statusCode * 100
                                               status:response.statusCode
-                                             message:[[NSString alloc] initWithData:data ?: [NSData data] encoding:NSUTF8StringEncoding]
+                                             message:[plain art_shortString]
                                            requestId:requestId];
             }
             

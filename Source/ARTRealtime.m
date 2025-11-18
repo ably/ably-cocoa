@@ -1,13 +1,8 @@
-//
-//  ARTRealtime.m
-//
-//
-
 #import "ARTRealtime+Private.h"
 #import "ARTRealtime+WrapperSDKProxy.h"
-
 #import "ARTRealtimeChannel+Private.h"
 #import "ARTStatus.h"
+#import "ARTErrorInfo+Private.h"
 #import "ARTDefault.h"
 #import "ARTRest+Private.h"
 #import "ARTAuth+Private.h"
@@ -1073,10 +1068,14 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     
     ARTErrorInfo *error;
     if (self.auth.authorizing_nosync && (self.options.authUrl || self.options.authCallback)) {
-        error = [ARTErrorInfo createWithCode:ARTErrorAuthConfiguredProviderFailure status:ARTStateConnectionFailed message:@"timed out"];
+        error = [ARTErrorInfo createWithCode:ARTErrorAuthConfiguredProviderFailure
+                                      status:ARTHttpStatusCodeFromErrorCode(ARTErrorUnauthorized) // RSA4c1
+                                     message:@"timed out"];
     }
     else {
-        error = [ARTErrorInfo createWithCode:ARTErrorConnectionTimedOut status:ARTStateConnectionFailed message:@"timed out"];
+        error = [ARTErrorInfo createWithCode:ARTErrorConnectionTimedOut
+                                      status:ARTStateConnectionFailed
+                                     message:@"timed out"];
     }
     switch (self.connection.state_nosync) {
         case ARTRealtimeConnected: {
@@ -1195,19 +1194,23 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     else if (self.options.authUrl || self.options.authCallback) {
         if (error.code == ARTErrorForbidden /* RSA4d */) {
             ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTErrorAuthConfiguredProviderFailure
-                                                            status:error.artStatusCode
-                                                           message:error.description];
+                                                            status:ARTHttpStatusCodeFromErrorCode(ARTErrorForbidden)
+                                                           message:error.description
+                                                   underlyingError:error];
             ARTConnectionStateChangeParams *const params = [[ARTConnectionStateChangeParams alloc] initWithErrorInfo:errorInfo];
             [self performTransitionToState:ARTRealtimeFailed withParams:params];
         } else {
-            ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTErrorAuthConfiguredProviderFailure status:ARTStateConnectionFailed message:error.description];
+            ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTErrorAuthConfiguredProviderFailure
+                                                            status:ARTHttpStatusCodeFromErrorCode(ARTErrorUnauthorized)
+                                                           message:error.description
+                                                   underlyingError:error];
             switch (self.connection.state_nosync) {
                 case ARTRealtimeConnected:
                     // RSA4c3
                     [self.connection setErrorReason:errorInfo];
                     break;
                 default: {
-                    // RSA4c
+                    // RSA4c1, RSA4c2
                     ARTConnectionStateChangeParams *const params = [[ARTConnectionStateChangeParams alloc] initWithErrorInfo:errorInfo];
                     [self performTransitionToDisconnectedOrSuspendedWithParams:params];
                     break;

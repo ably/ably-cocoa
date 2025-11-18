@@ -875,6 +875,27 @@ class AuthTests: XCTestCase {
 
         XCTAssertEqual(realtime.connection.state, ARTRealtimeConnectionState.connected)
     }
+    
+    // RSA4c2 (with 404, see https://github.com/ably/ably-cocoa/issues/2135)
+    func test__040__Token__authentication_method__if_a_request_by_a_realtime_client_to_an_authUrl_results_in_an_HTTP_404_the_client_library_should_transition_to_the_DISCONNECTED_state() throws {
+        let test = Test()
+        let options = try AblyTests.clientOptions(for: test)
+        options.autoConnect = false
+        options.authUrl = URL(string: "https://api.restful-api.dev/objects/\(UUID())")! // random address to get 404
+        let realtime = ARTRealtime(options: options)
+        defer { realtime.dispose(); realtime.close() }
+
+        waitUntil(timeout: testTimeout) { done in
+            realtime.connection.once(.disconnected) { stateChange in
+                XCTAssertEqual(stateChange.reason?.code, ARTErrorCode.authConfiguredProviderFailure.intValue)
+                XCTAssertEqual(stateChange.reason?.statusCode, 401)
+                XCTAssertEqual(stateChange.reason?.cause?.statusCode, 404)
+                XCTAssertEqual(realtime.connection.errorReason, stateChange.reason)
+                done()
+            }
+            realtime.connect()
+        }
+    }
 
     // RSA15
 

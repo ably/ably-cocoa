@@ -15,41 +15,46 @@ NSString *const ARTFallbackIncompatibleOptionsException = @"ARTFallbackIncompati
 
 NSString *const ARTAblyMessageNoMeansToRenewToken = @"no means to renew the token is provided (either an API key, authCallback or authUrl)";
 
-NSInteger getStatusFromCode(NSInteger code) {
-    return code / 100;
+NSInteger ARTHttpStatusCodeFromErrorCode(ARTErrorCode errorCode) {
+    return errorCode / 100;
 }
 
 @implementation ARTErrorInfo
 
 + (ARTErrorInfo *)createWithCode:(NSInteger)code message:(NSString *)message requestId:(nullable NSString *)requestId {
-    return [ARTErrorInfo createWithCode:code status:getStatusFromCode(code) message:message requestId:requestId];
+    return [ARTErrorInfo createWithCode:code status:ARTHttpStatusCodeFromErrorCode(code) message:message requestId:requestId];
 }
 
 + (ARTErrorInfo *)createWithCode:(NSInteger)code message:(NSString *)message requestId:(nullable NSString *)requestId additionalUserInfo:(nullable NSDictionary<NSString *, id> *)additionalUserInfo {
-    return [ARTErrorInfo createWithCode:code status:getStatusFromCode(code) message:message requestId:requestId additionalUserInfo:additionalUserInfo];
+    return [ARTErrorInfo createWithCode:code status:ARTHttpStatusCodeFromErrorCode(code) message:message requestId:requestId additionalUserInfo:additionalUserInfo underlyingError:nil];
 }
 
 + (ARTErrorInfo *)createWithCode:(NSInteger)code message:(NSString *)message {
-    return [ARTErrorInfo createWithCode:code status:getStatusFromCode(code) message:message requestId:nil];
+    return [ARTErrorInfo createWithCode:code status:ARTHttpStatusCodeFromErrorCode(code) message:message requestId:nil];
+}
+
++ (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message underlyingError:(NSError *)underlyingError {
+    return [ARTErrorInfo createWithCode:code status:status message:message requestId:nil additionalUserInfo:nil underlyingError:underlyingError];
 }
 
 + (ARTErrorInfo *)createWithCode:(NSInteger)code message:(NSString *)message additionalUserInfo:(nullable NSDictionary<NSString *, id> *)additionalUserInfo {
-    return [ARTErrorInfo createWithCode:code status:getStatusFromCode(code) message:message requestId:nil additionalUserInfo:additionalUserInfo];
+    return [ARTErrorInfo createWithCode:code status:ARTHttpStatusCodeFromErrorCode(code) message:message requestId:nil additionalUserInfo:additionalUserInfo underlyingError:nil];
 }
 
 + (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message additionalUserInfo:(nullable NSDictionary<NSString *, id> *)additionalUserInfo {
-    return [ARTErrorInfo createWithCode:code status:status message:message requestId:nil additionalUserInfo:additionalUserInfo];
+    return [ARTErrorInfo createWithCode:code status:status message:message requestId:nil additionalUserInfo:additionalUserInfo underlyingError:nil];
 }
 
 + (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message requestId:(nullable NSString *)requestId {
-    return [ARTErrorInfo createWithCode:code status:status message:message requestId:requestId additionalUserInfo:nil];
+    return [ARTErrorInfo createWithCode:code status:status message:message requestId:requestId additionalUserInfo:nil underlyingError:nil];
 }
 
-+ (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message requestId:(nullable NSString *)requestId additionalUserInfo:(nullable NSDictionary<NSString *, id> *)additionalUserInfo {
++ (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message requestId:(nullable NSString *)requestId additionalUserInfo:(nullable NSDictionary<NSString *, id> *)additionalUserInfo underlyingError:(NSError *)underlyingError {
     NSMutableDictionary *userInfo = [NSMutableDictionary new];
     userInfo[ARTErrorInfoStatusCodeKey] = [NSNumber numberWithInteger:status];
     userInfo[NSLocalizedDescriptionKey] = message;
     userInfo[ARTErrorInfoRequestIdKey] = requestId;
+    userInfo[NSUnderlyingErrorKey] = underlyingError;
 
     // Add any additional userInfo values
     if (additionalUserInfo) {
@@ -132,9 +137,9 @@ NSInteger getStatusFromCode(NSInteger code) {
 
 - (NSString *)description {
     if (self.reason != nil) {
-        return [NSString stringWithFormat:@"Error %ld - %@ (reason: %@)", (long)self.code, self.message ?: @"<Empty Message>", self.reason];
+        return [NSString stringWithFormat:@"Error %ld (status: %ld) - %@ (reason: %@)", (long)self.code, (long)self.statusCode, self.message ?: @"<Empty Message>", self.reason];
     } else {
-        return [NSString stringWithFormat:@"Error %ld - %@", (long)self.code, self.message ?: @"<Empty Message>"];
+        return [NSString stringWithFormat:@"Error %ld (status: %ld) - %@", (long)self.code, (long)self.statusCode, self.message ?: @"<Empty Message>"];
     }
 }
 
@@ -151,7 +156,6 @@ NSInteger getStatusFromCode(NSInteger code) {
 }
 
 @end
-
 
 
 @implementation ARTStatus
@@ -184,7 +188,7 @@ NSInteger getStatusFromCode(NSInteger code) {
 
 #pragma mark private
 
--(void) setErrorInfo:(ARTErrorInfo *)errorInfo {
+- (void)setErrorInfo:(ARTErrorInfo *)errorInfo {
     _errorInfo = errorInfo;
 }
 

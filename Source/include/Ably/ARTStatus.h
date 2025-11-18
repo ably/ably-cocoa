@@ -232,6 +232,9 @@ FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
 + (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message;
 
 /// :nodoc:
++ (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(nullable NSString *)message underlyingError:(nullable NSError *)error;
+
+/// :nodoc:
 + (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message additionalUserInfo:(nullable NSDictionary<NSString *, id> *)additionalUserInfo;
 
 /// :nodoc:
@@ -250,7 +253,7 @@ FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
 + (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message requestId:(nullable NSString *)requestId;
 
 /// :nodoc:
-+ (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message requestId:(nullable NSString *)requestId additionalUserInfo:(nullable NSDictionary<NSString *, id> *)additionalUserInfo;
++ (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message requestId:(nullable NSString *)requestId additionalUserInfo:(nullable NSDictionary<NSString *, id> *)additionalUserInfo underlyingError:(nullable NSError *)underlyingError;
 
 /// :nodoc:
 + (ARTErrorInfo *)createFromNSException:(NSException *)error requestId:(nullable NSString *)requestId;
