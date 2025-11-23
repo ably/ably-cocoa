@@ -258,7 +258,7 @@ typedef NS_ENUM(NSUInteger, ARTNetworkState) {
         _pendingAuthorizations = [NSMutableArray array];
         _connection = [[ARTConnectionInternal alloc] initWithRealtime:self logger:self.logger];
         _connectionStateTtl = [ARTDefault connectionStateTtl];
-        _immediateReconnectionDelay = 0.1;
+        _immediateReconnectionDelay = 1.0;
         const id<ARTRetryDelayCalculator> connectRetryDelayCalculator = [[ARTBackoffRetryDelayCalculator alloc] initWithInitialRetryTimeout:options.disconnectedRetryTimeout
                                                                                                                  jitterCoefficientGenerator:options.testOptions.jitterCoefficientGenerator];
         _connectRetryState = [[ARTConnectRetryState alloc] initWithRetryDelayCalculator:connectRetryDelayCalculator
