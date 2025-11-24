@@ -512,6 +512,7 @@ art_dispatch_sync(_queue, ^{
     if (self->_channel.shouldAttach && attachOnSubscribe) { // RTP6c
         [self->_channel _attach:onAttach];
     }
+    // This is where the listener gets registered
     listener = action == ARTPresenceActionAll ? [_eventEmitter on:cb] : [_eventEmitter on:[ARTEvent newWithPresenceAction:action] callback:cb];
     ARTLogVerbose(self.logger, @"R:%p C:%p (%@) presence subscribe to '%@' action(s)", self->_realtime, self->_channel, self->_channel.name, ARTPresenceActionToStr(action));
 });
@@ -675,6 +676,7 @@ art_dispatch_sync(_queue, ^{
     }
 }
 
+// This seems to be the funnel through which all presence events get emitted
 - (void)broadcast:(ARTPresenceMessage *)pm {
     [_eventEmitter emit:[ARTEvent newWithPresenceAction:pm.action] with:pm];
 }
@@ -744,6 +746,7 @@ art_dispatch_sync(_queue, ^{
         ARTLogDebug(self.logger, @"RT:%p C:%p (%@) PresenceMap sync is in progress", _realtime, _channel, _channel.name);
     }
 
+    ARTLogDebug(_logger, @"LAWRENCE: onSync calling onMessage for SYNC");
     [self onMessage:message];
 
     // TODO: RTP18a (previous in-flight sync should be discarded)
@@ -797,6 +800,8 @@ art_dispatch_sync(_queue, ^{
 }
 
 - (void)processMember:(ARTPresenceMessage *)message {
+    ARTLogDebug(_logger, @"LAWRENCE: processMember presence member \"%@\" with action %@", message.memberKey, ARTPresenceActionToStr(message.action));
+
     ARTPresenceMessage *messageCopy = [message copy];
     // Internal member
     if ([message.connectionId isEqualToString:self.connectionId]) { // RTP17b
@@ -839,6 +844,7 @@ art_dispatch_sync(_queue, ^{
     }
 
     if (memberUpdated) {
+        ARTLogDebug(_logger, @"LAWRENCE: Broadcasting presence member \"%@\" with action %@", message.memberKey, ARTPresenceActionToStr(message.action));
         [self broadcast:message]; // RTP2g (original action)
     }
     else {

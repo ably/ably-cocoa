@@ -105,6 +105,149 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     // RTP1
 
+    // Tests the case where B finds out about A through presence enter
+    func test_customerIssue_bothAttachedBeforeEnter() throws {
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        let channelName = test.uniqueChannelName()
+
+        let optionsA = options.copy() as! ARTClientOptions
+        optionsA.clientId = "clientA"
+        let clientA = ARTRealtime(options: optionsA)
+        let channelA = clientA.channels.get(channelName)
+
+        let optionsB = options.copy() as! ARTClientOptions
+        optionsB.clientId = "clientB"
+        let clientB = ARTRealtime(options: optionsB)
+        let channelB = clientB.channels.get(channelName)
+
+        let channels = [channelA, channelB]
+
+        // Attach both channels
+
+        waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(channels.count, done: done)
+
+            for channel in channels {
+                channel.attach { error in
+                    XCTAssertNil(error)
+                    partialDone()
+                }
+            }
+        }
+
+        // Subscribe to presence on both channels
+
+        var receivedOnSubscriptionA: [ARTPresenceMessage] = []
+        channelA.presence.subscribe { presenceMessage in
+            receivedOnSubscriptionA.append(presenceMessage)
+        }
+        var receivedOnSubscriptionB: [ARTPresenceMessage] = []
+        channelB.presence.subscribe { presenceMessage in
+            receivedOnSubscriptionB.append(presenceMessage)
+        }
+
+        // Enter presence on both channels
+        waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(channels.count, done: done)
+
+            for channel in channels {
+                channel.presence.enter(nil) { error in
+                    XCTAssertNil(error)
+                    partialDone()
+                }
+            }
+        }
+
+        expect(Set(receivedOnSubscriptionA.map(\.clientId))).toEventually(equal(["clientA", "clientB"]))
+        expect(Set(receivedOnSubscriptionB.map(\.clientId))).toEventually(equal(["clientA", "clientB"]))
+    }
+
+    // Tests the case where B finds out about A through presence sync
+    func test_customerIssue_oneAttachedBeforeEnter() throws {
+        let test = Test()
+        let channelName = test.uniqueChannelName()
+
+        let optionsA = try AblyTests.commonAppSetup(for: test)
+        optionsA.clientId = "clientA"
+        optionsA.testOptions.channelNamePrefix = nil
+        let clientA = ARTRealtime(options: optionsA)
+        let channelA = clientA.channels.get(channelName)
+
+        let optionsB = try AblyTests.commonAppSetup(for: test)
+        optionsB.logLevel = .verbose
+        optionsB.testOptions.channelNamePrefix = nil
+        optionsB.clientId = "clientB"
+        let clientB = ARTRealtime(options: optionsB)
+        let channelB = clientB.channels.get(channelName)
+
+        print("LAWRENCE: clientA.internal: \(clientA.internal), clientB.internal: \(clientB.internal)")
+
+        // Attach channel A
+        waitUntil(timeout: testTimeout) { done in
+            channelA.attach { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+
+        // Subscribe to presence on channel A
+        var receivedOnSubscriptionA: [ARTPresenceMessage] = []
+        channelA.presence.subscribe { presenceMessage in
+            receivedOnSubscriptionA.append(presenceMessage)
+        }
+
+        // Enter presence on channel A
+        waitUntil(timeout: testTimeout) { done in
+            channelA.presence.enter(nil) { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+
+        var receivedOnSubscriptionB: [ARTPresenceMessage] = []
+        channelB.presence.subscribe { presenceMessage in
+            print("LAWRENCE: B has received presence event with clientId \(presenceMessage.clientId)")
+            receivedOnSubscriptionB.append(presenceMessage)
+        }
+
+        // Attach channel B
+        waitUntil(timeout: testTimeout) { done in
+            channelB.attach { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+
+        // Enter presence on channel B
+        waitUntil(timeout: testTimeout) { done in
+            channelB.presence.enter(nil) { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+
+        expect(Set(receivedOnSubscriptionA.map(\.clientId))).toEventually(equal(["clientA", "clientB"]))
+        expect(Set(receivedOnSubscriptionB.map(\.clientId))).toEventually(equal(["clientA", "clientB"]))
+
+        /*
+        // This expectation is intermittently failing
+        print("LAWRENCE: Waiting to see what B gets")
+        waitUntil(timeout: testTimeout) { done in
+            DispatchQueue.main.asyncAfter(deadline: .now().advanced(by: .seconds(10))) {
+                let receivedOnBClientIDs = receivedOnSubscriptionB.map(\.clientId)
+                if Set(receivedOnBClientIDs) == ["clientA", "clientB"] {
+                    done()
+                } else {
+                    print("LAWRENCE: Not got everything from B; just got \(receivedOnBClientIDs)")
+                    // What if we close the connection now? Nah this doesn't reproduce their issue. But something weird is happening
+                    clientB.connection.close()
+                }
+            }
+        }
+         */
+    }
+
     func test__010__Presence__ProtocolMessage_bit_flag__when_members_are_present() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)

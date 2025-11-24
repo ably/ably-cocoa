@@ -179,8 +179,10 @@
 - (ARTEventListener *)_on:(nullable id<ARTEventIdentification>)event callback:(void (^)(id))cb {
     NSString *eventId = event == nil ? [NSString stringWithFormat:@"%p", self] :
                                        [NSString stringWithFormat:@"%p-%@", self, [event identification]];
+    NSLog(@"LAWRENCE: ARTEventEmitter added listener for eventId %@", eventId);
     __block ARTEventListener *listener;
     id<NSObject> observer = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+        NSLog(@"LAWRENCE: ARTEventEmitter notification listener called for eventId %@, with object %@", eventId, note.object);
         if (listener == nil || [listener invalidated]) return;
         if ([listener hasTimer] && ![listener timerIsRunning]) return;
         [listener stopTimer];
@@ -263,9 +265,13 @@
 
 - (void)emit:(id<ARTEventIdentification>)event with:(id)data {
     if (event) {
-        [self.notificationCenter postNotificationName:[NSString stringWithFormat:@"%p-%@", self, [event identification]] object:data];
+        NSString *name = [NSString stringWithFormat:@"%p-%@", self, [event identification]];
+        NSLog(@"LAWRENCE: EventEmitter emitting event %@ with %@ (notification name %@)", event, data, name);
+        [self.notificationCenter postNotificationName:name object:data];
     }
-    [self.notificationCenter postNotificationName:[NSString stringWithFormat:@"%p", self] object:data];
+    NSString *name = [NSString stringWithFormat:@"%p", self];
+    [self.notificationCenter postNotificationName:name object:data];
+    NSLog(@"LAWRENCE: EventEmitter emitting event %@ with data %@ (notification name %@)", event, data, name);
 }
 
 - (void)addObject:(id)obj toArrayWithKey:(nullable id)key {
