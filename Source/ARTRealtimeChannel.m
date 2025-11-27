@@ -1152,7 +1152,8 @@ art_dispatch_sync(_queue, ^{
     }] startTimer];
     
     if (self.presence.syncInProgress_nosync) {
-        [self.presence failsSync:[ARTErrorInfo createWithCode:ARTErrorChannelOperationFailed message:@"channel is being DETACHED"]];
+        // ably-os:inline-error-update:90000:2025-08-22:e8u Original: "channel is being DETACHED"
+        [self.presence failsSync:[ARTErrorInfo createWithCode:ARTErrorChannelOperationFailed message:@"channel is being detached"]];
     }
 }
 
