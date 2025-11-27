@@ -65,6 +65,8 @@ NS_ASSUME_NONNULL_END
       - the calls to `-[NSStream open]` (it's not clear to me what exactly is blocking here but it triggers an Xcode warning so let's avoid it)
      */
     _Nonnull dispatch_queue_t _websocketOpenQueue;
+    
+    NSString *_host;
 }
 
 @synthesize delegate = _delegate;
@@ -73,6 +75,7 @@ NS_ASSUME_NONNULL_END
 - (instancetype)initWithRest:(ARTRestInternal *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey logger:(ARTInternalLog *)logger webSocketFactory:(id<ARTWebSocketFactory>)webSocketFactory {
     self = [super init];
     if (self) {
+        _host = options.realtimeHost;
         _workQueue = rest.queue;
         _websocketOpenQueue = dispatch_queue_create("io.ably.websocketOpen", dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_DEFAULT, 0));
         _websocket = nil;
@@ -190,7 +193,7 @@ NS_ASSUME_NONNULL_END
     // URL
     NSURLComponents *urlComponents = [NSURLComponents componentsWithString:@"/"];
     urlComponents.queryItems = [queryItems allValues];
-    NSURL *url = [urlComponents URLRelativeToURL:[options realtimeUrl]];
+    NSURL *url = [urlComponents URLRelativeToURL:[options realtimeUrlForHost:self.host]];
 
     ARTLogDebug(_logger, @"R:%p WS:%p url %@", _delegate, self, url);
 
@@ -245,11 +248,11 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)setHost:(NSString *)host {
-    self.options.realtimeHost = host;
+    _host = host;
 }
 
 - (NSString *)host {
-    return self.options.realtimeHost;
+    return _host;
 }
 
 - (ARTRealtimeTransportState)state {

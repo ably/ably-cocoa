@@ -105,12 +105,16 @@ NSString *ARTDefaultEnvironment = nil;
     return [self restUrlComponents].URL;
 }
 
-- (NSURL*)realtimeUrl {
+- (NSURL*)realtimeUrlForHost:(NSString *)host {
     NSURLComponents *components = [[NSURLComponents alloc] init];
     components.scheme = self.tls ? @"wss" : @"ws";
-    components.host = self.realtimeHost;
+    components.host = host;
     components.port = [NSNumber numberWithInteger:(self.tls ? self.tlsPort : self.port)];
     return components.URL;
+}
+
+- (NSURL*)realtimeUrl {
+    return [self realtimeUrlForHost:self.realtimeHost];
 }
 
 - (id)copyWithZone:(NSZone *)zone {
