@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)setDefaultEnvironment:(nullable NSString *)environment;
 + (BOOL)getDefaultIdempotentRestPublishingForVersion:(NSString *)version;
 - (NSURLComponents *)restUrlComponents;
+- (NSURL*)realtimeUrlForHost:(NSString *)host; // helps obtain url with an alternative host without changing other params
 
 // MARK: - Plugins
 
