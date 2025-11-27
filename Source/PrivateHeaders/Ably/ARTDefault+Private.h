@@ -1,6 +1,6 @@
 #import <Ably/ARTDefault.h>
 
-extern NSString *const ARTDefaultProduction;
+extern NSString *const ARTDefaultProductionEnvironment;
 
 @interface ARTDefault (Private)
 
@@ -9,5 +9,7 @@ extern NSString *const ARTDefaultProduction;
 
 + (NSInteger)maxSandboxMessageSize;
 + (NSInteger)maxProductionMessageSize;
+
++ (NSString *)connectivityCheckUrl;
 
 @end

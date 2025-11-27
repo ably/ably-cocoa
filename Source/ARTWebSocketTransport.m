@@ -20,6 +20,7 @@
 #import "ARTConnection+Private.h"
 #import "ARTInternalLog.h"
 #import "ARTWebSocketFactory.h"
+#import "ARTDomainSelector.h"
 
 enum {
     ARTWsNeverConnected = -1,
@@ -75,7 +76,7 @@ NS_ASSUME_NONNULL_END
 - (instancetype)initWithRest:(ARTRestInternal *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey logger:(ARTInternalLog *)logger webSocketFactory:(id<ARTWebSocketFactory>)webSocketFactory {
     self = [super init];
     if (self) {
-        _host = options.realtimeHost;
+        _host = options.domainSelector.primaryDomain;
         _workQueue = rest.queue;
         _websocketOpenQueue = dispatch_queue_create("io.ably.websocketOpen", dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_DEFAULT, 0));
         _websocket = nil;
