@@ -14,29 +14,33 @@ static NSString *const ARTDefaultRoutingPolicy       = @"main";
  The policy that the library will use to determine its REC1 primary domain.
  */
 typedef NS_ENUM(NSInteger, ARTPrimaryDomainSelectionPolicy) {
-    /// REC1a: The `endpoint` client option has not been specified.
+    /// REC1a: The `endpoint` client option has not been specified (used default main.realtime.ably.net, policyId = nil, hostname = nil).
     ARTPrimaryDomainSelectionPolicyDefault,
     
-    /// REC1b2: The `endpoint` client option is a hostname.
+    /// REC1b2: The `endpoint` client option is a hostname (policyId = nil, example hostname = "example.ably.co.uk").
     ARTPrimaryDomainSelectionPolicyHostname,
     
-    /// REC1b3: The `endpoint` client option specifies a non-production routing policy.
+    /// REC1b3: The `endpoint` client option specifies a non-production routing policy (example policyId = "sandbox", hostname = nil).
     ARTPrimaryDomainSelectionPolicyNonProductionRoutingPolicy,
     
-    /// REC1b4: The `endpoint` client option is a production routing policy ID.
+    /// REC1b4: The `endpoint` client option is a production routing policy ID (example policyId = "main", hostname = nil).
     ARTPrimaryDomainSelectionPolicyProductionRoutingPolicy,
     
-    /// REC1c: Deprecated `environment` option is being used.
+    /// REC1c: Deprecated `environment` option is being used (example policyId = "main", hostname = nil).
     ARTPrimaryDomainSelectionPolicyLegacyEnvironment,
     
-    /// REC1d: Deprecated `restHost` or `realtimeHost` option is being used.
+    /// REC1d: Deprecated `restHost` or `realtimeHost` option is being used (policyId = nil, example hostname = "example.ably.co.uk").
     ARTPrimaryDomainSelectionPolicyLegacyHost
 };
 
 @interface ARTDomainSelector ()
 
 @property (nonatomic) ARTPrimaryDomainSelectionPolicy primaryDomainSelectionPolicy;
+
+/// Prefix used for construction of the primary and fallback domains names (for `ARTPrimaryDomainSelectionPolicyNonProductionRoutingPolicy`, `ARTPrimaryDomainSelectionPolicyProductionRoutingPolicy` and `ARTPrimaryDomainSelectionPolicyLegacyEnvironment` values of ``primaryDomainSelectionPolicy``).
 @property (nonatomic, nullable) NSString *policyId;
+
+/// Sores the value of the primary domain if assigned directly (for `ARTPrimaryDomainSelectionPolicyHostname` and `ARTPrimaryDomainSelectionPolicyLegacyHost` values of ``primaryDomainSelectionPolicy``).
 @property (nonatomic, nullable) NSString *hostname;
 @property (nonatomic, nullable) NSArray<NSString *> *fallbackHostsClientOption;
 @property (nonatomic) BOOL fallbackHostsUseDefault;
