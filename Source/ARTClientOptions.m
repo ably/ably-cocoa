@@ -316,13 +316,6 @@ NSString *ARTDefaultEndpoint = nil;
     }
 }
 
-- (BOOL)isProductionEnvironment {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    return [[self.environment lowercaseString] isEqualToString:[ARTDefaultProductionEnvironment lowercaseString]];
-#pragma clang diagnostic pop
-}
-
 - (BOOL)hasEnvironment {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"

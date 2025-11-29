@@ -15,8 +15,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTClientOptions ()
 
-@property (readonly) BOOL isProductionEnvironment;
-
 @property (readonly, nonatomic) ARTDomainSelector *domainSelector;
 
 + (void)setDefaultEndpoint:(nullable NSString *)endpoint;

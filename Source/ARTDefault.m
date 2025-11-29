@@ -4,7 +4,6 @@
 #import "ARTDomainSelector.h"
 
 NSString *const ARTDefaultAPIVersion = @"4"; // CSV2
-NSString *const ARTDefaultProductionEnvironment = @"production";
 
 NSTimeInterval ARTConnectionStateTtl = 60.0;
 NSInteger ARTMaxProductionMessageSize = 65536;
@@ -81,14 +80,6 @@ NSString *const ARTDefaultConnectivityCheckUrl = @"internet-up.ably-realtime.com
 #endif
 }
 
-+ (NSInteger)maxSandboxMessageSize {
-    return ARTMaxSandboxMessageSize;
-}
-
-+ (NSInteger)maxProductionMessageSize {
-    return ARTMaxProductionMessageSize;
-}
-
 + (void)setConnectionStateTtl:(NSTimeInterval)value {
     @synchronized (self) {
         ARTConnectionStateTtl = value;
@@ -102,18 +93,6 @@ NSString *const ARTDefaultConnectivityCheckUrl = @"internet-up.ably-realtime.com
 #else
         ARTMaxProductionMessageSize = value;
 #endif
-    }
-}
-
-+ (void)setMaxProductionMessageSize:(NSInteger)value {
-    @synchronized (self) {
-        ARTMaxProductionMessageSize = value;
-    }
-}
-
-+ (void)setMaxSandboxMessageSize:(NSInteger)value {
-    @synchronized (self) {
-        ARTMaxSandboxMessageSize = value;
     }
 }
 
