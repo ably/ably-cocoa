@@ -4,7 +4,7 @@ import os
 
 /// An implementation of `Logger` to use when testing internal components of the LiveObjects plugin.
 final class TestLogger: NSObject, AblyLiveObjects.Logger {
-    // By default, we don’t log in tests to keep the test logs easy to read. You can set this property to `true` to temporarily turn logging on if you want to debug a test.
+    // By default, we don't log in tests to keep the test logs easy to read. You can set this property to `true` to temporarily turn logging on if you want to debug a test.
     static let loggingEnabled = false
 
     private let underlyingLogger = os.Logger()

@@ -220,7 +220,7 @@ struct WireValueTests {
         #expect(resultAsNSObject == expectedResultAsNSObject)
     }
 
-    // Tests that it creates an object that can be serialized by `JSONSerialization` (which is what ably-cocoa uses for JSON serialization), and that the result of this serialization is what we’d expect.
+    // Tests that it creates an object that can be serialized by `JSONSerialization` (which is what ably-cocoa uses for JSON serialization), and that the result of this serialization is what we'd expect.
     @Test
     func toPluginSupportData_endToEnd_json() throws {
         let value: WireValue = [
@@ -274,7 +274,7 @@ struct WireValueTests {
         #expect(valueData == expectedData)
     }
 
-    // Tests that it creates an object that can be serialized by `ARTMsgPackEncoder` (which is what ably-cocoa uses for MessagePack serialization), and that the result of this serialization is what we’d expect.
+    // Tests that it creates an object that can be serialized by `ARTMsgPackEncoder` (which is what ably-cocoa uses for MessagePack serialization), and that the result of this serialization is what we'd expect.
     @Test
     func toPluginSupportData_endToEnd_msgpack() throws {
         let value: WireValue = [

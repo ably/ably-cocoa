@@ -16,7 +16,7 @@ disabled_rules:
   - nesting
   - type_body_length
 
-  # Rules of type "lint" that we’ve decided we don’t want:
+  # Rules of type "lint" that we've decided we don't want:
   - todo # We frequently use TODOs accompanied by a GitHub issue reference
 
 opt_in_rules:
@@ -34,7 +34,7 @@ opt_in_rules:
   - reduce_into
   - sorted_first_last
 
-  # Opt-in rules of type "style" that we’ve decided we want:
+  # Opt-in rules of type "style" that we've decided we want:
   - attributes
   - closure_end_indentation
   - closure_spacing
@@ -64,7 +64,7 @@ opt_in_rules:
   - vertical_whitespace_closing_braces
   - vertical_whitespace_opening_braces
 
-  # Opt-in rules of type "idiomatic" that we’ve decided we want:
+  # Opt-in rules of type "idiomatic" that we've decided we want:
   - anonymous_argument_in_multiline_closure
   - convenience_type
   - fallthrough
@@ -76,7 +76,7 @@ opt_in_rules:
   - toggle_bool
   - xct_specific_matcher
 
-  # Opt-in rules of type "lint" that we’ve decided we want:
+  # Opt-in rules of type "lint" that we've decided we want:
   - array_init
   - empty_xctest_method
   - override_in_extension
