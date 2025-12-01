@@ -8,9 +8,11 @@ final class MockCoreSDK: CoreSDK {
     private nonisolated(unsafe) var _publishHandler: (([OutboundObjectMessage]) async throws(ARTErrorInfo) -> Void)?
 
     private let channelStateMutex: DispatchQueueMutex<_AblyPluginSupportPrivate.RealtimeChannelState>
+    private let serverTime: Date
 
-    init(channelState: _AblyPluginSupportPrivate.RealtimeChannelState, internalQueue: DispatchQueue) {
+    init(channelState: _AblyPluginSupportPrivate.RealtimeChannelState, serverTime: Date = .init(), internalQueue: DispatchQueue) {
         channelStateMutex = DispatchQueueMutex(dispatchQueue: internalQueue, initialValue: channelState)
+        self.serverTime = serverTime
     }
 
     func publish(objectMessages: [OutboundObjectMessage]) async throws(ARTErrorInfo) {
@@ -34,5 +36,9 @@ final class MockCoreSDK: CoreSDK {
         mutex.withLock {
             _publishHandler = handler
         }
+    }
+
+    func fetchServerTime() async throws(ARTErrorInfo) -> Date {
+        serverTime
     }
 }

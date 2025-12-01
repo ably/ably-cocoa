@@ -172,14 +172,17 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
     }
 
     internal func createMap(entries: [String: InternalLiveMapValue], coreSDK: CoreSDK) async throws(ARTErrorInfo) -> InternalDefaultLiveMap {
-        let creationOperation = try mutableStateMutex.withSync { _ throws(ARTErrorInfo) in
+        try mutableStateMutex.withSync { _ throws(ARTErrorInfo) in
             // RTO11d
             try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: "RealtimeObjects.createMap")
+        }
 
+        // RTO11f7
+        let timestamp = try await coreSDK.fetchServerTime()
+
+        let creationOperation = mutableStateMutex.withSync { _ in
             // RTO11f
-            // TODO: This is a stopgap; change to use server time per RTO11f5 (https://github.com/ably/ably-liveobjects-swift-plugin/issues/50)
-            let timestamp = clock.now
-            return ObjectCreationHelpers.nosync_creationOperationForLiveMap(
+            ObjectCreationHelpers.nosync_creationOperationForLiveMap(
                 entries: entries,
                 timestamp: timestamp,
             )
@@ -218,8 +221,9 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
 
         // RTO12f
 
-        // TODO: This is a stopgap; change to use server time per RTO12f5 (https://github.com/ably/ably-liveobjects-swift-plugin/issues/50)
-        let timestamp = clock.now
+        // RTO12f5
+        let timestamp = try await coreSDK.fetchServerTime()
+
         let creationOperation = ObjectCreationHelpers.creationOperationForLiveCounter(
             count: count,
             timestamp: timestamp,

@@ -20,12 +20,14 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/ably/ably-cocoa",
-            from: "1.2.46",
+            // TODO: Unpin before next release
+            revision: "23954b55bea7fa24beaa6e43beb580d501e6b6e1",
         ),
         .package(
             url: "https://github.com/ably/ably-cocoa-plugin-support",
             // Be sure to use `exact` here and not `from`; SPM does not have any special handling of 0.x versions and will resolve 'from: "0.2.0"' to anything less than 1.0.0.
-            exact: "0.2.0",
+            // TODO: Unpin before next release
+            revision: "37ad19df2cc6063c74ec88ecefc2ddf491db5ebf",
         ),
         .package(
             url: "https://github.com/apple/swift-argument-parser",

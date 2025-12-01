@@ -1202,15 +1202,15 @@ struct InternalDefaultRealtimeObjectsTests {
             }
         }
 
+        // @spec RTO11f7
         // @spec RTO11g
         // @spec RTO11h3a
         // @spec RTO11h3b
         @Test
         func publishesObjectMessageAndCreatesMap() async throws {
             let internalQueue = TestFactories.createInternalQueue()
-            let clock = MockSimpleClock(currentTime: .init(timeIntervalSince1970: 1_754_042_434))
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(clock: clock, internalQueue: internalQueue)
-            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attached, serverTime: .init(timeIntervalSince1970: 1_754_042_434), internalQueue: internalQueue)
 
             // Track published messages
             var publishedMessages: [OutboundObjectMessage] = []
@@ -1234,8 +1234,7 @@ struct InternalDefaultRealtimeObjectsTests {
             #expect(publishedMessage.operation?.action == .known(.mapCreate))
             let objectID = try #require(publishedMessage.operation?.objectId)
             #expect(objectID.hasPrefix("map:"))
-            // TODO: This is a stopgap; change to use server time per RTO11f5 (https://github.com/ably/ably-liveobjects-swift-plugin/issues/50)
-            #expect(objectID.contains("1754042434000")) // check contains the mock clock's timestamp in milliseconds
+            #expect(objectID.contains("1754042434000")) // check contains the server timestamp in milliseconds per RTO11f7
             #expect(publishedMessage.operation?.map?.entries == [
                 "stringKey": .init(data: .init(string: "stringValue")),
             ])
@@ -1336,15 +1335,15 @@ struct InternalDefaultRealtimeObjectsTests {
                 }
             }
 
+            // @spec RTO12f5
             // @spec RTO12g
             // @spec RTO12h3a
             // @spec RTO12h3b
             @Test
             func publishesObjectMessageAndCreatesCounter() async throws {
                 let internalQueue = TestFactories.createInternalQueue()
-                let clock = MockSimpleClock(currentTime: .init(timeIntervalSince1970: 1_754_042_434))
-                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(clock: clock, internalQueue: internalQueue)
-                let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+                let coreSDK = MockCoreSDK(channelState: .attached, serverTime: .init(timeIntervalSince1970: 1_754_042_434), internalQueue: internalQueue)
 
                 // Track published messages
                 var publishedMessages: [OutboundObjectMessage] = []
@@ -1363,8 +1362,7 @@ struct InternalDefaultRealtimeObjectsTests {
                 #expect(publishedMessage.operation?.action == .known(.counterCreate))
                 let objectID = try #require(publishedMessage.operation?.objectId)
                 #expect(objectID.hasPrefix("counter:"))
-                // TODO: This is a stopgap; change to use server time per RTO11f5 (https://github.com/ably/ably-liveobjects-swift-plugin/issues/50)
-                #expect(objectID.contains("1754042434000")) // check contains the mock clock's timestamp in milliseconds
+                #expect(objectID.contains("1754042434000")) // check contains the server timestamp in milliseconds per RTO12f5
                 #expect(publishedMessage.operation?.counter?.count == 10.5)
 
                 // Verify initial value was merged per RTO12h3a
