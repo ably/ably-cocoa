@@ -3730,6 +3730,63 @@ private struct ObjectsIntegrationTests {
 
     // TODO: Implement the remaining scenarios
 
+    // MARK: - GC Grace Period
+
+    @Test("gcGracePeriod is set from connectionDetails.objectsGCGracePeriod")
+    func gcGracePeriod_isSetFromConnectionDetails() async throws {
+        let client = try await realtimeWithObjects(options: .init())
+
+        try await monitorConnectionThenCloseAndFinishAsync(client) {
+            await client.connection.onceAsync(.connected)
+
+            let channel = client.channels.get("channel", options: channelOptionsWithObjects())
+            let objects = try #require(channel.objects as? PublicDefaultRealtimeObjects)
+            let connectionDetails = client.internal.latestConnectionDetails
+
+            // gcGracePeriod should be set after the initial connection
+            let initialConnectionDetailsGracePeriod = try #require(connectionDetails?.objectsGCGracePeriod)
+            #expect(objects.testsOnly_gcGracePeriod == initialConnectionDetailsGracePeriod.doubleValue, "Check gcGracePeriod is set after initial connection from connectionDetails.objectsGCGracePeriod")
+
+            let testProxyTransport = try #require(client.internal.transport as? TestProxyTransport)
+            let connectedProtocolMessage = ARTProtocolMessage()
+            connectedProtocolMessage.action = .connected
+            connectedProtocolMessage.connectionDetails = .init(clientId: nil, connectionKey: nil, maxMessageSize: 10, maxFrameSize: 10, maxInboundRate: 10, connectionStateTtl: 10, serverId: "", maxIdleInterval: 10, objectsGCGracePeriod: 0.999) // all arbitrary except objectsGCGracePeriod
+            client.internal.queue.ably_syncNoDeadlock {
+                testProxyTransport.receive(connectedProtocolMessage)
+            }
+
+            #expect(objects.testsOnly_gcGracePeriod == 0.999, "Check gcGracePeriod is updated on new CONNECTED event")
+        }
+    }
+
+    @Test("gcGracePeriod has a default value if connectionDetails.objectsGCGracePeriod is missing")
+    func gcGracePeriod_usesDefaultValue() async throws {
+        let client = try await realtimeWithObjects(options: .init())
+
+        try await monitorConnectionThenCloseAndFinishAsync(client) {
+            await client.connection.onceAsync(.connected)
+
+            let channel = client.channels.get("channel", options: channelOptionsWithObjects())
+            let objects = try #require(channel.objects as? PublicDefaultRealtimeObjects)
+
+            client.internal.queue.ably_syncNoDeadlock {
+                objects.testsOnly_proxied.nosync_setGarbageCollectionGracePeriod(0.999)
+            }
+            #expect(objects.testsOnly_gcGracePeriod == 0.999)
+
+            // send a CONNECTED event without objectsGCGracePeriod, it should use the default value instead
+            let testProxyTransport = try #require(client.internal.transport as? TestProxyTransport)
+            let connectedProtocolMessage = ARTProtocolMessage()
+            connectedProtocolMessage.action = .connected
+            connectedProtocolMessage.connectionDetails = .init(clientId: nil, connectionKey: nil, maxMessageSize: 10, maxFrameSize: 10, maxInboundRate: 10, connectionStateTtl: 10, serverId: "", maxIdleInterval: 10, objectsGCGracePeriod: nil) // all arbitrary except objectsGCGracePeriod
+            client.internal.queue.ably_syncNoDeadlock {
+                testProxyTransport.receive(connectedProtocolMessage)
+            }
+
+            #expect(objects.testsOnly_gcGracePeriod == InternalDefaultRealtimeObjects.GarbageCollectionOptions.defaultGracePeriod, "Check gcGracePeriod is set to a default value if connectionDetails.objectsGCGracePeriod is missing")
+        }
+    }
+
     // MARK: - Tombstones GC Scenarios
 
     enum TombstonesGCScenarios: Scenarios {
@@ -3895,7 +3952,7 @@ private struct ObjectsIntegrationTests {
         var options = testCase.options
         let garbageCollectionOptions = InternalDefaultRealtimeObjects.GarbageCollectionOptions(
             interval: 0.5,
-            gracePeriod: 0.25,
+            gracePeriod: .fixed(0.25),
         )
         options.garbageCollectionOptions = garbageCollectionOptions
 
@@ -3913,7 +3970,7 @@ private struct ObjectsIntegrationTests {
             let internallyTypedObjects = try #require(objects as? PublicDefaultRealtimeObjects)
             let waitForTombstonedObjectsToBeCollected: @Sendable (Date) async throws -> Void = { (tombstonedAt: Date) in
                 // Sleep until we're sure we're past tombstonedAt + gracePeriod
-                let timeUntilGracePeriodExpires = (tombstonedAt + garbageCollectionOptions.gracePeriod).timeIntervalSince(.init())
+                let timeUntilGracePeriodExpires = (tombstonedAt + garbageCollectionOptions.gracePeriod.toTimeInterval).timeIntervalSince(.init())
                 if timeUntilGracePeriodExpires > 0 {
                     try await Task.sleep(nanoseconds: UInt64(timeUntilGracePeriodExpires * Double(NSEC_PER_SEC)))
                 }

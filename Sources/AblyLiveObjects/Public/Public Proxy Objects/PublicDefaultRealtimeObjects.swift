@@ -122,4 +122,8 @@ internal final class PublicDefaultRealtimeObjects: RealtimeObjects {
     internal func testsOnly_overridePublish(with newImplementation: @escaping ([OutboundObjectMessage]) async throws(ARTErrorInfo) -> Void) {
         coreSDK.testsOnly_overridePublish(with: newImplementation)
     }
+
+    internal var testsOnly_gcGracePeriod: TimeInterval {
+        proxied.testsOnly_gcGracePeriod
+    }
 }
