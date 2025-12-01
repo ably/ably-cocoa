@@ -7,6 +7,7 @@
 @protocol APRealtimeChannel;
 @protocol APRealtimeClient;
 @protocol APPublicErrorInfo;
+@protocol APConnectionDetailsProtocol;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -82,6 +83,13 @@ NS_SWIFT_SENDABLE
 - (void)nosync_handleObjectSyncProtocolMessageWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
                                     protocolMessageChannelSerial:(nullable NSString *)protocolMessageChannelSerial
                                                          channel:(id<APRealtimeChannel>)channel;
+
+/// Called whenever the client receives a `CONNECTED` `ProtocolMessage`, passing its `connectionDetails` (if any).
+///
+/// Parameters:
+/// - channel: The channel that should be informed about the connection details.
+- (void)nosync_onConnectedWithConnectionDetails:(nullable id<APConnectionDetailsProtocol>)connectionDetails
+                                        channel:(id<APRealtimeChannel>)channel;
 
 @end
 

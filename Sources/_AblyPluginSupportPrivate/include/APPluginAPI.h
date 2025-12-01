@@ -80,6 +80,9 @@ NS_SWIFT_SENDABLE
 - (void)nosync_fetchServerTimeForClient:(id<APRealtimeClient>)client
                              completion:(void (^ _Nullable)(NSDate *_Nullable serverTime, _Nullable id<APPublicErrorInfo> error))completion;
 
+/// The `connectionDetails` from the latest `CONNECTED` `ProtocolMessage` that the client received (`nil` if it did not contain a `connectionDetails`).
+- (nullable id<APConnectionDetailsProtocol>)nosync_latestConnectionDetailsForClient:(id<APRealtimeClient>)client;
+
 /// Logs a message to a logger.
 - (void)log:(NSString *)message
         withLevel:(APLogLevel)level
