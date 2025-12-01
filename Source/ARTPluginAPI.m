@@ -7,6 +7,7 @@
 #import "ARTPublicRealtimeChannelUnderlyingObjects.h"
 #import "ARTClientOptions+Private.h"
 #import "ARTErrorInfo+Private.h"
+#import "ARTConnectionDetails+Private.h"
 
 static ARTErrorInfo *_ourPublicErrorInfo(id<APPublicErrorInfo> pluginPublicErrorInfo) {
     if (![pluginPublicErrorInfo isKindOfClass:[ARTErrorInfo class]]) {
@@ -171,6 +172,13 @@ static ARTLogLevel _convertPluginLogLevel(APLogLevel pluginLogLevel) {
     dispatch_assert_queue(internalRealtimeClient.queue);
 
     [internalRealtimeClient.auth fetchServerTimeWithCompletion:completion];
+}
+
+- (id<APConnectionDetailsProtocol>)nosync_latestConnectionDetailsForClient:(id<APRealtimeClient>)client {
+    ARTRealtimeInternal *internalRealtimeClient = _internalRealtimeClient(client);
+    dispatch_assert_queue(internalRealtimeClient.queue);
+
+    return internalRealtimeClient.latestConnectionDetails;
 }
 
 - (void)log:(NSString *)message

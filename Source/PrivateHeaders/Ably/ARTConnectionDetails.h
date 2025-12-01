@@ -51,6 +51,9 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (readonly, nonatomic) NSTimeInterval maxIdleInterval;
 
+/// If the `objectsGCGracePeriod` is present in the `ConnectionDetails`, this contains an `NSNumber` wrapping an `NSTimeInterval` containing its value in seconds.
+@property (readonly, nonatomic, nullable) NSNumber *objectsGCGracePeriod;
+
 /// :nodoc:
 - (instancetype)initWithClientId:(NSString *_Nullable)clientId
                    connectionKey:(NSString *_Nullable)connectionKey
@@ -59,7 +62,8 @@ NS_ASSUME_NONNULL_BEGIN
                   maxInboundRate:(NSInteger)maxInboundRate
               connectionStateTtl:(NSTimeInterval)connectionStateTtl
                         serverId:(NSString *)serverId
-                 maxIdleInterval:(NSTimeInterval)maxIdleInterval;
+                 maxIdleInterval:(NSTimeInterval)maxIdleInterval
+            objectsGCGracePeriod:(nullable NSNumber *)objectsGCGracePeriod;
 
 NS_ASSUME_NONNULL_END
 

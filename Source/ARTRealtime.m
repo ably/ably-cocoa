@@ -55,6 +55,7 @@
 #import "ARTRealtimeTransportFactory.h"
 #import "ARTConnectRetryState.h"
 #import "ARTWrapperSDKProxyRealtime+Private.h"
+#import "ARTConnectionDetails+Private.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -203,6 +204,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) ARTConnectRetryState *connectRetryState;
 @property (nonatomic, readonly) ARTInternalLog *logger;
+
+// Redeclaration as readwrite
+@property (nullable, readwrite, nonatomic) ARTConnectionDetails *latestConnectionDetails;
 
 @end
 
@@ -906,7 +910,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 
 - (void)onConnected:(ARTProtocolMessage *)message {
     _renewingToken = false;
-    
+
     switch (self.connection.state_nosync) {
         case ARTRealtimeConnecting: {
             if (_resuming) {
@@ -1606,6 +1610,10 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     
     NSAssert(transport == self.transport, @"Unexpected transport");
 
+#ifdef ABLY_SUPPORTS_PLUGINS
+    NSArray<ARTRealtimeChannelInternal *> *allChannels = self.channels.collection.allValues;
+#endif
+
     switch (message.action) {
         case ARTProtocolMessageHeartbeat:
             [self onHeartbeat];
@@ -1614,10 +1622,18 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
             [self onError:message];
             break;
         case ARTProtocolMessageConnected:
+            self.latestConnectionDetails = message.connectionDetails;
+
             // Set Auth#clientId
             if (message.connectionDetails) {
                 [self.auth setProtocolClientId:message.connectionDetails.clientId];
             }
+#ifdef ABLY_SUPPORTS_PLUGINS
+            for (ARTRealtimeChannelInternal *channel in allChannels) {
+                [self.options.liveObjectsPlugin nosync_onConnectedWithConnectionDetails:message.connectionDetails
+                                                                                channel:channel];
+            }
+#endif
             // Event
             [self onConnected:message];
             break;
