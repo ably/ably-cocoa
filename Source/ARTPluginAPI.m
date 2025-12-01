@@ -165,6 +165,14 @@ static ARTLogLevel _convertPluginLogLevel(APLogLevel pluginLogLevel) {
     return _convertOurRealtimeChannelState(internalChannel.state_nosync);
 }
 
+- (void)nosync_fetchServerTimeForClient:(id<APRealtimeClient>)client
+                             completion:(void (^)(NSDate * _Nullable, id<APPublicErrorInfo> _Nullable))completion {
+    ARTRealtimeInternal *internalRealtimeClient = _internalRealtimeClient(client);
+    dispatch_assert_queue(internalRealtimeClient.queue);
+
+    [internalRealtimeClient.auth fetchServerTimeWithCompletion:completion];
+}
+
 - (void)log:(NSString *)message
         withLevel:(APLogLevel)level
         file:(const char *)fileName
