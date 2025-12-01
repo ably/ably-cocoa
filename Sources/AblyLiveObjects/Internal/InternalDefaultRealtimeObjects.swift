@@ -17,8 +17,6 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
 
     /// The RTO10a interval at which we will perform garbage collection.
     private let garbageCollectionInterval: TimeInterval
-    /// The RTO10b grace period for which we will retain tombstoned objects and map entries.
-    private nonisolated(unsafe) var garbageCollectionGracePeriod: TimeInterval
     // The task that runs the periodic garbage collection described in RTO10.
     private nonisolated(unsafe) var garbageCollectionTask: Task<Void, Never>!
 
@@ -111,10 +109,10 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
                     userCallbackQueue: userCallbackQueue,
                     clock: clock,
                 ),
+                garbageCollectionGracePeriod: garbageCollectionOptions.gracePeriod,
             ),
         )
         garbageCollectionInterval = garbageCollectionOptions.interval
-        garbageCollectionGracePeriod = garbageCollectionOptions.gracePeriod
 
         garbageCollectionTask = Task { [weak self, garbageCollectionInterval] in
             do {
@@ -354,7 +352,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
     internal func performGarbageCollection() {
         mutableStateMutex.withSync { mutableState in
             mutableState.objectsPool.nosync_performGarbageCollection(
-                gracePeriod: garbageCollectionGracePeriod,
+                gracePeriod: mutableState.garbageCollectionGracePeriod,
                 clock: clock,
                 logger: logger,
                 eventsContinuation: completedGarbageCollectionEventsWithoutBufferingContinuation,
@@ -394,6 +392,9 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
         internal var syncStatus = SyncStatus()
         internal var onChannelAttachedHasObjects: Bool?
         internal var objectsEventSubscriptionStorage = SubscriptionStorage<ObjectsEvent, Void>()
+
+        /// The RTO10b grace period for which we will retain tombstoned objects and map entries.
+        internal var garbageCollectionGracePeriod: TimeInterval
 
         /// The state that drives the emission of the `syncing` and `synced` events.
         ///
