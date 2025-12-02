@@ -12,8 +12,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSArray<NSString *> *)fallbackHosts;
 + (NSArray<NSString *> *)fallbackHostsWithEnvironment:(NSString *_Nullable)environment;
-+ (NSString*)restHost;
-+ (NSString*)realtimeHost;
++ (NSString *)restHost;
++ (NSString *)realtimeHost;
+
 + (int)port;
 + (int)tlsPort;
 
