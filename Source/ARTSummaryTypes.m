@@ -1,5 +1,5 @@
 #import "ARTSummaryTypes.h"
-#import "ARTSummaryTypes+Private.h"
+#import "ARTDictionarySerializable.h"
 #import "ARTNSDictionary+ARTDictionaryUtil.h"
 #import "ARTMessageAnnotations.h"
 

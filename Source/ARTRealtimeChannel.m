@@ -144,6 +144,22 @@
     [_internal publish:messages callback:callback];
 }
 
+- (void)updateMessage:(ARTMessage *)message operation:(nullable ARTMessageOperation *)operation params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params callback:(nullable ARTCallback)callback {
+    [_internal updateMessage:message operation:operation params:params wrapperSDKAgents:nil callback:callback];
+}
+
+- (void)deleteMessage:(ARTMessage *)message operation:(nullable ARTMessageOperation *)operation params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params callback:(nullable ARTCallback)callback {
+    [_internal deleteMessage:message operation:operation params:params wrapperSDKAgents:nil callback:callback];
+}
+
+- (void)getMessageWithSerial:(NSString *)serial callback:(ARTMessageErrorCallback)callback {
+    [_internal getMessageWithSerial:serial wrapperSDKAgents:nil callback:callback];
+}
+
+- (void)getMessageVersionsWithSerial:(NSString *)serial callback:(ARTPaginatedMessagesCallback)callback {
+    [_internal getMessageVersionsWithSerial:serial wrapperSDKAgents:nil callback:callback];
+}
+
 - (void)history:(ARTPaginatedMessagesCallback)callback {
     [_internal historyWithWrapperSDKAgents:nil completion:callback];
 }
@@ -450,6 +466,30 @@ art_dispatch_sync(_queue, ^{
     }];
  }
 #endif
+
+- (void)updateMessage:(ARTMessage *)message
+            operation:(nullable ARTMessageOperation *)operation
+               params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
+     wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+             callback:(nullable ARTCallback)callback {
+    [self.restChannel updateMessage:message operation:operation params:params wrapperSDKAgents:wrapperSDKAgents callback:callback];
+}
+
+- (void)deleteMessage:(ARTMessage *)message
+            operation:(nullable ARTMessageOperation *)operation
+               params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
+     wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+             callback:(nullable ARTCallback)callback {
+    [self.restChannel deleteMessage:message operation:operation params:params wrapperSDKAgents:wrapperSDKAgents callback:callback];
+}
+
+- (void)getMessageWithSerial:(NSString *)serial wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTMessageErrorCallback)callback {
+    [self.restChannel getMessageWithSerial:serial wrapperSDKAgents:wrapperSDKAgents callback:callback];
+}
+
+- (void)getMessageVersionsWithSerial:(NSString *)serial wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTPaginatedMessagesCallback)callback {
+    [self.restChannel getMessageVersionsWithSerial:serial wrapperSDKAgents:wrapperSDKAgents callback:callback];
+}
 
 - (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(ARTStatusCallback)cb {
     switch (self.state_nosync) {

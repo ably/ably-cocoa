@@ -1,0 +1,436 @@
+import Ably
+import Nimble
+import XCTest
+
+@testable import Ably
+
+class MessageUpdatesDeletesTests: XCTestCase {
+    
+    // MARK: - Test Environment
+    
+    private enum TestEnvironment {
+        case rest(client: ARTRest, testHTTPExecutor: TestProxyHTTPExecutor, channelName: String)
+        case realtime(client: ARTRealtime, testHTTPExecutor: TestProxyHTTPExecutor, channelName: String)
+        
+        var channel: ARTChannelProtocol {
+            switch self {
+            case .rest(let client, _, let channelName):
+                return client.channels.get(channelName)
+            case .realtime(let client, _, let channelName):
+                return client.channels.get(channelName)
+            }
+        }
+        
+        var realtimeClient: ARTRealtime? {
+            switch self {
+            case .rest(_, _, _):
+                return nil
+            case .realtime(let client, _, _):
+                return client
+            }
+        }
+        
+        var requests: [URLRequest] {
+            switch self {
+            case .rest(_, let testHTTPExecutor, _),
+                 .realtime(_, let testHTTPExecutor, _):
+                return testHTTPExecutor.requests
+            }
+        }
+        
+        static func rest(_ test: Test) throws -> TestEnvironment {
+            let options = try AblyTests.commonAppSetup(for: test)
+            options.testOptions.channelNamePrefix = nil
+            let client = ARTRest(options: options)
+            let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+            client.internal.httpExecutor = testHTTPExecutor
+            let channelName = test.uniqueChannelName(prefix: "mutable:") // updates and deletes don't work without this prefix on a channel name
+            return .rest(client: client, testHTTPExecutor: testHTTPExecutor, channelName: channelName)
+        }
+        
+        static func realtime(_ test: Test) throws -> TestEnvironment {
+            let options = try AblyTests.commonAppSetup(for: test)
+            options.testOptions.channelNamePrefix = nil
+            let client = ARTRealtime(options: options)
+            let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+            client.internal.rest.httpExecutor = testHTTPExecutor
+            let channelName = test.uniqueChannelName(prefix: "mutable:")
+            return .realtime(client: client, testHTTPExecutor: testHTTPExecutor, channelName: channelName)
+        }
+    }
+    
+    // These `waitUntil*HistoryBecomesAvailable*` functions are needed to wait when the published message makes its way to the database.
+    // If you post a message and receive it on a realtime channel and then try to fetch it via `history:`, `getMessageWithSerial:` or  `getMessageVersions:`, the request will fail with ~20% of chance.
+    
+    private func waitUntilHistoryBecomesAvailableOnChannel(_ channel: ARTChannelProtocol) -> ARTMessage {
+        var firstMessage: ARTMessage!
+        while firstMessage == nil {
+            sleep(1) // wait before to increase the chance of the first request
+            waitUntil(timeout: testTimeout) { done in
+                channel.history { result, _ in
+                    firstMessage = result?.items.first
+                    done()
+                }
+            }
+        }
+        return firstMessage
+    }
+    
+    private func waitUntilEditingHistoryBecomesAvailableForMessageSerial(_ serial: String, onChannel channel: ARTChannelProtocol) -> [ARTMessage] {
+        var versions: [ARTMessage] = []
+        while versions.count == 0 {
+            sleep(1) // wait before to increase the chance of the first request
+            waitUntil(timeout: testTimeout) { done in
+                channel.getMessageVersions(withSerial: serial) { result, error in
+                    XCTAssertNil(error)
+                    versions = result?.items ?? []
+                    done()
+                }
+            }
+        }
+        return versions
+    }
+    
+    private func _test__rest_and_realtime__getMessage(_ testEnvironment: TestEnvironment) throws {
+        let channel = testEnvironment.channel
+        
+        // First publish a message
+        waitUntil(timeout: testTimeout) { done in
+            channel.publish("chat-message", data: "test message") { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+        
+        let publishedMessage = waitUntilHistoryBecomesAvailableOnChannel(channel)
+        guard let publishedMessageSerial = publishedMessage.serial else {
+            XCTFail("publishedMessage's serial is nil")
+            return
+        }
+        
+        var retrievedMessage: ARTMessage!
+        
+        // RSL11a: Get the message by serial string
+        waitUntil(timeout: testTimeout) { done in
+            channel.getMessageWithSerial(publishedMessageSerial) { message, error in
+                XCTAssertNil(error)
+                retrievedMessage = message
+                done()
+            }
+        }
+        
+        // RSL11b: Verify GET request to correct endpoint
+        guard let request = testEnvironment.requests.last, let requestUrl = request.url else {
+            XCTFail("No HTTP request was made")
+            return
+        }
+        
+        XCTAssertEqual(request.httpMethod, "GET")
+        XCTAssertTrue(requestUrl.path.contains("/channels/\(channel.name)/messages/\(publishedMessageSerial)"))
+        
+        // RSL11c: Returns the decoded Message object
+        
+        XCTAssertNotNil(retrievedMessage)
+        XCTAssertEqual(retrievedMessage.serial, publishedMessageSerial)
+        XCTAssertEqual(retrievedMessage.name, "chat-message")
+        XCTAssertEqual(retrievedMessage.data as? String, "test message")
+    }
+    
+    private func _test__rest_and_realtime__updateMessage__and__getMessageVersions(_ testEnvironment: TestEnvironment) throws {
+        let channel = testEnvironment.channel
+        
+        // First publish a message
+        waitUntil(timeout: testTimeout) { done in
+            channel.publish("chat-message", data: "hello world") { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+        
+        let publishedMessage = waitUntilHistoryBecomesAvailableOnChannel(channel)
+        guard let publishedMessageSerial = publishedMessage.serial else {
+            XCTFail("publishedMessage's serial is nil")
+            return
+        }
+        
+        // Update data and extras fields
+        let messageUpdate = publishedMessage.copy() as! ARTMessage
+        messageUpdate.data = "hello world!"
+        messageUpdate.extras = ["editSummary": "added exclamation"] as ARTJsonCompatible
+        
+        // RSL12a: optional MessageOperation object
+        let operation = ARTMessageOperation(clientId: "updater-client", descriptionText: "Editing message text", metadata: ["newValue": "hello world!"])
+        
+        // RSL12a: optional params
+        let params: [String: ARTStringifiable] = ["param1": .withString("value1")]
+        
+        waitUntil(timeout: testTimeout) { done in
+            channel.update(messageUpdate, operation: operation, params: params) { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+        
+        // RSL12b: Verify PATCH request to correct endpoint
+        guard let request = testEnvironment.requests.last, let requestUrl = request.url else {
+            XCTFail("No HTTP request was made")
+            return
+        }
+        
+        XCTAssertEqual(request.httpMethod, "PATCH")
+        XCTAssertTrue(requestUrl.path.contains("/channels/\(channel.name)/messages/\(publishedMessageSerial)"))
+        
+        // Verify params in querystring
+        XCTAssertTrue(requestUrl.query?.contains("param1=value1") ?? false)
+        
+        // RSL12b1-RSL12b6: Verify request body
+        
+        var bodyDict: [String: Any]!
+        
+        switch extractBodyAsMsgPack(request) {
+        case let .failure(error):
+            XCTFail(error); return
+        case let .success(httpBody):
+            // RSL12c: The body must be encoded to the appropriate format per RSC8
+            bodyDict = try XCTUnwrap(httpBody.unbox as? [String: Any])
+            XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Type"), "application/x-msgpack")
+        }
+        
+        // RSL12b1: serial
+        XCTAssertEqual(bodyDict["serial"] as? String, publishedMessageSerial)
+        
+        // RSL12b2: operation
+        if let operationDict = bodyDict["operation"] as? [String: Any] {
+            XCTAssertEqual(operationDict["clientId"] as? String, "updater-client")
+            XCTAssertEqual(operationDict["description"] as? String, "Editing message text")
+            XCTAssertEqual((operationDict["metadata"] as? [String: String])?["newValue"], "hello world!")
+        } else {
+            XCTFail("Operation should be present in request body")
+        }
+        
+        // RSL12b3: name
+        XCTAssertEqual(bodyDict["name"] as? String, "chat-message")
+        
+        // RSL12b4: data
+        XCTAssertEqual(bodyDict["data"] as? String, "hello world!")
+        
+        // RSL12b6: extras
+        XCTAssertNotNil(bodyDict["extras"])
+        
+        var updatedMessage: ARTMessage!
+        
+        // Get the updated message by serial string
+        waitUntil(timeout: testTimeout) { done in
+            channel.getMessageWithSerial(publishedMessageSerial) { message, error in
+                XCTAssertNil(error)
+                updatedMessage = message
+                done()
+            }
+        }
+        
+        XCTAssertNotNil(updatedMessage)
+        XCTAssertEqual(updatedMessage.serial, publishedMessageSerial)
+        XCTAssertEqual(updatedMessage.name, "chat-message")
+        XCTAssertEqual(updatedMessage.data as? String, "hello world!")
+        XCTAssertEqual(updatedMessage.action, .update)
+        
+        // Verify version properties
+        XCTAssertNotNil(updatedMessage.version)
+        XCTAssertNotNil(updatedMessage.version?.serial)
+        XCTAssertTrue(updatedMessage.version!.serial! > publishedMessageSerial)
+        XCTAssertNotNil(updatedMessage.version?.timestamp)
+        XCTAssertTrue(updatedMessage.version!.timestamp! > publishedMessage.timestamp!)
+        XCTAssertEqual(updatedMessage.version?.clientId, "updater-client")
+        XCTAssertEqual(updatedMessage.version?.descriptionText, "Editing message text")
+        XCTAssertEqual(updatedMessage.version?.metadata, ["newValue": "hello world!"])
+        
+        // RSL14a: Get versions by serial string
+        let versions = waitUntilEditingHistoryBecomesAvailableForMessageSerial(publishedMessageSerial, onChannel: channel)
+        
+        XCTAssertEqual(versions.count, 2)
+        XCTAssertEqual(versions[0].data as? String, "hello world")
+        XCTAssertEqual(versions[1].data as? String, "hello world!")
+    }
+    
+    private func _test__rest_and_realtime__deleteMessage(_ testEnvironment: TestEnvironment) throws {
+        let channel = testEnvironment.channel
+        
+        // First publish a message
+        waitUntil(timeout: testTimeout) { done in
+            channel.publish("chat-message", data: "test text") { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+        
+        let publishedMessage = waitUntilHistoryBecomesAvailableOnChannel(channel)
+        guard let publishedMessageSerial = publishedMessage.serial else {
+            XCTFail("publishedMessage's serial is nil")
+            return
+        }
+        
+        // Create message for delete with fields
+        let messageDelete = publishedMessage.copy() as! ARTMessage
+        messageDelete.serial = publishedMessageSerial
+        messageDelete.extras = ["deleteReason": "test deletion"] as ARTJsonCompatible
+        messageDelete.data = ""
+        
+        // RSL13a: optional MessageOperation object
+        let operation = ARTMessageOperation(clientId: "deleter-client", descriptionText: "Test delete operation", metadata: ["reason": "inappropriate content"])
+        
+        // RSL13a: optional params
+        let params: [String: ARTStringifiable] = ["deleteParam": .withString("deleteValue")]
+        
+        waitUntil(timeout: testTimeout) { done in
+            channel.delete(messageDelete, operation: operation, params: params) { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+        
+        // RSL13b: Verify POST request to /delete endpoint
+        guard let request = testEnvironment.requests.last, let requestUrl = request.url else {
+            XCTFail("No HTTP request was made")
+            return
+        }
+        
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertTrue(requestUrl.path.contains("/channels/\(channel.name)/messages/\(publishedMessageSerial)/delete"))
+        
+        // Verify params in querystring
+        XCTAssertTrue(request.url?.query?.contains("deleteParam=deleteValue") ?? false)
+        
+        // RSL13b1-RSL13b6: Verify request body
+        
+        var bodyDict: [String: Any]!
+        
+        switch extractBodyAsMsgPack(request) {
+        case let .failure(error):
+            XCTFail(error)
+        case let .success(httpBody):
+            // RSL12c: The body must be encoded to the appropriate format per RSC8
+            bodyDict = try XCTUnwrap(httpBody.unbox as? [String: Any])
+            XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Type"), "application/x-msgpack")
+        }
+        
+        // RSL13b1: serial
+        XCTAssertEqual(bodyDict["serial"] as? String, publishedMessageSerial)
+        
+        // RSL13b2: operation
+        if let operationDict = bodyDict["operation"] as? [String: Any] {
+            XCTAssertEqual(operationDict["clientId"] as? String, "deleter-client")
+            XCTAssertEqual(operationDict["description"] as? String, "Test delete operation")
+            XCTAssertEqual((operationDict["metadata"] as? [String: String])?["reason"], "inappropriate content")
+        } else {
+            XCTFail("Operation should be present in request body")
+        }
+        
+        // RSL13b3: name
+        XCTAssertEqual(bodyDict["name"] as? String, "chat-message")
+        
+        // RSL13b4: data
+        XCTAssertEqual(bodyDict["data"] as? String, "")
+        
+        // RSL13b6: extras
+        XCTAssertNotNil(bodyDict["extras"])
+        
+        var updatedMessage: ARTMessage?
+        
+        // Get the updated message by serial string
+        waitUntil(timeout: testTimeout) { done in
+            channel.getMessageWithSerial(publishedMessageSerial) { message, error in
+                XCTAssertNil(error)
+                updatedMessage = message
+                done()
+            }
+        }
+        
+        guard let updatedMessage else {
+            XCTFail("updatedMessage is nil")
+            return
+        }
+        
+        XCTAssertNotNil(updatedMessage)
+        XCTAssertEqual(updatedMessage.serial, publishedMessageSerial)
+        XCTAssertEqual(updatedMessage.name, "chat-message")
+        XCTAssertEqual(updatedMessage.data as? String, "")
+        XCTAssertEqual(updatedMessage.action, .delete)
+        
+        // Verify version properties
+        XCTAssertNotNil(updatedMessage.version)
+        XCTAssertNotNil(updatedMessage.version?.serial)
+        XCTAssertTrue(updatedMessage.version!.serial! > publishedMessageSerial)
+        XCTAssertNotNil(updatedMessage.version?.timestamp)
+        XCTAssertTrue(updatedMessage.version!.timestamp! > publishedMessage.timestamp!)
+        XCTAssertEqual(updatedMessage.version?.clientId, "deleter-client")
+        XCTAssertEqual(updatedMessage.version?.descriptionText, "Test delete operation")
+        XCTAssertEqual(updatedMessage.version?.metadata, ["reason": "inappropriate content"])
+    }
+    
+    // MARK: - RSL11: RestChannel#getMessage function
+    
+    // RSL11a: Takes a first argument of a serial string of the message to be retrieved
+    // RSL11b: The SDK must send a GET request to the endpoint /channels/{channelName}/messages/{serial}
+    // RSL11c: Returns the decoded Message object for the specified message serial
+    func test__RSL11__getMessage() throws {
+        let test = Test()
+        try _test__rest_and_realtime__getMessage(.rest(test))
+    }
+    
+    // MARK: - RTL28: RealtimeChannel#getMessage function
+    
+    // RTL28: same as RestChannel#getMessage
+    func test__RTL28__getMessage() throws {
+        let test = Test()
+        let env = try TestEnvironment.realtime(test)
+        defer {
+            env.realtimeClient?.close()
+        }
+        try _test__rest_and_realtime__getMessage(env)
+    }
+    
+    // MARK: - RSL12: RestChannel#updateMessage function
+    
+    // RSL12a: Takes a first argument of a Message object (which must contain a populated serial field)
+    // RSL12b: The SDK must send a PATCH to /channels/{channelName}/messages/{serial}
+    // RSL12b1-RSL12b6: Request body fields
+    // RSL12c: The body must be encoded to the appropriate format per RSC8
+    // RSL14b: The SDK must send a GET request to the endpoint
+    // RSL14c: Returns a PaginatedResult<Message>
+    func test__RSL12__RSL14__updateMessage__and__getMessageVersions() throws {
+        let test = Test()
+        try _test__rest_and_realtime__updateMessage__and__getMessageVersions(.rest(test))
+    }
+    
+    // RTL29: RealtimeChannel#updateMessage function: same as RestChannel#updateMessage
+    // RTL31: RealtimeChannel#getMessageVersions function: same as RestChannel#getMessageVersions
+    func test__RTL29__RTL31__updateMessage__and__getMessageVersions() throws {
+        let test = Test()
+        let env = try TestEnvironment.realtime(test)
+        defer {
+            env.realtimeClient?.close()
+        }
+        try _test__rest_and_realtime__updateMessage__and__getMessageVersions(env)
+    }
+    
+    // MARK: - RSL13: RestChannel#deleteMessage function
+    
+    // RSL13a: Takes a first argument of a Message object (which must contain a populated serial field)
+    // RSL13b: The SDK must send a POST to /channels/{channelName}/messages/{serial}/delete
+    // RSL13b1-RSL13b6: Request body fields
+    // RSL13c: The body must be encoded to the appropriate format per RSC8
+    func test__RSL13__deleteMessage() throws {
+        let test = Test()
+        try _test__rest_and_realtime__deleteMessage(.rest(test))
+    }
+    
+    // RTL30: RealtimeChannel#deleteMessage function: same as RestChannel#deleteMessage
+    func test__RTL30__deleteMessage() throws {
+        let test = Test()
+        let env = try TestEnvironment.realtime(test)
+        defer {
+            env.realtimeClient?.close()
+        }
+        try _test__rest_and_realtime__deleteMessage(env)
+    }
+}

@@ -2,6 +2,7 @@
 
 #import <Ably/ARTTypes.h>
 #import <Ably/ARTChannelProtocol.h>
+#import <Ably/ARTStringifiable.h>
 
 @class ARTRest;
 @class ARTChannelOptions;
@@ -43,6 +44,26 @@ NS_SWIFT_SENDABLE
 - (void)publish:(NSArray<ARTMessage *> *)messages;
 
 - (void)publish:(NSArray<ARTMessage *> *)messages callback:(nullable ARTCallback)callback;
+
+- (void)updateMessage:(ARTMessage *)message
+            operation:(nullable ARTMessageOperation *)operation
+               params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
+     wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+             callback:(nullable ARTCallback)callback;
+
+- (void)deleteMessage:(ARTMessage *)message
+            operation:(nullable ARTMessageOperation *)operation
+               params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
+     wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+             callback:(nullable ARTCallback)callback;
+
+- (void)getMessageWithSerial:(NSString *)serial
+            wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                    callback:(ARTMessageErrorCallback)callback;
+
+- (void)getMessageVersionsWithSerial:(NSString *)serial
+                    wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                            callback:(ARTPaginatedMessagesCallback)callback;
 
 - (void)historyWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
                          completion:(ARTPaginatedMessagesCallback)callback;

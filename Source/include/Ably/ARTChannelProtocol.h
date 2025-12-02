@@ -1,10 +1,12 @@
 #import <Foundation/Foundation.h>
 
 #import <Ably/ARTTypes.h>
+#import "ARTStringifiable.h"
 
 @class ARTRest;
 @class ARTChannelOptions;
 @class ARTMessage;
+@class ARTMessageOperation;
 @class ARTBaseMessage;
 @class ARTPaginatedResult<ItemType>;
 @class ARTDataQuery;
@@ -67,6 +69,48 @@ NS_ASSUME_NONNULL_BEGIN
  * @param callback A success or failure callback function.
  */
 - (void)publish:(NSArray<ARTMessage *> *)messages callback:(nullable ARTCallback)callback;
+
+/**
+ * Updates a previously published message on the channel with operation metadata and params.
+ *
+ * @param message The message to update (must contain a populated serial field).
+ * @param operation Optional operation metadata for the update.
+ * @param params Optional publish params.
+ * @param callback A success or failure callback function.
+ */
+- (void)updateMessage:(ARTMessage *)message
+            operation:(nullable ARTMessageOperation *)operation
+               params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
+             callback:(nullable ARTCallback)callback;
+
+/**
+ * Deletes a previously published message on the channel with operation metadata and params.
+ *
+ * @param message The message to delete (must contain a populated serial field).
+ * @param operation Optional operation metadata for the delete.
+ * @param params Optional publish params.
+ * @param callback A success or failure callback function.
+ */
+- (void)deleteMessage:(ARTMessage *)message
+            operation:(nullable ARTMessageOperation *)operation
+               params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
+             callback:(nullable ARTCallback)callback;
+
+/**
+ * Retrieves a single message by its serial identifier.
+ *
+ * @param serial The serial of the message to retrieve.
+ * @param callback A callback that receives the message or an error.
+ */
+- (void)getMessageWithSerial:(NSString *)serial callback:(ARTMessageErrorCallback)callback;
+
+/**
+ * Retrieves the version history of a message by its serial identifier.
+ *
+ * @param serial The serial of the message whose versions to retrieve.
+ * @param callback A callback for retrieving a paginated result of message versions.
+ */
+- (void)getMessageVersionsWithSerial:(NSString *)serial callback:(ARTPaginatedMessagesCallback)callback;
 
 /// :nodoc: TODO: docstring
 - (void)history:(ARTPaginatedMessagesCallback)callback;
