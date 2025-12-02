@@ -53,6 +53,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, readwrite, nonatomic) NSString *name;
 
 /// The action type of the message, one of the `ARTMessageAction` enum values.
+///
+/// - Note: A message that you create via the ``initWithName:data:`` or ``initWithName:data:clientId:`` initializers will have an `action` of ``ARTMessageAction/ARTMessageActionCreate``. However, the value of this property will be ignored when you pass this message to the SDK (e.g. when publishing the message).
 @property (readwrite, nonatomic) ARTMessageAction action;
 
 /// This message's unique serial (an identifier that will be the same in all future updates of this message).
