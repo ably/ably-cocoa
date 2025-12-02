@@ -442,6 +442,24 @@ art_dispatch_sync(_queue, ^{
 }
 
 #ifdef ABLY_SUPPORTS_PLUGINS
+// LAWRENCE: This is what's used by the plugin API.
+//
+// publish goes
+//
+// 1. channel.publish:message:extras:callback: (this is shared between REST and Realtime; it encodes data and checks size)
+// 2. channel.internalPostMessages:callback: — this checks client ID compatibility, checks connection state and errors if not "active", then creates a `ProtocolMessage`
+// 3. channel.publishProtocolMessage:callback:
+// 4. realtime.send:sentCallback:ackCallback:
+//
+// pluginAPI goes
+//
+// 1. channel.sendObjectWithObjectMessages:completion:
+// 2. channel.publishProtocolMessage:callback: — from here it's same as publish
+// 3. realtime.send:sentCallback:ackCallback:
+//
+// So the difference is in the internalPostMessages:callback:
+//
+// It does however seem to me that the connection state check in internalPostMessages:callback: is redundant, since there's already one in realtime.send:sentCallback:ackCallback:
 - (void)sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
                           completion:(ARTCallback)completion {
     ARTProtocolMessage *pm = [[ARTProtocolMessage alloc] init];
@@ -457,6 +475,7 @@ art_dispatch_sync(_queue, ^{
  }
 #endif
 
+// LAWRENCE: This is what's used by the plugin API.
 - (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(ARTStatusCallback)cb {
     switch (self.state_nosync) {
         case ARTRealtimeChannelSuspended:
