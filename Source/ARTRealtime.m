@@ -1323,6 +1323,12 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     }
 }
 
+/// Submits a channel message for best-effort delivery to Ably, with possible queueing and retries.
+///
+/// This enables the channel message publishing behaviour described in RTL6c:
+///
+/// - If the connection can accept the message (either to be immediately sent or to be queued), then it will accept the message per RTL6c1 and RTL6c2.
+/// - If the connection cannot accept the message (due to some combination of connection state and the `queueMessages` client option), then the callbacks will be immediately called with an error per RTL6c4.
 - (void)send:(ARTProtocolMessage *)msg reuseMsgSerial:(BOOL)reuseMsgSerial sentCallback:(ARTCallback)sentCallback ackCallback:(ARTStatusCallback)ackCallback {
     if ([self shouldSendEvents]) {
         [self sendImpl:msg reuseMsgSerial:reuseMsgSerial sentCallback:sentCallback ackCallback:ackCallback];
