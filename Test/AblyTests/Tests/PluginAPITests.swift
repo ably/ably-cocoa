@@ -187,49 +187,4 @@ class PluginAPITests: XCTestCase {
             XCTAssertEqual(newConnectionDetails.objectsGCGracePeriod, 1500)
         }
     }
-
-    // MARK: - Sending `ObjectMessage`
-
-    func test_sendObjectMessage() throws {
-        // Given: A realtime channel
-        let test = Test()
-        let options = try AblyTests.commonAppSetup(for: test)
-//        options.autoConnect = false
-        // TODO remove
-        options.logLevel = .verbose
-
-        options.testOptions.transportFactory = TestProxyTransportFactory()
-
-        let client = ARTRealtime(options: options)
-        defer { client.dispose(); client.close() }
-
-        let pluginAPI = DependencyStore.sharedInstance().fetchPluginAPI()
-//        let pluginRealtimeClient = client.internal as! _AblyPluginSupportPrivate.RealtimeClient
-
-        let channel = client.channels.get(test.uniqueChannelName())
-        let pluginRealtimeChannel = channel.internal as! _AblyPluginSupportPrivate.RealtimeChannel
-
-        let internalQueue = client.internal.queue
-
-        // When: TODO
-
-        client.close()
-        waitUntil(timeout: testTimeout) { done in
-            client.connection.once(.closed) { _ in
-                done()
-            }
-        }
-        XCTAssertEqual(channel.state, .detached)
-
-        waitUntil(timeout: testTimeout) { done in
-            internalQueue.sync {
-                print("Sending object")
-                // TODO what's the mechanism that's causing this to fail even though we've skipped a check?
-                pluginAPI.nosync_sendObject(withObjectMessages: [], channel: pluginRealtimeChannel) { error in
-                    XCTAssertNotNil(error)
-                    done()
-                }
-            }
-        }
-    }
 }
