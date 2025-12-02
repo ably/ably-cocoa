@@ -8,6 +8,9 @@ internal protocol CoreSDK: AnyObject, Sendable {
     /// Implements the internal `#publish` method of RTO15.
     func publish(objectMessages: [OutboundObjectMessage]) async throws(ARTErrorInfo)
 
+    /// Implements the server time fetch of RTO16, including the storing and usage of the local clock offset.
+    func fetchServerTime() async throws(ARTErrorInfo) -> Date
+
     /// Replaces the implementation of ``publish(objectMessages:)``.
     ///
     /// Used by integration tests, for example to disable `ObjectMessage` publishing so that a test can verify that a behaviour is not a side effect of an `ObjectMessage` sent by the SDK.
@@ -79,6 +82,28 @@ internal final class DefaultCoreSDK: CoreSDK {
         mutex.withLock {
             overriddenPublishImplementation = newImplementation
         }
+    }
+
+    internal func fetchServerTime() async throws(ARTErrorInfo) -> Date {
+        try await withCheckedContinuation { (continuation: CheckedContinuation<Result<Date, ARTErrorInfo>, _>) in
+            let internalQueue = pluginAPI.internalQueue(for: client)
+
+            internalQueue.async { [client, pluginAPI] in
+                pluginAPI.nosync_fetchServerTime(for: client) { serverTime, error in
+                    // We don't currently rely on this documented behaviour of `noSync_fetchServerTime` but we may do later, so assert it to be sure it's happening.
+                    dispatchPrecondition(condition: .onQueue(internalQueue))
+
+                    if let error {
+                        continuation.resume(returning: .failure(ARTErrorInfo.castPluginPublicErrorInfo(error)))
+                    } else {
+                        guard let serverTime else {
+                            preconditionFailure("nosync_fetchServerTime gave nil serverTime and nil error")
+                        }
+                        continuation.resume(returning: .success(serverTime))
+                    }
+                }
+            }
+        }.get()
     }
 
     internal var nosync_channelState: _AblyPluginSupportPrivate.RealtimeChannelState {
