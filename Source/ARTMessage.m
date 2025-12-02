@@ -12,6 +12,8 @@
         self.name = [name copy];
         if (data) {
             self.data = data;
+            // The `action` property is meant to be optional so that it is absent on user-instantiated messages. However, we misunderstood this when implementing this property. So now we have to set a default value which, as the documentation says, is ignored (currently this is because we don't populate `action` on _any_ outbound `ProtocolMessage`; when we start doing this for realtime edits and deletes we'll have to make sure that we find some way to ignore the user-specified value; either by skipping it somehow or by just always sending MESSAGE_CREATE for publishes, which Simon said should be OK). Internal discussion: https://ably-real-time.slack.com/archives/CURL4U2FP/p1764676336838699
+            self.action = ARTMessageActionCreate;
             self.encoding = @"";
         }
     }
