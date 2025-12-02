@@ -72,6 +72,14 @@ NS_SWIFT_SENDABLE
 /// Returns a realtime channel's current state.
 - (APRealtimeChannelState)nosync_stateForChannel:(id<APRealtimeChannel>)channel;
 
+/// Fetches the Ably server time from the REST API, per RTO16.
+///
+/// Per RTO16a, if the client knows the local clock's offset from the server time, then the server time will be calculated without making a request.
+///
+/// The completion handler will be called on the client's internal queue (see `-internalQueueForClient:`).
+- (void)nosync_fetchServerTimeForClient:(id<APRealtimeClient>)client
+                             completion:(void (^ _Nullable)(NSDate *_Nullable serverTime, _Nullable id<APPublicErrorInfo> error))completion;
+
 /// Logs a message to a logger.
 - (void)log:(NSString *)message
         withLevel:(APLogLevel)level
