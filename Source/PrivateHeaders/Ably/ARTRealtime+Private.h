@@ -149,6 +149,19 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 - (void)transportReconnectWithExistingParameters;
 
 // Message sending
+
+/// Submits a `ProtocolMessage` for delivery to Ably, with possible queueing and retries.
+///
+/// Note that this method is used internally for various kinds of messages: those that do not require an `ACK` (e.g. `ATTACH`), which should only be sent when they can be sent immediately, and those which require an `ACK` (e.g. `MESSAGE`), which can be queued to be sent later. In the case of messages that require an `ACK`, it implements the connection behaviour described in RTL6c (the RTL6c channel state checks must be performed separately by the channel).
+///
+/// It behaves as follows:
+///
+/// - If the connection can send the message immediately, it will be sent immediately.
+/// - If the connection cannot send the message immediately, then the behaviour depends on whether the message has an `action` that expects to receive an `ACK` from Ably:
+///    - If the message expects an `ACK`, then this method follows the channel message publishing behaviour described in RTL6c:
+///      - If the connection can queue the message to be sent later, then it will accept the message per RTL6c2.
+///      - If the connection cannot queue the message (due to some combination of connection state and the `queueMessages` client option), then the callbacks will be immediately called with an error per RTL6c4.
+///    - If the message does not expect an `ACK`, then the message will be silently dropped (i.e. it is the responsibility of callers to not submit messages to the connection in this scenario).
 - (void)send:(ARTProtocolMessage *)msg sentCallback:(nullable ARTCallback)sentCallback ackCallback:(nullable ARTStatusCallback)ackCallback;
 
 - (void)send:(ARTProtocolMessage *)msg reuseMsgSerial:(BOOL)reuseMsgSerial sentCallback:(nullable ARTCallback)sentCallback ackCallback:(nullable ARTStatusCallback)ackCallback;
