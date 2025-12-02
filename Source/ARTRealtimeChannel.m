@@ -423,12 +423,6 @@ art_dispatch_sync(_queue, ^{
         }
     }
 
-    if (!self.realtime.connection.isActive_nosync) {
-        if (callback)
-            callback([self.realtime.connection error_nosync]);
-        return;
-    }
-
     ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
     msg.action = ARTProtocolMessageMessage;
     msg.channel = self.name;
