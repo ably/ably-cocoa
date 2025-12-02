@@ -36,6 +36,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)createTokenRequest:(void (^)(ARTTokenRequest *_Nullable tokenRequest, NSError *_Nullable error))callback;
 
+/// Provides the implementation for `-[ARTPluginAPI nosync_fetchServerTimeForClient:completion:]`. See documentation for that method in `APPluginAPIProtocol`.
+- (void)fetchServerTimeWithCompletion:(void (^ _Nullable)(NSDate *_Nullable serverTime, ARTErrorInfo *_Nullable error))completion;
+
 @end
 
 /// Messages related to the ARTAuth

@@ -12,7 +12,8 @@ Currently, our only plugin is for adding LiveObjects functionality. This plugin 
 
 - Everything in ably-cocoa that depends on `_AblyPluginSupportPrivate` is gated behind `#ifdef ABLY_SUPPORTS_PLUGINS`, which is only defined in SPM builds. This is so as not to affect the non-SPM builds (i.e. Xcode, CocoaPods), which do not have access to `_AblyPluginSupportPrivate`.
 - ably-cocoa provides an implementation of `_AblyPluginSupportPrivate`'s `APPluginAPI` protocol, which is the interface that plugins use to access ably-cocoa's internals. On library initialization, it registers this implementation with `APDependencyStore`, from where plugins can subsequetly fetch it.
-- Currently, the plan is to test all the LiveObjects functionality within the LiveObjects plugin repository, so ably-cocoa does not contain any tests for the plugins mechanism.
+- There are some tests for the `APPluginAPI` implementation in `PluginAPITests.swift` (with only partial coverage at the moment).
+- Currently, the plan is to test all the LiveObjects functionality within the LiveObjects plugin repository, so the ably-cocoa tests do not import the LiveObjects plugin.
 - The underscore and `Private` are to reduce the chances of the user accidentally importing it into their project.
 - `_AblyPluginSupportPrivate` can not refer to any of ably-cocoa's types (since SPM forbids circular dependencies) and so it contains various types that duplicate ably-cocoa's public types. These fall into two categories:
   - enums e.g. `APRealtimeChannelState`, which are an exact copy of the corresponding ably-cocoa enum (in this example, `ARTRealtimeChannelState`)
