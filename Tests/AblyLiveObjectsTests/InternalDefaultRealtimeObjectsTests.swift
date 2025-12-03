@@ -1315,133 +1315,133 @@ struct InternalDefaultRealtimeObjectsTests {
             // Check that the existing object has not been replaced in the pool
             #expect(realtimeObjects.testsOnly_objectsPool.entries[generatedObjectID]?.mapValue === existingObject)
         }
+    }
 
-        /// Tests for `InternalDefaultRealtimeObjects.createCounter`, covering RTO12 specification points (these are largely a smoke test, the rest being tested in ObjectCreationHelpers tests)
-        struct CreateCounterTests {
-            // @spec RTO12d
-            @Test(arguments: [.detached, .failed, .suspended] as [_AblyPluginSupportPrivate.RealtimeChannelState])
-            func throwsIfChannelIsInInvalidState(channelState: _AblyPluginSupportPrivate.RealtimeChannelState) async throws {
-                let internalQueue = TestFactories.createInternalQueue()
-                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
-                let coreSDK = MockCoreSDK(channelState: channelState, internalQueue: internalQueue)
+    /// Tests for `InternalDefaultRealtimeObjects.createCounter`, covering RTO12 specification points (these are largely a smoke test, the rest being tested in ObjectCreationHelpers tests)
+    struct CreateCounterTests {
+        // @spec RTO12d
+        @Test(arguments: [.detached, .failed, .suspended] as [_AblyPluginSupportPrivate.RealtimeChannelState])
+        func throwsIfChannelIsInInvalidState(channelState: _AblyPluginSupportPrivate.RealtimeChannelState) async throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: channelState, internalQueue: internalQueue)
 
-                await #expect {
-                    _ = try await realtimeObjects.createCounter(count: 10.5, coreSDK: coreSDK)
-                } throws: { error in
-                    guard let errorInfo = error as? ARTErrorInfo else {
-                        return false
-                    }
-                    return errorInfo.code == 90001 && errorInfo.statusCode == 400
+            await #expect {
+                _ = try await realtimeObjects.createCounter(count: 10.5, coreSDK: coreSDK)
+            } throws: { error in
+                guard let errorInfo = error as? ARTErrorInfo else {
+                    return false
+                }
+                return errorInfo.code == 90001 && errorInfo.statusCode == 400
+            }
+        }
+
+        // @spec RTO12f5
+        // @spec RTO12g
+        // @spec RTO12h3a
+        // @spec RTO12h3b
+        @Test
+        func publishesObjectMessageAndCreatesCounter() async throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attached, serverTime: .init(timeIntervalSince1970: 1_754_042_434), internalQueue: internalQueue)
+
+            // Track published messages
+            var publishedMessages: [OutboundObjectMessage] = []
+            coreSDK.setPublishHandler { messages in
+                publishedMessages.append(contentsOf: messages)
+            }
+
+            // Call createCounter
+            let returnedCounter = try await realtimeObjects.createCounter(count: 10.5, coreSDK: coreSDK)
+
+            // Verify ObjectMessage was published (RTO12g)
+            #expect(publishedMessages.count == 1)
+            let publishedMessage = publishedMessages[0]
+
+            // Sense check of ObjectMessage structure per RTO12f7-11
+            #expect(publishedMessage.operation?.action == .known(.counterCreate))
+            let objectID = try #require(publishedMessage.operation?.objectId)
+            #expect(objectID.hasPrefix("counter:"))
+            #expect(objectID.contains("1754042434000")) // check contains the server timestamp in milliseconds per RTO12f5
+            #expect(publishedMessage.operation?.counter?.count == 10.5)
+
+            // Verify initial value was merged per RTO12h3a
+            #expect(try returnedCounter.value(coreSDK: coreSDK) == 10.5)
+
+            // Verify object was added to pool per RTO12h3b
+            #expect(realtimeObjects.testsOnly_objectsPool.entries[objectID]?.counterValue === returnedCounter)
+        }
+
+        // @spec RTO12f2a
+        @Test
+        func withNoEntriesArgumentCreatesWithZeroValue() async throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+
+            // Track published messages
+            var publishedMessages: [OutboundObjectMessage] = []
+            coreSDK.setPublishHandler { messages in
+                publishedMessages.append(contentsOf: messages)
+            }
+
+            // Call createCounter with no count
+            let result = try await realtimeObjects.createCounter(coreSDK: coreSDK)
+
+            // Verify ObjectMessage was published
+            #expect(publishedMessages.count == 1)
+            let publishedMessage = publishedMessages[0]
+
+            // Verify counter operation has zero count per RTO12f2a
+            let counterOperation = publishedMessage.operation?.counter
+            // swiftlint:disable:next empty_count
+            #expect(counterOperation?.count == 0)
+
+            // Verify LiveCounter has zero value
+            #expect(try result.value(coreSDK: coreSDK) == 0)
+        }
+
+        // @spec RTO12h2
+        @Test
+        func returnsExistingObjectIfAlreadyInPool() async throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+
+            // Track published messages and the generated objectId
+            var publishedMessages: [OutboundObjectMessage] = []
+            var maybeGeneratedObjectID: String?
+            var maybeExistingObject: AnyObject?
+
+            coreSDK.setPublishHandler { messages in
+                publishedMessages.append(contentsOf: messages)
+
+                // Extract the generated objectId from the published message
+                if let objectID = messages.first?.operation?.objectId {
+                    maybeGeneratedObjectID = objectID
+
+                    // Create an object with this exact ID in the pool
+                    // This simulates the object already existing when createMap tries to get it, before the publish operation completes (e.g. because it has been populated by receipt of an OBJECT)
+                    maybeExistingObject = realtimeObjects.testsOnly_createZeroValueLiveObject(forObjectID: objectID)?.counterValue
                 }
             }
 
-            // @spec RTO12f5
-            // @spec RTO12g
-            // @spec RTO12h3a
-            // @spec RTO12h3b
-            @Test
-            func publishesObjectMessageAndCreatesCounter() async throws {
-                let internalQueue = TestFactories.createInternalQueue()
-                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
-                let coreSDK = MockCoreSDK(channelState: .attached, serverTime: .init(timeIntervalSince1970: 1_754_042_434), internalQueue: internalQueue)
+            // Call createCounter - the publishHandler will create the object with the generated ID
+            let result = try await realtimeObjects.createCounter(count: 10.5, coreSDK: coreSDK)
 
-                // Track published messages
-                var publishedMessages: [OutboundObjectMessage] = []
-                coreSDK.setPublishHandler { messages in
-                    publishedMessages.append(contentsOf: messages)
-                }
+            // Verify ObjectMessage was published
+            #expect(publishedMessages.count == 1)
 
-                // Call createCounter
-                let returnedCounter = try await realtimeObjects.createCounter(count: 10.5, coreSDK: coreSDK)
+            // Extract the variables that we populated based on the generated object ID
+            let generatedObjectID = try #require(maybeGeneratedObjectID)
+            let existingObject = try #require(maybeExistingObject)
 
-                // Verify ObjectMessage was published (RTO12g)
-                #expect(publishedMessages.count == 1)
-                let publishedMessage = publishedMessages[0]
+            // Verify the returned object is the same as the existing one
+            #expect(result === existingObject)
 
-                // Sense check of ObjectMessage structure per RTO12f7-11
-                #expect(publishedMessage.operation?.action == .known(.counterCreate))
-                let objectID = try #require(publishedMessage.operation?.objectId)
-                #expect(objectID.hasPrefix("counter:"))
-                #expect(objectID.contains("1754042434000")) // check contains the server timestamp in milliseconds per RTO12f5
-                #expect(publishedMessage.operation?.counter?.count == 10.5)
-
-                // Verify initial value was merged per RTO12h3a
-                #expect(try returnedCounter.value(coreSDK: coreSDK) == 10.5)
-
-                // Verify object was added to pool per RTO12h3b
-                #expect(realtimeObjects.testsOnly_objectsPool.entries[objectID]?.counterValue === returnedCounter)
-            }
-
-            // @spec RTO12f2a
-            @Test
-            func withNoEntriesArgumentCreatesWithZeroValue() async throws {
-                let internalQueue = TestFactories.createInternalQueue()
-                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
-                let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
-
-                // Track published messages
-                var publishedMessages: [OutboundObjectMessage] = []
-                coreSDK.setPublishHandler { messages in
-                    publishedMessages.append(contentsOf: messages)
-                }
-
-                // Call createCounter with no count
-                let result = try await realtimeObjects.createCounter(coreSDK: coreSDK)
-
-                // Verify ObjectMessage was published
-                #expect(publishedMessages.count == 1)
-                let publishedMessage = publishedMessages[0]
-
-                // Verify counter operation has zero count per RTO12f2a
-                let counterOperation = publishedMessage.operation?.counter
-                // swiftlint:disable:next empty_count
-                #expect(counterOperation?.count == 0)
-
-                // Verify LiveCounter has zero value
-                #expect(try result.value(coreSDK: coreSDK) == 0)
-            }
-
-            // @spec RTO12h2
-            @Test
-            func returnsExistingObjectIfAlreadyInPool() async throws {
-                let internalQueue = TestFactories.createInternalQueue()
-                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
-                let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
-
-                // Track published messages and the generated objectId
-                var publishedMessages: [OutboundObjectMessage] = []
-                var maybeGeneratedObjectID: String?
-                var maybeExistingObject: AnyObject?
-
-                coreSDK.setPublishHandler { messages in
-                    publishedMessages.append(contentsOf: messages)
-
-                    // Extract the generated objectId from the published message
-                    if let objectID = messages.first?.operation?.objectId {
-                        maybeGeneratedObjectID = objectID
-
-                        // Create an object with this exact ID in the pool
-                        // This simulates the object already existing when createMap tries to get it, before the publish operation completes (e.g. because it has been populated by receipt of an OBJECT)
-                        maybeExistingObject = realtimeObjects.testsOnly_createZeroValueLiveObject(forObjectID: objectID)?.counterValue
-                    }
-                }
-
-                // Call createCounter - the publishHandler will create the object with the generated ID
-                let result = try await realtimeObjects.createCounter(count: 10.5, coreSDK: coreSDK)
-
-                // Verify ObjectMessage was published
-                #expect(publishedMessages.count == 1)
-
-                // Extract the variables that we populated based on the generated object ID
-                let generatedObjectID = try #require(maybeGeneratedObjectID)
-                let existingObject = try #require(maybeExistingObject)
-
-                // Verify the returned object is the same as the existing one
-                #expect(result === existingObject)
-
-                // Check that the existing object has not been replaced in the pool
-                #expect(realtimeObjects.testsOnly_objectsPool.entries[generatedObjectID]?.counterValue === existingObject)
-            }
+            // Check that the existing object has not been replaced in the pool
+            #expect(realtimeObjects.testsOnly_objectsPool.entries[generatedObjectID]?.counterValue === existingObject)
         }
     }
 }
