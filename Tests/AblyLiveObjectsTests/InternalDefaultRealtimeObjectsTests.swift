@@ -1444,4 +1444,173 @@ struct InternalDefaultRealtimeObjectsTests {
             #expect(realtimeObjects.testsOnly_objectsPool.entries[generatedObjectID]?.counterValue === existingObject)
         }
     }
+
+    struct SyncEventsTests {
+        enum ChannelEvent {
+            case attached(hasObjects: Bool)
+            case objectSync(channelSerial: String?)
+        }
+
+        struct Scenario {
+            /// A human-readable description of the test scenario.
+            var description: String
+
+            /// The channel events to be applied in sequence.
+            var channelEvents: [ChannelEvent]
+
+            /// The expected sync events that the RealtimeObjects should emit, in the order they are expected to be emitted.
+            var expectedSyncEvents: [ObjectsEvent]
+        }
+
+        @MainActor
+        @Test(
+            // TODO: This is based on the JS behaviour; update with spec points once specified in https://github.com/ably/ably-liveobjects-swift-plugin/issues/80
+            arguments: [
+                // 1. ATTACHED with HAS_OBJECTS false
+
+                .init(
+                    description: "The first ATTACHED should always provoke a SYNCING even when HAS_OBJECTS is false, so that the SYNCED is preceded by SYNCING",
+                    channelEvents: [.attached(hasObjects: false)],
+                    expectedSyncEvents: [.syncing, .synced],
+                ),
+
+                .init(
+                    description: "ATTACHED with HAS_OBJECTS false once SYNCED should not provoke further events",
+                    channelEvents: [.attached(hasObjects: false), .attached(hasObjects: false)],
+                    expectedSyncEvents: [.syncing, .synced],
+                ),
+
+                .init(
+                    description: "If we're in SYNCING awaiting an OBJECT_SYNC but then instead get an ATTACHED with HAS_OBJECTS false, we should emit a SYNCED",
+                    channelEvents: [.attached(hasObjects: true), .attached(hasObjects: false)],
+                    expectedSyncEvents: [.syncing, .synced],
+                ),
+
+                // 2. ATTACHED with HAS_OBJECTS true
+
+                .init(
+                    description: "An initial ATTACHED with HAS_OBJECTS true provokes a SYNCING",
+                    channelEvents: [.attached(hasObjects: true)],
+                    expectedSyncEvents: [.syncing],
+                ),
+
+                .init(
+                    description: "ATTACHED with HAS_OBJECTS true when SYNCED should provoke another SYNCING, because we're waiting to receive the updated objects in an OBJECT_SYNC",
+                    channelEvents: [.attached(hasObjects: false), .attached(hasObjects: true)],
+                    expectedSyncEvents: [.syncing, .synced, .syncing],
+                ),
+
+                .init(
+                    description: "If we're in SYNCING awaiting an OBJECT_SYNC but then instead get another ATTACHED with HAS_OBJECTS true, we should remain SYNCING (i.e. not emit another event)",
+                    channelEvents: [.attached(hasObjects: true), .attached(hasObjects: true)],
+                    expectedSyncEvents: [.syncing],
+                ),
+
+                // 3. OBJECT_SYNC straight after ATTACHED
+
+                .init(
+                    description: "A complete multi-message OBJECT_SYNC sequence after ATTACHED emits SYNCING and then SYNCED",
+                    channelEvents: [
+                        .attached(hasObjects: true),
+                        .objectSync(channelSerial: "foo:1"),
+                        .objectSync(channelSerial: "foo:2"),
+                        .objectSync(channelSerial: "foo:"),
+                    ],
+                    expectedSyncEvents: [.syncing, .synced],
+                ),
+                .init(
+                    description: "A complete single-message OBJECT_SYNC after ATTACHED emits SYNCING and then SYNCED",
+                    channelEvents: [
+                        .attached(hasObjects: true),
+                        .objectSync(channelSerial: "foo:"),
+                    ],
+                    expectedSyncEvents: [.syncing, .synced],
+                ),
+                .init(
+                    description: "SYNCED is not emitted midway through a multi-message OBJECT_SYNC sequence",
+                    channelEvents: [
+                        .attached(hasObjects: true),
+                        .objectSync(channelSerial: "foo:1"),
+                        .objectSync(channelSerial: "foo:2"),
+                    ],
+                    expectedSyncEvents: [.syncing],
+                ),
+
+                // 4. OBJECT_SYNC when already SYNCED
+
+                .init(
+                    description: "A complete multi-message OBJECT_SYNC sequence when already SYNCED emits SYNCING and then SYNCED",
+                    channelEvents: [
+                        .attached(hasObjects: false), // to get us to SYNCED
+                        .objectSync(channelSerial: "foo:1"),
+                        .objectSync(channelSerial: "foo:2"),
+                        .objectSync(channelSerial: "foo:"),
+                    ],
+                    expectedSyncEvents: [
+                        .syncing, .synced, // The initial SYNCED
+                        .syncing, .synced, // From the complete OBJECT_SYNC
+                    ],
+                ),
+                .init(
+                    description: "A complete single-message OBJECT_SYNC when already SYNCED emits SYNCING and then SYNCED",
+                    channelEvents: [
+                        .attached(hasObjects: false), // to get us to SYNCED
+                        .objectSync(channelSerial: "foo:"),
+                    ],
+                    expectedSyncEvents: [
+                        .syncing, .synced, // The initial SYNCED
+                        .syncing, .synced, // From the complete OBJECT_SYNC
+                    ],
+                ),
+
+                // 5. New sync sequence in the middle of a sync sequence
+
+                .init(
+                    description: "A new OBJECT_SYNC sequence in the middle of a sync sequence does not provoke another SYNCING",
+                    channelEvents: [
+                        .attached(hasObjects: true),
+                        .objectSync(channelSerial: "foo:1"),
+                        .objectSync(channelSerial: "foo:2"),
+                        .objectSync(channelSerial: "bar:1"),
+                    ],
+                    expectedSyncEvents: [.syncing],
+                ),
+            ] as [Scenario],
+        )
+        func emitsCorrectSyncEvents(scenario: Scenario) async throws {
+            // Given: An InternalDefaultRealtimeObjects
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+
+            var receivedSyncEvents: [ObjectsEvent] = []
+            for event in [ObjectsEvent.syncing, .synced] {
+                realtimeObjects.on(event: event) { _ in
+                    MainActor.assumeIsolated {
+                        receivedSyncEvents.append(event)
+                    }
+                }
+            }
+
+            // When: The sequence of channel events described by the scenario is received
+            internalQueue.ably_syncNoDeadlock {
+                for channelEvent in scenario.channelEvents {
+                    switch channelEvent {
+                    case let .attached(hasObjects):
+                        realtimeObjects.nosync_onChannelAttached(hasObjects: hasObjects)
+                    case let .objectSync(channelSerial):
+                        realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                            objectMessages: [],
+                            protocolMessageChannelSerial: channelSerial,
+                        )
+                    }
+                }
+            }
+
+            // Give event callbacks a chance to happen on the main queue
+            await Task { @MainActor in }.value
+
+            // Then: It emits the expected sequence of sync events
+            #expect(receivedSyncEvents == scenario.expectedSyncEvents)
+        }
+    }
 }
