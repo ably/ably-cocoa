@@ -578,11 +578,6 @@ art_dispatch_sync(_queue, ^{
         }
     }
 
-    if (!_realtime.connection.isActive_nosync) {
-        if (callback) callback([_realtime.connection error_nosync]);
-        return;
-    }
-
     if ([_channel exceedMaxSize:@[msg]]) {
         if (callback) {
             ARTErrorInfo *sizeError = [ARTErrorInfo createWithCode:ARTErrorMaxMessageLengthExceeded

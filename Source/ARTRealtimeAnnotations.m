@@ -141,13 +141,6 @@
                                                              type:outboundAnnotation.type
                                                            extras:outboundAnnotation.extras];
 art_dispatch_sync(_queue, ^{
-    if (!self.realtime.connection.isActive_nosync) { // RTAN1b
-        if (callback) {
-            callback(self.realtime.connection.error_nosync);
-        }
-        return;
-    }
-    
     NSError *error = nil;
     ARTAnnotation *annotationToPublish = _dataEncoder ? [annotation encodeDataWithEncoder:_dataEncoder error:&error] : annotation; // RSAN1c3
     if (error) {
@@ -174,28 +167,12 @@ art_dispatch_sync(_queue, ^{
     pm.action = ARTProtocolMessageAnnotation;
     pm.channel = _channel.name;
     pm.annotations = @[annotationToPublish];
-    
-    switch (_channel.state_nosync) { // RTAN1b
-        case ARTRealtimeChannelSuspended:
-        case ARTRealtimeChannelFailed: {
-            if (callback) {
-                callback([ARTErrorInfo createWithCode:ARTErrorChannelOperationFailedInvalidState message:[NSString stringWithFormat:@"channel operation failed (invalid channel state: %@)", ARTRealtimeChannelStateToStr(self->_channel.state_nosync)]]);
-            }
-            break;
-        }
-        case ARTRealtimeChannelInitialized:
-        case ARTRealtimeChannelDetaching:
-        case ARTRealtimeChannelDetached:
-        case ARTRealtimeChannelAttaching:
-        case ARTRealtimeChannelAttached: {
-            [self.realtime send:pm sentCallback:nil ackCallback:^(ARTStatus *status) {
-                if (callback) {
-                    callback(status.errorInfo);
-                }
-            }];
-            break;
-        }
-    }
+
+    // RTAN1b
+    [_channel publishProtocolMessage:pm callback:^void(ARTStatus *status) {
+        if (callback)
+            callback(status.errorInfo);
+    }];
 });
 }
 
