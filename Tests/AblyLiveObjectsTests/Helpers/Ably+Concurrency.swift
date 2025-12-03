@@ -48,3 +48,14 @@ extension ARTRestProtocol {
         }.get()
     }
 }
+
+extension ARTConnectionProtocol {
+    @discardableResult
+    func onceAsync(_ event: ARTRealtimeConnectionEvent) async -> ARTConnectionStateChange {
+        await withCheckedContinuation { continuation in
+            once(event) { stateChange in
+                continuation.resume(returning: stateChange)
+            }
+        }
+    }
+}

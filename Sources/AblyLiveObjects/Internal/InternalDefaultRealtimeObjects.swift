@@ -17,8 +17,6 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
 
     /// The RTO10a interval at which we will perform garbage collection.
     private let garbageCollectionInterval: TimeInterval
-    /// The RTO10b grace period for which we will retain tombstoned objects and map entries.
-    private nonisolated(unsafe) var garbageCollectionGracePeriod: TimeInterval
     // The task that runs the periodic garbage collection described in RTO10.
     private nonisolated(unsafe) var garbageCollectionTask: Task<Void, Never>!
 
@@ -29,10 +27,30 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
         /// The default value comes from the suggestion in RTO10a.
         internal var interval: TimeInterval = 5 * 60
 
-        /// The initial RTO10b grace period for which we will retain tombstoned objects and map entries. This value may later get overridden by the `gcGracePeriod` of a `CONNECTED` `ProtocolMessage` from Realtime.
+        /// The initial RTO10b grace period for which we will retain tombstoned objects and map entries. This value may later get overridden by the `objectsGCGracePeriod` of a `CONNECTED` `ProtocolMessage` from Realtime.
         ///
         /// This default value comes from RTO10b3; can be overridden for testing.
-        internal var gracePeriod: TimeInterval = 24 * 60 * 60
+        internal var gracePeriod: GracePeriod = .dynamic(Self.defaultGracePeriod)
+
+        /// The default value from RTO10b3.
+        internal static let defaultGracePeriod: TimeInterval = 24 * 60 * 60
+
+        internal enum GracePeriod: Encodable, Hashable {
+            /// The client will always use this grace period, and will not update the grace period from the `objectsGCGracePeriod` of a `CONNECTED` `ProtocolMessage`.
+            ///
+            /// - Important: This should only be used in tests.
+            case fixed(TimeInterval)
+
+            /// The client will use this grace period, which may be subsequently updated by the `objectsGCGracePeriod` of a `CONNECTED` `ProtocolMessage`.
+            case dynamic(TimeInterval)
+
+            internal var toTimeInterval: TimeInterval {
+                switch self {
+                case let .fixed(timeInterval), let .dynamic(timeInterval):
+                    timeInterval
+                }
+            }
+        }
     }
 
     internal var testsOnly_objectsPool: ObjectsPool {
@@ -111,10 +129,10 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
                     userCallbackQueue: userCallbackQueue,
                     clock: clock,
                 ),
+                garbageCollectionGracePeriod: garbageCollectionOptions.gracePeriod,
             ),
         )
         garbageCollectionInterval = garbageCollectionOptions.interval
-        garbageCollectionGracePeriod = garbageCollectionOptions.gracePeriod
 
         garbageCollectionTask = Task { [weak self, garbageCollectionInterval] in
             do {
@@ -354,7 +372,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
     internal func performGarbageCollection() {
         mutableStateMutex.withSync { mutableState in
             mutableState.objectsPool.nosync_performGarbageCollection(
-                gracePeriod: garbageCollectionGracePeriod,
+                gracePeriod: mutableState.garbageCollectionGracePeriod.toTimeInterval,
                 clock: clock,
                 logger: logger,
                 eventsContinuation: completedGarbageCollectionEventsWithoutBufferingContinuation,
@@ -368,6 +386,29 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
     /// Emits an element whenever a garbage collection cycle has completed.
     internal var testsOnly_completedGarbageCollectionEventsWithoutBuffering: AsyncStream<Void> {
         completedGarbageCollectionEventsWithoutBuffering
+    }
+
+    /// Sets the garbage collection grace period.
+    ///
+    /// Call this upon receiving a `CONNECTED` `ProtocolMessage`, per RTO10b2.
+    ///
+    /// - Note: If the `.fixed` grace period option was chosen on instantiation, this is a no-op.
+    internal func nosync_setGarbageCollectionGracePeriod(_ gracePeriod: TimeInterval) {
+        mutableStateMutex.withoutSync { mutableState in
+            switch mutableState.garbageCollectionGracePeriod {
+            case .fixed:
+                // no-op
+                break
+            case .dynamic:
+                mutableState.garbageCollectionGracePeriod = .dynamic(gracePeriod)
+            }
+        }
+    }
+
+    internal var testsOnly_gcGracePeriod: TimeInterval {
+        mutableStateMutex.withSync { mutableState in
+            mutableState.garbageCollectionGracePeriod.toTimeInterval
+        }
     }
 
     // MARK: - Testing
@@ -394,6 +435,9 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
         internal var syncStatus = SyncStatus()
         internal var onChannelAttachedHasObjects: Bool?
         internal var objectsEventSubscriptionStorage = SubscriptionStorage<ObjectsEvent, Void>()
+
+        /// The RTO10b grace period for which we will retain tombstoned objects and map entries.
+        internal var garbageCollectionGracePeriod: GarbageCollectionOptions.GracePeriod
 
         /// The state that drives the emission of the `syncing` and `synced` events.
         ///

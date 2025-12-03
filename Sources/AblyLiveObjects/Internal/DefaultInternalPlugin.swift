@@ -40,6 +40,16 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
         let callbackQueue = pluginAPI.callbackQueue(for: client)
         let options = ARTClientOptions.castPluginPublicClientOptions(pluginAPI.options(for: client))
 
+        let garbageCollectionOptions = options.garbageCollectionOptions ?? {
+            if let latestConnectionDetails = pluginAPI.nosync_latestConnectionDetails(for: client), let gracePeriod = latestConnectionDetails.objectsGCGracePeriod {
+                // If we already have connection details, then use its grace period per RTO10b2
+                .init(gracePeriod: .dynamic(gracePeriod.doubleValue))
+            } else {
+                // Use the default grace period
+                .init()
+            }
+        }()
+
         let logger = DefaultLogger(pluginLogger: pluginLogger, pluginAPI: pluginAPI)
         logger.log("LiveObjects.DefaultInternalPlugin received prepare(_:)", level: .debug)
         let liveObjects = InternalDefaultRealtimeObjects(
@@ -47,7 +57,7 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
             internalQueue: internalQueue,
             userCallbackQueue: callbackQueue,
             clock: DefaultSimpleClock(),
-            garbageCollectionOptions: options.garbageCollectionOptions ?? .init(),
+            garbageCollectionOptions: garbageCollectionOptions,
         )
         pluginAPI.nosync_setPluginDataValue(liveObjects, forKey: Self.pluginDataKey, channel: channel)
     }
@@ -131,6 +141,13 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
             objectMessages: objectMessages,
             protocolMessageChannelSerial: protocolMessageChannelSerial,
         )
+    }
+
+    internal func nosync_onConnected(withConnectionDetails connectionDetails: (any ConnectionDetailsProtocol)?, channel: any RealtimeChannel) {
+        let gracePeriod = connectionDetails?.objectsGCGracePeriod?.doubleValue ?? InternalDefaultRealtimeObjects.GarbageCollectionOptions.defaultGracePeriod
+
+        // RTO10b
+        nosync_realtimeObjects(for: channel).nosync_setGarbageCollectionGracePeriod(gracePeriod)
     }
 
     // MARK: - Sending `OBJECT` ProtocolMessage
