@@ -69,7 +69,7 @@ internal final class DefaultCoreSDK: CoreSDK {
             return
         }
 
-        // TODO: Implement the full spec of RTO15 (https://github.com/ably/ably-liveobjects-swift-plugin/issues/47)
+        // TODO: Implement message size checking (https://github.com/ably/ably-liveobjects-swift-plugin/issues/13)
         try await DefaultInternalPlugin.sendObject(
             objectMessages: objectMessages,
             channel: channel,
