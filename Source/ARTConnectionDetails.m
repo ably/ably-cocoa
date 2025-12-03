@@ -9,7 +9,8 @@
                   maxInboundRate:(NSInteger)maxInboundRate
               connectionStateTtl:(NSTimeInterval)connectionStateTtl
                         serverId:(NSString *)serverId
-                 maxIdleInterval:(NSTimeInterval)maxIdleInterval {
+                 maxIdleInterval:(NSTimeInterval)maxIdleInterval
+            objectsGCGracePeriod:(nullable NSNumber *)objectsGCGracePeriod {
     if (self = [super init]) {
         _clientId = clientId;
         _connectionKey = connectionKey;
@@ -19,6 +20,7 @@
         _connectionStateTtl = connectionStateTtl;
         _serverId = serverId;
         _maxIdleInterval = maxIdleInterval;
+        _objectsGCGracePeriod = objectsGCGracePeriod;
     }
     return self;
 }

@@ -952,6 +952,13 @@
     if (!input) {
         return nil;
     }
+
+    NSNumber *objectsGCGracePeriod = nil;
+    // RTO10b3 implies this may be absent
+    if ([input valueForKey:@"objectsGCGracePeriod"]) {
+        objectsGCGracePeriod = @(millisecondsToTimeInterval([input artInteger:@"objectsGCGracePeriod"]));
+    }
+
     return [[ARTConnectionDetails alloc] initWithClientId:[input artString:@"clientId"]
                                             connectionKey:[input artString:@"connectionKey"]
                                            maxMessageSize:[input artInteger:@"maxMessageSize"]
@@ -959,7 +966,8 @@
                                            maxInboundRate:[input artInteger:@"maxInboundRate"]
                                        connectionStateTtl:millisecondsToTimeInterval([input artInteger:@"connectionStateTtl"])
                                                  serverId:[input artString:@"serverId"]
-                                          maxIdleInterval:millisecondsToTimeInterval([input artInteger:@"maxIdleInterval"])];
+                                          maxIdleInterval:millisecondsToTimeInterval([input artInteger:@"maxIdleInterval"])
+                                     objectsGCGracePeriod:objectsGCGracePeriod];
 }
 
 - (ARTChannelMetrics *)channelMetricsFromDictionary:(NSDictionary *)input {

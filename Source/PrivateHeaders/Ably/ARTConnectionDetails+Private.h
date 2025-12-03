@@ -1,5 +1,14 @@
 #import "ARTConnectionDetails.h"
 
+#ifdef ABLY_SUPPORTS_PLUGINS
+@import _AblyPluginSupportPrivate;
+#endif
+
+#ifdef ABLY_SUPPORTS_PLUGINS
+@interface ARTConnectionDetails () <APConnectionDetailsProtocol>
+@end
+#endif
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTConnectionDetails ()

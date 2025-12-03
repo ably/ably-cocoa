@@ -53,6 +53,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic) dispatch_queue_t queue;
 
+/// The `connectionDetails` from the latest `CONNECTED` `ProtocolMessage` that we received (`nil` if it did not contain a `connectionDetails`).
+///
+/// Provides the implementation for `-[ARTPluginAPI nosync_latestConnectionDetailsForClient:]`. See documentation for that method in `APPluginAPIProtocol`.
+@property (nullable, readonly, nonatomic) ARTConnectionDetails *latestConnectionDetails;
+
 - (void)timeWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
                       completion:(ARTDateTimeCallback)callback;
 
