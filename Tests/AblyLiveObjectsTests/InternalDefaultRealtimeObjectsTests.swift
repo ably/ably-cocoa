@@ -1462,9 +1462,12 @@ struct InternalDefaultRealtimeObjectsTests {
             var expectedSyncEvents: [ObjectsEvent]
         }
 
+        // @spec RTO17b
+        // @spec RTO4c
+        // @spec RTO5e
+        // @spec RTO5c8
         @MainActor
         @Test(
-            // TODO: This is based on the JS behaviour; update with spec points once specified in https://github.com/ably/ably-liveobjects-swift-plugin/issues/80
             arguments: [
                 // 1. ATTACHED with HAS_OBJECTS false
 
