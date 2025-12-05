@@ -448,7 +448,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
 
         /// The state that drives the emission of the `syncing` and `synced` events and which stores the sync sequence data.
         ///
-        /// This manipulation of this value is based on https://github.com/ably/ably-js/blob/0c5baa9273ca87aec6ca594833d59c4c4d2dddbb/src/plugins/objects/objects.ts.
+        /// This manipulation of this value is based on https://github.com/ably/ably-js/blob/e280bff11a4a7627362c5185e764b7ebd0490570/src/plugins/objects/objects.ts.
         /// TODO: Bring in line with spec once it exists (https://github.com/ably/ably-liveobjects-swift-plugin/issues/80)
         internal var state = State.initialized
 
@@ -507,8 +507,8 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
 
             onChannelAttachedHasObjects = hasObjects
 
-            if (hasObjects && state.toObjectsSyncState != .syncing) || state.toObjectsSyncState == .initialized {
-                // We will subsequently transition to .synced either by the completion of the RTO4a OBJECT_SYNC, or by the RTO4b no-HAS_OBJECTS case below
+            // We will subsequently transition to .synced either by the completion of the RTO4a OBJECT_SYNC, or by the RTO4b no-HAS_OBJECTS case below
+            if state.toObjectsSyncState != .syncing {
                 transition(to: .syncing(.init(syncSequence: nil)), userCallbackQueue: userCallbackQueue)
             }
 
@@ -523,9 +523,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
             // I have, for now, not directly implemented the "perform the actions for object sync completion" of RTO4b4 since my implementation doesn't quite match the model given there; here you only have a SyncObjectsPool if you have an OBJECT_SYNC in progress, which you might not have upon receiving an ATTACHED. Instead I've just implemented what seem like the relevant side effects. Can revisit this if "the actions for object sync completion" get more complex.
 
             // RTO4b3, RTO4b4, RTO4b5, RTO5c3, RTO5c4, RTO5c5
-            if state.toObjectsSyncState != .synced {
-                transition(to: .synced, userCallbackQueue: userCallbackQueue)
-            }
+            transition(to: .synced, userCallbackQueue: userCallbackQueue)
         }
 
         /// Implements the `OBJECT_SYNC` handling of RTO5.
