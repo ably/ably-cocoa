@@ -62,9 +62,20 @@ NS_SWIFT_SENDABLE
 /// All `_AblyPluginSupportPrivate` methods whose names begin with `nosync_` must be called on this queue.
 - (dispatch_queue_t)internalQueueForClient:(id<APRealtimeClient>)client;
 
-/// Sends an `OBJECT` `ProtocolMessage` on a channel and indicates the result of waiting for an `ACK`. TODO there is still some deciding to be done about the exact contract of this method.
+/// Attempts to submit an `OBJECT` `ProtocolMessage` for best-effort delivery to Ably per RTO15.
+///
+/// This enables the channel message publishing behaviour described in RTL6c:
+///
+/// - If the channel's state is neither SUSPENDED nor FAILED then the message will be submitted to the connection for further checks per RTL6c1 and RTL6c2. Note that these checks may cause the connection to immediately reject the message per RTL6c4.
+/// - If the channel's state is SUSPENDED or FAILED then the callback will be called immediately with an error per RTL6c4.
+///
+/// If the message ends up being sent on the transport then the completion handler will be called to indicate the result of waiting for an `ACK` or `NACK`, or when the connection gives up on trying to send the message.
 ///
 /// The completion handler will be called on the client's internal queue (see `-internalQueueForClient:`).
+///
+/// This method will call ``APLiveObjectsPlugin/encodeObjectMessage:format:`` to encode the `ObjectMessage`s to be sent over the wire, per RTO15c.
+///
+/// - Note: This method does not currently implement the RTO15d message size checks; this will come in https://github.com/ably/ably-liveobjects-swift-plugin/issues/13.
 - (void)nosync_sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
                                     channel:(id<APRealtimeChannel>)channel
                                  completion:(void (^ _Nullable)(_Nullable id<APPublicErrorInfo> error))completion;
