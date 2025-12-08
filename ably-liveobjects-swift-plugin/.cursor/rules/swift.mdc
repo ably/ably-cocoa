@@ -1,0 +1,28 @@
+---
+description: Guidelines for writing Swift
+globs: 
+alwaysApply: false
+---
+When writing Swift:
+
+- Be sure to satisfy SwiftLint's `explicit_acl` rule ("All declarations should specify Access Control Level keywords explicitly).
+    - When writing an `extension` of a type, favour placing the access level on the declaration of the extension rather than each of its individual members.
+    - This does not apply when writing test code.
+- When writing initializer expressions, when the type that is being initialized can be inferred, favour using the implicit `.init(…)` form instead of explicitly writing the type name.
+- When writing enum value expressions, when the type that is being initialized can be inferred, favour using the implicit `.caseName` form instead of explicitly writing the type name.
+- When writing JSONValue or WireValue types, favour using the literal syntax enabled by their conformance to the `ExpressibleBy*Literal` protocols where possible.
+- When writing a JSON string, favour using Swift raw string literals instead of escaping double quotes.
+- When you need to import the following modules inside the AblyLiveObjects library code (that is, in non-test code), do so in the following way:
+    - Ably: use `import Ably`
+    - `_AblyPluginSupportPrivate`: use `internal import _AblyPluginSupportPrivate`
+- When writing an array literal that starts with an initializer expression, start the initializer expression on the line after the opening square bracket of the array literal. That is, instead of writing:
+  ```swift
+  objectMessages: [InboundObjectMessage(
+      id: nil,
+   ```
+   write:
+   ```swift
+   objectMessages: [
+       InboundObjectMessage(
+           id: nil,
+   ```

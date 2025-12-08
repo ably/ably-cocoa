@@ -1,0 +1,3 @@
+disabled_rules:
+  # See disabling of enumNamespaces in .swiftformat in this directory for motivation (Swift Testing suite types)
+  - convenience_type
