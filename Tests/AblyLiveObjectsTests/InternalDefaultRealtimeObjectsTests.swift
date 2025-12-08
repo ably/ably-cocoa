@@ -1475,9 +1475,12 @@ struct InternalDefaultRealtimeObjectsTests {
                 ),
 
                 .init(
-                    description: "ATTACHED with HAS_OBJECTS false once SYNCED should not provoke further events",
+                    description: "ATTACHED with HAS_OBJECTS false once SYNCED emits SYNCING and then SYNCED",
                     channelEvents: [.attached(hasObjects: false), .attached(hasObjects: false)],
-                    expectedSyncEvents: [.syncing, .synced],
+                    expectedSyncEvents: [
+                        .syncing, .synced, // The initial SYNCED
+                        .syncing, .synced, // From the subsequent ATTACHED
+                    ],
                 ),
 
                 .init(
