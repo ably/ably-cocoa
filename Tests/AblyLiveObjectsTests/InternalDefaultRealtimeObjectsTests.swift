@@ -1315,133 +1315,302 @@ struct InternalDefaultRealtimeObjectsTests {
             // Check that the existing object has not been replaced in the pool
             #expect(realtimeObjects.testsOnly_objectsPool.entries[generatedObjectID]?.mapValue === existingObject)
         }
+    }
 
-        /// Tests for `InternalDefaultRealtimeObjects.createCounter`, covering RTO12 specification points (these are largely a smoke test, the rest being tested in ObjectCreationHelpers tests)
-        struct CreateCounterTests {
-            // @spec RTO12d
-            @Test(arguments: [.detached, .failed, .suspended] as [_AblyPluginSupportPrivate.RealtimeChannelState])
-            func throwsIfChannelIsInInvalidState(channelState: _AblyPluginSupportPrivate.RealtimeChannelState) async throws {
-                let internalQueue = TestFactories.createInternalQueue()
-                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
-                let coreSDK = MockCoreSDK(channelState: channelState, internalQueue: internalQueue)
+    /// Tests for `InternalDefaultRealtimeObjects.createCounter`, covering RTO12 specification points (these are largely a smoke test, the rest being tested in ObjectCreationHelpers tests)
+    struct CreateCounterTests {
+        // @spec RTO12d
+        @Test(arguments: [.detached, .failed, .suspended] as [_AblyPluginSupportPrivate.RealtimeChannelState])
+        func throwsIfChannelIsInInvalidState(channelState: _AblyPluginSupportPrivate.RealtimeChannelState) async throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: channelState, internalQueue: internalQueue)
 
-                await #expect {
-                    _ = try await realtimeObjects.createCounter(count: 10.5, coreSDK: coreSDK)
-                } throws: { error in
-                    guard let errorInfo = error as? ARTErrorInfo else {
-                        return false
+            await #expect {
+                _ = try await realtimeObjects.createCounter(count: 10.5, coreSDK: coreSDK)
+            } throws: { error in
+                guard let errorInfo = error as? ARTErrorInfo else {
+                    return false
+                }
+                return errorInfo.code == 90001 && errorInfo.statusCode == 400
+            }
+        }
+
+        // @spec RTO12f5
+        // @spec RTO12g
+        // @spec RTO12h3a
+        // @spec RTO12h3b
+        @Test
+        func publishesObjectMessageAndCreatesCounter() async throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attached, serverTime: .init(timeIntervalSince1970: 1_754_042_434), internalQueue: internalQueue)
+
+            // Track published messages
+            var publishedMessages: [OutboundObjectMessage] = []
+            coreSDK.setPublishHandler { messages in
+                publishedMessages.append(contentsOf: messages)
+            }
+
+            // Call createCounter
+            let returnedCounter = try await realtimeObjects.createCounter(count: 10.5, coreSDK: coreSDK)
+
+            // Verify ObjectMessage was published (RTO12g)
+            #expect(publishedMessages.count == 1)
+            let publishedMessage = publishedMessages[0]
+
+            // Sense check of ObjectMessage structure per RTO12f7-11
+            #expect(publishedMessage.operation?.action == .known(.counterCreate))
+            let objectID = try #require(publishedMessage.operation?.objectId)
+            #expect(objectID.hasPrefix("counter:"))
+            #expect(objectID.contains("1754042434000")) // check contains the server timestamp in milliseconds per RTO12f5
+            #expect(publishedMessage.operation?.counter?.count == 10.5)
+
+            // Verify initial value was merged per RTO12h3a
+            #expect(try returnedCounter.value(coreSDK: coreSDK) == 10.5)
+
+            // Verify object was added to pool per RTO12h3b
+            #expect(realtimeObjects.testsOnly_objectsPool.entries[objectID]?.counterValue === returnedCounter)
+        }
+
+        // @spec RTO12f2a
+        @Test
+        func withNoEntriesArgumentCreatesWithZeroValue() async throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+
+            // Track published messages
+            var publishedMessages: [OutboundObjectMessage] = []
+            coreSDK.setPublishHandler { messages in
+                publishedMessages.append(contentsOf: messages)
+            }
+
+            // Call createCounter with no count
+            let result = try await realtimeObjects.createCounter(coreSDK: coreSDK)
+
+            // Verify ObjectMessage was published
+            #expect(publishedMessages.count == 1)
+            let publishedMessage = publishedMessages[0]
+
+            // Verify counter operation has zero count per RTO12f2a
+            let counterOperation = publishedMessage.operation?.counter
+            // swiftlint:disable:next empty_count
+            #expect(counterOperation?.count == 0)
+
+            // Verify LiveCounter has zero value
+            #expect(try result.value(coreSDK: coreSDK) == 0)
+        }
+
+        // @spec RTO12h2
+        @Test
+        func returnsExistingObjectIfAlreadyInPool() async throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+
+            // Track published messages and the generated objectId
+            var publishedMessages: [OutboundObjectMessage] = []
+            var maybeGeneratedObjectID: String?
+            var maybeExistingObject: AnyObject?
+
+            coreSDK.setPublishHandler { messages in
+                publishedMessages.append(contentsOf: messages)
+
+                // Extract the generated objectId from the published message
+                if let objectID = messages.first?.operation?.objectId {
+                    maybeGeneratedObjectID = objectID
+
+                    // Create an object with this exact ID in the pool
+                    // This simulates the object already existing when createMap tries to get it, before the publish operation completes (e.g. because it has been populated by receipt of an OBJECT)
+                    maybeExistingObject = realtimeObjects.testsOnly_createZeroValueLiveObject(forObjectID: objectID)?.counterValue
+                }
+            }
+
+            // Call createCounter - the publishHandler will create the object with the generated ID
+            let result = try await realtimeObjects.createCounter(count: 10.5, coreSDK: coreSDK)
+
+            // Verify ObjectMessage was published
+            #expect(publishedMessages.count == 1)
+
+            // Extract the variables that we populated based on the generated object ID
+            let generatedObjectID = try #require(maybeGeneratedObjectID)
+            let existingObject = try #require(maybeExistingObject)
+
+            // Verify the returned object is the same as the existing one
+            #expect(result === existingObject)
+
+            // Check that the existing object has not been replaced in the pool
+            #expect(realtimeObjects.testsOnly_objectsPool.entries[generatedObjectID]?.counterValue === existingObject)
+        }
+    }
+
+    struct SyncEventsTests {
+        enum ChannelEvent {
+            case attached(hasObjects: Bool)
+            case objectSync(channelSerial: String?)
+        }
+
+        struct Scenario {
+            /// A human-readable description of the test scenario.
+            var description: String
+
+            /// The channel events to be applied in sequence.
+            var channelEvents: [ChannelEvent]
+
+            /// The expected sync events that the RealtimeObjects should emit, in the order they are expected to be emitted.
+            var expectedSyncEvents: [ObjectsEvent]
+        }
+
+        @MainActor
+        @Test(
+            // TODO: This is based on the JS behaviour; update with spec points once specified in https://github.com/ably/ably-liveobjects-swift-plugin/issues/80
+            arguments: [
+                // 1. ATTACHED with HAS_OBJECTS false
+
+                .init(
+                    description: "The first ATTACHED should always provoke a SYNCING even when HAS_OBJECTS is false, so that the SYNCED is preceded by SYNCING",
+                    channelEvents: [.attached(hasObjects: false)],
+                    expectedSyncEvents: [.syncing, .synced],
+                ),
+
+                .init(
+                    description: "ATTACHED with HAS_OBJECTS false once SYNCED should not provoke further events",
+                    channelEvents: [.attached(hasObjects: false), .attached(hasObjects: false)],
+                    expectedSyncEvents: [.syncing, .synced],
+                ),
+
+                .init(
+                    description: "If we're in SYNCING awaiting an OBJECT_SYNC but then instead get an ATTACHED with HAS_OBJECTS false, we should emit a SYNCED",
+                    channelEvents: [.attached(hasObjects: true), .attached(hasObjects: false)],
+                    expectedSyncEvents: [.syncing, .synced],
+                ),
+
+                // 2. ATTACHED with HAS_OBJECTS true
+
+                .init(
+                    description: "An initial ATTACHED with HAS_OBJECTS true provokes a SYNCING",
+                    channelEvents: [.attached(hasObjects: true)],
+                    expectedSyncEvents: [.syncing],
+                ),
+
+                .init(
+                    description: "ATTACHED with HAS_OBJECTS true when SYNCED should provoke another SYNCING, because we're waiting to receive the updated objects in an OBJECT_SYNC",
+                    channelEvents: [.attached(hasObjects: false), .attached(hasObjects: true)],
+                    expectedSyncEvents: [.syncing, .synced, .syncing],
+                ),
+
+                .init(
+                    description: "If we're in SYNCING awaiting an OBJECT_SYNC but then instead get another ATTACHED with HAS_OBJECTS true, we should remain SYNCING (i.e. not emit another event)",
+                    channelEvents: [.attached(hasObjects: true), .attached(hasObjects: true)],
+                    expectedSyncEvents: [.syncing],
+                ),
+
+                // 3. OBJECT_SYNC straight after ATTACHED
+
+                .init(
+                    description: "A complete multi-message OBJECT_SYNC sequence after ATTACHED emits SYNCING and then SYNCED",
+                    channelEvents: [
+                        .attached(hasObjects: true),
+                        .objectSync(channelSerial: "foo:1"),
+                        .objectSync(channelSerial: "foo:2"),
+                        .objectSync(channelSerial: "foo:"),
+                    ],
+                    expectedSyncEvents: [.syncing, .synced],
+                ),
+                .init(
+                    description: "A complete single-message OBJECT_SYNC after ATTACHED emits SYNCING and then SYNCED",
+                    channelEvents: [
+                        .attached(hasObjects: true),
+                        .objectSync(channelSerial: "foo:"),
+                    ],
+                    expectedSyncEvents: [.syncing, .synced],
+                ),
+                .init(
+                    description: "SYNCED is not emitted midway through a multi-message OBJECT_SYNC sequence",
+                    channelEvents: [
+                        .attached(hasObjects: true),
+                        .objectSync(channelSerial: "foo:1"),
+                        .objectSync(channelSerial: "foo:2"),
+                    ],
+                    expectedSyncEvents: [.syncing],
+                ),
+
+                // 4. OBJECT_SYNC when already SYNCED
+
+                .init(
+                    description: "A complete multi-message OBJECT_SYNC sequence when already SYNCED emits SYNCING and then SYNCED",
+                    channelEvents: [
+                        .attached(hasObjects: false), // to get us to SYNCED
+                        .objectSync(channelSerial: "foo:1"),
+                        .objectSync(channelSerial: "foo:2"),
+                        .objectSync(channelSerial: "foo:"),
+                    ],
+                    expectedSyncEvents: [
+                        .syncing, .synced, // The initial SYNCED
+                        .syncing, .synced, // From the complete OBJECT_SYNC
+                    ],
+                ),
+                .init(
+                    description: "A complete single-message OBJECT_SYNC when already SYNCED emits SYNCING and then SYNCED",
+                    channelEvents: [
+                        .attached(hasObjects: false), // to get us to SYNCED
+                        .objectSync(channelSerial: "foo:"),
+                    ],
+                    expectedSyncEvents: [
+                        .syncing, .synced, // The initial SYNCED
+                        .syncing, .synced, // From the complete OBJECT_SYNC
+                    ],
+                ),
+
+                // 5. New sync sequence in the middle of a sync sequence
+
+                .init(
+                    description: "A new OBJECT_SYNC sequence in the middle of a sync sequence does not provoke another SYNCING",
+                    channelEvents: [
+                        .attached(hasObjects: true),
+                        .objectSync(channelSerial: "foo:1"),
+                        .objectSync(channelSerial: "foo:2"),
+                        .objectSync(channelSerial: "bar:1"),
+                    ],
+                    expectedSyncEvents: [.syncing],
+                ),
+            ] as [Scenario],
+        )
+        func emitsCorrectSyncEvents(scenario: Scenario) async throws {
+            // Given: An InternalDefaultRealtimeObjects
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+
+            var receivedSyncEvents: [ObjectsEvent] = []
+            for event in [ObjectsEvent.syncing, .synced] {
+                realtimeObjects.on(event: event) { _ in
+                    MainActor.assumeIsolated {
+                        receivedSyncEvents.append(event)
                     }
-                    return errorInfo.code == 90001 && errorInfo.statusCode == 400
                 }
             }
 
-            // @spec RTO12f5
-            // @spec RTO12g
-            // @spec RTO12h3a
-            // @spec RTO12h3b
-            @Test
-            func publishesObjectMessageAndCreatesCounter() async throws {
-                let internalQueue = TestFactories.createInternalQueue()
-                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
-                let coreSDK = MockCoreSDK(channelState: .attached, serverTime: .init(timeIntervalSince1970: 1_754_042_434), internalQueue: internalQueue)
-
-                // Track published messages
-                var publishedMessages: [OutboundObjectMessage] = []
-                coreSDK.setPublishHandler { messages in
-                    publishedMessages.append(contentsOf: messages)
-                }
-
-                // Call createCounter
-                let returnedCounter = try await realtimeObjects.createCounter(count: 10.5, coreSDK: coreSDK)
-
-                // Verify ObjectMessage was published (RTO12g)
-                #expect(publishedMessages.count == 1)
-                let publishedMessage = publishedMessages[0]
-
-                // Sense check of ObjectMessage structure per RTO12f7-11
-                #expect(publishedMessage.operation?.action == .known(.counterCreate))
-                let objectID = try #require(publishedMessage.operation?.objectId)
-                #expect(objectID.hasPrefix("counter:"))
-                #expect(objectID.contains("1754042434000")) // check contains the server timestamp in milliseconds per RTO12f5
-                #expect(publishedMessage.operation?.counter?.count == 10.5)
-
-                // Verify initial value was merged per RTO12h3a
-                #expect(try returnedCounter.value(coreSDK: coreSDK) == 10.5)
-
-                // Verify object was added to pool per RTO12h3b
-                #expect(realtimeObjects.testsOnly_objectsPool.entries[objectID]?.counterValue === returnedCounter)
-            }
-
-            // @spec RTO12f2a
-            @Test
-            func withNoEntriesArgumentCreatesWithZeroValue() async throws {
-                let internalQueue = TestFactories.createInternalQueue()
-                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
-                let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
-
-                // Track published messages
-                var publishedMessages: [OutboundObjectMessage] = []
-                coreSDK.setPublishHandler { messages in
-                    publishedMessages.append(contentsOf: messages)
-                }
-
-                // Call createCounter with no count
-                let result = try await realtimeObjects.createCounter(coreSDK: coreSDK)
-
-                // Verify ObjectMessage was published
-                #expect(publishedMessages.count == 1)
-                let publishedMessage = publishedMessages[0]
-
-                // Verify counter operation has zero count per RTO12f2a
-                let counterOperation = publishedMessage.operation?.counter
-                // swiftlint:disable:next empty_count
-                #expect(counterOperation?.count == 0)
-
-                // Verify LiveCounter has zero value
-                #expect(try result.value(coreSDK: coreSDK) == 0)
-            }
-
-            // @spec RTO12h2
-            @Test
-            func returnsExistingObjectIfAlreadyInPool() async throws {
-                let internalQueue = TestFactories.createInternalQueue()
-                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
-                let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
-
-                // Track published messages and the generated objectId
-                var publishedMessages: [OutboundObjectMessage] = []
-                var maybeGeneratedObjectID: String?
-                var maybeExistingObject: AnyObject?
-
-                coreSDK.setPublishHandler { messages in
-                    publishedMessages.append(contentsOf: messages)
-
-                    // Extract the generated objectId from the published message
-                    if let objectID = messages.first?.operation?.objectId {
-                        maybeGeneratedObjectID = objectID
-
-                        // Create an object with this exact ID in the pool
-                        // This simulates the object already existing when createMap tries to get it, before the publish operation completes (e.g. because it has been populated by receipt of an OBJECT)
-                        maybeExistingObject = realtimeObjects.testsOnly_createZeroValueLiveObject(forObjectID: objectID)?.counterValue
+            // When: The sequence of channel events described by the scenario is received
+            internalQueue.ably_syncNoDeadlock {
+                for channelEvent in scenario.channelEvents {
+                    switch channelEvent {
+                    case let .attached(hasObjects):
+                        realtimeObjects.nosync_onChannelAttached(hasObjects: hasObjects)
+                    case let .objectSync(channelSerial):
+                        realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                            objectMessages: [],
+                            protocolMessageChannelSerial: channelSerial,
+                        )
                     }
                 }
-
-                // Call createCounter - the publishHandler will create the object with the generated ID
-                let result = try await realtimeObjects.createCounter(count: 10.5, coreSDK: coreSDK)
-
-                // Verify ObjectMessage was published
-                #expect(publishedMessages.count == 1)
-
-                // Extract the variables that we populated based on the generated object ID
-                let generatedObjectID = try #require(maybeGeneratedObjectID)
-                let existingObject = try #require(maybeExistingObject)
-
-                // Verify the returned object is the same as the existing one
-                #expect(result === existingObject)
-
-                // Check that the existing object has not been replaced in the pool
-                #expect(realtimeObjects.testsOnly_objectsPool.entries[generatedObjectID]?.counterValue === existingObject)
             }
+
+            // Give event callbacks a chance to happen on the main queue
+            await Task { @MainActor in }.value
+
+            // Then: It emits the expected sequence of sync events
+            #expect(receivedSyncEvents == scenario.expectedSyncEvents)
         }
     }
 }

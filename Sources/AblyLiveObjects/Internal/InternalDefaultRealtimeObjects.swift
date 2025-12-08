@@ -489,8 +489,10 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
 
             onChannelAttachedHasObjects = hasObjects
 
-            // We will subsequently transition to .synced either by the completion of the RTO4a OBJECT_SYNC, or by the RTO4b no-HAS_OBJECTS case below
-            transition(to: .syncing, userCallbackQueue: userCallbackQueue)
+            if hasObjects || state == .initialized {
+                // We will subsequently transition to .synced either by the completion of the RTO4a OBJECT_SYNC, or by the RTO4b no-HAS_OBJECTS case below
+                transition(to: .syncing, userCallbackQueue: userCallbackQueue)
+            }
 
             // We only care about the case where HAS_OBJECTS is not set (RTO4b); if it is set then we're going to shortly receive an OBJECT_SYNC instead (RTO4a)
             guard !hasObjects else {
@@ -521,6 +523,8 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
             logger.log("handleObjectSyncProtocolMessage(objectMessages: \(LoggingUtilities.formatObjectMessagesForLogging(objectMessages)), protocolMessageChannelSerial: \(String(describing: protocolMessageChannelSerial)))", level: .debug)
 
             receivedObjectSyncProtocolMessagesContinuation.yield(objectMessages)
+
+            transition(to: .syncing, userCallbackQueue: userCallbackQueue)
 
             // If populated, this contains a full set of sync data for the channel, and should be applied to the ObjectsPool.
             let completedSyncObjectsPool: [SyncObjectsPoolEntry]?
