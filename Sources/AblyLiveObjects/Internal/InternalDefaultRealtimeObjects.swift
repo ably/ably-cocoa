@@ -62,7 +62,11 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
     /// If this returns false, it means that there is currently no stored sync sequence ID, SyncObjectsPool, or BufferedObjectOperations.
     internal var testsOnly_hasSyncSequence: Bool {
         mutableStateMutex.withSync { mutableState in
-            mutableState.syncSequence != nil
+            if case let .syncing(syncingData) = mutableState.state, syncingData.syncSequence != nil {
+                true
+            } else {
+                false
+            }
         }
     }
 
@@ -84,26 +88,6 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
 
         /// `OBJECT` ProtocolMessages that were received during this sync sequence, to be applied once the sync sequence is complete, per RTO7a.
         internal var bufferedObjectOperations: [InboundObjectMessage]
-    }
-
-    /// Tracks whether an object sync sequence has happened yet. This allows us to wait for a sync before returning from `getRoot()`, per RTO1c.
-    private struct SyncStatus {
-        private(set) var isSyncComplete = false
-        private let syncCompletionEvents: AsyncStream<Void>
-        private let syncCompletionContinuation: AsyncStream<Void>.Continuation
-
-        internal init() {
-            (syncCompletionEvents, syncCompletionContinuation) = AsyncStream.makeStream()
-        }
-
-        internal mutating func signalSyncComplete() {
-            isSyncComplete = true
-            syncCompletionContinuation.yield()
-        }
-
-        internal func waitForSyncCompletion() async {
-            await syncCompletionEvents.first { _ in true }
-        }
     }
 
     internal init(
@@ -168,18 +152,23 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
     // MARK: - Internal methods that power RealtimeObjects conformance
 
     internal func getRoot(coreSDK: CoreSDK) async throws(ARTErrorInfo) -> InternalDefaultLiveMap {
-        let syncStatus = try mutableStateMutex.withSync { mutableState throws(ARTErrorInfo) in
+        let state = try mutableStateMutex.withSync { mutableState throws(ARTErrorInfo) in
             // RTO1b: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
             try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed], operationDescription: "getRoot")
 
-            return mutableState.syncStatus
+            return mutableState.state
         }
 
-        if !syncStatus.isSyncComplete {
+        if state.toObjectsSyncState != .synced {
             // RTO1c
             waitingForSyncEventsContinuation.yield()
             logger.log("getRoot started waiting for sync sequence to complete", level: .debug)
-            await syncStatus.waitForSyncCompletion()
+            await withCheckedContinuation { continuation in
+                onInternal(event: .synced) { subscription in
+                    subscription.off()
+                    continuation.resume()
+                }
+            }
             logger.log("getRoot completed waiting for sync sequence to complete", level: .debug)
         }
 
@@ -272,6 +261,24 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
         mutableStateMutex.withSync { mutableState in
             // swiftlint:disable:next trailing_closure
             mutableState.on(event: event, callback: callback, updateSelfLater: { [weak self] action in
+                guard let self else {
+                    return
+                }
+
+                mutableStateMutex.withSync { mutableState in
+                    action(&mutableState)
+                }
+            })
+        }
+    }
+
+    /// Adds a subscriber to the ``internalObjectsEventSubscriptionStorage`` (i.e. unaffected by `offAll()`).
+    @discardableResult
+    internal func onInternal(event: ObjectsEvent, callback: @escaping ObjectsEventCallback) -> any OnObjectsEventResponse {
+        // TODO: Looking at this again later the whole process for adding a subscriber is really verbose and boilerplate-y, and I think the unfortunate result of me trying to be clever at some point; revisit in https://github.com/ably/ably-liveobjects-swift-plugin/issues/102
+        mutableStateMutex.withSync { mutableState in
+            // swiftlint:disable:next trailing_closure
+            mutableState.onInternal(event: event, callback: callback, updateSelfLater: { [weak self] action in
                 guard let self else {
                     return
                 }
@@ -430,34 +437,45 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
 
     private struct MutableState {
         internal var objectsPool: ObjectsPool
-        /// Note that we only ever populate this during a multi-`ProtocolMessage` sync sequence. It is not used in the RTO4b or RTO5a5 cases where the sync data is entirely contained within a single ProtocolMessage, because an individual ProtocolMessage is processed atomically and so no other operations that might wish to query this property can occur concurrently with the handling of these cases.
-        internal var syncSequence: SyncSequence?
-        internal var syncStatus = SyncStatus()
         internal var onChannelAttachedHasObjects: Bool?
         internal var objectsEventSubscriptionStorage = SubscriptionStorage<ObjectsEvent, Void>()
+
+        /// Used when the object wishes to subscribe to its own events (i.e. unaffected by `offAll()`); used e.g. to wait for a sync before returning from `getRoot()`, per RTO1c.
+        internal var internalObjectsEventSubscriptionStorage = SubscriptionStorage<ObjectsEvent, Void>()
 
         /// The RTO10b grace period for which we will retain tombstoned objects and map entries.
         internal var garbageCollectionGracePeriod: GarbageCollectionOptions.GracePeriod
 
-        /// The state that drives the emission of the `syncing` and `synced` events.
+        /// The state that drives the emission of the `syncing` and `synced` events and which stores the sync sequence data.
         ///
         /// This manipulation of this value is based on https://github.com/ably/ably-js/blob/0c5baa9273ca87aec6ca594833d59c4c4d2dddbb/src/plugins/objects/objects.ts.
-        /// TODO: Bring in line with spec once it exists (https://github.com/ably/ably-liveobjects-swift-plugin/issues/80) and reconcile it with the existing state that we have
+        /// TODO: Bring in line with spec once it exists (https://github.com/ably/ably-liveobjects-swift-plugin/issues/80)
         internal var state = State.initialized
 
-        /// The state that drives the emission of the `syncing` and `synced` events.
-        ///
-        /// This type is copied from https://github.com/ably/ably-js/blob/0c5baa9273ca87aec6ca594833d59c4c4d2dddbb/src/plugins/objects/objects.ts.
-        /// TODO: Bring in line with spec once it exists (https://github.com/ably/ably-liveobjects-swift-plugin/issues/80)
+        /// Has the same cases as `ObjectsSyncState` but with associated data to store the sync sequence data and represent the constraint that you only have a sync sequence if you're SYNCING.
         internal enum State {
             case initialized
-            case syncing
+            case syncing(AssociatedData.Syncing)
             case synced
 
-            var toEvent: ObjectsEvent? {
+            /// Note: We follow the same pattern as used in the WIP ably-swift: a state's associated data is a class instance and the convention is that to update the associated data for the current state you mutate the existing instance instead of creating a new one.
+            enum AssociatedData {
+                class Syncing {
+                    /// Note that we only ever populate this during a multi-`ProtocolMessage` sync sequence. It is not used in the RTO4b or RTO5a5 cases where the sync data is entirely contained within a single ProtocolMessage, because an individual ProtocolMessage is processed atomically and so no other operations that might wish to query this property can occur concurrently with the handling of these cases.
+                    ///
+                    /// It is optional because there are times that we transition to SYNCING even when the sync data is contained in a single ProtocolMessage (this behaviour is copied from JS and will be specified in https://github.com/ably/ably-liveobjects-swift-plugin/issues/80).
+                    var syncSequence: SyncSequence?
+
+                    init(syncSequence: SyncSequence?) {
+                        self.syncSequence = syncSequence
+                    }
+                }
+            }
+
+            var toObjectsSyncState: ObjectsSyncState {
                 switch self {
                 case .initialized:
-                    nil
+                    .initialized
                 case .syncing:
                     .syncing
                 case .synced:
@@ -470,11 +488,11 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
             to newState: State,
             userCallbackQueue: DispatchQueue,
         ) {
-            guard newState != state else {
-                return
+            guard newState.toObjectsSyncState != state.toObjectsSyncState else {
+                preconditionFailure("Cannot transition to the current state")
             }
             state = newState
-            guard let event = newState.toEvent else {
+            guard let event = newState.toObjectsSyncState.toEvent else {
                 return
             }
             emitObjectsEvent(event, on: userCallbackQueue)
@@ -489,9 +507,9 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
 
             onChannelAttachedHasObjects = hasObjects
 
-            if hasObjects || state == .initialized {
+            if (hasObjects && state.toObjectsSyncState != .syncing) || state.toObjectsSyncState == .initialized {
                 // We will subsequently transition to .synced either by the completion of the RTO4a OBJECT_SYNC, or by the RTO4b no-HAS_OBJECTS case below
-                transition(to: .syncing, userCallbackQueue: userCallbackQueue)
+                transition(to: .syncing(.init(syncSequence: nil)), userCallbackQueue: userCallbackQueue)
             }
 
             // We only care about the case where HAS_OBJECTS is not set (RTO4b); if it is set then we're going to shortly receive an OBJECT_SYNC instead (RTO4a)
@@ -505,9 +523,9 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
             // I have, for now, not directly implemented the "perform the actions for object sync completion" of RTO4b4 since my implementation doesn't quite match the model given there; here you only have a SyncObjectsPool if you have an OBJECT_SYNC in progress, which you might not have upon receiving an ATTACHED. Instead I've just implemented what seem like the relevant side effects. Can revisit this if "the actions for object sync completion" get more complex.
 
             // RTO4b3, RTO4b4, RTO4b5, RTO5c3, RTO5c4, RTO5c5
-            syncSequence = nil
-            syncStatus.signalSyncComplete()
-            transition(to: .synced, userCallbackQueue: userCallbackQueue)
+            if state.toObjectsSyncState != .synced {
+                transition(to: .synced, userCallbackQueue: userCallbackQueue)
+            }
         }
 
         /// Implements the `OBJECT_SYNC` handling of RTO5.
@@ -524,12 +542,12 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
 
             receivedObjectSyncProtocolMessagesContinuation.yield(objectMessages)
 
-            transition(to: .syncing, userCallbackQueue: userCallbackQueue)
-
             // If populated, this contains a full set of sync data for the channel, and should be applied to the ObjectsPool.
             let completedSyncObjectsPool: [SyncObjectsPoolEntry]?
             // If populated, this contains a set of buffered inbound OBJECT messages that should be applied.
             let completedSyncBufferedObjectOperations: [InboundObjectMessage]?
+            // The SyncSequence, if any, to store in the SYNCING state that results from this OBJECT_SYNC.
+            let syncSequenceForSyncingState: SyncSequence?
 
             if let protocolMessageChannelSerial {
                 let syncCursor: SyncCursor
@@ -542,7 +560,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
                 }
 
                 // Figure out whether to continue any existing sync sequence or start a new one
-                var updatedSyncSequence: SyncSequence = if let syncSequence {
+                var updatedSyncSequence: SyncSequence = if case let .syncing(syncingData) = state, let syncSequence = syncingData.syncSequence {
                     if syncCursor.sequenceID == syncSequence.id {
                         // RTO5a3: Continue existing sync sequence
                         syncSequence
@@ -564,13 +582,13 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
                     }
                 })
 
-                syncSequence = updatedSyncSequence
-
                 (completedSyncObjectsPool, completedSyncBufferedObjectOperations) = if syncCursor.isEndOfSequence {
                     (updatedSyncSequence.syncObjectsPool, updatedSyncSequence.bufferedObjectOperations)
                 } else {
                     (nil, nil)
                 }
+
+                syncSequenceForSyncingState = updatedSyncSequence
             } else {
                 // RTO5a5: The sync data is contained entirely within this single OBJECT_SYNC
                 completedSyncObjectsPool = objectMessages.compactMap { objectMessage in
@@ -581,6 +599,13 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
                     }
                 }
                 completedSyncBufferedObjectOperations = nil
+                syncSequenceForSyncingState = nil
+            }
+
+            if case let .syncing(syncingData) = state {
+                syncingData.syncSequence = syncSequenceForSyncingState
+            } else {
+                transition(to: .syncing(.init(syncSequence: syncSequenceForSyncingState)), userCallbackQueue: userCallbackQueue)
             }
 
             if let completedSyncObjectsPool {
@@ -608,9 +633,6 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
                 }
 
                 // RTO5c3, RTO5c4, RTO5c5
-                syncSequence = nil
-
-                syncStatus.signalSyncComplete()
                 transition(to: .synced, userCallbackQueue: userCallbackQueue)
             }
         }
@@ -628,12 +650,12 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
 
             logger.log("handleObjectProtocolMessage(objectMessages: \(LoggingUtilities.formatObjectMessagesForLogging(objectMessages)))", level: .debug)
 
-            if let existingSyncSequence = syncSequence {
+            if case let .syncing(syncingData) = state, let existingSyncSequence = syncingData.syncSequence {
                 // RTO8a: Buffer the OBJECT message, to be handled once the sync completes
                 logger.log("Buffering OBJECT message due to in-progress sync", level: .debug)
                 var newSyncSequence = existingSyncSequence
                 newSyncSequence.bufferedObjectOperations.append(contentsOf: objectMessages)
-                syncSequence = newSyncSequence
+                syncingData.syncSequence = newSyncSequence
             } else {
                 // RTO8b: Handle the OBJECT message immediately
                 for objectMessage in objectMessages {
@@ -723,6 +745,28 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
             return ObjectsEventResponse(subscription: subscription)
         }
 
+        /// Adds a subscriber to the ``internalObjectsEventSubscriptionStorage`` (i.e. unaffected by `offAll()`).
+        @discardableResult
+        internal mutating func onInternal(event: ObjectsEvent, callback: @escaping ObjectsEventCallback, updateSelfLater: @escaping UpdateMutableState) -> any OnObjectsEventResponse {
+            // TODO: Looking at this again later the whole process for adding a subscriber is really verbose and boilerplate-y, and I think the unfortunate result of me trying to be clever at some point; revisit in https://github.com/ably/ably-liveobjects-swift-plugin/issues/102
+            let updateSubscriptionStorage: SubscriptionStorage<ObjectsEvent, Void>.UpdateSubscriptionStorage = { action in
+                updateSelfLater { mutableState in
+                    action(&mutableState.internalObjectsEventSubscriptionStorage)
+                }
+            }
+
+            let subscription = internalObjectsEventSubscriptionStorage.subscribe(
+                listener: { _, subscriptionInCallback in
+                    let response = ObjectsEventResponse(subscription: subscriptionInCallback)
+                    callback(response)
+                },
+                eventName: event,
+                updateSelfLater: updateSubscriptionStorage,
+            )
+
+            return ObjectsEventResponse(subscription: subscription)
+        }
+
         private struct ObjectsEventResponse: OnObjectsEventResponse {
             let subscription: any SubscribeResponse
 
@@ -737,6 +781,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
 
         internal func emitObjectsEvent(_ event: ObjectsEvent, on queue: DispatchQueue) {
             objectsEventSubscriptionStorage.emit(eventName: event, on: queue)
+            internalObjectsEventSubscriptionStorage.emit(eventName: event, on: queue)
         }
     }
 }
