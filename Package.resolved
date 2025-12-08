@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/ably/ably-cocoa-plugin-support",
         "state": {
           "branch": null,
-          "revision": "9699dfefd26134a808f116d28428c230907faf27",
-          "version": null
+          "revision": "e19acc30f283d6c8fe41ea03323ad7bbc0386a79",
+          "version": "0.3.0"
         }
       },
       {

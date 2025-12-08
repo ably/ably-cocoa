@@ -21,7 +21,7 @@ let package = Package(
         .package(name: "Nimble", url: "https://github.com/quick/nimble", from: "11.2.2"),
         // Be sure to use `exact` here and not `from`; SPM does not have any special handling of 0.x versions and will resolve 'from: "0.2.0"' to anything less than 1.0.0. (BTW, our version of SPM manifest doesn't seem to have `exact`; this closed range equivalent is what Claude says I should use.)
         // TODO: Unpin before next release
-        .package(name: "ably-cocoa-plugin-support", url: "https://github.com/ably/ably-cocoa-plugin-support", .revision("9699dfefd26134a808f116d28428c230907faf27"))
+        .package(name: "ably-cocoa-plugin-support", url: "https://github.com/ably/ably-cocoa-plugin-support", "0.3.0"..."0.3.0"),
     ],
     targets: [
         .target(
