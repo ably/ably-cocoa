@@ -1,5 +1,14 @@
 # Change Log
 
+## [1.2.54](https://github.com/ably/ably-cocoa/tree/1.2.54)
+
+## What's Changed
+
+- Documents that the `ARTMessage.action` property is ignored for user-supplied messages.
+- Adds support for version 0.3.0 of the [LiveObjects plugin](https://github.com/ably/ably-liveobjects-swift-plugin) and removes support for earlier versions of the plugin.
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.53...1.2.54
+
 ## [1.2.53](https://github.com/ably/ably-cocoa/tree/1.2.53)
 
 ## What's Changed

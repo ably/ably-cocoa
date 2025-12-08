@@ -6,7 +6,7 @@ bundle exec jazzy \
   --objc \
   --clean \
   --author Ably \
-  --module-version 1.2.53 \
+  --module-version 1.2.54 \
   --umbrella-header Source/include/Ably/AblyPublic.h \
   --framework-root Source \
   --module Ably \
