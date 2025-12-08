@@ -5,6 +5,7 @@ import Foundation
 // This file contains the ObjectMessage types that we use within the codebase. We convert them to and from the corresponding wire types (e.g. `InboundWireObjectMessage`) for sending and receiving over the wire.
 
 /// An `ObjectMessage` received in the `state` property of an `OBJECT` or `OBJECT_SYNC` `ProtocolMessage`.
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal struct InboundObjectMessage {
     internal var id: String? // OM2a
     internal var clientId: String? // OM2b
@@ -19,6 +20,7 @@ internal struct InboundObjectMessage {
 }
 
 /// An `ObjectMessage` to be sent in the `state` property of an `OBJECT` `ProtocolMessage`.
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal struct OutboundObjectMessage: Equatable {
     internal var id: String? // OM2a
     internal var clientId: String? // OM2b
@@ -35,6 +37,7 @@ internal struct OutboundObjectMessage: Equatable {
 /// A partial version of `ObjectOperation` that excludes the `action` and `objectId` property. Used for encoding initial values which don't include the `action` and where the `objectId` is not yet known.
 ///
 /// `ObjectOperation` delegates its encoding and decoding to `PartialObjectOperation`.
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal struct PartialObjectOperation {
     internal var mapOp: ObjectsMapOp? // OOP3c
     internal var counterOp: WireObjectsCounterOp? // OOP3d
@@ -44,6 +47,7 @@ internal struct PartialObjectOperation {
     internal var initialValue: String? // OOP3h
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal struct ObjectOperation: Equatable {
     internal var action: WireEnum<ObjectOperationAction> // OOP3a
     internal var objectId: String // OOP3b
@@ -55,6 +59,7 @@ internal struct ObjectOperation: Equatable {
     internal var initialValue: String? // OOP3h
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal struct ObjectData: Equatable {
     internal var objectId: String? // OD2a
     internal var boolean: Bool? // OD2c
@@ -64,11 +69,13 @@ internal struct ObjectData: Equatable {
     internal var json: JSONObjectOrArray? // TODO: Needs specification (see https://github.com/ably/ably-liveobjects-swift-plugin/issues/46)
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal struct ObjectsMapOp: Equatable {
     internal var key: String // OMO2a
     internal var data: ObjectData? // OMO2b
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal struct ObjectsMapEntry: Equatable {
     internal var tombstone: Bool? // OME2a
     internal var timeserial: String? // OME2b
@@ -76,11 +83,13 @@ internal struct ObjectsMapEntry: Equatable {
     internal var serialTimestamp: Date? // OME2d
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal struct ObjectsMap: Equatable {
     internal var semantics: WireEnum<ObjectsMapSemantics> // OMP3a
     internal var entries: [String: ObjectsMapEntry]? // OMP3b
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal struct ObjectState: Equatable {
     internal var objectId: String // OST2a
     internal var siteTimeserials: [String: String] // OST2b
@@ -90,6 +99,7 @@ internal struct ObjectState: Equatable {
     internal var counter: WireObjectsCounter? // OST2f
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal extension InboundObjectMessage {
     /// Initializes an `InboundObjectMessage` from an `InboundWireObjectMessage`, applying the data decoding rules of OD5.
     ///
@@ -117,6 +127,7 @@ internal extension InboundObjectMessage {
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal extension OutboundObjectMessage {
     /// Converts this `OutboundObjectMessage` to an `OutboundWireObjectMessage`, applying the data encoding rules of OD4.
     ///
@@ -138,6 +149,7 @@ internal extension OutboundObjectMessage {
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal extension ObjectOperation {
     /// Initializes an `ObjectOperation` from a `WireObjectOperation`, applying the data decoding rules of OD5.
     ///
@@ -202,6 +214,7 @@ internal extension ObjectOperation {
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal extension PartialObjectOperation {
     /// Initializes a `PartialObjectOperation` from a `PartialWireObjectOperation`, applying the data decoding rules of OD5.
     ///
@@ -243,6 +256,7 @@ internal extension PartialObjectOperation {
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal extension ObjectData {
     /// Initializes an `ObjectData` from a `WireObjectData`, applying the data decoding rules of OD5.
     ///
@@ -347,6 +361,7 @@ internal extension ObjectData {
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal extension ObjectsMapOp {
     /// Initializes a `ObjectsMapOp` from a `WireObjectsMapOp`, applying the data decoding rules of OD5.
     ///
@@ -375,6 +390,7 @@ internal extension ObjectsMapOp {
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal extension ObjectsMapEntry {
     /// Initializes an `ObjectsMapEntry` from a `WireObjectsMapEntry`, applying the data decoding rules of OD5.
     ///
@@ -408,6 +424,7 @@ internal extension ObjectsMapEntry {
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal extension ObjectsMap {
     /// Initializes an `ObjectsMap` from a `WireObjectsMap`, applying the data decoding rules of OD5.
     ///
@@ -436,6 +453,7 @@ internal extension ObjectsMap {
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal extension ObjectState {
     /// Initializes an `ObjectState` from a `WireObjectState`, applying the data decoding rules of OD5.
     ///
@@ -476,6 +494,7 @@ internal extension ObjectState {
 
 // MARK: - CustomDebugStringConvertible
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 extension InboundObjectMessage: CustomDebugStringConvertible {
     internal var debugDescription: String {
         var parts: [String] = []
@@ -495,6 +514,7 @@ extension InboundObjectMessage: CustomDebugStringConvertible {
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 extension OutboundObjectMessage: CustomDebugStringConvertible {
     internal var debugDescription: String {
         var parts: [String] = []
@@ -514,6 +534,7 @@ extension OutboundObjectMessage: CustomDebugStringConvertible {
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 extension ObjectOperation: CustomDebugStringConvertible {
     internal var debugDescription: String {
         var parts: [String] = []
@@ -531,6 +552,7 @@ extension ObjectOperation: CustomDebugStringConvertible {
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 extension ObjectState: CustomDebugStringConvertible {
     internal var debugDescription: String {
         var parts: [String] = []
@@ -546,6 +568,7 @@ extension ObjectState: CustomDebugStringConvertible {
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 extension ObjectsMapOp: CustomDebugStringConvertible {
     internal var debugDescription: String {
         var parts: [String] = []
@@ -557,6 +580,7 @@ extension ObjectsMapOp: CustomDebugStringConvertible {
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 extension ObjectsMap: CustomDebugStringConvertible {
     internal var debugDescription: String {
         var parts: [String] = []
@@ -575,6 +599,7 @@ extension ObjectsMap: CustomDebugStringConvertible {
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 extension ObjectsMapEntry: CustomDebugStringConvertible {
     internal var debugDescription: String {
         var parts: [String] = []
@@ -588,6 +613,7 @@ extension ObjectsMapEntry: CustomDebugStringConvertible {
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 extension ObjectData: CustomDebugStringConvertible {
     internal var debugDescription: String {
         var parts: [String] = []

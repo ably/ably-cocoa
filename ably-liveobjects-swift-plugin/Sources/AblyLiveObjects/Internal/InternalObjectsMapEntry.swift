@@ -1,6 +1,7 @@
 import Foundation
 
 /// The entries stored in a `LiveMap`'s data. Same as an `ObjectsMapEntry` but with an additional `tombstonedAt` property, per RTLM3a.
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal struct InternalObjectsMapEntry: Equatable {
     internal var tombstonedAt: Date? // RTLM3a
     internal var tombstone: Bool {
@@ -12,6 +13,7 @@ internal struct InternalObjectsMapEntry: Equatable {
     internal var data: ObjectData? // OME2c
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal extension InternalObjectsMapEntry {
     init(objectsMapEntry: ObjectsMapEntry, tombstonedAt: Date?) {
         self.tombstonedAt = tombstonedAt

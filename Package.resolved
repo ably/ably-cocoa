@@ -2,15 +2,6 @@
   "object": {
     "pins": [
       {
-        "package": "ably-cocoa-plugin-support",
-        "repositoryURL": "https://github.com/ably/ably-cocoa-plugin-support",
-        "state": {
-          "branch": null,
-          "revision": "9699dfefd26134a808f116d28428c230907faf27",
-          "version": null
-        }
-      },
-      {
         "package": "CwlCatchException",
         "repositoryURL": "https://github.com/mattgallagher/CwlCatchException.git",
         "state": {

@@ -1,6 +1,7 @@
 import Foundation
 
 /// The contents of the spec's `SyncObjectsPool` that is built during an `OBJECT_SYNC` sync sequence.
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal struct SyncObjectsPoolEntry {
     internal var state: ObjectState
     /// The `serialTimestamp` of the `ObjectMessage` that generated this entry.

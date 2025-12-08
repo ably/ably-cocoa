@@ -5,6 +5,7 @@ import Foundation
 /// Helpers for creating a new LiveObject.
 ///
 /// These generate an object ID and the `ObjectMessage` needed to create the LiveObject.
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal enum ObjectCreationHelpers {
     /// The metadata that `createCounter` needs in order to request that Realtime create a LiveCounter and to populate the local objects pool.
     internal struct CounterCreationOperation {

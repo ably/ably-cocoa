@@ -1,4 +1,5 @@
 /// An enum extracted from a wire representation that either belongs to one of a set of known values or is a new, unknown value.
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal enum WireEnum<Known> where Known: RawRepresentable {
     case known(Known)
     case unknown(Known.RawValue)
@@ -21,5 +22,7 @@ internal enum WireEnum<Known> where Known: RawRepresentable {
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 extension WireEnum: Sendable where Known: Sendable, Known.RawValue: Sendable {}
+@available(macOS 11, iOS 14, tvOS 14, *)
 extension WireEnum: Equatable where Known: Equatable, Known.RawValue: Equatable {}

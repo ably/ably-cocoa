@@ -1,5 +1,6 @@
 internal import _AblyPluginSupportPrivate
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal extension InternalLiveMapValue {
     // MARK: - Mapping to public types
 

@@ -4,6 +4,7 @@ import Ably
 /// The API that the internal components of the SDK (that is, `DefaultLiveObjects` and down) use to interact with our core SDK (i.e. ably-cocoa).
 ///
 /// This provides us with a mockable interface to ably-cocoa, and it also allows internal components and their tests not to need to worry about some of the boring details of how we bridge Swift types to `_AblyPluginSupportPrivate`'s Objective-C API (i.e. boxing).
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal protocol CoreSDK: AnyObject, Sendable {
     /// Implements the internal `#publish` method of RTO15.
     func publish(objectMessages: [OutboundObjectMessage]) async throws(ARTErrorInfo)
@@ -20,6 +21,7 @@ internal protocol CoreSDK: AnyObject, Sendable {
     var nosync_channelState: _AblyPluginSupportPrivate.RealtimeChannelState { get }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal final class DefaultCoreSDK: CoreSDK {
     /// Used to synchronize access to internal mutable state.
     private let mutex = NSLock()
@@ -114,6 +116,7 @@ internal final class DefaultCoreSDK: CoreSDK {
 // MARK: - Channel State Validation
 
 /// Extension on CoreSDK to provide channel state validation utilities.
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal extension CoreSDK {
     /// Validates that the channel is not in any of the specified invalid states.
     ///

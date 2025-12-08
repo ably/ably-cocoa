@@ -79,36 +79,42 @@ internal indirect enum WireValue: Sendable, Equatable {
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 extension WireValue: ExpressibleByDictionaryLiteral {
     internal init(dictionaryLiteral elements: (String, WireValue)...) {
         self = .object(.init(uniqueKeysWithValues: elements))
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 extension WireValue: ExpressibleByArrayLiteral {
     internal init(arrayLiteral elements: WireValue...) {
         self = .array(elements)
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 extension WireValue: ExpressibleByStringLiteral {
     internal init(stringLiteral value: String) {
         self = .string(value)
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 extension WireValue: ExpressibleByIntegerLiteral {
     internal init(integerLiteral value: Int) {
         self = .number(value as NSNumber)
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 extension WireValue: ExpressibleByFloatLiteral {
     internal init(floatLiteral value: Double) {
         self = .number(value as NSNumber)
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 extension WireValue: ExpressibleByBooleanLiteral {
     internal init(booleanLiteral value: Bool) {
         self = .bool(value)
@@ -117,6 +123,7 @@ extension WireValue: ExpressibleByBooleanLiteral {
 
 // MARK: - Bridging with ably-cocoa
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal extension WireValue {
     /// Creates a `WireValue` from an `_AblyPluginSupportPrivate` deserialized wire object.
     ///
@@ -158,6 +165,7 @@ internal extension WireValue {
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal extension [String: WireValue] {
     /// Creates an `_AblyPluginSupportPrivate` deserialized wire object from a dictionary that has string keys and `WireValue` values.
     ///
@@ -169,6 +177,7 @@ internal extension [String: WireValue] {
 
 // MARK: - Conversion to/from ExtendedJSONValue
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal extension WireValue {
     enum ExtraValue {
         case data(Data)
@@ -218,6 +227,7 @@ internal extension WireValue {
 
 // MARK: - Conversion to/from JSONValue
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal extension WireValue {
     /// Converts a `JSONValue` to its corresponding `WireValue`.
     init(jsonValue: JSONValue) {

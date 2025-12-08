@@ -1,6 +1,7 @@
 import Foundation
 
 /// Same as the public ``LiveMapValue`` type but with associated values of internal type.
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal enum InternalLiveMapValue: Sendable, Equatable {
     case string(String)
     case number(Double)

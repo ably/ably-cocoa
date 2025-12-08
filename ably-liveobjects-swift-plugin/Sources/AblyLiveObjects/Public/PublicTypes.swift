@@ -5,18 +5,22 @@ import Ably
 /// - Parameters:
 ///   - update: The update object describing the changes made to the object.
 ///   - subscription: A ``SubscribeResponse`` object that allows the provided listener to deregister itself from future updates.
+@available(macOS 11, iOS 14, tvOS 14, *)
 public typealias LiveObjectUpdateCallback<T> = @Sendable (_ update: sending T, _ subscription: SubscribeResponse) -> Void
 
 /// The callback used for the events emitted by ``RealtimeObjects``.
 ///
 /// - Parameter subscription: An ``OnObjectsEventResponse`` object that allows the provided listener to deregister itself from future updates.
+@available(macOS 11, iOS 14, tvOS 14, *)
 public typealias ObjectsEventCallback = @Sendable (_ subscription: OnObjectsEventResponse) -> Void
 
 /// The callback used for the lifecycle events emitted by ``LiveObject``.
 /// - Parameter subscription: A ``OnLiveObjectLifecycleEventResponse`` object that allows the provided listener to deregister itself from future updates.
+@available(macOS 11, iOS 14, tvOS 14, *)
 public typealias LiveObjectLifecycleEventCallback = @Sendable (_ subscription: OnLiveObjectLifecycleEventResponse) -> Void
 
 /// Describes the events emitted by an ``RealtimeObjects`` object.
+@available(macOS 11, iOS 14, tvOS 14, *)
 public enum ObjectsEvent: Sendable {
     /// The local copy of Objects on a channel is currently being synchronized with the Ably service.
     case syncing
@@ -25,12 +29,14 @@ public enum ObjectsEvent: Sendable {
 }
 
 /// Describes the events emitted by a ``LiveObject`` object.
+@available(macOS 11, iOS 14, tvOS 14, *)
 public enum LiveObjectLifecycleEvent: Sendable {
     /// Indicates that the object has been deleted from the Objects pool and should no longer be interacted with.
     case deleted
 }
 
 /// Enables the Objects to be read, modified and subscribed to for a channel.
+@available(macOS 11, iOS 14, tvOS 14, *)
 public protocol RealtimeObjects: Sendable {
     /// Retrieves the root ``LiveMap`` object for Objects on a channel.
     func getRoot() async throws(ARTErrorInfo) -> any LiveMap
@@ -87,6 +93,7 @@ public protocol RealtimeObjects: Sendable {
 ///     ],
 /// ])
 /// ```
+@available(macOS 11, iOS 14, tvOS 14, *)
 public enum LiveMapValue: Sendable, Equatable {
     case string(String)
     case number(Double)
@@ -191,36 +198,42 @@ public enum LiveMapValue: Sendable, Equatable {
 
 // MARK: - ExpressibleBy*Literal conformances
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 extension LiveMapValue: ExpressibleByDictionaryLiteral {
     public init(dictionaryLiteral elements: (String, JSONValue)...) {
         self = .jsonObject(.init(uniqueKeysWithValues: elements))
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 extension LiveMapValue: ExpressibleByArrayLiteral {
     public init(arrayLiteral elements: JSONValue...) {
         self = .jsonArray(elements)
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 extension LiveMapValue: ExpressibleByStringLiteral {
     public init(stringLiteral value: String) {
         self = .string(value)
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 extension LiveMapValue: ExpressibleByIntegerLiteral {
     public init(integerLiteral value: Int) {
         self = .number(Double(value))
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 extension LiveMapValue: ExpressibleByFloatLiteral {
     public init(floatLiteral value: Double) {
         self = .number(value)
     }
 }
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 extension LiveMapValue: ExpressibleByBooleanLiteral {
     public init(booleanLiteral value: Bool) {
         self = .bool(value)
@@ -228,6 +241,7 @@ extension LiveMapValue: ExpressibleByBooleanLiteral {
 }
 
 /// Object returned from an `on` call, allowing the listener provided in that call to be deregistered.
+@available(macOS 11, iOS 14, tvOS 14, *)
 public protocol OnObjectsEventResponse: Sendable {
     /// Deregisters the listener passed to the `on` call.
     func off()
@@ -238,6 +252,7 @@ public protocol OnObjectsEventResponse: Sendable {
 /// meaning that if two clients update the same key in the map, the update with the most recent timestamp wins.
 ///
 /// Keys must be strings. Values can be another ``LiveObject``, or a primitive type, such as a string, number, boolean, JSON-serializable object or array, or binary data.
+@available(macOS 11, iOS 14, tvOS 14, *)
 public protocol LiveMap: LiveObject where Update == LiveMapUpdate {
     /// Returns the value associated with a given key. Returns `nil` if the key doesn't exist in a map or if the associated ``LiveObject`` has been deleted.
     ///
@@ -281,6 +296,7 @@ public protocol LiveMap: LiveObject where Update == LiveMapUpdate {
 }
 
 /// Describes whether an entry in ``LiveMapUpdate/update`` represents an update or a removal.
+@available(macOS 11, iOS 14, tvOS 14, *)
 public enum LiveMapUpdateAction: Sendable {
     /// The value of a key in the map was updated.
     case updated
@@ -289,6 +305,7 @@ public enum LiveMapUpdateAction: Sendable {
 }
 
 /// Represents an update to a ``LiveMap`` object, describing the keys that were updated or removed.
+@available(macOS 11, iOS 14, tvOS 14, *)
 public protocol LiveMapUpdate: Sendable {
     /// An object containing keys from a `LiveMap` that have changed, along with their change status:
     /// - ``LiveMapUpdateAction/updated`` - the value of a key in the map was updated.
@@ -297,6 +314,7 @@ public protocol LiveMapUpdate: Sendable {
 }
 
 /// The `LiveCounter` class represents a counter that can be incremented or decremented and is synchronized across clients in realtime.
+@available(macOS 11, iOS 14, tvOS 14, *)
 public protocol LiveCounter: LiveObject where Update == LiveCounterUpdate {
     /// Returns the current value of the counter.
     var value: Double { get throws(ARTErrorInfo) }
@@ -317,12 +335,14 @@ public protocol LiveCounter: LiveObject where Update == LiveCounterUpdate {
 }
 
 /// Represents an update to a ``LiveCounter`` object.
+@available(macOS 11, iOS 14, tvOS 14, *)
 public protocol LiveCounterUpdate: Sendable {
     /// Holds the numerical change to the counter value.
     var amount: Double { get }
 }
 
 /// Describes the common interface for all conflict-free data structures supported by the Objects.
+@available(macOS 11, iOS 14, tvOS 14, *)
 public protocol LiveObject: AnyObject, Sendable {
     /// The type of update event that this object emits.
     associatedtype Update
@@ -351,12 +371,14 @@ public protocol LiveObject: AnyObject, Sendable {
 }
 
 /// Object returned from a `subscribe` call, allowing the listener provided in that call to be deregistered.
+@available(macOS 11, iOS 14, tvOS 14, *)
 public protocol SubscribeResponse: Sendable {
     /// Deregisters the listener passed to the `subscribe` call.
     func unsubscribe()
 }
 
 /// Object returned from an `on` call, allowing the listener provided in that call to be deregistered.
+@available(macOS 11, iOS 14, tvOS 14, *)
 public protocol OnLiveObjectLifecycleEventResponse: Sendable {
     /// Deregisters the listener passed to the `on` call.
     func off()
@@ -365,6 +387,7 @@ public protocol OnLiveObjectLifecycleEventResponse: Sendable {
 // MARK: - AsyncSequence Extensions
 
 /// Extension to provide AsyncSequence-based subscription for `LiveObject` updates.
+@available(macOS 11, iOS 14, tvOS 14, *)
 public extension LiveObject {
     /// Returns an `AsyncSequence` that emits updates to this `LiveObject`.
     ///

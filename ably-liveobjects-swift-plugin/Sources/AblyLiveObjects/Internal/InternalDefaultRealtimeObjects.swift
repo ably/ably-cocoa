@@ -2,6 +2,7 @@ internal import _AblyPluginSupportPrivate
 import Ably
 
 /// This provides the implementation behind ``PublicDefaultRealtimeObjects``, via internal versions of the ``RealtimeObjects`` API.
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoolDelegate {
     private let mutableStateMutex: DispatchQueueMutex<MutableState>
 

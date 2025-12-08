@@ -12,6 +12,7 @@ import Foundation
 /// This differs from the approach that we take in ably-cocoa, in which we create a new public object each time we need to return one. Given that the LiveObjects SDK revolves around the concept of various live-updating objects, it seemed like it might be quite a confusing user experience if the pointer identity of, say, a `LiveMap` changed each time it was fetched.
 ///
 /// - Note: We can only make a best-effort attempt to maintain the pointer identity of the public objects. Since the SDK cannot maintain a strong reference to the public objects (given that the whole reason that these objects exist is for us to know whether the user holds a strong reference to them), if the user releases all of their strong references to a public object then the next time they fetch the public object they will receive a new object.
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal final class PublicObjectsStore: Sendable {
     // Used to synchronize access to mutable state
     private let mutex = NSLock()

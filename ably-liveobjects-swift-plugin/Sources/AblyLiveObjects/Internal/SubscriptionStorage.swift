@@ -1,6 +1,7 @@
 import Foundation
 
 /// Handles subscription bookkeeping, providing methods for subscribing and emitting events.
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal struct SubscriptionStorage<EventName: Hashable & Sendable, Update: Sendable> {
     /// Internal bookkeeping for subscriptions, organized by event name.
     /// Each event name maps to a dictionary of subscriptions keyed by their ID for O(1) operations.
@@ -83,6 +84,7 @@ internal struct SubscriptionStorage<EventName: Hashable & Sendable, Update: Send
 
 // MARK: - Convenience extension for Void updates
 
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal extension SubscriptionStorage where Update == Void {
     /// Convenience method for emitting events when there's no update data to pass.
     func emit(eventName: EventName, on queue: DispatchQueue) {

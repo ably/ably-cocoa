@@ -14,14 +14,16 @@ let package = Package(
             name: "Ably",
             targets: ["Ably"]
         ),
+        // AblyLiveObjects supports macOS >= 11, iOS >= 14, tvOS >= 14. This is implemented via `@available` annotations in the code since SPM does not allow OS requirements to vary by product.
+        .library(
+            name: "AblyLiveObjects",
+            targets: ["AblyLiveObjects"]
+        ),
     ],
     dependencies: [
         .package(name: "msgpack", url: "https://github.com/rvi/msgpack-objective-C", from: "0.4.0"),
         .package(name: "AblyDeltaCodec", url: "https://github.com/ably/delta-codec-cocoa", from: "1.3.5"),
         .package(name: "Nimble", url: "https://github.com/quick/nimble", from: "11.2.2"),
-        // Be sure to use `exact` here and not `from`; SPM does not have any special handling of 0.x versions and will resolve 'from: "0.2.0"' to anything less than 1.0.0. (BTW, our version of SPM manifest doesn't seem to have `exact`; this closed range equivalent is what Claude says I should use.)
-        // TODO: Unpin before next release
-        .package(name: "ably-cocoa-plugin-support", url: "https://github.com/ably/ably-cocoa-plugin-support", .revision("9699dfefd26134a808f116d28428c230907faf27"))
     ],
     targets: [
         .target(
@@ -29,7 +31,7 @@ let package = Package(
             dependencies: [
                 .byName(name: "msgpack"),
                 .byName(name: "AblyDeltaCodec"),
-                .product(name: "_AblyPluginSupportPrivate", package: "ably-cocoa-plugin-support")
+                .byName(name: "_AblyPluginSupportPrivate")
             ],
             path: "Source",
             exclude: [
@@ -54,6 +56,18 @@ let package = Package(
                 .headerSearchPath("SocketRocket/Internal/IOConsumer"),
             ]
         ),
+        .target(
+            name: "_AblyPluginSupportPrivate",
+            path: "ably-cocoa-plugin-support/Sources/_AblyPluginSupportPrivate"
+        ),
+        .target(
+            name: "AblyLiveObjects",
+            dependencies: [
+                .byName(name: "Ably"),
+                .byName(name: "_AblyPluginSupportPrivate"),
+            ],
+            path: "ably-liveobjects-swift-plugin/Sources/AblyLiveObjects"
+        ),
         .testTarget(
             name: "AblyTests",
             dependencies: [
@@ -61,7 +75,7 @@ let package = Package(
                 .byName(name: "AblyTesting"),
                 .byName(name: "AblyTestingObjC"),
                 .byName(name: "Nimble"),
-                .product(name: "_AblyPluginSupportPrivate", package: "ably-cocoa-plugin-support")
+                .byName(name: "_AblyPluginSupportPrivate")
             ],
             path: "Test/AblyTests",
             resources: [

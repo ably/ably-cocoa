@@ -2,12 +2,14 @@ internal import _AblyPluginSupportPrivate
 import Ably
 
 /// Protocol for accessing objects from the ObjectsPool. This is used by a LiveMap when it needs to return an object given an object ID.
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal protocol LiveMapObjectsPoolDelegate: AnyObject, Sendable {
     /// A snapshot of the objects pool.
     var nosync_objectsPool: ObjectsPool { get }
 }
 
 /// This provides the implementation behind ``PublicDefaultLiveMap``, via internal versions of the ``LiveMap`` API.
+@available(macOS 11, iOS 14, tvOS 14, *)
 internal final class InternalDefaultLiveMap: Sendable {
     private let mutableStateMutex: DispatchQueueMutex<MutableState>
 
