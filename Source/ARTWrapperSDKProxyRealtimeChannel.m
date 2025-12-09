@@ -104,6 +104,37 @@ NS_ASSUME_NONNULL_END
     [self.underlyingChannel publish:name data:data extras:extras callback:callback];
 }
 
+- (void)getMessageWithSerial:(nonnull NSString *)serial callback:(nonnull ARTMessageErrorCallback)callback { 
+    [self.underlyingChannel.internal getMessageWithSerial:serial
+                                         wrapperSDKAgents:self.proxyOptions.agents
+                                                 callback:callback];
+}
+
+- (void)updateMessage:(nonnull ARTMessage *)message
+            operation:(nullable ARTMessageOperation *)operation
+               params:(nullable NSDictionary<NSString *,ARTStringifiable *> *)params
+             callback:(nullable ARTCallback)callback {
+    [self.underlyingChannel.internal updateMessage:message
+                                         operation:operation
+                                            params:params
+                                  wrapperSDKAgents:self.proxyOptions.agents
+                                          callback:callback];
+}
+
+- (void)deleteMessage:(nonnull ARTMessage *)message operation:(nullable ARTMessageOperation *)operation params:(nullable NSDictionary<NSString *,ARTStringifiable *> *)params callback:(nullable ARTCallback)callback {
+    [self.underlyingChannel.internal deleteMessage:message
+                                         operation:operation
+                                            params:params
+                                  wrapperSDKAgents:self.proxyOptions.agents
+                                          callback:callback];
+}
+
+- (void)getMessageVersionsWithSerial:(nonnull NSString *)serial callback:(nonnull ARTPaginatedMessagesCallback)callback {
+    [self.underlyingChannel.internal getMessageVersionsWithSerial:serial
+                                                 wrapperSDKAgents:self.proxyOptions.agents
+                                                         callback:callback];
+}
+
 - (void)attach {
     [self.underlyingChannel attach];
 }

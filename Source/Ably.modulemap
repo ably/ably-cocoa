@@ -139,6 +139,7 @@ framework module Ably {
         header "ARTPluginAPI.h"
         header "ARTPublicRealtimeChannelUnderlyingObjects.h"
         header "ARTErrorInfo+Private.h"
-        header "ARTSummaryTypes+Private.h"
+        header "ARTDictionarySerializable.h"
+        header "ARTMessageOperation+Private.h"
     }
 }

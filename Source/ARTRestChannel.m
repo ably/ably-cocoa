@@ -5,6 +5,8 @@
 #import "ARTChannel+Private.h"
 #import "ARTChannelOptions.h"
 #import "ARTMessage.h"
+#import "ARTMessageOperation.h"
+#import "ARTMessageOperation+Private.h"
 #import "ARTBaseMessage+Private.h"
 #import "ARTPaginatedResult+Private.h"
 #import "ARTDataQuery+Private.h"
@@ -97,6 +99,22 @@
 
 - (void)publish:(NSArray<ARTMessage *> *)messages callback:(nullable ARTCallback)callback {
     [_internal publish:messages callback:callback];
+}
+
+- (void)updateMessage:(ARTMessage *)message operation:(nullable ARTMessageOperation *)operation params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params callback:(nullable ARTCallback)callback {
+    [_internal updateMessage:message operation:operation params:params wrapperSDKAgents:nil callback:callback];
+}
+
+- (void)deleteMessage:(ARTMessage *)message operation:(nullable ARTMessageOperation *)operation params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params callback:(nullable ARTCallback)callback {
+    [_internal deleteMessage:message operation:operation params:params wrapperSDKAgents:nil callback:callback];
+}
+
+- (void)getMessageWithSerial:(NSString *)serial callback:(ARTMessageErrorCallback)callback {
+    [_internal getMessageWithSerial:serial wrapperSDKAgents:nil callback:callback];
+}
+
+- (void)getMessageVersionsWithSerial:(NSString *)serial callback:(ARTPaginatedMessagesCallback)callback {
+    [_internal getMessageVersionsWithSerial:serial wrapperSDKAgents:nil callback:callback];
 }
 
 - (void)history:(ARTPaginatedMessagesCallback)callback {
@@ -384,6 +402,262 @@ art_dispatch_sync(_queue, ^{
                 callback(errorInfo);
             }
         }];
+    });
+}
+
+- (void)_updateMessage:(ARTMessage *)message
+              isDelete:(BOOL)isDelete
+             operation:(nullable ARTMessageOperation *)operation
+                params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
+      wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+              callback:(nullable ARTCallback)callback {
+    if (callback) {
+        ARTCallback userCallback = callback;
+        callback = ^(ARTErrorInfo *__nullable error) {
+            art_dispatch_async(self->_userQueue, ^{
+                userCallback(error);
+            });
+        };
+    }
+    
+    art_dispatch_async(_queue, ^{
+        // RSL12/RSL13 - message must have serial
+        if (!message.serial || message.serial.length == 0) {
+            if (callback) {
+                callback([ARTErrorInfo createWithCode:ARTErrorInvalidParameterValue message:[NSString stringWithFormat:@"This message lacks a serial and cannot be %@. Make sure you have enabled \"Message annotations, updates, and deletes\" in channel settings on your dashboard.", isDelete ? @"deleted" : @"updated"]]);
+            }
+            return;
+        }
+        
+        // RSL12b/RSL13b - Build request body according to spec
+        NSMutableDictionary *requestBody = [NSMutableDictionary dictionary];
+        
+        // RSL12b1/RSL13b1 - serial
+        requestBody[@"serial"] = message.serial;
+        
+        // RSL12b2/RSL13b2 - operation
+        if (operation) {
+            NSMutableDictionary *operationDict = [NSMutableDictionary dictionary];
+            [operation writeToDictionary:operationDict];
+            if (operationDict.count > 0) {
+                requestBody[@"operation"] = operationDict;
+            }
+        }
+        
+        // RSL12b3/RSL13b3 - name
+        if (message.name) {
+            requestBody[@"name"] = message.name;
+        }
+        
+        // RSL12b4, RSL12b5 / RSL13b4, RSL13b5 - data and encoding (encode per RSL4)
+        if (message.data) {
+            NSError *encodeError = nil;
+            ARTMessage *encodedMessage = [message encodeWithEncoder:self.dataEncoder error:&encodeError];
+            if (encodeError) {
+                if (callback) callback([ARTErrorInfo createFromNSError:encodeError]);
+                return;
+            }
+            
+            requestBody[@"data"] = encodedMessage.data;
+            if (encodedMessage.encoding && encodedMessage.encoding.length > 0) {
+                requestBody[@"encoding"] = encodedMessage.encoding;
+            }
+        }
+        
+        // RSL12b6/RSL13b6 - extras
+        if (message.extras) {
+            requestBody[@"extras"] = message.extras;
+        }
+        
+        // Encode the request body
+        NSError *encodeError = nil;
+        NSData *requestBodyData = [self.rest.defaultEncoder encode:requestBody error:&encodeError];
+        if (encodeError) {
+            if (callback) callback([ARTErrorInfo createFromNSError:encodeError]);
+            return;
+        }
+        
+        // RSL12b - PATCH to /channels/{channelName}/messages/{serial}
+        // RSL13b - POST to /channels/{channelName}/messages/{serial}/delete
+        NSString *messagePath;
+        NSString *httpMethod;
+        
+        if (isDelete) {
+            // RSL13b - POST to /channels/{channelName}/messages/{serial}/delete
+            messagePath = [NSString stringWithFormat:@"messages/%@/delete", [message.serial stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]]];
+            httpMethod = @"POST";
+        } else {
+            // RSL12b - PATCH to /channels/{channelName}/messages/{serial}
+            messagePath = [NSString stringWithFormat:@"messages/%@", [message.serial stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]]];
+            httpMethod = @"PATCH";
+        }
+        
+        NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:[self->_basePath stringByAppendingPathComponent:messagePath]] resolvingAgainstBaseURL:YES];
+        
+        // RSL12a/RSL13a - params in querystring
+        if (params && params.count > 0) {
+            NSMutableArray<NSURLQueryItem *> *queryItems = [NSMutableArray array];
+            for (NSString *key in params) {
+                [queryItems addObject:[NSURLQueryItem queryItemWithName:key value:params[key].stringValue]];
+            }
+            components.queryItems = queryItems;
+        }
+        
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
+        request.HTTPMethod = httpMethod;
+        request.HTTPBody = requestBodyData;
+        
+        if (self.rest.defaultEncoding) {
+            [request setValue:self.rest.defaultEncoding forHTTPHeaderField:@"Content-Type"];
+        }
+        
+        NSString *logOperation = isDelete ? @"delete" : @"update";
+        ARTLogDebug(self.logger, @"RS:%p C:%p (%@) %@ message %@", self->_rest, self, self.name, logOperation, [[NSString alloc] initWithData:requestBodyData ?: [NSData data] encoding:NSUTF8StringEncoding]);
+        
+        [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+            if (callback) {
+                ARTErrorInfo *errorInfo;
+                if (self->_rest.options.addRequestIds) {
+                    errorInfo = error ? [ARTErrorInfo wrap:[ARTErrorInfo createFromNSError:error] prepend:[NSString stringWithFormat:@"Request '%@' failed with ", request.URL]] : nil;
+                } else {
+                    errorInfo = error ? [ARTErrorInfo createFromNSError:error] : nil;
+                }
+                
+                callback(errorInfo);
+            }
+        }];
+    });
+}
+
+// RSL12
+- (void)updateMessage:(ARTMessage *)message
+            operation:(nullable ARTMessageOperation *)operation
+               params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
+     wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+             callback:(nullable ARTCallback)callback {
+    [self _updateMessage:message isDelete:NO operation:operation params:params wrapperSDKAgents:wrapperSDKAgents callback:callback];
+}
+
+// RSL13
+- (void)deleteMessage:(ARTMessage *)message
+            operation:(nullable ARTMessageOperation *)operation
+               params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
+     wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+             callback:(nullable ARTCallback)callback {
+    [self _updateMessage:message isDelete:YES operation:operation params:params wrapperSDKAgents:wrapperSDKAgents callback:callback];
+}
+
+// RSL11
+- (void)getMessageWithSerial:(NSString *)serial
+            wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                    callback:(ARTMessageErrorCallback)callback {
+    if (callback) {
+        ARTMessageErrorCallback userCallback = callback;
+        callback = ^(ARTMessage *_Nullable message, ARTErrorInfo *_Nullable error) {
+            art_dispatch_async(self->_userQueue, ^{
+                userCallback(message, error);
+            });
+        };
+    }
+    
+    art_dispatch_async(_queue, ^{
+        NSString *messagePath = [NSString stringWithFormat:@"messages/%@", [serial stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]]];
+        NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:[self->_basePath stringByAppendingPathComponent:messagePath]] resolvingAgainstBaseURL:YES];
+        
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
+        request.HTTPMethod = @"GET";
+        
+        ARTLogDebug(self.logger, @"RS:%p C:%p (%@) get message with serial %@", self->_rest, self, self.name, serial);
+        
+        [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+            if (error) {
+                ARTErrorInfo *errorInfo;
+                if (self->_rest.options.addRequestIds) {
+                    errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createFromNSError:error] prepend:[NSString stringWithFormat:@"Request '%@' failed with ", request.URL]];
+                } else {
+                    errorInfo = [ARTErrorInfo createFromNSError:error];
+                }
+                if (callback) {
+                    callback(nil, errorInfo);
+                }
+                return;
+            }
+            
+            if (response.statusCode == 200) {
+                NSError *decodeError = nil;
+                id<ARTEncoder> decoder = self->_rest.encoders[response.MIMEType];
+                if (!decoder) {
+                    if (callback) {
+                        callback(nil, [ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:[NSString stringWithFormat:@"Decoder for MIMEType '%@' wasn't found.", response.MIMEType]]);
+                    }
+                    return;
+                }
+                
+                ARTMessage *message = [decoder decodeMessage:data error:&decodeError];
+                if (decodeError) {
+                    if (callback) {
+                        callback(nil, [ARTErrorInfo createFromNSError:decodeError]);
+                    }
+                    return;
+                }
+                
+                // Decode the message data if needed
+                ARTMessage *decodedMessage = [message decodeWithEncoder:self.dataEncoder error:&decodeError];
+                if (decodeError) {
+                    if (callback) {
+                        callback(nil, [ARTErrorInfo wrap:[ARTErrorInfo createFromNSError:decodeError] prepend:@"Failed to decode message data: "]);
+                    }
+                    return;
+                }
+                
+                if (callback) {
+                    callback(decodedMessage, nil);
+                }
+            } else {
+                if (callback) {
+                    callback(nil, [ARTErrorInfo createWithCode:response.statusCode message:[NSString stringWithFormat:@"Failed to get message: HTTP %ld", (long)response.statusCode]]);
+                }
+            }
+        }];
+    });
+}
+
+// RSL14
+- (void)getMessageVersionsWithSerial:(NSString *)serial
+                    wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                            callback:(ARTPaginatedMessagesCallback)callback {
+    if (callback) {
+        ARTPaginatedMessagesCallback userCallback = callback;
+        callback = ^(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error) {
+            art_dispatch_async(self->_userQueue, ^{
+                userCallback(result, error);
+            });
+        };
+    }
+    
+    art_dispatch_async(_queue, ^{
+        NSString *messagePath = [NSString stringWithFormat:@"messages/%@/versions", [serial stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]]];
+        NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:[self->_basePath stringByAppendingPathComponent:messagePath]] resolvingAgainstBaseURL:YES];
+        
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
+        request.HTTPMethod = @"GET";
+        
+        ARTLogDebug(self.logger, @"RS:%p C:%p (%@) get message versions for serial %@", self->_rest, self, self.name, serial);
+        
+        ARTPaginatedResultResponseProcessor responseProcessor = ^NSArray<ARTMessage *> *(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
+            id<ARTEncoder> encoder = [self->_rest.encoders objectForKey:response.MIMEType];
+            return [[encoder decodeMessages:data error:errorPtr] artMap:^(ARTMessage *message) {
+                NSError *decodeError = nil;
+                message = [message decodeWithEncoder:self.dataEncoder error:&decodeError];
+                if (decodeError != nil) {
+                    ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:decodeError.localizedFailureReason] prepend:@"Failed to decode data: "];
+                    ARTLogError(self.logger, @"RS:%p C:%p (%@) %@", self->_rest, self, self.name, errorInfo.message);
+                }
+                return message;
+            }];
+        };
+        
+        [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor wrapperSDKAgents:wrapperSDKAgents logger:self.logger callback:callback];
     });
 }
 

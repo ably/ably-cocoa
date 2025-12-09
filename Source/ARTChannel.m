@@ -153,6 +153,34 @@
     [self internalPostMessages:messagesWithDataEncoded callback:callback];
 }
 
+- (void)updateMessage:(ARTMessage *)message
+            operation:(nullable ARTMessageOperation *)operation
+               params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
+     wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+             callback:(nullable ARTCallback)callback {
+    NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
+}
+
+- (void)deleteMessage:(ARTMessage *)message
+            operation:(nullable ARTMessageOperation *)operation
+               params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
+     wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+             callback:(nullable ARTCallback)callback {
+    NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
+}
+
+- (void)getMessageWithSerial:(NSString *)serial
+            wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                    callback:(ARTMessageErrorCallback)callback {
+    NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
+}
+
+- (void)getMessageVersionsWithSerial:(NSString *)serial
+                    wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                            callback:(ARTPaginatedMessagesCallback)callback {
+    NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
+}
+
 - (BOOL)exceedMaxSize:(NSArray<ARTBaseMessage *> *)messages {
     NSInteger size = 0;
     for (ARTMessage *message in messages) {

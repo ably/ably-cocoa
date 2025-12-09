@@ -45,6 +45,7 @@
 #import <Ably/ARTChannelProtocol.h>
 #import <Ably/ARTMessageVersion.h>
 #import <Ably/ARTMessageAnnotations.h>
+#import <Ably/ARTMessageOperation.h>
 #import <Ably/ARTAnnotation.h>
 #import <Ably/ARTOutboundAnnotation.h>
 #import <Ably/ARTSummaryTypes.h>

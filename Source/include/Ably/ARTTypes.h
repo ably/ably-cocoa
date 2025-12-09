@@ -502,6 +502,9 @@ typedef void (^ARTDateTimeCallback)(NSDate *_Nullable result, NSError *_Nullable
 typedef void (^ARTMessageCallback)(ARTMessage *message);
 
 /// :nodoc:
+typedef void (^ARTMessageErrorCallback)(ARTMessage *_Nullable message, ARTErrorInfo *_Nullable error);
+
+/// :nodoc:
 typedef void (^ARTChannelStateCallback)(ARTChannelStateChange *stateChange);
 
 /// :nodoc:
