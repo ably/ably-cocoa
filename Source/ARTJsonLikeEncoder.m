@@ -3,6 +3,7 @@
 #import "ARTJsonLikeEncoder.h"
 
 #import "ARTMessage.h"
+#import "ARTMessage+Private.h"
 #import "ARTPresence.h"
 #import "ARTPresenceMessage.h"
 #import "ARTAnnotation.h"
@@ -405,6 +406,23 @@
     }
 }
 
+- (int)intFromMessageAction:(ARTMessageAction)action
+{
+    // TM5
+    switch (action) {
+        case ARTMessageActionCreate:
+            return 0;
+        case ARTMessageActionUpdate:
+            return 1;
+        case ARTMessageActionDelete:
+            return 2;
+        case ARTMessageActionMeta:
+            return 3;
+        case ARTMessageActionMessageSummary:
+            return 4;
+    }
+}
+
 - (ARTPresenceMessage *)presenceMessageFromDictionary:(NSDictionary *)input {
     ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: presenceMessageFromDictionary %@", _rest, [_delegate formatAsString], input);
     if (![input isKindOfClass:[NSDictionary class]]) {
@@ -499,6 +517,11 @@
 
     if (message.name) {
         [output setObject:message.name forKey:@"name"];
+    }
+
+    if (message.actionIsInternallySet) {
+        int action = [self intFromMessageAction:message.action];
+        [output setObject:[NSNumber numberWithInt:action] forKey:@"action"];
     }
 
     if (message.extras) {
