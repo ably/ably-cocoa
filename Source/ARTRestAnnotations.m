@@ -202,10 +202,10 @@ art_dispatch_async(_queue, ^{
                 self->_channel.rest, self->_channel, self->_channel.name,
                 [[NSString alloc] initWithData:encodedAnnotation encoding:NSUTF8StringEncoding]);
     
-    [self->_channel.rest executeRequest:request
-                         withAuthOption:ARTAuthenticationOn
-                       wrapperSDKAgents:nil
-                             completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [self->_channel.rest executeAblyRequest:request
+                             withAuthOption:ARTAuthenticationOn
+                           wrapperSDKAgents:nil
+                                 completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (callback) {
             ARTErrorInfo *errorInfo = nil;
             if (error) {

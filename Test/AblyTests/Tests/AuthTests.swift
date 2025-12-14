@@ -592,6 +592,7 @@ class AuthTests: XCTestCase {
                     fail("ErrorInfo is nil"); done(); return
                 }
                 XCTAssertEqual(errorInfo.code, ARTErrorCode.authConfiguredProviderFailure.intValue)
+                XCTAssertTrue(errorInfo.description().contains("Invalid request: body param is required")) // see https://github.com/ably/ably-cocoa/issues/2135
                 done()
             }
             realtime.connect()

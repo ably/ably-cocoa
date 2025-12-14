@@ -93,7 +93,7 @@
                 callback:(ARTHTTPPaginatedCallback)callback {
     ARTLogDebug(logger, @"HTTP Paginated request: %@", request);
 
-    [rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [rest executeAblyRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error && ![error.domain isEqualToString:ARTAblyErrorDomain]) {
             callback(nil, [ARTErrorInfo createFromNSError:error]);
             return;

@@ -260,6 +260,7 @@ NS_ASSUME_NONNULL_END
     NSURL *url = [self buildURL:options withParams:params];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     request.HTTPMethod = options.authMethod;
+    [request setTimeoutInterval:_options.httpRequestTimeout];
 
     // HTTP Header Fields
     if ([options isMethodPOST]) {
@@ -370,7 +371,7 @@ art_dispatch_async(_queue, ^{
 
         ARTLogDebug(self.logger, @"RS:%p using authUrl (%@ %@)", _rest, request.HTTPMethod, request.URL);
 
-        task = [_rest executeRequest:request withAuthOption:ARTAuthenticationOff wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+        task = [_rest executeExternalRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (error) {
                 checkerCallback(nil, error);
             } else {
@@ -508,7 +509,7 @@ art_dispatch_async(_queue, ^{
     [request setValue:[encoder mimeType] forHTTPHeaderField:@"Accept"];
     [request setValue:[encoder mimeType] forHTTPHeaderField:@"Content-Type"];
 
-    return [_rest executeRequest:request withAuthOption:ARTAuthenticationOff wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    return [_rest executeAblyRequest:request withAuthOption:ARTAuthenticationOff wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             callback(nil, error);
         } else {

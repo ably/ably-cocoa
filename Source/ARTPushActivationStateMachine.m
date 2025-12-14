@@ -197,7 +197,7 @@ art_dispatch_async(_queue, ^{
         [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
         ARTLogDebug(self->_logger, @"%@: device registration with request %@", NSStringFromClass(self.class), request);
-        [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+        [self->_rest executeAblyRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (error) {
                 ARTLogError(self->_logger, @"%@: device registration failed (%@)", NSStringFromClass(self.class), error.localizedDescription);
                 [self sendEvent:[ARTPushActivationEventGettingDeviceRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
@@ -263,7 +263,7 @@ art_dispatch_async(_queue, ^{
     [request setDeviceAuthentication:local];
 
     ARTLogDebug(_logger, @"%@: update device with request %@", NSStringFromClass(self.class), request);
-    [_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [_rest executeAblyRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             ARTLogError(self->_logger, @"%@: update device failed (%@)", NSStringFromClass(self.class), error.localizedDescription);
             [self sendEvent:[ARTPushActivationEventSyncRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
@@ -311,7 +311,7 @@ art_dispatch_async(_queue, ^{
         [request setDeviceAuthentication:local];
 
         ARTLogDebug(self->_logger, @"%@: sync device with request %@", NSStringFromClass(self.class), request);
-        [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+        [self->_rest executeAblyRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (error) {
                 ARTLogError(self->_logger, @"%@: device registration failed (%@)", NSStringFromClass(self.class), error.localizedDescription);
                 [self sendEvent:[ARTPushActivationEventSyncRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
@@ -366,7 +366,7 @@ art_dispatch_async(_queue, ^{
     [request setDeviceAuthentication:local];
 
     ARTLogDebug(_logger, @"%@: device deregistration with request %@", NSStringFromClass(self.class), request);
-    [_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [_rest executeAblyRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             // RSH3d2c1: ignore unauthorized or invalid credentials errors
             if (response.statusCode == 401 || error.code == 40005) {
