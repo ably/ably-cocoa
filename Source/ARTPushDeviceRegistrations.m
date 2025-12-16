@@ -81,14 +81,26 @@
     #endif
 
 art_dispatch_async(_queue, ^{
-    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:deviceDetails.id] resolvingAgainstBaseURL:NO];
+    NSMutableDictionary<NSString *, NSString *> *params = nil;
     if (self->_rest.options.pushFullWait) {
-        components.queryItems = @[[NSURLQueryItem queryItemWithName:@"fullWait" value:@"true"]];
+        params = @{
+            @"fullWait": @"true"
+        }.mutableCopy;
     }
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
-    request.HTTPMethod = @"PUT";
-    request.HTTPBody = [[self->_rest defaultEncoder] encodeDeviceDetails:deviceDetails error:nil];
-    [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
+    NSData *bodyData = [[self->_rest defaultEncoder] encodeDeviceDetails:deviceDetails error:nil];
+    NSError *error = nil;
+    NSMutableURLRequest *request = [self->_rest buildRequest:@"PUT"
+                                                        path:[@"/push/deviceRegistrations" stringByAppendingPathComponent:deviceDetails.id]
+                                                     baseUrl:self->_rest.baseUrl
+                                                      params:params
+                                                        body:bodyData
+                                                     headers:nil
+                                                       error:&error];
+    if (error) {
+        if (callback) callback([ARTErrorInfo createFromNSError:error]);
+        return;
+    }
+
     [request setDeviceAuthentication:deviceDetails.id localDevice:local logger:self->_logger];
 
     ARTLogDebug(self->_logger, @"save device with request %@", request);
@@ -135,8 +147,19 @@ art_dispatch_async(_queue, ^{
     #endif
 
 art_dispatch_async(_queue, ^{
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:deviceId]];
-    request.HTTPMethod = @"GET";
+    NSError *error = nil;
+    NSMutableURLRequest *request = [self->_rest buildRequest:@"GET"
+                                                        path:[@"/push/deviceRegistrations" stringByAppendingPathComponent:deviceId]
+                                                     baseUrl:self->_rest.baseUrl
+                                                      params:nil
+                                                        body:nil
+                                                     headers:nil
+                                                       error:&error];
+    if (error) {
+        if (callback) callback(nil, [ARTErrorInfo createFromNSError:error]);
+        return;
+    }
+    
     [request setDeviceAuthentication:deviceId localDevice:local logger:self->_logger];
 
     ARTLogDebug(self->_logger, @"get device with request %@", request);
@@ -181,10 +204,18 @@ art_dispatch_async(_queue, ^{
     }
 
 art_dispatch_async(_queue, ^{
-    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"] resolvingAgainstBaseURL:NO];
-    components.queryItems = [params art_asURLQueryItems];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
-    request.HTTPMethod = @"GET";
+    NSError *error = nil;
+    NSMutableURLRequest *request = [self->_rest buildRequest:@"GET"
+                                                        path:@"/push/deviceRegistrations"
+                                                     baseUrl:self->_rest.baseUrl
+                                                      params:params
+                                                        body:nil
+                                                     headers:nil
+                                                       error:&error];
+    if (error) {
+        if (callback) callback(nil, [ARTErrorInfo createFromNSError:error]);
+        return;
+    }
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **error) {
         return [self->_rest.encoders[response.MIMEType] decodeDevicesDetails:data error:error];
@@ -204,13 +235,24 @@ art_dispatch_async(_queue, ^{
     }
 
 art_dispatch_async(_queue, ^{
-    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:deviceId] resolvingAgainstBaseURL:NO];
-        if (self->_rest.options.pushFullWait) {
-        components.queryItems = @[[NSURLQueryItem queryItemWithName:@"fullWait" value:@"true"]];
+    NSMutableDictionary<NSString *, NSString *> *params = nil;
+    if (self->_rest.options.pushFullWait) {
+        params = @{
+            @"fullWait": @"true"
+        }.mutableCopy;
     }
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
-    request.HTTPMethod = @"DELETE";
-    [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
+    NSError *error = nil;
+    NSMutableURLRequest *request = [self->_rest buildRequest:@"DELETE"
+                                                        path:[@"/push/deviceRegistrations" stringByAppendingPathComponent:deviceId]
+                                                     baseUrl:self->_rest.baseUrl
+                                                      params:params
+                                                        body:nil
+                                                     headers:nil
+                                                       error:&error];
+    if (error) {
+        if (callback) callback([ARTErrorInfo createFromNSError:error]);
+        return;
+    }
 
     ARTLogDebug(self->_logger, @"remove device with request %@", request);
     [self->_rest executeAblyRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -248,13 +290,23 @@ art_dispatch_async(_queue, ^{
     #endif
 
 art_dispatch_async(_queue, ^{
-    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"] resolvingAgainstBaseURL:NO];
-    components.queryItems = [params art_asURLQueryItems];
+    NSMutableDictionary<NSString *, NSString *> *queryParams = [params mutableCopy];
     if (self->_rest.options.pushFullWait) {
-        components.queryItems = [components.queryItems arrayByAddingObject:[NSURLQueryItem queryItemWithName:@"fullWait" value:@"true"]];
+        queryParams[@"fullWait"] = @"true";
     }
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
-    request.HTTPMethod = @"DELETE";
+    NSError *error = nil;
+    NSMutableURLRequest *request = [self->_rest buildRequest:@"DELETE"
+                                                        path:@"/push/deviceRegistrations"
+                                                     baseUrl:self->_rest.baseUrl
+                                                      params:queryParams
+                                                        body:nil
+                                                     headers:nil
+                                                       error:&error];
+    if (error) {
+        if (callback) callback([ARTErrorInfo createFromNSError:error]);
+        return;
+    }
+    
     [request setDeviceAuthentication:[params objectForKey:@"deviceId"] localDevice:local];
 
     ARTLogDebug(self->_logger, @"remove devices with request %@", request);

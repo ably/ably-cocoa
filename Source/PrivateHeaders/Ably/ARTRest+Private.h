@@ -100,6 +100,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)timeWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
                       completion:(ARTDateTimeCallback)callback;
 
+- (NSMutableURLRequest * _Nullable)buildRequest:(NSString *)method
+                                           path:(NSString *)path
+                                        baseUrl:(nullable NSURL *)baseUrl
+                                         params:(nullable NSStringDictionary *)params
+                                           body:(nullable id)body
+                                        headers:(nullable NSStringDictionary *)headers
+                                          error:(NSError *_Nullable *_Nullable)errorPtr;
+
 - (BOOL)request:(NSString *)method
            path:(NSString *)path
          params:(nullable NSStringDictionary *)params

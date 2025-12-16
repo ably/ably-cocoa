@@ -35,17 +35,17 @@
     return self;
 }
 
-- (NSMutableArray *)asQueryItems {
-    NSMutableArray *items = [NSMutableArray array];
+- (NSStringDictionary *)asQueryParams {
+    NSMutableDictionary *items = [NSMutableDictionary dictionary];
 
     if (self.clientId) {
-        [items addObject:[NSURLQueryItem queryItemWithName:@"clientId" value:self.clientId]];
+        items[@"clientId"] = self.clientId;
     }
     if (self.connectionId) {
-        [items addObject:[NSURLQueryItem queryItemWithName:@"connectionId" value:self.connectionId]];
+        items[@"connectionId"] = self.connectionId;
     }
-
-    [items addObject:[NSURLQueryItem queryItemWithName:@"limit" value:[NSString stringWithFormat:@"%lu", (unsigned long)self.limit]]];
+    
+    items[@"limit"] = [NSString stringWithFormat:@"%lu", (unsigned long)self.limit];
 
     return items;
 }
@@ -139,10 +139,21 @@ NS_ASSUME_NONNULL_END
         }
         return NO;
     }
-
-    NSURLComponents *requestUrl = [NSURLComponents componentsWithString:[_channel.basePath stringByAppendingPathComponent:@"presence"]];
-    requestUrl.queryItems = [query asQueryItems];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl.URL];
+    
+    NSError *error = nil;
+    NSMutableURLRequest *request = [self->_channel.rest buildRequest:@"GET"
+                                                                path:[_channel.basePath stringByAppendingPathComponent:@"presence"]
+                                                             baseUrl:nil
+                                                              params:query.asQueryParams
+                                                                body:nil
+                                                             headers:nil
+                                                               error:&error];
+    if (error) {
+        if (errorPtr) {
+            *errorPtr = error;
+        }
+        return NO;
+    }
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
         id<ARTEncoder> encoder = [self->_channel.rest.encoders objectForKey:response.MIMEType];
@@ -194,16 +205,20 @@ art_dispatch_async(_queue, ^{
         return NO;
     }
 
-    NSURLComponents *requestUrl = [NSURLComponents componentsWithString:[_channel.basePath stringByAppendingPathComponent:@"presence/history"]];
     NSError *error = nil;
-    requestUrl.queryItems = [query asQueryItems:&error];
+    NSMutableURLRequest *request = [self->_channel.rest buildRequest:@"GET"
+                                                                path:[_channel.basePath stringByAppendingPathComponent:@"presence/history"]
+                                                             baseUrl:nil
+                                                              params:query.asQueryParams
+                                                                body:nil
+                                                             headers:nil
+                                                               error:&error];
     if (error) {
         if (errorPtr) {
             *errorPtr = error;
         }
         return NO;
     }
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl.URL];
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
         id<ARTEncoder> encoder = [self->_channel.rest.encoders objectForKey:response.MIMEType];
@@ -225,3 +240,4 @@ art_dispatch_async(_queue, ^{
 }
 
 @end
+

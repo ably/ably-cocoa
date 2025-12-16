@@ -1907,7 +1907,7 @@ class RestClientTests: XCTestCase {
             }
         } catch let error as NSError {
             XCTAssertEqual(error.code, ARTCustomRequestError.invalidMethod.rawValue)
-            expect(error.localizedDescription).to(contain("Method isn't valid"))
+            expect(error.localizedDescription).to(contain("HTTP method 'A' isn't valid"))
         }
 
         do {
@@ -1916,7 +1916,7 @@ class RestClientTests: XCTestCase {
             }
         } catch let error as NSError {
             XCTAssertEqual(error.code, ARTCustomRequestError.invalidMethod.rawValue)
-            expect(error.localizedDescription).to(contain("Method isn't valid"))
+            expect(error.localizedDescription).to(contain("HTTP method '' isn't valid"))
         }
     }
 
@@ -1946,7 +1946,7 @@ class RestClientTests: XCTestCase {
             }
         } catch let error as NSError {
             XCTAssertEqual(error.code, ARTCustomRequestError.invalidBody.rawValue)
-            expect(error.localizedDescription).to(contain("should be a Dictionary or an Array"))
+            expect(error.localizedDescription).to(contain("should be a NSData, NSDictionary or an NSArray"))
         }
     }
 

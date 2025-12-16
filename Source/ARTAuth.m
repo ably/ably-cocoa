@@ -493,21 +493,24 @@ art_dispatch_async(_queue, ^{
 - (NSObject<ARTCancellable> *)executeTokenRequest:(ARTTokenRequest *)tokenRequest
                                          callback:(ARTTokenDetailsCallback)callback {
     id<ARTEncoder> encoder = _rest.defaultEncoder;
-
-    NSURL *requestUrl = [NSURL URLWithString:[NSString stringWithFormat:@"/keys/%@/requestToken?format=%@", tokenRequest.keyName, [encoder formatAsString]]
-                               relativeToURL:_rest.baseUrl];
-    
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];
-    request.HTTPMethod = @"POST";
-
-    NSError *encodeError = nil;
-    request.HTTPBody = [encoder encodeTokenRequest:tokenRequest error:&encodeError];
-    if (encodeError) {
-        callback(nil, encodeError);
+    NSError *error = nil;
+    NSData *bodyData = [encoder encodeTokenRequest:tokenRequest error:&error];
+    if (error) {
+        callback(nil, error);
         return nil;
     }
-    [request setValue:[encoder mimeType] forHTTPHeaderField:@"Accept"];
-    [request setValue:[encoder mimeType] forHTTPHeaderField:@"Content-Type"];
+    
+    NSMutableURLRequest *request = [_rest buildRequest:@"POST"
+                                                  path:[NSString stringWithFormat:@"/keys/%@/requestToken", tokenRequest.keyName]
+                                               baseUrl:nil
+                                                params:@{ @"format": encoder.formatAsString }
+                                                  body:bodyData
+                                               headers:nil
+                                                 error:&error];
+    if (error) {
+        callback(nil, error);
+        return nil;
+    }
 
     return [_rest executeAblyRequest:request withAuthOption:ARTAuthenticationOff wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {

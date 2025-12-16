@@ -80,14 +80,26 @@
 #endif
     
     art_dispatch_async(_queue, ^{
-        NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"] resolvingAgainstBaseURL:NO];
+        NSMutableDictionary<NSString *, NSString *> *params = nil;
         if (self->_rest.options.pushFullWait) {
-            components.queryItems = @[[NSURLQueryItem queryItemWithName:@"fullWait" value:@"true"]];
+            params = @{
+                @"fullWait": @"true"
+            }.mutableCopy;
         }
-        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
-        request.HTTPMethod = @"POST";
-        request.HTTPBody = [[self->_rest defaultEncoder] encodePushChannelSubscription:channelSubscription error:nil];
-        [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
+        NSData *bodyData = [[self->_rest defaultEncoder] encodePushChannelSubscription:channelSubscription error:nil];
+        NSError *error = nil;
+        NSMutableURLRequest *request = [self->_rest buildRequest:@"POST"
+                                                            path:@"/push/channelSubscriptions"
+                                                         baseUrl:self->_rest.baseUrl
+                                                          params:params
+                                                            body:bodyData
+                                                         headers:nil
+                                                           error:&error];
+        if (error) {
+            if (callback) callback([ARTErrorInfo createFromNSError:error]);
+            return;
+        }
+        
         [request setDeviceAuthentication:channelSubscription.deviceId localDevice:local];
         
         ARTLogDebug(self->_logger, @"save channel subscription with request %@", request);
@@ -121,9 +133,18 @@
     }
     
     art_dispatch_async(_queue, ^{
-        NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channels"] resolvingAgainstBaseURL:NO];
-        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
-        request.HTTPMethod = @"GET";
+        NSError *error = nil;
+        NSMutableURLRequest *request = [self->_rest buildRequest:@"GET"
+                                                            path:@"/push/channels"
+                                                         baseUrl:nil
+                                                          params:nil
+                                                            body:nil
+                                                         headers:nil
+                                                           error:&error];
+        if (error) {
+            if (callback) callback(nil, [ARTErrorInfo createFromNSError:error]);
+            return;
+        }
         
         ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **error) {
             return [self->_rest.encoders[response.MIMEType] decode:data error:error];
@@ -143,11 +164,19 @@
     }
     
     art_dispatch_async(_queue, ^{
-        NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"] resolvingAgainstBaseURL:NO];
-        components.queryItems = [params art_asURLQueryItems];
-        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
-        request.HTTPMethod = @"GET";
-        
+        NSError *error = nil;
+        NSMutableURLRequest *request = [self->_rest buildRequest:@"GET"
+                                                            path:@"/push/channelSubscriptions"
+                                                         baseUrl:nil
+                                                          params:params
+                                                            body:nil
+                                                         headers:nil
+                                                           error:&error];
+        if (error) {
+            if (callback) callback(nil, [ARTErrorInfo createFromNSError:error]);
+            return;
+        }
+    
         ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **error) {
             return [self->_rest.encoders[response.MIMEType] decodePushChannelSubscriptions:data error:error];
         };
@@ -197,13 +226,22 @@
 }
 
 - (void)_removeWhere:(NSStringDictionary *)params wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTCallback)callback {
-    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"] resolvingAgainstBaseURL:NO];
-    components.queryItems = [params art_asURLQueryItems];
+    NSMutableDictionary<NSString *, NSString *> *queryParams = [params mutableCopy];
     if (_rest.options.pushFullWait) {
-        components.queryItems = [components.queryItems arrayByAddingObject:[NSURLQueryItem queryItemWithName:@"fullWait" value:@"true"]];
+        queryParams[@"fullWait"] = @"true";
     }
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
-    request.HTTPMethod = @"DELETE";
+    NSError *error = nil;
+    NSMutableURLRequest *request = [_rest buildRequest:@"DELETE"
+                                                  path:@"/push/channelSubscriptions"
+                                               baseUrl:_rest.baseUrl
+                                                params:queryParams
+                                                  body:nil
+                                               headers:nil
+                                                 error:&error];
+    if (error) {
+        if (callback) callback([ARTErrorInfo createFromNSError:error]);
+        return;
+    }
 #if TARGET_OS_IOS
     [request setDeviceAuthentication:[params objectForKey:@"deviceId"] localDevice:_rest.device_nosync];
 #endif
