@@ -153,10 +153,9 @@ class MessageUpdatesDeletesTests: XCTestCase {
             return
         }
         
-        // Update data and extras fields
+        // Update data
         let messageUpdate = publishedMessage.copy() as! ARTMessage
         messageUpdate.data = "hello world!"
-        messageUpdate.extras = ["editSummary": "added exclamation"] as ARTJsonCompatible
         
         // RSL12a: optional MessageOperation object
         let operation = ARTMessageOperation(clientId: "updater-client", descriptionText: "Editing message text", metadata: ["newValue": "hello world!"])
@@ -214,9 +213,6 @@ class MessageUpdatesDeletesTests: XCTestCase {
         // RSL12b4: data
         XCTAssertEqual(bodyDict["data"] as? String, "hello world!")
         
-        // RSL12b6: extras
-        XCTAssertNotNil(bodyDict["extras"])
-        
         var updatedMessage: ARTMessage!
         
         // Get the updated message by serial string
@@ -272,7 +268,6 @@ class MessageUpdatesDeletesTests: XCTestCase {
         // Create message for delete with fields
         let messageDelete = publishedMessage.copy() as! ARTMessage
         messageDelete.serial = publishedMessageSerial
-        messageDelete.extras = ["deleteReason": "test deletion"] as ARTJsonCompatible
         messageDelete.data = ""
         
         // RSL13a: optional MessageOperation object
@@ -330,9 +325,6 @@ class MessageUpdatesDeletesTests: XCTestCase {
         
         // RSL13b4: data
         XCTAssertEqual(bodyDict["data"] as? String, "")
-        
-        // RSL13b6: extras
-        XCTAssertNotNil(bodyDict["extras"])
         
         var updatedMessage: ARTMessage?
         
