@@ -5,18 +5,18 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- * Contains operation metadata for message updates.
+ * Contains metadata about a message update or delete operation.
  */
 NS_SWIFT_SENDABLE
 @interface ARTMessageOperation : NSObject
 
-/// The client ID associated with this operation.
+/// Optional identifier of the client performing the operation.
 @property (nullable, readonly, nonatomic) NSString *clientId;
 
-/// A description of the operation performed.
+/// Optional human-readable description of the operation.
 @property (nullable, readonly, nonatomic) NSString *descriptionText;
 
-/// Metadata associated with the operation.
+/// Optional dictionary of key-value pairs containing additional metadata about the operation.
 @property (nullable, readonly, nonatomic) NSDictionary<NSString *, NSString *> *metadata;
 
 - (instancetype)initWithClientId:(nullable NSString *)clientId descriptionText:(nullable NSString *)descriptionText metadata:(nullable NSDictionary<NSString *, NSString *> *)metadata;
