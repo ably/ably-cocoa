@@ -3438,13 +3438,13 @@ class AuthTests: XCTestCase {
     }
 
     // RSA10k
-
-    func test__115__authorize__server_time_offset__should_obtain_server_time_once_and_persist_the_offset_from_the_local_clock() throws {
+    
+    func _test__115__authorize__server_time_offset__should_obtain_server_time_once_and_persist_the_offset_from_the_local_clock(_ offset: TimeInterval) throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let rest = ARTRest(options: options)
 
-        let mockServerDate = Date().addingTimeInterval(120)
+        let mockServerDate = Date().addingTimeInterval(offset)
         rest.auth.internal.testSuite_returnValue(for: NSSelectorFromString("handleServerTime:"), with: mockServerDate)
         let currentDate = Date()
 
@@ -3494,6 +3494,14 @@ class AuthTests: XCTestCase {
                 done()
             }
         }
+    }
+
+    func test__115__authorize__server_time_offset__should_obtain_server_time_once_and_persist_the_offset_from_the_local_clock() throws {
+        try _test__115__authorize__server_time_offset__should_obtain_server_time_once_and_persist_the_offset_from_the_local_clock(120)
+    }
+
+    func test__115b__authorize__server_time_offset__should_obtain_server_time_once_and_persist_the_offset_from_the_local_clock() throws {
+        try _test__115__authorize__server_time_offset__should_obtain_server_time_once_and_persist_the_offset_from_the_local_clock(-119) // looks like 120 is out of range in server side comparison
     }
 
     func test__116__authorize__server_time_offset__should_be_consistent_the_timestamp_request_with_the_server_time() throws {
