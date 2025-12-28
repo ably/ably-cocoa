@@ -3479,7 +3479,7 @@ class AuthTests: XCTestCase {
         rest.auth.internal.testSuite_forceTokenToExpire()
 
         waitUntil(timeout: testTimeout) { done in
-            rest.auth.authorize(nil, options: nil) { tokenDetails, error in
+            rest.auth.authorize(nil, options: authOptions) { tokenDetails, error in
                 XCTAssertNil(error)
                 guard tokenDetails != nil else {
                     fail("TokenDetails is nil"); done(); return
