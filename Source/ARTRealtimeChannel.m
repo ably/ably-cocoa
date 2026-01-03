@@ -1213,7 +1213,9 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
           error:(NSError **)errorPtr {
     if (query.untilAttach) { // RTL10b
         if (self.state_nosync != ARTRealtimeChannelAttached) {
-            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain code:ARTRealtimeHistoryErrorNotAttached userInfo:@{NSLocalizedDescriptionKey:@"ARTRealtimeHistoryQuery: untilAttach used in channel that isn't attached"}];
+            if (errorPtr) {
+                *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain code:ARTRealtimeHistoryErrorNotAttached userInfo:@{NSLocalizedDescriptionKey:@"ARTRealtimeHistoryQuery: untilAttach used in channel that isn't attached"}];
+            }
             return false;
         }
         query.realtimeChannelAttachSerial = self.attachSerial;

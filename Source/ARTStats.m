@@ -26,7 +26,7 @@ static NSString *statsUnitToString(ARTStatsGranularity unit) {
 }
 
 - (NSStringDictionary *)asQueryParams {
-    NSMutableDictionary *items = (NSMutableDictionary *)[super asQueryParams];
+    NSMutableDictionary *items = (NSMutableDictionary *)[super asQueryParams].mutableCopy;
     items[@"unit"] = statsUnitToString(self.unit);
     return items;
 }
