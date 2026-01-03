@@ -75,13 +75,21 @@
                 return;
             }
 
-            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/publish"]];
-            request.HTTPMethod = @"POST";
             NSMutableDictionary *body = [NSMutableDictionary dictionary];
             [body setObject:recipient forKey:@"recipient"];
             [body addEntriesFromDictionary:data];
-            request.HTTPBody = [[self->_rest defaultEncoder] encode:body error:nil];
-            [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
+            NSError *error = nil;
+            NSMutableURLRequest *request = [self->_rest buildRequest:@"POST"
+                                                                path:@"/push/publish"
+                                                             baseUrl:self->_rest.baseUrl
+                                                              params:nil
+                                                                body:body
+                                                             headers:nil
+                                                               error:&error];
+            if (error) {
+                if (callback) callback([ARTErrorInfo createFromNSError:error]);
+                return;
+            }
 
             ARTLogDebug(self->_logger, @"push notification to a single device %@", request);
             [self->_rest executeAblyRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {

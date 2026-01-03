@@ -120,13 +120,24 @@ art_dispatch_async(_queue, ^{
     }
     NSString *deviceId = device.id;
 
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"]];
-    request.HTTPMethod = @"POST";
-    request.HTTPBody = [[self->_rest defaultEncoder] encode:@{
+    NSDictionary *bodyDict = @{
         @"deviceId": deviceId,
         @"channel": self->_channel.name,
-    } error:nil];
-    [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
+    };
+    
+    NSError *error = nil;
+    NSMutableURLRequest *request = [self->_rest buildRequest:@"POST"
+                                                        path:@"/push/channelSubscriptions"
+                                                     baseUrl:self->_rest.baseUrl
+                                                      params:nil
+                                                        body:bodyDict
+                                                     headers:nil
+                                                       error:&error];
+    if (error) {
+        if (callback) callback([ARTErrorInfo createFromNSError:error]);
+        return;
+    }
+    
     [request setDeviceAuthentication:deviceId localDevice:device];
 
     ARTLogDebug(self->_logger, @"subscribe notifications for device %@ in channel %@", deviceId, self->_channel.name);
@@ -155,13 +166,23 @@ art_dispatch_async(_queue, ^{
         return;
     }
 
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"]];
-    request.HTTPMethod = @"POST";
-    request.HTTPBody = [[self->_rest defaultEncoder] encode:@{
+    NSDictionary *bodyDict = @{
         @"clientId": clientId,
         @"channel": self->_channel.name,
-    } error:nil];
-    [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
+    };
+    
+    NSError *error = nil;
+    NSMutableURLRequest *request = [self->_rest buildRequest:@"POST"
+                                                        path:@"/push/channelSubscriptions"
+                                                     baseUrl:self->_rest.baseUrl
+                                                      params:nil
+                                                        body:bodyDict
+                                                     headers:nil
+                                                       error:&error];
+    if (error) {
+        if (callback) callback([ARTErrorInfo createFromNSError:error]);
+        return;
+    }
 
     ARTLogDebug(self->_logger, @"subscribe notifications for clientId %@ in channel %@", clientId, self->_channel.name);
     [self->_rest executeAblyRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -190,14 +211,24 @@ art_dispatch_async(_queue, ^{
     }
     NSString *deviceId = device.id;
 
-    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"] resolvingAgainstBaseURL:NO];
-    components.queryItems = @[
-        [NSURLQueryItem queryItemWithName:@"deviceId" value:deviceId],
-        [NSURLQueryItem queryItemWithName:@"channel" value:self->_channel.name],
-    ];
+    NSMutableDictionary<NSString *, NSString *> *params = @{
+        @"deviceId": deviceId,
+        @"channel": self->_channel.name,
+    }.mutableCopy;
+    
+    NSError *error = nil;
+    NSMutableURLRequest *request = [self->_rest buildRequest:@"DELETE"
+                                                        path:@"/push/channelSubscriptions"
+                                                     baseUrl:self->_rest.baseUrl
+                                                      params:params
+                                                        body:nil
+                                                     headers:nil
+                                                       error:&error];
+    if (error) {
+        if (callback) callback([ARTErrorInfo createFromNSError:error]);
+        return;
+    }
 
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
-    request.HTTPMethod = @"DELETE";
     [request setDeviceAuthentication:deviceId localDevice:device];
 
     ARTLogDebug(self->_logger, @"unsubscribe notifications for device %@ in channel %@", deviceId, self->_channel.name);
@@ -226,14 +257,23 @@ art_dispatch_async(_queue, ^{
         return;
     }
 
-    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"] resolvingAgainstBaseURL:NO];
-    components.queryItems = @[
-        [NSURLQueryItem queryItemWithName:@"clientId" value:clientId],
-        [NSURLQueryItem queryItemWithName:@"channel" value:self->_channel.name],
-    ];
-
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
-    request.HTTPMethod = @"DELETE";
+    NSMutableDictionary<NSString *, NSString *> *params = @{
+        @"clientId": clientId,
+        @"channel": self->_channel.name,
+    }.mutableCopy;
+    
+    NSError *error = nil;
+    NSMutableURLRequest *request = [self->_rest buildRequest:@"DELETE"
+                                                        path:@"/push/channelSubscriptions"
+                                                     baseUrl:self->_rest.baseUrl
+                                                      params:params
+                                                        body:nil
+                                                     headers:nil
+                                                       error:&error];
+    if (error) {
+        if (callback) callback([ARTErrorInfo createFromNSError:error]);
+        return;
+    }
 
     ARTLogDebug(self->_logger, @"unsubscribe notifications for clientId %@ in channel %@", clientId, self->_channel.name);
     [self->_rest executeAblyRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -260,7 +300,7 @@ art_dispatch_async(_queue, ^{
 
     __block BOOL ret;
 art_dispatch_sync(_queue, ^{
-    NSMutableDictionary<NSString *, NSString *> *mutableParams = params ? [NSMutableDictionary dictionaryWithDictionary:params] : [[NSMutableDictionary alloc] init];
+    NSMutableDictionary<NSString *, NSString *> *mutableParams = params.mutableCopy ?: [NSMutableDictionary dictionary];
 
     if (!mutableParams[@"deviceId"] && !mutableParams[@"clientId"]) {
         if (errorPtr) {
@@ -283,10 +323,21 @@ art_dispatch_sync(_queue, ^{
 
     mutableParams[@"concatFilters"] = @"true";
 
-    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"] resolvingAgainstBaseURL:NO];
-    components.queryItems = [mutableParams art_asURLQueryItems];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
-    request.HTTPMethod = @"GET";
+    NSError *error = nil;
+    NSMutableURLRequest *request = [self->_rest buildRequest:@"GET"
+                                                        path:@"/push/channelSubscriptions"
+                                                     baseUrl:nil
+                                                      params:mutableParams
+                                                        body:nil
+                                                     headers:nil
+                                                       error:&error];
+    if (error) {
+        if (errorPtr) {
+            *errorPtr = error;
+        }
+        ret = NO;
+        return;
+    }
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **error) {
         return [self->_rest.encoders[response.MIMEType] decodePushChannelSubscriptions:data error:error];

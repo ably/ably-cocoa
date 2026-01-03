@@ -25,12 +25,9 @@ static NSString *statsUnitToString(ARTStatsGranularity unit) {
     }
 }
 
-- (NSMutableArray *)asQueryItems:(NSError **)error {
-    NSMutableArray *items = [super asQueryItems:error];
-    if (*error) {
-        return nil;
-    }
-    [items addObject:[NSURLQueryItem queryItemWithName:@"unit" value:statsUnitToString(self.unit)]];
+- (NSStringDictionary *)asQueryParams {
+    NSMutableDictionary *items = (NSMutableDictionary *)[super asQueryParams].mutableCopy;
+    items[@"unit"] = statsUnitToString(self.unit);
     return items;
 }
 

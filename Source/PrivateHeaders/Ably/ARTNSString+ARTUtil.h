@@ -7,5 +7,6 @@
 + (NSString *)nilToEmpty:(NSString*)aString;
 - (BOOL)isEmptyString;
 - (BOOL)isNotEmptyString;
+- (NSString *)encodePathSegment;
 
 @end

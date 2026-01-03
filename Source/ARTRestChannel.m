@@ -14,6 +14,8 @@
 #import "ARTAuth+Private.h"
 #import "ARTTokenDetails.h"
 #import "ARTNSArray+ARTFunctional.h"
+#import "ARTNSDictionary+ARTDictionaryUtil.h"
+#import "ARTNSString+ARTUtil.h"
 #import "ARTPushChannel+Private.h"
 #import "ARTCrypto+Private.h"
 #import "ARTClientOptions.h"
@@ -191,16 +193,13 @@
         };
     }
 
-    __block BOOL ret;
-art_dispatch_sync(_queue, ^{
     if (query.limit > 1000) {
         if (errorPtr) {
             *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
                                             code:ARTDataQueryErrorLimit
                                         userInfo:@{NSLocalizedDescriptionKey:@"Limit supports up to 1000 results only"}];
         }
-        ret = NO;
-        return;
+        return NO;
     }
     if ([query.start compare:query.end] == NSOrderedDescending) {
         if (errorPtr) {
@@ -208,22 +207,23 @@ art_dispatch_sync(_queue, ^{
                                             code:ARTDataQueryErrorTimestampRange
                                         userInfo:@{NSLocalizedDescriptionKey:@"Start must be equal to or less than end"}];
         }
-        ret = NO;
-        return;
+        return NO;
     }
 
-    NSURLComponents *componentsUrl = [NSURLComponents componentsWithString:[self->_basePath stringByAppendingPathComponent:@"messages"]];
     NSError *error = nil;
-    componentsUrl.queryItems = [query asQueryItems:&error];
+    NSMutableURLRequest *request = [self->_rest buildRequest:@"GET"
+                                                        path:[self->_basePath stringByAppendingPathComponent:@"messages"]
+                                                     baseUrl:nil
+                                                      params:query.asQueryParams
+                                                        body:nil
+                                                     headers:nil
+                                                       error:&error];
     if (error) {
         if (errorPtr) {
             *errorPtr = error;
         }
-        ret = NO;
-        return;
+        return NO;
     }
-
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:componentsUrl.URL];
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^NSArray<ARTMessage *> *(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
         id<ARTEncoder> encoder = [self->_rest.encoders objectForKey:response.MIMEType];
@@ -237,12 +237,11 @@ art_dispatch_sync(_queue, ^{
             return message;
         }];
     };
-
-    ARTLogDebug(self.logger, @"RS:%p C:%p (%@) stats request %@", self->_rest, self, self.name, request);
+    
+art_dispatch_sync(_queue, ^{
     [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor wrapperSDKAgents:wrapperSDKAgents logger:self.logger callback:callback];
-    ret = YES;
 });
-    return ret;
+    return YES;
 }
 
 - (void)status:(ARTChannelDetailsCallback)callback {
@@ -255,8 +254,18 @@ art_dispatch_sync(_queue, ^{
         };
     }
     art_dispatch_async(_queue, ^{
-        NSURL *url = [NSURL URLWithString:self->_basePath];
-        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+        NSError *error = nil;
+        NSMutableURLRequest *request = [self->_rest buildRequest:@"GET"
+                                                            path:self->_basePath
+                                                         baseUrl:nil
+                                                          params:nil
+                                                            body:nil
+                                                         headers:nil
+                                                           error:&error];
+        if (error) {
+            if (callback) callback(nil, [ARTErrorInfo createFromNSError:error]);
+            return;
+        }
         
         ARTLogDebug(self.logger, @"RS:%p C:%p (%@) channel details request %@", self->_rest, self, self.name, request);
         
@@ -317,78 +326,61 @@ art_dispatch_sync(_queue, ^{
     }
     
     art_dispatch_async(_queue, ^{
-        NSData *encodedMessage = nil;
+        NSArray<ARTMessage *> *messages = nil;
+        BOOL dataIsArray = NO;
         
-        if ([data isKindOfClass:[ARTMessage class]]) {
-            ARTMessage *message = (ARTMessage *)data;
-            
-            NSString *baseId = nil;
-            if (self.rest.options.idempotentRestPublishing && message.isIdEmpty) {
+        if ([data isKindOfClass:ARTMessage.class]) {
+            messages = @[data];
+        }
+        else if ([data isKindOfClass:[NSArray<ARTMessage *> class]]) {
+            messages = data;
+            dataIsArray = YES;
+        }
+        else {
+            if (callback) callback([ARTErrorInfo createWithCode:ARTStateInvalidArgs message:@"Unknown data type for publishing messages. Expected ARTMessage or [ARTMessage]."]);
+            return;
+        }
+        
+        NSString *baseId = nil;
+        if (self.rest.options.idempotentRestPublishing) {
+            BOOL messagesHaveEmptyId = [messages artFilter:^BOOL(ARTMessage *m) { return !m.isIdEmpty; }].count <= 0;
+            if (messagesHaveEmptyId) {
                 NSData *baseIdData = [ARTCrypto generateSecureRandomData:ARTIdempotentLibraryGeneratedIdLength];
                 baseId = [baseIdData base64EncodedStringWithOptions:0];
-                message.id = [NSString stringWithFormat:@"%@:0", baseId];
             }
-            
+        }
+        
+        NSInteger serial = 0;
+        for (ARTMessage *message in messages) {
             if (message.clientId && self.rest.auth.clientId_nosync && ![message.clientId isEqualToString:self.rest.auth.clientId_nosync]) {
-                callback([ARTErrorInfo createWithCode:ARTStateMismatchedClientId message:@"attempted to publish message with an invalid clientId"]);
+                if (callback) callback([ARTErrorInfo createWithCode:ARTStateMismatchedClientId message:@"attempted to publish message with an invalid clientId"]);
                 return;
             }
-            
-            NSError *encodeError = nil;
-            encodedMessage = [self.rest.defaultEncoder encodeMessage:message error:&encodeError];
-            if (encodeError) {
-                callback([ARTErrorInfo createFromNSError:encodeError]);
-                return;
+            if (baseId) {
+                message.id = [NSString stringWithFormat:@"%@:%ld", baseId, (long)serial];
             }
-        }
-        else if ([data isKindOfClass:[NSArray class]]) {
-            NSArray<ARTMessage *> *messages = (NSArray *)data;
-            
-            NSString *baseId = nil;
-            if (self.rest.options.idempotentRestPublishing) {
-                BOOL messagesHaveEmptyId = [messages artFilter:^BOOL(ARTMessage *m) { return !m.isIdEmpty; }].count <= 0;
-                if (messagesHaveEmptyId) {
-                    NSData *baseIdData = [ARTCrypto generateSecureRandomData:ARTIdempotentLibraryGeneratedIdLength];
-                    baseId = [baseIdData base64EncodedStringWithOptions:0];
-                }
-            }
-            
-            NSInteger serial = 0;
-            for (ARTMessage *message in messages) {
-                if (message.clientId && self.rest.auth.clientId_nosync && ![message.clientId isEqualToString:self.rest.auth.clientId_nosync]) {
-                    callback([ARTErrorInfo createWithCode:ARTStateMismatchedClientId message:@"attempted to publish message with an invalid clientId"]);
-                    return;
-                }
-                if (baseId) {
-                    message.id = [NSString stringWithFormat:@"%@:%ld", baseId, (long)serial];
-                }
-                serial += 1;
-            }
-            
-            NSError *encodeError = nil;
-            encodedMessage = [self.rest.defaultEncoder encodeMessages:data error:&encodeError];
-            if (encodeError) {
-                callback([ARTErrorInfo createFromNSError:encodeError]);
-                return;
-            }
+            serial += 1;
         }
         
-        NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:[self->_basePath stringByAppendingPathComponent:@"messages"]] resolvingAgainstBaseURL:YES];
-        NSMutableArray<NSURLQueryItem *> *queryItems = [NSMutableArray new];
+        NSArray<NSDictionary *> *jsonMessages = [self.rest.defaultEncoder messagesToArray:messages];
         
-        if (queryItems.count > 0) {
-            components.queryItems = queryItems;
+        // unwrap single item array back to the object, because many tests rely on that
+        id bodyData = jsonMessages.count > 1 || dataIsArray ? jsonMessages : jsonMessages.firstObject;
+        
+        NSError *error = nil;
+        NSMutableURLRequest *request = [self->_rest buildRequest:@"POST"
+                                                            path:[self->_basePath stringByAppendingPathComponent:@"messages"]
+                                                         baseUrl:nil
+                                                          params:nil
+                                                            body:bodyData
+                                                         headers:nil
+                                                           error:&error];
+        if (error) {
+            if (callback) callback([ARTErrorInfo createFromNSError:error]);
+            return;
         }
-        
-        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
-        request.HTTPMethod = @"POST";
-        request.HTTPBody = encodedMessage;
-        
-        if (self.rest.defaultEncoding) {
-            [request setValue:self.rest.defaultEncoding forHTTPHeaderField:@"Content-Type"];
-        }
-        
-        ARTLogDebug(self.logger, @"RS:%p C:%p (%@) post message %@", self->_rest, self, self.name, [[NSString alloc] initWithData:encodedMessage ?: [NSData data] encoding:NSUTF8StringEncoding]);
+
+        ARTLogDebug(self.logger, @"RS:%p C:%p (%@) post message(s):\n%@", self->_rest, self, self.name, jsonMessages);
         
         [self->_rest executeAblyRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (callback) {
@@ -469,14 +461,6 @@ art_dispatch_sync(_queue, ^{
             requestBody[@"extras"] = message.extras;
         }
         
-        // Encode the request body
-        NSError *encodeError = nil;
-        NSData *requestBodyData = [self.rest.defaultEncoder encode:requestBody error:&encodeError];
-        if (encodeError) {
-            if (callback) callback([ARTErrorInfo createFromNSError:encodeError]);
-            return;
-        }
-        
         // RSL12b - PATCH to /channels/{channelName}/messages/{serial}
         // RSL13b - POST to /channels/{channelName}/messages/{serial}/delete
         NSString *messagePath;
@@ -484,35 +468,34 @@ art_dispatch_sync(_queue, ^{
         
         if (isDelete) {
             // RSL13b - POST to /channels/{channelName}/messages/{serial}/delete
-            messagePath = [NSString stringWithFormat:@"messages/%@/delete", [message.serial stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]]];
+            messagePath = [NSString stringWithFormat:@"%@/messages/%@/delete", self->_basePath, [message.serial encodePathSegment]];
             httpMethod = @"POST";
         } else {
             // RSL12b - PATCH to /channels/{channelName}/messages/{serial}
-            messagePath = [NSString stringWithFormat:@"messages/%@", [message.serial stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]]];
+            messagePath = [NSString stringWithFormat:@"%@/messages/%@", self->_basePath, [message.serial encodePathSegment]];
             httpMethod = @"PATCH";
         }
         
-        NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:[self->_basePath stringByAppendingPathComponent:messagePath]] resolvingAgainstBaseURL:YES];
-        
         // RSL12a/RSL13a - params in querystring
-        if (params && params.count > 0) {
-            NSMutableArray<NSURLQueryItem *> *queryItems = [NSMutableArray array];
-            for (NSString *key in params) {
-                [queryItems addObject:[NSURLQueryItem queryItemWithName:key value:params[key].stringValue]];
-            }
-            components.queryItems = queryItems;
-        }
+        NSStringDictionary *queryParams = [params artMap:^id(NSString *key, ARTStringifiable *value) {
+            return value.stringValue;
+        }];
         
-        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
-        request.HTTPMethod = httpMethod;
-        request.HTTPBody = requestBodyData;
-        
-        if (self.rest.defaultEncoding) {
-            [request setValue:self.rest.defaultEncoding forHTTPHeaderField:@"Content-Type"];
+        NSError *error = nil;
+        NSMutableURLRequest *request = [self->_rest buildRequest:httpMethod
+                                                            path:messagePath
+                                                         baseUrl:nil
+                                                          params:queryParams
+                                                            body:requestBody
+                                                         headers:nil
+                                                           error:&error];
+        if (error) {
+            if (callback) callback([ARTErrorInfo createFromNSError:error]);
+            return;
         }
         
         NSString *logOperation = isDelete ? @"delete" : @"update";
-        ARTLogDebug(self.logger, @"RS:%p C:%p (%@) %@ message %@", self->_rest, self, self.name, logOperation, [[NSString alloc] initWithData:requestBodyData ?: [NSData data] encoding:NSUTF8StringEncoding]);
+        ARTLogDebug(self.logger, @"RS:%p C:%p (%@) %@ message:\n%@", self->_rest, self, self.name, logOperation, requestBody);
         
         [self->_rest executeAblyRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (callback) {
@@ -561,12 +544,21 @@ art_dispatch_sync(_queue, ^{
     }
     
     art_dispatch_async(_queue, ^{
-        NSString *messagePath = [NSString stringWithFormat:@"messages/%@", [serial stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]]];
-        NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:[self->_basePath stringByAppendingPathComponent:messagePath]] resolvingAgainstBaseURL:YES];
+        NSString *messagePath = [NSString stringWithFormat:@"%@/messages/%@", self->_basePath, [serial encodePathSegment]];
         
-        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
-        request.HTTPMethod = @"GET";
-        
+        NSError *error = nil;
+        NSMutableURLRequest *request = [self->_rest buildRequest:@"GET"
+                                                            path:messagePath
+                                                         baseUrl:nil
+                                                          params:nil
+                                                            body:nil
+                                                         headers:nil
+                                                           error:&error];
+        if (error) {
+            if (callback) callback(nil, [ARTErrorInfo createFromNSError:error]);
+            return;
+        }
+
         ARTLogDebug(self.logger, @"RS:%p C:%p (%@) get message with serial %@", self->_rest, self, self.name, serial);
         
         [self->_rest executeAblyRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -636,11 +628,20 @@ art_dispatch_sync(_queue, ^{
     }
     
     art_dispatch_async(_queue, ^{
-        NSString *messagePath = [NSString stringWithFormat:@"messages/%@/versions", [serial stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]]];
-        NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:[self->_basePath stringByAppendingPathComponent:messagePath]] resolvingAgainstBaseURL:YES];
+        NSString *path = [NSString stringWithFormat:@"%@/messages/%@/versions", self->_basePath, [serial encodePathSegment]];
         
-        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
-        request.HTTPMethod = @"GET";
+        NSError *error = nil;
+        NSMutableURLRequest *request = [self->_rest buildRequest:@"GET"
+                                                            path:path
+                                                         baseUrl:nil
+                                                          params:nil
+                                                            body:nil
+                                                         headers:nil
+                                                           error:&error];
+        if (error) {
+            if (callback) callback(nil, [ARTErrorInfo createFromNSError:error]);
+            return;
+        }
         
         ARTLogDebug(self.logger, @"RS:%p C:%p (%@) get message versions for serial %@", self->_rest, self, self.name, serial);
         

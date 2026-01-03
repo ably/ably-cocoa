@@ -617,7 +617,7 @@
     return [[ARTAuthDetails alloc] initWithToken:[input artString:@"accessToken"]];
 }
 
-- (NSArray *)messagesToArray:(NSArray *)messages {
+- (NSArray<NSDictionary *> *)messagesToArray:(NSArray<ARTMessage *> *)messages {
     NSMutableArray *output = [NSMutableArray array];
     
     for (ARTMessage *message in messages) {

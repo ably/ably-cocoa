@@ -279,7 +279,6 @@ art_dispatch_async(_queue, ^{
 }
 
 - (BOOL)history:(ARTRealtimeHistoryQuery *)query wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTPaginatedPresenceCallback)callback error:(NSError **)errorPtr {
-    query.realtimeChannel = _channel;
     return [_channel.restChannel.presence history:query wrapperSDKAgents:wrapperSDKAgents callback:callback error:errorPtr];
 }
 

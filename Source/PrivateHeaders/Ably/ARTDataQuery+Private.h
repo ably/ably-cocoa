@@ -5,13 +5,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTDataQuery (Private)
 
-- (nullable NSMutableArray /* <NSURLQueryItem *> */ *)asQueryItems:(NSError *_Nullable *)error;
+- (NSStringDictionary *)asQueryParams;
 
 @end
 
 @interface ARTRealtimeHistoryQuery ()
 
-@property (readwrite) ARTRealtimeChannelInternal *realtimeChannel;
+@property (readwrite, copy) NSString *realtimeChannelAttachSerial;
 
 @end
 

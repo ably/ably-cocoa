@@ -495,7 +495,9 @@ NS_ASSUME_NONNULL_END
         if (![mutableRequest valueForHTTPHeaderField:@"X-Ably-Version"]) {
             [mutableRequest setValue:[ARTDefault apiVersion] forHTTPHeaderField:@"X-Ably-Version"];
         }
+        
         [mutableRequest setValue:[self agentIdentifierWithWrapperSDKAgents:wrapperSDKAgents] forHTTPHeaderField:@"Ably-Agent"];
+        
         if (_options.clientId && !self.auth.isTokenAuth) {
             [mutableRequest setValue:encodeBase64(_options.clientId) forHTTPHeaderField:@"X-Ably-ClientId"];
         }
@@ -607,11 +609,18 @@ NS_ASSUME_NONNULL_END
 
 - (NSObject<ARTCancellable> *)_timeWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
                                              completion:(ARTDateTimeCallback)callback {
-    NSURL *requestUrl = [NSURL URLWithString:@"/time" relativeToURL:self.baseUrl];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];
-    request.HTTPMethod = @"GET";
-    NSString *accept = [[_encoders.allValues valueForKeyPath:@"mimeType"] componentsJoinedByString:@","];
-    [request setValue:accept forHTTPHeaderField:@"Accept"];
+    NSError *error = nil;
+    NSMutableURLRequest *request = [self buildRequest:@"GET"
+                                                 path:@"/time"
+                                              baseUrl:self.baseUrl
+                                               params:nil
+                                                 body:nil
+                                              headers:nil
+                                                error:&error];
+    if (error) {
+        if (callback) callback(nil, error);
+        return nil;
+    }
     
     return [self executeAblyRequest:request withAuthOption:ARTAuthenticationOff wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
@@ -629,6 +638,100 @@ NS_ASSUME_NONNULL_END
             callback(time, decodeError);
         }
     }];
+}
+
+- (NSMutableURLRequest * _Nullable)buildRequest:(NSString *)method
+                                           path:(NSString *)path
+                                        baseUrl:(nullable NSURL *)baseUrl
+                                         params:(nullable NSStringDictionary *)params
+                                           body:(nullable id)body
+                                        headers:(nullable NSStringDictionary *)headers
+                                          error:(NSError *_Nullable *_Nullable)errorPtr {
+    if (![@[@"get", @"post", @"patch", @"put", @"delete"] containsObject:method.lowercaseString]) {
+        if (errorPtr) {
+            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
+                                            code:ARTCustomRequestErrorInvalidMethod
+                                        userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:@"HTTP method '%@' isn't valid.", method]}];
+        }
+        return nil;
+    }
+
+    if (body && ![body isKindOfClass:NSData.class] && ![body isKindOfClass:NSDictionary.class] && ![body isKindOfClass:NSArray.class]) {
+        if (errorPtr) {
+            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
+                                            code:ARTCustomRequestErrorInvalidBody
+                                        userInfo:@{NSLocalizedDescriptionKey:@"Body should be a NSData, NSDictionary or an NSArray."}];
+        }
+        return nil;
+    }
+
+    if ([[path stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet] isEqualToString:@""]) {
+        if (errorPtr) {
+            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
+                                            code:ARTCustomRequestErrorInvalidPath
+                                        userInfo:@{NSLocalizedDescriptionKey:@"Path cannot be empty."}];
+        }
+        return nil;
+    }
+    
+    if (baseUrl == nil) {
+        baseUrl = self.baseUrl;
+    }
+
+    NSURL *url = [NSURL URLWithString:path relativeToURL:baseUrl];
+    // Should not happen in iOS 17 and above. See explanation in the "Important" section here:
+    // https://developer.apple.com/documentation/foundation/nsurl/1572047-urlwithstring
+    if (!url) {
+        if (errorPtr) {
+            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
+                                            code:ARTCustomRequestErrorInvalidPath
+                                        userInfo:@{NSLocalizedDescriptionKey:@"Path isn't valid for an URL."}];
+        }
+        return nil;
+    }
+
+    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:url resolvingAgainstBaseURL:YES];
+    __block NSMutableArray<NSURLQueryItem *> *queryItems = nil;
+    [params enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *value, BOOL *stop) {
+        if (!queryItems) {
+            queryItems = [NSMutableArray new];
+        }
+        [queryItems addObject:[NSURLQueryItem queryItemWithName:key value:value]];
+    }];
+    components.queryItems = queryItems;
+
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
+    request.HTTPMethod = method.uppercaseString;
+
+    [headers enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *value, BOOL *stop) {
+        [request addValue:value forHTTPHeaderField:key];
+    }];
+
+    if (body != nil) {
+        NSData *bodyData;
+        if ([body isKindOfClass:NSData.class]) {
+            bodyData = body;
+        } else {
+            NSError *encodeError = nil;
+            bodyData = [self.defaultEncoder encode:body error:&encodeError];
+            if (encodeError) {
+                if (errorPtr) {
+                    *errorPtr = encodeError;
+                }
+                return nil;
+            }
+        }
+        request.HTTPBody = bodyData;
+        [request setValue:self.defaultEncoder.mimeType forHTTPHeaderField:@"Content-Type"];
+        if ([@[@"post", @"patch", @"put"] containsObject:method.lowercaseString]) {
+            [request setValue:[NSString stringWithFormat:@"%d", (unsigned int)bodyData.length] forHTTPHeaderField:@"Content-Length"];
+        }
+    }
+
+    [request setTimeoutInterval:_options.httpRequestTimeout];
+    [request setAcceptHeader:self.defaultEncoder encoders:self.encoders];
+
+    return request;
 }
 
 - (BOOL)request:(NSString *)method
@@ -649,80 +752,20 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         };
     }
 
-    if (![[method lowercaseString] isEqualToString:@"get"] &&
-        ![[method lowercaseString] isEqualToString:@"post"] &&
-        ![[method lowercaseString] isEqualToString:@"patch"] &&
-        ![[method lowercaseString] isEqualToString:@"put"] &&
-        ![[method lowercaseString] isEqualToString:@"delete"]) {
+    NSError *error = nil;
+    NSMutableURLRequest *request = [self buildRequest:method
+                                                 path:path
+                                              baseUrl:self.baseUrl
+                                               params:params
+                                                 body:body
+                                              headers:headers
+                                                error:&error];
+    if (error) {
         if (errorPtr) {
-            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
-                                            code:ARTCustomRequestErrorInvalidMethod
-                                        userInfo:@{NSLocalizedDescriptionKey:@"Method isn't valid."}];
+            *errorPtr = error;
         }
         return NO;
     }
-
-    if (body &&
-        ![body isKindOfClass:[NSDictionary class]] &&
-        ![body isKindOfClass:[NSArray class]]) {
-        if (errorPtr) {
-            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
-                                            code:ARTCustomRequestErrorInvalidBody
-                                        userInfo:@{NSLocalizedDescriptionKey:@"Body should be a Dictionary or an Array."}];
-        }
-        return NO;
-    }
-
-    if ([[path stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] isEqualToString:@""]) {
-        if (errorPtr) {
-            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
-                                            code:ARTCustomRequestErrorInvalidPath
-                                        userInfo:@{NSLocalizedDescriptionKey:@"Path cannot be empty."}];
-        }
-        return NO;
-    }
-
-    NSURL *url = [NSURL URLWithString:path relativeToURL:self.baseUrl];
-    // Should not happen in iOS 17 and above. See explanation in the "Important" section here:
-    // https://developer.apple.com/documentation/foundation/nsurl/1572047-urlwithstring
-    if (!url) {
-        if (errorPtr) {
-            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
-                                            code:ARTCustomRequestErrorInvalidPath
-                                        userInfo:@{NSLocalizedDescriptionKey:@"Path isn't valid for an URL."}];
-        }
-        return NO;
-    }
-
-    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:url resolvingAgainstBaseURL:YES];
-    __block NSMutableArray<NSURLQueryItem *> *queryItems = nil;
-    [params enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *value, BOOL *stop) {
-        if (!queryItems) {
-            queryItems = [NSMutableArray new];
-        }
-        [queryItems addObject:[NSURLQueryItem queryItemWithName:key value:value]];
-    }];
-    components.queryItems = queryItems;
-
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
-    request.HTTPMethod = method;
-
-    [headers enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *value, BOOL *stop) {
-        [request addValue:value forHTTPHeaderField:key];
-    }];
-
-    if (body != nil) {
-        NSError *encodeError = nil;
-        NSData *bodyData = [self.defaultEncoder encode:body error:&encodeError];
-
-        request.HTTPBody = bodyData;
-        [request setValue:[self.defaultEncoder mimeType] forHTTPHeaderField:@"Content-Type"];
-        if ([[method lowercaseString] isEqualToString:@"post"]) {
-            [request setValue:[NSString stringWithFormat:@"%d", (unsigned int)bodyData.length] forHTTPHeaderField:@"Content-Length"];
-        }
-    }
-
-    [request setAcceptHeader:self.defaultEncoder encoders:self.encoders];
 
     ARTLogDebug(self.logger, @"request %@ %@", method, path);
     art_dispatch_async(_queue, ^{
@@ -750,7 +793,6 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
                        completion:(ARTPaginatedStatsCallback)callback {
     return [self stats:[[ARTStatsQuery alloc] init] wrapperSDKAgents:wrapperSDKAgents callback:callback error:nil];
 }
-
 - (BOOL)stats:(ARTStatsQuery *)query wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTPaginatedStatsCallback)callback error:(NSError **)errorPtr {
     if (callback) {
         ARTPaginatedStatsCallback userCallback = callback;
@@ -778,16 +820,20 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         return NO;
     }
 
-    NSURLComponents *requestUrl = [NSURLComponents componentsWithString:@"/stats"];
     NSError *error = nil;
-    requestUrl.queryItems = [query asQueryItems:&error];
+    NSMutableURLRequest *request = [self buildRequest:@"GET"
+                                                 path:@"/stats"
+                                              baseUrl:self.baseUrl
+                                               params:query.asQueryParams
+                                                 body:nil
+                                              headers:nil
+                                                error:&error];
     if (error) {
         if (errorPtr) {
             *errorPtr = error;
         }
         return NO;
     }
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[requestUrl URLRelativeToURL:self.baseUrl]];
 
     // Override X-Ably-Version header to use protocol version 2 for stats
     [request setValue:@"2" forHTTPHeaderField:@"X-Ably-Version"];
@@ -933,3 +979,4 @@ static BOOL sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = YES;
 }
 
 @end
+

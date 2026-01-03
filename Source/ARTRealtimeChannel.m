@@ -1207,8 +1207,19 @@ art_dispatch_sync(_queue, ^{
     [self history:[[ARTRealtimeHistoryQuery alloc] init] wrapperSDKAgents:wrapperSDKAgents callback:callback error:nil];
 }
 
-- (BOOL)history:(ARTRealtimeHistoryQuery *)query wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTPaginatedMessagesCallback)callback error:(NSError **)errorPtr {
-    query.realtimeChannel = self;
+- (BOOL)history:(ARTRealtimeHistoryQuery *)query
+wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+       callback:(ARTPaginatedMessagesCallback)callback
+          error:(NSError **)errorPtr {
+    if (query.untilAttach) { // RTL10b
+        if (self.state_nosync != ARTRealtimeChannelAttached) {
+            if (errorPtr) {
+                *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain code:ARTRealtimeHistoryErrorNotAttached userInfo:@{NSLocalizedDescriptionKey:@"ARTRealtimeHistoryQuery: untilAttach used in channel that isn't attached"}];
+            }
+            return false;
+        }
+        query.realtimeChannelAttachSerial = self.attachSerial;
+    }
     return [_restChannel history:query wrapperSDKAgents:wrapperSDKAgents callback:callback error:errorPtr];
 }
 

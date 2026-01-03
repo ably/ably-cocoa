@@ -188,7 +188,7 @@ typedef NS_ENUM(NSInteger, ARTDataQueryError) {
 /// :nodoc:
 NS_SWIFT_SENDABLE
 typedef NS_ENUM(NSInteger, ARTRealtimeHistoryError) {
-    ARTRealtimeHistoryErrorNotAttached = ARTDataQueryErrorTimestampRange + 1
+    ARTRealtimeHistoryErrorNotAttached = ARTDataQueryErrorTimestampRange + 1 // TODO: overlaps with ARTDataQueryErrorMissingRequiredFields
 };
 
 /// :nodoc:
@@ -468,11 +468,6 @@ NS_SWIFT_SENDABLE
 @end
 
 /// :nodoc:
-@interface NSDictionary (ARTURLQueryItemAdditions)
-@property (nonatomic, readonly) NSArray<NSURLQueryItem *> *art_asURLQueryItems;
-@end
-
-/// :nodoc:
 @interface NSMutableArray (ARTQueueAdditions)
 - (void)art_enqueue:(id)object;
 - (nullable id)art_dequeue;
@@ -485,6 +480,7 @@ NS_SWIFT_SENDABLE
 
 /// :nodoc:
 typedef NSDictionary<NSString *, NSString *> NSStringDictionary;
+typedef NSMutableDictionary<NSString *, NSString *> NSMutableStringDictionary;
 
 // Below are the typedefs of completion handlers to improve readability and maintainability in properties and method parameters.
 // Either result/response or error can be nil but not both.

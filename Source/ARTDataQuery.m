@@ -22,18 +22,18 @@ static NSString *queryDirectionToString(ARTQueryDirection direction) {
     }
 }
 
-- (NSMutableArray *)asQueryItems:(NSError *_Nullable*)error {
-    NSMutableArray *items = [NSMutableArray array];
+- (NSStringDictionary *)asQueryParams {
+    NSMutableStringDictionary *items = [NSMutableStringDictionary dictionary];
 
     if (self.start) {
-        [items addObject:[NSURLQueryItem queryItemWithName:@"start" value:[NSString stringWithFormat:@"%llu", dateToMilliseconds(self.start)]]];
+        items[@"start"] = [NSString stringWithFormat:@"%llu", dateToMilliseconds(self.start)];
     }
     if (self.end) {
-        [items addObject:[NSURLQueryItem queryItemWithName:@"end" value:[NSString stringWithFormat:@"%llu", dateToMilliseconds(self.end)]]];
+        items[@"end"] = [NSString stringWithFormat:@"%llu", dateToMilliseconds(self.end)];
     }
-
-    [items addObject:[NSURLQueryItem queryItemWithName:@"limit" value:[NSString stringWithFormat:@"%hu", self.limit]]];
-    [items addObject:[NSURLQueryItem queryItemWithName:@"direction" value:queryDirectionToString(self.direction)]];
+    
+    items[@"limit"] = [NSString stringWithFormat:@"%hu", self.limit];
+    items[@"direction"] = queryDirectionToString(self.direction);
 
     return items;
 }
@@ -42,20 +42,10 @@ static NSString *queryDirectionToString(ARTQueryDirection direction) {
 
 @implementation ARTRealtimeHistoryQuery
 
-- (NSMutableArray *)asQueryItems:(NSError **)errorPtr {
-    NSMutableArray *items = [super asQueryItems:errorPtr];
-    if (*errorPtr) {
-        return nil;
-    }
-    if (self.untilAttach) {
-        NSAssert(self.realtimeChannel, @"ARTRealtimeHistoryQuery used from outside ARTRealtimeChannel.history");
-        if (self.realtimeChannel.state_nosync != ARTRealtimeChannelAttached) {
-            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain code:ARTRealtimeHistoryErrorNotAttached userInfo:@{NSLocalizedDescriptionKey:@"ARTRealtimeHistoryQuery: untilAttach used in channel that isn't attached"}];
-            return nil;
-        }
-        [items addObject:[NSURLQueryItem queryItemWithName:@"fromSerial" value:self.realtimeChannel.attachSerial]];
-    }
-    return items;
+- (NSStringDictionary *)asQueryParams {
+    NSMutableStringDictionary *params = super.asQueryParams.mutableCopy;
+    params[@"fromSerial"] = self.realtimeChannelAttachSerial;
+    return params;
 }
 
 @end

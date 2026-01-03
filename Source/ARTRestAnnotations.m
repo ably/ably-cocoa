@@ -5,6 +5,7 @@
 #import "ARTDataQuery+Private.h"
 #import "ARTJsonEncoder.h"
 #import "ARTNSArray+ARTFunctional.h"
+#import "ARTNSString+ARTUtil.h"
 #import "ARTChannel+Private.h"
 #import "ARTBaseMessage+Private.h"
 #import "ARTInternalLog.h"
@@ -37,12 +38,10 @@
     return self;
 }
 
-- (NSMutableArray *)asQueryItems {
-    NSMutableArray *items = [NSMutableArray array];
-
-    [items addObject:[NSURLQueryItem queryItemWithName:@"limit" value:[NSString stringWithFormat:@"%lu", (unsigned long)self.limit]]];
-
-    return items;
+- (NSStringDictionary *)asQueryParams {
+    NSMutableDictionary<NSString *, NSString *> *params = [NSMutableDictionary dictionary];
+    params[@"limit"] = [NSString stringWithFormat:@"%lu", (unsigned long)self.limit];
+    return params;
 }
 
 @end
@@ -187,15 +186,19 @@ art_dispatch_async(_queue, ^{
     }
     
     // Construct URL for the annotation endpoint
-    NSString *path = [NSString stringWithFormat:@"%@/messages/%@/annotations", [self->_channel getBasePath], [messageSerial stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]]];
+    NSString *path = [NSString stringWithFormat:@"%@/messages/%@/annotations", [self->_channel getBasePath], [messageSerial encodePathSegment]];
     
-    NSURL *url = [NSURL URLWithString:path];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-    request.HTTPMethod = @"POST";
-    request.HTTPBody = encodedAnnotation;
-    
-    if (self->_channel.rest.defaultEncoding) {
-        [request setValue:self->_channel.rest.defaultEncoding forHTTPHeaderField:@"Content-Type"];
+    NSError *error = nil;
+    NSMutableURLRequest *request = [self->_channel.rest buildRequest:@"POST"
+                                                                path:path
+                                                             baseUrl:nil
+                                                              params:nil
+                                                                body:encodedAnnotation
+                                                             headers:nil
+                                                               error:&error];
+    if (error) {
+        if (callback) callback([ARTErrorInfo createFromNSError:error]);
+        return;
     }
     
     ARTLogDebug(self->_logger, @"RS:%p CH:%p (%@) publish annotation %@",
@@ -245,19 +248,20 @@ art_dispatch_async(_queue, ^{
     }
     
 art_dispatch_async(_queue, ^{
-    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString: [NSString stringWithFormat:@"%@/messages/%@/annotations", [self->_channel getBasePath], [messageSerial stringByAddingPercentEncodingWithAllowedCharacters:NSCharacterSet.URLPathAllowedCharacterSet]]] resolvingAgainstBaseURL:YES];
+    NSString *path = [NSString stringWithFormat:@"%@/messages/%@/annotations", [self->_channel getBasePath], [messageSerial encodePathSegment]];
     
-    // Add query parameters
-    NSMutableArray<NSURLQueryItem *> *queryItems = [NSMutableArray new];
-    if (query) {
-        [queryItems addObjectsFromArray:[query asQueryItems]];
+    NSError *error = nil;
+    NSMutableURLRequest *request = [self->_channel.rest buildRequest:@"GET"
+                                                                path:path
+                                                             baseUrl:nil
+                                                              params:[query asQueryParams]
+                                                                body:nil
+                                                             headers:nil
+                                                               error:&error];
+    if (error) {
+        if (callback) callback(nil, [ARTErrorInfo createFromNSError:error]);
+        return;
     }
-    if (queryItems.count > 0) {
-        components.queryItems = queryItems;
-    }
-    
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:components.URL];
-    request.HTTPMethod = @"GET";
     
     ARTLogDebug(self->_logger, @"RS:%p CH:%p (%@) get annotations request %@",
                 self->_channel.rest, self->_channel, self->_channel.name, request);

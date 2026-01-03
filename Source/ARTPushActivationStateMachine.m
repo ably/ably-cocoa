@@ -190,11 +190,19 @@ art_dispatch_async(_queue, ^{
     }
 
     void (^doDeviceRegistration)(void) = ^{
-        // Asynchronous HTTP request
-        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"]];
-        request.HTTPMethod = @"POST";
-        request.HTTPBody = [[self->_rest defaultEncoder] encodeLocalDevice:local error:nil];
-        [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
+        NSError *error = nil;
+        NSMutableURLRequest *request = [self->_rest buildRequest:@"POST"
+                                                            path:@"/push/deviceRegistrations"
+                                                         baseUrl:self->_rest.baseUrl
+                                                          params:nil
+                                                            body:[self->_rest.defaultEncoder encodeLocalDevice:local error:nil]
+                                                         headers:nil
+                                                           error:&error];
+        if (error) {
+            ARTLogError(self->_logger, @"%@: device registration failed (%@)", NSStringFromClass(self.class), error.localizedDescription);
+            [self sendEvent:[ARTPushActivationEventGettingDeviceRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
+            return;
+        }
 
         ARTLogDebug(self->_logger, @"%@: device registration with request %@", NSStringFromClass(self.class), request);
         [self->_rest executeAblyRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -252,14 +260,26 @@ art_dispatch_async(_queue, ^{
         return;
     }
 
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:local.id]];
-    request.HTTPMethod = @"PATCH";
-    request.HTTPBody = [[_rest defaultEncoder] encode:@{
+    NSDictionary *bodyDict = @{
         @"push": @{
             @"recipient": local.push.recipient
         }
-    } error:nil];
-    [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
+    };
+    
+    NSError *requestError = nil;
+    NSMutableURLRequest *request = [_rest buildRequest:@"PATCH"
+                                                  path:[@"/push/deviceRegistrations" stringByAppendingPathComponent:local.id]
+                                               baseUrl:_rest.baseUrl
+                                                params:nil
+                                                  body:bodyDict
+                                               headers:nil
+                                                 error:&requestError];
+    if (requestError) {
+        ARTLogError(self->_logger, @"%@: device update failed (%@)", NSStringFromClass(self.class), requestError.localizedDescription);
+        [self sendEvent:[ARTPushActivationEventSyncRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:requestError]]];
+        return;
+    }
+
     [request setDeviceAuthentication:local];
 
     ARTLogDebug(_logger, @"%@: update device with request %@", NSStringFromClass(self.class), request);
@@ -303,17 +323,26 @@ art_dispatch_async(_queue, ^{
 
     void (^doDeviceSync)(void) = ^{
         // Asynchronous HTTP request
-        NSString *const path = [@"/push/deviceRegistrations" stringByAppendingPathComponent:local.id];
-        NSMutableURLRequest *const request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:path]];
-        request.HTTPMethod = @"PUT";
-        request.HTTPBody = [[self->_rest defaultEncoder] encodeDeviceDetails:local error:nil];
-        [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
+        NSError *requestError = nil;
+        NSMutableURLRequest *request = [self->_rest buildRequest:@"PUT"
+                                                            path:[@"/push/deviceRegistrations" stringByAppendingPathComponent:local.id]
+                                                         baseUrl:self->_rest.baseUrl
+                                                          params:nil
+                                                            body:[self->_rest.defaultEncoder encodeDeviceDetails:local error:nil]
+                                                         headers:nil
+                                                           error:&requestError];
+        if (requestError) {
+            ARTLogError(self->_logger, @"%@: device sync failed (%@)", NSStringFromClass(self.class), requestError.localizedDescription);
+            [self sendEvent:[ARTPushActivationEventSyncRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:requestError]]];
+            return;
+        }
+        
         [request setDeviceAuthentication:local];
 
         ARTLogDebug(self->_logger, @"%@: sync device with request %@", NSStringFromClass(self.class), request);
         [self->_rest executeAblyRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (error) {
-                ARTLogError(self->_logger, @"%@: device registration failed (%@)", NSStringFromClass(self.class), error.localizedDescription);
+                ARTLogError(self->_logger, @"%@: device sync failed (%@)", NSStringFromClass(self.class), error.localizedDescription);
                 [self sendEvent:[ARTPushActivationEventSyncRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
                 return;
             }
@@ -361,8 +390,20 @@ art_dispatch_async(_queue, ^{
     }
 
     // Asynchronous HTTP request
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:local.id]];
-    request.HTTPMethod = @"DELETE";
+    NSError *requestError = nil;
+    NSMutableURLRequest *request = [_rest buildRequest:@"DELETE"
+                                                  path:[@"/push/deviceRegistrations" stringByAppendingPathComponent:local.id]
+                                               baseUrl:_rest.baseUrl
+                                                params:nil
+                                                  body:nil
+                                               headers:nil
+                                                 error:&requestError];
+    if (requestError) {
+        ARTLogError(self->_logger, @"%@: device deregistration failed (%@)", NSStringFromClass(self.class), requestError.localizedDescription);
+        [self sendEvent:[ARTPushActivationEventDeregistrationFailed newWithError:[ARTErrorInfo createFromNSError:requestError]]];
+        return;
+    }
+    
     [request setDeviceAuthentication:local];
 
     ARTLogDebug(_logger, @"%@: device deregistration with request %@", NSStringFromClass(self.class), request);

@@ -323,21 +323,6 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
     }
 }
 
-@implementation NSDictionary (ARTURLQueryItemAdditions)
-
-- (NSArray<NSURLQueryItem *> *)art_asURLQueryItems {
-    NSMutableArray<NSURLQueryItem *> *items = [NSMutableArray new];
-    for (id key in [self allKeys]) {
-        id value = [self valueForKey:key];
-        if ([key isKindOfClass:[NSString class]] && [value isKindOfClass:[NSString class]]) {
-            [items addObject:[NSURLQueryItem queryItemWithName:key value:value]];
-        }
-    }
-    return items;
-}
-
-@end
-
 @implementation NSMutableArray (ARTQueueAdditions)
 
 - (void)art_enqueue:(id)object {

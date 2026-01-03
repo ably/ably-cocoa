@@ -48,6 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 // Message
 - (nullable NSData *)encodeMessage:(ARTMessage *)message error:(NSError *_Nullable *_Nullable)error;
 - (nullable ARTMessage *)decodeMessage:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
+- (NSDictionary *)messageToDictionary:(ARTMessage *)message;
 
 // Annotation
 - (nullable NSData *)encodeAnnotation:(ARTAnnotation *)annotation error:(NSError *_Nullable *_Nullable)error;
@@ -56,6 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 // Message list
 - (nullable NSData *)encodeMessages:(NSArray<ARTMessage *> *)messages error:(NSError *_Nullable *_Nullable)error;
 - (nullable NSArray<ARTMessage *> *)decodeMessages:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
+- (NSArray<NSDictionary *> *)messagesToArray:(NSArray<ARTMessage *> *)messages;
 
 // Annotation list
 - (nullable NSData *)encodeAnnotations:(NSArray<ARTAnnotation *> *)annotations error:(NSError *_Nullable *_Nullable)error;
