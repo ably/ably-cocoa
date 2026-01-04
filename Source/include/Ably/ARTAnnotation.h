@@ -47,7 +47,7 @@ NS_SWIFT_SENDABLE
 @property (nonatomic, readonly, nullable) NSString *encoding;
 
 /// Timestamp of when the message was received by Ably, as a `NSDate` object.
-@property (nullable, nonatomic, readonly) NSDate *timestamp;
+@property (readonly, nonatomic) NSDate *timestamp;
 
 /// This annotation's unique serial (lexicographically totally ordered).
 @property (readonly, nonatomic) NSString *serial;
