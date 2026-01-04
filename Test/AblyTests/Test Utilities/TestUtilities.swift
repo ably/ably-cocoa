@@ -108,6 +108,8 @@ class AblyTests {
         let options = try AblyTests.clientOptions(for: test, debug: debug)
         options.testOptions.channelNamePrefix = "test-\(test.id)-\(UUID().uuidString)"
 
+        ARTDefault.setMaxMessageSize(16384)
+        
         if forceNewApp {
             testApplication = nil
         }

@@ -6,13 +6,12 @@
 static NSString *const ARTDefault_apiVersion = @"4"; // CSV2
 
 NSString *const ARTDefaultProduction = @"production";
+NSInteger ARTMaxMessageSize = 65536; // 16384 in sandbox
 
 static NSString *const ARTDefault_restHost = @"rest.ably.io";
 static NSString *const ARTDefault_realtimeHost = @"realtime.ably.io";
 
 static NSTimeInterval _connectionStateTtl = 60.0;
-static NSInteger _maxProductionMessageSize = 65536;
-static NSInteger _maxSandboxMessageSize = 16384;
 
 @implementation ARTDefault
 
@@ -71,19 +70,7 @@ static NSInteger _maxSandboxMessageSize = 16384;
 }
 
 + (NSInteger)maxMessageSize {
-#if DEBUG
-    return _maxSandboxMessageSize;
-#else
-    return _maxProductionMessageSize;
-#endif
-}
-
-+ (NSInteger)maxSandboxMessageSize {
-    return _maxSandboxMessageSize;
-}
-
-+ (NSInteger)maxProductionMessageSize {
-    return _maxProductionMessageSize;
+    return ARTMaxMessageSize;
 }
 
 + (void)setConnectionStateTtl:(NSTimeInterval)value {
@@ -94,23 +81,7 @@ static NSInteger _maxSandboxMessageSize = 16384;
 
 + (void)setMaxMessageSize:(NSInteger)value {
     @synchronized (self) {
-#if DEBUG
-        _maxSandboxMessageSize = value;
-#else
-        _maxProductionMessageSize = value;
-#endif
-    }
-}
-
-+ (void)setMaxProductionMessageSize:(NSInteger)value {
-    @synchronized (self) {
-        _maxProductionMessageSize = value;
-    }
-}
-
-+ (void)setMaxSandboxMessageSize:(NSInteger)value {
-    @synchronized (self) {
-        _maxSandboxMessageSize = value;
+        ARTMaxMessageSize = value;
     }
 }
 
