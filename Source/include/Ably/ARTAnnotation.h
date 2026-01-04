@@ -68,7 +68,7 @@ NS_SWIFT_SENDABLE
                      count:(nullable NSNumber *)count
                       data:(nullable id)data
                   encoding:(nullable NSString *)encoding
-                 timestamp:(nullable NSDate *)timestamp
+                 timestamp:(NSDate *)timestamp
                     serial:(nullable NSString *)serial
              messageSerial:(NSString *)messageSerial
                       type:(NSString *)type
