@@ -35,6 +35,13 @@ typedef NS_ENUM(NSUInteger, ARTMessageAction) {
      * annotations that have been made to this message.
      */
     ARTMessageActionMessageSummary,
+    /**
+     * Message action for an appended message. The `serial` field identifies
+     * the message to which data is being appended. The `data` field is
+     * appended to the previous message's data, while all other fields
+     * replace the previous values.
+     */
+    ARTMessageActionAppend,
 };
 
 NSString *_Nonnull ARTMessageActionToStr(ARTMessageAction action);

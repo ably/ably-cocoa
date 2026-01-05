@@ -156,7 +156,7 @@
     [self internalPostMessages:messagesWithDataEncoded callback:callback];
 }
 
-/// Sends a mutation request to edit the given user-supplied message (i.e. one passed to one of updateMessage or deleteMessage), per RSL15.
+/// Sends a mutation request to edit the given user-supplied message (i.e. one passed to one of updateMessage, appendMessage, or deleteMessage), per RSL15.
 - (void)editMessage:(ARTMessage *)message
              action:(ARTMessageAction)action
           operation:(nullable ARTMessageOperation *)operation
@@ -209,6 +209,11 @@
             callback(error);
         }
     }];
+}
+
+- (void)appendMessage:(ARTMessage *)message operation:(ARTMessageOperation *)operation params:(NSDictionary<NSString *,ARTStringifiable *> *)params wrapperSDKAgents:(NSStringDictionary *)wrapperSDKAgents callback:(ARTEditResultCallback)callback {
+    // RSL15b1, RTL32b1
+    [self editMessage:message action:ARTMessageActionAppend operation:operation params:params wrapperSDKAgents:wrapperSDKAgents callback:callback];
 }
 
 - (void)getMessageWithSerial:(NSString *)serial

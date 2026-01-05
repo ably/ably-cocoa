@@ -423,6 +423,8 @@
             return 3;
         case ARTMessageActionMessageSummary:
             return 4;
+        case ARTMessageActionAppend:
+            return 5;
     }
 }
 

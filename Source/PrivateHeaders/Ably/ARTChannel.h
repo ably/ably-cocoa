@@ -57,6 +57,12 @@ NS_SWIFT_SENDABLE
      wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
              callback:(nullable ARTCallback)callback;
 
+- (void)appendMessage:(ARTMessage *)message
+            operation:(nullable ARTMessageOperation *)operation
+               params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
+     wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+             callback:(nullable ARTEditResultCallback)callback;
+
 - (void)getMessageWithSerial:(NSString *)serial
             wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
                     callback:(ARTMessageErrorCallback)callback;

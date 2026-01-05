@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)internalPostMessages:(id)data callback:(nullable ARTCallback)callback;
 
 /**
- * Internal method for sending a mutation request (update or delete) for a message.
+ * Internal method for sending a mutation request (update, append, delete) for a message.
  *
  * @param message The message to mutate (with action, version, etc. already set).
  * @param params Optional query parameters for the request.

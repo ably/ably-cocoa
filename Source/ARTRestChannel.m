@@ -111,6 +111,10 @@
     [_internal deleteMessage:message operation:operation params:params wrapperSDKAgents:nil callback:callback];
 }
 
+- (void)appendMessage:(ARTMessage *)message operation:(nullable ARTMessageOperation *)operation params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params callback:(nullable ARTEditResultCallback)callback {
+    [_internal appendMessage:message operation:operation params:params wrapperSDKAgents:nil callback:callback];
+}
+
 - (void)getMessageWithSerial:(NSString *)serial callback:(ARTMessageErrorCallback)callback {
     [_internal getMessageWithSerial:serial wrapperSDKAgents:nil callback:callback];
 }
@@ -435,6 +439,9 @@ art_dispatch_sync(_queue, ^{
                     case ARTMessageActionDelete:
                         actionName = @"deleted";
                         break;
+                    case ARTMessageActionAppend:
+                        actionName = @"appended";
+                        break;
                     default:
                         actionName = @"(unknown operation)";
                 }
@@ -475,7 +482,20 @@ art_dispatch_sync(_queue, ^{
             [request setValue:self.rest.defaultEncoding forHTTPHeaderField:@"Content-Type"];
         }
 
-        NSString *logOperation = (message.action == ARTMessageActionDelete) ? @"delete" : @"update";
+        NSString *logOperation;
+        switch (message.action) {
+            case ARTMessageActionUpdate:
+                logOperation = @"update";
+                break;
+            case ARTMessageActionAppend:
+                logOperation = @"append";
+                break;
+            case ARTMessageActionDelete:
+                logOperation = @"delete";
+                break;
+            default:
+                logOperation = @"(unknown operation)";
+        }
         ARTLogDebug(self.logger, @"RS:%p C:%p (%@) %@ message %@", self->_rest, self, self.name, logOperation, message);
 
         [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {

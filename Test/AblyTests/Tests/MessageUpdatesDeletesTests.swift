@@ -360,6 +360,126 @@ class MessageUpdatesDeletesTests: XCTestCase {
         XCTAssertEqual(updatedMessage.version?.descriptionText, "Test delete operation")
         XCTAssertEqual(updatedMessage.version?.metadata, ["reason": "inappropriate content"])
     }
+
+    private func _test__rest_and_realtime__appendMessage(_ testEnvironment: TestEnvironment) throws {
+        let channel = testEnvironment.channel
+
+        // First publish a message
+        waitUntil(timeout: testTimeout) { done in
+            channel.publish("chat-message", data: "Hello") { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+
+        let publishedMessage = waitUntilHistoryBecomesAvailableOnChannel(channel)
+        guard let publishedMessageSerial = publishedMessage.serial else {
+            XCTFail("publishedMessage's serial is nil")
+            return
+        }
+
+        // Create message for append with fields
+        let messageAppend = publishedMessage.copy() as! ARTMessage
+        messageAppend.serial = publishedMessageSerial
+        messageAppend.data = " world!"
+
+        // RSL15a: optional MessageOperation object
+        let operation = ARTMessageOperation(clientId: "appender-client", descriptionText: "Test append operation", metadata: ["reason": "further LLM tokens"])
+
+        // RSL15a: optional params
+        let params: [String: ARTStringifiable] = ["appendParam": .withString("appendValue")]
+
+        var appendResult: ARTUpdateDeleteResult?
+        waitUntil(timeout: testTimeout) { done in
+            channel.append(messageAppend, operation: operation, params: params) { updateDeleteResult, error in
+                XCTAssertNil(error)
+                appendResult = updateDeleteResult
+                done()
+            }
+        }
+
+        if case .rest = testEnvironment {
+            // RSL15b: Verify PATCH request to correct endpoint
+            guard let request = testEnvironment.requests.last, let requestUrl = request.url else {
+                XCTFail("No HTTP request was made")
+                return
+            }
+
+            XCTAssertEqual(request.httpMethod, "PATCH")
+            XCTAssertTrue(requestUrl.path.contains("/channels/\(channel.name)/messages/\(publishedMessageSerial)"))
+
+            // RSL15b: Verify params in querystring
+            XCTAssertTrue(request.url?.query?.contains("appendParam=appendValue") ?? false)
+
+            // RSL15b: Verify request body - encoded Message object
+
+            var bodyDict: [String: Any]!
+
+            switch extractBodyAsMsgPack(request) {
+            case let .failure(error):
+                XCTFail(error)
+            case let .success(httpBody):
+                // RSL15d: The body must be encoded to the appropriate format per RSC8
+                bodyDict = try XCTUnwrap(httpBody.unbox as? [String: Any])
+                XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Type"), "application/x-msgpack")
+            }
+
+            // Verify message fields are present
+            XCTAssertEqual(bodyDict["serial"] as? String, publishedMessageSerial)
+            XCTAssertEqual(bodyDict["name"] as? String, "chat-message")
+            XCTAssertEqual(bodyDict["data"] as? String, " world!")
+
+            // RSL15b1: action field (5 = MESSAGE_APPEND)
+            XCTAssertEqual(bodyDict["action"] as? Int, 5)
+
+            // RSL15b7: version field contains operation data
+            if let versionDict = bodyDict["version"] as? [String: Any] {
+                XCTAssertEqual(versionDict["clientId"] as? String, "appender-client")
+                XCTAssertEqual(versionDict["description"] as? String, "Test append operation")
+                XCTAssertEqual((versionDict["metadata"] as? [String: String])?["reason"], "further LLM tokens")
+            } else {
+                XCTFail("Version should be present in request body")
+            }
+        }
+
+        let unwrappedAppendResult = try XCTUnwrap(appendResult)
+
+        var updatedMessage: ARTMessage?
+
+        // Get the updated message by serial string
+        waitUntil(timeout: testTimeout) { done in
+            channel.getMessageWithSerial(publishedMessageSerial) { message, error in
+                XCTAssertNil(error)
+                updatedMessage = message
+                done()
+            }
+        }
+
+        guard let updatedMessage else {
+            XCTFail("updatedMessage is nil")
+            return
+        }
+
+        XCTAssertNotNil(updatedMessage)
+        XCTAssertEqual(updatedMessage.serial, publishedMessageSerial)
+        XCTAssertEqual(updatedMessage.name, "chat-message")
+        // Check that the data we requested to append (" world!") was successfully appended to the original message's data ("Hello")
+        XCTAssertEqual(updatedMessage.data as? String, "Hello world!")
+        XCTAssertEqual(updatedMessage.action, .update)
+
+        // Verify version properties
+        XCTAssertNotNil(updatedMessage.version)
+        XCTAssertNotNil(updatedMessage.version?.serial)
+        XCTAssertTrue(updatedMessage.version!.serial! > publishedMessageSerial)
+        XCTAssertNotNil(updatedMessage.version?.timestamp)
+        XCTAssertTrue(updatedMessage.version!.timestamp! > publishedMessage.timestamp!)
+        XCTAssertEqual(updatedMessage.version?.clientId, "appender-client")
+        XCTAssertEqual(updatedMessage.version?.descriptionText, "Test append operation")
+        XCTAssertEqual(updatedMessage.version?.metadata, ["reason": "further LLM tokens"])
+
+        // Check the contents of appendMessage's returned UpdateDeleteResult
+        XCTAssertEqual(updatedMessage.version?.serial, unwrappedAppendResult.versionSerial)
+    }
     
     // MARK: - RSL11: RestChannel#getMessage function
     
@@ -434,5 +554,74 @@ class MessageUpdatesDeletesTests: XCTestCase {
             env.realtimeClient?.close()
         }
         try _test__rest_and_realtime__deleteMessage(env)
+    }
+
+    // MARK: - RSL15: RestChannel#appendMessage function
+
+    func test__RSL15__appendMessage() throws {
+        let test = Test()
+        try _test__rest_and_realtime__appendMessage(.rest(test))
+    }
+
+    // MARK: - RTL32: RealtimeChannel#appendMessage function
+
+    // RTL32
+    func test__RTL32__appendMessage() throws {
+        let test = Test()
+        let env = try TestEnvironment.realtime(test)
+        defer {
+            env.realtimeClient?.close()
+        }
+        try _test__rest_and_realtime__appendMessage(env)
+    }
+
+    func test_subscribeToAppends() throws {
+        // Given: A realtime channel that supports mutable messages
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        options.testOptions.channelNamePrefix = nil
+        let client = ARTRealtime(options: options)
+        defer { client.close() }
+        let channelName = test.uniqueChannelName(prefix: "mutable:")
+        let channel = client.channels.get(channelName)
+
+        waitUntil(timeout: testTimeout) { done in
+            channel.attach { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+
+        // When: An update is appended to a message via appendMessage()
+
+        waitUntil(timeout: testTimeout) { done in
+            channel.publish(nil, data: "Hello") { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+
+        let publishedMessage = waitUntilHistoryBecomesAvailableOnChannel(channel)
+        var updatedMessage: ARTMessage?
+
+        waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(2, done: done)
+
+            channel.subscribe { message in
+                updatedMessage = message
+                partialDone()
+            }
+
+            publishedMessage.data = " world!"
+            channel.append(publishedMessage, operation: nil, params: nil) { _, error in
+                print("Append completed")
+                XCTAssertNil(error)
+                partialDone()
+            }
+        }
+
+        // Then: The realtime channel emits a message with action APPEND
+        XCTAssertEqual(updatedMessage?.data as? String, " world!")
+        XCTAssertEqual(updatedMessage?.action, .append)
     }
 }

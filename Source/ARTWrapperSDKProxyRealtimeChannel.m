@@ -129,6 +129,14 @@ NS_ASSUME_NONNULL_END
                                           callback:callback];
 }
 
+- (void)appendMessage:(ARTMessage *)message operation:(ARTMessageOperation *)operation params:(NSDictionary<NSString *,ARTStringifiable *> *)params callback:(ARTEditResultCallback)callback {
+    [self.underlyingChannel.internal appendMessage:message
+                                         operation:operation
+                                            params:params
+                                  wrapperSDKAgents:self.proxyOptions.agents
+                                          callback:callback];
+}
+
 - (void)getMessageVersionsWithSerial:(nonnull NSString *)serial callback:(nonnull ARTPaginatedMessagesCallback)callback {
     [self.underlyingChannel.internal getMessageVersionsWithSerial:serial
                                                  wrapperSDKAgents:self.proxyOptions.agents

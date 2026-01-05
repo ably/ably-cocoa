@@ -97,6 +97,19 @@ NS_ASSUME_NONNULL_BEGIN
              callback:(nullable ARTCallback)callback;
 
 /**
+ * Appends data to an existing message. The supplied `data` property is appended to the previous message's data, while all other properties (`name`, `extras`) replace the previous values if provided.
+ *
+ * @param message An `ARTMessage` object containing a populated `serial` field and the data to append.
+ * @param operation An optional `ARTMessageOperation` object containing metadata about the append operation.
+ * @param params Optional parameters (sent as part of the query string for REST and ignored for Realtime).
+ * @param callback A success or failure callback function. On success, it receives an `ARTUpdateDeleteResult` object containing the new version of the message.
+ */
+- (void)appendMessage:(ARTMessage *)message
+            operation:(nullable ARTMessageOperation *)operation
+               params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
+             callback:(nullable ARTEditResultCallback)callback;
+
+/**
  * Retrieves the latest version of a specific message by its serial identifier.
  *
  * @param serial A serial identifier string of the message to retrieve.

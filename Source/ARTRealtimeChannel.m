@@ -155,6 +155,10 @@
     [_internal deleteMessage:message operation:operation params:params wrapperSDKAgents:nil callback:callback];
 }
 
+- (void)appendMessage:(ARTMessage *)message operation:(nullable ARTMessageOperation *)operation params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params callback:(nullable ARTEditResultCallback)callback {
+    [_internal appendMessage:message operation:operation params:params wrapperSDKAgents:nil callback:callback];
+}
+
 - (void)getMessageWithSerial:(NSString *)serial callback:(ARTMessageErrorCallback)callback {
     [_internal getMessageWithSerial:serial wrapperSDKAgents:nil callback:callback];
 }
