@@ -142,5 +142,8 @@ module Ably {
         header "../PrivateHeaders/Ably/ARTDictionarySerializable.h"
         header "../PrivateHeaders/Ably/ARTMessageOperation+Private.h"
         header "../PrivateHeaders/Ably/ARTMessage+Private.h"
+        header "../PrivateHeaders/Ably/ARTPublishResult.h"
+        header "../PrivateHeaders/Ably/ARTPublishResultSerial.h"
+        header "../PrivateHeaders/Ably/ARTMessageSendStatus.h"
     }
 }

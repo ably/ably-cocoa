@@ -7,6 +7,7 @@
 #import "ARTRestChannel+Private.h"
 #import <Ably/ARTRealtimeChannel.h>
 #import <Ably/ARTEventEmitter.h>
+#import "ARTMessageSendStatus.h"
 #import "ARTRealtime+Private.h"
 #import "ARTQueuedDealloc.h"
 #import "ARTPushChannel+Private.h"
@@ -129,7 +130,7 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
 ///
 /// - If the channel's state is neither SUSPENDED nor FAILED then the message will be submitted to the connection for further checks per RTL6c1 and RTL6c2. Note that these checks may cause the connection to immediately reject the message per RTL6c4.
 /// - If the channel's state is SUSPENDED or FAILED then the callback will be called immediately with an error per RTL6c4.
-- (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(ARTStatusCallback)cb;
+- (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(ARTMessageSendCallback)cb;
 
 - (void)setAttached:(ARTProtocolMessage *)message;
 - (void)setDetached:(ARTProtocolMessage *)message;

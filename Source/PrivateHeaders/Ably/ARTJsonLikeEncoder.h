@@ -5,6 +5,9 @@
 #import <Ably/ARTAuthDetails.h>
 #import <Ably/ARTStats.h>
 
+@class ARTPublishResult;
+@class ARTPublishResultSerial;
+
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol ARTJsonLikeEncoderDelegate <NSObject>
@@ -55,6 +58,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSDictionary *)authDetailsToDictionary:(ARTAuthDetails *)authDetails;
 - (nullable ARTAuthDetails *)authDetailsFromDictionary:(NSDictionary *)input;
+
+- (nullable ARTPublishResultSerial *)publishResultSerialFromValue:(id)input;
+- (nullable NSArray<ARTPublishResultSerial *> *)publishResultSerialsFromArray:(NSArray *)input;
+- (nullable ARTPublishResult *)publishResultFromDictionary:(NSDictionary *)input;
+- (nullable NSArray<ARTPublishResult *> *)publishResultsFromArray:(NSArray *)input;
+
+- (id)publishResultSerialToValue:(ARTPublishResultSerial *)serial;
+- (NSArray *)publishResultSerialsToArray:(NSArray<ARTPublishResultSerial *> *)serials;
+- (NSDictionary *)publishResultToDictionary:(ARTPublishResult *)publishResult;
+- (NSArray *)publishResultsToArray:(NSArray<ARTPublishResult *> *)publishResults;
 
 - (nullable NSArray *)statsFromArray:(NSArray *)input;
 - (nullable ARTStats *)statsFromDictionary:(NSDictionary *)input;

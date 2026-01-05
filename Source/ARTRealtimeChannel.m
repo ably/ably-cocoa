@@ -444,9 +444,9 @@ art_dispatch_sync(_queue, ^{
     msg.channel = self.name;
     msg.messages = data;
 
-    [self publishProtocolMessage:msg callback:^void(ARTStatus *status) {
+    [self publishProtocolMessage:msg callback:^void(ARTMessageSendStatus *status) {
         if (callback)
-            callback(status.errorInfo);
+            callback(status.status.errorInfo);
     }];
 });
 }
@@ -459,9 +459,9 @@ art_dispatch_sync(_queue, ^{
     pm.channel = self.name;
     pm.state = objectMessages;
 
-    [self publishProtocolMessage:pm callback:^(ARTStatus *status) {
+    [self publishProtocolMessage:pm callback:^(ARTMessageSendStatus *status) {
         if (completion) {
-            completion(status.errorInfo);
+            completion(status.status.errorInfo);
         }
     }];
  }
@@ -491,13 +491,13 @@ art_dispatch_sync(_queue, ^{
     [self.restChannel getMessageVersionsWithSerial:serial wrapperSDKAgents:wrapperSDKAgents callback:callback];
 }
 
-- (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(ARTStatusCallback)cb {
+- (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(ARTMessageSendCallback)cb {
     switch (self.state_nosync) {
         case ARTRealtimeChannelSuspended:
         case ARTRealtimeChannelFailed: {
             if (cb) {
-                ARTStatus *statusInvalidChannelState = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:ARTErrorChannelOperationFailedInvalidState message:[NSString stringWithFormat:@"channel operation failed (invalid channel state: %@)", ARTRealtimeChannelStateToStr(self.state_nosync)]]];
-                cb(statusInvalidChannelState);
+                ARTErrorInfo *error = [ARTErrorInfo createWithCode:ARTErrorChannelOperationFailedInvalidState message:[NSString stringWithFormat:@"channel operation failed (invalid channel state: %@)", ARTRealtimeChannelStateToStr(self.state_nosync)]];
+                cb([ARTMessageSendStatus errorWithInfo:error]);
             }
             break;
         }
@@ -506,7 +506,7 @@ art_dispatch_sync(_queue, ^{
         case ARTRealtimeChannelDetached:
         case ARTRealtimeChannelAttaching:
         case ARTRealtimeChannelAttached: {
-            [self.realtime send:pm sentCallback:nil ackCallback:^(ARTStatus *status) {
+            [self.realtime send:pm sentCallback:nil ackCallback:^(ARTMessageSendStatus *status) {
                 if (cb) cb(status);
             }];
             break;

@@ -13,6 +13,8 @@
 #import "ARTMessageAnnotations+Private.h"
 #import "ARTProtocolMessage.h"
 #import "ARTProtocolMessage+Private.h"
+#import "ARTPublishResult.h"
+#import "ARTPublishResultSerial.h"
 #import "ARTNSDictionary+ARTDictionaryUtil.h"
 #import "ARTNSDate+ARTUtil.h"
 #import "ARTInternalLog.h"
@@ -617,6 +619,97 @@
     return [[ARTAuthDetails alloc] initWithToken:[input artString:@"accessToken"]];
 }
 
+- (nullable ARTPublishResultSerial *)publishResultSerialFromValue:(id)input {
+    // input can be NSString or NSNull for nullable strings
+    if ([input isKindOfClass:[NSString class]]) {
+        return [[ARTPublishResultSerial alloc] initWithValue:(NSString *)input];
+    } else if ([input isKindOfClass:[NSNull class]]) {
+        return [[ARTPublishResultSerial alloc] initWithValue:nil];
+    }
+    return nil;
+}
+
+- (nullable NSArray<ARTPublishResultSerial *> *)publishResultSerialsFromArray:(NSArray *)input {
+    if (![input isKindOfClass:[NSArray class]]) {
+        return nil;
+    }
+
+    NSMutableArray *output = [NSMutableArray array];
+    for (id item in input) {
+        ARTPublishResultSerial *serial = [self publishResultSerialFromValue:item];
+        if (!serial) {
+            return nil;
+        }
+        [output addObject:serial];
+    }
+    return output;
+}
+
+- (nullable ARTPublishResult *)publishResultFromDictionary:(NSDictionary *)input {
+    if (![input isKindOfClass:[NSDictionary class]]) {
+        return nil;
+    }
+
+    NSArray *serialsArray = [input objectForKey:@"serials"];
+    NSArray<ARTPublishResultSerial *> *serials = [self publishResultSerialsFromArray:serialsArray];
+    if (!serials) {
+        return nil;
+    }
+
+    return [[ARTPublishResult alloc] initWithSerials:serials];
+}
+
+- (nullable NSArray<ARTPublishResult *> *)publishResultsFromArray:(NSArray *)input {
+    if (![input isKindOfClass:[NSArray class]]) {
+        return nil;
+    }
+
+    NSMutableArray *output = [NSMutableArray array];
+    for (NSDictionary *item in input) {
+        ARTPublishResult *publishResult = [self publishResultFromDictionary:item];
+        if (!publishResult) {
+            return nil;
+        }
+        [output addObject:publishResult];
+    }
+    return output;
+}
+
+- (id)publishResultSerialToValue:(ARTPublishResultSerial *)serial {
+    // Convert ARTPublishResultSerial to either NSString or NSNull for nullable strings
+    if (serial.value) {
+        return serial.value;
+    } else {
+        return [NSNull null];
+    }
+}
+
+- (NSArray *)publishResultSerialsToArray:(NSArray<ARTPublishResultSerial *> *)serials {
+    NSMutableArray *output = [NSMutableArray array];
+    for (ARTPublishResultSerial *serial in serials) {
+        id value = [self publishResultSerialToValue:serial];
+        [output addObject:value];
+    }
+    return output;
+}
+
+- (NSDictionary *)publishResultToDictionary:(ARTPublishResult *)publishResult {
+    NSMutableDictionary *output = [NSMutableDictionary dictionary];
+    if (publishResult.serials) {
+        output[@"serials"] = [self publishResultSerialsToArray:publishResult.serials];
+    }
+    return output;
+}
+
+- (NSArray *)publishResultsToArray:(NSArray<ARTPublishResult *> *)publishResults {
+    NSMutableArray *output = [NSMutableArray array];
+    for (ARTPublishResult *publishResult in publishResults) {
+        NSDictionary *item = [self publishResultToDictionary:publishResult];
+        [output addObject:item];
+    }
+    return output;
+}
+
 - (NSArray *)messagesToArray:(NSArray *)messages {
     NSMutableArray *output = [NSMutableArray array];
     
@@ -712,6 +805,10 @@
 
     if (message.params) {
         output[@"params"] = message.params;
+    }
+
+    if (message.res) {
+        output[@"res"] = [self publishResultsToArray:message.res];
     }
 
 #ifdef ABLY_SUPPORTS_PLUGINS
@@ -964,6 +1061,7 @@
     message.messages = [self messagesFromArray:messages protocolMessage:message];
     message.presence = [self presenceMessagesFromArray:[input objectForKey:@"presence"]];
     message.annotations = [self annotationsFromArray:[input objectForKey:@"annotations"]];
+    message.res = [self publishResultsFromArray:[input objectForKey:@"res"]];
 #ifdef ABLY_SUPPORTS_PLUGINS
     message.state = [self objectMessagesFromArray:[input objectForKey:@"state"] protocolMessage:message];
 #endif

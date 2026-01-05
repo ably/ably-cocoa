@@ -25,6 +25,7 @@
         _flags = 0;
         _error = nil;
         _connectionDetails = nil;
+        _res = nil;
     }
     return self;
 }
@@ -56,6 +57,7 @@
     [description appendFormat:@" presence: %@\n", self.presence];
     [description appendFormat:@" annotations: %@\n", self.annotations];
     [description appendFormat:@" params: %@\n", self.params];
+    [description appendFormat:@" res: %@\n", self.res];
     [description appendFormat:@"}"];
     return description;
 }
@@ -78,6 +80,7 @@
     pm.error = self.error;
     pm.connectionDetails = self.connectionDetails;
     pm.params = self.params;
+    pm.res = self.res;
     return pm;
 }
 

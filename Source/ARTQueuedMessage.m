@@ -5,7 +5,7 @@
 
 @implementation ARTQueuedMessage
 
-- (instancetype)initWithProtocolMessage:(ARTProtocolMessage *)msg sentCallback:(ARTCallback)sentCallback ackCallback:(ARTStatusCallback)ackCallback {
+- (instancetype)initWithProtocolMessage:(ARTProtocolMessage *)msg sentCallback:(ARTCallback)sentCallback ackCallback:(ARTMessageSendCallback)ackCallback {
     self = [super init];
     if (self) {
         _msg = msg;
@@ -33,9 +33,9 @@
     };
 }
 
-- (ARTStatusCallback)ackCallback {
-    return ^(ARTStatus *status) {
-        for (ARTStatusCallback cb in self.ackCallbacks) {
+- (ARTMessageSendCallback)ackCallback {
+    return ^(ARTMessageSendStatus *status) {
+        for (ARTMessageSendCallback cb in self.ackCallbacks) {
             cb(status);
         }
     };
