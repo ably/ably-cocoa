@@ -33,6 +33,9 @@
 #import "ARTBackoffRetryDelayCalculator.h"
 #import "ARTInternalLog.h"
 #import "ARTAttachRetryState.h"
+#import "ARTPublishResult.h"
+#import "ARTPublishResultSerial.h"
+#import "ARTUpdateDeleteResult.h"
 #if TARGET_OS_IPHONE
 #import "ARTPushChannel+Private.h"
 #endif
@@ -467,11 +470,39 @@ art_dispatch_sync(_queue, ^{
  }
 #endif
 
-- (void)internalSendMutationRequestForMessage:(ARTMessage *)message
-                                       params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
-                             wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
-                                     callback:(nullable ARTUpdateDeleteResultCallback)callback {
-    [self.restChannel internalSendMutationRequestForMessage:message params:params wrapperSDKAgents:wrapperSDKAgents callback:callback];
+- (void)internalSendEditRequestForMessage:(ARTMessage *)message
+                                   params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
+                         wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                                 callback:(nullable ARTEditResultCallback)callback {
+    if (callback) {
+        ARTEditResultCallback userCallback = callback;
+        callback = ^(ARTUpdateDeleteResult *_Nullable result, ARTErrorInfo *_Nullable error) {
+            art_dispatch_async(self->_userQueue, ^{
+                userCallback(result, error);
+            });
+        };
+    }
+
+    art_dispatch_sync(_queue, ^{
+        // RTL32b
+        ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
+        msg.action = ARTProtocolMessageMessage;
+        msg.channel = self.name;
+        msg.messages = @[message];
+
+        [self publishProtocolMessage:msg callback:^void(ARTMessageSendStatus *status) {
+            if (callback) {
+                if (status.status.errorInfo) {
+                    callback(nil, status.status.errorInfo);
+                } else {
+                    // RTL32d: Extract the versionSerial from the ACK and create an UpdateDeleteResult
+                    NSString *versionSerial = status.publishResult.serials.firstObject.value;
+                    ARTUpdateDeleteResult *updateDeleteResult = [[ARTUpdateDeleteResult alloc] initWithVersionSerial:versionSerial];
+                    callback(updateDeleteResult, nil);
+                }
+            }
+        }];
+    });
 }
 
 - (void)getMessageWithSerial:(NSString *)serial wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTMessageErrorCallback)callback {

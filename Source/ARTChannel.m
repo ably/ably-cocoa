@@ -190,7 +190,7 @@
                params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
      wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
              callback:(nullable ARTCallback)callback {
-    // RSL15b1
+    // RSL15b1, RTL32b1
     [self editMessage:message action:ARTMessageActionUpdate operation:operation params:params wrapperSDKAgents:wrapperSDKAgents callback:^(ARTUpdateDeleteResult *result, ARTErrorInfo *error) {
         if (callback) {
             callback(error);
@@ -203,7 +203,7 @@
                params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
      wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
              callback:(nullable ARTCallback)callback {
-    // RSL15b1
+    // RSL15b1, RTL32b1
     [self editMessage:message action:ARTMessageActionDelete operation:operation params:params wrapperSDKAgents:wrapperSDKAgents callback:^(ARTUpdateDeleteResult *result, ARTErrorInfo *error) {
         if (callback) {
             callback(error);

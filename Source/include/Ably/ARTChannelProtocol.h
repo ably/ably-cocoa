@@ -75,7 +75,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @param message An `ARTMessage` object containing a populated `serial` field and the fields to update.
  * @param operation An optional `ARTMessageOperation` object containing metadata about the update operation.
- * @param params Optional parameters sent as part of the query string.
+ * @param params Optional parameters (sent as part of the query string for REST and ignored for Realtime).
  * @param callback A success or failure callback function.
  */
 - (void)updateMessage:(ARTMessage *)message
@@ -88,7 +88,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @param message An `ARTMessage` object containing a populated `serial` field.
  * @param operation An optional `ARTMessageOperation` object containing metadata about the delete operation.
- * @param params Optional parameters sent as part of the query string.
+ * @param params Optional parameters (sent as part of the query string for REST and ignored for Realtime).
  * @param callback A success or failure callback function.
  */
 - (void)deleteMessage:(ARTMessage *)message
