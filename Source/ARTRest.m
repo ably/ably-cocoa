@@ -16,9 +16,9 @@
 #import "ARTHttp.h"
 #import "ARTClientOptions+Private.h"
 #import "ARTDefault.h"
+#import "ARTDefault+Private.h"
 #import "ARTStats.h"
 #import "ARTFallback+Private.h"
-#import "ARTFallbackHosts.h"
 #import "ARTNSDictionary+ARTDictionaryUtil.h"
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTRestChannel.h"
@@ -47,6 +47,7 @@
 #import "ARTPushActivationStateMachine+Private.h"
 #import "ARTPushActivationEvent.h"
 #endif
+#import "ARTDomainSelector.h"
 
 @implementation ARTRest {
     ARTQueuedDealloc *_dealloc;
@@ -372,14 +373,12 @@ NS_ASSUME_NONNULL_END
         }
         
         // RSC15f - reset the successed fallback host on fallbackRetryTimeout expiration
-        // change URLRequest host from `fallback host` to `default host`
-        //
         if (self.currentFallbackHost != nil && self.fallbackRetryExpiration != nil && [[self.continuousClock now] isAfter:self.fallbackRetryExpiration]) {
             ARTLogDebug(self.logger, @"RS:%p fallbackRetryExpiration ids expired, reset `prioritizedHost` and `currentFallbackHost`", self);
             
             self.currentFallbackHost = nil;
             self.prioritizedHost = nil;
-            [mutableRequest replaceHostWith:_options.restHost];
+            [mutableRequest replaceHostWith:_options.domainSelector.primaryDomain];
         }
     }
 
@@ -443,13 +442,13 @@ NS_ASSUME_NONNULL_END
             // Response Status Code < 400 and no errors
             if (error == nil && self.currentFallbackHost != nil) {
                 ARTLogDebug(self.logger, @"RS:%p switching `prioritizedHost` to fallback host %@", self, self.currentFallbackHost);
-                self.prioritizedHost = self.currentFallbackHost;
+                self.prioritizedHost = self.currentFallbackHost; // RSC15f
             }
         }
         
         if (retries < self->_options.httpMaxRetryCount && [self shouldRetryWithFallback:request response:response error:error]) {
             if (!blockFallbacks) {
-                NSArray *hosts = [ARTFallbackHosts hostsFromOptions:self->_options];
+                NSArray *hosts = self->_options.domainSelector.fallbackDomains;
                 blockFallbacks = [[ARTFallback alloc] initWithFallbackHosts:hosts shuffleArray:self->_options.testOptions.shuffleArray];
             }
             if (blockFallbacks) {
@@ -459,7 +458,7 @@ NS_ASSUME_NONNULL_END
                     
                     self.currentFallbackHost = host;
                     NSMutableURLRequest *newRequest = [request copy];
-                    [newRequest setValue:host forHTTPHeaderField:@"Host"];
+                    [newRequest setValue:host forHTTPHeaderField:@"Host"]; // RSC15j
                     newRequest.URL = [NSURL copyFromURL:request.URL withHost:host];
                     task = [self executeRequest:newRequest
                                       fallbacks:blockFallbacks
@@ -518,7 +517,7 @@ NS_ASSUME_NONNULL_END
         // Test purpose only
         return _prioritizedHost;
     }
-    return self.options.restHost;
+    return self.options.domainSelector.primaryDomain;
 }
 
 - (NSString *)prepareBasicAuthorisationHeader:(NSString *)key {
@@ -676,7 +675,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 }
 
 - (NSObject<ARTCancellable> *)internetIsUp:(void (^)(BOOL isUp)) cb {
-    NSURL *requestUrl = [NSURL URLWithString:@"https://internet-up.ably-realtime.com/is-the-internet-up.txt"];
+    NSURL *requestUrl = [NSURL URLWithString:self.options.connectivityCheckUrl ?: ARTDefault.connectivityCheckUrl]; // REC3a, REC3b
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];
     request.HTTPMethod = @"GET";
 

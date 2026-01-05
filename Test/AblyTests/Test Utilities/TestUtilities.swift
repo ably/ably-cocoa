@@ -118,7 +118,7 @@ class AblyTests {
         if let testApplication {
             app = testApplication
         } else {
-            let request = NSMutableURLRequest(url: URL(string: "https://\(options.restHost):\(options.tlsPort)/apps")!)
+            let request = NSMutableURLRequest(url: URL(string: "https://\(options.domainSelector.primaryDomain):\(options.tlsPort)/apps")!)
             request.httpMethod = "POST"
             request.httpBody = try JSONUtility.encode(appSetupModel.postApps)
 
@@ -145,7 +145,7 @@ class AblyTests {
 
     class func clientOptions(for test: Test, debug: Bool = false, key: String? = nil, requestToken: Bool = false) throws -> ARTClientOptions {
         let options = ARTClientOptions()
-        options.environment = getEnvironment()
+        options.endpoint = getTestEndpoint()
         if debug {
             options.logLevel = .verbose
         }
@@ -605,8 +605,7 @@ func getJWTToken(for test: Test, invalid: Bool = false, expiresIn: Int = 3600, c
         URLQueryItem(name: "clientId", value: clientId),
         URLQueryItem(name: "capability", value: capability),
         URLQueryItem(name: "jwtType", value: jwtType),
-        URLQueryItem(name: "encrypted", value: String(encrypted)),
-        URLQueryItem(name: "environment", value: getEnvironment()) 
+        URLQueryItem(name: "encrypted", value: String(encrypted)) 
     ]
     
     let request = NSMutableURLRequest(url: urlComponents!.url!)
@@ -626,12 +625,15 @@ public func delay(_ seconds: TimeInterval, closure: @escaping () -> Void) {
     DispatchQueue.main.asyncAfter(deadline: .now() + seconds, execute: closure)
 }
 
-public func getEnvironment() -> String {
-    let b = Bundle(for: AblyTests.self)    
-    guard let env = b.infoDictionary!["ABLY_ENV"] as? String, env.count > 0 else {
-        return "sandbox"
+public func getTestEndpoint() -> String {
+    let bundle = Bundle(for: AblyTests.self)
+    if let endpoint = bundle.infoDictionary!["ABLY_ENDPOINT"] as? String, endpoint.count > 0 {
+        return endpoint
     }
-    return env
+    if let env = bundle.infoDictionary!["ABLY_ENV"] as? String, env.count > 0 {
+        return env
+    }
+    return "nonprod:sandbox"
 }
 
 public func buildMessagesThatExceedMaxMessageSize() -> [ARTMessage] {

@@ -1,52 +1,44 @@
 #import "Ably.h"
 #import "ARTDefault+Private.h"
-#import "ARTNSArray+ARTFunctional.h"
 #import "ARTClientInformation+Private.h"
+#import "ARTDomainSelector.h"
 
-static NSString *const ARTDefault_apiVersion = @"4"; // CSV2
+NSString *const ARTDefaultAPIVersion = @"4"; // CSV2
 
-NSString *const ARTDefaultProduction = @"production";
+NSTimeInterval ARTConnectionStateTtl = 60.0;
 NSInteger ARTMaxMessageSize = 65536; // 16384 in sandbox
 
-static NSString *const ARTDefault_restHost = @"rest.ably.io";
-static NSString *const ARTDefault_realtimeHost = @"realtime.ably.io";
-
-static NSTimeInterval _connectionStateTtl = 60.0;
+NSString *const ARTDefaultConnectivityCheckUrl = @"internet-up.ably-realtime.com/is-the-internet-up.txt";
 
 @implementation ARTDefault
 
 + (NSString *)apiVersion {
-    return ARTDefault_apiVersion;
+    return ARTDefaultAPIVersion;
 }
 
 + (NSString *)libraryVersion {
     return ARTClientInformation_libraryVersion;
 }
 
-+ (NSArray*)fallbackHostsWithEnvironment:(NSString *)environment {
-    NSArray<NSString *> * fallbacks = @[@"a", @"b", @"c", @"d", @"e"];
-    NSString *prefix = @"";
-    NSString *suffix = @"";
-    if (environment && ![environment isEqualToString:@""] && ![environment isEqualToString:ARTDefaultProduction]) {
-        prefix = [NSString stringWithFormat:@"%@-", environment];
-        suffix = @"-fallback";
-    }
-    
-    return [fallbacks artMap:^NSString *(NSString * fallback) {
-        return [NSString stringWithFormat:@"%@%@%@.ably-realtime.com", prefix, fallback, suffix];
-    }];
++ (NSArray<NSString *> *)fallbackHostsWithEnvironment:(NSString *_Nullable)environment {
+    return [[[ARTDomainSelector alloc] initWithEndpointClientOption:nil
+                                          fallbackHostsClientOption:nil
+                                            environmentClientOption:environment
+                                               restHostClientOption:nil
+                                           realtimeHostClientOption:nil
+                                            fallbackHostsUseDefault:false] fallbackDomains];
 }
 
-+ (NSArray*)fallbackHosts {
++ (NSArray<NSString *> *)fallbackHosts {
     return [self fallbackHostsWithEnvironment:nil];
 }
 
-+ (NSString*)restHost {
-    return ARTDefault_restHost;
++ (NSString *)restHost {
+    return [[ARTDomainSelector alloc] init].primaryDomain;
 }
 
-+ (NSString*)realtimeHost {
-    return ARTDefault_realtimeHost;
++ (NSString *)realtimeHost {
+    return [[ARTDomainSelector alloc] init].primaryDomain;
 }
 
 + (int)port {
@@ -62,7 +54,7 @@ static NSTimeInterval _connectionStateTtl = 60.0;
 }
 
 + (NSTimeInterval)connectionStateTtl {
-    return _connectionStateTtl;
+    return ARTConnectionStateTtl;
 }
 
 + (NSTimeInterval)realtimeRequestTimeout {
@@ -75,7 +67,7 @@ static NSTimeInterval _connectionStateTtl = 60.0;
 
 + (void)setConnectionStateTtl:(NSTimeInterval)value {
     @synchronized (self) {
-        _connectionStateTtl = value;
+        ARTConnectionStateTtl = value;
     }
 }
 
@@ -91,6 +83,10 @@ static NSTimeInterval _connectionStateTtl = 60.0;
 
 + (NSString *)platformAgent {
     return [ARTClientInformation platformAgentIdentifier];
+}
+
++ (NSString *)connectivityCheckUrl {
+    return [NSString stringWithFormat:@"https://%@", ARTDefaultConnectivityCheckUrl];
 }
 
 @end

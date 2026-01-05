@@ -4,6 +4,8 @@
 @import _AblyPluginSupportPrivate;
 #endif
 
+@class ARTDomainSelector;
+
 NS_ASSUME_NONNULL_BEGIN
 
 #ifdef ABLY_SUPPORTS_PLUGINS
@@ -13,17 +15,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTClientOptions ()
 
-@property (readonly) BOOL isProductionEnvironment;
-@property (readonly) BOOL hasEnvironment;
-@property (readonly) BOOL hasEnvironmentDifferentThanProduction;
-@property (readonly) BOOL hasCustomRestHost;
-@property (readonly) BOOL hasDefaultRestHost;
-@property (readonly) BOOL hasCustomRealtimeHost;
-@property (readonly) BOOL hasDefaultRealtimeHost;
-@property (readonly) BOOL hasCustomPort;
-@property (readonly) BOOL hasCustomTlsPort;
+@property (readonly, nonatomic) ARTDomainSelector *domainSelector;
 
-+ (void)setDefaultEnvironment:(nullable NSString *)environment;
++ (void)setDefaultEndpoint:(nullable NSString *)endpoint;
 + (BOOL)getDefaultIdempotentRestPublishingForVersion:(NSString *)version;
 - (NSURLComponents *)restUrlComponents;
 - (NSURL*)realtimeUrlForHost:(NSString *)host; // helps obtain url with an alternative host without changing other params

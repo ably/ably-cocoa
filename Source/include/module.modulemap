@@ -50,7 +50,6 @@ module Ably {
         header "../PrivateHeaders/Ably/ARTMessageAnnotations+Private.h"
         header "../PrivateHeaders/Ably/ARTRestAnnotations+Private.h"
         header "../PrivateHeaders/Ably/ARTFallback+Private.h"
-        header "../PrivateHeaders/Ably/ARTFallbackHosts.h"
         header "../PrivateHeaders/Ably/ARTLocalDevice+Private.h"
         header "../PrivateHeaders/Ably/ARTDeviceDetails+Private.h"
         header "../PrivateHeaders/Ably/ARTDevicePushDetails+Private.h"
@@ -142,5 +141,6 @@ module Ably {
         header "../PrivateHeaders/Ably/ARTDictionarySerializable.h"
         header "../PrivateHeaders/Ably/ARTMessageOperation+Private.h"
         header "../PrivateHeaders/Ably/ARTMessage+Private.h"
+        header "../PrivateHeaders/Ably/ARTDomainSelector.h"
     }
 }
