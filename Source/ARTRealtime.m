@@ -1330,17 +1330,9 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     // see RTL6c2, RTN19, RTN7 and TO3g
     else if (msg.ackRequired) {
         if (self.isActive && self.options.queueMessages) {
-            ARTQueuedMessage *lastQueuedMessage = self.queuedMessages.lastObject; //RTL6d5
-            NSInteger maxSize = _connection.maxMessageSize;
-            BOOL merged = [lastQueuedMessage mergeFrom:msg maxSize:maxSize sentCallback:nil ackCallback:ackCallback];
-            if (!merged) {
-                ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg sentCallback:sentCallback ackCallback:ackCallback];
-                [self.queuedMessages addObject:qm];
-                ARTLogDebug(self.logger, @"RT:%p (channel: %@) protocol message with action '%lu - %@' has been queued (%@)", self, msg.channel, (unsigned long)msg.action, ARTProtocolMessageActionToStr(msg.action), msg.messages);
-            }
-            else {
-                ARTLogVerbose(self.logger, @"RT:%p (channel: %@) message %@ has been bundled to %@", self, msg.channel, msg, lastQueuedMessage.msg);
-            }
+            ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg sentCallback:sentCallback ackCallback:ackCallback];
+            [self.queuedMessages addObject:qm];
+            ARTLogDebug(self.logger, @"RT:%p (channel: %@) protocol message with action '%lu - %@' has been queued (%@)", self, msg.channel, (unsigned long)msg.action, ARTProtocolMessageActionToStr(msg.action), msg.messages);
         }
         // RTL6c4
         else {

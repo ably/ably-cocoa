@@ -1112,17 +1112,17 @@ class RealtimeClientConnectionTests: XCTestCase {
             return
         }
         // Messages covered in a single ACK response
-        XCTAssertEqual(acks[0].msgSerial, 5) // [0] 1st publish + [1,2,3] publish + [4] enter with invalid client + [5] queued messages
-        XCTAssertEqual(acks[0].count, 1)
+        XCTAssertEqual(acks[0].msgSerial, 5) // [0] 1st publish + [1,2,3] publish + [4] enter with invalid client + [5,6,7] queued messages
+        XCTAssertEqual(acks[0].count, 3)
 
         if nacks.count != 1 {
             fail("Received invalid number of NACK responses: \(nacks.count)")
             return
         }
-        XCTAssertEqual(nacks[0].msgSerial, 6)
+        XCTAssertEqual(nacks[0].msgSerial, 8)
         XCTAssertEqual(nacks[0].count, 1)
 
-        XCTAssertEqual(client.internal.msgSerial, 7)
+        XCTAssertEqual(client.internal.msgSerial, 9)
     }
 
     func test__034__Connection__ACK_and_NACK__ProtocolMessage__should_reset_msgSerial_serially_if_the_connection_does_not_resume() throws {
