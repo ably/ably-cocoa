@@ -1,5 +1,6 @@
 #import "ARTDefault.h"
 #import "ARTMessageVersion.h"
+#import "ARTMessageOperation.h"
 #import "ARTNSDate+ARTUtil.h"
 #import "ARTNSDictionary+ARTDictionaryUtil.h"
 
@@ -13,6 +14,16 @@
         _clientId = nil;
         _descriptionText = nil;
         _metadata = nil;
+    }
+    return self;
+}
+
+- (instancetype)initWithOperation:(ARTMessageOperation *)operation {
+    self = [super init];
+    if (self) {
+        _clientId = operation.clientId;
+        _descriptionText = operation.descriptionText;
+        _metadata = operation.metadata;
     }
     return self;
 }

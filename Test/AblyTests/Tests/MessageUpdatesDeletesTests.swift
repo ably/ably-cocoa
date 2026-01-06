@@ -156,11 +156,11 @@ class MessageUpdatesDeletesTests: XCTestCase {
         // Update data
         let messageUpdate = publishedMessage.copy() as! ARTMessage
         messageUpdate.data = "hello world!"
-        
-        // RSL12a: optional MessageOperation object
+
+        // RSL15a: optional MessageOperation object
         let operation = ARTMessageOperation(clientId: "updater-client", descriptionText: "Editing message text", metadata: ["newValue": "hello world!"])
-        
-        // RSL12a: optional params
+
+        // RSL15a: optional params
         let params: [String: ARTStringifiable] = ["param1": .withString("value1")]
         
         waitUntil(timeout: testTimeout) { done in
@@ -170,48 +170,47 @@ class MessageUpdatesDeletesTests: XCTestCase {
             }
         }
         
-        // RSL12b: Verify PATCH request to correct endpoint
+        // RSL15b: Verify PATCH request to correct endpoint
         guard let request = testEnvironment.requests.last, let requestUrl = request.url else {
             XCTFail("No HTTP request was made")
             return
         }
-        
+
         XCTAssertEqual(request.httpMethod, "PATCH")
         XCTAssertTrue(requestUrl.path.contains("/channels/\(channel.name)/messages/\(publishedMessageSerial)"))
-        
-        // Verify params in querystring
+
+        // RSL15b: Verify params in querystring
         XCTAssertTrue(requestUrl.query?.contains("param1=value1") ?? false)
-        
-        // RSL12b1-RSL12b6: Verify request body
-        
+
+        // RSL15b: Verify request body - encoded Message object
+
         var bodyDict: [String: Any]!
-        
+
         switch extractBodyAsMsgPack(request) {
         case let .failure(error):
             XCTFail(error); return
         case let .success(httpBody):
-            // RSL12c: The body must be encoded to the appropriate format per RSC8
+            // RSL15d: The body must be encoded to the appropriate format per RSC8
             bodyDict = try XCTUnwrap(httpBody.unbox as? [String: Any])
             XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Type"), "application/x-msgpack")
         }
-        
-        // RSL12b1: serial
+
+        // Verify message fields are present
         XCTAssertEqual(bodyDict["serial"] as? String, publishedMessageSerial)
-        
-        // RSL12b2: operation
-        if let operationDict = bodyDict["operation"] as? [String: Any] {
-            XCTAssertEqual(operationDict["clientId"] as? String, "updater-client")
-            XCTAssertEqual(operationDict["description"] as? String, "Editing message text")
-            XCTAssertEqual((operationDict["metadata"] as? [String: String])?["newValue"], "hello world!")
-        } else {
-            XCTFail("Operation should be present in request body")
-        }
-        
-        // RSL12b3: name
         XCTAssertEqual(bodyDict["name"] as? String, "chat-message")
-        
-        // RSL12b4: data
         XCTAssertEqual(bodyDict["data"] as? String, "hello world!")
+
+        // RSL15b1: action field (1 = MESSAGE_UPDATE)
+        XCTAssertEqual(bodyDict["action"] as? Int, 1)
+
+        // RSL15b7: version field contains operation data
+        if let versionDict = bodyDict["version"] as? [String: Any] {
+            XCTAssertEqual(versionDict["clientId"] as? String, "updater-client")
+            XCTAssertEqual(versionDict["description"] as? String, "Editing message text")
+            XCTAssertEqual((versionDict["metadata"] as? [String: String])?["newValue"], "hello world!")
+        } else {
+            XCTFail("Version should be present in request body")
+        }
         
         var updatedMessage: ARTMessage!
         
@@ -269,11 +268,11 @@ class MessageUpdatesDeletesTests: XCTestCase {
         let messageDelete = publishedMessage.copy() as! ARTMessage
         messageDelete.serial = publishedMessageSerial
         messageDelete.data = ""
-        
-        // RSL13a: optional MessageOperation object
+
+        // RSL15a: optional MessageOperation object
         let operation = ARTMessageOperation(clientId: "deleter-client", descriptionText: "Test delete operation", metadata: ["reason": "inappropriate content"])
-        
-        // RSL13a: optional params
+
+        // RSL15a: optional params
         let params: [String: ARTStringifiable] = ["deleteParam": .withString("deleteValue")]
         
         waitUntil(timeout: testTimeout) { done in
@@ -283,48 +282,47 @@ class MessageUpdatesDeletesTests: XCTestCase {
             }
         }
         
-        // RSL13b: Verify POST request to /delete endpoint
+        // RSL15b: Verify PATCH request to correct endpoint
         guard let request = testEnvironment.requests.last, let requestUrl = request.url else {
             XCTFail("No HTTP request was made")
             return
         }
-        
-        XCTAssertEqual(request.httpMethod, "POST")
-        XCTAssertTrue(requestUrl.path.contains("/channels/\(channel.name)/messages/\(publishedMessageSerial)/delete"))
-        
-        // Verify params in querystring
+
+        XCTAssertEqual(request.httpMethod, "PATCH")
+        XCTAssertTrue(requestUrl.path.contains("/channels/\(channel.name)/messages/\(publishedMessageSerial)"))
+
+        // RSL15b: Verify params in querystring
         XCTAssertTrue(request.url?.query?.contains("deleteParam=deleteValue") ?? false)
-        
-        // RSL13b1-RSL13b6: Verify request body
-        
+
+        // RSL15b: Verify request body - encoded Message object
+
         var bodyDict: [String: Any]!
-        
+
         switch extractBodyAsMsgPack(request) {
         case let .failure(error):
             XCTFail(error)
         case let .success(httpBody):
-            // RSL12c: The body must be encoded to the appropriate format per RSC8
+            // RSL15d: The body must be encoded to the appropriate format per RSC8
             bodyDict = try XCTUnwrap(httpBody.unbox as? [String: Any])
             XCTAssertEqual(request.value(forHTTPHeaderField: "Content-Type"), "application/x-msgpack")
         }
-        
-        // RSL13b1: serial
+
+        // Verify message fields are present
         XCTAssertEqual(bodyDict["serial"] as? String, publishedMessageSerial)
-        
-        // RSL13b2: operation
-        if let operationDict = bodyDict["operation"] as? [String: Any] {
-            XCTAssertEqual(operationDict["clientId"] as? String, "deleter-client")
-            XCTAssertEqual(operationDict["description"] as? String, "Test delete operation")
-            XCTAssertEqual((operationDict["metadata"] as? [String: String])?["reason"], "inappropriate content")
-        } else {
-            XCTFail("Operation should be present in request body")
-        }
-        
-        // RSL13b3: name
         XCTAssertEqual(bodyDict["name"] as? String, "chat-message")
-        
-        // RSL13b4: data
         XCTAssertEqual(bodyDict["data"] as? String, "")
+
+        // RSL15b1: action field (2 = MESSAGE_DELETE)
+        XCTAssertEqual(bodyDict["action"] as? Int, 2)
+
+        // RSL15b7: version field contains operation data
+        if let versionDict = bodyDict["version"] as? [String: Any] {
+            XCTAssertEqual(versionDict["clientId"] as? String, "deleter-client")
+            XCTAssertEqual(versionDict["description"] as? String, "Test delete operation")
+            XCTAssertEqual((versionDict["metadata"] as? [String: String])?["reason"], "inappropriate content")
+        } else {
+            XCTFail("Version should be present in request body")
+        }
         
         var updatedMessage: ARTMessage?
         
@@ -381,15 +379,17 @@ class MessageUpdatesDeletesTests: XCTestCase {
         try _test__rest_and_realtime__getMessage(env)
     }
     
-    // MARK: - RSL12: RestChannel#updateMessage function
-    
-    // RSL12a: Takes a first argument of a Message object (which must contain a populated serial field)
-    // RSL12b: The SDK must send a PATCH to /channels/{channelName}/messages/{serial}
-    // RSL12b1-RSL12b6: Request body fields
-    // RSL12c: The body must be encoded to the appropriate format per RSC8
+    // MARK: - RSL15: RestChannel#updateMessage function
+
+    // RSL15a: Takes a first argument of a Message object (which must contain a populated serial field), optional MessageOperation, and optional params
+    // RSL15b: The SDK must send a PATCH to /channels/{channelName}/messages/{serial}
+    // RSL15b1: Request body includes action field set to MESSAGE_UPDATE
+    // RSL15b7: Request body includes version field from MessageOperation
+    // RSL15c: The SDK must not mutate the user-supplied Message object
+    // RSL15d: The body must be encoded to the appropriate format per RSC8
     // RSL14b: The SDK must send a GET request to the endpoint
     // RSL14c: Returns a PaginatedResult<Message>
-    func test__RSL12__RSL14__updateMessage__and__getMessageVersions() throws {
+    func test__RSL15__RSL14__updateMessage__and__getMessageVersions() throws {
         let test = Test()
         try _test__rest_and_realtime__updateMessage__and__getMessageVersions(.rest(test))
     }
@@ -405,13 +405,15 @@ class MessageUpdatesDeletesTests: XCTestCase {
         try _test__rest_and_realtime__updateMessage__and__getMessageVersions(env)
     }
     
-    // MARK: - RSL13: RestChannel#deleteMessage function
-    
-    // RSL13a: Takes a first argument of a Message object (which must contain a populated serial field)
-    // RSL13b: The SDK must send a POST to /channels/{channelName}/messages/{serial}/delete
-    // RSL13b1-RSL13b6: Request body fields
-    // RSL13c: The body must be encoded to the appropriate format per RSC8
-    func test__RSL13__deleteMessage() throws {
+    // MARK: - RSL15: RestChannel#deleteMessage function
+
+    // RSL15a: Takes a first argument of a Message object (which must contain a populated serial field), optional MessageOperation, and optional params
+    // RSL15b: The SDK must send a PATCH to /channels/{channelName}/messages/{serial}
+    // RSL15b1: Request body includes action field set to MESSAGE_DELETE
+    // RSL15b7: Request body includes version field from MessageOperation
+    // RSL15c: The SDK must not mutate the user-supplied Message object
+    // RSL15d: The body must be encoded to the appropriate format per RSC8
+    func test__RSL15__deleteMessage() throws {
         let test = Test()
         try _test__rest_and_realtime__deleteMessage(.rest(test))
     }

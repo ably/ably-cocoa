@@ -15,6 +15,7 @@
 #import "ARTProtocolMessage+Private.h"
 #import "ARTPublishResult.h"
 #import "ARTPublishResultSerial.h"
+#import "ARTUpdateDeleteResult.h"
 #import "ARTNSDictionary+ARTDictionaryUtil.h"
 #import "ARTNSDate+ARTUtil.h"
 #import "ARTInternalLog.h"
@@ -1121,6 +1122,19 @@
     ARTChannelStatus *status = [self channelStatusFromDictionary:statusDict];
     ARTChannelDetails *details = [[ARTChannelDetails alloc] initWithChannelId:[input artString:@"channelId"] status:status];
     return details;
+}
+
+- (ARTUpdateDeleteResult *)decodeUpdateDeleteResult:(NSData *)data error:(NSError **)error {
+    return [self updateDeleteResultFromDictionary:[self decodeDictionary:data error:error]];
+}
+
+- (ARTUpdateDeleteResult *)updateDeleteResultFromDictionary:(NSDictionary *)input {
+    ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: updateDeleteResultFromDictionary %@", _rest, [_delegate formatAsString], input);
+    if (![input isKindOfClass:[NSDictionary class]]) {
+        return nil;
+    }
+    NSString *versionSerial = [input artString:@"versionSerial"];
+    return [[ARTUpdateDeleteResult alloc] initWithVersionSerial:versionSerial];
 }
 
 - (NSArray *)statsFromArray:(NSArray *)input {

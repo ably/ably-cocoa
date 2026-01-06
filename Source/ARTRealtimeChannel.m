@@ -467,20 +467,11 @@ art_dispatch_sync(_queue, ^{
  }
 #endif
 
-- (void)updateMessage:(ARTMessage *)message
-            operation:(nullable ARTMessageOperation *)operation
-               params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
-     wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
-             callback:(nullable ARTCallback)callback {
-    [self.restChannel updateMessage:message operation:operation params:params wrapperSDKAgents:wrapperSDKAgents callback:callback];
-}
-
-- (void)deleteMessage:(ARTMessage *)message
-            operation:(nullable ARTMessageOperation *)operation
-               params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
-     wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
-             callback:(nullable ARTCallback)callback {
-    [self.restChannel deleteMessage:message operation:operation params:params wrapperSDKAgents:wrapperSDKAgents callback:callback];
+- (void)internalSendMutationRequestForMessage:(ARTMessage *)message
+                                       params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
+                             wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                                     callback:(nullable ARTUpdateDeleteResultCallback)callback {
+    [self.restChannel internalSendMutationRequestForMessage:message params:params wrapperSDKAgents:wrapperSDKAgents callback:callback];
 }
 
 - (void)getMessageWithSerial:(NSString *)serial wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTMessageErrorCallback)callback {

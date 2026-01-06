@@ -334,6 +334,12 @@
 		21C2BE612F0D5B0E00AE5E41 /* ARTMessageSendStatus.h in Headers */ = {isa = PBXBuildFile; fileRef = 21C2BE602F0D5B0E00AE5E41 /* ARTMessageSendStatus.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		21C2BE622F0D5B0E00AE5E41 /* ARTMessageSendStatus.h in Headers */ = {isa = PBXBuildFile; fileRef = 21C2BE602F0D5B0E00AE5E41 /* ARTMessageSendStatus.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		21C2BE632F0D5B0E00AE5E41 /* ARTMessageSendStatus.h in Headers */ = {isa = PBXBuildFile; fileRef = 21C2BE602F0D5B0E00AE5E41 /* ARTMessageSendStatus.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		21C2BE652F0D776000AE5E41 /* ARTUpdateDeleteResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 21C2BE642F0D776000AE5E41 /* ARTUpdateDeleteResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		21C2BE662F0D776000AE5E41 /* ARTUpdateDeleteResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 21C2BE642F0D776000AE5E41 /* ARTUpdateDeleteResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		21C2BE672F0D776000AE5E41 /* ARTUpdateDeleteResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 21C2BE642F0D776000AE5E41 /* ARTUpdateDeleteResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		21C2BE692F0D776800AE5E41 /* ARTUpdateDeleteResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 21C2BE682F0D776800AE5E41 /* ARTUpdateDeleteResult.m */; };
+		21C2BE6A2F0D776800AE5E41 /* ARTUpdateDeleteResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 21C2BE682F0D776800AE5E41 /* ARTUpdateDeleteResult.m */; };
+		21C2BE6B2F0D776800AE5E41 /* ARTUpdateDeleteResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 21C2BE682F0D776800AE5E41 /* ARTUpdateDeleteResult.m */; };
 		21D04A722EE9AA4A00BD59DD /* ARTMessage+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 21D04A712EE9AA4A00BD59DD /* ARTMessage+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		21D04A732EE9AA4A00BD59DD /* ARTMessage+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 21D04A712EE9AA4A00BD59DD /* ARTMessage+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		21D04A742EE9AA4A00BD59DD /* ARTMessage+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 21D04A712EE9AA4A00BD59DD /* ARTMessage+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -1241,6 +1247,8 @@
 		21C2BE552F0D237100AE5E41 /* ARTPublishResultSerial.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTPublishResultSerial.m; sourceTree = "<group>"; };
 		21C2BE5C2F0D5B0100AE5E41 /* ARTMessageSendStatus.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTMessageSendStatus.m; sourceTree = "<group>"; };
 		21C2BE602F0D5B0E00AE5E41 /* ARTMessageSendStatus.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTMessageSendStatus.h; path = PrivateHeaders/Ably/ARTMessageSendStatus.h; sourceTree = "<group>"; };
+		21C2BE642F0D776000AE5E41 /* ARTUpdateDeleteResult.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTUpdateDeleteResult.h; path = include/Ably/ARTUpdateDeleteResult.h; sourceTree = "<group>"; };
+		21C2BE682F0D776800AE5E41 /* ARTUpdateDeleteResult.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTUpdateDeleteResult.m; sourceTree = "<group>"; };
 		21D04A712EE9AA4A00BD59DD /* ARTMessage+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTMessage+Private.h"; path = "PrivateHeaders/Ably/ARTMessage+Private.h"; sourceTree = "<group>"; };
 		21E1C0E42A0DC47400A5DB65 /* ARTWebSocketFactory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTWebSocketFactory.h; path = PrivateHeaders/Ably/ARTWebSocketFactory.h; sourceTree = "<group>"; };
 		21E1C0E82A0DC5E600A5DB65 /* ARTWebSocketFactory.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTWebSocketFactory.m; sourceTree = "<group>"; };
@@ -1968,6 +1976,8 @@
 				21C2BE552F0D237100AE5E41 /* ARTPublishResultSerial.m */,
 				21C2BE602F0D5B0E00AE5E41 /* ARTMessageSendStatus.h */,
 				21C2BE5C2F0D5B0100AE5E41 /* ARTMessageSendStatus.m */,
+				21C2BE642F0D776000AE5E41 /* ARTUpdateDeleteResult.h */,
+				21C2BE682F0D776800AE5E41 /* ARTUpdateDeleteResult.m */,
 			);
 			name = Types;
 			sourceTree = "<group>";
@@ -2195,6 +2205,7 @@
 				215924D92D636E04004A235C /* ARTWrapperSDKProxyRealtimePresence+Private.h in Headers */,
 				967A43211A39AEAF00E4CE23 /* ARTNSArray+ARTFunctional.h in Headers */,
 				D7C1B8791BBF5F810087B55F /* ARTAuth+Private.h in Headers */,
+				21C2BE652F0D776000AE5E41 /* ARTUpdateDeleteResult.h in Headers */,
 				84D04C402DE8FB1A000E8AE2 /* ARTAnnotation.h in Headers */,
 				84D04C562DF8FB1A000E8AE2 /* ARTOutboundAnnotation.h in Headers */,
 				84557E842E91B21F00596CC6 /* ARTRestAnnotations+Private.h in Headers */,
@@ -2507,6 +2518,7 @@
 				D710D47D21949A27008F54AD /* Ably.h in Headers */,
 				2124B78C29DB12A900AD8361 /* ARTVersion2Log.h in Headers */,
 				EB1B53FE22F8D91C006A59AC /* ARTQueuedDealloc.h in Headers */,
+				21C2BE662F0D776000AE5E41 /* ARTUpdateDeleteResult.h in Headers */,
 				2114D4282D4BC5470032839A /* AblyInternal.h in Headers */,
 				21E5D87F2D5E3EC300526C4C /* ARTChannelProtocol.h in Headers */,
 				2114D4292D4BC5470032839A /* AblyPublic.h in Headers */,
@@ -2722,6 +2734,7 @@
 				D710D5AE21949D2A008F54AD /* ARTProtocolMessage.h in Headers */,
 				2124B78D29DB12A900AD8361 /* ARTVersion2Log.h in Headers */,
 				D710D47F21949A28008F54AD /* Ably.h in Headers */,
+				21C2BE672F0D776000AE5E41 /* ARTUpdateDeleteResult.h in Headers */,
 				2114D42C2D4BC5470032839A /* AblyInternal.h in Headers */,
 				21E5D8802D5E3EC300526C4C /* ARTChannelProtocol.h in Headers */,
 				2114D42D2D4BC5470032839A /* AblyPublic.h in Headers */,
@@ -3062,6 +3075,7 @@
 				21113B5529DC6ACD00652C86 /* ARTTestClientOptions.m in Sources */,
 				1C578E201B3435CA00EF46EC /* ARTFallback.m in Sources */,
 				217D1831254222F600DFF07E /* ARTSRConstants.m in Sources */,
+				21C2BE6A2F0D776800AE5E41 /* ARTUpdateDeleteResult.m in Sources */,
 				21276CBE29EF34AE00107B5F /* ARTContinuousClock.m in Sources */,
 				96A507B61A37881C0077CDF8 /* ARTNSDate+ARTUtil.m in Sources */,
 				217D182C254222F500DFF07E /* ARTSRProxyConnect.m in Sources */,
@@ -3210,6 +3224,7 @@
 				21113B5629DC6ACD00652C86 /* ARTTestClientOptions.m in Sources */,
 				D710D66E21949E78008F54AD /* ARTNSDate+ARTUtil.m in Sources */,
 				217D1848254222F700DFF07E /* ARTSRConstants.m in Sources */,
+				21C2BE692F0D776800AE5E41 /* ARTUpdateDeleteResult.m in Sources */,
 				21276CBF29EF34AE00107B5F /* ARTContinuousClock.m in Sources */,
 				D710D57321949CC4008F54AD /* ARTPushAdmin.m in Sources */,
 				217D1843254222F700DFF07E /* ARTSRProxyConnect.m in Sources */,
@@ -3358,6 +3373,7 @@
 				21113B5729DC6ACD00652C86 /* ARTTestClientOptions.m in Sources */,
 				D710D65421949E77008F54AD /* ARTNSDate+ARTUtil.m in Sources */,
 				217D185F254222F900DFF07E /* ARTSRConstants.m in Sources */,
+				21C2BE6B2F0D776800AE5E41 /* ARTUpdateDeleteResult.m in Sources */,
 				21276CC029EF34AE00107B5F /* ARTContinuousClock.m in Sources */,
 				D710D57921949CC5008F54AD /* ARTPushAdmin.m in Sources */,
 				217D185A254222F900DFF07E /* ARTSRProxyConnect.m in Sources */,

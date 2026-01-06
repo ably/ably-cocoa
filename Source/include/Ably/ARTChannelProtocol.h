@@ -71,7 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)publish:(NSArray<ARTMessage *> *)messages callback:(nullable ARTCallback)callback;
 
 /**
- * Publishes an update to an existing message with patch semantics. Non-null `name`, `data`, and `extras` fields in the provided message will replace the corresponding fields in the existing message, while null fields will be left unchanged.
+ * Publishes an update to existing message with shallow mixin semantics. Non-`nil` `name`, `data`, and `extras` properties in the provided message will replace the corresponding fields in the existing message, while `nil` properties will be left unchanged. Note that this publishes an update, it does not mutate the original message if passed in.
  *
  * @param message An `ARTMessage` object containing a populated `serial` field and the fields to update.
  * @param operation An optional `ARTMessageOperation` object containing metadata about the update operation.
@@ -84,7 +84,7 @@ NS_ASSUME_NONNULL_BEGIN
              callback:(nullable ARTCallback)callback;
 
 /**
- * Marks a message as deleted by publishing an update with an action of `ARTMessageActionDelete`. This does not remove the message from the server, and the full message history remains accessible. Uses patch semantics: non-null `name`, `data`, and `extras` fields in the provided message will replace the corresponding fields in the existing message, while null fields will be left unchanged (meaning that if you for example want the `ARTMessageActionDelete` to have an empty data, you should explicitly set the `data` to an empty object).
+ * Marks a message as deleted by publishing an update with an action of `ARTMessageActionDelete`. This does not remove the message from the server, and the full message history remains accessible. Uses shallow mixin semantics: non-`nil` `name`, `data`, and `extras` properties in the provided message will replace the corresponding properties in the existing message, while `nil` fields will be left unchanged (meaning that if you for example want the `ARTMessageActionDelete` to have an empty data, you should explicitly set the `data` to an empty object).
  *
  * @param message An `ARTMessage` object containing a populated `serial` field.
  * @param operation An optional `ARTMessageOperation` object containing metadata about the delete operation.

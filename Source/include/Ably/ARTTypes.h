@@ -17,6 +17,7 @@
 @class ARTStats;
 @class ARTPushChannelSubscription;
 @class ARTDeviceDetails;
+@class ARTUpdateDeleteResult;
 @protocol ARTTokenDetailsCompatible;
 
 /// :nodoc:
@@ -563,6 +564,9 @@ typedef void (^ARTPaginatedDeviceDetailsCallback)(ARTPaginatedResult<ARTDeviceDe
 
 /// :nodoc:
 typedef void (^ARTPaginatedTextCallback)(ARTPaginatedResult<NSString *> *_Nullable result, ARTErrorInfo *_Nullable error);
+
+/// :nodoc:
+typedef void (^ARTEditResultCallback)(ARTUpdateDeleteResult *_Nullable result, ARTErrorInfo *_Nullable error);
 
 /**
  * :nodoc:

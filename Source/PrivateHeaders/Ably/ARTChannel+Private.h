@@ -43,6 +43,28 @@ NS_ASSUME_NONNULL_BEGIN
  * to implement their specific transport logic.
  */
 - (void)internalPostMessages:(id)data callback:(nullable ARTCallback)callback;
+
+/**
+ * Internal method for sending a mutation request (update or delete) for a message.
+ *
+ * @param message The message to mutate (with action, version, etc. already set).
+ * @param params Optional query parameters for the request.
+ * @param wrapperSDKAgents Optional wrapper SDK agents for the request.
+ * @param callback Callback invoked with the result of the operation (success or error).
+ *
+ * @discussion Contract - Work already performed on the messages before calling this method:
+ *   - Data encoding has been applied per RSL4 via `encodeMessageIfNeeded:error:`
+ *     (this applies cipher encryption if the channel has cipher params configured)
+ *   - Encoding errors have been handled and will not reach this method
+ *
+ * @discussion Subclasses (ARTRealtimeChannelInternal, ARTRestChannelInternal) override this method
+ * to implement their specific transport logic for message mutations.
+ */
+- (void)internalSendEditRequestForMessage:(ARTMessage *)message
+                                   params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
+                         wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                                 callback:(nullable ARTEditResultCallback)callback;
+
 - (BOOL)exceedMaxSize:(NSArray<ARTBaseMessage *> *)messages;
 
 - (nullable ARTChannelOptions *)options;

@@ -49,3 +49,4 @@
 #import <Ably/ARTAnnotation.h>
 #import <Ably/ARTOutboundAnnotation.h>
 #import <Ably/ARTSummaryTypes.h>
+#import <Ably/ARTUpdateDeleteResult.h>
