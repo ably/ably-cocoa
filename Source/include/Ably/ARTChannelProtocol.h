@@ -71,12 +71,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)publish:(NSArray<ARTMessage *> *)messages callback:(nullable ARTCallback)callback;
 
 /**
- * Updates a previously published message on the channel with operation metadata and params.
+ * Publishes an update to an existing message with patch semantics. Non-null `name`, `data`, and `extras` fields in the provided message will replace the corresponding fields in the existing message, while null fields will be left unchanged.
  *
- * @param message The message to update (must contain a populated serial field).
- * @param operation Optional operation metadata for the update.
- * @param params Optional publish params.
- * @param callback A success or failure callback function.
+ * @param message An `ARTMessage` object containing a populated `serial` field and the fields to update.
+ * @param operation An optional `ARTMessageOperation` object containing metadata about the update operation.
+ * @param params Optional parameters sent as part of the query string.
+ * @param callback A callback which, upon success, will contain a `ARTMessage` object containing the updated message. Upon failure, the callback will contain an `ARTErrorInfo` object which explains the error.
  */
 - (void)updateMessage:(ARTMessage *)message
             operation:(nullable ARTMessageOperation *)operation
@@ -84,12 +84,12 @@ NS_ASSUME_NONNULL_BEGIN
              callback:(nullable ARTCallback)callback;
 
 /**
- * Deletes a previously published message on the channel with operation metadata and params.
+ * Marks a message as deleted by publishing an update with an action of `ARTMessageActionDelete`. This does not remove the message from the server, and the full message history remains accessible. Uses patch semantics: non-null `name`, `data`, and `extras` fields in the provided message will replace the corresponding fields in the existing message, while null fields will be left unchanged (meaning that if you for example want the `ARTMessageActionDelete` to have an empty data, you should explicitly set the `data` to an empty object).
  *
- * @param message The message to delete (must contain a populated serial field).
- * @param operation Optional operation metadata for the delete.
- * @param params Optional publish params.
- * @param callback A success or failure callback function.
+ * @param message An `ARTMessage` object containing a populated `serial` field.
+ * @param operation An optional `ARTMessageOperation` object containing metadata about the delete operation.
+ * @param params Optional parameters sent as part of the query string.
+ * @param callback A callback which, upon success, will contain a `ARTMessage` object containing the deleted message. Upon failure, the callback will contain an `ARTErrorInfo` object which explains the error.
  */
 - (void)deleteMessage:(ARTMessage *)message
             operation:(nullable ARTMessageOperation *)operation
@@ -97,18 +97,18 @@ NS_ASSUME_NONNULL_BEGIN
              callback:(nullable ARTCallback)callback;
 
 /**
- * Retrieves a single message by its serial identifier.
+ * Retrieves the latest version of a specific message by its serial identifier.
  *
- * @param serial The serial of the message to retrieve.
- * @param callback A callback that receives the message or an error.
+ * @param serial A serial identifier string of the message to retrieve.
+ * @param callback A callback which, upon success, will contain a `ARTMessage` object representing the latest version of the message. Upon failure, the callback will contain an `ARTErrorInfo` object which explains the error.
  */
 - (void)getMessageWithSerial:(NSString *)serial callback:(ARTMessageErrorCallback)callback;
 
 /**
- * Retrieves the version history of a message by its serial identifier.
+ * Retrieves all historical versions of a specific message, ordered by version. This includes the original message and all subsequent updates or delete operations.
  *
- * @param serial The serial of the message whose versions to retrieve.
- * @param callback A callback for retrieving a paginated result of message versions.
+ * @param serial A serial identifier string of the message whose versions are to be retrieved.
+ * @param callback A callback which, upon success, will contain an `ARTPaginatedResult` object containing an array of `ARTMessage` objects representing all versions of the message. Upon failure, the callback will contain an `ARTErrorInfo` object which explains the error.
  */
 - (void)getMessageVersionsWithSerial:(NSString *)serial callback:(ARTPaginatedMessagesCallback)callback;
 
