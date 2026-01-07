@@ -50,7 +50,6 @@ framework module Ably {
         header "ARTMessageAnnotations+Private.h"
         header "ARTRestAnnotations+Private.h"
         header "ARTFallback+Private.h"
-        header "ARTFallbackHosts.h"
         header "ARTLocalDevice+Private.h"
         header "ARTDeviceDetails+Private.h"
         header "ARTDevicePushDetails+Private.h"
@@ -142,5 +141,6 @@ framework module Ably {
         header "ARTDictionarySerializable.h"
         header "ARTMessageOperation+Private.h"
         header "ARTMessage+Private.h"
+        header "ARTDomainSelector.h"
     }
 }

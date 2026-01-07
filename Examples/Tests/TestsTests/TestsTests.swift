@@ -18,7 +18,7 @@ class TestsTests: XCTestCase {
         var responseData: Data?
 
         let postAppExpectation = self.expectation(description: "POST app to sandbox")
-        let request = NSMutableURLRequest(url: URL(string: "https://sandbox-rest.ably.io:443/apps")!)
+        let request = NSMutableURLRequest(url: URL(string: "https://sandbox.realtime.ably-nonprod.net:443/apps")!)
         request.httpMethod = "POST"
         request.httpBody = "{\"keys\":[{}]}".data(using: String.Encoding.utf8)
         request.allHTTPHeaderFields = [
@@ -47,7 +47,7 @@ class TestsTests: XCTestCase {
         }
 
         let options = ARTClientOptions(key: key as String)
-        options.environment = "sandbox"
+        options.endpoint = "nonprod:sandbox"
         let client = ARTRealtime(options: options)
 
         let receiveExpectation = self.expectation(description: "message received")
@@ -64,17 +64,17 @@ class TestsTests: XCTestCase {
 
         let backgroundRealtimeExpectation = self.expectation(description: "Realtime in a Background Queue")
         var realtime: ARTRealtime! //strong reference
-        URLSession.shared.dataTask(with: URL(string: "https://ably.io")!) { _,_,_  in
+        URLSession.shared.dataTask(with: URL(string: "https://ably.com")!) { _,_,_  in
             realtime = ARTRealtime(key: key as String)
             realtime.channels.get("foo").attach { _ in
                 do { backgroundRealtimeExpectation.fulfill() }
             }
-        } .resume()
+        }.resume()
         self.waitForExpectations(timeout: 10, handler: nil)
 
         let backgroundRestExpectation = self.expectation(description: "Rest in a Background Queue")
         var rest: ARTRest! //strong reference
-        URLSession.shared.dataTask(with: URL(string: "https://ably.io")!) { _,_,_  in
+        URLSession.shared.dataTask(with: URL(string: "https://ably.com")!) { _,_,_  in
             rest = ARTRest(key: key as String)
             rest.channels.get("foo").history { result, error in
                 do { backgroundRestExpectation.fulfill() }

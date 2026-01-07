@@ -32,7 +32,6 @@
 #import "ARTStats.h"
 #import "ARTRealtimeTransport.h"
 #import "ARTFallback.h"
-#import "ARTFallbackHosts.h"
 #import "ARTAuthDetails.h"
 #import "ARTGCD.h"
 #import "ARTEncoder.h"
@@ -56,6 +55,7 @@
 #import "ARTConnectRetryState.h"
 #import "ARTWrapperSDKProxyRealtime+Private.h"
 #import "ARTConnectionDetails+Private.h"
+#import "ARTDomainSelector.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -1525,28 +1525,8 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 - (BOOL)shouldRetryWithFallbackForError:(ARTRealtimeTransportError *)error options:(ARTClientOptions *)options {
     if ((error.type == ARTRealtimeTransportErrorTypeBadResponse && error.badResponseCode >= 500 && error.badResponseCode <= 504) ||
          error.type == ARTRealtimeTransportErrorTypeHostUnreachable || error.type == ARTRealtimeTransportErrorTypeTimeout) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        // RTN17b3
-        if (options.fallbackHostsUseDefault) {
-            return YES;
-        }
-#pragma clang diagnostic pop
-
-        // RTN17b1
-        if (!(options.hasCustomRealtimeHost || options.hasCustomPort || options.hasCustomTlsPort)) {
-            return YES;
-        }
-        
-        // RTN17b2
-        if (options.fallbackHosts) {
-            return YES;
-        }
-                
-        // RSC15g2
-        if (options.hasEnvironmentDifferentThanProduction) {
-            return YES;
-        }
+        // RTN17g
+        return options.domainSelector.fallbackDomains.count > 0;
     }
     return NO;
 }
@@ -1709,7 +1689,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     if (![self isSuspendMode] && [self shouldRetryWithFallbackForError:transportError options:clientOptions]) {
         ARTLogDebug(self.logger, @"R:%p host is down; can retry with fallback host", self);
         if (!_fallbacks) {
-            NSArray *hosts = [ARTFallbackHosts hostsFromOptions:clientOptions];
+            NSArray *hosts = clientOptions.domainSelector.fallbackDomains;
             _fallbacks = [[ARTFallback alloc] initWithFallbackHosts:hosts shuffleArray:clientOptions.testOptions.shuffleArray];
         }
         if (_fallbacks) {

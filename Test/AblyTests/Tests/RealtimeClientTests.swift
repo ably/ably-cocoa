@@ -153,6 +153,7 @@ class RealtimeClientTests: XCTestCase {
     }
 
     // RTC1d
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.realtimeHost property. Remove this deprecation when removing the property.")
     func test__017__RealtimeClient__options__should_modify_the_realtime_endpoint_host_if_realtimeHost_is_assigned() {
         let options = ARTClientOptions(key: "secret:key")
         options.realtimeHost = "fake.ably.io"
@@ -176,24 +177,6 @@ class RealtimeClientTests: XCTestCase {
             }
             client.connect()
         }
-    }
-
-    // RTC1e
-    func test__018__RealtimeClient__options__should_modify_both_the_REST_and_realtime_endpoint_if_environment_string_is_assigned() throws {
-        let test = Test()
-        let options = try AblyTests.commonAppSetup(for: test)
-
-        let oldRestHost = options.restHost
-        let oldRealtimeHost = options.realtimeHost
-
-        // Change REST and realtime endpoint hosts
-        options.environment = "test"
-
-        XCTAssertEqual(options.restHost, "test-rest.ably.io")
-        XCTAssertEqual(options.realtimeHost, "test-realtime.ably.io")
-        // Extra care
-        XCTAssertEqual(oldRestHost, "\(getEnvironment())-rest.ably.io")
-        XCTAssertEqual(oldRealtimeHost, "\(getEnvironment())-realtime.ably.io")
     }
 
     // RTC1f

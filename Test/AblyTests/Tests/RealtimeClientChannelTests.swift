@@ -2786,9 +2786,6 @@ class RealtimeClientChannelTests: XCTestCase {
 
     func test__090__Channel__publish__message_bundling__should_only_bundle_messages_when_it_respects_all_of_the_constraints() throws {
         let test = Test()
-        let defaultMaxMessageSize = ARTDefault.maxMessageSize()
-        ARTDefault.setMaxMessageSize(256)
-        defer { ARTDefault.setMaxMessageSize(defaultMaxMessageSize) }
 
         let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
@@ -2796,6 +2793,10 @@ class RealtimeClientChannelTests: XCTestCase {
         defer { client.dispose(); client.close() }
         let channelOne = client.channels.get(test.uniqueChannelName(prefix: "bundlingOne"))
         let channelTwo = client.channels.get(test.uniqueChannelName(prefix: "bundlingTwo"))
+        
+        let defaultMaxMessageSize = ARTDefault.maxMessageSize()
+        ARTDefault.setMaxMessageSize(256)
+        defer { ARTDefault.setMaxMessageSize(defaultMaxMessageSize) }
 
         channelTwo.publish("2a", data: ["expectedBundle": 0])
         channelOne.publish("a", data: ["expectedBundle": 1])
