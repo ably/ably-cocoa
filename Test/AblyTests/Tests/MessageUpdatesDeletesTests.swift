@@ -162,10 +162,12 @@ class MessageUpdatesDeletesTests: XCTestCase {
 
         // RSL15a: optional params
         let params: [String: ARTStringifiable] = ["param1": .withString("value1")]
-        
+
+        var updateResult: ARTUpdateDeleteResult?
         waitUntil(timeout: testTimeout) { done in
-            channel.update(messageUpdate, operation: operation, params: params) { error in
+            channel.update(messageUpdate, operation: operation, params: params) { result, error in
                 XCTAssertNil(error)
+                updateResult = result
                 done()
             }
         }
@@ -240,7 +242,11 @@ class MessageUpdatesDeletesTests: XCTestCase {
         XCTAssertEqual(updatedMessage.version?.clientId, "updater-client")
         XCTAssertEqual(updatedMessage.version?.descriptionText, "Editing message text")
         XCTAssertEqual(updatedMessage.version?.metadata, ["newValue": "hello world!"])
-        
+
+        // Check the contents of updateMessage's returned UpdateDeleteResult
+        let unwrappedUpdateResult = try XCTUnwrap(updateResult)
+        XCTAssertEqual(updatedMessage.version?.serial, unwrappedUpdateResult.versionSerial)
+
         // RSL14a: Get versions by serial string
         let versions = waitUntilEditingHistoryBecomesAvailableForMessageSerial(publishedMessageSerial, onChannel: channel)
         
@@ -276,10 +282,12 @@ class MessageUpdatesDeletesTests: XCTestCase {
 
         // RSL15a: optional params
         let params: [String: ARTStringifiable] = ["deleteParam": .withString("deleteValue")]
-        
+
+        var deleteResult: ARTUpdateDeleteResult?
         waitUntil(timeout: testTimeout) { done in
-            channel.delete(messageDelete, operation: operation, params: params) { error in
+            channel.delete(messageDelete, operation: operation, params: params) { result, error in
                 XCTAssertNil(error)
+                deleteResult = result
                 done()
             }
         }
@@ -359,6 +367,10 @@ class MessageUpdatesDeletesTests: XCTestCase {
         XCTAssertEqual(updatedMessage.version?.clientId, "deleter-client")
         XCTAssertEqual(updatedMessage.version?.descriptionText, "Test delete operation")
         XCTAssertEqual(updatedMessage.version?.metadata, ["reason": "inappropriate content"])
+
+        // Check the contents of deleteMessage's returned UpdateDeleteResult
+        let unwrappedDeleteResult = try XCTUnwrap(deleteResult)
+        XCTAssertEqual(updatedMessage.version?.serial, unwrappedDeleteResult.versionSerial)
     }
 
     private func _test__rest_and_realtime__appendMessage(_ testEnvironment: TestEnvironment) throws {

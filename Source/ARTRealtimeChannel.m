@@ -147,11 +147,11 @@
     [_internal publish:messages callback:callback];
 }
 
-- (void)updateMessage:(ARTMessage *)message operation:(nullable ARTMessageOperation *)operation params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params callback:(nullable ARTCallback)callback {
+- (void)updateMessage:(ARTMessage *)message operation:(nullable ARTMessageOperation *)operation params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params callback:(nullable ARTEditResultCallback)callback {
     [_internal updateMessage:message operation:operation params:params wrapperSDKAgents:nil callback:callback];
 }
 
-- (void)deleteMessage:(ARTMessage *)message operation:(nullable ARTMessageOperation *)operation params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params callback:(nullable ARTCallback)callback {
+- (void)deleteMessage:(ARTMessage *)message operation:(nullable ARTMessageOperation *)operation params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params callback:(nullable ARTEditResultCallback)callback {
     [_internal deleteMessage:message operation:operation params:params wrapperSDKAgents:nil callback:callback];
 }
 

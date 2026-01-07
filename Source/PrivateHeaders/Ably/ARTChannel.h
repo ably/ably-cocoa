@@ -49,13 +49,13 @@ NS_SWIFT_SENDABLE
             operation:(nullable ARTMessageOperation *)operation
                params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
      wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
-             callback:(nullable ARTCallback)callback;
+             callback:(nullable ARTEditResultCallback)callback;
 
 - (void)deleteMessage:(ARTMessage *)message
             operation:(nullable ARTMessageOperation *)operation
                params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
      wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
-             callback:(nullable ARTCallback)callback;
+             callback:(nullable ARTEditResultCallback)callback;
 
 - (void)appendMessage:(ARTMessage *)message
             operation:(nullable ARTMessageOperation *)operation

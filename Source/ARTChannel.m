@@ -189,26 +189,18 @@
             operation:(nullable ARTMessageOperation *)operation
                params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
      wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
-             callback:(nullable ARTCallback)callback {
+             callback:(nullable ARTEditResultCallback)callback {
     // RSL15b1, RTL32b1
-    [self editMessage:message action:ARTMessageActionUpdate operation:operation params:params wrapperSDKAgents:wrapperSDKAgents callback:^(ARTUpdateDeleteResult *result, ARTErrorInfo *error) {
-        if (callback) {
-            callback(error);
-        }
-    }];
+    [self editMessage:message action:ARTMessageActionUpdate operation:operation params:params wrapperSDKAgents:wrapperSDKAgents callback:callback];
 }
 
 - (void)deleteMessage:(ARTMessage *)message
             operation:(nullable ARTMessageOperation *)operation
                params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
      wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
-             callback:(nullable ARTCallback)callback {
+             callback:(nullable ARTEditResultCallback)callback {
     // RSL15b1, RTL32b1
-    [self editMessage:message action:ARTMessageActionDelete operation:operation params:params wrapperSDKAgents:wrapperSDKAgents callback:^(ARTUpdateDeleteResult *result, ARTErrorInfo *error) {
-        if (callback) {
-            callback(error);
-        }
-    }];
+    [self editMessage:message action:ARTMessageActionDelete operation:operation params:params wrapperSDKAgents:wrapperSDKAgents callback:callback];
 }
 
 - (void)appendMessage:(ARTMessage *)message operation:(ARTMessageOperation *)operation params:(NSDictionary<NSString *,ARTStringifiable *> *)params wrapperSDKAgents:(NSStringDictionary *)wrapperSDKAgents callback:(ARTEditResultCallback)callback {
