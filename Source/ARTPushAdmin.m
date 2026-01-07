@@ -84,7 +84,7 @@
             [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
             ARTLogDebug(self->_logger, @"push notification to a single device %@", request);
-        [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+            [self->_rest executeAblyRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
                 if (error) {
                     ARTLogError(self->_logger, @"%@: push notification to a single device failed (%@)", NSStringFromClass(self.class), error.localizedDescription);
                     if (callback) callback([ARTErrorInfo createFromNSError:error]);

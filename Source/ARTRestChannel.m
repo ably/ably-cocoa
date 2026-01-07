@@ -260,7 +260,7 @@ art_dispatch_sync(_queue, ^{
         
         ARTLogDebug(self.logger, @"RS:%p C:%p (%@) channel details request %@", self->_rest, self, self.name, request);
         
-        [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable error) {
+        [self->_rest executeAblyRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable error) {
             
             if (response.statusCode == 200 /*OK*/) {
                 NSError *decodeError = nil;
@@ -390,7 +390,7 @@ art_dispatch_sync(_queue, ^{
         
         ARTLogDebug(self.logger, @"RS:%p C:%p (%@) post message %@", self->_rest, self, self.name, [[NSString alloc] initWithData:encodedMessage ?: [NSData data] encoding:NSUTF8StringEncoding]);
         
-        [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+        [self->_rest executeAblyRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (callback) {
                 ARTErrorInfo *errorInfo;
                 if (self->_rest.options.addRequestIds) {
@@ -514,7 +514,7 @@ art_dispatch_sync(_queue, ^{
         NSString *logOperation = isDelete ? @"delete" : @"update";
         ARTLogDebug(self.logger, @"RS:%p C:%p (%@) %@ message %@", self->_rest, self, self.name, logOperation, [[NSString alloc] initWithData:requestBodyData ?: [NSData data] encoding:NSUTF8StringEncoding]);
         
-        [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+        [self->_rest executeAblyRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (callback) {
                 ARTErrorInfo *errorInfo;
                 if (self->_rest.options.addRequestIds) {
@@ -569,7 +569,7 @@ art_dispatch_sync(_queue, ^{
         
         ARTLogDebug(self.logger, @"RS:%p C:%p (%@) get message with serial %@", self->_rest, self, self.name, serial);
         
-        [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+        [self->_rest executeAblyRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (error) {
                 ARTErrorInfo *errorInfo;
                 if (self->_rest.options.addRequestIds) {

@@ -71,16 +71,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 // MARK: ARTHTTPExecutor
 
-- (nullable NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request
-                                     wrapperSDKAgents:(nullable NSDictionary<NSString *, NSString *> *)wrapperSDKAgents
-                                           completion:(nullable ARTURLRequestCallback)callback;
+- (nullable NSObject<ARTCancellable> *)executeExternalRequest:(NSURLRequest *)request
+                                                   completion:(nullable ARTURLRequestCallback)callback;
 
 // MARK: Internal
 
-- (nullable NSObject<ARTCancellable> *)executeRequest:(NSMutableURLRequest *)request
-                                       withAuthOption:(ARTAuthentication)authOption
-                                     wrapperSDKAgents:(nullable NSDictionary<NSString *, NSString *> *)wrapperSDKAgents
-                                           completion:(ARTURLRequestCallback)callback;
+- (nullable NSObject<ARTCancellable> *)executeAblyRequest:(NSMutableURLRequest *)request
+                                           withAuthOption:(ARTAuthentication)authOption
+                                         wrapperSDKAgents:(nullable NSDictionary<NSString *, NSString *> *)wrapperSDKAgents
+                                               completion:(ARTURLRequestCallback)callback;
+
+- (nullable NSObject<ARTCancellable> *)executeAblyRequest:(NSURLRequest *)request
+                                         wrapperSDKAgents:(nullable NSDictionary<NSString *, NSString *> *)wrapperSDKAgents
+                                               completion:(nullable ARTURLRequestCallback)callback;
 
 - (nullable NSObject<ARTCancellable> *)internetIsUp:(void (^)(BOOL isUp))cb;
 

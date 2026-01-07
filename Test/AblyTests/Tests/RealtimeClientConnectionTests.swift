@@ -5351,7 +5351,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                     "Accept": "application/json",
                     "Content-Type": "application/json",
                 ]
-                client.internal.rest.execute(request, withAuthOption: .on, wrapperSDKAgents: nil, completion: { _, _, err in
+                client.internal.rest.executeAblyRequest(request, withAuthOption: .on, wrapperSDKAgents: nil, completion: { _, _, err in
                     if let err = err {
                         fail("\(err)")
                     }
@@ -5377,7 +5377,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                     let request = NSMutableURLRequest(url: URL(string: "/channels/\(channel.name)/messages")!)
                     request.httpMethod = "GET"
                     request.allHTTPHeaderFields = ["Accept": "application/json"]
-                    client.internal.rest.execute(request, withAuthOption: .on, wrapperSDKAgents: nil, completion: { _, data, err in
+                    client.internal.rest.executeAblyRequest(request, withAuthOption: .on, wrapperSDKAgents: nil, completion: { _, data, err in
                         if let err = err {
                             fail("\(err)")
                             done()
@@ -5441,7 +5441,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                     "Accept": "application/json",
                     "Content-Type": "application/json",
                 ]
-                restPublishClient.internal.execute(request, withAuthOption: .on, wrapperSDKAgents: nil, completion: { _, _, err in
+                restPublishClient.internal.executeAblyRequest(request, withAuthOption: .on, wrapperSDKAgents: nil, completion: { _, _, err in
                     if let err = err {
                         fail("\(err)")
                     }
@@ -5507,7 +5507,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                     let request = NSMutableURLRequest(url: URL(string: "/channels/\(restPublishChannel.name)/messages")!)
                     request.httpMethod = "GET"
                     request.allHTTPHeaderFields = ["Accept": "application/json"]
-                    restRetrieveClient.internal.execute(request, withAuthOption: .on, wrapperSDKAgents: nil, completion: { _, data, err in
+                    restRetrieveClient.internal.executeAblyRequest(request, withAuthOption: .on, wrapperSDKAgents: nil, completion: { _, data, err in
                         if let err = err {
                             fail("\(err)")
                             done()

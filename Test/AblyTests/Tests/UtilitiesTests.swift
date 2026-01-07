@@ -257,9 +257,9 @@ class UtilitiesTests: XCTestCase {
             ]
         )
         
-        let request = URLRequest(url: URL(string: "https://www.example.com")!)
+        let request = URLRequest(url: URL(string: "https://www.example.com")!) // this should be an Ably address, but we use random since the response is simulated
         waitUntil(timeout: testTimeout) { done in
-            rest.internal.execute(request, wrapperSDKAgents:nil, completion: { response, _, error in
+            rest.internal.executeAblyRequest(request, wrapperSDKAgents:nil, completion: { response, _, error in
                 guard let error = error as? ARTErrorInfo else {
                     fail("Should be ARTErrorInfo"); done(); return
                 }
@@ -292,9 +292,9 @@ class UtilitiesTests: XCTestCase {
             ]
         )
         
-        let request = URLRequest(url: URL(string: "https://www.example.com")!)
+        let request = URLRequest(url: URL(string: "https://www.example.com")!) // this should be an Ably address, but we use random since the response is simulated
         waitUntil(timeout: testTimeout) { done in
-            rest.internal.execute(request, wrapperSDKAgents:nil, completion: { response, _, error in
+            rest.internal.executeAblyRequest(request, wrapperSDKAgents:nil, completion: { response, _, error in
                 guard let error = error as? ARTErrorInfo else {
                     fail("Should be ARTErrorInfo"); done(); return
                 }

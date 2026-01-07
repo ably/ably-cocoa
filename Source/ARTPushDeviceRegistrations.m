@@ -92,7 +92,7 @@ art_dispatch_async(_queue, ^{
     [request setDeviceAuthentication:deviceDetails.id localDevice:local logger:self->_logger];
 
     ARTLogDebug(self->_logger, @"save device with request %@", request);
-    [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [self->_rest executeAblyRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode == 200 /*OK*/) {
             NSError *decodeError = nil;
             ARTDeviceDetails *deviceDetails = [[self->_rest defaultEncoder] decodeDeviceDetails:data error:&decodeError];
@@ -140,7 +140,7 @@ art_dispatch_async(_queue, ^{
     [request setDeviceAuthentication:deviceId localDevice:local logger:self->_logger];
 
     ARTLogDebug(self->_logger, @"get device with request %@", request);
-    [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [self->_rest executeAblyRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode == 200 /*OK*/) {
             NSError *decodeError = nil;
             ARTDeviceDetails *device = [self->_rest.encoders[response.MIMEType] decodeDeviceDetails:data error:&decodeError];
@@ -213,7 +213,7 @@ art_dispatch_async(_queue, ^{
     [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
     ARTLogDebug(self->_logger, @"remove device with request %@", request);
-    [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [self->_rest executeAblyRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode == 200 /*Ok*/ || response.statusCode == 204 /*not returning any content*/) {
             ARTLogDebug(self->_logger, @"%@: save device successfully", NSStringFromClass(self.class));
             callback(nil);
@@ -258,7 +258,7 @@ art_dispatch_async(_queue, ^{
     [request setDeviceAuthentication:[params objectForKey:@"deviceId"] localDevice:local];
 
     ARTLogDebug(self->_logger, @"remove devices with request %@", request);
-    [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [self->_rest executeAblyRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode == 200 /*Ok*/ || response.statusCode == 204 /*not returning any content*/) {
             ARTLogDebug(self->_logger, @"%@: remove devices successfully", NSStringFromClass(self.class));
             callback(nil);
