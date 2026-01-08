@@ -464,7 +464,7 @@ art_dispatch_sync(_queue, ^{
         NSString *messagePath = [NSString stringWithFormat:@"messages/%@", [message.serial stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]]];
         NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:[self->_basePath stringByAppendingPathComponent:messagePath]] resolvingAgainstBaseURL:YES];
 
-        // RSL15b - params in querystring
+        // RSL15f - params in querystring
         if (params && params.count > 0) {
             NSMutableArray<NSURLQueryItem *> *queryItems = [NSMutableArray array];
             for (NSString *key in params) {

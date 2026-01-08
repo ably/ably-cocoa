@@ -75,7 +75,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @param message An `ARTMessage` object containing a populated `serial` field and the fields to update.
  * @param operation An optional `ARTMessageOperation` object containing metadata about the update operation.
- * @param params Optional parameters (sent as part of the query string for REST and ignored for Realtime).
+ * @param params Optional parameters sent as part of the request. As Ably adds supported parameters, they will be documented on the [docs pages](https://ably.com/docs).
  * @param callback A success or failure callback function. On success, it receives an `ARTUpdateDeleteResult` object containing the new version of the message.
  */
 - (void)updateMessage:(ARTMessage *)message
@@ -88,7 +88,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @param message An `ARTMessage` object containing a populated `serial` field.
  * @param operation An optional `ARTMessageOperation` object containing metadata about the delete operation.
- * @param params Optional parameters (sent as part of the query string for REST and ignored for Realtime).
+ * @param params Optional parameters sent as part of the request. As Ably adds supported parameters, they will be documented on the [docs pages](https://ably.com/docs).
  * @param callback A success or failure callback function. On success, it receives an `ARTUpdateDeleteResult` object containing the new version of the message.
  */
 - (void)deleteMessage:(ARTMessage *)message
@@ -101,7 +101,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @param message An `ARTMessage` object containing a populated `serial` field and the data to append.
  * @param operation An optional `ARTMessageOperation` object containing metadata about the append operation.
- * @param params Optional parameters (sent as part of the query string for REST and ignored for Realtime).
+ * @param params Optional parameters sent as part of the request. As Ably adds supported parameters, they will be documented on the [docs pages](https://ably.com/docs).
  * @param callback A success or failure callback function. On success, it receives an `ARTUpdateDeleteResult` object containing the new version of the message.
  */
 - (void)appendMessage:(ARTMessage *)message

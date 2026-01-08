@@ -182,7 +182,7 @@ class MessageUpdatesDeletesTests: XCTestCase {
             XCTAssertEqual(request.httpMethod, "PATCH")
             XCTAssertTrue(requestUrl.path.contains("/channels/\(channel.name)/messages/\(publishedMessageSerial)"))
 
-            // RSL15b: Verify params in querystring
+            // RSL15f: Verify params in querystring
             XCTAssertTrue(requestUrl.query?.contains("param1=value1") ?? false)
 
             // RSL15b: Verify request body - encoded Message object
@@ -302,7 +302,7 @@ class MessageUpdatesDeletesTests: XCTestCase {
             XCTAssertEqual(request.httpMethod, "PATCH")
             XCTAssertTrue(requestUrl.path.contains("/channels/\(channel.name)/messages/\(publishedMessageSerial)"))
 
-            // RSL15b: Verify params in querystring
+            // RSL15f: Verify params in querystring
             XCTAssertTrue(request.url?.query?.contains("deleteParam=deleteValue") ?? false)
 
             // RSL15b: Verify request body - encoded Message object
@@ -420,7 +420,7 @@ class MessageUpdatesDeletesTests: XCTestCase {
             XCTAssertEqual(request.httpMethod, "PATCH")
             XCTAssertTrue(requestUrl.path.contains("/channels/\(channel.name)/messages/\(publishedMessageSerial)"))
 
-            // RSL15b: Verify params in querystring
+            // RSL15f: Verify params in querystring
             XCTAssertTrue(request.url?.query?.contains("appendParam=appendValue") ?? false)
 
             // RSL15b: Verify request body - encoded Message object

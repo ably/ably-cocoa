@@ -494,6 +494,15 @@ art_dispatch_sync(_queue, ^{
         msg.channel = self.name;
         msg.messages = @[message];
 
+        // RTL32e: include params in ProtocolMessage
+        if (params && params.count > 0) {
+            NSMutableDictionary<NSString *, NSString *> *stringParams = [NSMutableDictionary dictionaryWithCapacity:params.count];
+            for (NSString *key in params) {
+                stringParams[key] = params[key].stringValue;
+            }
+            msg.params = stringParams;
+        }
+
         [self publishProtocolMessage:msg callback:^void(ARTMessageSendStatus *status) {
             if (callback) {
                 if (status.status.errorInfo) {
