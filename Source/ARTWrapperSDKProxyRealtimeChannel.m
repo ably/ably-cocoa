@@ -129,8 +129,16 @@ NS_ASSUME_NONNULL_END
                                           callback:callback];
 }
 
+- (void)getMessageVersionsWithSerial:(nonnull NSString *)serial params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params callback:(nonnull ARTPaginatedMessagesCallback)callback {
+    [self.underlyingChannel.internal getMessageVersionsWithSerial:serial
+                                                           params:params
+                                                 wrapperSDKAgents:self.proxyOptions.agents
+                                                         callback:callback];
+}
+
 - (void)getMessageVersionsWithSerial:(nonnull NSString *)serial callback:(nonnull ARTPaginatedMessagesCallback)callback {
     [self.underlyingChannel.internal getMessageVersionsWithSerial:serial
+                                                           params:nil
                                                  wrapperSDKAgents:self.proxyOptions.agents
                                                          callback:callback];
 }

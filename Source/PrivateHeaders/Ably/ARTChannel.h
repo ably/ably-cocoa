@@ -62,6 +62,11 @@ NS_SWIFT_SENDABLE
                     callback:(ARTMessageErrorCallback)callback;
 
 - (void)getMessageVersionsWithSerial:(NSString *)serial
+                              params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
+                    wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                            callback:(ARTPaginatedMessagesCallback)callback;
+
+- (void)getMessageVersionsWithSerial:(NSString *)serial
                     wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
                             callback:(ARTPaginatedMessagesCallback)callback;
 

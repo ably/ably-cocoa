@@ -113,8 +113,12 @@
     [_internal getMessageWithSerial:serial wrapperSDKAgents:nil callback:callback];
 }
 
+- (void)getMessageVersionsWithSerial:(NSString *)serial params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params callback:(ARTPaginatedMessagesCallback)callback {
+    [_internal getMessageVersionsWithSerial:serial params:params wrapperSDKAgents:nil callback:callback];
+}
+
 - (void)getMessageVersionsWithSerial:(NSString *)serial callback:(ARTPaginatedMessagesCallback)callback {
-    [_internal getMessageVersionsWithSerial:serial wrapperSDKAgents:nil callback:callback];
+    [_internal getMessageVersionsWithSerial:serial params:nil wrapperSDKAgents:nil callback:callback];
 }
 
 - (void)history:(ARTPaginatedMessagesCallback)callback {
@@ -624,6 +628,7 @@ art_dispatch_sync(_queue, ^{
 
 // RSL14
 - (void)getMessageVersionsWithSerial:(NSString *)serial
+                              params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
                     wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
                             callback:(ARTPaginatedMessagesCallback)callback {
     if (callback) {
@@ -638,6 +643,14 @@ art_dispatch_sync(_queue, ^{
     art_dispatch_async(_queue, ^{
         NSString *messagePath = [NSString stringWithFormat:@"messages/%@/versions", [serial stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]]];
         NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:[self->_basePath stringByAppendingPathComponent:messagePath]] resolvingAgainstBaseURL:YES];
+        
+        if (params && params.count > 0) {
+            NSMutableArray<NSURLQueryItem *> *queryItems = [NSMutableArray array];
+            for (NSString *key in params) {
+                [queryItems addObject:[NSURLQueryItem queryItemWithName:key value:params[key].stringValue]];
+            }
+            components.queryItems = queryItems;
+        }
         
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
         request.HTTPMethod = @"GET";
