@@ -176,6 +176,13 @@
 }
 
 - (void)getMessageVersionsWithSerial:(NSString *)serial
+                              params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
+                    wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                            callback:(ARTPaginatedMessagesCallback)callback {
+    NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
+}
+
+- (void)getMessageVersionsWithSerial:(NSString *)serial
                     wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
                             callback:(ARTPaginatedMessagesCallback)callback {
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));

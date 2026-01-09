@@ -108,6 +108,17 @@ NS_ASSUME_NONNULL_BEGIN
  * Retrieves all historical versions of a specific message, ordered by version. This includes the original message and all subsequent updates or delete operations.
  *
  * @param serial A serial identifier string of the message whose versions are to be retrieved.
+ * @param params Optional parameters sent as part of the query string.
+ * @param callback A callback which, upon success, will contain an `ARTPaginatedResult` object containing an array of `ARTMessage` objects representing all versions of the message. Upon failure, the callback will contain an `ARTErrorInfo` object which explains the error.
+ */
+- (void)getMessageVersionsWithSerial:(NSString *)serial
+                              params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
+                            callback:(ARTPaginatedMessagesCallback)callback;
+
+/**
+ * Retrieves all historical versions of a specific message, ordered by version. This includes the original message and all subsequent updates or delete operations.
+ *
+ * @param serial A serial identifier string of the message whose versions are to be retrieved.
  * @param callback A callback which, upon success, will contain an `ARTPaginatedResult` object containing an array of `ARTMessage` objects representing all versions of the message. Upon failure, the callback will contain an `ARTErrorInfo` object which explains the error.
  */
 - (void)getMessageVersionsWithSerial:(NSString *)serial callback:(ARTPaginatedMessagesCallback)callback;

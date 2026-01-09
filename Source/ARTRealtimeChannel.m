@@ -156,8 +156,12 @@
     [_internal getMessageWithSerial:serial wrapperSDKAgents:nil callback:callback];
 }
 
+- (void)getMessageVersionsWithSerial:(NSString *)serial params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params callback:(ARTPaginatedMessagesCallback)callback {
+    [_internal getMessageVersionsWithSerial:serial params:params wrapperSDKAgents:nil callback:callback];
+}
+
 - (void)getMessageVersionsWithSerial:(NSString *)serial callback:(ARTPaginatedMessagesCallback)callback {
-    [_internal getMessageVersionsWithSerial:serial wrapperSDKAgents:nil callback:callback];
+    [_internal getMessageVersionsWithSerial:serial params:nil wrapperSDKAgents:nil callback:callback];
 }
 
 - (void)history:(ARTPaginatedMessagesCallback)callback {
@@ -487,8 +491,11 @@ art_dispatch_sync(_queue, ^{
     [self.restChannel getMessageWithSerial:serial wrapperSDKAgents:wrapperSDKAgents callback:callback];
 }
 
-- (void)getMessageVersionsWithSerial:(NSString *)serial wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTPaginatedMessagesCallback)callback {
-    [self.restChannel getMessageVersionsWithSerial:serial wrapperSDKAgents:wrapperSDKAgents callback:callback];
+- (void)getMessageVersionsWithSerial:(NSString *)serial
+                              params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
+                    wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                            callback:(ARTPaginatedMessagesCallback)callback {
+    [self.restChannel getMessageVersionsWithSerial:serial params:params wrapperSDKAgents:wrapperSDKAgents callback:callback];
 }
 
 - (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(ARTStatusCallback)cb {
