@@ -2078,39 +2078,30 @@ class RestClientTests: XCTestCase {
         let test = Test()
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.addRequestIds = true
+        let client = ARTRest(options: options)
+        let internalLog = InternalLog(clientOptions: options)
+        let mockHTTP = MockHTTP(logger: internalLog)
+        testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
+        client.internal.httpExecutor = testHTTPExecutor
+        mockHTTP.setNetworkState(network: .hostUnreachable, resetAfter: 2)
+        let channel = client.channels.get(test.uniqueChannelName())
 
-        let restA = ARTRest(options: options)
-        let mockHttpExecutor = MockHTTPExecutor()
-        restA.internal.httpExecutor = mockHttpExecutor
         waitUntil(timeout: testTimeout) { done in
-            restA.channels.get(test.uniqueChannelName()).publish(nil, data: "something") { error in
+            channel.publish(nil, data: "") { error in
                 XCTAssertNil(error)
-                guard let url = mockHttpExecutor.requests.first?.url else {
-                    fail("No requests found")
-                    return
-                }
-                expect(url.query).to(contain("request_id"))
                 done()
             }
         }
-
-        mockHttpExecutor.reset()
-
-        options.addRequestIds = false
-        let restB = ARTRest(options: options)
-        restB.internal.httpExecutor = mockHttpExecutor
-        waitUntil(timeout: testTimeout) { done in
-            restB.channels.get(test.uniqueChannelName()).publish(nil, data: "something") { error in
-                XCTAssertNil(error)
-                XCTAssertEqual(mockHttpExecutor.requests.count, 1)
-                guard let url = mockHttpExecutor.requests.first?.url else {
-                    fail("No requests found")
-                    return
-                }
-                XCTAssertNil(url.query)
-                done()
-            }
-        }
+        
+        let requests = testHTTPExecutor.requests
+        XCTAssertEqual(requests.count, 3)
+        let capturedURLs = requests.map { $0.url!.absoluteString }
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-e].ably-realtime.com"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(2), pattern: "//[a-e].ably-realtime.com"))
+        
+        let requestIds = capturedURLs.map { $0.substring(after: "request_id=") }
+        XCTAssertEqual(Set(requestIds).count, 1) // all requestIds are equal
     }
 
     func test__096__RestClient__request_IDs__should_remain_the_same_if_a_request_is_retried_to_a_fallback_host() {
