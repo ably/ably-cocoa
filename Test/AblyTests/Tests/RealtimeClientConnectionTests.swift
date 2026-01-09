@@ -1112,7 +1112,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             return
         }
         // Messages covered in a single ACK response
-        XCTAssertEqual(acks[0].msgSerial, 5) // [0] 1st publish + [1.2.4] publish + [4] enter with invalid client + [5] queued messages
+        XCTAssertEqual(acks[0].msgSerial, 5) // [0] 1st publish + [1,2,3] publish + [4] enter with invalid client + [5] queued messages
         XCTAssertEqual(acks[0].count, 1)
 
         if nacks.count != 1 {
