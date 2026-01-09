@@ -218,12 +218,15 @@ class MessageUpdatesDeletesTests: XCTestCase {
 
         var updatedMessage: ARTMessage!
         
-        // Get the updated message by serial string
-        waitUntil(timeout: testTimeout) { done in
-            channel.getMessageWithSerial(publishedMessageSerial) { message, error in
-                XCTAssertNil(error)
-                updatedMessage = message
-                done()
+        // Fetch the updated message (poll getMessageWithSerial until it returns the updated message)
+        while updatedMessage == nil || updatedMessage!.version?.serial == publishedMessage.version?.serial {
+            // Get the updated message by serial string
+            waitUntil(timeout: testTimeout) { done in
+                channel.getMessageWithSerial(publishedMessageSerial) { message, error in
+                    XCTAssertNil(error)
+                    updatedMessage = message
+                    done()
+                }
             }
         }
         
@@ -337,16 +340,19 @@ class MessageUpdatesDeletesTests: XCTestCase {
         }
 
         var updatedMessage: ARTMessage?
-        
-        // Get the updated message by serial string
-        waitUntil(timeout: testTimeout) { done in
-            channel.getMessageWithSerial(publishedMessageSerial) { message, error in
-                XCTAssertNil(error)
-                updatedMessage = message
-                done()
+
+        // Fetch the updated message (poll getMessageWithSerial until it returns the updated message)
+        while updatedMessage == nil || updatedMessage!.version?.serial == publishedMessage.version?.serial {
+            // Get the updated message by serial string
+            waitUntil(timeout: testTimeout) { done in
+                channel.getMessageWithSerial(publishedMessageSerial) { message, error in
+                    XCTAssertNil(error)
+                    updatedMessage = message
+                    done()
+                }
             }
         }
-        
+
         guard let updatedMessage else {
             XCTFail("updatedMessage is nil")
             return
@@ -458,12 +464,15 @@ class MessageUpdatesDeletesTests: XCTestCase {
 
         var updatedMessage: ARTMessage?
 
-        // Get the updated message by serial string
-        waitUntil(timeout: testTimeout) { done in
-            channel.getMessageWithSerial(publishedMessageSerial) { message, error in
-                XCTAssertNil(error)
-                updatedMessage = message
-                done()
+        // Fetch the updated message (poll getMessageWithSerial until it returns the updated message)
+        while updatedMessage == nil || updatedMessage!.version?.serial == publishedMessage.version?.serial {
+            // Get the updated message by serial string
+            waitUntil(timeout: testTimeout) { done in
+                channel.getMessageWithSerial(publishedMessageSerial) { message, error in
+                    XCTAssertNil(error)
+                    updatedMessage = message
+                    done()
+                }
             }
         }
 
