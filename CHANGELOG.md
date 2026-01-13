@@ -1,6 +1,6 @@
 # Change Log
 
-## [1.2.55]((https://github.com/ably/ably-cocoa/tree/1.2.55)
+## [1.2.55](https://github.com/ably/ably-cocoa/tree/1.2.55)
 
 This release contains no user-facing changes; it corrects a mistake in the internal version data that version 1.2.54 submits to Ably.
 
