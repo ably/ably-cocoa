@@ -71,6 +71,8 @@ NSString *ARTMessageActionToStr(ARTMessageAction action) {
             return @"Meta";
         case ARTMessageActionMessageSummary:
             return @"Summary";
+        case ARTMessageActionAppend:
+            return @"Append";
     }
     return @"Unknown";
 }

@@ -1,5 +1,6 @@
 #import <Foundation/Foundation.h>
 #import <Ably/ARTTypes.h>
+#import "ARTMessageSendStatus.h"
 
 @class ARTProtocolMessage;
 
@@ -12,12 +13,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic) NSMutableArray *sentCallbacks;
 @property (readonly, nonatomic) NSMutableArray *ackCallbacks;
 
-- (instancetype)initWithProtocolMessage:(ARTProtocolMessage *)msg sentCallback:(nullable ARTCallback)sentCallback ackCallback:(nullable ARTStatusCallback)ackCallback;
-
-- (BOOL)mergeFrom:(ARTProtocolMessage *)msg maxSize:(NSInteger)maxSize sentCallback:(nullable ARTCallback)sentCallback ackCallback:(nullable ARTStatusCallback)ackCallback;
+- (instancetype)initWithProtocolMessage:(ARTProtocolMessage *)msg sentCallback:(nullable ARTCallback)sentCallback ackCallback:(nullable ARTMessageSendCallback)ackCallback;
 
 - (ARTCallback)sentCallback;
-- (ARTStatusCallback)ackCallback;
+- (ARTMessageSendCallback)ackCallback;
 
 @end
 

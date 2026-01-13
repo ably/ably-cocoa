@@ -561,7 +561,7 @@ art_dispatch_sync(_queue, ^{
 });
 }
 
-- (void)addPendingPresence:(ARTProtocolMessage *)msg callback:(ARTStatusCallback)cb {
+- (void)addPendingPresence:(ARTProtocolMessage *)msg callback:(ARTMessageSendCallback)cb {
     ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg sentCallback:nil ackCallback:cb];
     [_pendingPresence addObject:qm];
 }
@@ -604,8 +604,8 @@ art_dispatch_sync(_queue, ^{
     ARTRealtimeChannelState channelState = _channel.state_nosync;
     switch (channelState) {
         case ARTRealtimeChannelAttached: {
-            [_realtime send:pm sentCallback:nil ackCallback:^(ARTStatus *status) { // RTP16a
-                if (callback) callback(status.errorInfo);
+            [_realtime send:pm sentCallback:nil ackCallback:^(ARTMessageSendStatus *status) { // RTP16a
+                if (callback) callback(status.status.errorInfo);
             }];
             break;
         }
@@ -616,9 +616,9 @@ art_dispatch_sync(_queue, ^{
             // fallthrough
         case ARTRealtimeChannelAttaching: {
             if (_realtime.options.queueMessages) { // RTP16b
-                [self addPendingPresence:pm callback:^(ARTStatus *status) {
+                [self addPendingPresence:pm callback:^(ARTMessageSendStatus *status) {
                     if (callback) {
-                        callback(status.errorInfo);
+                        callback(status.status.errorInfo);
                     }
                 }];
                 break;
@@ -665,8 +665,9 @@ art_dispatch_sync(_queue, ^{
 - (void)failPendingPresence:(ARTStatus *)status {
     NSArray *pendingPresence = _pendingPresence;
     _pendingPresence = [NSMutableArray array];
+    ARTMessageSendStatus *sendStatus = [[ARTMessageSendStatus alloc] initWithStatus:status publishResult:nil];
     for (ARTQueuedMessage *qm in pendingPresence) {
-        qm.ackCallback(status);
+        qm.ackCallback(sendStatus);
     }
 }
 

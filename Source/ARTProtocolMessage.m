@@ -25,6 +25,7 @@
         _flags = 0;
         _error = nil;
         _connectionDetails = nil;
+        _res = nil;
     }
     return self;
 }
@@ -56,6 +57,7 @@
     [description appendFormat:@" presence: %@\n", self.presence];
     [description appendFormat:@" annotations: %@\n", self.annotations];
     [description appendFormat:@" params: %@\n", self.params];
+    [description appendFormat:@" res: %@\n", self.res];
     [description appendFormat:@"}"];
     return description;
 }
@@ -78,91 +80,8 @@
     pm.error = self.error;
     pm.connectionDetails = self.connectionDetails;
     pm.params = self.params;
+    pm.res = self.res;
     return pm;
-}
-
-- (BOOL)mergeFrom:(ARTProtocolMessage *)src maxSize:(NSInteger)maxSize {
-     if (![src.channel isEqualToString:self.channel] || src.action != self.action) {
-         // RTL6d3
-         return NO;
-     }
-     if ([self mergeWithMessages:src.messages wouldExceedMaxSize:maxSize]) {
-         // RTL6d1
-         return NO;
-     }
-     if ([self clientIdsAreDifferent:src.messages]) {
-         // RTL6d2
-         return NO;
-     }
-
-     NSArray *proposed = nil;
-     switch (self.action) {
-         // RTL6d4, RTL6d6
-         case ARTProtocolMessageMessage:
-             proposed = [self.messages arrayByAddingObjectsFromArray:src.messages];
-             break;
-         case ARTProtocolMessagePresence:
-             proposed = [self.presence arrayByAddingObjectsFromArray:src.presence];
-             break;
-         case ARTProtocolMessageAnnotation:
-             proposed = [self.annotations arrayByAddingObjectsFromArray:src.annotations];
-             break;
-         default:
-             proposed = nil;
-             return NO;
-     }
-
-     NSUInteger ids = [proposed artFilter:^BOOL(ARTMessage *message) {
-         return message.id != nil;
-     }].count;
-     if (ids > 0) {
-         // RTL6d7
-         return NO;
-     }
-
-     switch (self.action) {
-         case ARTProtocolMessageMessage:
-             self.messages = proposed;
-             return YES;
-         case ARTProtocolMessagePresence:
-             self.presence = proposed;
-             return YES;
-         case ARTProtocolMessageAnnotation:
-             self.annotations = proposed;
-             return YES;
-         default:
-             return NO;
-     }
-}
-
-- (BOOL)clientIdsAreDifferent:(NSArray<ARTMessage*>*)messages {
-    NSMutableSet *queuedClientIds = [NSMutableSet new];
-    NSMutableSet *incomingClientIds = [NSMutableSet new];
-    for (ARTMessage *message in self.messages) {
-        [queuedClientIds addObject:[NSString nilToEmpty:message.clientId]];
-    }
-    for (ARTMessage *message in messages) {
-        [incomingClientIds addObject:[NSString nilToEmpty:message.clientId]];
-    }
-    [queuedClientIds unionSet:incomingClientIds];
-    if (queuedClientIds.count == 1) {
-        return NO;
-    } else {
-        return YES;
-    }
-}
-
-- (BOOL)mergeWithMessages:(NSArray<ARTMessage*>*)messages wouldExceedMaxSize:(NSInteger)maxSize {
-    NSInteger queuedMessagesSize = 0;
-    for (ARTMessage *message in self.messages) {
-        queuedMessagesSize += [message messageSize];
-    }
-    NSInteger messagesSize = 0;
-    for (ARTMessage *message in messages) {
-        messagesSize += [message messageSize];
-    }
-    NSInteger totalSize = queuedMessagesSize + messagesSize;
-    return totalSize > maxSize;
 }
 
 - (BOOL)ackRequired {

@@ -71,30 +71,43 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)publish:(NSArray<ARTMessage *> *)messages callback:(nullable ARTCallback)callback;
 
 /**
- * Publishes an update to an existing message with patch semantics. Non-null `name`, `data`, and `extras` fields in the provided message will replace the corresponding fields in the existing message, while null fields will be left unchanged.
+ * Publishes an update to existing message with shallow mixin semantics. Non-`nil` `name`, `data`, and `extras` properties in the provided message will replace the corresponding fields in the existing message, while `nil` properties will be left unchanged. Note that this publishes an update, it does not mutate the original message if passed in.
  *
  * @param message An `ARTMessage` object containing a populated `serial` field and the fields to update.
  * @param operation An optional `ARTMessageOperation` object containing metadata about the update operation.
- * @param params Optional parameters sent as part of the query string.
- * @param callback A callback which, upon success, will contain a `ARTMessage` object containing the updated message. Upon failure, the callback will contain an `ARTErrorInfo` object which explains the error.
+ * @param params Optional parameters sent as part of the request. As Ably adds supported parameters, they will be documented on the [docs pages](https://ably.com/docs).
+ * @param callback A success or failure callback function. On success, it receives an `ARTUpdateDeleteResult` object containing the new version of the message.
  */
 - (void)updateMessage:(ARTMessage *)message
             operation:(nullable ARTMessageOperation *)operation
                params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
-             callback:(nullable ARTCallback)callback;
+             callback:(nullable ARTEditResultCallback)callback;
 
 /**
- * Marks a message as deleted by publishing an update with an action of `ARTMessageActionDelete`. This does not remove the message from the server, and the full message history remains accessible. Uses patch semantics: non-null `name`, `data`, and `extras` fields in the provided message will replace the corresponding fields in the existing message, while null fields will be left unchanged (meaning that if you for example want the `ARTMessageActionDelete` to have an empty data, you should explicitly set the `data` to an empty object).
+ * Marks a message as deleted by publishing an update with an action of `ARTMessageActionDelete`. This does not remove the message from the server, and the full message history remains accessible. Uses shallow mixin semantics: non-`nil` `name`, `data`, and `extras` properties in the provided message will replace the corresponding properties in the existing message, while `nil` fields will be left unchanged (meaning that if you for example want the `ARTMessageActionDelete` to have an empty data, you should explicitly set the `data` to an empty object).
  *
  * @param message An `ARTMessage` object containing a populated `serial` field.
  * @param operation An optional `ARTMessageOperation` object containing metadata about the delete operation.
- * @param params Optional parameters sent as part of the query string.
- * @param callback A callback which, upon success, will contain a `ARTMessage` object containing the deleted message. Upon failure, the callback will contain an `ARTErrorInfo` object which explains the error.
+ * @param params Optional parameters sent as part of the request. As Ably adds supported parameters, they will be documented on the [docs pages](https://ably.com/docs).
+ * @param callback A success or failure callback function. On success, it receives an `ARTUpdateDeleteResult` object containing the new version of the message.
  */
 - (void)deleteMessage:(ARTMessage *)message
             operation:(nullable ARTMessageOperation *)operation
                params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
-             callback:(nullable ARTCallback)callback;
+             callback:(nullable ARTEditResultCallback)callback;
+
+/**
+ * Appends data to an existing message. The supplied `data` property is appended to the previous message's data, while all other properties (`name`, `extras`) replace the previous values if provided.
+ *
+ * @param message An `ARTMessage` object containing a populated `serial` field and the data to append.
+ * @param operation An optional `ARTMessageOperation` object containing metadata about the append operation.
+ * @param params Optional parameters sent as part of the request. As Ably adds supported parameters, they will be documented on the [docs pages](https://ably.com/docs).
+ * @param callback A success or failure callback function. On success, it receives an `ARTUpdateDeleteResult` object containing the new version of the message.
+ */
+- (void)appendMessage:(ARTMessage *)message
+            operation:(nullable ARTMessageOperation *)operation
+               params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
+             callback:(nullable ARTEditResultCallback)callback;
 
 /**
  * Retrieves the latest version of a specific message by its serial identifier.

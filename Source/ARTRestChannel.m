@@ -5,8 +5,10 @@
 #import "ARTChannel+Private.h"
 #import "ARTChannelOptions.h"
 #import "ARTMessage.h"
+#import "ARTMessage+Private.h"
 #import "ARTMessageOperation.h"
 #import "ARTMessageOperation+Private.h"
+#import "ARTMessageVersion+Private.h"
 #import "ARTBaseMessage+Private.h"
 #import "ARTPaginatedResult+Private.h"
 #import "ARTDataQuery+Private.h"
@@ -101,12 +103,16 @@
     [_internal publish:messages callback:callback];
 }
 
-- (void)updateMessage:(ARTMessage *)message operation:(nullable ARTMessageOperation *)operation params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params callback:(nullable ARTCallback)callback {
+- (void)updateMessage:(ARTMessage *)message operation:(nullable ARTMessageOperation *)operation params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params callback:(nullable ARTEditResultCallback)callback {
     [_internal updateMessage:message operation:operation params:params wrapperSDKAgents:nil callback:callback];
 }
 
-- (void)deleteMessage:(ARTMessage *)message operation:(nullable ARTMessageOperation *)operation params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params callback:(nullable ARTCallback)callback {
+- (void)deleteMessage:(ARTMessage *)message operation:(nullable ARTMessageOperation *)operation params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params callback:(nullable ARTEditResultCallback)callback {
     [_internal deleteMessage:message operation:operation params:params wrapperSDKAgents:nil callback:callback];
+}
+
+- (void)appendMessage:(ARTMessage *)message operation:(nullable ARTMessageOperation *)operation params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params callback:(nullable ARTEditResultCallback)callback {
+    [_internal appendMessage:message operation:operation params:params wrapperSDKAgents:nil callback:callback];
 }
 
 - (void)getMessageWithSerial:(NSString *)serial callback:(ARTMessageErrorCallback)callback {
@@ -405,96 +411,60 @@ art_dispatch_sync(_queue, ^{
     });
 }
 
-- (void)_updateMessage:(ARTMessage *)message
-              isDelete:(BOOL)isDelete
-             operation:(nullable ARTMessageOperation *)operation
-                params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
-      wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
-              callback:(nullable ARTCallback)callback {
+/// Sends a REST request to edit the given message (that is, a PATCH request to `/channels/{channelName}/messages/{serial}`, per RSL15.
+///
+/// The message will be sent as-is.
+- (void)internalSendEditRequestForMessage:(ARTMessage *)message
+                                   params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
+                         wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                                 callback:(nullable ARTEditResultCallback)callback {
     if (callback) {
-        ARTCallback userCallback = callback;
-        callback = ^(ARTErrorInfo *__nullable error) {
+        ARTEditResultCallback userCallback = callback;
+        callback = ^(ARTUpdateDeleteResult *_Nullable result, ARTErrorInfo *_Nullable error) {
             art_dispatch_async(self->_userQueue, ^{
-                userCallback(error);
+                userCallback(result, error);
             });
         };
     }
-    
+
     art_dispatch_async(_queue, ^{
-        // RSL12/RSL13 - message must have serial
+        // RSL15 - message must have serial
         if (!message.serial || message.serial.length == 0) {
             if (callback) {
-                callback([ARTErrorInfo createWithCode:ARTErrorInvalidParameterValue message:[NSString stringWithFormat:@"This message lacks a serial and cannot be %@. Make sure you have enabled \"Message annotations, updates, and deletes\" in channel settings on your dashboard.", isDelete ? @"deleted" : @"updated"]]);
+                NSString *actionName;
+                switch (message.action) {
+                    case ARTMessageActionUpdate:
+                        actionName = @"updated";
+                        break;
+                    case ARTMessageActionDelete:
+                        actionName = @"deleted";
+                        break;
+                    case ARTMessageActionAppend:
+                        actionName = @"appended";
+                        break;
+                    default:
+                        actionName = @"(unknown operation)";
+                }
+                callback(nil, [ARTErrorInfo createWithCode:ARTErrorInvalidParameterValue message:[NSString stringWithFormat:@"This message lacks a serial and cannot be %@. Make sure you have enabled \"Message annotations, updates, and deletes\" in channel settings on your dashboard.", actionName]]);
             }
             return;
         }
-        
-        // RSL12b/RSL13b - Build request body according to spec
-        NSMutableDictionary *requestBody = [NSMutableDictionary dictionary];
-        
-        // RSL12b1/RSL13b1 - serial
-        requestBody[@"serial"] = message.serial;
-        
-        // RSL12b2/RSL13b2 - operation
-        if (operation) {
-            NSMutableDictionary *operationDict = [NSMutableDictionary dictionary];
-            [operation writeToDictionary:operationDict];
-            if (operationDict.count > 0) {
-                requestBody[@"operation"] = operationDict;
-            }
-        }
-        
-        // RSL12b3/RSL13b3 - name
-        if (message.name) {
-            requestBody[@"name"] = message.name;
-        }
-        
-        // RSL12b4, RSL12b5 / RSL13b4, RSL13b5 - data and encoding (encode per RSL4)
-        if (message.data) {
-            NSError *encodeError = nil;
-            ARTMessage *encodedMessage = [message encodeWithEncoder:self.dataEncoder error:&encodeError];
-            if (encodeError) {
-                if (callback) callback([ARTErrorInfo createFromNSError:encodeError]);
-                return;
-            }
-            
-            requestBody[@"data"] = encodedMessage.data;
-            if (encodedMessage.encoding && encodedMessage.encoding.length > 0) {
-                requestBody[@"encoding"] = encodedMessage.encoding;
-            }
-        }
-        
-        // RSL12b6/RSL13b6 - extras
-        if (message.extras) {
-            requestBody[@"extras"] = message.extras;
-        }
-        
-        // Encode the request body
+
+        // RSL15d - Serialize the message per RSC8
         NSError *encodeError = nil;
-        NSData *requestBodyData = [self.rest.defaultEncoder encode:requestBody error:&encodeError];
+        NSData *encodedMessage = [self.rest.defaultEncoder encodeMessage:message error:&encodeError];
         if (encodeError) {
-            if (callback) callback([ARTErrorInfo createFromNSError:encodeError]);
+            if (callback) {
+                callback(nil, [ARTErrorInfo createFromNSError:encodeError]);
+            }
             return;
         }
-        
-        // RSL12b - PATCH to /channels/{channelName}/messages/{serial}
-        // RSL13b - POST to /channels/{channelName}/messages/{serial}/delete
-        NSString *messagePath;
-        NSString *httpMethod;
-        
-        if (isDelete) {
-            // RSL13b - POST to /channels/{channelName}/messages/{serial}/delete
-            messagePath = [NSString stringWithFormat:@"messages/%@/delete", [message.serial stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]]];
-            httpMethod = @"POST";
-        } else {
-            // RSL12b - PATCH to /channels/{channelName}/messages/{serial}
-            messagePath = [NSString stringWithFormat:@"messages/%@", [message.serial stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]]];
-            httpMethod = @"PATCH";
-        }
-        
+
+        // RSL15b - PATCH to /channels/{channelName}/messages/{serial}
+        NSString *messagePath = [NSString stringWithFormat:@"messages/%@", [message.serial stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]]];
         NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:[self->_basePath stringByAppendingPathComponent:messagePath]] resolvingAgainstBaseURL:YES];
-        
-        // RSL12a/RSL13a - params in querystring
+
+        // RSL15f - params in querystring
         if (params && params.count > 0) {
             NSMutableArray<NSURLQueryItem *> *queryItems = [NSMutableArray array];
             for (NSString *key in params) {
@@ -502,49 +472,66 @@ art_dispatch_sync(_queue, ^{
             }
             components.queryItems = queryItems;
         }
-        
+
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
-        request.HTTPMethod = httpMethod;
-        request.HTTPBody = requestBodyData;
-        
+        request.HTTPMethod = @"PATCH";
+        request.HTTPBody = encodedMessage;
+
+        // RSL15d - Content-Type per RSC8
         if (self.rest.defaultEncoding) {
             [request setValue:self.rest.defaultEncoding forHTTPHeaderField:@"Content-Type"];
         }
-        
-        NSString *logOperation = isDelete ? @"delete" : @"update";
-        ARTLogDebug(self.logger, @"RS:%p C:%p (%@) %@ message %@", self->_rest, self, self.name, logOperation, [[NSString alloc] initWithData:requestBodyData ?: [NSData data] encoding:NSUTF8StringEncoding]);
-        
+
+        NSString *logOperation;
+        switch (message.action) {
+            case ARTMessageActionUpdate:
+                logOperation = @"update";
+                break;
+            case ARTMessageActionAppend:
+                logOperation = @"append";
+                break;
+            case ARTMessageActionDelete:
+                logOperation = @"delete";
+                break;
+            default:
+                logOperation = @"(unknown operation)";
+        }
+        ARTLogDebug(self.logger, @"RS:%p C:%p (%@) %@ message %@", self->_rest, self, self.name, logOperation, message);
+
         [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (callback) {
-                ARTErrorInfo *errorInfo;
-                if (self->_rest.options.addRequestIds) {
-                    errorInfo = error ? [ARTErrorInfo wrap:[ARTErrorInfo createFromNSError:error] prepend:[NSString stringWithFormat:@"Request '%@' failed with ", request.URL]] : nil;
-                } else {
-                    errorInfo = error ? [ARTErrorInfo createFromNSError:error] : nil;
+                if (error) {
+                    ARTErrorInfo *errorInfo;
+                    if (self->_rest.options.addRequestIds) {
+                        errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createFromNSError:error] prepend:[NSString stringWithFormat:@"Request '%@' failed with ", request.URL]];
+                    } else {
+                        errorInfo = [ARTErrorInfo createFromNSError:error];
+                    }
+                    callback(nil, errorInfo);
+                    return;
                 }
-                
-                callback(errorInfo);
+
+                if (response.statusCode == 200) {
+                    NSError *decodeError = nil;
+                    id<ARTEncoder> decoder = self->_rest.encoders[response.MIMEType];
+                    if (!decoder) {
+                        callback(nil, [ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:[NSString stringWithFormat:@"Decoder for MIMEType '%@' wasn't found.", response.MIMEType]]);
+                        return;
+                    }
+
+                    ARTUpdateDeleteResult *result = [decoder decodeUpdateDeleteResult:data error:&decodeError];
+                    if (decodeError) {
+                        callback(nil, [ARTErrorInfo createFromNSError:decodeError]);
+                        return;
+                    }
+
+                    callback(result, nil);
+                } else {
+                    callback(nil, [ARTErrorInfo createWithCode:response.statusCode message:[NSString stringWithFormat:@"Failed to %@ message: HTTP %ld", logOperation, (long)response.statusCode]]);
+                }
             }
         }];
     });
-}
-
-// RSL12
-- (void)updateMessage:(ARTMessage *)message
-            operation:(nullable ARTMessageOperation *)operation
-               params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
-     wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
-             callback:(nullable ARTCallback)callback {
-    [self _updateMessage:message isDelete:NO operation:operation params:params wrapperSDKAgents:wrapperSDKAgents callback:callback];
-}
-
-// RSL13
-- (void)deleteMessage:(ARTMessage *)message
-            operation:(nullable ARTMessageOperation *)operation
-               params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
-     wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
-             callback:(nullable ARTCallback)callback {
-    [self _updateMessage:message isDelete:YES operation:operation params:params wrapperSDKAgents:wrapperSDKAgents callback:callback];
 }
 
 // RSL11

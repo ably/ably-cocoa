@@ -2,6 +2,9 @@
 #import "ARTChannelOptions+Private.h"
 #import "ARTDataEncoder.h"
 #import "ARTMessage.h"
+#import "ARTMessage+Private.h"
+#import "ARTMessageOperation.h"
+#import "ARTMessageVersion+Private.h"
 #import "ARTChannelOptions.h"
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTBaseMessage+Private.h"
@@ -153,20 +156,56 @@
     [self internalPostMessages:messagesWithDataEncoded callback:callback];
 }
 
+/// Sends a mutation request to edit the given user-supplied message (i.e. one passed to one of updateMessage, appendMessage, or deleteMessage), per RSL15.
+- (void)editMessage:(ARTMessage *)message
+             action:(ARTMessageAction)action
+          operation:(nullable ARTMessageOperation *)operation
+             params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
+   wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+           callback:(nullable ARTEditResultCallback)callback {
+    // RSL4: Encode message's data
+    NSError *error;
+    ARTMessage *messageWithDataEncoded = [self encodeMessageIfNeeded:message error:&error];
+    if (error) {
+        if (callback) callback(nil, [ARTErrorInfo createFromNSError:error]);
+        return;
+    }
+
+    ARTMessage *wireMessage = [messageWithDataEncoded copy];
+
+    // RSL15b1
+    wireMessage.action = action;
+    wireMessage.actionIsInternallySet = YES;
+
+    // RSL15b7
+    if (operation) {
+        wireMessage.version = [[ARTMessageVersion alloc] initWithOperation:operation];
+    }
+
+    [self internalSendEditRequestForMessage:wireMessage params:params wrapperSDKAgents:wrapperSDKAgents callback:callback];
+}
+
 - (void)updateMessage:(ARTMessage *)message
             operation:(nullable ARTMessageOperation *)operation
                params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
      wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
-             callback:(nullable ARTCallback)callback {
-    NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
+             callback:(nullable ARTEditResultCallback)callback {
+    // RSL15b1, RTL32b1
+    [self editMessage:message action:ARTMessageActionUpdate operation:operation params:params wrapperSDKAgents:wrapperSDKAgents callback:callback];
 }
 
 - (void)deleteMessage:(ARTMessage *)message
             operation:(nullable ARTMessageOperation *)operation
                params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
      wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
-             callback:(nullable ARTCallback)callback {
-    NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
+             callback:(nullable ARTEditResultCallback)callback {
+    // RSL15b1, RTL32b1
+    [self editMessage:message action:ARTMessageActionDelete operation:operation params:params wrapperSDKAgents:wrapperSDKAgents callback:callback];
+}
+
+- (void)appendMessage:(ARTMessage *)message operation:(ARTMessageOperation *)operation params:(NSDictionary<NSString *,ARTStringifiable *> *)params wrapperSDKAgents:(NSStringDictionary *)wrapperSDKAgents callback:(ARTEditResultCallback)callback {
+    // RSL15b1, RTL32b1
+    [self editMessage:message action:ARTMessageActionAppend operation:operation params:params wrapperSDKAgents:wrapperSDKAgents callback:callback];
 }
 
 - (void)getMessageWithSerial:(NSString *)serial
@@ -209,6 +248,13 @@
 }
 
 - (void)internalPostMessages:(id)data callback:(ARTCallback)callback {
+    NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
+}
+
+- (void)internalSendEditRequestForMessage:(ARTMessage *)message
+                                   params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
+                         wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                                 callback:(nullable ARTEditResultCallback)callback {
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
 }
 

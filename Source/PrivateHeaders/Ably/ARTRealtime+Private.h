@@ -1,6 +1,7 @@
 #import <Ably/ARTRealtime.h>
 #import <Ably/ARTEventEmitter.h>
 #import <Ably/ARTTypes.h>
+#import "ARTMessageSendStatus.h"
 #import "ARTQueuedMessage.h"
 #import "ARTPendingMessage.h"
 #import "ARTProtocolMessage.h"
@@ -162,9 +163,9 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 ///      - If the connection can queue the message to be sent later, then it will accept the message per RTL6c2.
 ///      - If the connection cannot queue the message (due to some combination of connection state and the `queueMessages` client option), then the callbacks will be immediately called with an error per RTL6c4.
 ///    - If the message does not expect an `ACK`, then the message will be silently dropped (i.e. it is the responsibility of callers to not submit messages to the connection in this scenario).
-- (void)send:(ARTProtocolMessage *)msg sentCallback:(nullable ARTCallback)sentCallback ackCallback:(nullable ARTStatusCallback)ackCallback;
+- (void)send:(ARTProtocolMessage *)msg sentCallback:(nullable ARTCallback)sentCallback ackCallback:(nullable ARTMessageSendCallback)ackCallback;
 
-- (void)send:(ARTProtocolMessage *)msg reuseMsgSerial:(BOOL)reuseMsgSerial sentCallback:(nullable ARTCallback)sentCallback ackCallback:(nullable ARTStatusCallback)ackCallback;
+- (void)send:(ARTProtocolMessage *)msg reuseMsgSerial:(BOOL)reuseMsgSerial sentCallback:(nullable ARTCallback)sentCallback ackCallback:(nullable ARTMessageSendCallback)ackCallback;
 
 @end
 

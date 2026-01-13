@@ -169,9 +169,9 @@ art_dispatch_sync(_queue, ^{
     pm.annotations = @[annotationToPublish];
 
     // RTAN1b
-    [_channel publishProtocolMessage:pm callback:^void(ARTStatus *status) {
+    [_channel publishProtocolMessage:pm callback:^void(ARTMessageSendStatus *status) {
         if (callback)
-            callback(status.errorInfo);
+            callback(status.status.errorInfo);
     }];
 });
 }

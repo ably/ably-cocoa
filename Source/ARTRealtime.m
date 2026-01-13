@@ -1281,7 +1281,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     }
 }
 
-- (void)sendImpl:(ARTProtocolMessage *)pm reuseMsgSerial:(BOOL)reuseMsgSerial sentCallback:(ARTCallback)sentCallback ackCallback:(ARTStatusCallback)ackCallback {
+- (void)sendImpl:(ARTProtocolMessage *)pm reuseMsgSerial:(BOOL)reuseMsgSerial sentCallback:(ARTCallback)sentCallback ackCallback:(ARTMessageSendCallback)ackCallback {
     if (pm.ackRequired) {
         if (!reuseMsgSerial) { // RTN19a2
             pm.msgSerial = [NSNumber numberWithLongLong:self.msgSerial];
@@ -1298,13 +1298,13 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     if (error) {
         ARTErrorInfo *e = [ARTErrorInfo createFromNSError:error];
         if (sentCallback) sentCallback(e);
-        if (ackCallback) ackCallback([ARTStatus state:ARTStateError info:e]);
+        if (ackCallback) ackCallback([ARTMessageSendStatus errorWithInfo:e]);
         return;
     }
     else if (!data) {
         ARTErrorInfo *e = [ARTErrorInfo createWithCode:ARTClientCodeErrorInvalidType message:@"Encoder as failed without error."];
         if (sentCallback) sentCallback(e);
-        if (ackCallback) ackCallback([ARTStatus state:ARTStateError info:e]);
+        if (ackCallback) ackCallback([ARTMessageSendStatus errorWithInfo:e]);
         return;
     }
     
@@ -1323,24 +1323,16 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     }
 }
 
-- (void)send:(ARTProtocolMessage *)msg reuseMsgSerial:(BOOL)reuseMsgSerial sentCallback:(ARTCallback)sentCallback ackCallback:(ARTStatusCallback)ackCallback {
+- (void)send:(ARTProtocolMessage *)msg reuseMsgSerial:(BOOL)reuseMsgSerial sentCallback:(ARTCallback)sentCallback ackCallback:(ARTMessageSendCallback)ackCallback {
     if ([self shouldSendEvents]) {
         [self sendImpl:msg reuseMsgSerial:reuseMsgSerial sentCallback:sentCallback ackCallback:ackCallback];
     }
     // see RTL6c2, RTN19, RTN7 and TO3g
     else if (msg.ackRequired) {
         if (self.isActive && self.options.queueMessages) {
-            ARTQueuedMessage *lastQueuedMessage = self.queuedMessages.lastObject; //RTL6d5
-            NSInteger maxSize = _connection.maxMessageSize;
-            BOOL merged = [lastQueuedMessage mergeFrom:msg maxSize:maxSize sentCallback:nil ackCallback:ackCallback];
-            if (!merged) {
-                ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg sentCallback:sentCallback ackCallback:ackCallback];
-                [self.queuedMessages addObject:qm];
-                ARTLogDebug(self.logger, @"RT:%p (channel: %@) protocol message with action '%lu - %@' has been queued (%@)", self, msg.channel, (unsigned long)msg.action, ARTProtocolMessageActionToStr(msg.action), msg.messages);
-            }
-            else {
-                ARTLogVerbose(self.logger, @"RT:%p (channel: %@) message %@ has been bundled to %@", self, msg.channel, msg, lastQueuedMessage.msg);
-            }
+            ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg sentCallback:sentCallback ackCallback:ackCallback];
+            [self.queuedMessages addObject:qm];
+            ARTLogDebug(self.logger, @"RT:%p (channel: %@) protocol message with action '%lu - %@' has been queued (%@)", self, msg.channel, (unsigned long)msg.action, ARTProtocolMessageActionToStr(msg.action), msg.messages);
         }
         // RTL6c4
         else {
@@ -1350,7 +1342,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
                 sentCallback(error);
             }
             if (ackCallback) {
-                ackCallback([ARTStatus state:ARTStateError info:error]);
+                ackCallback([ARTMessageSendStatus errorWithInfo:error]);
             }
         }
     }
@@ -1359,7 +1351,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     }
 }
 
-- (void)send:(ARTProtocolMessage *)msg sentCallback:(ARTCallback)sentCallback ackCallback:(ARTStatusCallback)ackCallback {
+- (void)send:(ARTProtocolMessage *)msg sentCallback:(ARTCallback)sentCallback ackCallback:(ARTMessageSendCallback)ackCallback {
     [self send:msg reuseMsgSerial:NO sentCallback:sentCallback ackCallback:ackCallback];
 }
 
@@ -1371,7 +1363,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     self.pendingMessages = [NSMutableArray array];
     for (ARTPendingMessage *pendingMessage in pendingMessages) {
         ARTProtocolMessage* pm = pendingMessage.msg;
-        [self send:pm reuseMsgSerial:resumed sentCallback:nil ackCallback:^(ARTStatus *status) {
+        [self send:pm reuseMsgSerial:resumed sentCallback:nil ackCallback:^(ARTMessageSendStatus *status) {
             pendingMessage.ackCallback(status);
         }];
     }
@@ -1380,8 +1372,9 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 - (void)failPendingMessages:(ARTStatus *)status {
     NSArray<ARTPendingMessage *> *pms = self.pendingMessages;
     self.pendingMessages = [NSMutableArray array];
+    ARTMessageSendStatus *sendStatus = [[ARTMessageSendStatus alloc] initWithStatus:status publishResult:nil];
     for (ARTPendingMessage *pendingMessage in pms) {
-        pendingMessage.ackCallback(status);
+        pendingMessage.ackCallback(sendStatus);
     }
 }
 
@@ -1397,9 +1390,10 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 - (void)failQueuedMessages:(ARTStatus *)status {
     NSArray *qms = self.queuedMessages;
     self.queuedMessages = [NSMutableArray array];
+    ARTMessageSendStatus *sendStatus = [[ARTMessageSendStatus alloc] initWithStatus:status publishResult:nil];
     for (ARTQueuedMessage *message in qms) {
         message.sentCallback(status.errorInfo);
-        message.ackCallback(status);
+        message.ackCallback(sendStatus);
     }
 }
 
@@ -1454,11 +1448,18 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     }
     
     for (ARTPendingMessage *msg in nackMessages) {
-        msg.ackCallback([ARTStatus state:ARTStateError info:message.error]);
+        msg.ackCallback([ARTMessageSendStatus errorWithInfo:message.error]);
     }
-    
+
+    NSUInteger index = 0;
     for (ARTPendingMessage *msg in ackMessages) {
-        msg.ackCallback([ARTStatus state:ARTStateOk]);
+        // TR4s: Extract the specific PublishResult for this message
+        ARTPublishResult *publishResult = nil;
+        if (message.res && index < message.res.count) {
+            publishResult = message.res[index];
+        }
+        msg.ackCallback([ARTMessageSendStatus okWithPublishResult:publishResult]);
+        index++;
     }
     
     ARTLogVerbose(self.logger, @"R:%p ACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count);
@@ -1492,7 +1493,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     self.pendingMessageStartSerial += count;
     
     for (ARTPendingMessage *msg in nackMessages) {
-        msg.ackCallback([ARTStatus state:ARTStateError info:message.error]);
+        msg.ackCallback([ARTMessageSendStatus errorWithInfo:message.error]);
     }
     
     ARTLogVerbose(self.logger, @"R:%p NACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count);

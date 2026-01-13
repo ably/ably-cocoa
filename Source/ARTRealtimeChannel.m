@@ -33,6 +33,9 @@
 #import "ARTBackoffRetryDelayCalculator.h"
 #import "ARTInternalLog.h"
 #import "ARTAttachRetryState.h"
+#import "ARTPublishResult.h"
+#import "ARTPublishResultSerial.h"
+#import "ARTUpdateDeleteResult.h"
 #if TARGET_OS_IPHONE
 #import "ARTPushChannel+Private.h"
 #endif
@@ -144,12 +147,16 @@
     [_internal publish:messages callback:callback];
 }
 
-- (void)updateMessage:(ARTMessage *)message operation:(nullable ARTMessageOperation *)operation params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params callback:(nullable ARTCallback)callback {
+- (void)updateMessage:(ARTMessage *)message operation:(nullable ARTMessageOperation *)operation params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params callback:(nullable ARTEditResultCallback)callback {
     [_internal updateMessage:message operation:operation params:params wrapperSDKAgents:nil callback:callback];
 }
 
-- (void)deleteMessage:(ARTMessage *)message operation:(nullable ARTMessageOperation *)operation params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params callback:(nullable ARTCallback)callback {
+- (void)deleteMessage:(ARTMessage *)message operation:(nullable ARTMessageOperation *)operation params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params callback:(nullable ARTEditResultCallback)callback {
     [_internal deleteMessage:message operation:operation params:params wrapperSDKAgents:nil callback:callback];
+}
+
+- (void)appendMessage:(ARTMessage *)message operation:(nullable ARTMessageOperation *)operation params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params callback:(nullable ARTEditResultCallback)callback {
+    [_internal appendMessage:message operation:operation params:params wrapperSDKAgents:nil callback:callback];
 }
 
 - (void)getMessageWithSerial:(NSString *)serial callback:(ARTMessageErrorCallback)callback {
@@ -444,9 +451,9 @@ art_dispatch_sync(_queue, ^{
     msg.channel = self.name;
     msg.messages = data;
 
-    [self publishProtocolMessage:msg callback:^void(ARTStatus *status) {
+    [self publishProtocolMessage:msg callback:^void(ARTMessageSendStatus *status) {
         if (callback)
-            callback(status.errorInfo);
+            callback(status.status.errorInfo);
     }];
 });
 }
@@ -459,28 +466,56 @@ art_dispatch_sync(_queue, ^{
     pm.channel = self.name;
     pm.state = objectMessages;
 
-    [self publishProtocolMessage:pm callback:^(ARTStatus *status) {
+    [self publishProtocolMessage:pm callback:^(ARTMessageSendStatus *status) {
         if (completion) {
-            completion(status.errorInfo);
+            completion(status.status.errorInfo);
         }
     }];
  }
 #endif
 
-- (void)updateMessage:(ARTMessage *)message
-            operation:(nullable ARTMessageOperation *)operation
-               params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
-     wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
-             callback:(nullable ARTCallback)callback {
-    [self.restChannel updateMessage:message operation:operation params:params wrapperSDKAgents:wrapperSDKAgents callback:callback];
-}
+- (void)internalSendEditRequestForMessage:(ARTMessage *)message
+                                   params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
+                         wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
+                                 callback:(nullable ARTEditResultCallback)callback {
+    if (callback) {
+        ARTEditResultCallback userCallback = callback;
+        callback = ^(ARTUpdateDeleteResult *_Nullable result, ARTErrorInfo *_Nullable error) {
+            art_dispatch_async(self->_userQueue, ^{
+                userCallback(result, error);
+            });
+        };
+    }
 
-- (void)deleteMessage:(ARTMessage *)message
-            operation:(nullable ARTMessageOperation *)operation
-               params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params
-     wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
-             callback:(nullable ARTCallback)callback {
-    [self.restChannel deleteMessage:message operation:operation params:params wrapperSDKAgents:wrapperSDKAgents callback:callback];
+    art_dispatch_sync(_queue, ^{
+        // RTL32b
+        ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
+        msg.action = ARTProtocolMessageMessage;
+        msg.channel = self.name;
+        msg.messages = @[message];
+
+        // RTL32e: include params in ProtocolMessage
+        if (params && params.count > 0) {
+            NSMutableDictionary<NSString *, NSString *> *stringParams = [NSMutableDictionary dictionaryWithCapacity:params.count];
+            for (NSString *key in params) {
+                stringParams[key] = params[key].stringValue;
+            }
+            msg.params = stringParams;
+        }
+
+        [self publishProtocolMessage:msg callback:^void(ARTMessageSendStatus *status) {
+            if (callback) {
+                if (status.status.errorInfo) {
+                    callback(nil, status.status.errorInfo);
+                } else {
+                    // RTL32d: Extract the versionSerial from the ACK and create an UpdateDeleteResult
+                    NSString *versionSerial = status.publishResult.serials.firstObject.value;
+                    ARTUpdateDeleteResult *updateDeleteResult = [[ARTUpdateDeleteResult alloc] initWithVersionSerial:versionSerial];
+                    callback(updateDeleteResult, nil);
+                }
+            }
+        }];
+    });
 }
 
 - (void)getMessageWithSerial:(NSString *)serial wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents callback:(ARTMessageErrorCallback)callback {
@@ -491,13 +526,13 @@ art_dispatch_sync(_queue, ^{
     [self.restChannel getMessageVersionsWithSerial:serial wrapperSDKAgents:wrapperSDKAgents callback:callback];
 }
 
-- (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(ARTStatusCallback)cb {
+- (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(ARTMessageSendCallback)cb {
     switch (self.state_nosync) {
         case ARTRealtimeChannelSuspended:
         case ARTRealtimeChannelFailed: {
             if (cb) {
-                ARTStatus *statusInvalidChannelState = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:ARTErrorChannelOperationFailedInvalidState message:[NSString stringWithFormat:@"channel operation failed (invalid channel state: %@)", ARTRealtimeChannelStateToStr(self.state_nosync)]]];
-                cb(statusInvalidChannelState);
+                ARTErrorInfo *error = [ARTErrorInfo createWithCode:ARTErrorChannelOperationFailedInvalidState message:[NSString stringWithFormat:@"channel operation failed (invalid channel state: %@)", ARTRealtimeChannelStateToStr(self.state_nosync)]];
+                cb([ARTMessageSendStatus errorWithInfo:error]);
             }
             break;
         }
@@ -506,7 +541,7 @@ art_dispatch_sync(_queue, ^{
         case ARTRealtimeChannelDetached:
         case ARTRealtimeChannelAttaching:
         case ARTRealtimeChannelAttached: {
-            [self.realtime send:pm sentCallback:nil ackCallback:^(ARTStatus *status) {
+            [self.realtime send:pm sentCallback:nil ackCallback:^(ARTMessageSendStatus *status) {
                 if (cb) cb(status);
             }];
             break;

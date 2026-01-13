@@ -113,7 +113,7 @@ NS_ASSUME_NONNULL_END
 - (void)updateMessage:(nonnull ARTMessage *)message
             operation:(nullable ARTMessageOperation *)operation
                params:(nullable NSDictionary<NSString *,ARTStringifiable *> *)params
-             callback:(nullable ARTCallback)callback {
+             callback:(nullable ARTEditResultCallback)callback {
     [self.underlyingChannel.internal updateMessage:message
                                          operation:operation
                                             params:params
@@ -121,8 +121,16 @@ NS_ASSUME_NONNULL_END
                                           callback:callback];
 }
 
-- (void)deleteMessage:(nonnull ARTMessage *)message operation:(nullable ARTMessageOperation *)operation params:(nullable NSDictionary<NSString *,ARTStringifiable *> *)params callback:(nullable ARTCallback)callback {
+- (void)deleteMessage:(nonnull ARTMessage *)message operation:(nullable ARTMessageOperation *)operation params:(nullable NSDictionary<NSString *,ARTStringifiable *> *)params callback:(nullable ARTEditResultCallback)callback {
     [self.underlyingChannel.internal deleteMessage:message
+                                         operation:operation
+                                            params:params
+                                  wrapperSDKAgents:self.proxyOptions.agents
+                                          callback:callback];
+}
+
+- (void)appendMessage:(ARTMessage *)message operation:(ARTMessageOperation *)operation params:(NSDictionary<NSString *,ARTStringifiable *> *)params callback:(ARTEditResultCallback)callback {
+    [self.underlyingChannel.internal appendMessage:message
                                          operation:operation
                                             params:params
                                   wrapperSDKAgents:self.proxyOptions.agents

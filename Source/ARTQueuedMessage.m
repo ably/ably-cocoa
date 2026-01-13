@@ -5,7 +5,7 @@
 
 @implementation ARTQueuedMessage
 
-- (instancetype)initWithProtocolMessage:(ARTProtocolMessage *)msg sentCallback:(ARTCallback)sentCallback ackCallback:(ARTStatusCallback)ackCallback {
+- (instancetype)initWithProtocolMessage:(ARTProtocolMessage *)msg sentCallback:(ARTCallback)sentCallback ackCallback:(ARTMessageSendCallback)ackCallback {
     self = [super init];
     if (self) {
         _msg = msg;
@@ -25,19 +25,6 @@
     return [self.msg description];
 }
 
-- (BOOL)mergeFrom:(ARTProtocolMessage *)msg maxSize:(NSInteger)maxSize sentCallback:(ARTCallback)sentCallback ackCallback:(ARTStatusCallback)ackCallback {
-    if ([self.msg mergeFrom:msg maxSize:maxSize]) {
-        if (sentCallback) {
-            [self.sentCallbacks addObject:sentCallback];
-        }
-        if (ackCallback) {
-            [self.ackCallbacks addObject:ackCallback];
-        }
-        return YES;
-    }
-    return NO;
-}
-
 - (ARTCallback)sentCallback {
     return ^(ARTErrorInfo *error) {
         for (ARTCallback cb in self.sentCallbacks) {
@@ -46,9 +33,9 @@
     };
 }
 
-- (ARTStatusCallback)ackCallback {
-    return ^(ARTStatus *status) {
-        for (ARTStatusCallback cb in self.ackCallbacks) {
+- (ARTMessageSendCallback)ackCallback {
+    return ^(ARTMessageSendStatus *status) {
+        for (ARTMessageSendCallback cb in self.ackCallbacks) {
             cb(status);
         }
     };

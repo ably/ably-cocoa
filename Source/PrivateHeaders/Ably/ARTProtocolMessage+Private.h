@@ -26,8 +26,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic) BOOL hasBacklog;
 @property (readonly, nonatomic) BOOL resumed;
 
-- (BOOL)mergeFrom:(ARTProtocolMessage *)msg maxSize:(NSInteger)maxSize;
-
 @end
 
 NS_ASSUME_NONNULL_END
