@@ -1,5 +1,20 @@
 # Change Log
 
+## [1.2.56](https://github.com/ably/ably-cocoa/tree/1.2.56)
+
+## What's Changed
+
+This release introduces the ability to:
+
+- update an existing message (either by replacing its data or appending to its data)
+- delete a message
+- retrieve the latest version of a message
+- retrieve all historical versions of a message
+
+For more information, see the [documentation on updating and deleting messages](https://ably.com/docs/messages/updates-deletes).
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.55...1.2.56
+
 ## [1.2.55](https://github.com/ably/ably-cocoa/tree/1.2.55)
 
 This release contains no user-facing changes; it corrects a mistake in the internal version data that version 1.2.54 submits to Ably.
