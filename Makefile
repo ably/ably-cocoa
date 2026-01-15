@@ -65,13 +65,13 @@ submodules:
 	
 ## -- Testing --
 
-## [Tests] Run tests on iOS 18.4 using sandbox environment
+## [Tests] Run tests on iOS 26.2 using sandbox environment
 test_iOS:
-	ABLY_ENV="sandbox" NAME="ably-iOS" bundle exec fastlane test_iOS18_4
+	ABLY_ENV="sandbox" NAME="ably-iOS" bundle exec fastlane test_iOS26_2
 
-## [Tests] Run tests on tvOS 18.4 using sandbox environment
+## [Tests] Run tests on tvOS 26.2 using sandbox environment
 test_tvOS:
-	ABLY_ENV="sandbox" NAME="ably-tvOS" bundle exec fastlane test_tvOS18_4
+	ABLY_ENV="sandbox" NAME="ably-tvOS" bundle exec fastlane test_tvOS26_2
 
 ## [Tests] Run tests on macOS using sandbox environment
 test_macOS:

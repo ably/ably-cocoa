@@ -21,10 +21,10 @@ jobs:
         include:
 
           - platform: iOS
-            lane: test_iOS18_4
+            lane: test_iOS26_2
 
           - platform: tvOS
-            lane: test_tvOS18_4
+            lane: test_tvOS26_2
 
           - platform: macOS
             lane: test_macOS

@@ -43,7 +43,7 @@ jobs:
         run: |
           pod repo update
           pod install
-          bundle exec fastlane scan -s Tests --output-directory "fastlane/test_output/examples/test_iOS18_4"
+          bundle exec fastlane scan -s Tests --output-directory "fastlane/test_output/examples/test_iOS26_2"
 
       - name: Carthage Installation
         working-directory: ./Examples/AblyCarthage
