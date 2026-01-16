@@ -4725,4 +4725,24 @@ class RealtimeClientChannelTests: XCTestCase {
         // Then: The modes property should be set from the protocol message and contain only channel modes
         XCTAssertEqual(channel.modes, [.presence, .subscribe])
     }
+
+    // RTL6j
+    func test__142__publish__with_resultCallback__returns_valid_ARTPublishResult_with_message_serials() throws {
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        let realtime = AblyTests.newRealtime(options).client
+        defer { realtime.dispose(); realtime.close() }
+
+        let channel = realtime.channels.get(test.uniqueChannelName())
+
+        waitUntil(timeout: testTimeout) { done in
+            channel.publish("testEvent", data: "testData") { result, error in
+                XCTAssertNil(error)
+                XCTAssertNotNil(result)
+                XCTAssertEqual(result?.serials.count, 1)
+                XCTAssertNotNil(result?.serials.first?.value)
+                done()
+            }
+        }
+    }
 }

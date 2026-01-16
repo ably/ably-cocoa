@@ -115,6 +115,10 @@
     [_internal publish:name data:data callback:callback];
 }
 
+- (void)publish:(nullable NSString *)name data:(nullable id)data resultCallback:(nullable ARTPublishResultCallback)resultCallback {
+    [_internal publish:name data:data resultCallback:resultCallback];
+}
+
 - (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId {
     [_internal publish:name data:data clientId:clientId];
 }
@@ -145,6 +149,10 @@
 
 - (void)publish:(NSArray<ARTMessage *> *)messages callback:(nullable ARTCallback)callback {
     [_internal publish:messages callback:callback];
+}
+
+- (void)publish:(NSArray<ARTMessage *> *)messages resultCallback:(nullable ARTPublishResultCallback)resultCallback {
+    [_internal publish:messages resultCallback:resultCallback];
 }
 
 - (void)updateMessage:(ARTMessage *)message operation:(nullable ARTMessageOperation *)operation params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params callback:(nullable ARTEditResultCallback)callback {
@@ -412,12 +420,12 @@ art_dispatch_sync(_queue, ^{
 }
 #endif
 
-- (void)internalPostMessages:(id)data callback:(ARTCallback)callback {
+- (void)internalPostMessages:(id)data callback:(ARTPublishResultCallback)callback {
     if (callback) {
-        ARTCallback userCallback = callback;
-        callback = ^(ARTErrorInfo *__nullable error) {
+        ARTPublishResultCallback userCallback = callback;
+        callback = ^(ARTPublishResult *__nullable result, ARTErrorInfo *__nullable error) {
             art_dispatch_async(self->_userQueue, ^{
-                userCallback(error);
+                userCallback(result, error);
             });
         };
     }
@@ -431,7 +439,7 @@ art_dispatch_sync(_queue, ^{
         ARTMessage *message = (ARTMessage *)data;
         if (message.clientId && self->_realtime.rest.auth.clientId_nosync && ![message.clientId isEqualToString:self->_realtime.rest.auth.clientId_nosync]) {
             if (callback)
-                callback([ARTErrorInfo createWithCode:ARTStateMismatchedClientId message:@"attempted to publish message with an invalid clientId"]);
+                callback(nil, [ARTErrorInfo createWithCode:ARTStateMismatchedClientId message:@"attempted to publish message with an invalid clientId"]);
             return;
         }
     }
@@ -440,7 +448,7 @@ art_dispatch_sync(_queue, ^{
         for (ARTMessage *message in messages) {
             if (message.clientId && self->_realtime.rest.auth.clientId_nosync && ![message.clientId isEqualToString:self->_realtime.rest.auth.clientId_nosync]) {
                 if (callback)
-                    callback([ARTErrorInfo createWithCode:ARTStateMismatchedClientId message:@"attempted to publish message with an invalid clientId"]);
+                    callback(nil, [ARTErrorInfo createWithCode:ARTStateMismatchedClientId message:@"attempted to publish message with an invalid clientId"]);
                 return;
             }
         }
@@ -453,7 +461,7 @@ art_dispatch_sync(_queue, ^{
 
     [self publishProtocolMessage:msg callback:^void(ARTMessageSendStatus *status) {
         if (callback)
-            callback(status.status.errorInfo);
+            callback(status.publishResult, status.status.errorInfo);
     }];
 });
 }

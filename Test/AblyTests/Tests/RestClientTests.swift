@@ -906,7 +906,7 @@ class RestClientTests: XCTestCase {
     // RSC15b
 
     // RSC15b1
-    func test__055__RestClient__Host_Fallback__Fallback_behavior__should_be_applied_when_restHost__port_and_tlsPort_has_not_been_set_to_an_explicit_value() {
+    func test__055__RestClient__Host_Fallback__Fallback_behavior__should_be_applied_when_restHost__port_and_tlsPort_has_not_been_set_to_an_explicit_value() throws {
         let test = Test()
         let options = ARTClientOptions(key: "xxxx:xxxx")
         let client = ARTRest(options: options)
@@ -915,6 +915,10 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable, resetAfter: 2)
+        mockHTTP.setSuccessResponse(
+            data: try JSONSerialization.data(withJSONObject: ["serials": []], options: []),
+            contentType: "application/json"
+        )
         let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
@@ -1040,7 +1044,7 @@ class RestClientTests: XCTestCase {
 
     // RSC15b3, RSC15g4
     @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
-    func test__060__RestClient__Host_Fallback__Fallback_behavior__should_be_applied_when_ClientOptions_fallbackHosts_is_not_provided_and_deprecated_fallbackHostsUseDefault_is_on() {
+    func test__060__RestClient__Host_Fallback__Fallback_behavior__should_be_applied_when_ClientOptions_fallbackHosts_is_not_provided_and_deprecated_fallbackHostsUseDefault_is_on() throws {
         let test = Test()
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.fallbackHostsUseDefault = true
@@ -1050,6 +1054,10 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable, resetAfter: 2)
+        mockHTTP.setSuccessResponse(
+            data: try JSONSerialization.data(withJSONObject: ["serials": []], options: []),
+            contentType: "application/json"
+        )
         let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
@@ -1116,7 +1124,7 @@ class RestClientTests: XCTestCase {
     }
 
     // RSC15g2
-    func test__062__RestClient__Host_Fallback__fallback_hosts_list_and_priorities__should_use_environment_fallback_hosts_when_ClientOptions_environment_is_set_to_a_value_other_than__production__and_ClientOptions_fallbackHosts_is_not_set() {
+    func test__062__RestClient__Host_Fallback__fallback_hosts_list_and_priorities__should_use_environment_fallback_hosts_when_ClientOptions_environment_is_set_to_a_value_other_than__production__and_ClientOptions_fallbackHosts_is_not_set() throws {
         let test = Test()
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.environment = "test"
@@ -1126,6 +1134,10 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable, resetAfter: 2)
+        mockHTTP.setSuccessResponse(
+            data: try JSONSerialization.data(withJSONObject: ["serials": []], options: []),
+            contentType: "application/json"
+        )
         let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
@@ -1200,7 +1212,7 @@ class RestClientTests: XCTestCase {
 
     // RSC15g4
     @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
-    func test__046__RestClient__Host_Fallback__applies_when_ClientOptions_fallbackHostsUseDefault_is_true() {
+    func test__046__RestClient__Host_Fallback__applies_when_ClientOptions_fallbackHostsUseDefault_is_true() throws {
         let test = Test()
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.environment = "test"
@@ -1211,6 +1223,10 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable, resetAfter: 1)
+        mockHTTP.setSuccessResponse(
+            data: try JSONSerialization.data(withJSONObject: ["serials": []], options: []),
+            contentType: "application/json"
+        )
         let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
@@ -2074,7 +2090,7 @@ class RestClientTests: XCTestCase {
 
     // RSC7c
 
-    func test__095__RestClient__request_IDs__should_add__request_id__query_parameter() {
+    func test__095__RestClient__request_IDs__should_add__request_id__query_parameter() throws {
         let test = Test()
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.addRequestIds = true
@@ -2082,6 +2098,10 @@ class RestClientTests: XCTestCase {
         let restA = ARTRest(options: options)
         let mockHttpExecutor = MockHTTPExecutor()
         restA.internal.httpExecutor = mockHttpExecutor
+        mockHttpExecutor.setSuccessResponse(
+            data: try JSONSerialization.data(withJSONObject: ["serials": []], options: []),
+            contentType: "application/json"
+        )
         waitUntil(timeout: testTimeout) { done in
             restA.channels.get(test.uniqueChannelName()).publish(nil, data: "something") { error in
                 XCTAssertNil(error)
