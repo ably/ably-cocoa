@@ -25,6 +25,8 @@
 #import "ARTRestAnnotations+Private.h"
 #import "ARTConstants.h"
 #import "ARTGCD.h"
+#import "ARTPublishResult.h"
+#import "ARTPublishResultSerial.h"
 
 @implementation ARTRestChannel {
     ARTQueuedDealloc *_dealloc;
@@ -71,6 +73,10 @@
     [_internal publish:name data:data callback:callback];
 }
 
+- (void)publish:(nullable NSString *)name data:(nullable id)data resultCallback:(nullable ARTPublishResultCallback)resultCallback {
+    [_internal publish:name data:data resultCallback:resultCallback];
+}
+
 - (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId {
     [_internal publish:name data:data clientId:clientId];
 }
@@ -101,6 +107,10 @@
 
 - (void)publish:(NSArray<ARTMessage *> *)messages callback:(nullable ARTCallback)callback {
     [_internal publish:messages callback:callback];
+}
+
+- (void)publish:(NSArray<ARTMessage *> *)messages resultCallback:(nullable ARTPublishResultCallback)resultCallback {
+    [_internal publish:messages resultCallback:resultCallback];
 }
 
 - (void)updateMessage:(ARTMessage *)message operation:(nullable ARTMessageOperation *)operation params:(nullable NSDictionary<NSString *, ARTStringifiable *> *)params callback:(nullable ARTEditResultCallback)callback {
@@ -312,12 +322,12 @@ art_dispatch_sync(_queue, ^{
     });
 }
 
-- (void)internalPostMessages:(id)data callback:(ARTCallback)callback {
+- (void)internalPostMessages:(id)data callback:(ARTPublishResultCallback)callback {
     if (callback) {
-        ARTCallback userCallback = callback;
-        callback = ^(ARTErrorInfo *__nullable error) {
+        ARTPublishResultCallback userCallback = callback;
+        callback = ^(ARTPublishResult *__nullable result, ARTErrorInfo *__nullable error) {
             art_dispatch_async(self->_userQueue, ^{
-                userCallback(error);
+                userCallback(result, error);
             });
         };
     }
@@ -336,14 +346,14 @@ art_dispatch_sync(_queue, ^{
             }
             
             if (message.clientId && self.rest.auth.clientId_nosync && ![message.clientId isEqualToString:self.rest.auth.clientId_nosync]) {
-                callback([ARTErrorInfo createWithCode:ARTStateMismatchedClientId message:@"attempted to publish message with an invalid clientId"]);
+                callback(nil, [ARTErrorInfo createWithCode:ARTStateMismatchedClientId message:@"attempted to publish message with an invalid clientId"]);
                 return;
             }
             
             NSError *encodeError = nil;
             encodedMessage = [self.rest.defaultEncoder encodeMessage:message error:&encodeError];
             if (encodeError) {
-                callback([ARTErrorInfo createFromNSError:encodeError]);
+                callback(nil, [ARTErrorInfo createFromNSError:encodeError]);
                 return;
             }
         }
@@ -362,7 +372,7 @@ art_dispatch_sync(_queue, ^{
             NSInteger serial = 0;
             for (ARTMessage *message in messages) {
                 if (message.clientId && self.rest.auth.clientId_nosync && ![message.clientId isEqualToString:self.rest.auth.clientId_nosync]) {
-                    callback([ARTErrorInfo createWithCode:ARTStateMismatchedClientId message:@"attempted to publish message with an invalid clientId"]);
+                    callback(nil, [ARTErrorInfo createWithCode:ARTStateMismatchedClientId message:@"attempted to publish message with an invalid clientId"]);
                     return;
                 }
                 if (baseId) {
@@ -374,7 +384,7 @@ art_dispatch_sync(_queue, ^{
             NSError *encodeError = nil;
             encodedMessage = [self.rest.defaultEncoder encodeMessages:data error:&encodeError];
             if (encodeError) {
-                callback([ARTErrorInfo createFromNSError:encodeError]);
+                callback(nil, [ARTErrorInfo createFromNSError:encodeError]);
                 return;
             }
         }
@@ -396,16 +406,38 @@ art_dispatch_sync(_queue, ^{
         
         ARTLogDebug(self.logger, @"RS:%p C:%p (%@) post message %@", self->_rest, self, self.name, [[NSString alloc] initWithData:encodedMessage ?: [NSData data] encoding:NSUTF8StringEncoding]);
         
-        [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+        [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *responseData, NSError *error) {
             if (callback) {
-                ARTErrorInfo *errorInfo;
-                if (self->_rest.options.addRequestIds) {
-                    errorInfo = error ? [ARTErrorInfo wrap:[ARTErrorInfo createFromNSError:error] prepend:[NSString stringWithFormat:@"Request '%@' failed with ", request.URL]] : nil;
-                } else {
-                    errorInfo = error ? [ARTErrorInfo createFromNSError:error] : nil;
+                if (error) {
+                    ARTErrorInfo *errorInfo;
+                    if (self->_rest.options.addRequestIds) {
+                        errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createFromNSError:error] prepend:[NSString stringWithFormat:@"Request '%@' failed with ", request.URL]];
+                    } else {
+                        errorInfo = [ARTErrorInfo createFromNSError:error];
+                    }
+                    callback(nil, errorInfo);
+                    return;
                 }
-                
-                callback(errorInfo);
+
+                // RSL1n: Decode the response to extract publish result
+                if (response.statusCode >= 200 && response.statusCode < 300) {
+                    id<ARTEncoder> decoder = self->_rest.encoders[response.MIMEType];
+                    if (!decoder) {
+                        callback(nil, [ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:[NSString stringWithFormat:@"Decoder for MIMEType '%@' wasn't found.", response.MIMEType]]);
+                        return;
+                    }
+
+                    NSError *decodeError = nil;
+                    ARTPublishResult *publishResult = [decoder decodePublishResult:responseData error:&decodeError];
+                    if (decodeError) {
+                        callback(nil, [ARTErrorInfo createFromNSError:decodeError]);
+                        return;
+                    }
+
+                    callback(publishResult, nil);
+                } else {
+                    callback(nil, [ARTErrorInfo createWithCode:response.statusCode message:[NSString stringWithFormat:@"Failed to publish message: HTTP %ld", (long)response.statusCode]]);
+                }
             }
         }];
     });

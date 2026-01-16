@@ -29,6 +29,8 @@ NS_SWIFT_SENDABLE
 
 - (void)publish:(nullable NSString *)name data:(nullable id)data callback:(nullable ARTCallback)callback;
 
+- (void)publish:(nullable NSString *)name data:(nullable id)data resultCallback:(nullable ARTPublishResultCallback)resultCallback;
+
 - (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId;
 
 - (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId callback:(nullable ARTCallback)callback;
@@ -44,6 +46,8 @@ NS_SWIFT_SENDABLE
 - (void)publish:(NSArray<ARTMessage *> *)messages;
 
 - (void)publish:(NSArray<ARTMessage *> *)messages callback:(nullable ARTCallback)callback;
+
+- (void)publish:(NSArray<ARTMessage *> *)messages resultCallback:(nullable ARTPublishResultCallback)resultCallback;
 
 - (void)updateMessage:(ARTMessage *)message
             operation:(nullable ARTMessageOperation *)operation

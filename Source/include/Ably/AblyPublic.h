@@ -50,3 +50,5 @@
 #import <Ably/ARTOutboundAnnotation.h>
 #import <Ably/ARTSummaryTypes.h>
 #import <Ably/ARTUpdateDeleteResult.h>
+#import <Ably/ARTPublishResult.h>
+#import <Ably/ARTPublishResultSerial.h>

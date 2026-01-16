@@ -142,8 +142,6 @@ framework module Ably {
         header "ARTDictionarySerializable.h"
         header "ARTMessageOperation+Private.h"
         header "ARTMessage+Private.h"
-        header "ARTPublishResult.h"
-        header "ARTPublishResultSerial.h"
         header "ARTMessageSendStatus.h"
     }
 }

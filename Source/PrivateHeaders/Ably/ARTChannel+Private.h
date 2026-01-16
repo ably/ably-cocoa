@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   - A single `ARTMessage` object
  *   - An `NSArray` of `ARTMessage` objects
  *
- * @param callback Callback invoked with the result of the operation (success or error).
+ * @param callback Callback invoked with the result of the operation (success with ARTPublishResult or error).
  *
  * @discussion Contract - Work already performed on the messages before calling this method:
  *   - Messages have been created from raw parameters (name, data, clientId, extras)
@@ -42,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
  * Subclasses (ARTRealtimeChannelInternal, ARTRestChannelInternal) override this method
  * to implement their specific transport logic.
  */
-- (void)internalPostMessages:(id)data callback:(nullable ARTCallback)callback;
+- (void)internalPostMessages:(id)data callback:(nullable ARTPublishResultCallback)callback;
 
 /**
  * Internal method for sending a mutation request (update, append, delete) for a message.

@@ -802,6 +802,7 @@ class MockHTTP: ARTHttp {
     private var networkState: FakeNetworkResponse?
     private var rule: Rule?
     private var count: Int = 0
+    private var successResponseData: (data: Data?, contentType: String)?
 
     init(logger: InternalLog) {
         super.init(queue: AblyTests.queue, logger: logger)
@@ -826,6 +827,30 @@ class MockHTTP: ARTHttp {
         queue.async {
             self.networkState = network
             self.rule = .host(name: host)
+        }
+    }
+
+    /// Sets the response data to be returned for successful (non-error) requests.
+    ///
+    /// This configures what MockHTTP returns when no error state is active (i.e., when
+    /// `networkState` is `nil` or after `resetAfter` count is exhausted). This is independent
+    /// of the error simulation logic controlled by `networkState` and `rule`.
+    ///
+    /// - Parameters:
+    ///   - data: The response body data to return. Pass `nil` for no response body.
+    ///   - contentType: The Content-Type header value (e.g., "application/json").
+    ///
+    /// - Important: You must provide the content-type that matches how your data is encoded.
+    ///   There is no default - the caller knows their payload format.
+    ///
+    /// - Note: This setting persists across the "resetAfter" logic. Set it once at test
+    ///   setup and it will apply to all successful requests throughout the test.
+    ///
+    /// - Note: This does NOT affect error cases (`.hostUnreachable`, `.hostInternalError`, etc.).
+    ///   Those continue to return their configured error responses.
+    func setSuccessResponse(data: Data?, contentType: String) {
+        queue.sync {
+            self.successResponseData = (data, contentType)
         }
     }
 
@@ -860,7 +885,18 @@ class MockHTTP: ARTHttp {
     func performRequest(state: FakeNetworkResponse?, requestCallback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) {
         switch state {
         case .none:
-            requestCallback?(nil, nil, nil)
+            if let successResponseData {
+                let response = HTTPURLResponse(
+                    url: URL(string: "http://cocoa.test.suite")!,
+                    statusCode: 200,
+                    httpVersion: nil,
+                    headerFields: ["Content-Type": successResponseData.contentType]
+                )
+                requestCallback?(response, successResponseData.data, nil)
+            } else {
+                // Default response: no response if success response not configured
+                requestCallback?(nil, nil, nil)
+            }
         case .noInternet:
             requestCallback?(nil, nil, NSError(domain: NSURLErrorDomain, code: -1009, userInfo: [NSLocalizedDescriptionKey: "The Internet connection appears to be offline."]))
         case .hostUnreachable:
@@ -937,6 +973,7 @@ extension [String: Any] {
 class MockHTTPExecutor: NSObject, ARTHTTPExecutor {
 
     fileprivate var errorSimulator: NSError?
+    private var successResponseData: (data: Data?, contentType: String)?
 
     private(set) var logger = InternalLog(logger: MockVersion2Log())
     var requests: [URLRequest] = []
@@ -950,12 +987,33 @@ class MockHTTPExecutor: NSObject, ARTHTTPExecutor {
             return nil
         }
 
-        callback?(HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: ["X-Ably-HTTPExecutor": "MockHTTPExecutor"]), nil, nil)
+        if let successResponseData {
+            let headerFields = [
+                "X-Ably-HTTPExecutor": "MockHTTPExecutor",
+                "Content-Type": successResponseData.contentType
+            ]
+            callback?(HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: headerFields), successResponseData.data, nil)
+        } else {
+            // Default response: 200 OK with no body if success response not configured
+            callback?(HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: ["X-Ably-HTTPExecutor": "MockHTTPExecutor"]), nil, nil)
+        }
         return nil
     }
 
     func simulateIncomingErrorOnNextRequest(_ error: NSError) {
         errorSimulator = error
+    }
+
+    /// Sets the response data to be returned for successful requests.
+    ///
+    /// - Parameters:
+    ///   - data: The response body data to return. Pass `nil` for no response body.
+    ///   - contentType: The Content-Type header value (e.g., "application/json").
+    ///
+    /// - Important: You must provide the content-type that matches how your data is encoded.
+    ///   There is no default - the caller knows their payload format.
+    func setSuccessResponse(data: Data?, contentType: String) {
+        successResponseData = (data, contentType)
     }
 
     func reset() {

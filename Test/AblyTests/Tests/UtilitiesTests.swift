@@ -221,14 +221,6 @@ class UtilitiesTests: XCTestCase {
 
         testHTTPExecutor.simulateIncomingPayloadOnNextRequest(data as Data)
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: nil) { error in
-                XCTAssertNil(error) // ignored
-                done()
-            }
-        }
-
-        testHTTPExecutor.simulateIncomingPayloadOnNextRequest(data as Data)
-        waitUntil(timeout: testTimeout) { done in
             channel.history { _, error in
                 guard let error = error else {
                     fail("Error is nil"); done(); return

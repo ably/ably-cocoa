@@ -1130,6 +1130,10 @@
     return [self updateDeleteResultFromDictionary:[self decodeDictionary:data error:error]];
 }
 
+- (ARTPublishResult *)decodePublishResult:(NSData *)data error:(NSError **)error {
+    return [self publishResultFromDictionary:[self decodeDictionary:data error:error]];
+}
+
 - (ARTUpdateDeleteResult *)updateDeleteResultFromDictionary:(NSDictionary *)input {
     ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: updateDeleteResultFromDictionary %@", _rest, [_delegate formatAsString], input);
     if (![input isKindOfClass:[NSDictionary class]]) {

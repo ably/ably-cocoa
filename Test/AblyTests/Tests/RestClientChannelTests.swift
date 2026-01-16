@@ -662,6 +662,10 @@ class RestClientChannelTests: XCTestCase {
         rest.internal.options.idempotentRestPublishing = true
         let mockHTTPExecutor = MockHTTPExecutor()
         rest.internal.httpExecutor = mockHTTPExecutor
+        mockHTTPExecutor.setSuccessResponse(
+            data: try JSONSerialization.data(withJSONObject: ["serials": []], options: []),
+            contentType: "application/json"
+        )
         let channel = rest.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
@@ -693,6 +697,10 @@ class RestClientChannelTests: XCTestCase {
         rest.internal.options.idempotentRestPublishing = true
         let mockHTTPExecutor = MockHTTPExecutor()
         rest.internal.httpExecutor = mockHTTPExecutor
+        mockHTTPExecutor.setSuccessResponse(
+            data: try JSONSerialization.data(withJSONObject: ["serials": []], options: []),
+            contentType: "application/json"
+        )
         let channel = rest.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
@@ -726,6 +734,10 @@ class RestClientChannelTests: XCTestCase {
         rest.internal.options.idempotentRestPublishing = true
         let mockHTTPExecutor = MockHTTPExecutor()
         rest.internal.httpExecutor = mockHTTPExecutor
+        mockHTTPExecutor.setSuccessResponse(
+            data: try JSONSerialization.data(withJSONObject: ["serials": []], options: []),
+            contentType: "application/json"
+        )
         let channel = rest.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
@@ -751,6 +763,10 @@ class RestClientChannelTests: XCTestCase {
         rest.internal.options.idempotentRestPublishing = true
         let mockHTTPExecutor = MockHTTPExecutor()
         rest.internal.httpExecutor = mockHTTPExecutor
+        mockHTTPExecutor.setSuccessResponse(
+            data: try JSONSerialization.data(withJSONObject: ["serials": []], options: []),
+            contentType: "application/json"
+        )
         let channel = rest.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
@@ -781,6 +797,10 @@ class RestClientChannelTests: XCTestCase {
         rest.internal.options.idempotentRestPublishing = true
         let mockHTTPExecutor = MockHTTPExecutor()
         rest.internal.httpExecutor = mockHTTPExecutor
+        mockHTTPExecutor.setSuccessResponse(
+            data: try JSONSerialization.data(withJSONObject: ["serials": []], options: []),
+            contentType: "application/json"
+        )
         let channel = rest.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
@@ -812,6 +832,10 @@ class RestClientChannelTests: XCTestCase {
         let rest = ARTRest(options: options)
         let mockHTTPExecutor = MockHTTPExecutor()
         rest.internal.httpExecutor = mockHTTPExecutor
+        mockHTTPExecutor.setSuccessResponse(
+            data: try JSONSerialization.data(withJSONObject: ["serials": []], options: []),
+            contentType: "application/json"
+        )
         let channel = rest.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
@@ -1710,5 +1734,23 @@ class RestClientChannelTests: XCTestCase {
         XCTAssert(channel.name.contains("/"))
         XCTAssertFalse(urlEncodedChannelName.contains("/"))
         XCTAssert(url.absoluteString.contains(urlEncodedChannelName))
+    }
+
+    // RSL1n
+    func test__49__publish__with_resultCallback__returns_valid_ARTPublishResult_with_message_serials() throws {
+        let test = Test()
+        let testEnvironment = try TestEnvironment(test: test)
+
+        let channel = testEnvironment.client.channels.get(test.uniqueChannelName())
+
+        waitUntil(timeout: testTimeout) { done in
+            channel.publish("testEvent", data: "testData") { result, error in
+                XCTAssertNil(error)
+                XCTAssertNotNil(result)
+                XCTAssertEqual(result?.serials.count, 1)
+                XCTAssertNotNil(result?.serials.first?.value)
+                done()
+            }
+        }
     }
 }
