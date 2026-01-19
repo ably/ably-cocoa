@@ -137,9 +137,9 @@ class AuthTests: XCTestCase {
                 done()
             }
         }
-        
+
         let url = try XCTUnwrap(testHTTPExecutor.requests.first?.url, "No request url found")
-        
+
         XCTAssertEqual(url.scheme, "http", "No HTTP support")
     }
 
@@ -158,7 +158,7 @@ class AuthTests: XCTestCase {
         }
 
         let url = try XCTUnwrap(testHTTPExecutor.requests.first?.url, "No request url found")
-        
+
         XCTAssertEqual(url.scheme, "https", "No HTTPS support")
     }
 
@@ -598,7 +598,7 @@ class AuthTests: XCTestCase {
         }
 
         let errorInfo = try XCTUnwrap(realtime.connection.errorReason, "ErrorInfo is empty")
-        
+
         XCTAssertEqual(errorInfo.code, ARTErrorCode.authConfiguredProviderFailure.intValue)
         expect(errorInfo.message).to(contain("body param is required"))
     }
@@ -665,9 +665,9 @@ class AuthTests: XCTestCase {
         }
 
         expect(realtime.connection.state).toEventually(equal(ARTRealtimeConnectionState.disconnected), timeout: testTimeout)
-        
+
         let errorInfo = try XCTUnwrap(realtime.connection.errorReason, "ErrorInfo is empty")
-        
+
         XCTAssertEqual(errorInfo.code, ARTErrorCode.authConfiguredProviderFailure.intValue)
         expect(errorInfo.message).to(contain("hostname could not be found"))
     }
@@ -700,7 +700,7 @@ class AuthTests: XCTestCase {
         realtime.internal.transport?.receive(authMessage)
 
         expect(realtime.connection.errorReason).toEventuallyNot(beNil(), timeout: testTimeout)
-        
+
         let errorInfo = try XCTUnwrap(realtime.connection.errorReason, "ErrorInfo is empty")
 
         XCTAssertEqual(errorInfo.code, ARTErrorCode.authConfiguredProviderFailure.intValue)
@@ -787,7 +787,7 @@ class AuthTests: XCTestCase {
         realtime.internal.transport?.receive(authMessage)
 
         expect(realtime.connection.errorReason).toEventuallyNot(beNil(), timeout: testTimeout)
-        
+
         let errorInfo = try XCTUnwrap(realtime.connection.errorReason, "ErrorInfo is empty")
 
         XCTAssertEqual(errorInfo.code, ARTErrorCode.authConfiguredProviderFailure.intValue)
@@ -867,7 +867,7 @@ class AuthTests: XCTestCase {
         }
 
         expect(realtime.connection.errorReason).toEventuallyNot(beNil(), timeout: testTimeout)
-        
+
         let errorInfo = try XCTUnwrap(realtime.connection.errorReason, "ErrorInfo is empty")
 
         XCTAssertEqual(errorInfo.code, ARTErrorCode.authConfiguredProviderFailure.intValue)
@@ -903,9 +903,9 @@ class AuthTests: XCTestCase {
                 done()
             }
         }
-        
+
         let request = try XCTUnwrap(testHTTPExecutor.requests.first, "No request found")
-        
+
         switch extractBodyAsMsgPack(request) {
         case let .failure(error):
             XCTFail(error)
@@ -940,10 +940,10 @@ class AuthTests: XCTestCase {
                 }
             }
         }
-        
+
         let transport = try XCTUnwrap(client.internal.transport as? TestProxyTransport, "Transport is nil")
         let connectedMessage = try XCTUnwrap(transport.protocolMessagesReceived.filter({ $0.action == .connected }).last, "No CONNECTED protocol action received")
-        
+
         // CONNECTED ProtocolMessage
         XCTAssertEqual(connectedMessage.connectionDetails!.clientId, expectedClientId)
     }
@@ -1055,7 +1055,7 @@ class AuthTests: XCTestCase {
         let request = rest.auth.internal.buildRequest(options, with: tokenParams)
 
         let query = try XCTUnwrap(request.url?.query, "URL is empty")
-        
+
         expect(query).to(haveParam("capability", withValue: "%7B%22*%22:%5B%22*%22%5D%7D"))
         expect(query).to(haveParam("timestamp", withValue: "1475965860000"))
     }
@@ -1082,9 +1082,9 @@ class AuthTests: XCTestCase {
                 done()
             }
         }
-        
+
         let request = try XCTUnwrap(testHTTPExecutor.requests.first, "No request found")
-        
+
         switch extractBodyAsMsgPack(request) {
         case let .failure(error):
             fail(error)
@@ -1114,9 +1114,9 @@ class AuthTests: XCTestCase {
                 done()
             }
         }
-        
+
         let request = try XCTUnwrap(testHTTPExecutor.requests.first, "No request found")
-        
+
         switch extractBodyAsMsgPack(request) {
         case let .failure(error):
             fail(error)
@@ -1563,7 +1563,7 @@ class AuthTests: XCTestCase {
                 done()
             })
         }
-        
+
         let testTokenRequest = try XCTUnwrap(tokenRequest, "TokenRequest is empty")
         let jsonTokenRequest = try XCTUnwrap(createJsonEncoder().encode(testTokenRequest), "Invalid TokenRequest")
 
@@ -1621,7 +1621,7 @@ class AuthTests: XCTestCase {
 
         let url = try XCTUnwrap(request.url, "Request is invalid")
         let urlComponents = try XCTUnwrap(NSURLComponents(url: url, resolvingAgainstBaseURL: false), "invalid URL: \(url)")
-        
+
         XCTAssertEqual(urlComponents.scheme, "http")
         XCTAssertEqual(urlComponents.host, "auth.ably.io")
         guard let queryItems = urlComponents.queryItems else {
@@ -2541,7 +2541,7 @@ class AuthTests: XCTestCase {
 
         // Check that token exists
         XCTAssertEqual(rest.auth.internal.method, ARTAuthMethod.token)
-        
+
         let firstTokenDetails = try XCTUnwrap(rest.auth.tokenDetails, "TokenDetails is nil")
         XCTAssertNotNil(firstTokenDetails.token)
 
@@ -2554,7 +2554,7 @@ class AuthTests: XCTestCase {
 
         // Check that token has not changed
         XCTAssertEqual(rest.auth.internal.method, ARTAuthMethod.token)
-        
+
         let secondTokenDetails = try XCTUnwrap(rest.auth.tokenDetails, "TokenDetails is nil")
         XCTAssertTrue(firstTokenDetails === secondTokenDetails)
 
@@ -3000,7 +3000,7 @@ class AuthTests: XCTestCase {
 
     func test__107__authorize__should_adhere_to_all_requirements_relating_to__authUrl_with_json() throws {
         let test = Test()
-        
+
         let tokenDetails = try XCTUnwrap(getTestTokenDetails(for: test), "TokenDetails is empty")
         let tokenDetailsData = try XCTUnwrap(createJsonEncoder().encode(tokenDetails), "Couldn't encode token details")
         let tokenDetailsJSON = try XCTUnwrap(String(data: tokenDetailsData, encoding: .utf8), "JSON TokenDetails is empty")
@@ -4459,7 +4459,7 @@ class AuthTests: XCTestCase {
         let test = Test()
         var originalTokenRequest: ARTTokenRequest!
         let tmpRest = ARTRest(options: try AblyTests.commonAppSetup(for: test))
-        
+
         let channelName = test.uniqueChannelName()
         waitUntil(timeout: testTimeout) { done in
             let tokenParams = ARTTokenParams()
@@ -4499,10 +4499,10 @@ class AuthTests: XCTestCase {
                 done()
             }
         }
-        
+
         let requestUrl = try XCTUnwrap(testHttpExecutor.requests.first?.url, "No request url found")
         let tokenDetails = try XCTUnwrap(rest.internal.auth.tokenDetails, "Should have token details")
-        
+
         XCTAssertEqual(requestUrl.host, "auth-test.ably.cocoa")
         XCTAssertEqual(tokenDetails.clientId, originalTokenRequest.clientId)
         XCTAssertNotNil(tokenDetails.token)

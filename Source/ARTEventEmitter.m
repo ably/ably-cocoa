@@ -134,7 +134,7 @@
         NSAssert(false, @"timer is already running");
     }
     _timerIsRunning = true;
-    
+
     __weak ARTEventListener *weakSelf = self;
     _work = artDispatchScheduled(_timeoutDeadline, [_eventHandler queue], ^{
         [weakSelf timeout];
@@ -347,7 +347,7 @@
             });
         };
     }
-    
+
     __block ARTEventListener *listener;
 art_dispatch_sync(_queue, ^{
     listener = [super on:event callback:cb];
@@ -364,7 +364,7 @@ art_dispatch_sync(_queue, ^{
             });
         };
     }
-    
+
     __block ARTEventListener *listener;
 art_dispatch_sync(_queue, ^{
     listener = [super on:cb];

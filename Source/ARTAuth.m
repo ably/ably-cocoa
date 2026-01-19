@@ -197,7 +197,7 @@ NS_ASSUME_NONNULL_END
     } else {
         [ARTException raise:@"ARTAuthException" format:@"Could not setup authentication method with given options."];
     }
-    
+
     if ([options.clientId isEqual:@"*"]) {
         [ARTException raise:@"ARTAuthException" format:@"Invalid clientId: cannot contain only a wilcard \"*\"."];
     }
@@ -300,7 +300,7 @@ NS_ASSUME_NONNULL_END
         if (self.tokenDetails.expires == nil) {
             return YES;
         }
-        
+
         // RSA4b1: Only check expiry client-side if local clock has been adjusted.
         // If it hasn't, assume the token remains valid.
         if (![self hasTimeOffset]) {
@@ -347,7 +347,7 @@ art_dispatch_async(_queue, ^{
         callback(nil, [ARTErrorInfo createWithCode:ARTStateRequestTokenFailed message:ARTAblyMessageNoMeansToRenewToken]);
         return nil;
     }
-    
+
     const ARTTokenDetailsCallback checkerCallback = ^(ARTTokenDetails *tokenDetails, NSError *error) {
         if (error) {
             if (error.code == NSURLErrorTimedOut) {
@@ -400,13 +400,13 @@ art_dispatch_async(_queue, ^{
                     [tokenDetailsCompat toTokenDetails:[self toAuth] callback:callback];
                 }
             }, &safeCallback);
-            
+
             const ARTAuthCallback userCallback = ^(ARTTokenParams *tokenParams, ARTTokenDetailsCompatibleCallback callback) {
                 art_dispatch_async(self->_userQueue, ^{
                     replacedOptions.authCallback(tokenParams, callback);
                 });
             };
-            
+
             tokenDetailsFactory = ^(ARTTokenParams *tokenParams, ARTTokenDetailsCallback callback) {
                 userCallback(tokenParams, ^(id<ARTTokenDetailsCompatible> tokenDetailsCompat, NSError *error) {
                     art_dispatch_async(self->_queue, ^{
@@ -495,7 +495,7 @@ art_dispatch_async(_queue, ^{
 
     NSURL *requestUrl = [NSURL URLWithString:[NSString stringWithFormat:@"/keys/%@/requestToken?format=%@", tokenRequest.keyName, [encoder formatAsString]]
                                relativeToURL:_rest.baseUrl];
-    
+
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];
     request.HTTPMethod = @"POST";
 
@@ -582,7 +582,7 @@ art_dispatch_async(_queue, ^{
                 callback(tokenDetails, nil);
             }
         };
-        
+
         void (^const failureCallbackBlock)(NSError *) = ^(NSError *error) {
             ARTLogVerbose(self.logger, @"RS:%p ARTAuthInternal [authorize.%@]: failure callback: %@ with token details %@", self->_rest, authorizeId, error, tokenDetails);
             if (callback) {
@@ -685,7 +685,7 @@ art_dispatch_async(_queue, ^{
     if (currentTokenParams.capability) {
         // Validate: Capability JSON text
         NSError *errorCapability = nil;
-        
+
         [NSJSONSerialization JSONObjectWithData:[currentTokenParams.capability dataUsingEncoding:NSUTF8StringEncoding] options:0 error:&errorCapability];
 
         if (errorCapability) {

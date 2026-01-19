@@ -63,7 +63,7 @@
 - (void)recreateDataEncoderWith:(ARTCipherParams*)cipher {
     NSError *error = nil;
     _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:cipher logger:self.logger error:&error];
-    
+
     if (error != nil) {
         ARTLogWarn(_logger, @"creating ARTDataEncoder: %@", error);
         _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:nil logger:self.logger error:nil];
@@ -122,7 +122,7 @@
         if (resultCallback) resultCallback(nil, [ARTErrorInfo createFromNSError:error]);
         return;
     }
-    
+
     // Checked after encoding, so that the client can receive callback with encoding errors
     if ([self exceedMaxSize:@[message]]) {
         ARTErrorInfo *sizeError = [ARTErrorInfo createWithCode:ARTErrorMaxMessageLengthExceeded
@@ -132,7 +132,7 @@
         }
         return;
     }
-    
+
     [self internalPostMessages:messagesWithDataEncoded callback:resultCallback];
 }
 
@@ -155,14 +155,14 @@
     for (ARTMessage *message in messages) {
         [messagesWithDataEncoded addObject:[self encodeMessageIfNeeded:message error:&error]];
     }
-    
+
     if (error) {
         if (resultCallback) {
             resultCallback(nil, [ARTErrorInfo createFromNSError:error]);
         }
         return;
     }
-    
+
     // Checked after encoding, so that the client can receive callback with encoding errors
     if ([self exceedMaxSize:messages]) {
         ARTErrorInfo *sizeError = [ARTErrorInfo createWithCode:ARTErrorMaxMessageLengthExceeded
@@ -172,7 +172,7 @@
         }
         return;
     }
-    
+
     [self internalPostMessages:messagesWithDataEncoded callback:resultCallback];
 }
 

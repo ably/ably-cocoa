@@ -843,24 +843,24 @@ static void aspect_deregisterTrackedSelector(id self, SEL selector) {
     if (numberOfArguments > 1) {
         [blockInvocation setArgument:&info atIndex:1];
     }
-    
+
 	void *argBuf = NULL;
     for (NSUInteger idx = 2; idx < numberOfArguments; idx++) {
         const char *type = [originalInvocation.methodSignature getArgumentTypeAtIndex:idx];
 		NSUInteger argSize;
 		NSGetSizeAndAlignment(type, &argSize, NULL);
-        
+
 		if (!(argBuf = reallocf(argBuf, argSize))) {
             AspectLogError(@"Failed to allocate memory for block invocation.");
 			return NO;
 		}
-        
+
 		[originalInvocation getArgument:argBuf atIndex:idx];
 		[blockInvocation setArgument:argBuf atIndex:idx];
     }
-    
+
     [blockInvocation invokeWithTarget:self.block];
-    
+
     if (argBuf != NULL) {
         free(argBuf);
     }

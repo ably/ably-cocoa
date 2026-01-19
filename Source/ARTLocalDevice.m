@@ -59,7 +59,7 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
 - (void)generateAndPersistPairOfDeviceIdAndSecret {
     self.id = [self.class generateId];
     self.secret = [self.class generateSecret];
-    
+
     [_storage setObject:self.id forKey:ARTDeviceIdKey];
     [_storage setSecret:self.secret forDevice:self.id];
 }
@@ -73,7 +73,7 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
 
     NSString *deviceId = [storage objectForKey:ARTDeviceIdKey];
     NSString *deviceSecret = deviceId == nil ? nil : [storage secretForDevice:deviceId];
-    
+
     if (deviceId == nil || deviceSecret == nil) {
         [device generateAndPersistPairOfDeviceIdAndSecret]; // Should be removed later once spec issue #180 resolved.
     }
@@ -97,7 +97,7 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
         ARTAPNSDeviceDefaultTokenType,
         ARTAPNSDeviceLocationTokenType
     ];
-    
+
     for (NSString *tokenType in supportedTokenTypes) {
         NSString *token = [ARTLocalDevice apnsDeviceTokenOfType:tokenType fromStorage:storage];
         [device setAPNSDeviceToken:token tokenType:tokenType];
@@ -108,11 +108,11 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
 - (void)setupDetailsWithClientId:(NSString *)clientId {
     NSString *deviceId = self.id;
     NSString *deviceSecret = self.secret;
-    
+
     if (deviceId == nil || deviceSecret == nil) {
         [self generateAndPersistPairOfDeviceIdAndSecret];
     }
-    
+
     self.clientId = clientId;
     [_storage setObject:clientId forKey:ARTClientIdKey];
 }
@@ -120,7 +120,7 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
 - (void)resetDetails {
     // Should be replaced later to resetting device's id/secret once spec issue #180 resolved.
     [self generateAndPersistPairOfDeviceIdAndSecret];
-    
+
     self.clientId = nil;
     [_storage setObject:nil forKey:ARTClientIdKey];
     [self setAndPersistIdentityTokenDetails:nil];

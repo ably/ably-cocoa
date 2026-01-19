@@ -133,23 +133,23 @@
 }
 
 - (NSString *)id {
-    __block NSString *ret;   
+    __block NSString *ret;
 art_dispatch_sync(_queue, ^{
     ret = [self id_nosync];
 });
     return ret;
-} 
+}
 
 - (NSString *)key {
-    __block NSString *ret;   
+    __block NSString *ret;
 art_dispatch_sync(_queue, ^{
     ret = [self key_nosync];
 });
     return ret;
-} 
+}
 
 - (ARTRealtimeConnectionState)state {
-    __block ARTRealtimeConnectionState ret;   
+    __block ARTRealtimeConnectionState ret;
 art_dispatch_sync(_queue, ^{
     ret = [self state_nosync];
 });
@@ -157,7 +157,7 @@ art_dispatch_sync(_queue, ^{
 }
 
 - (ARTErrorInfo *)errorReason {
-    __block ARTErrorInfo *ret;   
+    __block ARTErrorInfo *ret;
 art_dispatch_sync(_queue, ^{
     ret = [self errorReason_nosync];
 });
@@ -190,11 +190,11 @@ art_dispatch_sync(_queue, ^{
 
 - (NSString *)id_nosync {
     return _id;
-} 
+}
 
 - (NSString *)key_nosync {
     return _key;
-} 
+}
 
 - (NSInteger)maxMessageSize {
     if (_maxMessageSize)
@@ -276,14 +276,14 @@ art_dispatch_sync(_queue, ^{
     if (_key == nil || IsInactiveConnectionState(_state)) { // RTN16g2
         return nil;
     }
-    
+
     NSMutableDictionary<NSString *, NSString *> *channelSerials = [NSMutableDictionary new];
     for (ARTRealtimeChannelInternal *const channel in _realtime.channels.nosyncIterable) {
         if (channel.state_nosync == ARTRealtimeChannelAttached) {
             channelSerials[channel.name] = channel.channelSerial;
         }
     }
-    
+
     ARTConnectionRecoveryKey *const recoveryKey = [[ARTConnectionRecoveryKey alloc] initWithConnectionKey:_key
                                                                                                 msgSerial:_realtime.msgSerial
                                                                                            channelSerials:channelSerials];
@@ -339,7 +339,7 @@ art_dispatch_sync(_queue, ^{
         @"connectionKey": _connectionKey,
         @"channelSerials": _channelSerials
     };
-    
+
     NSData *const jsonData = [NSJSONSerialization dataWithJSONObject:object
                                                              options:0
                                                                error:&error];
@@ -348,23 +348,23 @@ art_dispatch_sync(_queue, ^{
                                        reason:[NSString stringWithFormat:@"%@: This JSON serialization should pass without errors.", self.class]
                                      userInfo:nil];
     }
-    
+
     return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
 }
 
 + (ARTConnectionRecoveryKey *)fromJsonString:(NSString *)json error:(NSError **)errorPtr {
     NSData *const jsonData = [json dataUsingEncoding:NSUTF8StringEncoding];
-    
+
     NSError *error = nil;
     NSDictionary *const object = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
-    
+
     if (error) {
         if (errorPtr) {
             *errorPtr = error;
         }
         return nil;
     }
-    
+
     return [[ARTConnectionRecoveryKey alloc] initWithConnectionKey:[object valueForKey:@"connectionKey"]
                                                          msgSerial:[[object valueForKey:@"msgSerial"] longLongValue]
                                                     channelSerials:[object valueForKey:@"channelSerials"]];

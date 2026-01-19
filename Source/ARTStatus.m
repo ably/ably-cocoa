@@ -67,11 +67,11 @@ NSInteger getStatusFromCode(NSInteger code) {
     if ([error isKindOfClass:[ARTErrorInfo class]]) {
         return (ARTErrorInfo *)error;
     }
-    
+
     NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithDictionary:error.userInfo];
     userInfo[ARTErrorInfoOriginalDomainKey] = error.domain;
     userInfo[ARTErrorInfoRequestIdKey] = error.requestId;
-    
+
     return [[ARTErrorInfo alloc] initWithDomain:ARTAblyErrorDomain code:error.code userInfo:userInfo];
 }
 
@@ -142,7 +142,7 @@ NSInteger getStatusFromCode(NSInteger code) {
     if (self.statusCode == 0 ) {
         return nil;
     }
-    
+
     return [@"https://help.ably.io/error/" stringByAppendingFormat:@"%lld", (long long)self.statusCode];
 }
 

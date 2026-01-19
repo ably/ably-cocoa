@@ -89,7 +89,7 @@ NSString *ARTDefaultEnvironment = nil;
     if ([_environment isEqualToString:ARTDefaultProduction]) {
         return [ARTDefault realtimeHost];
     }
-    
+
     return self.hasEnvironment ? [self host:[ARTDefault realtimeHost] forEnvironment:_environment] : [ARTDefault realtimeHost];
 }
 
@@ -138,7 +138,7 @@ NSString *ARTDefaultEnvironment = nil;
     options.httpOpenTimeout = self.httpOpenTimeout;
     options.fallbackRetryTimeout = self.fallbackRetryTimeout;
     options->_fallbackHosts = self.fallbackHosts; //ignore setter
-    
+
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     options->_fallbackHostsUseDefault = self.fallbackHostsUseDefault; //ignore setter

@@ -57,7 +57,7 @@ class TestsTests: XCTestCase {
             client.close()
             receiveExpectation.fulfill()
         }
-        
+
         client.channels.get("test").publish(nil, data: "Get this!")
 
         self.waitForExpectations(timeout: 10, handler: nil)

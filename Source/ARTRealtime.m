@@ -243,7 +243,7 @@ typedef NS_ENUM(NSUInteger, ARTNetworkState) {
     self = [super init];
     if (self) {
         NSAssert(options, @"ARTRealtime: No options provided");
-        
+
         _logger = [[ARTInternalLog alloc] initWithClientOptions:options];
         _rest = [[ARTRestInternal alloc] initWithOptions:options realtime:self logger:_logger];
         _userQueue = _rest.userQueue;
@@ -269,13 +269,13 @@ typedef NS_ENUM(NSUInteger, ARTNetworkState) {
                                                                                  logger:_logger
                                                                        logMessagePrefix:[NSString stringWithFormat:@"RT: %p ", self]];
         self.auth.delegate = self;
-        
+
         [self.connection setState:ARTRealtimeInitialized];
-        
+
         ARTLogVerbose(self.logger, @"R:%p initialized with RS:%p", self, _rest);
-        
+
         self.rest.prioritizedHost = nil;
-        
+
         if (options.recover) {
             NSError *error;
             ARTConnectionRecoveryKey *const recoveryKey = [ARTConnectionRecoveryKey fromJsonString:options.recover error:&error];
@@ -290,7 +290,7 @@ typedef NS_ENUM(NSUInteger, ARTNetworkState) {
                 }
             }
         }
-        
+
         if (options.autoConnect) {
             [self connect];
         }
@@ -327,7 +327,7 @@ typedef NS_ENUM(NSUInteger, ARTNetworkState) {
             }
         }];
     };
-    
+
     void (^haltCurrentConnectionAndReconnect)(void) = ^{
         // Halt the current connection and reconnect with the most recent token
         ARTLogDebug(self.logger, @"RS:%p halt current connection and reconnect with %@", self.rest, tokenDetails);
@@ -337,7 +337,7 @@ typedef NS_ENUM(NSUInteger, ARTNetworkState) {
         [self cancelAllPendingAuthorizations];
         waitForResponse();
     };
-    
+
     switch (self.connection.state_nosync) {
         case ARTRealtimeConnected: {
             // Update (send AUTH message)
@@ -451,7 +451,7 @@ typedef NS_ENUM(NSUInteger, ARTNetworkState) {
 
 - (void)dealloc {
     ARTLogVerbose(self.logger, @"R:%p dealloc", self);
-    
+
     self.rest.prioritizedHost = nil;
 }
 
@@ -482,7 +482,7 @@ typedef NS_ENUM(NSUInteger, ARTNetworkState) {
 - (void)_close {
     [self setReachabilityActive:NO];
     [self cancelTimers];
-    
+
     switch (self.connection.state_nosync) {
         case ARTRealtimeInitialized:
         case ARTRealtimeClosing:
@@ -531,7 +531,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
             });
         };
     }
-    
+
     art_dispatch_async(_queue, ^{
         switch (self.connection.state_nosync) {
             case ARTRealtimeInitialized:
@@ -579,12 +579,12 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 
 - (void)updateWithErrorInfo:(nullable ARTErrorInfo *)errorInfo {
     ARTLogDebug(self.logger, @"R:%p update requested", self);
-    
+
     if (self.connection.state_nosync != ARTRealtimeConnected) {
         ARTLogWarn(self.logger, @"R:%p update ignored because connection is not connected", self);
         return;
     }
-    
+
     ARTConnectionStateChangeParams *const params = [[ARTConnectionStateChangeParams alloc] initWithErrorInfo:errorInfo];
     [self performTransitionToState:ARTRealtimeConnected withParams:params];
 }
@@ -629,7 +629,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         [_reachability listenForHost:[_transport host] callback:^(BOOL reachable) {
             ARTRealtimeInternal *strongSelf = weakSelf;
             if (!strongSelf) return;
-            
+
             ARTNetworkState previousState = strongSelf->_networkState;
             strongSelf->_networkState = reachable ? ARTNetworkStateIsReachable : ARTNetworkStateIsUnreachable;
             [strongSelf didChangeNetworkStateFromState:previousState];
@@ -652,40 +652,40 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 - (void)performTransitionToState:(ARTRealtimeConnectionState)state withParams:(ARTConnectionStateChangeParams *)params {
     ARTChannelStateChangeParams *channelStateChangeParams = nil;
     ARTEventListener *stateChangeEventListener = nil;
-    
+
     ARTLogVerbose(self.logger, @"R:%p realtime state transitions to %tu - %@%@", self, state, ARTRealtimeConnectionStateToStr(state), params.retryAttempt ? [NSString stringWithFormat: @" (result of %@)", params.retryAttempt.id] : @"");
-    
+
     ARTRealtimeConnectionEvent event = state == self.connection.state_nosync ? ARTRealtimeConnectionEventUpdate : (ARTRealtimeConnectionEvent)state;
-    
+
     ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:state
                                                                                      previous:self.connection.state_nosync
                                                                                         event:event
                                                                                        reason:params.errorInfo
                                                                                       retryIn:0
                                                                                  retryAttempt:params.retryAttempt];
-    
+
     ARTLogDebug(self.logger, @"RT:%p realtime is transitioning from %tu - %@ to %tu - %@", self, stateChange.previous, ARTRealtimeConnectionStateToStr(stateChange.previous), stateChange.current, ARTRealtimeConnectionStateToStr(stateChange.current));
 
     [self.connection setState:state];
     [self.connection setErrorReason:params.errorInfo];
-    
+
     [self.connectRetryState connectionWillTransitionToState:stateChange.current];
-    
+
     switch (stateChange.current) {
         case ARTRealtimeConnecting: {
-            
+
             // RTN15g We want to enforce a new connection also when there hasn't been activity for longer than (idle interval + TTL)
             if (stateChange.previous == ARTRealtimeDisconnected || stateChange.previous == ARTRealtimeSuspended) {
                 [self clearConnectionStateIfInactive];
             }
-            
+
             stateChangeEventListener = [self unlessStateChangesBefore:self.options.testOptions.realtimeRequestTimeout do:^{
                 [self onConnectionTimeOut];
             }];
             _connectingTimeoutListener = stateChangeEventListener;
-            
+
             BOOL usingFallback = NO;
-            
+
             if (_fallbacks != nil) {
                 usingFallback = [self reconnectWithFallback]; // RTN17j
             }
@@ -698,7 +698,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
                 }
                 [self setReachabilityActive:YES];
             }
-            
+
             break;
         }
         case ARTRealtimeClosing: {
@@ -787,7 +787,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         case ARTRealtimeInitialized:
             break;
     }
-    
+
     // If there's a channels.release() going on waiting on this channel
     // to detach, doing those operations on it here would fire its event listener and
     // immediately remove the channel from the channels dictionary, thus
@@ -798,7 +798,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
         [channels addObject:channel];
     }
-    
+
     if ([self shouldSendEvents]) {
         for (ARTRealtimeChannelInternal *channel in channels) {
             ARTAttachRequestParams *const params = [[ARTAttachRequestParams alloc] initWithReason:stateChange.reason];
@@ -809,7 +809,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     else if (!self.isActive) {
         if (!channelStateChangeParams) {
             if (stateChange.reason) {
-                channelStateChangeParams = [[ARTChannelStateChangeParams alloc] initWithState:ARTStateError 
+                channelStateChangeParams = [[ARTChannelStateChangeParams alloc] initWithState:ARTStateError
                                                                                     errorInfo:stateChange.reason];
             } else {
                 channelStateChangeParams = [[ARTChannelStateChangeParams alloc] initWithState:ARTStateError];
@@ -818,7 +818,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 
         ARTStatus *const channelStatus = [ARTStatus state:channelStateChangeParams.state info:channelStateChangeParams.errorInfo];
         [self failQueuedMessages:channelStatus];
-        
+
         // Channels
         for (ARTRealtimeChannelInternal *channel in channels) {
             switch (stateChange.current) {
@@ -843,13 +843,13 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
             }
         }
     }
-    
+
     [self.connection emit:stateChange.event with:stateChange];
-    
+
     [self performPendingAuthorizationWithState:stateChange.current error:stateChange.reason];
-    
+
     [_internalEventEmitter emit:[ARTEvent newWithConnectionEvent:(ARTRealtimeConnectionEvent)state] with:stateChange];
-    
+
     // stateChangeEventListener may be nil if we're in a failed state
     if (stateChangeEventListener != nil) {
         [stateChangeEventListener startTimer];
@@ -932,11 +932,11 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
                 self.msgSerial = 0;
                 self.pendingMessageStartSerial = 0;
             }
-            
+
             [self.connection setId:message.connectionId];
             [self.connection setKey:message.connectionKey];
             [self.connection setMaxMessageSize:message.connectionDetails.maxMessageSize];
-            
+
             if (message.connectionDetails && message.connectionDetails.connectionStateTtl) {
                 _connectionStateTtl = message.connectionDetails.connectionStateTtl;
             }
@@ -948,7 +948,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
             ARTConnectionStateChangeParams *const params = [[ARTConnectionStateChangeParams alloc] initWithErrorInfo:message.error];
             params.resumed = resumed;  // RTN19a
             [self performTransitionToState:ARTRealtimeConnected withParams:params];
-            
+
             break;
         }
         case ARTRealtimeConnected: {
@@ -958,7 +958,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         default:
             break;
     }
-    
+
     _resuming = false;
 }
 
@@ -969,7 +969,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 - (void)onDisconnected:(ARTProtocolMessage *)message {
     ARTLogInfo(self.logger, @"R:%p Realtime disconnected", self);
     ARTErrorInfo * const error = message.error;
-    
+
     if (
         [self isTokenError:error]
         && !_renewingToken // If already reconnecting, give up.
@@ -1025,7 +1025,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         [self onChannelMessage:message];
     } else {
         ARTErrorInfo *error = message.error;
-        
+
         if ([self isTokenError:error] && [self.auth tokenIsRenewable]) {
             if (_renewingToken) {
                 // Already retrying; give up.
@@ -1037,7 +1037,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
             [self transportReconnectWithRenewedToken];
             return;
         }
-        
+
         [self.connection setId:nil];
         ARTConnectionStateChangeParams *const params = [[ARTConnectionStateChangeParams alloc] initWithErrorInfo:message.error];
         [self performTransitionToState:ARTRealtimeFailed withParams:params];
@@ -1074,7 +1074,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     _authenitcatingTimeoutWork = nil;
     [_authTask cancel];
     _authTask = nil;
-    
+
     ARTErrorInfo *error;
     if (self.auth.authorizing_nosync && (self.options.authUrl || self.options.authCallback)) {
         error = [ARTErrorInfo createWithCode:ARTErrorAuthConfiguredProviderFailure status:ARTStateConnectionFailed message:@"timed out"];
@@ -1131,7 +1131,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     else {
         // Token
         ARTLogDebug(self.logger, @"R:%p connecting with token auth; authorising (timeout of %f)", self, self.options.testOptions.realtimeRequestTimeout);
-        
+
         if (!forceNewToken && [self.auth tokenRemainsValid]) {
             // Reuse token
             ARTLogDebug(self.logger, @"R:%p reusing token for auth", self);
@@ -1140,12 +1140,12 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         else {
             // New Token
             [self.auth setTokenDetails:nil];
-            
+
             // Schedule timeout handler
             _authenitcatingTimeoutWork = artDispatchScheduled(self.options.testOptions.realtimeRequestTimeout, _rest.queue, ^{
                 [self onConnectionTimeOut];
             });
-            
+
             id<ARTAuthDelegate> delegate = self.auth.delegate;
             if (newConnection) {
                 // Deactivate use of `ARTAuthDelegate`: `authorize` should complete without waiting for a CONNECTED state.
@@ -1157,7 +1157,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
                     artDispatchCancel(self->_authenitcatingTimeoutWork);
                     self->_authenitcatingTimeoutWork = nil;
                     self->_authTask = nil;
-                    
+
                     // It's still valid?
                     switch (self.connection.state_nosync) {
                         case ARTRealtimeClosing:
@@ -1166,13 +1166,13 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
                         default:
                             break;
                     }
-                    
+
                     ARTLogDebug(self.logger, @"R:%p authorized: %@ error: %@", self, tokenDetails, error);
                     if (error) {
                         [self handleTokenAuthError:error];
                         return;
                     }
-                    
+
                     if (forceNewToken && newConnection) {
                         [self resetTransportWithResumeKey:self->_transport.resumeKey];
                     }
@@ -1287,14 +1287,14 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
             pm.msgSerial = [NSNumber numberWithLongLong:self.msgSerial];
         }
     }
-    
+
     for (ARTMessage *msg in pm.messages) {
         msg.connectionId = self.connection.id_nosync;
     }
-    
+
     NSError *error = nil;
     NSData *data = [self.rest.defaultEncoder encodeProtocolMessage:pm error:&error];
-    
+
     if (error) {
         ARTErrorInfo *e = [ARTErrorInfo createFromNSError:error];
         if (sentCallback) sentCallback(e);
@@ -1307,7 +1307,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         if (ackCallback) ackCallback([ARTMessageSendStatus errorWithInfo:e]);
         return;
     }
-    
+
     if (pm.ackRequired) {
         if (!reuseMsgSerial) {
             self.msgSerial++;
@@ -1315,7 +1315,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         ARTPendingMessage *pendingMessage = [[ARTPendingMessage alloc] initWithProtocolMessage:pm ackCallback:ackCallback];
         [self.pendingMessages addObject:pendingMessage];
     }
-    
+
     ARTLogDebug(self.logger, @"RT:%p sending action %tu - %@", self, pm.action, ARTProtocolMessageActionToStr(pm.action));
     if ([self.transport send:data withSource:pm]) {
         if (sentCallback) sentCallback(nil);
@@ -1381,7 +1381,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 - (void)sendQueuedMessages {
     NSArray *qms = self.queuedMessages;
     self.queuedMessages = [NSMutableArray array];
-    
+
     for (ARTQueuedMessage *message in qms) {
         [self sendImpl:message.msg reuseMsgSerial:NO sentCallback:message.sentCallback ackCallback:message.ackCallback];
     }
@@ -1404,7 +1404,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     NSArray *ackMessages = nil;
     ARTLogVerbose(self.logger, @"R:%p ACK: msgSerial=%lld, count=%d", self, serial, count);
     ARTLogVerbose(self.logger, @"R:%p ACK (before processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count);
-    
+
     if (serial < self.pendingMessageStartSerial) {
         // This is an error condition and shouldn't happen but
         // we can handle it gracefully by only processing the
@@ -1412,7 +1412,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         count -= (int)(self.pendingMessageStartSerial - serial);
         serial = self.pendingMessageStartSerial;
     }
-    
+
     if (serial > self.pendingMessageStartSerial) {
         // This counts as a nack of the messages earlier than serial,
         // as well as an ack
@@ -1431,7 +1431,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         [self.pendingMessages removeObjectsInRange:nackRange];
         self.pendingMessageStartSerial = serial;
     }
-    
+
     if (serial == self.pendingMessageStartSerial) {
         NSRange ackRange;
         if (count > self.pendingMessages.count) {
@@ -1446,7 +1446,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         [self.pendingMessages removeObjectsInRange:ackRange];
         self.pendingMessageStartSerial += count;
     }
-    
+
     for (ARTPendingMessage *msg in nackMessages) {
         msg.ackCallback([ARTMessageSendStatus errorWithInfo:message.error]);
     }
@@ -1461,7 +1461,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         msg.ackCallback([ARTMessageSendStatus okWithPublishResult:publishResult]);
         index++;
     }
-    
+
     ARTLogVerbose(self.logger, @"R:%p ACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count);
 }
 
@@ -1470,14 +1470,14 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     int count = message.count;
     ARTLogVerbose(self.logger, @"R:%p NACK: msgSerial=%lld, count=%d", self, serial, count);
     ARTLogVerbose(self.logger, @"R:%p NACK (before processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count);
-    
+
     if (serial != self.pendingMessageStartSerial) {
         // This is an error condition and it shouldn't happen but
         // we can handle it gracefully by only processing the
         // relevant portion of the response
         count -= (int)(self.pendingMessageStartSerial - serial);
     }
-    
+
     NSRange nackRange;
     if (count > self.pendingMessages.count) {
         ARTLogError(self.logger, @"R:%p NACK: count response is greater than the total of pending messages", self);
@@ -1487,15 +1487,15 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     else {
         nackRange = NSMakeRange(0, count);
     }
-    
+
     NSArray *nackMessages = [self.pendingMessages subarrayWithRange:nackRange];
     [self.pendingMessages removeObjectsInRange:nackRange];
     self.pendingMessageStartSerial += count;
-    
+
     for (ARTPendingMessage *msg in nackMessages) {
         msg.ackCallback([ARTMessageSendStatus errorWithInfo:message.error]);
     }
-    
+
     ARTLogVerbose(self.logger, @"R:%p NACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count);
 }
 
@@ -1510,7 +1510,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
                 [self performTransitionToState:ARTRealtimeDisconnected withParams:params];
                 return;
             }
-            
+
             ARTLogDebug(self.logger, @"R:%p internet OK; retrying realtime connection at %@", self, host);
             self.rest.prioritizedHost = host;
             [self transportReconnectWithHost:host];
@@ -1538,12 +1538,12 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         if (!(options.hasCustomRealtimeHost || options.hasCustomPort || options.hasCustomTlsPort)) {
             return YES;
         }
-        
+
         // RTN17b2
         if (options.fallbackHosts) {
             return YES;
         }
-                
+
         // RSC15g2
         if (options.hasEnvironmentDifferentThanProduction) {
             return YES;
@@ -1564,10 +1564,10 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         return;
     }
     artDispatchCancel(_idleTimer);
-    
+
     _idleTimer = artDispatchScheduled(self.options.testOptions.realtimeRequestTimeout + self.maxIdleInterval, _rest.queue, ^{
         ARTLogError(self.logger, @"R:%p No activity seen from realtime in %f seconds; assuming connection has dropped", self, [[NSDate date] timeIntervalSinceDate:self->_lastActivity]);
-        
+
         ARTErrorInfo *idleTimerExpired = [ARTErrorInfo createWithCode:ARTErrorDisconnected status:408 message:@"Idle timer expired"];
         ARTConnectionStateChangeParams *const params = [[ARTConnectionStateChangeParams alloc] initWithErrorInfo:idleTimerExpired];
         [self performTransitionToDisconnectedOrSuspendedWithParams:params];
@@ -1587,28 +1587,28 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 
 - (void)realtimeTransport:(id)transport didReceiveMessage:(ARTProtocolMessage *)message {
     [self onActivity];
-    
+
     if (!message) {
         // Invalid data
         return;
     }
-    
+
     if (transport != self.transport) {
         // Old connection
         return;
     }
-    
+
     if (self.connection.state_nosync == ARTRealtimeDisconnected) {
         // Already disconnected
         return;
     }
-    
+
     ARTLogVerbose(self.logger, @"R:%p did receive Protocol Message %@ (connection state is %@)", self, ARTProtocolMessageActionToStr(message.action), ARTRealtimeConnectionStateToStr(self.connection.state_nosync));
-    
+
     if (message.error) {
         ARTLogVerbose(self.logger, @"R:%p Protocol Message with error %@", self, message.error);
     }
-    
+
     NSAssert(transport == self.transport, @"Unexpected transport");
 
 #ifdef ABLY_SUPPORTS_PLUGINS
@@ -1669,7 +1669,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         // Old connection
         return;
     }
-    
+
     if (self.connection.state_nosync == ARTRealtimeClosing) {
         // Close succeeded. Nothing more to do.
         [self performTransitionToState:ARTRealtimeClosed withParams:[[ARTConnectionStateChangeParams alloc] init]];
@@ -1684,7 +1684,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         // Old connection
         return;
     }
-    
+
     if (self.connection.state_nosync == ARTRealtimeClosing) {
         [self performTransitionToState:ARTRealtimeClosed withParams:[[ARTConnectionStateChangeParams alloc] init]];
     } else {
@@ -1699,14 +1699,14 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         // Old connection
         return;
     }
-    
+
     ARTLogDebug(self.logger, @"R:%p realtime transport failed: %@", self, transportError);
-    
+
     ARTErrorInfo *const errorInfo = [ARTErrorInfo createFromNSError:transportError.error];
     ARTConnectionStateChangeParams *const params = [[ARTConnectionStateChangeParams alloc] initWithErrorInfo:errorInfo];
 
     ARTClientOptions *const clientOptions = [self getClientOptions];
-    
+
     if (![self isSuspendMode] && [self shouldRetryWithFallbackForError:transportError options:clientOptions]) {
         ARTLogDebug(self.logger, @"R:%p host is down; can retry with fallback host", self);
         if (!_fallbacks) {
@@ -1732,7 +1732,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         // Old connection
         return;
     }
-    
+
     ARTErrorInfo *const errorInfo = [ARTErrorInfo createWithCode:ARTClientCodeErrorTransport message:@"Transport never connected"];
     ARTConnectionStateChangeParams *const params = [[ARTConnectionStateChangeParams alloc] initWithErrorInfo:errorInfo];
     [self performTransitionToDisconnectedOrSuspendedWithParams:params];
@@ -1743,7 +1743,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         // Old connection
         return;
     }
-    
+
     if (error && error.type == ARTRealtimeTransportErrorTypeRefused) {
         ARTErrorInfo *const errorInfo = [ARTErrorInfo createWithCode:ARTClientCodeErrorTransport message:[NSString stringWithFormat:@"Connection refused using %@", error.url]];
         ARTConnectionStateChangeParams *const params = [[ARTConnectionStateChangeParams alloc] initWithErrorInfo:errorInfo];
@@ -1776,7 +1776,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         // Old connection
         return;
     }
-    
+
     self.msgSerial = msgSerial;
 }
 

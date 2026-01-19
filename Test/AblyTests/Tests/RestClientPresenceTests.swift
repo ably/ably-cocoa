@@ -86,7 +86,7 @@ class RestClientPresenceTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let channelName = test.uniqueChannelName()
-        
+
         let client = ARTRest(options: options)
         let channel = client.channels.get(channelName)
 
@@ -122,7 +122,7 @@ class RestClientPresenceTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRest(options: options)
-        
+
         let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
@@ -167,7 +167,7 @@ class RestClientPresenceTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRest(options: options)
-        
+
         let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
@@ -227,7 +227,7 @@ class RestClientPresenceTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRest(options: options)
-        
+
         let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
@@ -282,7 +282,7 @@ class RestClientPresenceTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRest(options: options)
-        
+
         let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
@@ -318,7 +318,7 @@ class RestClientPresenceTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRest(options: options)
-        
+
         let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
@@ -365,7 +365,7 @@ class RestClientPresenceTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRest(options: options)
-        
+
         let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
@@ -443,7 +443,7 @@ class RestClientPresenceTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRest(options: options)
-        
+
         let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 

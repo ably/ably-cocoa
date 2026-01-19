@@ -330,7 +330,7 @@
     if (!message.version.timestamp) { // TM2s2
         message.version.timestamp = message.timestamp;
     }
-    
+
     id annotations = input[@"annotations"];
     if (annotations && [annotations isKindOfClass:[NSDictionary class]]) {
         message.annotations = [ARTMessageAnnotations createFromDictionary:annotations];
@@ -343,7 +343,7 @@
         // TM8a
         message.annotations.summary = @{};
     }
-    
+
     return message;
 }
 
@@ -351,7 +351,7 @@
     if (![input isKindOfClass:[NSArray class]]) {
         return nil;
     }
-    
+
     NSMutableArray *output = [NSMutableArray array];
     for (NSDictionary *item in input) {
         ARTMessage *message = [self messageFromDictionary:item protocolMessage:protocolMessage];
@@ -439,13 +439,13 @@
     message.encoding = [input artString:@"encoding"];
     message.clientId = [input artString:@"clientId"];
     message.timestamp = [input artTimestamp:@"timestamp"];
-    
+
     int action = [[input artNumber:@"action"] intValue];
-    
+
     message.action = [self presenceActionFromInt:action];
-    
+
     message.connectionId = [input artString:@"connectionId"];
-    
+
     return message;
 }
 
@@ -453,7 +453,7 @@
     if (![input isKindOfClass:[NSArray class]]) {
         return nil;
     }
-    
+
     NSMutableArray *output = [NSMutableArray array];
     for (NSDictionary *item in input) {
         ARTPresenceMessage *message = [self presenceMessageFromDictionary:item];
@@ -490,7 +490,7 @@
     if (![input isKindOfClass:[NSArray class]]) {
         return nil;
     }
-    
+
     NSMutableArray *output = [NSMutableArray array];
     for (NSDictionary *item in input) {
         ARTAnnotation *annotation = [self annotationFromDictionary:item];
@@ -566,7 +566,7 @@
 
 - (NSDictionary *)annotationToDictionary:(ARTAnnotation *)annotation {
     NSMutableDictionary *output = [NSMutableDictionary dictionary];
-    
+
     // Only encode fields that exist in ARTOutboundAnnotation (RSAN1a2)
     if (annotation.id) {
         [output setObject:annotation.id forKey:@"id"];
@@ -589,11 +589,11 @@
     if (annotation.clientId) {
         [output setObject:annotation.clientId forKey:@"clientId"];
     }
-    
+
     if (annotation.data) {
         [self writeData:annotation.data encoding:annotation.encoding toDictionary:output];
     }
-    
+
     if (annotation.name) {
         [output setObject:annotation.name forKey:@"name"];
     }
@@ -715,46 +715,46 @@
 
 - (NSArray *)messagesToArray:(NSArray *)messages {
     NSMutableArray *output = [NSMutableArray array];
-    
+
     for (ARTMessage *message in messages) {
         NSDictionary *item = [self messageToDictionary:message];
         [output addObject:item];
     }
-    
+
     return output;
 }
 
 - (NSArray *)annotationsToArray:(NSArray *)annotations {
     NSMutableArray *output = [NSMutableArray array];
-    
+
     for (ARTAnnotation *annotation in annotations) {
         NSDictionary *item = [self annotationToDictionary:annotation];
         [output addObject:item];
     }
-    
+
     return output;
 }
 
 - (NSDictionary *)presenceMessageToDictionary:(ARTPresenceMessage *)message {
     NSMutableDictionary *output = [NSMutableDictionary dictionary];
-    
+
     if (message.timestamp) {
         [output setObject:[message.timestamp artToNumberMs] forKey:@"timestamp"];
     }
-    
+
     if (message.clientId) {
         [output setObject:message.clientId forKey:@"clientId"];
     }
-    
+
     if (message.data) {
         [self writeData:message.data encoding:message.encoding toDictionary:output];
     }
     if(message.connectionId) {
         [output setObject:message.connectionId forKey:@"connectionId"];
     }
-    
+
     int action = [self intFromPresenceMessageAction:message.action];
-    
+
     [output setObject:[NSNumber numberWithInt:action] forKey:@"action"];
     ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: presenceMessageToDictionary %@", _rest, [_delegate formatAsString], output);
     return output;
@@ -762,7 +762,7 @@
 
 - (NSArray *)presenceMessagesToArray:(NSArray *)messages {
     NSMutableArray *output = [NSMutableArray array];
-    
+
     for (ARTPresenceMessage *message in messages) {
         NSDictionary *item = [self presenceMessageToDictionary:message];
         [output addObject:item];
@@ -789,7 +789,7 @@
     if (message.messages) {
         output[@"messages"] = [self messagesToArray:message.messages];
     }
-    
+
     if (message.presence) {
         output[@"presence"] = [self presenceMessagesToArray:message.presence];
     }
@@ -826,11 +826,11 @@
 
 - (ARTTokenDetails *)tokenFromDictionary:(NSDictionary *)input error:(NSError * __autoreleasing *)error {
     ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: tokenFromDictionary %@", _rest, [_delegate formatAsString], input);
-    
+
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
-    
+
     NSDictionary *jsonError = [input artDictionary:@"error"];
     if (jsonError) {
         ARTLogError(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: tokenFromDictionary error %@", _rest, [_delegate formatAsString], jsonError);
@@ -844,19 +844,19 @@
         return nil;
     }
     error = nil;
-    
+
     NSString *token = [input artString:@"token"];
     NSNumber *expiresTimeInterval = [input objectForKey:@"expires"];
     NSDate *expires = expiresTimeInterval != nil ? [NSDate dateWithTimeIntervalSince1970:millisecondsToTimeInterval(expiresTimeInterval.doubleValue)] : nil;
     NSNumber *issuedInterval = [input objectForKey:@"issued"];
     NSDate *issued = issuedInterval != nil ? [NSDate dateWithTimeIntervalSince1970:millisecondsToTimeInterval(issuedInterval.doubleValue)] : nil;
-    
+
     return [[ARTTokenDetails alloc] initWithToken:token
                                               expires:expires
                                                issued:issued
                                            capability:[input artString:@"capability"]
                                              clientId:[input artString:@"clientId"]];
-    
+
 }
 
 - (NSDictionary *)tokenRequestToDictionary:(ARTTokenRequest *)tokenRequest {
@@ -944,7 +944,7 @@
     if (tokenDetails.clientId) {
         dictionary[@"clientId"] = tokenDetails.clientId;
     }
-    
+
     return dictionary;
 }
 
@@ -1039,7 +1039,7 @@
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
-    
+
     ARTProtocolMessage *message = [[ARTProtocolMessage alloc] init];
     message.action = (ARTProtocolMessageAction)[[input artNumber:@"action"] intValue];
     message.count = [[input artNumber:@"count"] intValue];
@@ -1147,9 +1147,9 @@
     if (![input isKindOfClass:[NSArray class]]) {
         return nil;
     }
-    
+
     NSMutableArray *output = [NSMutableArray array];
-    
+
     for (NSDictionary *item in input) {
         if (![item isKindOfClass:[NSDictionary class]]) {
             return nil;
@@ -1160,7 +1160,7 @@
         }
         [output addObject:statsItem];
     }
-    
+
     return output;
 }
 
@@ -1169,7 +1169,7 @@
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
-    
+
     return [[ARTStats alloc] initWithAll:[self statsMessageTypesFromDictionary:[input objectForKey:@"all"]]
                                  inbound:[self statsMessageTrafficFromDictionary:[input objectForKey:@"inbound"]]
                                 outbound:[self statsMessageTrafficFromDictionary:[input objectForKey:@"outbound"]]
@@ -1188,15 +1188,15 @@
     if (![input isKindOfClass:[NSDictionary class]]) {
         return [ARTStatsMessageTypes empty];
     }
-    
+
     ARTStatsMessageCount *all = [self statsMessageCountFromDictionary:[input objectForKey:@"all"]];
     ARTStatsMessageCount *messages = [self statsMessageCountFromDictionary:[input objectForKey:@"messages"]];
     ARTStatsMessageCount *presence = [self statsMessageCountFromDictionary:[input objectForKey:@"presence"]];
-    
+
     if (all || messages || presence) {
         return [[ARTStatsMessageTypes alloc] initWithAll:all messages:messages presence:presence];
     }
-    
+
     return [ARTStatsMessageTypes empty];
 }
 
@@ -1204,10 +1204,10 @@
     if (![input isKindOfClass:[NSDictionary class]]) {
         return [ARTStatsMessageCount empty];
     }
-    
+
     NSNumber *count = [input artTyped:[NSNumber class] key:@"count"];
     NSNumber *data = [input artTyped:[NSNumber class] key:@"data"];
-    
+
     return [[ARTStatsMessageCount alloc] initWithCount:count.doubleValue data:data.doubleValue];
 }
 
@@ -1215,19 +1215,19 @@
     if (![input isKindOfClass:[NSDictionary class]]) {
         return [ARTStatsMessageTraffic empty];
     }
-    
+
     ARTStatsMessageTypes *all = [self statsMessageTypesFromDictionary:[input objectForKey:@"all"]];
     ARTStatsMessageTypes *realtime = [self statsMessageTypesFromDictionary:[input objectForKey:@"realtime"]];
     ARTStatsMessageTypes *rest = [self statsMessageTypesFromDictionary:[input objectForKey:@"rest"]];
     ARTStatsMessageTypes *webhook = [self statsMessageTypesFromDictionary:[input objectForKey:@"webhook"]];
-    
+
     if (all || realtime || rest || webhook) {
         return [[ARTStatsMessageTraffic alloc] initWithAll:all
                                                   realtime:realtime
                                                       rest:rest
                                                    webhook:webhook];
     }
-    
+
     return [ARTStatsMessageTraffic empty];
 }
 
@@ -1235,15 +1235,15 @@
     if (![input isKindOfClass:[NSDictionary class]]) {
         return [ARTStatsConnectionTypes empty];
     }
-    
+
     ARTStatsResourceCount *all = [self statsResourceCountFromDictionary:[input objectForKey:@"all"]];
     ARTStatsResourceCount *plain = [self statsResourceCountFromDictionary:[input objectForKey:@"plain"]];
     ARTStatsResourceCount *tls = [self statsResourceCountFromDictionary:[input objectForKey:@"tls"]];
-    
+
     if (all || plain || tls) {
         return [[ARTStatsConnectionTypes alloc] initWithAll:all plain:plain tls:tls];
     }
-    
+
     return [ARTStatsConnectionTypes empty];
 }
 
@@ -1251,13 +1251,13 @@
     if (![input isKindOfClass:[NSDictionary class]]) {
         return [ARTStatsResourceCount empty];
     }
-    
+
     NSNumber *opened = [input artTyped:[NSNumber class] key:@"opened"];
     NSNumber *peak = [input artTyped:[NSNumber class] key:@"peak"];
     NSNumber *mean = [input artTyped:[NSNumber class] key:@"mean"];
     NSNumber *min = [input artTyped:[NSNumber class] key:@"min"];
     NSNumber *refused = [input artTyped:[NSNumber class] key:@"refused"];
-    
+
     return [[ARTStatsResourceCount alloc] initWithOpened:opened.doubleValue
                                                     peak:peak.doubleValue
                                                     mean:mean.doubleValue
@@ -1291,11 +1291,11 @@
     if (![input isKindOfClass:[NSDictionary class]]) {
         return [ARTStatsRequestCount empty];
     }
-    
+
     NSNumber *succeeded = [input artTyped:[NSNumber class] key:@"succeeded"];
     NSNumber *failed = [input artTyped:[NSNumber class] key:@"failed"];
     NSNumber *refused = [input artTyped:[NSNumber class] key:@"refused"];
-    
+
     return [[ARTStatsRequestCount alloc] initWithSucceeded:succeeded.doubleValue
                                                     failed:failed.doubleValue
                                                    refused:refused.doubleValue];
@@ -1306,16 +1306,16 @@
     if (![input isKindOfClass:[NSDictionary class]]) {
         return [ARTStatsPushCount empty];
     }
-    
+
     NSNumber *messages = [input artNumber:@"messages"];
     NSNumber *direct = [input artNumber:@"directPublishes"];
-    
+
     NSDictionary *notifications = input[@"notifications"];
     NSNumber *succeeded = [notifications artNumber:@"successful"];
     NSNumber *invalid = [notifications artNumber:@"invalid"];
     NSNumber *attempted = [notifications artNumber:@"attempted"];
     NSNumber *failed = [notifications artNumber:@"failed"];
-    
+
     return [[ARTStatsPushCount alloc] initWithSucceeded:succeeded.integerValue
                                                 invalid:invalid.integerValue
                                               attempted:attempted.integerValue
