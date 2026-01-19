@@ -218,7 +218,7 @@ class RealtimeClientTests: XCTestCase {
                     fail("Transport should be of type ARTWebSocketTransport"); done()
                     return
                 }
-                
+
                 if let absoluteString = webSocketTransport.websocketURL?.absoluteString {
                     XCTAssertTrue(absoluteString.contains("tpBool=true"))
                     XCTAssertTrue(absoluteString.contains("tpInt=12"))
@@ -258,7 +258,7 @@ class RealtimeClientTests: XCTestCase {
         defer { client.dispose(); client.close() }
 
         let channelName = test.uniqueChannelName()
-        
+
         client.channels.get(channelName).subscribe { _ in
             // Attached
         }
@@ -1280,7 +1280,7 @@ class RealtimeClientTests: XCTestCase {
             }
         }
     }
-    
+
     // https://github.com/ably/ably-cocoa/issues/577
     func test__005__RealtimeClient__background_behaviour() {
         let test = Test()
@@ -1521,7 +1521,7 @@ class RealtimeClientTests: XCTestCase {
         defer { client.dispose(); client.close() }
 
         let channelName = test.uniqueChannelName()
-        
+
         var received = false
         client.channels.get(channelName).subscribe { _ in
             received = true
@@ -1549,7 +1549,7 @@ class RealtimeClientTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
         let messages = buildMessagesThatExceedMaxMessageSize()
         defer { client.dispose(); client.close() }
-        
+
         waitUntil(timeout: testTimeout, action: { done in
             // Wait for connected so that maxMessageSize is loaded from connection details
             client.connection.once(.connected) { _ in
@@ -1568,7 +1568,7 @@ class RealtimeClientTests: XCTestCase {
         let client = ARTRealtime(options: options)
         let channel = client.channels.get(test.uniqueChannelName())
         defer { client.dispose(); client.close() }
-        
+
         waitUntil(timeout: testTimeout, action: { done in
             client.connection.once(.connected) { _ in
                 channel.presence.enter(presenceData, callback: { err in
@@ -1586,7 +1586,7 @@ class RealtimeClientTests: XCTestCase {
         let client = ARTRealtime(options: options)
         let channel = client.channels.get(test.uniqueChannelName())
         defer { client.dispose(); client.close() }
-        
+
         waitUntil(timeout: testTimeout, action: { done in
             client.connection.once(.connected) { _ in
                 channel.presence.leave(presenceData, callback: { err in
@@ -1604,7 +1604,7 @@ class RealtimeClientTests: XCTestCase {
         let client = ARTRealtime(options: options)
         let channel = client.channels.get(test.uniqueChannelName())
         defer { client.dispose(); client.close() }
-        
+
         waitUntil(timeout: testTimeout, action: { done in
             client.connection.once(.connected) { _ in
                 channel.presence.update(presenceData, callback: { err in
@@ -1622,7 +1622,7 @@ class RealtimeClientTests: XCTestCase {
         let client = ARTRealtime(options: options)
         let channel = client.channels.get(test.uniqueChannelName())
         defer { client.dispose(); client.close() }
-        
+
         waitUntil(timeout: testTimeout, action: { done in
             client.connection.once(.connected) { _ in
                 channel.presence.updateClient(clientId, data: presenceData, callback: { err in
@@ -1640,7 +1640,7 @@ class RealtimeClientTests: XCTestCase {
         let client = ARTRealtime(options: options)
         let channel = client.channels.get(test.uniqueChannelName())
         defer { client.dispose(); client.close() }
-        
+
         waitUntil(timeout: testTimeout, action: { done in
             client.connection.once(.connected) { _ in
                 channel.presence.leaveClient(clientId, data: presenceData, callback: { err in

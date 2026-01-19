@@ -12,7 +12,7 @@
     return [self initWithTotal:total clientIds:clientIds clipped:NO];
 }
 
-- (instancetype)initWithTotal:(NSInteger)total 
+- (instancetype)initWithTotal:(NSInteger)total
                     clientIds:(NSArray<NSString *> *)clientIds
                       clipped:(BOOL)clipped {
     self = [super init];
@@ -28,15 +28,15 @@
     if (![dictionary isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
-    
+
     NSInteger total = [dictionary artInteger:@"total"];
     NSArray *clientIdsArray = [dictionary artArray:@"clientIds"];
     BOOL clipped = [dictionary artBoolean:@"clipped"];
-    
+
     if (!clientIdsArray) {
         return nil;
     }
-    
+
     // Validate that all items in the array are strings
     NSMutableArray<NSString *> *validatedClientIds = [NSMutableArray array];
     for (id item in clientIdsArray) {
@@ -46,8 +46,8 @@
             return nil; // Invalid data type in array
         }
     }
-    
-    return [self initWithTotal:total 
+
+    return [self initWithTotal:total
                      clientIds:[validatedClientIds copy]
                        clipped:clipped];
 }
@@ -69,7 +69,7 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"<%@: %p> { total: %ld, clientIds: %@, clipped: %@ }", 
+    return [NSString stringWithFormat:@"<%@: %p> { total: %ld, clientIds: %@, clipped: %@ }",
             self.class, self, (long)self.total, self.clientIds, @(self.clipped)];
 }
 
@@ -84,7 +84,7 @@
     return [self initWithTotal:total clientIds:clientIds clipped:NO totalUnidentified:0 totalClientIds:clientIds.count];
 }
 
-- (instancetype)initWithTotal:(NSInteger)total 
+- (instancetype)initWithTotal:(NSInteger)total
                     clientIds:(NSDictionary<NSString *, NSNumber *> *)clientIds
                       clipped:(BOOL)clipped
             totalUnidentified:(NSInteger)totalUnidentified
@@ -104,24 +104,24 @@
     if (![dictionary isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
-    
+
     NSInteger total = [dictionary artInteger:@"total"];
     NSDictionary *clientIdsDict = [dictionary artDictionary:@"clientIds"];
     BOOL clipped = [dictionary artBoolean:@"clipped"];
     NSInteger totalUnidentified = [dictionary artInteger:@"totalUnidentified"];
     NSInteger totalClientIds = [dictionary artInteger:@"totalClientIds"];
-    
+
     if (!clientIdsDict) {
         return nil;
     }
-    
+
     // Validate that all values in the dictionary are numbers
     NSMutableDictionary<NSString *, NSNumber *> *validatedClientIds = [NSMutableDictionary dictionary];
     for (NSString *key in clientIdsDict) {
         if (![key isKindOfClass:[NSString class]]) {
             return nil; // Invalid key type
         }
-        
+
         id value = clientIdsDict[key];
         if ([value isKindOfClass:[NSNumber class]]) {
             validatedClientIds[key] = value;
@@ -138,8 +138,8 @@
             return nil; // Invalid value type
         }
     }
-    
-    return [self initWithTotal:total 
+
+    return [self initWithTotal:total
                      clientIds:[validatedClientIds copy]
                        clipped:clipped
              totalUnidentified:totalUnidentified
@@ -159,15 +159,15 @@
 }
 
 - (id)copyWithZone:(NSZone *)zone {
-    return [[ARTSummaryClientIdCounts allocWithZone:zone] initWithTotal:self.total 
-                                                              clientIds:self.clientIds 
-                                                                clipped:self.clipped 
-                                                      totalUnidentified:self.totalUnidentified 
+    return [[ARTSummaryClientIdCounts allocWithZone:zone] initWithTotal:self.total
+                                                              clientIds:self.clientIds
+                                                                clipped:self.clipped
+                                                      totalUnidentified:self.totalUnidentified
                                                          totalClientIds:self.totalClientIds];
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"<%@: %p> { total: %ld, clientIds: %@, clipped: %@, totalUnidentified: %ld, totalClientIds: %ld }", 
+    return [NSString stringWithFormat:@"<%@: %p> { total: %ld, clientIds: %@, clipped: %@, totalUnidentified: %ld, totalClientIds: %ld }",
             self.class, self, (long)self.total, self.clientIds, @(self.clipped), (long)self.totalUnidentified, (long)self.totalClientIds];
 }
 
@@ -190,7 +190,7 @@
     if (![dictionary isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
-    
+
     NSInteger total = [dictionary artInteger:@"total"];
     return [self initWithTotal:total];
 }

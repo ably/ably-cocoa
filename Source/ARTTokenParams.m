@@ -61,7 +61,7 @@
 
 - (NSMutableArray *)toArray {
     NSMutableArray *params = [[NSMutableArray alloc] init];
-    
+
     if (self.clientId)
         [params addObject:[NSURLQueryItem queryItemWithName:@"clientId" value:self.clientId]];
     if (self.ttl != nil)
@@ -70,13 +70,13 @@
         [params addObject:[NSURLQueryItem queryItemWithName:@"capability" value:self.capability]];
     if (self.timestamp)
         [params addObject:[NSURLQueryItem queryItemWithName:@"timestamp" value:[NSString stringWithFormat:@"%llu", dateToMilliseconds(self.timestamp)]]];
-    
+
     return params;
 }
 
 - (NSMutableDictionary<NSString *, NSString *> *)toDictionary {
     NSMutableDictionary<NSString *, NSString *> *const params = [NSMutableDictionary new];
-    
+
     if (self.clientId)
         params[@"clientId"] = self.clientId;
     if (self.ttl != nil)
@@ -85,14 +85,14 @@
         params[@"capability"] = self.capability;
     if (self.timestamp)
         params[@"timestamp"] = [NSString stringWithFormat:@"%llu", dateToMilliseconds(self.timestamp)];
-    
+
     return params;
 }
 
 - (NSArray *)toArrayWithUnion:(NSArray *)items {
     NSMutableArray *tokenParams = [self toArray];
     BOOL add = YES;
-    
+
     for (NSURLQueryItem *item in items) {
         for (NSURLQueryItem *param in tokenParams) {
             // Check if exist
@@ -106,14 +106,14 @@
         }
         add = YES;
     }
-    
+
     return tokenParams;
 }
 
 - (NSStringDictionary *)toDictionaryWithUnion:(NSArray<NSURLQueryItem *> *const)items {
     NSMutableDictionary<NSString *, NSString *> *const tokenParams = [self toDictionary];
     BOOL add = YES;
-    
+
     for (NSURLQueryItem *item in items) {
         for (NSString *key in tokenParams.allKeys) {
             // Check if exist
@@ -127,7 +127,7 @@
         }
         add = YES;
     }
-    
+
     return [tokenParams copy]; // immutable
 }
 
@@ -136,9 +136,9 @@ static NSString *hmacForDataAndKey(NSData *data, NSData *key) {
     const void *cData = [data bytes];
     size_t keyLen = [key length];
     size_t dataLen = [data length];
-    
+
     unsigned char hmac[CC_SHA256_DIGEST_LENGTH];
-    
+
     CCHmac(kCCHmacAlgSHA256, cKey, keyLen, cData, dataLen, hmac);
     NSData *mac = [[NSData alloc] initWithBytes:hmac length:sizeof(hmac)];
     NSString *str = [mac base64EncodedStringWithOptions:0];

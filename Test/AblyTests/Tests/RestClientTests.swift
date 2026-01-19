@@ -280,7 +280,7 @@ class RestClientTests: XCTestCase {
     // RSC4
     func test__024__RestClient__logging__should_accept_a_custom_logger() throws {
         let test = Test()
-        
+
         enum Log {
             static var interceptedLog: (String, ARTLogLevel) = ("", .none)
         }
@@ -483,7 +483,7 @@ class RestClientTests: XCTestCase {
                 done()
             }
         }
-        
+
         let url = try XCTUnwrap(testHTTPExecutor.requests.first?.url, "No request url found")
 
         expect(url.absoluteString).to(contain("//rest.ably.test"))
@@ -515,7 +515,7 @@ class RestClientTests: XCTestCase {
         clientHttps.internal.httpExecutor = testHTTPExecutor
 
         let channelName = test.uniqueChannelName()
-        
+
         waitUntil(timeout: testTimeout) { done in
             publishTestMessage(clientHttps, channelName: channelName) { _ in
                 done()
@@ -1667,7 +1667,7 @@ class RestClientTests: XCTestCase {
                 done()
             }
         }
-        
+
         let request = try XCTUnwrap(testHTTPExecutor.requests.first, "No request found")
 
         switch extractBodyAsMsgPack(request) {
@@ -1705,7 +1705,7 @@ class RestClientTests: XCTestCase {
                 done()
             }
         }
-        
+
         let request = try XCTUnwrap(testHTTPExecutor.requests.first, "No request found")
 
         switch extractBodyAsJSON(request) {
@@ -1854,7 +1854,7 @@ class RestClientTests: XCTestCase {
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
         let url = try XCTUnwrap(request.url, "No request url found")
         let acceptHeaderValue = try XCTUnwrap(request.allHTTPHeaderFields?["Accept"], "Accept HTTP Header is missing")
-        
+
         XCTAssertEqual(request.httpMethod!.uppercased(), "PATCH")
         XCTAssertEqual(url.absoluteString, "https://rest.ably.io:443/feature?foo=1")
         XCTAssertEqual(acceptHeaderValue, "application/x-msgpack,application/json")
@@ -1878,12 +1878,12 @@ class RestClientTests: XCTestCase {
                 done()
             }
         }
-        
+
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No requests found")
         let rawBody = try XCTUnwrap(request.httpBody, "should have a body")
         let decodedBody = try XCTUnwrap(try rest.internal.defaultEncoder.decode(rawBody), "Decode request body failed")
         let body = try XCTUnwrap(decodedBody as? NSDictionary, "Request body is invalid")
-        
+
         XCTAssertTrue(try XCTUnwrap(body.value(forKey: "blockchain") as? Bool))
     }
 

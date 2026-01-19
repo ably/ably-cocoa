@@ -239,7 +239,7 @@ class UtilitiesTests: XCTestCase {
         let rest = ARTRest(options: options)
         let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
-        
+
         testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(
             40400,
             statusCode: 404,
@@ -248,7 +248,7 @@ class UtilitiesTests: XCTestCase {
                 "err": "Error that shouldn't be parsed"
             ]
         )
-        
+
         let request = URLRequest(url: URL(string: "https://www.example.com")!)
         waitUntil(timeout: testTimeout) { done in
             rest.internal.execute(request, wrapperSDKAgents:nil, completion: { response, _, error in
@@ -271,7 +271,7 @@ class UtilitiesTests: XCTestCase {
         let rest = ARTRest(options: options)
         let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
-        
+
         testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(
             40400,
             statusCode: 404,
@@ -283,7 +283,7 @@ class UtilitiesTests: XCTestCase {
                 ]
             ]
         )
-        
+
         let request = URLRequest(url: URL(string: "https://www.example.com")!)
         waitUntil(timeout: testTimeout) { done in
             rest.internal.execute(request, wrapperSDKAgents:nil, completion: { response, _, error in
@@ -621,7 +621,7 @@ class UtilitiesTests: XCTestCase {
         XCTAssert(messages[0].timestamp == Date(timeIntervalSince1970: 12.345))
         XCTAssert(messages[0].version?.timestamp == Date(timeIntervalSince1970: 12.345))
     }
-    
+
     /// - TM8a
     /// - TM2u
     func test__026_Utilities__message_should_always_populate_annotations_and_summary_when_decoding() throws {

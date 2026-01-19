@@ -19,7 +19,7 @@ class TestProxyTransportFactory: RealtimeTransportFactory {
         )
 
         transportCreatedEvent?(testProxyTransport)
-        
+
         return testProxyTransport
     }
 }

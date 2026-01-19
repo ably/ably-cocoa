@@ -32,7 +32,7 @@ static NSInteger _maxSandboxMessageSize = 16384;
         prefix = [NSString stringWithFormat:@"%@-", environment];
         suffix = @"-fallback";
     }
-    
+
     return [fallbacks artMap:^NSString *(NSString * fallback) {
         return [NSString stringWithFormat:@"%@%@%@.ably-realtime.com", prefix, fallback, suffix];
     }];

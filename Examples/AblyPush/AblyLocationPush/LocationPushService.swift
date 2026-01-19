@@ -62,20 +62,20 @@ class LocationPushService: NSObject, CLLocationPushServiceExtension, CLLocationM
             try! newData.write(to: url)
         }
     }
-    
+
     func serviceExtensionWillTerminate() {
         // Called just before the extension will be terminated by the system.
         self.completion?()
     }
 
     // MARK: - CLLocationManagerDelegate methods
-    
+
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         // Process the location(s) as needed
         print("Locations received: \(locations)")
         self.completion?()
     }
-    
+
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print("Location manager failed: \(error)")
         self.completion?()

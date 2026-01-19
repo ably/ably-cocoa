@@ -158,7 +158,7 @@ NSString *ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent event) {
                 presenceSubscribers:(NSInteger)presenceSubscribers
                    objectPublishers:(NSInteger)objectPublishers
                   objectSubscribers:(NSInteger)objectSubscribers {
-    
+
     if (self = [super init]) {
         _connections = connections;
         _publishers = publishers;
@@ -393,7 +393,7 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
 
 @implementation ARTCancellableFromCallback {
     id _lock;
-    
+
     // _callback will be nil once either cancel or invoke has been called on
     // this instance.
     volatile ARTResultCallback _callback;
@@ -409,17 +409,17 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
     if (!self) {
         return nil;
     }
-    
+
     _lock = [NSObject new];
     _callback = callback;
-    
+
     __weak ARTCancellableFromCallback * _cancellable = self;
     _wrapper = ^(const id result, NSError *const error) {
         // _cancellable is a weak self so may, legitimately, be nil now.
         ARTCancellableFromCallback *const cancellable = _cancellable;
         [cancellable invokeWithResult:result error:error];
     };
-    
+
     return self;
 }
 
@@ -431,12 +431,12 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
 
 -(void)invokeWithResult:(const id)result error:(NSError *const)error {
     ARTResultCallback callback;
-    
+
     @synchronized (_lock) {
         callback = _callback;
         _callback = nil;
     }
-    
+
     if (callback) {
         callback(result, error);
     }
@@ -499,7 +499,7 @@ NSObject<ARTCancellable> * artCancellableFromCallback(const ARTResultCallback ca
     if (!wrapper) {
         [NSException raise:NSInternalInconsistencyException format:@"wrapper is nil."];
     }
-    
+
     ARTCancellableFromCallback *const cancellable =
         [[ARTCancellableFromCallback alloc] initWithCallback:callback];
     *wrapper = cancellable.wrapper;

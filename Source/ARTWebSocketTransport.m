@@ -148,7 +148,7 @@ NS_ASSUME_NONNULL_END
 
 - (NSURL *)setupWebSocket:(NSDictionary<NSString *, NSURLQueryItem *> *)params withOptions:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey {
     __block NSMutableDictionary<NSString*, NSURLQueryItem*> *queryItems = [params mutableCopy];
-    
+
     // ClientID
     if (options.clientId) {
         [queryItems addValueAsURLQueryItem:options.clientId forKey:@"clientId"];
@@ -176,7 +176,7 @@ NS_ASSUME_NONNULL_END
     }
 
     [queryItems addValueAsURLQueryItem:[ARTDefault apiVersion] forKey:@"v"];
-    
+
     // Lib
     [queryItems addValueAsURLQueryItem:[ARTClientInformation agentIdentifierWithAdditionalAgents:options.agents] forKey:@"agent"];
 
@@ -186,7 +186,7 @@ NS_ASSUME_NONNULL_END
             [queryItems addValueAsURLQueryItem:obj.stringValue forKey:key];
         }];
     }
-    
+
     // URL
     NSURLComponents *urlComponents = [NSURLComponents componentsWithString:@"/"];
     urlComponents.queryItems = [queryItems allValues];

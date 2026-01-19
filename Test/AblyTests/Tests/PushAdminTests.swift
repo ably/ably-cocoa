@@ -398,10 +398,10 @@ class PushAdminTests: XCTestCase {
                 done()
             }
         }
-        
+
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
-        
+
         XCTAssertEqual(authorization, testIdentityTokenDetails.token.base64Encoded())
     }
 
@@ -419,7 +419,7 @@ class PushAdminTests: XCTestCase {
 
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
-        
+
         XCTAssertEqual(authorization, localDevice.secret)
     }
 
@@ -527,7 +527,7 @@ class PushAdminTests: XCTestCase {
                 done()
             }
         }
-        
+
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
 
         XCTAssertEqual(request.httpMethod, "PUT")
@@ -561,10 +561,10 @@ class PushAdminTests: XCTestCase {
                 done()
             }
         }
-        
+
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
-        
+
         XCTAssertEqual(request.httpMethod, "PUT")
         XCTAssertEqual(authorization, testIdentityTokenDetails.token.base64Encoded())
     }
@@ -586,7 +586,7 @@ class PushAdminTests: XCTestCase {
 
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
-        
+
         XCTAssertEqual(request.httpMethod, "PUT")
         XCTAssertEqual(authorization, localDevice.secret)
     }
@@ -625,7 +625,7 @@ class PushAdminTests: XCTestCase {
                 done()
             }
         }
-        
+
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
 
         XCTAssertEqual(request.httpMethod, "DELETE")
@@ -751,7 +751,7 @@ class PushAdminTests: XCTestCase {
 
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
-        
+
         XCTAssertEqual(authorization, testIdentityTokenDetails.token.base64Encoded())
     }
 
@@ -772,7 +772,7 @@ class PushAdminTests: XCTestCase {
 
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
-        
+
         XCTAssertEqual(authorization, localDevice.secret)
     }
 
@@ -833,7 +833,7 @@ class PushAdminTests: XCTestCase {
         }
 
         let request = try XCTUnwrap(testProxyHTTPExecutor.requests.first, "No request found")
-        
+
         XCTAssertEqual(request.httpMethod, "DELETE")
         XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceToken"])
         XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"])
@@ -879,7 +879,7 @@ class PushAdminTests: XCTestCase {
 
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
-        
+
         XCTAssertEqual(authorization, testIdentityTokenDetails.token.base64Encoded())
     }
 
@@ -900,7 +900,7 @@ class PushAdminTests: XCTestCase {
 
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
-        
+
         XCTAssertEqual(authorization, localDevice.secret)
     }
 
