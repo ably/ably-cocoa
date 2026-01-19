@@ -7,12 +7,12 @@ struct ContentView: View {
     @State var showDeviceDetailsAlert = false
     @State var deviceDetails: ARTDeviceDetails?
     @State var deviceDetailsError: ARTErrorInfo?
-    
+
     @State var showDeviceTokensAlert = false
     @State var defaultDeviceToken: String?
     @State var locationDeviceToken: String?
     @State var deviceTokensError: ARTErrorInfo?
-    
+
     var body: some View {
         NavigationView {
             VStack {
@@ -21,7 +21,7 @@ struct ContentView: View {
                     .aspectRatio(contentMode: .fit)
                     .frame(height: 44)
                     .padding()
-                                       
+
                 PushButton(
                     isButtonEnabled: true, // Button to toggle push activation is always enabled
                     systemImage: ablyHelper.isPushActivated ? "bell.slash" : "bell",
@@ -54,7 +54,7 @@ struct ContentView: View {
                     }
                     return Alert(title: Text("Push activation"), message: Text("Success"))
                 }
-                
+
                 HStack {
                     let backgroundColor = Color(red: 0.40, green: 0.44, blue: 0.52)
                     StatelessButton(
@@ -81,7 +81,7 @@ struct ContentView: View {
                     )
                 }
                 .fixedSize(horizontal: false, vertical: true)
-                
+
                 .alert(isPresented: $showDeviceDetailsAlert) {
                     if deviceDetails != nil {
                         return Alert(title: Text("Device Details"), message: Text("\(deviceDetails!)"))
@@ -142,14 +142,14 @@ struct ContentView: View {
                     )
                 }
                 .fixedSize(horizontal: false, vertical: true)
-                
+
                 HStack {
                     StatelessButton(
                         isButtonEnabled: ablyHelper.isPushActivated && ablyHelper.isSubscribedToExampleChannel1,
                         systemImage: "paperplane.circle.fill",
                         title: "Send Push to \(Channel.exampleChannel1.rawValue)",
                         action: {
-                            AblyHelper.shared.sendPushToChannel(.exampleChannel1)    
+                            AblyHelper.shared.sendPushToChannel(.exampleChannel1)
                         }
                     )
                     StatelessButton(

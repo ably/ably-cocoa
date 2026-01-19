@@ -12,7 +12,7 @@
     // (RSAN1a3) - The SDK must validate that the user supplied `type` (All other fields are optional)
     // (TAN2k) type string: a string indicating the type of the annotation, handled opaquely by the SDK
     NSAssert(type, @"ARTOutboundAnnotation: No annotation `type` provided");
-    
+
     if (self = [super init]) {
         _id = annotationId;
         _type = type;

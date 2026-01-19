@@ -71,6 +71,18 @@ ably-cocoa allows users to pass in Ably-authored plugins via the `ARTClientOptio
 
 - In Objective-C code, use `art_dispatch_sync` and `art_dispatch_async` instead of `dispatch_sync` and `dispatch_async`, for more debuggable handling of the case in which we accidentally submit to a `nil` queue.
 
+## Linting
+
+Source files must comply with the rules defined in `.editorconfig` (enforced by CI).
+
+Many text editors — including Xcode, if the "Prefer settings from .editorconfig files" setting is switched on — can automatically follow these rules.
+
+To check compliance locally, install `editorconfig-checker` (`brew install editorconfig-checker`) and run:
+
+```bash
+make lint
+```
+
 ## Release Process
 
 For each release, the following needs to be done:

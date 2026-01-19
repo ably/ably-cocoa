@@ -90,17 +90,17 @@ private func testSupportsAESEncryptionWithKeyLength(_ encryptionKeyLength: UInt,
 struct ExpectedModel: Codable, Equatable {
     var data: String?
     let encoding: String?
-    
+
     static func with(_ object: Any) -> Self {
         do {
             let data = try JSONUtility.serialize(object)
-            
+
             return try JSONUtility.decode(data: data)
         } catch {
             fatalError("\(error)")
         }
     }
-    
+
     static func ==(lhs: Self, rhs: Self) -> Bool {
         lhs.data == rhs.data && lhs.encoding == rhs.encoding
     }
@@ -153,7 +153,7 @@ class RestClientChannelTests: XCTestCase {
         var publishedMessage: ARTMessage?
 
         let channel = testEnvironment.client.channels.get(test.uniqueChannelName())
-        
+
         channel.publish(PublishArgs.name, data: PublishArgs.data) { error in
             publishError = error
             channel.history { result, _ in
@@ -176,7 +176,7 @@ class RestClientChannelTests: XCTestCase {
         var publishedMessage: ARTMessage?
 
         let channel = testEnvironment.client.channels.get(test.uniqueChannelName())
-        
+
         channel.publish(PublishArgs.name, data: nil) { error in
             publishError = error
             channel.history { result, _ in
@@ -199,7 +199,7 @@ class RestClientChannelTests: XCTestCase {
         var publishedMessage: ARTMessage?
 
         let channel = testEnvironment.client.channels.get(test.uniqueChannelName())
-        
+
         channel.publish(nil, data: PublishArgs.data) { error in
             publishError = error
             channel.history { result, _ in
@@ -222,7 +222,7 @@ class RestClientChannelTests: XCTestCase {
         var publishedMessage: ARTMessage?
 
         let channel = testEnvironment.client.channels.get(test.uniqueChannelName())
-        
+
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: nil) { error in
                 publishError = error
@@ -246,7 +246,7 @@ class RestClientChannelTests: XCTestCase {
         var publishedMessage: ARTMessage?
 
         let channel = testEnvironment.client.channels.get(test.uniqueChannelName())
-        
+
         waitUntil(timeout: testTimeout) { done in
             channel.publish([ARTMessage(name: PublishArgs.name, data: PublishArgs.data)]) { error in
                 publishError = error
@@ -281,9 +281,9 @@ class RestClientChannelTests: XCTestCase {
             ARTMessage(name: "bar", data: "foo"),
             ARTMessage(name: "bat", data: "baz"),
         ]
-        
+
         let channel = client.channels.get(test.uniqueChannelName())
-        
+
         channel.publish(messages) { error in
             publishError = error
             client.internal.httpExecutor = oldExecutor
@@ -390,7 +390,7 @@ class RestClientChannelTests: XCTestCase {
         let realtime = ARTRealtime(options: options)
 
         let chanelName = test.uniqueChannelName(prefix: "ch1")
-        
+
         let subscriber = realtime.channels.get(chanelName)
         subscriber.attach()
         waitUntil(timeout: testTimeout) { done in
@@ -423,7 +423,7 @@ class RestClientChannelTests: XCTestCase {
         let realtime = ARTRealtime(options: options)
 
         let chanelName = test.uniqueChannelName(prefix: "ch1")
-        
+
         let subscriber = realtime.channels.get(chanelName)
         subscriber.attach()
         waitUntil(timeout: testTimeout) { done in
@@ -454,7 +454,7 @@ class RestClientChannelTests: XCTestCase {
         let realtime = ARTRealtime(options: options)
 
         let chanelName = test.uniqueChannelName(prefix: "ch1")
-        
+
         let subscriber = realtime.channels.get(chanelName)
         subscriber.attach()
         waitUntil(timeout: testTimeout) { done in
@@ -486,7 +486,7 @@ class RestClientChannelTests: XCTestCase {
         let realtime = ARTRealtime(options: options)
 
         let chanelName = test.uniqueChannelName(prefix: "ch1")
-        
+
         let subscriber = realtime.channels.get(chanelName)
         subscriber.attach()
         waitUntil(timeout: testTimeout) { done in
@@ -681,7 +681,7 @@ class RestClientChannelTests: XCTestCase {
 
         let arrayValue: [[String: Any]] = try XCTUnwrap(JSONUtility.jsonObject(data: AblyTests.msgpackToData(encodedBody)))
         let id = arrayValue.first?["id"] as? String
-        
+
         assertMessagePayloadId(id: id, expectedSerial: "0")
         XCTAssertNil(message.id)
     }
@@ -753,7 +753,7 @@ class RestClientChannelTests: XCTestCase {
 
         let arrayValue: [[String: Any]] = try XCTUnwrap(JSONUtility.jsonObject(data: AblyTests.msgpackToData(encodedBody)))
         let id = arrayValue.first?["id"] as? String
-        
+
         XCTAssertEqual(id, "123")
     }
 
@@ -883,7 +883,7 @@ class RestClientChannelTests: XCTestCase {
         ]
 
         let channel = client.channels.get(test.uniqueChannelName())
-        
+
         waitUntil(timeout: testTimeout) { done in
             channel.publish(messages) { error in
                 XCTAssertNotNil(error)
@@ -1298,12 +1298,12 @@ class RestClientChannelTests: XCTestCase {
             TestCase(value: array, expected: .with(["data": try JSONUtility.toJSONString(array), "encoding": "json"])),
             TestCase(value: binaryData, expected: .with(["data": binaryData.toBase64, "encoding": "base64"])),
         ]
-        
+
         client.internal.options.idempotentRestPublishing = false
         client.internal.httpExecutor = testHTTPExecutor
 
         let channel = client.channels.get(test.uniqueChannelName())
-        
+
         validCases.forEach { caseTest in
             waitUntil(timeout: testTimeout) { done in
                 channel.publish(nil, data: caseTest.value) { error in
@@ -1312,7 +1312,7 @@ class RestClientChannelTests: XCTestCase {
                         XCTFail("HTTPBody is nil")
                         done(); return
                     }
-                    
+
                     let jsonData = AblyTests.msgpackToData(httpBody)
                     var model: ExpectedModel? = nil
                     do {
@@ -1361,7 +1361,7 @@ class RestClientChannelTests: XCTestCase {
         client.internal.httpExecutor = testHTTPExecutor
 
         let channel = client.channels.get(test.uniqueChannelName())
-        
+
         encodingCases.forEach { caseItem in
             waitUntil(timeout: testTimeout) { done in
                 channel.publish(nil, data: caseItem.value, callback: { error in
@@ -1370,14 +1370,14 @@ class RestClientChannelTests: XCTestCase {
                         XCTFail("HTTPBody is nil")
                         done(); return
                     }
-                    
+
                     var model: ExpectedModel? = nil
                     do {
                         model = try JSONUtility.decode(data: AblyTests.msgpackToData(httpBody))
                     } catch {
                         XCTFail("\(error)")
                     }
-                    
+
                     XCTAssertEqual(model?.encoding, caseItem.expected.encoding)
                     done()
                 })
@@ -1393,9 +1393,9 @@ class RestClientChannelTests: XCTestCase {
         let testHTTPExecutor = testEnvironment.testHTTPExecutor
 
         client.internal.httpExecutor = testHTTPExecutor
-        
+
         let channel = client.channels.get(test.uniqueChannelName())
-        
+
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: binaryData, callback: { error in
                 XCTAssertNil(error)
@@ -1420,9 +1420,9 @@ class RestClientChannelTests: XCTestCase {
         let testHTTPExecutor = testEnvironment.testHTTPExecutor
 
         client.internal.httpExecutor = testHTTPExecutor
-        
+
         let channel = client.channels.get(test.uniqueChannelName())
-        
+
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: text, callback: { error in
                 XCTAssertNil(error)
@@ -1449,9 +1449,9 @@ class RestClientChannelTests: XCTestCase {
         let testHTTPExecutor = testEnvironment.testHTTPExecutor
 
         client.internal.httpExecutor = testHTTPExecutor
-        
+
         let channel = client.channels.get(test.uniqueChannelName())
-        
+
         // JSON Array
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: array, callback: { error in
@@ -1462,7 +1462,7 @@ class RestClientChannelTests: XCTestCase {
                     let dictionaryValue: [String: Any]? = try? JSONUtility.jsonObject(data: AblyTests.msgpackToData(http))
                     let data = (dictionaryValue?["data"] as? String)?.data(using: .utf8)
                     let jsonArray: NSArray? = try? JSONUtility.jsonObject(data: data)
-                    
+
                     XCTAssertEqual(jsonArray, array as NSArray?)
                     XCTAssertEqual(dictionaryValue?["encoding"] as? String, "json")
                 } else {
@@ -1480,9 +1480,9 @@ class RestClientChannelTests: XCTestCase {
         let testHTTPExecutor = testEnvironment.testHTTPExecutor
 
         client.internal.httpExecutor = testHTTPExecutor
-        
+
         let channel = client.channels.get(test.uniqueChannelName())
-        
+
         // JSON Object
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: dictionary, callback: { error in
@@ -1493,7 +1493,7 @@ class RestClientChannelTests: XCTestCase {
                     let dictionaryValue: [String: Any]? = try? JSONUtility.jsonObject(data: AblyTests.msgpackToData(http))
                     let data = (dictionaryValue?["data"] as? String)?.data(using: .utf8)
                     let jsonDictionary: NSDictionary? = try? JSONUtility.jsonObject(data: data)
-                    
+
                     XCTAssertEqual(jsonDictionary, dictionary as NSDictionary?)
                     XCTAssertEqual(dictionaryValue?["encoding"] as? String, "json")
                 } else {
@@ -1512,7 +1512,7 @@ class RestClientChannelTests: XCTestCase {
         let cases = [text, integer, decimal, dictionary, array, binaryData] as [Any]
 
         let channel = testEnvironment.client.channels.get(test.uniqueChannelName())
-        
+
         cases.forEach { caseTest in
             waitUntil(timeout: testTimeout) { done in
                 channel.publish(nil, data: caseTest, callback: { error in
@@ -1653,7 +1653,7 @@ class RestClientChannelTests: XCTestCase {
             }
         }
     }
-    
+
     // RSL8a, CHD2b, CHS2b, CHO2a
     func test__047__status__with_subscribers__returns_a_channel_details_object_populated_with_channel_metrics() throws {
         let test = Test()
@@ -1682,7 +1682,7 @@ class RestClientChannelTests: XCTestCase {
                 done()
             }
         }
-        
+
         func checkMetrics(completion: @escaping (ARTChannelDetails) -> ()) {
             restChannel.status { details, error in
                 XCTAssertNil(error)
@@ -1701,7 +1701,7 @@ class RestClientChannelTests: XCTestCase {
                 }
             }
         }
-        
+
         waitUntil(timeout: testTimeout) { done in
             checkMetrics { details in
                 XCTAssertEqual(details.status.occupancy.metrics.connections, 1) // CHM2a
@@ -1716,7 +1716,7 @@ class RestClientChannelTests: XCTestCase {
             }
         }
     }
-    
+
     func test__48__channel_name_can_contain_slash_character_which_is_url_encoded_in_the_rest_request_path() throws {
         let test = Test()
         let testEnvironment = try TestEnvironment(test: test)
@@ -1725,9 +1725,9 @@ class RestClientChannelTests: XCTestCase {
 
         client.internal.httpExecutor = testHTTPExecutor
         let channel = client.channels.get(test.uniqueChannelName(prefix: "beforeSlash/afterSlash"))
-        
+
         channel.publish(nil, data: nil)
-        
+
         let url = try XCTUnwrap(testHTTPExecutor.requests.first?.url)
         let urlEncodedChannelName = try XCTUnwrap(channel.name.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlHostAllowed))
 

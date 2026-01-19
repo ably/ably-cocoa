@@ -6,9 +6,9 @@ struct StatelessButton: View {
     let title: String
     let backgroundColor: Color
     let action: () -> Void
-    
+
     @State var taps: Int = 0 // purely to trigger animation on every tap
-    
+
     init(
         isButtonEnabled: Bool,
         systemImage: String,
@@ -22,7 +22,7 @@ struct StatelessButton: View {
         self.backgroundColor = backgroundColor
         self.action = action
     }
-    
+
     var body: some View {
         let button = Button {
             action()
@@ -38,11 +38,11 @@ struct StatelessButton: View {
         .tint(backgroundColor)
         .disabled(!isButtonEnabled)
         .animation(.easeInOut, value: isButtonEnabled)
-        
+
         if #available(iOS 17.0, *) {
             return button.symbolEffect(.bounce.down, value: taps)
         }
-        
+
         return button
     }
 }

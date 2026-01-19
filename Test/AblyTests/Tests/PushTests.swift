@@ -16,7 +16,7 @@ class PushTests: XCTestCase {
         static let tokenData = Data(base64Encoded: tokenBase64, options: [])!
         static let tokenString = tokenData.map { String(format: "%02x", $0) }.joined()
     }
-    
+
     enum TestLocationDeviceToken {
         static let tokenBase64 = "bG9jYXRpb24gZGV2aWNlIHRva2Vu"
         static let tokenData = Data(base64Encoded: tokenBase64, options: [])!
@@ -207,7 +207,7 @@ class PushTests: XCTestCase {
         let expectedDeviceTokenKey = "ARTAPNSDeviceToken-default" // ARTAPNSDeviceTokenKeyOfType(nil)
         expect(storage.keysWritten.keys).to(contain([expectedDeviceTokenKey]))
         XCTAssertEqual(storage.keysWritten.at(expectedDeviceTokenKey)?.value as? String, expectedDeviceToken)
-        
+
         let expectedLocationDeviceTokenKey = "ARTAPNSDeviceToken-location" // ARTAPNSDeviceTokenKeyOfType("location")
         expect(storage.keysWritten.keys).to(contain([expectedLocationDeviceTokenKey]))
         XCTAssertEqual(storage.keysWritten.at(expectedLocationDeviceTokenKey)?.value as? String, expectedLocationDeviceToken)
@@ -239,7 +239,7 @@ class PushTests: XCTestCase {
 
         let rest = ARTRest(key: "fake:key")
         rest.internal.storage = storage
-        
+
         storage.simulateOnNextRead(string: "testId", for: ARTDeviceIdKey)
         storage.simulateOnNextRead(string: "testSecret", for: ARTDeviceSecretKey)
         storage.simulateOnNextRead(string: testToken, for: ARTAPNSDeviceTokenKey)
@@ -295,7 +295,7 @@ class PushTests: XCTestCase {
 
         XCTAssertNil(realtime.device.clientId)
         XCTAssertNil(storage.keysWritten[ARTClientIdKey] as? String)
-        
+
         waitUntil(timeout: testTimeout) { done in
             realtime.connection.once(.connected) { _ in
                 done()
@@ -449,7 +449,7 @@ class PushTests: XCTestCase {
         pushRegistererDelegate = nil
         XCTAssertNil(rest.internal.options.pushRegistererDelegate)
     }
-    
+
     func test__016__activate_should_call_registerForAPNS_while_transition_from_not_activated() {
         var registerForAPNSMethodWasCalled = false
 
@@ -473,7 +473,7 @@ class PushTests: XCTestCase {
     }
 
     // RSH8i
-    
+
     func test__017__LocalDevice__must_verify_the_validity_of_saved_push_details_and_update_if_needed_on_the_Ably_server_by_triggering_GotPushDeviceDetails() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
@@ -530,7 +530,7 @@ class PushTests: XCTestCase {
             let expectedTokenString = pushDict.value(forKeyPath: "recipient.apnsDeviceTokens.default") as? String
             XCTAssertEqual(expectedTokenString, testDeviceToken)
         }
-        
+
         let updateRequest = mockHttpExecutor.requests.filter { req in
             req.httpMethod == "PATCH" && req.url!.path.hasPrefix("/push/deviceRegistrations/")
         }.first
@@ -546,7 +546,7 @@ class PushTests: XCTestCase {
             XCTAssertEqual(expectedTokenString, TestDeviceToken.tokenString)
         }
     }
-    
+
     func test__018__LocalDevice__when_alternative_device_token_available_update_push_details_on_the_Ably_server_by_triggering_GotPushDeviceDetails() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
@@ -564,11 +564,11 @@ class PushTests: XCTestCase {
         let testDeviceToken = "xxxx-xxxx-xxxx-xxxx-xxxx"
         rest.device.setAndPersistAPNSDeviceToken(testDeviceToken)
         defer { rest.device.setAndPersistAPNSDeviceToken(nil) }
-        
+
         func requestLocationDeviceToken() {
             ARTPush.didRegisterForLocationNotifications(withDeviceToken: TestLocationDeviceToken.tokenData, rest: rest)
         }
-        
+
         waitUntil(timeout: testTimeout) { done in
             pushRegistererDelegate.onDidActivateAblyPush = { _ in
                 requestLocationDeviceToken()
@@ -578,7 +578,7 @@ class PushTests: XCTestCase {
             }
             rest.push.activate()
         }
-        
+
         let registerRequest = mockHttpExecutor.requests.filter { req in
             req.httpMethod == "POST" && req.url!.path == "/push/deviceRegistrations"
         }.first
@@ -593,7 +593,7 @@ class PushTests: XCTestCase {
             let expectedTokenString = pushDict.value(forKeyPath: "recipient.apnsDeviceTokens.default") as? String
             XCTAssertEqual(expectedTokenString, testDeviceToken)
         }
-        
+
         let updateRequest = mockHttpExecutor.requests.filter { req in
             req.httpMethod == "PATCH" && req.url!.path.hasPrefix("/push/deviceRegistrations/")
         }.first

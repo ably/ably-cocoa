@@ -249,7 +249,7 @@ NS_ASSUME_NONNULL_END
                             wrapperSDKAgents:(nullable NSDictionary<NSString *, NSString *> *)wrapperSDKAgents
                                   completion:(ARTURLRequestCallback)callback {
     request.URL = [NSURL URLWithString:request.URL.relativeString relativeToURL:self.baseUrl];
-    
+
     switch (authOption) {
         case ARTAuthenticationOff:
             return [self executeRequest:request wrapperSDKAgents:wrapperSDKAgents completion:callback];
@@ -346,7 +346,7 @@ NS_ASSUME_NONNULL_END
                                   completion:(ARTURLRequestCallback)callback {
     NSString *requestId = nil;
     __block ARTFallback *blockFallbacks = fallbacks;
-    
+
     if ([request isKindOfClass:[NSMutableURLRequest class]]) {
         NSMutableURLRequest *mutableRequest = (NSMutableURLRequest *)request;
         [mutableRequest setAcceptHeader:self.defaultEncoder encoders:self.encoders];
@@ -359,7 +359,7 @@ NS_ASSUME_NONNULL_END
         if (_options.clientId && !self.auth.isTokenAuth) {
             [mutableRequest setValue:encodeBase64(_options.clientId) forHTTPHeaderField:@"X-Ably-ClientId"];
         }
-        
+
         if (_options.addRequestIds) {
             if (fallbacks != nil) {
                 requestId = originalRequestId;
@@ -367,16 +367,16 @@ NS_ASSUME_NONNULL_END
                 NSString *randomId = [NSUUID new].UUIDString;
                 requestId = [[randomId dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:0];
             }
-            
+
             [mutableRequest appendQueryItem:[NSURLQueryItem queryItemWithName:@"request_id" value:requestId]];
         }
-        
+
         // RSC15f - reset the successed fallback host on fallbackRetryTimeout expiration
         // change URLRequest host from `fallback host` to `default host`
         //
         if (self.currentFallbackHost != nil && self.fallbackRetryExpiration != nil && [[self.continuousClock now] isAfter:self.fallbackRetryExpiration]) {
             ARTLogDebug(self.logger, @"RS:%p fallbackRetryExpiration ids expired, reset `prioritizedHost` and `currentFallbackHost`", self);
-            
+
             self.currentFallbackHost = nil;
             self.prioritizedHost = nil;
             [mutableRequest replaceHostWith:_options.restHost];
@@ -438,7 +438,7 @@ NS_ASSUME_NONNULL_END
                                              message:[[NSString alloc] initWithData:data ?: [NSData data] encoding:NSUTF8StringEncoding]
                                            requestId:requestId];
             }
-            
+
         } else {
             // Response Status Code < 400 and no errors
             if (error == nil && self.currentFallbackHost != nil) {
@@ -446,7 +446,7 @@ NS_ASSUME_NONNULL_END
                 self.prioritizedHost = self.currentFallbackHost;
             }
         }
-        
+
         if (retries < self->_options.httpMaxRetryCount && [self shouldRetryWithFallback:request response:response error:error]) {
             if (!blockFallbacks) {
                 NSArray *hosts = [ARTFallbackHosts hostsFromOptions:self->_options];
@@ -456,7 +456,7 @@ NS_ASSUME_NONNULL_END
                 NSString *host = [blockFallbacks popFallbackHost];
                 if (host != nil) {
                     ARTLogDebug(self.logger, @"RS:%p host is down; retrying request at %@", self, host);
-                    
+
                     self.currentFallbackHost = host;
                     NSMutableURLRequest *newRequest = [request copy];
                     [newRequest setValue:host forHTTPHeaderField:@"Host"];
@@ -556,7 +556,7 @@ NS_ASSUME_NONNULL_END
     request.HTTPMethod = @"GET";
     NSString *accept = [[_encoders.allValues valueForKeyPath:@"mimeType"] componentsJoinedByString:@","];
     [request setValue:accept forHTTPHeaderField:@"Accept"];
-    
+
     return [self executeRequest:request withAuthOption:ARTAuthenticationOff wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             callback(nil, error);
@@ -583,7 +583,7 @@ NS_ASSUME_NONNULL_END
 wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
        callback:(ARTHTTPPaginatedCallback)callback
           error:(NSError **)errorPtr {
-    
+
     if (callback) {
         void (^userCallback)(ARTHTTPPaginatedResponse *, ARTErrorInfo *) = callback;
         callback = ^(ARTHTTPPaginatedResponse *r, ARTErrorInfo *e) {
@@ -739,7 +739,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
         return [self.encoders[response.MIMEType] decodeStats:data error:errorPtr];
     };
-    
+
 art_dispatch_async(_queue, ^{
     [ARTPaginatedResult executePaginated:self withRequest:request andResponseProcessor:responseProcessor wrapperSDKAgents:wrapperSDKAgents logger:self.logger callback:callback];
 });
@@ -753,7 +753,7 @@ art_dispatch_async(_queue, ^{
 - (NSURL *)getBaseUrl {
     NSURLComponents *components = [_options restUrlComponents];
     NSString *prioritizedHost = self.prioritizedHost; // Important to use the property, not the variable; it's atomic!
-    if (prioritizedHost) { 
+    if (prioritizedHost) {
         components.host = prioritizedHost;
     }
     return components.URL;
@@ -763,11 +763,11 @@ art_dispatch_async(_queue, ^{
     if (value == nil) {
         _fallbackRetryExpiration = nil;
     }
-    
+
     if ([_currentFallbackHost isEqual:value]) {
         return;
     }
-    
+
     _currentFallbackHost = value;
 
     ARTContinuousClockInstant *const now = [self.continuousClock now];
@@ -794,11 +794,11 @@ art_dispatch_async(_queue, ^{
 + (dispatch_queue_t)deviceAccessQueue {
     static dispatch_queue_t queue;
     static dispatch_once_t onceToken;
-    
+
     dispatch_once(&onceToken, ^{
         queue = dispatch_queue_create("io.ably.deviceAccess", DISPATCH_QUEUE_SERIAL);
     });
-    
+
     return queue;
 }
 
@@ -845,7 +845,7 @@ static BOOL sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = YES;
 - (void)setAndPersistAPNSDeviceTokenData:(NSData *)deviceTokenData tokenType:(NSString *)tokenType {
     NSString *deviceToken = deviceTokenData.deviceTokenString;
     ARTLogInfo(self.logger, @"ARTRest: device token: %@ of type: `%@`", deviceToken, tokenType);
-    
+
     NSString *currentDeviceToken = [ARTLocalDevice apnsDeviceTokenOfType:tokenType fromStorage:self.storage];
     if ([currentDeviceToken isEqualToString:deviceToken]) {
         // Already stored.
@@ -854,7 +854,7 @@ static BOOL sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = YES;
 
     [self.device_nosync setAndPersistAPNSDeviceToken:deviceToken tokenType:tokenType];
     ARTLogDebug(self.logger, @"ARTRest: device token stored");
-    
+
     [self.push getActivationMachine:^(ARTPushActivationStateMachine *_Nullable stateMachine) {
         [stateMachine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
     }];

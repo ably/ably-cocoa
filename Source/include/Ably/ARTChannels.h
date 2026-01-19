@@ -33,7 +33,7 @@ NS_SWIFT_SENDABLE
  *
  * @param name The channel name.
  * @param options An `ARTChannelOptions` object.
- * 
+ *
  * @return A `ARTRestChannel` or `ARTRealtimeChannel` object.
  */
 - (ChannelType)get:(NSString *)name options:(ARTChannelOptions *)options;

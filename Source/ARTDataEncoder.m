@@ -138,7 +138,7 @@
         [self setDeltaCodecBase:data identifier:identifier];
         return [[ARTDataEncoderOutput alloc] initWithData:data encoding:encoding errorInfo:nil];
     }
-    
+
     ARTErrorInfo *errorInfo = nil;
     NSArray *encodings = [encoding componentsSeparatedByString:@"/"];
     NSString *outputEncoding = [NSString stringWithString:encoding];
@@ -222,7 +222,7 @@
             break;
         }
     }
-    
+
     return [[ARTDataEncoderOutput alloc] initWithData:data
                                              encoding:outputEncoding
                                             errorInfo:errorInfo];

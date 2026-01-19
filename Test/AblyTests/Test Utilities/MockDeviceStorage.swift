@@ -2,7 +2,7 @@
 import Ably
 
 class MockDeviceStorage: NSObject, ARTDeviceStorage {
-    
+
     private let accessQueue = DispatchQueue(label: "io.ably.MockDeviceStorage")
 
     var keysRead: [String] = []

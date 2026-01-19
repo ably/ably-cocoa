@@ -112,7 +112,7 @@ NS_ASSUME_NONNULL_END
     [self.underlyingChannel publish:name data:data extras:extras callback:callback];
 }
 
-- (void)getMessageWithSerial:(nonnull NSString *)serial callback:(nonnull ARTMessageErrorCallback)callback { 
+- (void)getMessageWithSerial:(nonnull NSString *)serial callback:(nonnull ARTMessageErrorCallback)callback {
     [self.underlyingChannel.internal getMessageWithSerial:serial
                                          wrapperSDKAgents:self.proxyOptions.agents
                                                  callback:callback];

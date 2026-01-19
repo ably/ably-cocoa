@@ -118,7 +118,7 @@
             });
         };
     }
-    
+
     // RSAN1a1: Message object must contain a populated serial field
     if (messageSerial == nil) {
         if (callback) {
@@ -126,7 +126,7 @@
         }
         return;
     }
-    
+
     // Convert ARTOutboundAnnotation to ARTAnnotation for internal processing
     ARTAnnotation *annotation = [[ARTAnnotation alloc] initWithId:nil
                                                            action:action // RSAN1c1
@@ -149,11 +149,11 @@ art_dispatch_sync(_queue, ^{
         }
         return;
     }
-    
+
     // Validate annotation size against connection's maxMessageSize
     NSInteger annotationSize = [annotationToPublish annotationSize];
     NSInteger maxSize = self.realtime.connection.maxMessageSize;
-    
+
     if (annotationSize > maxSize) {
         if (callback) {
             callback([ARTErrorInfo createWithCode:ARTErrorMaxMessageLengthExceeded
@@ -161,7 +161,7 @@ art_dispatch_sync(_queue, ^{
         }
         return;
     }
-    
+
     // RTAN1c
     ARTProtocolMessage *pm = [[ARTProtocolMessage alloc] init];
     pm.action = ARTProtocolMessageAnnotation;
@@ -187,7 +187,7 @@ art_dispatch_sync(_queue, ^{
     }
 
     __block ARTEventListener *listener = nil;
-    
+
 art_dispatch_sync(_queue, ^{
     ARTRealtimeChannelOptions *options = self->_channel.getOptions_nosync;
     BOOL attachOnSubscribe = options != nil ? options.attachOnSubscribe : true;

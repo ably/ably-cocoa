@@ -5,13 +5,13 @@ import XCTest
 @testable import Ably
 
 class MessageUpdatesDeletesTests: XCTestCase {
-    
+
     // MARK: - Test Environment
-    
+
     private enum TestEnvironment {
         case rest(client: ARTRest, testHTTPExecutor: TestProxyHTTPExecutor, channelName: String)
         case realtime(client: ARTRealtime, testHTTPExecutor: TestProxyHTTPExecutor, channelName: String)
-        
+
         var channel: ARTChannelProtocol {
             switch self {
             case .rest(let client, _, let channelName):
@@ -20,7 +20,7 @@ class MessageUpdatesDeletesTests: XCTestCase {
                 return client.channels.get(channelName)
             }
         }
-        
+
         var realtimeClient: ARTRealtime? {
             switch self {
             case .rest(_, _, _):
@@ -29,7 +29,7 @@ class MessageUpdatesDeletesTests: XCTestCase {
                 return client
             }
         }
-        
+
         var requests: [URLRequest] {
             switch self {
             case .rest(_, let testHTTPExecutor, _),
@@ -37,7 +37,7 @@ class MessageUpdatesDeletesTests: XCTestCase {
                 return testHTTPExecutor.requests
             }
         }
-        
+
         static func rest(_ test: Test) throws -> TestEnvironment {
             let options = try AblyTests.commonAppSetup(for: test)
             options.testOptions.channelNamePrefix = nil
@@ -47,7 +47,7 @@ class MessageUpdatesDeletesTests: XCTestCase {
             let channelName = test.uniqueChannelName(prefix: "mutable:") // updates and deletes don't work without this prefix on a channel name
             return .rest(client: client, testHTTPExecutor: testHTTPExecutor, channelName: channelName)
         }
-        
+
         static func realtime(_ test: Test) throws -> TestEnvironment {
             let options = try AblyTests.commonAppSetup(for: test)
             options.testOptions.channelNamePrefix = nil
@@ -58,10 +58,10 @@ class MessageUpdatesDeletesTests: XCTestCase {
             return .realtime(client: client, testHTTPExecutor: testHTTPExecutor, channelName: channelName)
         }
     }
-    
+
     // These `waitUntil*HistoryBecomesAvailable*` functions are needed to wait when the published message makes its way to the database.
     // If you post a message and receive it on a realtime channel and then try to fetch it via `history:`, `getMessageWithSerial:` or  `getMessageVersions:`, the request will fail with ~20% of chance.
-    
+
     private func waitUntilHistoryBecomesAvailableOnChannel(_ channel: ARTChannelProtocol) -> ARTMessage {
         var firstMessage: ARTMessage!
         while firstMessage == nil {
@@ -75,7 +75,7 @@ class MessageUpdatesDeletesTests: XCTestCase {
         }
         return firstMessage
     }
-    
+
     private func waitUntilEditingHistoryBecomesAvailableForMessageSerial(_ serial: String, onChannel channel: ARTChannelProtocol) -> [ARTMessage] {
         var versions: [ARTMessage] = []
         while versions.count == 0 {
@@ -90,10 +90,10 @@ class MessageUpdatesDeletesTests: XCTestCase {
         }
         return versions
     }
-    
+
     private func _test__rest_and_realtime__getMessage(_ testEnvironment: TestEnvironment) throws {
         let channel = testEnvironment.channel
-        
+
         // First publish a message
         waitUntil(timeout: testTimeout) { done in
             channel.publish("chat-message", data: "test message") { error in
@@ -101,15 +101,15 @@ class MessageUpdatesDeletesTests: XCTestCase {
                 done()
             }
         }
-        
+
         let publishedMessage = waitUntilHistoryBecomesAvailableOnChannel(channel)
         guard let publishedMessageSerial = publishedMessage.serial else {
             XCTFail("publishedMessage's serial is nil")
             return
         }
-        
+
         var retrievedMessage: ARTMessage!
-        
+
         // RSL11a: Get the message by serial string
         waitUntil(timeout: testTimeout) { done in
             channel.getMessageWithSerial(publishedMessageSerial) { message, error in
@@ -118,27 +118,27 @@ class MessageUpdatesDeletesTests: XCTestCase {
                 done()
             }
         }
-        
+
         // RSL11b: Verify GET request to correct endpoint
         guard let request = testEnvironment.requests.last, let requestUrl = request.url else {
             XCTFail("No HTTP request was made")
             return
         }
-        
+
         XCTAssertEqual(request.httpMethod, "GET")
         XCTAssertTrue(requestUrl.path.contains("/channels/\(channel.name)/messages/\(publishedMessageSerial)"))
-        
+
         // RSL11c: Returns the decoded Message object
-        
+
         XCTAssertNotNil(retrievedMessage)
         XCTAssertEqual(retrievedMessage.serial, publishedMessageSerial)
         XCTAssertEqual(retrievedMessage.name, "chat-message")
         XCTAssertEqual(retrievedMessage.data as? String, "test message")
     }
-    
+
     private func _test__rest_and_realtime__updateMessage__and__getMessageVersions(_ testEnvironment: TestEnvironment) throws {
         let channel = testEnvironment.channel
-        
+
         // First publish a message
         waitUntil(timeout: testTimeout) { done in
             channel.publish("chat-message", data: "hello world") { error in
@@ -146,13 +146,13 @@ class MessageUpdatesDeletesTests: XCTestCase {
                 done()
             }
         }
-        
+
         let publishedMessage = waitUntilHistoryBecomesAvailableOnChannel(channel)
         guard let publishedMessageSerial = publishedMessage.serial else {
             XCTFail("publishedMessage's serial is nil")
             return
         }
-        
+
         // Update data
         let messageUpdate = publishedMessage.copy() as! ARTMessage
         messageUpdate.data = "hello world!"
@@ -217,7 +217,7 @@ class MessageUpdatesDeletesTests: XCTestCase {
         }
 
         var updatedMessage: ARTMessage!
-        
+
         // Fetch the updated message (poll getMessageWithSerial until it returns the updated message)
         while updatedMessage == nil || updatedMessage!.version?.serial == publishedMessage.version?.serial {
             // Get the updated message by serial string
@@ -229,13 +229,13 @@ class MessageUpdatesDeletesTests: XCTestCase {
                 }
             }
         }
-        
+
         XCTAssertNotNil(updatedMessage)
         XCTAssertEqual(updatedMessage.serial, publishedMessageSerial)
         XCTAssertEqual(updatedMessage.name, "chat-message")
         XCTAssertEqual(updatedMessage.data as? String, "hello world!")
         XCTAssertEqual(updatedMessage.action, .update)
-        
+
         // Verify version properties
         XCTAssertNotNil(updatedMessage.version)
         XCTAssertNotNil(updatedMessage.version?.serial)
@@ -252,15 +252,15 @@ class MessageUpdatesDeletesTests: XCTestCase {
 
         // RSL14a: Get versions by serial string
         let versions = waitUntilEditingHistoryBecomesAvailableForMessageSerial(publishedMessageSerial, onChannel: channel)
-        
+
         XCTAssertEqual(versions.count, 2)
         XCTAssertEqual(versions[0].data as? String, "hello world")
         XCTAssertEqual(versions[1].data as? String, "hello world!")
     }
-    
+
     private func _test__rest_and_realtime__deleteMessage(_ testEnvironment: TestEnvironment) throws {
         let channel = testEnvironment.channel
-        
+
         // First publish a message
         waitUntil(timeout: testTimeout) { done in
             channel.publish("chat-message", data: "test text") { error in
@@ -268,13 +268,13 @@ class MessageUpdatesDeletesTests: XCTestCase {
                 done()
             }
         }
-        
+
         let publishedMessage = waitUntilHistoryBecomesAvailableOnChannel(channel)
         guard let publishedMessageSerial = publishedMessage.serial else {
             XCTFail("publishedMessage's serial is nil")
             return
         }
-        
+
         // Create message for delete with fields
         let messageDelete = publishedMessage.copy() as! ARTMessage
         messageDelete.serial = publishedMessageSerial
@@ -357,13 +357,13 @@ class MessageUpdatesDeletesTests: XCTestCase {
             XCTFail("updatedMessage is nil")
             return
         }
-        
+
         XCTAssertNotNil(updatedMessage)
         XCTAssertEqual(updatedMessage.serial, publishedMessageSerial)
         XCTAssertEqual(updatedMessage.name, "chat-message")
         XCTAssertEqual(updatedMessage.data as? String, "")
         XCTAssertEqual(updatedMessage.action, .delete)
-        
+
         // Verify version properties
         XCTAssertNotNil(updatedMessage.version)
         XCTAssertNotNil(updatedMessage.version?.serial)
@@ -501,9 +501,9 @@ class MessageUpdatesDeletesTests: XCTestCase {
         // Check the contents of appendMessage's returned UpdateDeleteResult
         XCTAssertEqual(updatedMessage.version?.serial, unwrappedAppendResult.versionSerial)
     }
-    
+
     // MARK: - RSL11: RestChannel#getMessage function
-    
+
     // RSL11a: Takes a first argument of a serial string of the message to be retrieved
     // RSL11b: The SDK must send a GET request to the endpoint /channels/{channelName}/messages/{serial}
     // RSL11c: Returns the decoded Message object for the specified message serial
@@ -511,9 +511,9 @@ class MessageUpdatesDeletesTests: XCTestCase {
         let test = Test()
         try _test__rest_and_realtime__getMessage(.rest(test))
     }
-    
+
     // MARK: - RTL28: RealtimeChannel#getMessage function
-    
+
     // RTL28: same as RestChannel#getMessage
     func test__RTL28__getMessage() throws {
         let test = Test()
@@ -523,7 +523,7 @@ class MessageUpdatesDeletesTests: XCTestCase {
         }
         try _test__rest_and_realtime__getMessage(env)
     }
-    
+
     // MARK: - RSL15: RestChannel#updateMessage function
 
     // RSL15a: Takes a first argument of a Message object (which must contain a populated serial field), optional MessageOperation, and optional params
@@ -551,7 +551,7 @@ class MessageUpdatesDeletesTests: XCTestCase {
         }
         try _test__rest_and_realtime__updateMessage__and__getMessageVersions(env)
     }
-    
+
     // MARK: - RSL15: RestChannel#deleteMessage function
 
     // RSL15a: Takes a first argument of a Message object (which must contain a populated serial field), optional MessageOperation, and optional params

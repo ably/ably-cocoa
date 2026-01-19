@@ -20,7 +20,7 @@ NSString *const ARTAuthOptionsMethodDefault = @"GET";
             [ARTException raise:@"Invalid key" format:@"%@ should be of the form <keyName>:<keySecret>", key];
         }
         else if (key != nil) {
-            _key = [key copy];            
+            _key = [key copy];
         }
         return [self initDefaults];
     }
@@ -52,7 +52,7 @@ NSString *const ARTAuthOptionsMethodDefault = @"GET";
 
 - (id)copyWithZone:(NSZone *)zone {
     ARTAuthOptions *options = [[[self class] allocWithZone:zone] init];
-    
+
     options.key = self.key;
     options.token = self.token;
     options.tokenDetails = self.tokenDetails;
@@ -94,7 +94,7 @@ NSString *const ARTAuthOptionsMethodDefault = @"GET";
 
 - (ARTAuthOptions *)mergeWith:(ARTAuthOptions *)precedenceOptions {
     ARTAuthOptions *merged = [self copy];
-    
+
     if (precedenceOptions.key)
         merged.key = precedenceOptions.key;
     if (precedenceOptions.authCallback)

@@ -15,16 +15,16 @@ class AblyTestsConfiguration: NSObject, XCTestObservation {
         super.init()
         XCTestObservationCenter.shared.addTestObserver(self)
     }
-    
+
     private var performedPreFirstTestCaseSetup = false
-    
+
     func testCaseWillStart(_ testCase: XCTestCase) {
         if !performedPreFirstTestCaseSetup {
             preFirstTestCaseSetup()
             performedPreFirstTestCaseSetup = true
         }
     }
-    
+
     private func preFirstTestCaseSetup() {
         // This is code that, when we were using the Quick testing
         // framework, was inside a `configuration.beforeSuite` hook,
@@ -63,7 +63,7 @@ class AblyTests {
     class func msgpackToData(_ data: Data) -> Data {
         let decoded = try! ARTMsgPackEncoder().decode(data)
         let encoded = try! ARTJsonEncoder().encode(decoded)
-        
+
         return encoded
     }
 
@@ -129,7 +129,7 @@ class AblyTests {
 
             app = try JSONUtility.jsonObject(data: responseData)
             testApplication = app
-            
+
             if debug {
                 print(app)
             }
@@ -316,7 +316,7 @@ class AblyTests {
         }
 
     }
-    
+
     class func loadCryptoTestRawData(_ fileName: String) -> (key: Data, iv: Data, jsonItems: [CryptoData.Item]) {
         let file = testResourcesPath + fileName + ".json";
         let json: CryptoData = try! JSONUtility.decode(path: pathForTestResource(file))
@@ -326,7 +326,7 @@ class AblyTests {
 
         return (keyData, ivData, json.items)
     }
-    
+
     class func loadCryptoTestData(_ fileName: String) -> (key: Data, iv: Data, items: [CryptoTestItem]) {
         let (keyData, ivData, jsonItems) = loadCryptoTestRawData(fileName)
         let items = jsonItems.map{ $0 }.map(CryptoTestItem.init)
@@ -373,7 +373,7 @@ class SynchronousHTTPClient: NSObject, URLSessionDelegate, URLSessionTaskDelegat
             callbackResponse = response
             callbackError = error
             requestCompleted = true
-        }) 
+        })
         task.resume()
 
         while !requestCompleted {
@@ -604,9 +604,9 @@ func getJWTToken(for test: Test, invalid: Bool = false, expiresIn: Int = 3600, c
         URLQueryItem(name: "capability", value: capability),
         URLQueryItem(name: "jwtType", value: jwtType),
         URLQueryItem(name: "encrypted", value: String(encrypted)),
-        URLQueryItem(name: "environment", value: getEnvironment()) 
+        URLQueryItem(name: "environment", value: getEnvironment())
     ]
-    
+
     let request = NSMutableURLRequest(url: urlComponents!.url!)
     let (responseData, _) = try SynchronousHTTPClient().perform(request)
     return String(data: responseData, encoding: String.Encoding.utf8)
@@ -625,7 +625,7 @@ public func delay(_ seconds: TimeInterval, closure: @escaping () -> Void) {
 }
 
 public func getEnvironment() -> String {
-    let b = Bundle(for: AblyTests.self)    
+    let b = Bundle(for: AblyTests.self)
     guard let env = b.infoDictionary!["ABLY_ENV"] as? String, env.count > 0 else {
         return "sandbox"
     }
@@ -672,23 +672,23 @@ enum Result<T> {
 func extractURL(_ request: URLRequest?) -> Result<URL> {
     guard let request = request
         else { return Result(error: "No request found") }
-    
+
     guard let url = request.url
         else { return Result(error: "Request has no URL defined") }
-    
+
     return Result.success(Box(url))
 }
 
 func extractBodyAsJSON(_ request: URLRequest?) -> Result<NSDictionary> {
     guard let request = request
         else { return Result(error: "No request found") }
-    
+
     guard let bodyData = request.httpBody
         else { return Result(error: "No HTTPBody") }
-    
+
     guard let json = try? JSONSerialization.jsonObject(with: bodyData, options: .mutableLeaves)
         else { return Result(error: "Invalid json") }
-    
+
     guard let httpBody = json as? NSDictionary
         else { return Result(error: "HTTPBody has invalid format") }
 
@@ -923,7 +923,7 @@ struct ErrorSimulator {
     var statusCode: Int = 401
     var shouldPerformRequest: Bool = false
     let stubData: Data?
-    
+
     init(value: Int, description: String, statusCode: Int, shouldPerformRequest: Bool, stubData: Data?) {
         self.value = value
         self.description = description
@@ -931,7 +931,7 @@ struct ErrorSimulator {
         self.shouldPerformRequest = shouldPerformRequest
         self.stubData = stubData
     }
-    
+
     init(value: Int, description: String, statusCode: Int, shouldPerformRequest: Bool, stubDataDict: [String: Any]? = nil) {
         self.value = value
         self.description = description
@@ -951,7 +951,7 @@ struct ErrorSimulator {
             self.stubData = jsonObject.data()
         }
     }
-    
+
     func stubResponse(_ url: URL) -> HTTPURLResponse? {
         return HTTPURLResponse(url: url, statusCode: statusCode, httpVersion: "HTTP/1.1", headerFields: [
             "Content-Length": String(stubData?.count ?? 0),
@@ -980,7 +980,7 @@ class MockHTTPExecutor: NSObject, ARTHTTPExecutor {
 
     func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) -> (ARTCancellable & NSObjectProtocol)? {
         self.requests.append(request)
-        
+
         if let simulatedError = errorSimulator, var _ = request.url {
             defer { errorSimulator = nil }
             callback?(nil, nil, simulatedError)
@@ -1109,7 +1109,7 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
             else {
                 callback?(simulatedError.stubResponse(requestURL), simulatedError.stubData, nil)
                 return nil
-            }            
+            }
         }
 
         let task = http.execute(request, completion: { response, data, error in
@@ -1272,7 +1272,7 @@ class TestProxyTransport: ARTWebSocketTransport {
             self.replacingAcksWithNacks = nil
         }
     }
-    
+
     func emulateTokenRevokationBeforeConnected() {
         setBeforeIncomingMessageModifier { protocolMessage in
             if protocolMessage.action == .connected {
@@ -1462,7 +1462,7 @@ extension Sequence where Iterator.Element == Data {
         let msgPackEncoder = ARTMsgPackEncoder()
         return map({ try! msgPackEncoder.decode($0) as! T })
     }
-    
+
 }
 
 func + <K,V> (left: Dictionary<K,V>, right: Dictionary<K,V>?) -> Dictionary<K,V> {
@@ -1547,7 +1547,7 @@ extension Data {
 
         return result.uppercased()
     }
-    
+
 }
 
 extension NSData {
@@ -1603,15 +1603,15 @@ extension String {
 }
 
 extension ARTRealtime {
-    
+
     var transportFactory: TestProxyTransportFactory? {
         self.internal.options.testOptions.transportFactory as? TestProxyTransportFactory
     }
-    
+
     func simulateLostConnection() {
         self.internal.onDisconnected()
     }
-    
+
     func simulateLostConnectionAndState() {
         //1. Abruptly disconnect
         //2. Change the `Connection#id` and `Connection#key` before the client
@@ -1641,7 +1641,7 @@ extension ARTRealtime {
             reachability.simulate(false)
         }
     }
-    
+
     func simulateNoInternetConnection(during timeout: TimeInterval? = nil) {
         guard let transportFactory = self.transportFactory else {
             fatalError("Expected test TestProxyTransportFactory")
@@ -1662,14 +1662,14 @@ extension ARTRealtime {
             reachability.simulate(true)
         }
     }
-    
+
     func simulateRestoreInternetConnection(after seconds: TimeInterval? = nil) {
         guard let transportFactory = self.transportFactory else {
             fatalError("Expected test TestProxyTransportFactory")
         }
         simulateRestoreInternetConnection(after: seconds, transportFactory: transportFactory)
     }
-    
+
     @discardableResult
     func waitUntilConnected() -> Bool {
         var connected = false
@@ -1681,11 +1681,11 @@ extension ARTRealtime {
         }
         return connected
     }
-    
+
     func waitForPendingMessages() {
         expect(self.internal.pendingMessages).toEventually(haveCount(0),timeout: testTimeout)
     }
-    
+
     func overrideConnectionStateTTL(_ ttl: TimeInterval) -> HookToken {
         return self.internal.testSuite_injectIntoMethod(before: NSSelectorFromString("connectionStateTtl")) {
             self.internal.connectionStateTtl = ttl
@@ -1699,7 +1699,7 @@ extension ARTRealtime {
         }
         self.connection.off()
     }
-    
+
     func requestPresenceSyncForChannel(_ channel: ARTRealtimeChannel) {
         let syncMessage = ARTProtocolMessage()
         syncMessage.action = .sync
@@ -1968,7 +1968,7 @@ extension HTTPURLResponse {
         //of the private NSDictionary subclass in CFNetwork directly
         return allHeaderFields as NSDictionary
     }
-    
+
     /**
      The value which corresponds to the given header
      field. Note that, in keeping with the HTTP RFC, HTTP header field
@@ -2037,7 +2037,7 @@ extension DispatchTimeInterval {
             fatalError("Unhandled DispatchTimeInterval unit.")
         }
     }
-    
+
     /// Return a new dispatch time interval computed from this one, incremented by the supplied amount, to no less than millisecond precision.
     func incremented(by interval: TimeInterval) -> DispatchTimeInterval {
         // interval is a TimeInterval which is a Double which is in SECONDS
@@ -2063,7 +2063,7 @@ extension DispatchTimeInterval {
 }
 
 extension ARTErrorCode {
-    
+
     var intValue: NSInteger {
         return NSInteger(rawValue)
     }
