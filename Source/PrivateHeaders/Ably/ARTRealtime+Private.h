@@ -86,8 +86,8 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 
 @interface ARTRealtimeInternal () <ARTRealtimeTransportDelegate, ARTAuthDelegate>
 
-@property (readonly, nonatomic) ARTEventEmitter<ARTEvent *, ARTConnectionStateChange *> *internalEventEmitter;
-@property (readonly, nonatomic) ARTEventEmitter<ARTEvent *, NSNull *> *connectedEventEmitter;
+@property (readonly, nonatomic) ARTEventEmitter *internalEventEmitter;
+@property (readonly, nonatomic) ARTEventEmitter *connectedEventEmitter;
 
 @property (readonly, nonatomic) NSMutableArray<void (^)(ARTRealtimeConnectionState, ARTErrorInfo *_Nullable)> *pendingAuthorizations;
 

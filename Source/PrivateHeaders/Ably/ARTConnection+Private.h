@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface ARTConnectionInternal : NSObject
+@interface ARTConnectionInternal : NSObject<ARTEventEmitterProtocol>
 
 @property (nullable, readonly, nonatomic) NSString *id;
 @property (nullable, readonly, nonatomic) NSString *key;
@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable ARTErrorInfo *)error_nosync;
 - (nullable NSString *)createRecoveryKey_nosync;
 
-@property (readonly, nonatomic) ARTEventEmitter<ARTEvent *, ARTConnectionStateChange *> *eventEmitter;
+@property (readonly, nonatomic) ARTEventEmitter *eventEmitter;
 @property(weak, nonatomic) ARTRealtimeInternal* realtime; // weak because realtime owns self
 
 - (void)setId:(NSString *_Nullable)newId;
@@ -69,7 +69,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Embeds an `ARTEventEmitter` object.
  */
-ART_EMBED_INTERFACE_EVENT_EMITTER(ARTRealtimeConnectionEvent, ARTConnectionStateChange *)
+//ART_EMBED_INTERFACE_EVENT_EMITTER(ARTRealtimeConnectionEvent, ARTConnectionStateChange *)
 
 @end
 

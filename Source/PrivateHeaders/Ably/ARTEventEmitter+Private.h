@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface ARTEventEmitter<EventType, ItemType> ()
+@interface ARTEventEmitter ()
 
 /**
  * Emits an event, calling registered listeners with the given event name and any other given arguments. If an exception is raised in any of the listeners, the exception is caught by the `ARTEventEmitter` and the exception is logged to the Ably logger.
@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param event The named event.
  * @param data The event payload.
  */
-- (void)emit:(nullable EventType)event with:(nullable ItemType)data;
+- (void)emit:(nullable id<ARTEventIdentification>)event with:(nullable id)data;
 
 @property (nonatomic, readonly) NSNotificationCenter *notificationCenter;
 @property (nonatomic, readonly) dispatch_queue_t queue;
@@ -41,14 +41,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface ARTPublicEventEmitter<EventType:id<ARTEventIdentification>, ItemType> : ARTEventEmitter<EventType, ItemType>
+@interface ARTPublicEventEmitter : ARTEventEmitter
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest logger:(ARTInternalLog *)logger;
 - (void)off_nosync;
 
 @end
 
-@interface ARTInternalEventEmitter<EventType:id<ARTEventIdentification>, ItemType> : ARTEventEmitter<EventType, ItemType>
+@interface ARTInternalEventEmitter : ARTEventEmitter
 
 - (instancetype)initWithQueue:(dispatch_queue_t)queue;
 - (instancetype)initWithQueues:(dispatch_queue_t)queue userQueue:(_Nullable dispatch_queue_t)userQueue;

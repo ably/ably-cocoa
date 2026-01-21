@@ -5,7 +5,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtimeAnnotationsInternal : NSObject<ARTRealtimeAnnotationsProtocol>
 
-@property (readonly, nonatomic) ARTEventEmitter<ARTEvent *, ARTAnnotation *> *eventEmitter;
+@property (readonly, nonatomic) ARTEventEmitter *eventEmitter;
 @property (readonly, weak, nonatomic) ARTRealtimeInternal *realtime; // weak because realtime owns self
 
 - (instancetype)initWithChannel:(ARTRealtimeChannelInternal *)channel logger:(ARTInternalLog *)logger;

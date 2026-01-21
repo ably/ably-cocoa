@@ -172,7 +172,8 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)off:(ARTChannelEvent)event listener:(nonnull ARTEventListener *)listener {
-    [self.underlyingChannel off:event listener:listener];
+//    [self.underlyingChannel off:event listener:listener];
+    NSAssert(false, @"TBC");
 }
 
 - (nonnull ARTEventListener *)on:(nonnull void (^)(ARTChannelStateChange * _Nonnull))cb {
@@ -180,7 +181,8 @@ NS_ASSUME_NONNULL_END
 }
 
 - (nonnull ARTEventListener *)on:(ARTChannelEvent)event callback:(nonnull void (^)(ARTChannelStateChange * _Nonnull))cb {
-    return [self.underlyingChannel on:event callback:cb];
+//    return [self.underlyingChannel on:event callback:cb];
+    NSAssert(false, @"TBC");
 }
 
 - (nonnull ARTEventListener *)once:(nonnull void (^)(ARTChannelStateChange * _Nonnull))cb {
@@ -188,7 +190,8 @@ NS_ASSUME_NONNULL_END
 }
 
 - (nonnull ARTEventListener *)once:(ARTChannelEvent)event callback:(nonnull void (^)(ARTChannelStateChange * _Nonnull))cb {
-    return [self.underlyingChannel once:event callback:cb];
+//    return [self.underlyingChannel once:event callback:cb];
+    NSAssert(false, @"TBC");
 }
 
 - (void)setOptions:(ARTRealtimeChannelOptions * _Nullable)options callback:(nullable ARTCallback)callback {

@@ -222,7 +222,7 @@ typedef NS_ENUM(NSUInteger, ARTNetworkState) {
     BOOL _resuming;
     BOOL _renewingToken;
     NSTimeInterval _immediateReconnectionDelay;
-    ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_pingEventEmitter;
+    ARTEventEmitter *_pingEventEmitter;
     NSDate *_connectionLostAt;
     NSDate *_lastActivity;
     Class _reachabilityClass;

@@ -6,7 +6,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTRealtimePresenceInternal : NSObject
 
 @property (nonatomic, readonly) NSString *connectionId;
-@property (readonly, nonatomic) ARTEventEmitter<ARTEvent *, ARTPresenceMessage *> *eventEmitter;
+@property (readonly, nonatomic) ARTEventEmitter *eventEmitter;
 
 - (instancetype)initWithChannel:(ARTRealtimeChannelInternal *)channel logger:(ARTInternalLog *)logger;
 - (void)_unsubscribe;

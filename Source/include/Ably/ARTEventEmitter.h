@@ -27,14 +27,8 @@ NS_SWIFT_SENDABLE
 @interface ARTEventListener : NSObject
 @end
 
-/**
- * A generic interface for event registration and delivery used in a number of the types in the Realtime client library. For example, the `ARTConnection` and `ARTRealtimeChannel` objects emit events for their state using the `ARTEventEmitter` pattern.
- */
 NS_SWIFT_SENDABLE
-@interface ARTEventEmitter<EventType:id<ARTEventIdentification>, ItemType> : NSObject
-
-/// :nodoc:
-- (instancetype)init UNAVAILABLE_ATTRIBUTE;
+@protocol ARTEventEmitterProtocol
 
 /**
  * Registers the provided listener for the specified event. If `on:callback:` is called more than once with the same listener and event, the listener is added multiple times to its listener registry. Therefore, as an example, assuming the same listener is registered twice using `on:callback:`, and an event is emitted once, the listener would be invoked twice.
@@ -44,7 +38,7 @@ NS_SWIFT_SENDABLE
  *
  * @return The event listener.
  */
-- (ARTEventListener *)on:(EventType)event callback:(void (^)(ItemType))callback;
+- (ARTEventListener *)on:(id)event callback:(void (^)(id))callback;
 
 /**
  * Registers the provided listener all events. If `on:` is called more than once with the same listener and event, the listener is added multiple times to its listener registry. Therefore, as an example, assuming the same listener is registered twice using `on:`, and an event is emitted once, the listener would be invoked twice.
@@ -53,7 +47,7 @@ NS_SWIFT_SENDABLE
  *
  * @return The event listener.
  */
-- (ARTEventListener *)on:(void (^)(ItemType))callback;
+- (ARTEventListener *)on:(void (^)(id))callback;
 
 /**
  * Registers the provided listener for the first occurrence of a single named event specified as the `event` argument. If `once:callback:` is called more than once with the same listener, the listener is added multiple times to its listener registry. Therefore, as an example, assuming the same listener is registered twice using `once:callback:`, and an event is emitted once, the listener would be invoked twice. However, all subsequent events emitted would not invoke the listener as `once:callback:` ensures that each registration is only invoked once.
@@ -63,7 +57,7 @@ NS_SWIFT_SENDABLE
  *
  * @return The event listener.
  */
-- (ARTEventListener *)once:(EventType)event callback:(void (^)(ItemType))callback;
+- (ARTEventListener *)once:(id)event callback:(void (^)(id))callback;
 
 /**
  * Registers the provided listener for the first event that is emitted. If `once:` is called more than once with the same listener, the listener is added multiple times to its listener registry. Therefore, as an example, assuming the same listener is registered twice using `once:`, and an event is emitted once, the listener would be invoked twice. However, all subsequent events emitted would not invoke the listener as `once:` ensures that each registration is only invoked once.
@@ -72,7 +66,7 @@ NS_SWIFT_SENDABLE
  *
  * @return The event listener.
  */
-- (ARTEventListener *)once:(void (^)(ItemType))callback;
+- (ARTEventListener *)once:(void (^)(id))callback;
 
 /**
  * Removes all registrations that match both the specified listener and the specified event.
@@ -80,7 +74,7 @@ NS_SWIFT_SENDABLE
  * @param event The named event.
  * @param listener The event listener.
  */
-- (void)off:(EventType)event listener:(ARTEventListener *)listener;
+- (void)off:(id)event listener:(ARTEventListener *)listener;
 
 /**
  * Deregisters the specified listener. Removes all registrations matching the given listener, regardless of whether they are associated with an event or not.
@@ -93,6 +87,18 @@ NS_SWIFT_SENDABLE
  * Deregisters all registrations, for all events and listeners.
  */
 - (void)off;
+
+@end
+
+
+/**
+ * A generic interface for event registration and delivery used in a number of the types in the Realtime client library. For example, the `ARTConnection` and `ARTRealtimeChannel` objects emit events for their state using the `ARTEventEmitter` pattern.
+ */
+NS_SWIFT_SENDABLE
+@interface ARTEventEmitter : NSObject<ARTEventEmitterProtocol>
+
+/// :nodoc:
+- (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
 @end
 

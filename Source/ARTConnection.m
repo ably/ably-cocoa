@@ -76,23 +76,23 @@
     [_internal off:listener];
 }
 
-- (void)off:(ARTRealtimeConnectionEvent)event listener:(nonnull ARTEventListener *)listener {
+- (void)off:(id)event listener:(nonnull ARTEventListener *)listener {
     [_internal off:event listener:listener];
 }
 
-- (nonnull ARTEventListener *)on:(nonnull ARTConnectionStateCallback)cb {
+- (nonnull ARTEventListener *)on:(void (^)(id))cb {
     return [_internal on:cb];
 }
 
-- (nonnull ARTEventListener *)on:(ARTRealtimeConnectionEvent)event callback:(nonnull ARTConnectionStateCallback)cb {
+- (nonnull ARTEventListener *)on:(id)event callback:(void (^)(id))cb {
     return [_internal on:event callback:cb];
 }
 
-- (nonnull ARTEventListener *)once:(nonnull ARTConnectionStateCallback)cb {
+- (nonnull ARTEventListener *)once:(void (^)(id))cb {
     return [_internal once:cb];
 }
 
-- (nonnull ARTEventListener *)once:(ARTRealtimeConnectionEvent)event callback:(nonnull ARTConnectionStateCallback)cb {
+- (nonnull ARTEventListener *)once:(id)event callback:(void (^)(id))cb {
     return [_internal once:event callback:cb];
 }
 
@@ -234,19 +234,19 @@ art_dispatch_sync(_queue, ^{
     _errorReason = errorReason;
 }
 
-- (ARTEventListener *)on:(ARTRealtimeConnectionEvent)event callback:(ARTConnectionStateCallback)cb {
-    return [_eventEmitter on:[ARTEvent newWithConnectionEvent:event] callback:cb];
+- (ARTEventListener *)on:(id)event callback:(void (^)(id))cb {
+    return [_eventEmitter on:[ARTEvent newWithConnectionEvent:[event integerValue]] callback:cb];
 }
 
-- (ARTEventListener *)on:(ARTConnectionStateCallback)cb {
+- (ARTEventListener *)on:(void (^)(id))cb {
     return [_eventEmitter on:cb];
 }
 
-- (ARTEventListener *)once:(ARTRealtimeConnectionEvent)event callback:(ARTConnectionStateCallback)cb {
-    return [_eventEmitter once:[ARTEvent newWithConnectionEvent:event] callback:cb];
+- (ARTEventListener *)once:(id)event callback:(void (^)(id))cb {
+    return [_eventEmitter once:[ARTEvent newWithConnectionEvent:[event integerValue]] callback:cb];
 }
 
-- (ARTEventListener *)once:(ARTConnectionStateCallback)cb {
+- (ARTEventListener *)once:(void (^)(id))cb {
     return [_eventEmitter once:cb];
 }
 
@@ -257,8 +257,8 @@ art_dispatch_sync(_queue, ^{
         [_eventEmitter off];
     }
 }
-- (void)off:(ARTRealtimeConnectionEvent)event listener:(ARTEventListener *)listener {
-    [_eventEmitter off:[ARTEvent newWithConnectionEvent:event] listener:listener];
+- (void)off:(id)event listener:(ARTEventListener *)listener {
+    [_eventEmitter off:[ARTEvent newWithConnectionEvent:[event integerValue]] listener:listener];
 }
 
 - (void)off:(ARTEventListener *)listener {

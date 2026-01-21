@@ -269,8 +269,8 @@
     #endif
     CFRunLoopTimerRef _attachTimer;
     CFRunLoopTimerRef _detachTimer;
-    ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_attachedEventEmitter;
-    ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_detachedEventEmitter;
+    ARTEventEmitter *_attachedEventEmitter;
+    ARTEventEmitter *_detachedEventEmitter;
     NSString * _Nullable _lastPayloadMessageId;
     BOOL _decodeFailureRecoveryInProgress;
 }

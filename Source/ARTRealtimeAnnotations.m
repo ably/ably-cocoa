@@ -89,7 +89,7 @@
     __weak ARTRealtimeChannelInternal *_channel; // weak because channel owns self
     __weak ARTRealtimeInternal *_realtime;
     dispatch_queue_t _userQueue;
-    ARTEventEmitter<ARTEvent *, ARTAnnotation *> *_eventEmitter;
+    ARTEventEmitter *_eventEmitter;
     ARTDataEncoder *_dataEncoder;
 }
 

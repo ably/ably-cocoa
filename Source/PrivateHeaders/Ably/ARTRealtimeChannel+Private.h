@@ -30,9 +30,9 @@ NS_ASSUME_NONNULL_BEGIN
 #endif
 
 #ifdef ABLY_SUPPORTS_PLUGINS
-@interface ARTRealtimeChannelInternal : ARTChannel <APRealtimeChannel>
+@interface ARTRealtimeChannelInternal : ARTChannel <ARTEventEmitterProtocol, APRealtimeChannel>
 #else
-@interface ARTRealtimeChannelInternal : ARTChannel
+@interface ARTRealtimeChannelInternal : ARTChannel <ARTEventEmitterProtocol>
 #endif
 
 @property (readonly) ARTRealtimePresenceInternal *presence;
@@ -62,9 +62,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, nonatomic, nullable) NSString *attachSerial;
 @property (readwrite, nonatomic, nullable) NSString *channelSerial; // CP2b
 @property (readonly, nullable, getter=getClientId) NSString *clientId;
-@property (readonly, nonatomic) ARTEventEmitter<ARTEvent *, ARTChannelStateChange *> *internalEventEmitter;
-@property (readonly, nonatomic) ARTEventEmitter<ARTEvent *, ARTChannelStateChange *> *statesEventEmitter;
-@property (readonly, nonatomic) ARTEventEmitter<id<ARTEventIdentification>, ARTMessage *> *messagesEventEmitter;
+@property (readonly, nonatomic) ARTEventEmitter *internalEventEmitter;
+@property (readonly, nonatomic) ARTEventEmitter *statesEventEmitter;
+@property (readonly, nonatomic) ARTEventEmitter *messagesEventEmitter;
 
 @property (readwrite, nonatomic) BOOL attachResume;
 

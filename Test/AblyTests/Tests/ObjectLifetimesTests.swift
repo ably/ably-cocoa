@@ -116,7 +116,7 @@ class ObjectLifetimesTests: XCTestCase {
         }
 
         waitUntil(timeout: testTimeout) { done in
-            client!.connection.on(.closed) { _ in
+            client!.connection.on(ARTRealtimeConnectionState.closed) { _ in
                 done()
             }
             client!.close()

@@ -101,7 +101,7 @@ NS_ASSUME_NONNULL_END
     // Dedicated to Protocol Message
     NSString *_protocolClientId;
     NSInteger _authorizationsCount;
-    ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_cancelationEventEmitter;
+    ARTEventEmitter *_cancelationEventEmitter;
 }
 
 - (instancetype)init:(ARTRestInternal *)rest withOptions:(ARTClientOptions *)options logger:(ARTInternalLog *)logger {

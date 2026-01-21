@@ -107,7 +107,7 @@ class PluginAPITests: XCTestCase {
         client.connect()
         var transport: TestProxyTransport!
         waitUntil(timeout: testTimeout) { done in
-            client.connection.once(.connected) { _ in
+            client.connection.once(ARTRealtimeConnectionState.connected) { _ in
                 transport = client.internal.transport as? TestProxyTransport
                 done()
             }
@@ -162,7 +162,7 @@ class PluginAPITests: XCTestCase {
         client.connect()
         var transport: TestProxyTransport!
         waitUntil(timeout: testTimeout) { done in
-            client.connection.once(.connected) { _ in
+            client.connection.once(ARTRealtimeConnectionState.connected) { _ in
                 transport = client.internal.transport as? TestProxyTransport
                 done()
             }

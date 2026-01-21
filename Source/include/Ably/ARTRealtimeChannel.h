@@ -158,7 +158,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * `ARTRealtimeChannel` implements `ARTEventEmitter` and emits `ARTChannelEvent` events, where a `ARTChannelEvent` is either a `ARTRealtimeChannelState` or an `ARTChannelEventUpdate`.
  */
-ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
+//ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
 
 @end
 
@@ -185,7 +185,7 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
  * Also implements `ARTEventEmitter` interface and emits `ARTChannelEvent` events, where a `ARTChannelEvent` is either a `ARTRealtimeChannelState` or an `ARTChannelEvent.ARTChannelEventUpdate`.
  */
 NS_SWIFT_SENDABLE
-@interface ARTRealtimeChannel : NSObject <ARTRealtimeChannelProtocol>
+@interface ARTRealtimeChannel : NSObject <ARTRealtimeChannelProtocol, ARTEventEmitterProtocol>
 
 /**
  * An `ARTRealtimePresence` object.

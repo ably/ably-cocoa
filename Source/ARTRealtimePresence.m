@@ -177,11 +177,11 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
     __weak ARTRealtimeInternal *_realtime;
     dispatch_queue_t _userQueue;
     NSMutableArray<ARTQueuedMessage *> *_pendingPresence;
-    ARTEventEmitter<ARTEvent *, ARTPresenceMessage *> *_eventEmitter;
+    ARTEventEmitter *_eventEmitter;
     ARTDataEncoder *_dataEncoder;
     
     ARTPresenceSyncState _syncState;
-    ARTEventEmitter<ARTEvent * /*ARTSyncState*/, id> *_syncEventEmitter;
+    ARTEventEmitter *_syncEventEmitter;
     
     NSMutableDictionary<NSString *, ARTPresenceMessage *> *_members; // RTP2
     NSMutableDictionary<NSString *, ARTPresenceMessage *> *_internalMembers; // RTP17h
