@@ -86,6 +86,10 @@
     [self publish:name message:[[ARTMessage alloc] initWithName:name data:data] extras:extras callback:callback];
 }
 
+- (void)publish:(nullable NSString *)name data:(nullable id)data resultCallback:(nullable ARTPublishResultCallback)resultCallback {
+    [self publish:name message:[[ARTMessage alloc] initWithName:name data:data] extras:nil resultCallback:resultCallback];
+}
+
 - (void)publish:(NSString *)name data:(id)data clientId:(NSString *)clientId {
     [self publish:name data:data clientId:clientId callback:nil];
 }
@@ -103,11 +107,19 @@
 }
 
 - (void)publish:(NSString *)name message:(ARTMessage *)message extras:(id<ARTJsonCompatible>)extras callback:(ARTCallback)callback {
+    // Wrap callback to discard the result and only pass the error
+    ARTPublishResultCallback resultCallback = callback ? ^(ARTPublishResult *result, ARTErrorInfo *error) {
+        callback(error);
+    } : nil;
+    [self publish:name message:message extras:extras resultCallback:resultCallback];
+}
+
+- (void)publish:(NSString *)name message:(ARTMessage *)message extras:(id<ARTJsonCompatible>)extras resultCallback:(ARTPublishResultCallback)resultCallback {
     NSError *error = nil;
     message.extras = extras;
     ARTMessage *messagesWithDataEncoded = [self encodeMessageIfNeeded:message error:&error];
     if (error) {
-        if (callback) callback([ARTErrorInfo createFromNSError:error]);
+        if (resultCallback) resultCallback(nil, [ARTErrorInfo createFromNSError:error]);
         return;
     }
     
@@ -115,13 +127,13 @@
     if ([self exceedMaxSize:@[message]]) {
         ARTErrorInfo *sizeError = [ARTErrorInfo createWithCode:ARTErrorMaxMessageLengthExceeded
                                                        message:@"Maximum message length exceeded."];
-        if (callback) {
-            callback(sizeError);
+        if (resultCallback) {
+            resultCallback(nil, sizeError);
         }
         return;
     }
     
-    [self internalPostMessages:messagesWithDataEncoded callback:callback];
+    [self internalPostMessages:messagesWithDataEncoded callback:resultCallback];
 }
 
 - (void)publish:(NSArray<ARTMessage *> *)messages {
@@ -129,6 +141,14 @@
 }
 
 - (void)publish:(NSArray<ARTMessage *> *)messages callback:(nullable ARTCallback)callback {
+    // Wrap callback to discard the result and only pass the error
+    ARTPublishResultCallback resultCallback = callback ? ^(ARTPublishResult *result, ARTErrorInfo *error) {
+        callback(error);
+    } : nil;
+    [self publish:messages resultCallback:resultCallback];
+}
+
+- (void)publish:(NSArray<ARTMessage *> *)messages resultCallback:(nullable ARTPublishResultCallback)resultCallback {
     NSError *error = nil;
 
     NSMutableArray<ARTMessage *> *messagesWithDataEncoded = [NSMutableArray new];
@@ -137,8 +157,8 @@
     }
     
     if (error) {
-        if (callback) {
-            callback([ARTErrorInfo createFromNSError:error]);
+        if (resultCallback) {
+            resultCallback(nil, [ARTErrorInfo createFromNSError:error]);
         }
         return;
     }
@@ -147,13 +167,13 @@
     if ([self exceedMaxSize:messages]) {
         ARTErrorInfo *sizeError = [ARTErrorInfo createWithCode:ARTErrorMaxMessageLengthExceeded
                                                        message:@"Maximum message length exceeded."];
-        if (callback) {
-            callback(sizeError);
+        if (resultCallback) {
+            resultCallback(nil, sizeError);
         }
         return;
     }
     
-    [self internalPostMessages:messagesWithDataEncoded callback:callback];
+    [self internalPostMessages:messagesWithDataEncoded callback:resultCallback];
 }
 
 /// Sends a mutation request to edit the given user-supplied message (i.e. one passed to one of updateMessage, appendMessage, or deleteMessage), per RSL15.
@@ -247,7 +267,7 @@
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
 }
 
-- (void)internalPostMessages:(id)data callback:(ARTCallback)callback {
+- (void)internalPostMessages:(id)data callback:(ARTPublishResultCallback)callback {
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
 }
 

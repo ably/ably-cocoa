@@ -72,12 +72,20 @@ NS_ASSUME_NONNULL_END
     [self.underlyingChannel publish:messages callback:callback];
 }
 
+- (void)publish:(nonnull NSArray<ARTMessage *> *)messages resultCallback:(nullable ARTPublishResultCallback)resultCallback {
+    [self.underlyingChannel publish:messages resultCallback:resultCallback];
+}
+
 - (void)publish:(nullable NSString *)name data:(nullable id)data {
     [self.underlyingChannel publish:name data:data];
 }
 
 - (void)publish:(nullable NSString *)name data:(nullable id)data callback:(nullable ARTCallback)callback {
     [self.underlyingChannel publish:name data:data callback:callback];
+}
+
+- (void)publish:(nullable NSString *)name data:(nullable id)data resultCallback:(nullable ARTPublishResultCallback)resultCallback {
+    [self.underlyingChannel publish:name data:data resultCallback:resultCallback];
 }
 
 - (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(nonnull NSString *)clientId {

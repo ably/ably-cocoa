@@ -13,6 +13,7 @@
 @class ARTPushChannelSubscription;
 @class ARTLocalDevice;
 @class ARTUpdateDeleteResult;
+@class ARTPublishResult;
 
 @protocol ARTPushRecipient;
 
@@ -86,6 +87,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 // UpdateDeleteResult
 - (nullable ARTUpdateDeleteResult *)decodeUpdateDeleteResult:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
+
+// PublishResult
+- (nullable ARTPublishResult *)decodePublishResult:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
 
 - (nullable NSArray<ARTDeviceDetails *> *)decodeDevicesDetails:(NSData *)data error:(NSError * __autoreleasing *)error;
 - (nullable ARTDeviceIdentityTokenDetails *)decodeDeviceIdentityTokenDetails:(NSData *)data error:(NSError * __autoreleasing *)error;

@@ -41,25 +41,79 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)publish:(nullable NSString *)name data:(nullable id)data callback:(nullable ARTCallback)callback;
 
-/// :nodoc: TODO: docstring
+/**
+ * Publishes a single message to the channel with the given event name and payload. A callback may optionally be passed in to this call to be notified of success or failure of the operation. When publish is called with this client library, it won't attempt to implicitly attach to the channel, so long as [transient publishing](https://ably.com/docs/realtime/channels#transient-publish) is available in the library. Otherwise, the client will implicitly attach.
+ *
+ * @param name The name of the message.
+ * @param data The payload of the message.
+ * @param resultCallback A success or failure callback function. On success, receives an `ARTPublishResult` containing the serial of the published message.
+ */
+- (void)publish:(nullable NSString *)name data:(nullable id)data resultCallback:(nullable ARTPublishResultCallback)resultCallback;
+
+/**
+ * Publishes a single message to the channel with the given event name, payload, and `clientId`. When publish is called with this client library, it won't attempt to implicitly attach to the channel, so long as [transient publishing](https://ably.com/docs/realtime/channels#transient-publish) is available in the library. Otherwise, the client will implicitly attach.
+ *
+ * @param name The name of the message.
+ * @param data The payload of the message.
+ * @param clientId The ``ARTMessage/clientId`` of the message.
+ */
 - (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId;
 
-/// :nodoc: TODO: docstring
+/**
+ * Publishes a single message to the channel with the given event name, payload, and `clientId`. A callback may optionally be passed in to this call to be notified of success or failure of the operation. When publish is called with this client library, it won't attempt to implicitly attach to the channel, so long as [transient publishing](https://ably.com/docs/realtime/channels#transient-publish) is available in the library. Otherwise, the client will implicitly attach.
+ *
+ * @param name The name of the message.
+ * @param data The payload of the message.
+ * @param clientId The ``ARTMessage/clientId`` of the message.
+ * @param callback A success or failure callback function.
+ */
 - (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId callback:(nullable ARTCallback)callback;
 
-/// :nodoc: TODO: docstring
+/**
+ * Publishes a single message to the channel with the given event name, payload, and `extras`. When publish is called with this client library, it won't attempt to implicitly attach to the channel, so long as [transient publishing](https://ably.com/docs/realtime/channels#transient-publish) is available in the library. Otherwise, the client will implicitly attach.
+ *
+ * @param name The name of the message.
+ * @param data The payload of the message.
+ * @param extras The ``ARTMessage/extras`` of the message.
+ */
 - (void)publish:(nullable NSString *)name data:(nullable id)data extras:(nullable id<ARTJsonCompatible>)extras;
 
-/// :nodoc: TODO: docstring
+/**
+ * Publishes a single message to the channel with the given event name, payload, and `extras`. A callback may optionally be passed in to this call to be notified of success or failure of the operation. When publish is called with this client library, it won't attempt to implicitly attach to the channel, so long as [transient publishing](https://ably.com/docs/realtime/channels#transient-publish) is available in the library. Otherwise, the client will implicitly attach.
+ *
+ * @param name The name of the message.
+ * @param data The payload of the message.
+ * @param extras The ``ARTMessage/extras`` of the message.
+ * @param callback A success or failure callback function.
+ */
 - (void)publish:(nullable NSString *)name data:(nullable id)data extras:(nullable id<ARTJsonCompatible>)extras callback:(nullable ARTCallback)callback;
 
-/// :nodoc: TODO: docstring
+/**
+ * Publishes a single message to the channel with the given event name, payload, `clientId`, and `extras`. When publish is called with this client library, it won't attempt to implicitly attach to the channel, so long as [transient publishing](https://ably.com/docs/realtime/channels#transient-publish) is available in the library. Otherwise, the client will implicitly attach.
+ *
+ * @param name The name of the message.
+ * @param data The payload of the message.
+ * @param clientId The ``ARTMessage/clientId`` of the message.
+ * @param extras The ``ARTMessage/extras`` of the message.
+ */
 - (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId extras:(nullable id<ARTJsonCompatible>)extras;
 
-/// :nodoc: TODO: docstring
+/**
+ * Publishes a single message to the channel with the given event name, payload, `clientId`, and `extras`. A callback may optionally be passed in to this call to be notified of success or failure of the operation. When publish is called with this client library, it won't attempt to implicitly attach to the channel, so long as [transient publishing](https://ably.com/docs/realtime/channels#transient-publish) is available in the library. Otherwise, the client will implicitly attach.
+ *
+ * @param name The name of the message.
+ * @param data The payload of the message.
+ * @param clientId The ``ARTMessage/clientId`` of the message.
+ * @param extras The ``ARTMessage/extras`` of the message.
+ * @param callback A success or failure callback function.
+ */
 - (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId extras:(nullable id<ARTJsonCompatible>)extras callback:(nullable ARTCallback)callback;
 
-/// :nodoc: TODO: docstring
+/**
+ * Publishes an array of messages to the channel.
+ *
+ * @param messages An array of `ARTMessage` objects.
+ */
 - (void)publish:(NSArray<ARTMessage *> *)messages;
 
 /**
@@ -69,6 +123,14 @@ NS_ASSUME_NONNULL_BEGIN
  * @param callback A success or failure callback function.
  */
 - (void)publish:(NSArray<ARTMessage *> *)messages callback:(nullable ARTCallback)callback;
+
+/**
+ * Publishes an array of messages to the channel. A callback may optionally be passed in to this call to be notified of success or failure of the operation.
+ *
+ * @param messages An array of `ARTMessage` objects.
+ * @param resultCallback A success or failure callback function. On success, receives an `ARTPublishResult` containing the serials of the published messages.
+ */
+- (void)publish:(NSArray<ARTMessage *> *)messages resultCallback:(nullable ARTPublishResultCallback)resultCallback;
 
 /**
  * Publishes an update to existing message with shallow mixin semantics. Non-`nil` `name`, `data`, and `extras` properties in the provided message will replace the corresponding fields in the existing message, while `nil` properties will be left unchanged. Note that this publishes an update, it does not mutate the original message if passed in.
