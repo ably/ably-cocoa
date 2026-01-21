@@ -9,7 +9,7 @@ NS_ASSUME_NONNULL_BEGIN
  If for some reasons new URL constructed by URLComponents is `nil`, old URL is a valiid URL for this request.
  */
 - (void)replaceHostWith:(NSString *)host;
-- (void)appendQueryItem:(NSURLQueryItem *)item;
+- (void)setQueryItemNamed:(NSString *)name withValue:(NSString *)value;
 
 @end
 

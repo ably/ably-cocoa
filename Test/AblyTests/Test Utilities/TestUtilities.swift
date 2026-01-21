@@ -1541,7 +1541,35 @@ extension String {
     func replace(_ value: String, withString string: String) -> String {
         return self.replacingOccurrences(of: value, with: string, options: NSString.CompareOptions.literal, range: nil)
     }
-
+    
+    func substring(after: String) -> String? {
+        guard let range = self.range(of: after) else {
+            return nil
+        }
+        let startIndex = range.upperBound
+        return String(self[startIndex...])
+    }
+    
+    func substring(before: String) -> String? {
+        guard let range = self.range(of: before) else {
+            return nil
+        }
+        let endIndex = range.lowerBound
+        return String(self[..<endIndex])
+    }
+    
+    func substring(between: String, andString: String) -> String? {
+        guard let startRange = self.range(of: between) else {
+            return nil
+        }
+        let searchStartIndex = startRange.upperBound
+        let remainingString = String(self[searchStartIndex...])
+        guard let endRange = remainingString.range(of: andString) else {
+            return nil
+        }
+        let endIndex = endRange.lowerBound
+        return String(remainingString[..<endIndex])
+    }
 }
 
 extension ARTRealtime {

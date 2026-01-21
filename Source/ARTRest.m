@@ -368,7 +368,7 @@ NS_ASSUME_NONNULL_END
                 requestId = [[randomId dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:0];
             }
             
-            [mutableRequest appendQueryItem:[NSURLQueryItem queryItemWithName:@"request_id" value:requestId]];
+            [mutableRequest setQueryItemNamed:@"request_id" withValue:requestId];
         }
         
         // RSC15f - reset the successed fallback host on fallbackRetryTimeout expiration
@@ -464,7 +464,7 @@ NS_ASSUME_NONNULL_END
                     task = [self executeRequest:newRequest
                                       fallbacks:blockFallbacks
                                         retries:retries + 1
-                              originalRequestId:originalRequestId
+                              originalRequestId:requestId
                                wrapperSDKAgents:wrapperSDKAgents
                                      completion:callback];
                     return;
