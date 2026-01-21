@@ -1,5 +1,31 @@
 # Change Log
 
+## [1.2.57](https://github.com/ably/ably-cocoa/tree/1.2.57)
+
+### What's Changed
+
+This release introduces new overloads of `publish()` that return the `serial` of the published message(s). This simplifies the scenario in which a client wishes to perform an update to a message that it previously published.
+
+These new overloads are differentiated from the existing ones by:
+
+- a different argument label for the callback (`resultCallback` instead of `callback`)
+- a different number of arguments for the callback (two instead of one)
+
+If you have any existing calls to `publish()`, they should be unaffected by the introduction of these new overloads. 
+
+To call these new overloads in Swift, you can simply pass a trailing closure which accepts two arguments:
+
+```swift
+channel.publish("foo", data: nil) { publishResult, error in
+  // publishResult.serials contains the serial of the published message
+  // …
+}
+```
+
+For more information, see the [documentation on updating and deleting messages](https://ably.com/docs/messages/updates-deletes).
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.56...1.2.57
+
 ## [1.2.56](https://github.com/ably/ably-cocoa/tree/1.2.56)
 
 ## What's Changed
