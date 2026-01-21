@@ -810,8 +810,14 @@ art_dispatch_sync(_queue, ^{
     self.modes = message.channelModes;
 
 #ifdef ABLY_SUPPORTS_PLUGINS
-    [self.realtime.options.liveObjectsPlugin nosync_onChannelAttached:self
-                                                           hasObjects:message.hasObjects];
+    if ([self.realtime.options.liveObjectsPlugin respondsToSelector:@selector(nosync_onChannelAttached:hasObjects:resumed:)]) {
+        [self.realtime.options.liveObjectsPlugin nosync_onChannelAttached:self
+                                                               hasObjects:message.hasObjects
+                                                                  resumed:message.resumed];
+    } else {
+        [self.realtime.options.liveObjectsPlugin nosync_onChannelAttached:self
+                                                               hasObjects:message.hasObjects];
+    }
 #endif
 
     if (state == ARTRealtimeChannelAttached) {
