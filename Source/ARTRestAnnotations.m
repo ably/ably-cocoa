@@ -149,9 +149,6 @@ NS_ASSUME_NONNULL_END
                                                              name:outboundAnnotation.name
                                                             count:outboundAnnotation.count
                                                              data:outboundAnnotation.data
-                                                         encoding:nil
-                                                        timestamp:nil
-                                                           serial:nil
                                                     messageSerial:messageSerial // RSAN1c2
                                                              type:outboundAnnotation.type
                                                            extras:outboundAnnotation.extras];

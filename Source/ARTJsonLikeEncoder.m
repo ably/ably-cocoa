@@ -478,7 +478,7 @@
                                                             count:[input artNumber:@"count"]
                                                              data:[input objectForKey:@"data"]
                                                          encoding:[input artString:@"encoding"]
-                                                        timestamp:[input artTimestamp:@"timestamp"]
+                                                        timestamp:[input artTimestamp:@"timestamp"] ?: NSDate.date // see https://github.com/ably/ably-cocoa/issues/2124
                                                            serial:[input artString:@"serial"]
                                                     messageSerial:[input artString:@"messageSerial"]
                                                              type:[input artString:@"type"]
