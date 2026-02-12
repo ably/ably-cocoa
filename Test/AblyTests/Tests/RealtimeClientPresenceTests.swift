@@ -1,4 +1,5 @@
 import Ably
+import CommonCrypto
 import Foundation
 import Nimble
 import XCTest
@@ -3880,4 +3881,115 @@ class RealtimeClientPresenceTests: XCTestCase {
             client.connect()
         }
     }
+
+    // TP3i
+    func test__119__Presence__presence_message_attributes__extras_should_be_populated_from_user_claims_in_JWT() throws {
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+
+        guard let keyParts = options.key?.components(separatedBy: ":"),
+              keyParts.count == 2 else {
+            XCTFail("Invalid API key")
+            return
+        }
+        let keyName = keyParts[0]
+        let keySecret = keyParts[1]
+
+        let channelName = test.uniqueChannelName()
+        let userClaimValue = "admin"
+
+        // Build an Ably JWT with a user claim for the channel
+        let now = Int(Date().timeIntervalSince1970)
+        let claims: [String: Any] = [
+            "iat": now,
+            "exp": now + 3600,
+            "x-ably-capability": "{\"*\":[\"*\"]}",
+            "x-ably-clientId": "jwtClient",
+            "ably.channel.\(channelName)": userClaimValue,
+        ]
+        let jwtToken = try signJWT(claims: claims, keyName: keyName, keySecret: keySecret)
+
+        // Client 1 subscribes to presence on the channel
+        let subscribeOptions = try AblyTests.commonAppSetup(for: test)
+        // Disable channel name prefixing so both clients use the same channel name,
+        // matching the JWT claim's channel name exactly.
+        subscribeOptions.testOptions.channelNamePrefix = nil
+        let client1 = AblyTests.newRealtime(subscribeOptions).client
+        defer { client1.dispose(); client1.close() }
+        let channel1 = client1.channels.get(channelName)
+        attachAndWaitForInitialPresenceSyncToComplete(client: client1, channel: channel1)
+
+        // Client 2 connects with the JWT and enters presence
+        let jwtOptions = try AblyTests.clientOptions(for: test)
+        jwtOptions.token = jwtToken
+        let client2 = ARTRealtime(options: jwtOptions)
+        defer { client2.dispose(); client2.close() }
+        let channel2 = client2.channels.get(channelName)
+
+        waitUntil(timeout: testTimeout) { done in
+            channel1.presence.subscribe(.enter) { message in
+                XCTAssertEqual(message.clientId, "jwtClient")
+
+                guard let extras = message.extras as? NSDictionary else {
+                    XCTFail("extras should not be nil on presence message")
+                    done()
+                    return
+                }
+
+                let userClaim = extras["userClaim"] as? String
+                XCTAssertEqual(userClaim, userClaimValue)
+                done()
+            }
+
+            channel2.presence.enter("online") { error in
+                if let error = error {
+                    XCTFail("presence.enter failed: \(error)")
+                    done()
+                    return
+                }
+            }
+        }
+    }
+}
+
+// MARK: - JWT Signing Helper
+
+private func signJWT(claims: [String: Any], keyName: String, keySecret: String) throws -> String {
+    let header: [String: Any] = [
+        "typ": "JWT",
+        "alg": "HS256",
+        "kid": keyName,
+    ]
+
+    let headerData = try JSONSerialization.data(withJSONObject: header)
+    let claimsData = try JSONSerialization.data(withJSONObject: claims)
+
+    let headerBase64 = base64urlEncode(headerData)
+    let claimsBase64 = base64urlEncode(claimsData)
+
+    let signingInput = "\(headerBase64).\(claimsBase64)"
+    guard let signingInputData = signingInput.data(using: .utf8),
+          let keyData = keySecret.data(using: .utf8) else {
+        throw NSError(domain: "test.ably.io", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to encode JWT signing input"])
+    }
+
+    var hmac = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
+    signingInputData.withUnsafeBytes { inputBytes in
+        keyData.withUnsafeBytes { keyBytes in
+            CCHmac(CCHmacAlgorithm(kCCHmacAlgSHA256),
+                   keyBytes.baseAddress, keyData.count,
+                   inputBytes.baseAddress, signingInputData.count,
+                   &hmac)
+        }
+    }
+    let signatureBase64 = base64urlEncode(Data(hmac))
+
+    return "\(headerBase64).\(claimsBase64).\(signatureBase64)"
+}
+
+private func base64urlEncode(_ data: Data) -> String {
+    return data.base64EncodedString()
+        .replacingOccurrences(of: "+", with: "-")
+        .replacingOccurrences(of: "/", with: "_")
+        .replacingOccurrences(of: "=", with: "")
 }
