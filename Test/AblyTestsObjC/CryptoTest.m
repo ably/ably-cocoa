@@ -28,7 +28,7 @@
         [[ARTCipherParams alloc] initWithAlgorithm:@"aes" key:key iv:iv];
     ARTInternalLog *const logger = [[ARTInternalLog alloc] initWithCore:[[ARTMockInternalLogCore alloc] init]];
     id<ARTChannelCipher> cipher = [ARTCrypto cipherWithParams:params logger:logger];
-    
+
     // Prepare message data.
     const NSUInteger maxLength = 70;
     UInt8 messageData[maxLength];
@@ -43,7 +43,7 @@
         NSData *const dIn = [NSData dataWithBytes:&messageData length:i];
         NSData * dOut;
         XCTAssertEqual(ARTStateOk, [cipher encrypt:dIn output:&dOut].state);
-        
+
         // Decrypt the encrypted data and verify the result is the same as what
         // we submitted for encryption.
         NSData * dVerify;

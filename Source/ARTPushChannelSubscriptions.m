@@ -72,13 +72,13 @@
             });
         };
     }
-    
+
 #if TARGET_OS_IOS
     ARTLocalDevice *local = _rest.device;
 #else
     ARTLocalDevice *local = nil;
 #endif
-    
+
     art_dispatch_async(_queue, ^{
         NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"] resolvingAgainstBaseURL:NO];
         if (self->_rest.options.pushFullWait) {
@@ -89,7 +89,7 @@
         request.HTTPBody = [[self->_rest defaultEncoder] encodePushChannelSubscription:channelSubscription error:nil];
         [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
         [request setDeviceAuthentication:channelSubscription.deviceId localDevice:local];
-        
+
         ARTLogDebug(self->_logger, @"save channel subscription with request %@", request);
         [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (response.statusCode == 200 /*Ok*/ || response.statusCode == 201 /*Created*/) {
@@ -119,12 +119,12 @@
             });
         };
     }
-    
+
     art_dispatch_async(_queue, ^{
         NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channels"] resolvingAgainstBaseURL:NO];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
         request.HTTPMethod = @"GET";
-        
+
         ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **error) {
             return [self->_rest.encoders[response.MIMEType] decode:data error:error];
         };
@@ -141,13 +141,13 @@
             });
         };
     }
-    
+
     art_dispatch_async(_queue, ^{
         NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"] resolvingAgainstBaseURL:NO];
         components.queryItems = [params art_asURLQueryItems];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
         request.HTTPMethod = @"GET";
-        
+
         ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **error) {
             return [self->_rest.encoders[response.MIMEType] decodePushChannelSubscriptions:data error:error];
         };
@@ -164,7 +164,7 @@
             });
         };
     }
-    
+
     art_dispatch_async(_queue, ^{
         if ((subscription.deviceId && subscription.clientId) || (!subscription.deviceId && !subscription.clientId)) {
             callback([ARTErrorInfo createWithCode:0 message:@"ARTChannelSubscription cannot be for both a deviceId and a clientId"]);
@@ -190,7 +190,7 @@
             });
         };
     }
-    
+
     art_dispatch_async(_queue, ^{
         [self _removeWhere:params wrapperSDKAgents:wrapperSDKAgents callback:callback];
     });
@@ -207,7 +207,7 @@
 #if TARGET_OS_IOS
     [request setDeviceAuthentication:[params objectForKey:@"deviceId"] localDevice:_rest.device_nosync];
 #endif
-    
+
     ARTLogDebug(_logger, @"remove channel subscription with request %@", request);
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode == 200 /*Ok*/ || response.statusCode == 204 /*not returning any content*/) {

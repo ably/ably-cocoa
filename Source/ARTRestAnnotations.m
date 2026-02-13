@@ -126,7 +126,7 @@ NS_ASSUME_NONNULL_END
             });
         };
     }
-    
+
     // RSAN1a1: Message object must contain a populated serial field
     if (messageSerial == nil) {
         if (callback) {
@@ -134,14 +134,14 @@ NS_ASSUME_NONNULL_END
         }
         return;
     }
-    
+
     // RSAN1c4: generate annotation identifier if `idempotentRestPublishing` is enabled and id not provided
     NSString *annotationId = outboundAnnotation.id;
     if (!annotationId && _channel.rest.options.idempotentRestPublishing) {
         NSData *baseIdData = [ARTCrypto generateSecureRandomData:ARTIdempotentLibraryGeneratedIdLength];
         annotationId = [NSString stringWithFormat:@"%@:0", [baseIdData base64EncodedStringWithOptions:0]];
     }
-    
+
     // Convert ARTOutboundAnnotation to ARTAnnotation for internal processing
     ARTAnnotation *annotation = [[ARTAnnotation alloc] initWithId:annotationId
                                                            action:action // RSAN1c1
@@ -165,11 +165,11 @@ art_dispatch_async(_queue, ^{
         }
         return;
     }
-    
+
     // Validate the annotation size
     NSInteger annotationSize = [annotationToPublish annotationSize];
     NSInteger maxSize = [ARTDefault maxMessageSize];
-    
+
     if (annotationSize > maxSize) {
         if (callback) {
             callback([ARTErrorInfo createWithCode:ARTErrorMaxMessageLengthExceeded
@@ -177,7 +177,7 @@ art_dispatch_async(_queue, ^{
         }
         return;
     }
-    
+
     NSData *encodedAnnotation = [self->_channel.rest.defaultEncoder encodeAnnotations:@[annotationToPublish] error:&encodeError];
     if (encodeError) {
         if (callback) {
@@ -185,23 +185,23 @@ art_dispatch_async(_queue, ^{
         }
         return;
     }
-    
+
     // Construct URL for the annotation endpoint
     NSString *path = [NSString stringWithFormat:@"%@/messages/%@/annotations", [self->_channel getBasePath], [messageSerial stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]]];
-    
+
     NSURL *url = [NSURL URLWithString:path];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     request.HTTPMethod = @"POST";
     request.HTTPBody = encodedAnnotation;
-    
+
     if (self->_channel.rest.defaultEncoding) {
         [request setValue:self->_channel.rest.defaultEncoding forHTTPHeaderField:@"Content-Type"];
     }
-    
+
     ARTLogDebug(self->_logger, @"RS:%p CH:%p (%@) publish annotation %@",
                 self->_channel.rest, self->_channel, self->_channel.name,
                 [[NSString alloc] initWithData:encodedAnnotation encoding:NSUTF8StringEncoding]);
-    
+
     [self->_channel.rest executeRequest:request
                          withAuthOption:ARTAuthenticationOn
                        wrapperSDKAgents:nil
@@ -235,7 +235,7 @@ art_dispatch_async(_queue, ^{
             });
         };
     }
-    
+
     // RSAN3a: Message object must contain a populated serial field
     if (messageSerial == nil) {
         if (callback) {
@@ -243,10 +243,10 @@ art_dispatch_async(_queue, ^{
         }
         return;
     }
-    
+
 art_dispatch_async(_queue, ^{
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString: [NSString stringWithFormat:@"%@/messages/%@/annotations", [self->_channel getBasePath], [messageSerial stringByAddingPercentEncodingWithAllowedCharacters:NSCharacterSet.URLPathAllowedCharacterSet]]] resolvingAgainstBaseURL:YES];
-    
+
     // Add query parameters
     NSMutableArray<NSURLQueryItem *> *queryItems = [NSMutableArray new];
     if (query) {
@@ -255,13 +255,13 @@ art_dispatch_async(_queue, ^{
     if (queryItems.count > 0) {
         components.queryItems = queryItems;
     }
-    
+
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:components.URL];
     request.HTTPMethod = @"GET";
-    
+
     ARTLogDebug(self->_logger, @"RS:%p CH:%p (%@) get annotations request %@",
                 self->_channel.rest, self->_channel, self->_channel.name, request);
-    
+
     ARTPaginatedResultResponseProcessor responseProcessor = ^NSArray<ARTAnnotation *> *(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
         id<ARTEncoder> encoder = [self->_channel.rest.encoders objectForKey:response.MIMEType];
         return [[encoder decodeAnnotations:data error:errorPtr] artMap:^(ARTAnnotation *annotation) {
@@ -274,7 +274,7 @@ art_dispatch_async(_queue, ^{
             return annotation;
         }];
     };
-    
+
     [ARTPaginatedResult executePaginated:self->_channel.rest
                              withRequest:request
                     andResponseProcessor:responseProcessor

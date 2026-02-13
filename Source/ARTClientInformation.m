@@ -18,7 +18,7 @@ static inline UInt32 conformVersionComponent(const NSInteger component) {
 
 + (NSDictionary<NSString *, NSString *> *)agents {
     NSMutableDictionary<NSString *, NSString *> *const result = [NSMutableDictionary dictionary];
-    
+
     [result addEntriesFromDictionary:[self platformAgent]];
     [result addEntriesFromDictionary:[self libraryAgent]];
 
@@ -27,11 +27,11 @@ static inline UInt32 conformVersionComponent(const NSInteger component) {
 
 + (NSString *)agentIdentifierWithAdditionalAgents:(nullable NSDictionary<NSString *, NSString *> *const)additionalAgents {
     NSMutableDictionary<NSString *, NSString *> *const agents = [self.agents mutableCopy];
-    
+
     for (NSString *const additionalAgentName in additionalAgents) {
         agents[additionalAgentName] = additionalAgents[additionalAgentName];
     }
-    
+
     return [self agentIdentifierForAgents:agents];
 }
 
@@ -48,7 +48,7 @@ static inline UInt32 conformVersionComponent(const NSInteger component) {
             [components addObject:[NSString stringWithFormat:@"%@/%@", name, version]];
         }
     }
-        
+
     return [components componentsJoinedByString:@" "];
 }
 
@@ -62,11 +62,11 @@ static inline UInt32 conformVersionComponent(const NSInteger component) {
 
 + (NSDictionary<NSString *, NSString *> *)platformAgent {
     NSString *const osName = [self osName];
-    
+
     if (osName == nil) {
         return @{};
     }
-    
+
     return @{ osName: [self osVersionString] };
 }
 

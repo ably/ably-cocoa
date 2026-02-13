@@ -800,12 +800,12 @@ art_dispatch_sync(_queue, ^{
     }
     // RTL15a
     self.attachSerial = message.channelSerial;
-    
+
     // RTL15b
     if (message.channelSerial) {
         self.channelSerial = message.channelSerial;
     }
-    
+
     // RTL4m
     self.modes = message.channelModes;
 
@@ -954,7 +954,7 @@ art_dispatch_sync(_queue, ^{
 
         ++i;
     }
-    
+
     // RTL15b
     if (pm.channelSerial) {
         self.channelSerial = pm.channelSerial;
@@ -1227,7 +1227,7 @@ art_dispatch_sync(_queue, ^{
         [self performTransitionToState:ARTRealtimeChannelAttached withParams:params];
         [self->_detachedEventEmitter emit:nil with:errorInfo];
     }] startTimer];
-    
+
     if (self.presence.syncInProgress_nosync) {
         [self.presence failsSync:[ARTErrorInfo createWithCode:ARTErrorChannelOperationFailed message:@"channel is being DETACHED"]];
     }

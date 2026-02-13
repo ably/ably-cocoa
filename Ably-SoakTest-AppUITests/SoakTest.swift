@@ -21,9 +21,9 @@ class SoakTest: XCTestCase {
 
     func testSoak() {
         ARTHttp.setURLSessionClass(SoakTestURLSession.self)
-        
+
         var shouldStop = DispatchQueue(label: "io.ably.soakTest.shouldStop").syncValue(false)
-        
+
         for i in (0 ..< concurrentConnections) {
             let queue = DispatchQueue(label: "io.ably.soakTest.\(i)")
             let internalQueue = DispatchQueue(label: "io.ably.soakTest.internal.\(i)")
@@ -54,9 +54,9 @@ class SoakTest: XCTestCase {
                 channelsOperations(realtime: realtime, queue: queue)
             }
         }
-        
+
         Thread.sleep(forTimeInterval: runTime)
-        
+
         shouldStop.set(true)
     }
 }
@@ -111,7 +111,7 @@ func realtimeOperations(realtime: ARTRealtime, queue: DispatchQueue, shouldStop:
             realtime.close()
         }
     }
-    
+
     queue.afterSeconds(between: 0.1 ... 3.0) {
         realtime.ping { error in
             print("pinged; error: \(String(describing: error))")
@@ -127,19 +127,19 @@ func channelsOperations(realtime: ARTRealtime, queue: DispatchQueue) {
         channelsOperations(realtime: realtime, queue: queue)
 
         let channel = realtime.channels.get("channel.\(Int((0 ... 100).randomWithin()))")
-        
+
         queue.afterSeconds(between: 0.1 ... 1) {
             channel.attach { error in
                 print("\(channel.name): attached; error: \(String(describing: error))")
             }
         }
-        
+
         queue.afterSeconds(between: 0.1 ... 60) {
             channel.detach { error in
                 print("\(channel.name): detached; error: \(String(describing: error))")
             }
         }
-        
+
         queue.afterSeconds(between: 0.3 ... 2) {
             channel.subscribe { message in
                 print("\(channel.name): got message: \(message)")
@@ -151,27 +151,27 @@ func channelsOperations(realtime: ARTRealtime, queue: DispatchQueue) {
                     print("\(channel.name): got message ack; error: \(String(describing: error))")
             }
         }
-        
+
         queue.afterSeconds(between: 0.3 ... 2) {
             channel.presence.subscribe { message in
                 print("\(channel.name): got presence message: \(message)")
             }
         }
-        
+
         queue.afterSeconds(between: 0.5 ... 3) {
             presenceCycle(channel: channel, queue: queue)
         }
-        
+
         queue.afterSeconds(between: 0.1 ... 1) {
             realtime.channels.exists(channel.name)
         }
-        
+
         queue.afterSeconds(between: 0.1 ... 2) {
             realtime.channels.release(channel.name) { error in
                 print("\(channel.name): released; error: \(String(describing: error))")
             }
         }
-        
+
         if true.times(1, outOf: 10) {
             for channel in realtime.channels {
                 _ = channel

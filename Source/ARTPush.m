@@ -159,7 +159,7 @@
         [NSException raise:NSInternalInconsistencyException
                     format:@"_activationMachine already set."];
     }
-    
+
     _activationMachine = [[ARTPushActivationStateMachine alloc] initWithRest:self->_rest delegate:delegate logger:_logger];
     return _activationMachine;
 }
@@ -169,15 +169,15 @@
         [NSException raise:NSInternalInconsistencyException
                     format:@"Failed to immediately acquire lock for internal testing purposes."];
     }
-    
+
     ARTPushActivationStateMachine *const machine = _activationMachine;
     if (!machine) {
         [NSException raise:NSInternalInconsistencyException
                     format:@"There is no activation machine for internal testing purposes."];
     }
-    
+
     [_activationMachineLock unlock];
-    
+
     return machine;
 }
 

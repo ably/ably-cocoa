@@ -273,11 +273,11 @@ art_dispatch_sync(_queue, ^{
     art_dispatch_async(_queue, ^{
         NSURL *url = [NSURL URLWithString:self->_basePath];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-        
+
         ARTLogDebug(self.logger, @"RS:%p C:%p (%@) channel details request %@", self->_rest, self, self.name, request);
-        
+
         [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable error) {
-            
+
             if (response.statusCode == 200 /*OK*/) {
                 NSError *decodeError = nil;
                 id<ARTEncoder> decoder = self->_rest.encoders[response.MIMEType];
@@ -331,25 +331,25 @@ art_dispatch_sync(_queue, ^{
             });
         };
     }
-    
+
     art_dispatch_async(_queue, ^{
         NSData *encodedMessage = nil;
-        
+
         if ([data isKindOfClass:[ARTMessage class]]) {
             ARTMessage *message = (ARTMessage *)data;
-            
+
             NSString *baseId = nil;
             if (self.rest.options.idempotentRestPublishing && message.isIdEmpty) {
                 NSData *baseIdData = [ARTCrypto generateSecureRandomData:ARTIdempotentLibraryGeneratedIdLength];
                 baseId = [baseIdData base64EncodedStringWithOptions:0];
                 message.id = [NSString stringWithFormat:@"%@:0", baseId];
             }
-            
+
             if (message.clientId && self.rest.auth.clientId_nosync && ![message.clientId isEqualToString:self.rest.auth.clientId_nosync]) {
                 callback(nil, [ARTErrorInfo createWithCode:ARTStateMismatchedClientId message:@"attempted to publish message with an invalid clientId"]);
                 return;
             }
-            
+
             NSError *encodeError = nil;
             encodedMessage = [self.rest.defaultEncoder encodeMessage:message error:&encodeError];
             if (encodeError) {
@@ -359,7 +359,7 @@ art_dispatch_sync(_queue, ^{
         }
         else if ([data isKindOfClass:[NSArray class]]) {
             NSArray<ARTMessage *> *messages = (NSArray *)data;
-            
+
             NSString *baseId = nil;
             if (self.rest.options.idempotentRestPublishing) {
                 BOOL messagesHaveEmptyId = [messages artFilter:^BOOL(ARTMessage *m) { return !m.isIdEmpty; }].count <= 0;
@@ -368,7 +368,7 @@ art_dispatch_sync(_queue, ^{
                     baseId = [baseIdData base64EncodedStringWithOptions:0];
                 }
             }
-            
+
             NSInteger serial = 0;
             for (ARTMessage *message in messages) {
                 if (message.clientId && self.rest.auth.clientId_nosync && ![message.clientId isEqualToString:self.rest.auth.clientId_nosync]) {
@@ -380,7 +380,7 @@ art_dispatch_sync(_queue, ^{
                 }
                 serial += 1;
             }
-            
+
             NSError *encodeError = nil;
             encodedMessage = [self.rest.defaultEncoder encodeMessages:data error:&encodeError];
             if (encodeError) {
@@ -388,24 +388,24 @@ art_dispatch_sync(_queue, ^{
                 return;
             }
         }
-        
+
         NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:[self->_basePath stringByAppendingPathComponent:@"messages"]] resolvingAgainstBaseURL:YES];
         NSMutableArray<NSURLQueryItem *> *queryItems = [NSMutableArray new];
-        
+
         if (queryItems.count > 0) {
             components.queryItems = queryItems;
         }
-        
+
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
         request.HTTPMethod = @"POST";
         request.HTTPBody = encodedMessage;
-        
+
         if (self.rest.defaultEncoding) {
             [request setValue:self.rest.defaultEncoding forHTTPHeaderField:@"Content-Type"];
         }
-        
+
         ARTLogDebug(self.logger, @"RS:%p C:%p (%@) post message %@", self->_rest, self, self.name, [[NSString alloc] initWithData:encodedMessage ?: [NSData data] encoding:NSUTF8StringEncoding]);
-        
+
         [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:nil completion:^(NSHTTPURLResponse *response, NSData *responseData, NSError *error) {
             if (callback) {
                 if (error) {
@@ -578,16 +578,16 @@ art_dispatch_sync(_queue, ^{
             });
         };
     }
-    
+
     art_dispatch_async(_queue, ^{
         NSString *messagePath = [NSString stringWithFormat:@"messages/%@", [serial stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]]];
         NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:[self->_basePath stringByAppendingPathComponent:messagePath]] resolvingAgainstBaseURL:YES];
-        
+
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
         request.HTTPMethod = @"GET";
-        
+
         ARTLogDebug(self.logger, @"RS:%p C:%p (%@) get message with serial %@", self->_rest, self, self.name, serial);
-        
+
         [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn wrapperSDKAgents:wrapperSDKAgents completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (error) {
                 ARTErrorInfo *errorInfo;
@@ -601,7 +601,7 @@ art_dispatch_sync(_queue, ^{
                 }
                 return;
             }
-            
+
             if (response.statusCode == 200) {
                 NSError *decodeError = nil;
                 id<ARTEncoder> decoder = self->_rest.encoders[response.MIMEType];
@@ -611,7 +611,7 @@ art_dispatch_sync(_queue, ^{
                     }
                     return;
                 }
-                
+
                 ARTMessage *message = [decoder decodeMessage:data error:&decodeError];
                 if (decodeError) {
                     if (callback) {
@@ -619,7 +619,7 @@ art_dispatch_sync(_queue, ^{
                     }
                     return;
                 }
-                
+
                 // Decode the message data if needed
                 ARTMessage *decodedMessage = [message decodeWithEncoder:self.dataEncoder error:&decodeError];
                 if (decodeError) {
@@ -628,7 +628,7 @@ art_dispatch_sync(_queue, ^{
                     }
                     return;
                 }
-                
+
                 if (callback) {
                     callback(decodedMessage, nil);
                 }
@@ -653,16 +653,16 @@ art_dispatch_sync(_queue, ^{
             });
         };
     }
-    
+
     art_dispatch_async(_queue, ^{
         NSString *messagePath = [NSString stringWithFormat:@"messages/%@/versions", [serial stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]]];
         NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:[self->_basePath stringByAppendingPathComponent:messagePath]] resolvingAgainstBaseURL:YES];
-        
+
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
         request.HTTPMethod = @"GET";
-        
+
         ARTLogDebug(self.logger, @"RS:%p C:%p (%@) get message versions for serial %@", self->_rest, self, self.name, serial);
-        
+
         ARTPaginatedResultResponseProcessor responseProcessor = ^NSArray<ARTMessage *> *(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
             id<ARTEncoder> encoder = [self->_rest.encoders objectForKey:response.MIMEType];
             return [[encoder decodeMessages:data error:errorPtr] artMap:^(ARTMessage *message) {
@@ -675,7 +675,7 @@ art_dispatch_sync(_queue, ^{
                 return message;
             }];
         };
-        
+
         [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor wrapperSDKAgents:wrapperSDKAgents logger:self.logger callback:callback];
     });
 }

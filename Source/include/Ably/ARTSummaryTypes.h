@@ -25,7 +25,7 @@ NS_SWIFT_SENDABLE
  * @param clientIds Array of client ID strings
  * @param clipped Whether the data is clipped
  */
-- (instancetype)initWithTotal:(NSInteger)total 
+- (instancetype)initWithTotal:(NSInteger)total
                     clientIds:(NSArray<NSString *> *)clientIds
                       clipped:(BOOL)clipped;
 
@@ -60,7 +60,7 @@ NS_SWIFT_SENDABLE
  * @param totalUnidentified Total unidentified annotations
  * @param totalClientIds Total unique client IDs
  */
-- (instancetype)initWithTotal:(NSInteger)total 
+- (instancetype)initWithTotal:(NSInteger)total
                     clientIds:(NSDictionary<NSString *, NSNumber *> *)clientIds
                       clipped:(BOOL)clipped
             totalUnidentified:(NSInteger)totalUnidentified

@@ -7,10 +7,10 @@ struct PushButton: View {
     let action: () -> Void
     let isButtonEnabled: Bool // is the button enabled
     let isActive: Bool // is the action in it's on or off state
-    
+
     let activeColor = Color(red: 1.00, green: 0.33, blue: 0.09)
     let inActiveColor = Color(red: 0.00, green: 0.56, blue: 0.02)
-    
+
     init(
         isButtonEnabled: Bool,
         systemImage: String,
@@ -42,11 +42,11 @@ struct PushButton: View {
         .tint(isActive ? activeColor : inActiveColor)
         .disabled(!isButtonEnabled)
         .animation(.easeInOut, value: isButtonEnabled)
-        
+
         if #available(iOS 17.0, *) {
             return button.contentTransition(.symbolEffect(.replace))
         }
-        
+
         return button
     }
 }

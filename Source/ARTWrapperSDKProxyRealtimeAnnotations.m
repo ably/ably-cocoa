@@ -24,11 +24,11 @@ NS_ASSUME_NONNULL_END
     return self;
 }
 
-- (ARTEventListener *)subscribe:(ARTAnnotationCallback)callback { 
+- (ARTEventListener *)subscribe:(ARTAnnotationCallback)callback {
     return [self.underlyingRealtimeAnnotations subscribe:callback];
 }
 
-- (ARTEventListener *)subscribe:(NSString *)type callback:(ARTAnnotationCallback)callback { 
+- (ARTEventListener *)subscribe:(NSString *)type callback:(ARTAnnotationCallback)callback {
     return [self.underlyingRealtimeAnnotations subscribe:type callback:callback];
 }
 
@@ -64,7 +64,7 @@ NS_ASSUME_NONNULL_END
     [self.underlyingRealtimeAnnotations unsubscribe:listener];
 }
 
-- (void)unsubscribe:(NSString *)type listener:(ARTEventListener *)listener { 
+- (void)unsubscribe:(NSString *)type listener:(ARTEventListener *)listener {
     [self.underlyingRealtimeAnnotations unsubscribe:type listener:listener];
 }
 

@@ -238,7 +238,7 @@ class PushChannelTests: XCTestCase {
         let request = try XCTUnwrap(testEnvironment.mockHttpExecutor.requests.first, "should have a \"/push/channelSubscriptions\" request")
         let url = try XCTUnwrap(request.url, "No request url found")
         let query = try XCTUnwrap(url.query, "should have a query")
-        
+
         XCTAssertEqual(request.httpMethod, "DELETE")
         expect(url.absoluteString).to(contain("/push/channelSubscriptions"))
         expect(query).to(haveParam("clientId", withValue: rest.device.clientId!))

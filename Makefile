@@ -55,6 +55,12 @@ update: \
 	submodules \
 	update_carthage_dependencies
 
+## -- Linting --
+
+## [Lint] Check EditorConfig compliance
+lint:
+	editorconfig-checker
+
 ## -- Source Code Tasks --
 
 ## Update Git submodules

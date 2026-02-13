@@ -179,13 +179,13 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
     NSMutableArray<ARTQueuedMessage *> *_pendingPresence;
     ARTEventEmitter<ARTEvent *, ARTPresenceMessage *> *_eventEmitter;
     ARTDataEncoder *_dataEncoder;
-    
+
     ARTPresenceSyncState _syncState;
     ARTEventEmitter<ARTEvent * /*ARTSyncState*/, id> *_syncEventEmitter;
-    
+
     NSMutableDictionary<NSString *, ARTPresenceMessage *> *_members; // RTP2
     NSMutableDictionary<NSString *, ARTPresenceMessage *> *_internalMembers; // RTP17h
-    
+
     NSMutableDictionary<NSString *, ARTPresenceMessage *> *_beforeSyncMembers; // RTP19
 }
 
@@ -725,7 +725,7 @@ art_dispatch_sync(_queue, ^{
         if (!member.connectionId) {
             member.connectionId = message.connectionId;
         }
-        
+
         [self processMember:member];
 
         ++i;
@@ -769,9 +769,9 @@ art_dispatch_sync(_queue, ^{
                 NSString *message = [NSString stringWithFormat:@"Re-entering member \"%@\" is failed with code %ld (%@)", member.memberKey, (long)error.code, error.message];
                 ARTErrorInfo *reenterError = [ARTErrorInfo createWithCode:ARTErrorUnableToAutomaticallyReEnterPresenceChannel message:message];
                 ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:self->_channel.state_nosync previous:self->_channel.state_nosync event:ARTChannelEventUpdate reason:reenterError resumed:true]; // RTP17e
-                
+
                 [self->_channel emit:stateChange.event with:stateChange];
-                
+
                 ARTLogWarn(self.logger, @"RT:%p C:%p (%@) Re-entering member \"%@\" is failed with code %ld (%@)", self->_realtime, self->_channel, self->_channel.name, member.memberKey, (long)error.code, error.message);
             }
             else {
@@ -812,7 +812,7 @@ art_dispatch_sync(_queue, ^{
                 break;
         }
     }
-    
+
     BOOL memberUpdated = false;
     switch (message.action) {
         case ARTPresenceEnter:
@@ -846,12 +846,12 @@ art_dispatch_sync(_queue, ^{
     if ([msg1 isSynthesized] || [msg2 isSynthesized]) { // RTP2b1
         return !msg1.timestamp || msg1.timestamp.timeIntervalSince1970 >= msg2.timestamp.timeIntervalSince1970;
     }
-    
+
     NSInteger msg1Serial = [msg1 msgSerialFromId];
     NSInteger msg1Index = [msg1 indexFromId];
     NSInteger msg2Serial = [msg2 msgSerialFromId];
     NSInteger msg2Index = [msg2 indexFromId];
-    
+
     // RTP2b2
     if (msg1Serial == msg2Serial) {
         return msg1Index > msg2Index;

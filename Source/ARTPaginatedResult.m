@@ -53,15 +53,15 @@
         _initializedViaInit = NO;
 
         _items = items;
-        
+
         _relFirst = relFirst;
-        
+
         _relCurrent = relCurrent;
-        
+
         _relNext = relNext;
         _hasNext = !!relNext;
         _isLast = !_hasNext;
-        
+
         _rest = rest;
         _userQueue = rest.userQueue;
         _queue = rest.queue;
@@ -82,7 +82,7 @@
         // make our own.
         _dealloc = [[ARTQueuedDealloc alloc] init:_rest queue:_queue];
     }
-    
+
     return self;
 }
 
@@ -109,7 +109,7 @@
 
 - (void)first:(void (^)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
     [self initializedViaInitCheck];
-    
+
     if (callback) {
         void (^userCallback)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) = callback;
         callback = ^(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) {
@@ -124,7 +124,7 @@
 
 - (void)next:(void (^)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
     [self initializedViaInitCheck];
-    
+
     if (callback) {
         void (^userCallback)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) = callback;
         callback = ^(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) {

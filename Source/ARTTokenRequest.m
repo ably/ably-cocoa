@@ -50,7 +50,7 @@
 
     NSNumber *ttlNumber = [dict artNumber:@"ttl"];
     tokenRequest.ttl = ttlNumber != nil ? [NSNumber numberWithDouble:millisecondsToTimeInterval([ttlNumber unsignedLongLongValue])] : nil;
-    
+
     return tokenRequest;
 }
 
