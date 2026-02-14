@@ -1,5 +1,4 @@
 import Ably
-import CommonCrypto
 import Foundation
 import Nimble
 import XCTest
@@ -3950,46 +3949,4 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
         }
     }
-}
-
-// MARK: - JWT Signing Helper
-
-private func signJWT(claims: [String: Any], keyName: String, keySecret: String) throws -> String {
-    let header: [String: Any] = [
-        "typ": "JWT",
-        "alg": "HS256",
-        "kid": keyName,
-    ]
-
-    let headerData = try JSONSerialization.data(withJSONObject: header)
-    let claimsData = try JSONSerialization.data(withJSONObject: claims)
-
-    let headerBase64 = base64urlEncode(headerData)
-    let claimsBase64 = base64urlEncode(claimsData)
-
-    let signingInput = "\(headerBase64).\(claimsBase64)"
-    guard let signingInputData = signingInput.data(using: .utf8),
-          let keyData = keySecret.data(using: .utf8) else {
-        throw NSError(domain: "test.ably.io", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to encode JWT signing input"])
-    }
-
-    var hmac = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
-    signingInputData.withUnsafeBytes { inputBytes in
-        keyData.withUnsafeBytes { keyBytes in
-            CCHmac(CCHmacAlgorithm(kCCHmacAlgSHA256),
-                   keyBytes.baseAddress, keyData.count,
-                   inputBytes.baseAddress, signingInputData.count,
-                   &hmac)
-        }
-    }
-    let signatureBase64 = base64urlEncode(Data(hmac))
-
-    return "\(headerBase64).\(claimsBase64).\(signatureBase64)"
-}
-
-private func base64urlEncode(_ data: Data) -> String {
-    return data.base64EncodedString()
-        .replacingOccurrences(of: "+", with: "-")
-        .replacingOccurrences(of: "/", with: "_")
-        .replacingOccurrences(of: "=", with: "")
 }
