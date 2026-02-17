@@ -40,7 +40,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-/// :nodoc:
 typedef void (^ARTMessageSendCallback)(ARTMessageSendStatus *status);
 
 NS_ASSUME_NONNULL_END

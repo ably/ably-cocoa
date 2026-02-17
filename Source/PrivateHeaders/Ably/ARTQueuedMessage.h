@@ -6,7 +6,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// :nodoc:
 @interface ARTQueuedMessage : NSObject
 
 @property (readonly, nonatomic) ARTProtocolMessage *msg;

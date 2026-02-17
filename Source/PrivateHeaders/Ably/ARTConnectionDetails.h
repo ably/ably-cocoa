@@ -54,7 +54,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// If the `objectsGCGracePeriod` is present in the `ConnectionDetails`, this contains an `NSNumber` wrapping an `NSTimeInterval` containing its value in seconds.
 @property (readonly, nonatomic, nullable) NSNumber *objectsGCGracePeriod;
 
-/// :nodoc:
 - (instancetype)initWithClientId:(NSString *_Nullable)clientId
                    connectionKey:(NSString *_Nullable)connectionKey
                   maxMessageSize:(NSInteger)maxMessageSize
