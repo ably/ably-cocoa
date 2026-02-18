@@ -1,5 +1,7 @@
 #import <Ably/ARTDefault.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 extern NSString *const ARTDefaultProduction;
 
 @interface ARTDefault (Private)
@@ -11,3 +13,5 @@ extern NSString *const ARTDefaultProduction;
 + (NSInteger)maxProductionMessageSize;
 
 @end
+
+NS_ASSUME_NONNULL_END

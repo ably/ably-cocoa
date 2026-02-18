@@ -1,5 +1,7 @@
 #import "ARTContinuousClock.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface ARTContinuousClockInstant ()
 
 - (instancetype)initWithTime:(uint64_t)time NS_DESIGNATED_INITIALIZER;
@@ -12,6 +14,8 @@
 @property (nonatomic, readonly) uint64_t timeInNanosecondsSinceClockReferenceInstant;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 @implementation ARTContinuousClock
 

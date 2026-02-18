@@ -1,9 +1,13 @@
 #import <Foundation/Foundation.h>
 
-@interface ARTStringifiable()
+NS_ASSUME_NONNULL_BEGIN
 
-- (nonnull instancetype)initWithString:(nonnull NSString *)value;
-- (nonnull instancetype)initWithNumber:(nonnull NSNumber *)value;
-- (nonnull instancetype)initWithBool:(BOOL)value;
+@interface ARTStringifiable ()
+
+- (instancetype)initWithString:(NSString *)value;
+- (instancetype)initWithNumber:(NSNumber *)value;
+- (instancetype)initWithBool:(BOOL)value;
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -92,8 +92,10 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
     ARTRealtimeFailed
 };
 
+NS_ASSUME_NONNULL_BEGIN
+
 /// :nodoc:
-NSString *_Nonnull ARTRealtimeConnectionStateToStr(ARTRealtimeConnectionState state);
+NSString *ARTRealtimeConnectionStateToStr(ARTRealtimeConnectionState state);
 
 /**
  * Describes the events emitted by a `ARTConnection` object. An event is either an `ARTRealtimeConnectionEventUpdate` or an `ARTRealtimeConnectionState`.
@@ -115,7 +117,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionEvent) {
 };
 
 /// :nodoc:
-NSString *_Nonnull ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent event);
+NSString *ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent event);
 
 /**
  * Describes the possible states of an `ARTRealtimeChannel` object.
@@ -153,7 +155,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeChannelState) {
 };
 
 /// :nodoc:
-NSString *_Nonnull ARTRealtimeChannelStateToStr(ARTRealtimeChannelState state);
+NSString *ARTRealtimeChannelStateToStr(ARTRealtimeChannelState state);
 
 /**
  * Describes the events emitted by an `ARTRealtimeChannel` object. An event is either an `ARTChannelEventUpdate` or a `ARTRealtimeChannelState`.
@@ -174,7 +176,7 @@ typedef NS_ENUM(NSUInteger, ARTChannelEvent) {
 };
 
 /// :nodoc:
-NSString *_Nonnull ARTChannelEventToStr(ARTChannelEvent event);
+NSString *ARTChannelEventToStr(ARTChannelEvent event);
 
 
 /// :nodoc:
@@ -200,8 +202,6 @@ typedef NS_ENUM(NSInteger, ARTCustomRequestError) {
     ARTCustomRequestErrorInvalidBody = 2,
     ARTCustomRequestErrorInvalidPath = 3,
 };
-
-NS_ASSUME_NONNULL_BEGIN
 
 /// :nodoc:
 /// Decompose API key
@@ -582,6 +582,6 @@ typedef void (^ARTPublishResultCallback)(ARTPublishResult *_Nullable result, ART
  *
  * To make use of these benefits the caller needs to use the returned wrapper to invoke the callback. The wrapper will only work for as long as the returned instance remains allocated (i.e. has a strong reference to it somewhere).
  */
-NSObject<ARTCancellable> * artCancellableFromCallback(ARTResultCallback callback, _Nonnull ARTResultCallback *_Nonnull wrapper);
+NSObject<ARTCancellable> * artCancellableFromCallback(ARTResultCallback callback, _Nonnull ARTResultCallback * _Nonnull wrapper);
 
 NS_ASSUME_NONNULL_END

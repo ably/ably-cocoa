@@ -57,11 +57,15 @@
 #import "ARTWrapperSDKProxyRealtime+Private.h"
 #import "ARTConnectionDetails+Private.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface ARTConnectionStateChange ()
 
 - (void)setRetryIn:(NSTimeInterval)retryIn;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 #pragma mark - ARTRealtime implementation
 
