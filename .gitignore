@@ -47,8 +47,9 @@ Examples/Tests/Podfile.lock
 .build
 .idea
 
-## Jazzy Docs
+## Generated Documentation
 Docs/jazzy
+Docs/markdown-api-reference
 
 ## Tooling
 xcparse/
