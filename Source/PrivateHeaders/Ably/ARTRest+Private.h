@@ -25,8 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) ARTAuthInternal *auth;
 @property (nonatomic, readonly) ARTPushInternal *push;
 #if TARGET_OS_IOS
-@property (nonnull, nonatomic, readonly, getter=device) ARTLocalDevice *device;
-@property (nonnull, nonatomic, readonly, getter=device_nosync) ARTLocalDevice *device_nosync;
+@property (nonatomic, readonly, getter=device) ARTLocalDevice *device;
+@property (nonatomic, readonly, getter=device_nosync) ARTLocalDevice *device_nosync;
 @property (nonatomic) id<ARTDeviceStorage> storage;
 #endif
 

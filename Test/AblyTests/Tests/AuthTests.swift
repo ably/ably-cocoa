@@ -2466,7 +2466,7 @@ class AuthTests: XCTestCase {
                     XCTFail("TokenRequest is nil"); done(); return
                 }
                 let signed = tokenParams.sign(rest.internal.options.key!, withNonce: tokenRequest1.nonce)
-                XCTAssertEqual(tokenRequest1.mac, signed?.mac)
+                XCTAssertEqual(tokenRequest1.mac, signed.mac)
 
                 rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
                     XCTAssertNil(error)

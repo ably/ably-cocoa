@@ -384,12 +384,16 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
 
 @end
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface ARTCancellableFromCallback : NSObject<ARTCancellable>
 +(instancetype)new NS_UNAVAILABLE;
 -(instancetype)init NS_UNAVAILABLE;
 -(instancetype)initWithCallback:(ARTResultCallback)callback;
 @property(nonatomic, readonly) ARTResultCallback wrapper;
 @end
+
+NS_ASSUME_NONNULL_END
 
 @implementation ARTCancellableFromCallback {
     id _lock;

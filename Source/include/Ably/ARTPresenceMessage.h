@@ -28,10 +28,10 @@ typedef NS_ENUM(NSUInteger, ARTPresenceAction) {
     ARTPresenceUpdate
 };
 
-/// :nodoc:
-NSString *_Nonnull ARTPresenceActionToStr(ARTPresenceAction action);
-
 NS_ASSUME_NONNULL_BEGIN
+
+/// :nodoc:
+NSString *ARTPresenceActionToStr(ARTPresenceAction action);
 
 /**
  * Contains an individual presence update sent to, or received from, Ably.
@@ -48,10 +48,10 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A combination of `ARTBaseMessage.clientId` and `ARTBaseMessage.connectionId`.
  */
-- (nonnull NSString *)memberKey;
+- (NSString *)memberKey;
 
 /// :nodoc:
-- (BOOL)isEqualToPresenceMessage:(nonnull ARTPresenceMessage *)presence;
+- (BOOL)isEqualToPresenceMessage:(ARTPresenceMessage *)presence;
 
 @end
 
