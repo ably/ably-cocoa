@@ -10,7 +10,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// :nodoc:
 @protocol ARTHTTPExecutor
 
 - (nullable NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request
@@ -18,7 +17,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-/// :nodoc:
 @interface ARTHttp : NSObject<ARTHTTPExecutor>
 
 + (void)setURLSessionClass:(Class)urlSessionClass;
