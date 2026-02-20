@@ -21,11 +21,13 @@ class PluginAPITests: XCTestCase {
 
         internal var receivedConnectionDetails: [(connectionDetails: (any ConnectionDetailsProtocol)?, channel: any RealtimeChannel)] = []
         internal var receivedChannelAttached: [(channel: any RealtimeChannel, hasObjects: Bool)] = []
+        internal var receivedStateChanges: [(channel: any RealtimeChannel, state: RealtimeChannelState, reason: (any PublicErrorInfo)?)] = []
 
         /// Resets all recorded mock state. Called in `setUp()` since this is a shared static instance.
         func clearState() {
             receivedConnectionDetails.removeAll()
             receivedChannelAttached.removeAll()
+            receivedStateChanges.removeAll()
         }
 
         func nosync_prepare(_ channel: any RealtimeChannel, client: any RealtimeClient) {
@@ -56,6 +58,10 @@ class PluginAPITests: XCTestCase {
 
         func nosync_onConnected(withConnectionDetails connectionDetails: (any ConnectionDetailsProtocol)?, channel: any RealtimeChannel) {
             receivedConnectionDetails.append((connectionDetails, channel))
+        }
+
+        func nosync_onChannelStateChanged(_ channel: any RealtimeChannel, toState state: RealtimeChannelState, reason: (any PublicErrorInfo)?) {
+            receivedStateChanges.append((channel, state, reason))
         }
     }
 
@@ -150,7 +156,7 @@ class PluginAPITests: XCTestCase {
 
         let connectedProtocolMessage = ARTProtocolMessage()
         connectedProtocolMessage.action = .connected
-        let connectionDetails = ARTConnectionDetails(clientId: nil, connectionKey: nil, maxMessageSize: 100, maxFrameSize: 100, maxInboundRate: 100, connectionStateTtl: 100, serverId: "", maxIdleInterval: 100, objectsGCGracePeriod: 1500) // all arbitrary except objectsGCGracePeriod
+        let connectionDetails = ARTConnectionDetails(clientId: nil, connectionKey: nil, maxMessageSize: 100, maxFrameSize: 100, maxInboundRate: 100, connectionStateTtl: 100, serverId: "", maxIdleInterval: 100, objectsGCGracePeriod: 1500, siteCode: nil) // all arbitrary except objectsGCGracePeriod
         connectedProtocolMessage.connectionDetails = connectionDetails
         transport.receive(connectedProtocolMessage)
 
@@ -201,7 +207,7 @@ class PluginAPITests: XCTestCase {
 
         let connectedProtocolMessage = ARTProtocolMessage()
         connectedProtocolMessage.action = .connected
-        let connectionDetails = ARTConnectionDetails(clientId: nil, connectionKey: nil, maxMessageSize: 100, maxFrameSize: 100, maxInboundRate: 100, connectionStateTtl: 100, serverId: "", maxIdleInterval: 100, objectsGCGracePeriod: 1500) // all arbitrary except objectsGCGracePeriod
+        let connectionDetails = ARTConnectionDetails(clientId: nil, connectionKey: nil, maxMessageSize: 100, maxFrameSize: 100, maxInboundRate: 100, connectionStateTtl: 100, serverId: "", maxIdleInterval: 100, objectsGCGracePeriod: 1500, siteCode: "us-east-1-A") // all arbitrary except objectsGCGracePeriod and siteCode
         connectedProtocolMessage.connectionDetails = connectionDetails
         transport.receive(connectedProtocolMessage)
 
@@ -209,10 +215,11 @@ class PluginAPITests: XCTestCase {
         try internalQueue.sync {
             let newConnectionDetails = try XCTUnwrap(pluginAPI.nosync_latestConnectionDetails(for: pluginRealtimeClient))
             XCTAssertEqual(newConnectionDetails.objectsGCGracePeriod, 1500)
+            XCTAssertEqual(newConnectionDetails.siteCode?(), "us-east-1-A")
         }
     }
 
-    // MARK: - Channel attached
+    // MARK: - Channel state changes
 
     func test_channelAttachedNotifiesPlugin() throws {
         // Given: A realtime client with a plugin
@@ -248,6 +255,49 @@ class PluginAPITests: XCTestCase {
         XCTAssertTrue(withObjects.hasObjects)
     }
 
+    func test_channelStateChangeNotifiesPlugin() throws {
+        // Given: A realtime client
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        options.plugins = [.liveObjects: MockLiveObjectsPlugin.self]
+        options.testOptions.transportFactory = TestProxyTransportFactory()
+
+        let client = ARTRealtime(options: options)
+        defer { client.dispose(); client.close() }
+
+        let channel = client.channels.get(test.uniqueChannelName())
+
+        // When: The channel is attached
+        waitUntil(timeout: testTimeout) { done in
+            channel.attach { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+
+        // Then: The plugin receives state change notifications including the transition to ATTACHING and ATTACHED
+        var stateChanges = MockLiveObjectsPlugin._internalPlugin.receivedStateChanges
+        var states = stateChanges.map { $0.state }
+        XCTAssertTrue(states.contains(.attaching))
+        XCTAssertTrue(states.contains(.attached))
+
+        // When: The channel transitions to FAILED
+        MockLiveObjectsPlugin._internalPlugin.receivedStateChanges.removeAll()
+
+        let errorMessage = ARTProtocolMessage()
+        errorMessage.action = .error
+        errorMessage.channel = channel.name
+        errorMessage.error = .create(withCode: 50000, status: 500, message: "test error")
+        (client.internal.transport as! TestProxyTransport).receive(errorMessage)
+
+        // Then: The plugin receives a FAILED state change notification with the error as the reason
+        stateChanges = MockLiveObjectsPlugin._internalPlugin.receivedStateChanges
+        states = stateChanges.map { $0.state }
+        XCTAssertTrue(states.contains(.failed))
+        let failed = try XCTUnwrap(stateChanges.first { $0.state == .failed })
+        XCTAssertEqual((failed.reason as? ARTErrorInfo)?.code, 50000)
+    }
+
     // MARK: - Send object
 
     func test_sendObject() throws {
@@ -275,25 +325,41 @@ class PluginAPITests: XCTestCase {
         let pluginChannel = channel.internal as! _AblyPluginSupportPrivate.RealtimeChannel
         let internalQueue = client.internal.queue
 
-        // When: We call nosync_sendObject with a mock object message
+        // When: We call nosync_sendObject (completion variant) with a mock object message
         // (We don't wait for the completion handler; constructing a valid object message that
         // the server would ACK is out of scope for this test; we'll leave that for the LiveObjects
         // plugin tests)
-        let mockObjectMessage = MockInternalLiveObjectsPlugin.MockObjectMessage()
+        let mockObjectMessage1 = MockInternalLiveObjectsPlugin.MockObjectMessage()
         internalQueue.sync {
-            pluginAPI.nosync_sendObject(withObjectMessages: [mockObjectMessage], channel: pluginChannel, completion: nil)
+            pluginAPI.nosync_sendObject(withObjectMessages: [mockObjectMessage1], channel: pluginChannel, completion: nil)
         }
 
         // Then: The SDK asks the mock plugin to encode the object message (which encodes
         // MockObjectMessage.identifier under the key "mockMessageIdentifier"), and sends the
         // result in an OBJECT protocol message
-        let objectMessages = transport.protocolMessagesSent.filter { $0.action == .object }
+        var objectMessages = transport.protocolMessagesSent.filter { $0.action == .object }
         XCTAssertEqual(objectMessages.count, 1)
 
-        let lastRawData = try XCTUnwrap(transport.rawDataSent.last)
-        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: lastRawData) as? [String: Any])
-        let state = try XCTUnwrap(json["state"] as? [[String: Any]])
+        var lastRawData = try XCTUnwrap(transport.rawDataSent.last)
+        var json = try XCTUnwrap(JSONSerialization.jsonObject(with: lastRawData) as? [String: Any])
+        var state = try XCTUnwrap(json["state"] as? [[String: Any]])
         XCTAssertEqual(state.count, 1)
-        XCTAssertEqual(state[0]["mockMessageIdentifier"] as? String, mockObjectMessage.identifier)
+        XCTAssertEqual(state[0]["mockMessageIdentifier"] as? String, mockObjectMessage1.identifier)
+
+        // When: We call nosync_sendObject (completionWithResult variant) with another mock object message
+        let mockObjectMessage2 = MockInternalLiveObjectsPlugin.MockObjectMessage()
+        internalQueue.sync {
+            pluginAPI.nosync_sendObject?(withObjectMessages: [mockObjectMessage2], channel: pluginChannel, completionWithResult: nil)
+        }
+
+        // Then: The result is likewise sent in an OBJECT protocol message
+        objectMessages = transport.protocolMessagesSent.filter { $0.action == .object }
+        XCTAssertEqual(objectMessages.count, 2)
+
+        lastRawData = try XCTUnwrap(transport.rawDataSent.last)
+        json = try XCTUnwrap(JSONSerialization.jsonObject(with: lastRawData) as? [String: Any])
+        state = try XCTUnwrap(json["state"] as? [[String: Any]])
+        XCTAssertEqual(state.count, 1)
+        XCTAssertEqual(state[0]["mockMessageIdentifier"] as? String, mockObjectMessage2.identifier)
     }
 }

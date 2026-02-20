@@ -160,7 +160,8 @@ typedef CF_ENUM(NSUInteger, ARTErrorCode) {
     ARTErrorUnableToEnterPresenceChannelMaxMemberLimitExceeded = 91003,
     ARTErrorUnableToAutomaticallyReEnterPresenceChannel = 91004,
     ARTErrorPresenceStateIsOutOfSync = 91005,
-    ARTErrorMemberImplicitlyLeftPresenceChannel = 91100
+    ARTErrorMemberImplicitlyLeftPresenceChannel = 91100,
+    ARTErrorUnableToApplyObjectsOperationSyncDidNotComplete = 92008
 };
 
 /**
