@@ -54,6 +54,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// If the `objectsGCGracePeriod` is present in the `ConnectionDetails`, this contains an `NSNumber` wrapping an `NSTimeInterval` containing its value in seconds.
 @property (readonly, nonatomic, nullable) NSNumber *objectsGCGracePeriod;
 
+/// The site code of the server that the client is connected to (CD2j).
+@property (nullable, readonly, nonatomic) NSString *siteCode;
+
 - (instancetype)initWithClientId:(NSString *_Nullable)clientId
                    connectionKey:(NSString *_Nullable)connectionKey
                   maxMessageSize:(NSInteger)maxMessageSize
@@ -62,7 +65,8 @@ NS_ASSUME_NONNULL_BEGIN
               connectionStateTtl:(NSTimeInterval)connectionStateTtl
                         serverId:(NSString *)serverId
                  maxIdleInterval:(NSTimeInterval)maxIdleInterval
-            objectsGCGracePeriod:(nullable NSNumber *)objectsGCGracePeriod;
+            objectsGCGracePeriod:(nullable NSNumber *)objectsGCGracePeriod
+                        siteCode:(nullable NSString *)siteCode;
 
 NS_ASSUME_NONNULL_END
 

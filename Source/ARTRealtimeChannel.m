@@ -40,6 +40,8 @@
 #import "ARTPushChannel+Private.h"
 #endif
 
+#import "ARTErrorInfo+Private.h"
+
 #ifdef ABLY_SUPPORTS_PLUGINS
 @import _AblyPluginSupportPrivate;
 #import "ARTPluginAPI.h"
@@ -469,6 +471,16 @@ art_dispatch_sync(_queue, ^{
 #ifdef ABLY_SUPPORTS_PLUGINS
 - (void)sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
                           completion:(ARTCallback)completion {
+    [self sendObjectWithObjectMessages:objectMessages
+                  completionWithResult:^(ARTErrorInfo *error, ARTPublishResult *publishResult) {
+        if (completion) {
+            completion(error);
+        }
+    }];
+}
+
+- (void)sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
+                completionWithResult:(void (^)(ARTErrorInfo *_Nullable error, ARTPublishResult *_Nullable publishResult))completion {
     ARTProtocolMessage *pm = [[ARTProtocolMessage alloc] init];
     pm.action = ARTProtocolMessageObject;
     pm.channel = self.name;
@@ -476,10 +488,10 @@ art_dispatch_sync(_queue, ^{
 
     [self publishProtocolMessage:pm callback:^(ARTMessageSendStatus *status) {
         if (completion) {
-            completion(status.status.errorInfo);
+            completion(status.status.errorInfo, status.publishResult);
         }
     }];
- }
+}
 #endif
 
 - (void)internalSendEditRequestForMessage:(ARTMessage *)message
@@ -726,6 +738,15 @@ art_dispatch_sync(_queue, ^{
     }
 
     [self emit:stateChange.event with:stateChange];
+
+#ifdef ABLY_SUPPORTS_PLUGINS
+    {
+        id<APLiveObjectsInternalPluginProtocol> plugin = self.realtime.options.liveObjectsPlugin;
+        if ([plugin respondsToSelector:@selector(nosync_onChannelStateChanged:toState:reason:)]) {
+            [plugin nosync_onChannelStateChanged:self toState:ARTConvertToPluginChannelState(state) reason:self->_errorReason];
+        }
+    }
+#endif
 
     if (channelRetryListener) {
         [channelRetryListener startTimer];

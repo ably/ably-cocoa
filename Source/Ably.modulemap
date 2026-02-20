@@ -143,5 +143,7 @@ framework module Ably {
         header "ARTMessageOperation+Private.h"
         header "ARTMessage+Private.h"
         header "ARTMessageSendStatus.h"
+        header "ARTPublishResult+Private.h"
+        header "ARTPublishResultSerial+Private.h"
     }
 }
