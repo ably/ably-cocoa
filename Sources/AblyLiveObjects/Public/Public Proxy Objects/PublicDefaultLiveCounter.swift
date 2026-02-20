@@ -10,11 +10,13 @@ internal final class PublicDefaultLiveCounter: LiveCounter {
     // MARK: - Dependencies that hold a strong reference to `proxied`
 
     private let coreSDK: CoreSDK
+    private let realtimeObjects: any InternalRealtimeObjectsProtocol
     private let logger: Logger
 
-    internal init(proxied: InternalDefaultLiveCounter, coreSDK: CoreSDK, logger: Logger) {
+    internal init(proxied: InternalDefaultLiveCounter, coreSDK: CoreSDK, realtimeObjects: any InternalRealtimeObjectsProtocol, logger: Logger) {
         self.proxied = proxied
         self.coreSDK = coreSDK
+        self.realtimeObjects = realtimeObjects
         self.logger = logger
     }
 
@@ -27,11 +29,11 @@ internal final class PublicDefaultLiveCounter: LiveCounter {
     }
 
     internal func increment(amount: Double) async throws(ARTErrorInfo) {
-        try await proxied.increment(amount: amount, coreSDK: coreSDK)
+        try await proxied.increment(amount: amount, coreSDK: coreSDK, realtimeObjects: realtimeObjects)
     }
 
     internal func decrement(amount: Double) async throws(ARTErrorInfo) {
-        try await proxied.decrement(amount: amount, coreSDK: coreSDK)
+        try await proxied.decrement(amount: amount, coreSDK: coreSDK, realtimeObjects: realtimeObjects)
     }
 
     internal func subscribe(listener: @escaping LiveObjectUpdateCallback<LiveCounterUpdate>) throws(ARTErrorInfo) -> any SubscribeResponse {

@@ -1,8 +1,22 @@
 internal import _AblyPluginSupportPrivate
 import Ably
 
+/// Protocol that abstracts `InternalDefaultRealtimeObjects`, for testability.
+internal protocol InternalRealtimeObjectsProtocol: LiveMapObjectsPoolDelegate {
+    /// Per RTO20.
+    ///
+    /// The callback may be invoked while exclusive access to internal state is held, so it must not
+    /// call other methods on this object that read or mutate its state.
+    /// https://github.com/ably/ably-liveobjects-swift-plugin/issues/120 tracks removing this restriction.
+    func nosync_publishAndApply(
+        objectMessages: [OutboundObjectMessage],
+        coreSDK: CoreSDK,
+        callback: @escaping @Sendable (Result<Void, ARTErrorInfo>) -> Void,
+    )
+}
+
 /// This provides the implementation behind ``PublicDefaultRealtimeObjects``, via internal versions of the ``RealtimeObjects`` API.
-internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoolDelegate {
+internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeObjectsProtocol {
     private let mutableStateMutex: DispatchQueueMutex<MutableState>
 
     private let logger: Logger
@@ -199,23 +213,23 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
                             timestamp: timestamp,
                         )
 
-                        // RTO11g
-                        coreSDK.nosync_publish(objectMessages: [creationOperation.objectMessage]) { [self] result in
+                        // RTO11i
+                        nosync_publishAndApply(objectMessages: [creationOperation.objectMessage], coreSDK: coreSDK) { mutableState, result in
                             switch result {
                             case let .failure(error):
                                 continuation.resume(returning: .failure(error))
                             case .success:
                                 // RTO11h
-                                let map = mutableStateMutex.withoutSync { mutableState in
-                                    mutableState.objectsPool.nosync_getOrCreateMap(
-                                        creationOperation: creationOperation,
-                                        logger: logger,
-                                        internalQueue: mutableStateMutex.dispatchQueue,
-                                        userCallbackQueue: userCallbackQueue,
-                                        clock: clock,
-                                    )
+
+                                // RTO11h2
+                                guard case let .map(existingMap) = mutableState.objectsPool.entries[creationOperation.objectID] else {
+                                    // RTO11h3d: Object should have been created by publishAndApply
+                                    let error = LiveObjectsError.newlyCreatedObjectNotInPool(objectID: creationOperation.objectID).toARTErrorInfo()
+                                    continuation.resume(returning: .failure(error))
+                                    return
                                 }
-                                continuation.resume(returning: .success(map))
+
+                                continuation.resume(returning: .success(existingMap))
                             }
                         }
                     }
@@ -261,23 +275,23 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
                             timestamp: timestamp,
                         )
 
-                        // RTO12g
-                        coreSDK.nosync_publish(objectMessages: [creationOperation.objectMessage]) { [self] result in
+                        // RTO12i
+                        nosync_publishAndApply(objectMessages: [creationOperation.objectMessage], coreSDK: coreSDK) { mutableState, result in
                             switch result {
                             case let .failure(error):
                                 continuation.resume(returning: .failure(error))
                             case .success:
                                 // RTO12h
-                                let counter = mutableStateMutex.withoutSync { mutableState in
-                                    mutableState.objectsPool.nosync_getOrCreateCounter(
-                                        creationOperation: creationOperation,
-                                        logger: logger,
-                                        internalQueue: mutableStateMutex.dispatchQueue,
-                                        userCallbackQueue: userCallbackQueue,
-                                        clock: clock,
-                                    )
+
+                                // RTO12h2
+                                guard case let .counter(existingCounter) = mutableState.objectsPool.entries[creationOperation.objectID] else {
+                                    // RTO12h3d: Object should have been created by publishAndApply
+                                    let error = LiveObjectsError.newlyCreatedObjectNotInPool(objectID: creationOperation.objectID).toARTErrorInfo()
+                                    continuation.resume(returning: .failure(error))
+                                    return
                                 }
-                                continuation.resume(returning: .success(counter))
+
+                                continuation.resume(returning: .success(existingCounter))
                             }
                         }
                     }
@@ -352,6 +366,16 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
         }
     }
 
+    internal func nosync_onChannelStateChanged(toState state: _AblyPluginSupportPrivate.RealtimeChannelState, reason: ARTErrorInfo?) {
+        mutableStateMutex.withoutSync { mutableState in
+            mutableState.nosync_onChannelStateChanged(
+                toState: state,
+                reason: reason,
+                logger: logger,
+            )
+        }
+    }
+
     internal var testsOnly_receivedObjectProtocolMessages: AsyncStream<[InboundObjectMessage]> {
         receivedObjectProtocolMessages
     }
@@ -411,10 +435,121 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
         try await withCheckedContinuation { (continuation: CheckedContinuation<Result<Void, ARTErrorInfo>, _>) in
             mutableStateMutex.withSync { _ in
                 coreSDK.nosync_publish(objectMessages: objectMessages) { result in
-                    continuation.resume(returning: result)
+                    continuation.resume(returning: result.map { _ in })
                 }
             }
         }.get()
+    }
+
+    /// RTO20: Publishes ObjectMessages and applies them locally upon receiving the ACK from the server.
+    ///
+    /// Must be called from within `mutableStateMutex.withSync` (i.e. on the internal queue).
+    internal func nosync_publishAndApply(
+        objectMessages: [OutboundObjectMessage],
+        coreSDK: CoreSDK,
+        callback: @escaping @Sendable (Result<Void, ARTErrorInfo>) -> Void,
+    ) {
+        nosync_publishAndApply(objectMessages: objectMessages, coreSDK: coreSDK) { _, result in
+            callback(result)
+        }
+    }
+
+    /// Internal variant of ``nosync_publishAndApply`` whose callback receives `inout MutableState`,
+    /// allowing the caller to access mutable state (e.g. to look up a newly-created object) without
+    /// re-acquiring the mutex.
+    ///
+    /// This is a workaround for the fact that behavioural methods currently live on `MutableState`,
+    /// meaning callbacks are invoked while the mutex is held. See
+    /// https://github.com/ably/ably-liveobjects-swift-plugin/issues/120 for the longer-term fix.
+    ///
+    /// Must be called from within `mutableStateMutex.withSync` (i.e. on the internal queue).
+    private func nosync_publishAndApply(
+        objectMessages: [OutboundObjectMessage],
+        coreSDK: CoreSDK,
+        mutableStateCallback: @escaping @Sendable (inout MutableState, Result<Void, ARTErrorInfo>) -> Void,
+    ) {
+        // RTO20b: Publish via the core SDK. The callback fires asynchronously on the internal queue.
+        coreSDK.nosync_publish(objectMessages: objectMessages) { [self] result in
+            let publishResult: PublishResult
+            switch result {
+            case let .failure(error):
+                mutableStateMutex.withoutSync { mutableState in
+                    mutableStateCallback(&mutableState, .failure(error))
+                }
+                return
+            case let .success(pr):
+                publishResult = pr
+            }
+
+            logger.log("nosync_publishAndApply: received ACK for \(objectMessages.count) message(s), applying locally", level: .debug)
+
+            mutableStateMutex.withoutSync { mutableState in
+                // RTO20c1: Check siteCode
+                guard let siteCode = mutableState.siteCode else {
+                    logger.log("nosync_publishAndApply: operations will not be applied locally: siteCode not available from connectionDetails", level: .error)
+                    mutableStateCallback(&mutableState, .success(()))
+                    return
+                }
+
+                // RTO20c2: Check serials length
+                guard publishResult.serials.count == objectMessages.count else {
+                    logger.log("nosync_publishAndApply: operations will not be applied locally: PublishResult.serials has unexpected length (expected \(objectMessages.count), got \(publishResult.serials.count))", level: .error)
+                    mutableStateCallback(&mutableState, .success(()))
+                    return
+                }
+
+                // RTO20d: Create synthetic inbound ObjectMessages
+                let syntheticMessages = objectMessages.enumerated().compactMap { index, outboundMessage -> InboundObjectMessage? in
+                    // RTO20d1: Skip null serials (conflated)
+                    guard let serial = publishResult.serials[index] else {
+                        logger.log("nosync_publishAndApply: operation at index \(index) will not be applied locally: serial is null in PublishResult", level: .debug)
+                        return nil
+                    }
+
+                    // RTO20d2, RTO20d3: Create synthetic inbound message
+                    return .createSynthetic(from: outboundMessage, serial: serial, siteCode: siteCode)
+                }
+
+                // RTO20e: Build a waiter closure that owns both the apply-on-success
+                // and error-construction-on-failure logic. The waiter receives `inout MutableState`
+                // so it can apply synthetic messages and pass the reference through to the callback,
+                // avoiding re-entrant mutex acquisition.
+                let waiter: (inout MutableState, MutableState.PublishAndApplySyncWaiterOutcome) -> Void = { [self] mutableState, outcome in
+                    switch outcome {
+                    case .synced:
+                        // RTO20f: Apply synthetic messages with source: .local
+                        for syntheticMessage in syntheticMessages {
+                            mutableState.nosync_applyObjectProtocolMessageObjectMessage(
+                                syntheticMessage,
+                                source: .local,
+                                logger: logger,
+                                internalQueue: mutableStateMutex.dispatchQueue,
+                                userCallbackQueue: userCallbackQueue,
+                                clock: clock,
+                            )
+                        }
+                        mutableStateCallback(&mutableState, .success(()))
+                    case let .channelStateFailed(state, reason):
+                        // RTO20e1
+                        let error = LiveObjectsError.publishAndApplyFailedChannelStateChanged(
+                            channelState: state,
+                            reason: reason,
+                        )
+                        mutableStateCallback(&mutableState, .failure(error.toARTErrorInfo()))
+                    }
+                }
+
+                // Check sync state: if synced, invoke the waiter immediately; otherwise store it.
+                if mutableState.state.toObjectsSyncState != .synced {
+                    // RTO20e, RTO20e1: Store as a waiter; will be invoked when sync completes
+                    // or when the channel enters detached/suspended/failed.
+                    logger.log("nosync_publishAndApply: waiting for sync to complete before applying \(syntheticMessages.count) message(s)", level: .debug)
+                    mutableState.publishAndApplySyncWaiters.append(waiter)
+                } else {
+                    waiter(&mutableState, .synced)
+                }
+            }
+        }
     }
 
     // MARK: - Garbage collection of deleted objects and map entries
@@ -439,6 +574,15 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
         completedGarbageCollectionEventsWithoutBuffering
     }
 
+    /// Sets the `siteCode` from the latest `connectionDetails`.
+    ///
+    /// Call this upon receiving a `CONNECTED` `ProtocolMessage`.
+    internal func nosync_setSiteCode(_ siteCode: String?) {
+        mutableStateMutex.withoutSync { mutableState in
+            mutableState.siteCode = siteCode
+        }
+    }
+
     /// Sets the garbage collection grace period.
     ///
     /// Call this upon receiving a `CONNECTED` `ProtocolMessage`, per RTO10b2.
@@ -459,6 +603,12 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
     internal var testsOnly_gcGracePeriod: TimeInterval {
         mutableStateMutex.withSync { mutableState in
             mutableState.garbageCollectionGracePeriod.toTimeInterval
+        }
+    }
+
+    internal var testsOnly_appliedOnAckSerials: Set<String> {
+        mutableStateMutex.withSync { mutableState in
+            mutableState.appliedOnAckSerials
         }
     }
 
@@ -489,6 +639,30 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
 
         /// The RTO10b grace period for which we will retain tombstoned objects and map entries.
         internal var garbageCollectionGracePeriod: GarbageCollectionOptions.GracePeriod
+
+        /// RTO7b: Serials of operations that have been applied locally upon ACK but whose echoed OBJECT message has not yet been received.
+        internal var appliedOnAckSerials: Set<String> = [] // RTO7b1
+
+        /// The `siteCode` from the latest `ConnectionDetails`, pushed via ``nosync_setSiteCode``.
+        internal var siteCode: String?
+
+        /// The outcome passed to a `nosync_publishAndApply` sync waiter closure.
+        enum PublishAndApplySyncWaiterOutcome: Sendable {
+            case synced
+            case channelStateFailed(
+                state: _AblyPluginSupportPrivate.RealtimeChannelState,
+                reason: ARTErrorInfo?,
+            )
+        }
+
+        /// RTO20e/RTO20e1: Pending `nosync_publishAndApply` calls waiting for sync to complete.
+        /// Each closure captures the synthetic messages to apply and the user callback.
+        /// On sync completion, closures are called with `.synced`.
+        /// On channel state change to detached/suspended/failed, closures are called with `.channelStateFailed`.
+        ///
+        /// Waiters receive `inout MutableState` so they can apply synthetic messages and pass
+        /// mutable state access through to their callback, avoiding re-entrant mutex acquisition.
+        internal var publishAndApplySyncWaiters: [(inout MutableState, PublishAndApplySyncWaiterOutcome) -> Void] = []
 
         /// The RTO17 sync state. Also stores the sync sequence data.
         internal var state = State.initialized
@@ -569,8 +743,14 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
 
             // I have, for now, not directly implemented the "perform the actions for object sync completion" of RTO4b4 since my implementation doesn't quite match the model given there; here you only have a SyncObjectsPool if you have an OBJECT_SYNC in progress, which you might not have upon receiving an ATTACHED. Instead I've just implemented what seem like the relevant side effects. Can revisit this if "the actions for object sync completion" get more complex.
 
-            // RTO4b3, RTO4b4, RTO4b5, RTO5c3, RTO5c4, RTO5c5, RTO5c8
+            // RTO4b3, RTO4b4, RTO4b5, RTO5c3, RTO5c4, RTO5c5, RTO5c9, RTO5c8
+            appliedOnAckSerials.removeAll()
             transition(to: .synced, userCallbackQueue: userCallbackQueue)
+
+            // Resume any publishAndApply waiters now that sync is complete
+            nosync_drainPublishAndApplySyncWaiters(
+                outcome: .synced,
+            )
         }
 
         /// Implements the `OBJECT_SYNC` handling of RTO5.
@@ -667,8 +847,10 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
                 if !bufferedObjectOperations.isEmpty {
                     logger.log("Applying \(bufferedObjectOperations.count) buffered OBJECT ObjectMessages", level: .debug)
                     for objectMessage in bufferedObjectOperations {
+                        // RTO5c6
                         nosync_applyObjectProtocolMessageObjectMessage(
                             objectMessage,
+                            source: .channel,
                             logger: logger,
                             internalQueue: internalQueue,
                             userCallbackQueue: userCallbackQueue,
@@ -677,8 +859,16 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
                     }
                 }
 
+                // RTO5c9: Clear appliedOnAckSerials after sync
+                appliedOnAckSerials.removeAll()
+
                 // RTO5c3, RTO5c4, RTO5c5, RTO5c8
                 transition(to: .synced, userCallbackQueue: userCallbackQueue)
+
+                // Resume any publishAndApply waiters now that sync is complete
+                nosync_drainPublishAndApplySyncWaiters(
+                    outcome: .synced,
+                )
             }
         }
 
@@ -705,6 +895,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
                 for objectMessage in objectMessages {
                     nosync_applyObjectProtocolMessageObjectMessage(
                         objectMessage,
+                        source: .channel,
                         logger: logger,
                         internalQueue: internalQueue,
                         userCallbackQueue: userCallbackQueue,
@@ -715,8 +906,9 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
         }
 
         /// Implements the `OBJECT` application of RTO9.
-        private mutating func nosync_applyObjectProtocolMessageObjectMessage(
+        internal mutating func nosync_applyObjectProtocolMessageObjectMessage(
             _ objectMessage: InboundObjectMessage,
+            source: ObjectsOperationSource,
             logger: Logger,
             internalQueue: DispatchQueue,
             userCallbackQueue: DispatchQueue,
@@ -725,6 +917,13 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
             guard let operation = objectMessage.operation else {
                 // RTO9a1
                 logger.log("Unsupported OBJECT message received (no operation); \(objectMessage)", level: .warn)
+                return
+            }
+
+            // RTO9a3: Skip if already applied on ACK
+            if let serial = objectMessage.serial, appliedOnAckSerials.contains(serial) {
+                logger.log("Skipping OBJECT message: already applied on ACK; serial=\(serial)", level: .debug)
+                appliedOnAckSerials.remove(serial)
                 return
             }
 
@@ -752,18 +951,62 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
                 switch action {
                 case .mapCreate, .mapSet, .mapRemove, .counterCreate, .counterInc, .objectDelete:
                     // RTO9a2a3
-                    entry.nosync_apply(
+                    let applied = entry.nosync_apply(
                         operation,
+                        source: source,
                         objectMessageSerial: objectMessage.serial,
                         objectMessageSiteCode: objectMessage.siteCode,
                         objectMessageSerialTimestamp: objectMessage.serialTimestamp,
                         objectsPool: &objectsPool,
                     )
+
+                    // RTO9a2a4
+                    if source == .local, applied, let serial = objectMessage.serial {
+                        appliedOnAckSerials.insert(serial)
+                    }
                 }
             case let .unknown(rawValue):
                 // RTO9a2b
                 logger.log("Unsupported OBJECT operation action \(rawValue) received", level: .warn)
                 return
+            }
+        }
+
+        /// Drains all `nosync_publishAndApply` sync waiter closures, invoking each with the given outcome.
+        ///
+        /// Each waiter receives `&self` so it can apply synthetic messages and pass mutable state
+        /// access through to its callback without re-acquiring the mutex.
+        internal mutating func nosync_drainPublishAndApplySyncWaiters(
+            outcome: PublishAndApplySyncWaiterOutcome,
+        ) {
+            let waiters = publishAndApplySyncWaiters
+            publishAndApplySyncWaiters.removeAll()
+            for waiter in waiters {
+                waiter(&self, outcome)
+            }
+        }
+
+        /// RTO20e1: Called when the channel enters detached, suspended, or failed state.
+        /// Drains all waiting `nosync_publishAndApply` closures with a `.channelStateFailed` outcome.
+        internal mutating func nosync_onChannelStateChanged(
+            toState state: _AblyPluginSupportPrivate.RealtimeChannelState,
+            reason: ARTErrorInfo?,
+            logger: Logger,
+        ) {
+            switch state {
+            case .detached, .suspended, .failed:
+                guard !publishAndApplySyncWaiters.isEmpty else {
+                    return
+                }
+
+                logger.log("Channel entered \(state) state; rejecting \(publishAndApplySyncWaiters.count) publishAndApply waiter(s)", level: .debug)
+
+                // RTO20e1
+                nosync_drainPublishAndApplySyncWaiters(
+                    outcome: .channelStateFailed(state: state, reason: reason),
+                )
+            default:
+                break
             }
         }
 
@@ -792,7 +1035,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, LiveMapObjectsPoo
         /// Adds a subscriber to the ``internalObjectsEventSubscriptionStorage`` (i.e. unaffected by `offAll()`).
         @discardableResult
         internal mutating func onInternal(event: ObjectsEvent, callback: @escaping ObjectsEventCallback, updateSelfLater: @escaping UpdateMutableState) -> any OnObjectsEventResponse {
-            // TODO: Looking at this again later the whole process for adding a subscriber is really verbose and boilerplate-y, and I think the unfortunate result of me trying to be clever at some point; revisit in https://github.com/ably/ably-liveobjects-swift-plugin/issues/102
+            // TODO: Looking at this again later the whole process for adding a subscriber is really verbose and boilerplate-y, and I think the unfortunate result of me trying to be clever at some point; revisit in https://github.com/ably/ably-liveobjects-swift-plugin/issues/102. Also as things stand we end up not being able to use this method because we run into Swift exclusivity violations when we try to unsubscribe from within a listener that's invoked when the mutable state mutex is already held (see https://github.com/ably/ably-liveobjects-swift-plugin/issues/120), so e.g. the RTO20 wait-for-synced can't use this mechanism, which it should be able to.
             let updateSubscriptionStorage: SubscriptionStorage<ObjectsEvent, Void>.UpdateSubscriptionStorage = { action in
                 updateSelfLater { mutableState in
                     action(&mutableState.internalObjectsEventSubscriptionStorage)

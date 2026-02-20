@@ -1221,15 +1221,17 @@ struct InternalDefaultLiveMapTests {
             )
 
             // Apply operation with serial "ts1" which is lexicographically less than existing "ts2" and thus will be applied per RTLO4a (this is a non-pathological case of RTOL4a, that spec point being fully tested elsewhere)
-            internalQueue.ably_syncNoDeadlock {
+            let applied = internalQueue.ably_syncNoDeadlock {
                 map.nosync_apply(
                     operation,
+                    source: .channel,
                     objectMessageSerial: "ts1", // Less than existing "ts2"
                     objectMessageSiteCode: "site1",
                     objectMessageSerialTimestamp: nil,
                     objectsPool: &pool,
                 )
             }
+            #expect(!applied)
 
             // Check that the MAP_SET side-effects didn't happen:
             // Verify the operation was discarded - data unchanged (should still be "existing" from creation)
@@ -1238,9 +1240,10 @@ struct InternalDefaultLiveMapTests {
             #expect(map.testsOnly_siteTimeserials == ["site1": "ts2"])
         }
 
-        // @specOneOf(1/3) RTLM15c - We test this spec point for each possible operation
+        // @specOneOf(1/4) RTLM15c - We test this spec point for each possible operation
         // @spec RTLM15d1 - Tests MAP_CREATE operation application
         // @spec RTLM15d1a
+        // @spec RTLM15d1b
         @available(iOS 17.0.0, tvOS 17.0.0, *)
         @Test
         func appliesMapCreateOperation() async throws {
@@ -1259,15 +1262,17 @@ struct InternalDefaultLiveMapTests {
             var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Apply MAP_CREATE operation
-            internalQueue.ably_syncNoDeadlock {
+            let applied = internalQueue.ably_syncNoDeadlock {
                 map.nosync_apply(
                     operation,
+                    source: .channel,
                     objectMessageSerial: "ts1",
                     objectMessageSiteCode: "site1",
                     objectMessageSerialTimestamp: nil,
                     objectsPool: &pool,
                 )
             }
+            #expect(applied)
 
             // Verify the operation was applied - initial value merged (the full logic of RTLM16 is tested elsewhere; we just check for some of its side effects here)
             #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate)?.stringValue == "value1")
@@ -1280,9 +1285,10 @@ struct InternalDefaultLiveMapTests {
             #expect(subscriberInvocations.map(\.0) == [.init(update: ["key1": .updated])])
         }
 
-        // @specOneOf(2/3) RTLM15c - We test this spec point for each possible operation
+        // @specOneOf(2/4) RTLM15c - We test this spec point for each possible operation
         // @spec RTLM15d2 - Tests MAP_SET operation application
         // @spec RTLM15d2a
+        // @spec RTLM15d2b
         @available(iOS 17.0.0, tvOS 17.0.0, *)
         @Test
         func appliesMapSetOperation() async throws {
@@ -1316,15 +1322,17 @@ struct InternalDefaultLiveMapTests {
             )
 
             // Apply MAP_SET operation
-            internalQueue.ably_syncNoDeadlock {
+            let applied = internalQueue.ably_syncNoDeadlock {
                 map.nosync_apply(
                     operation,
+                    source: .channel,
                     objectMessageSerial: "ts1",
                     objectMessageSiteCode: "site1",
                     objectMessageSerialTimestamp: nil,
                     objectsPool: &pool,
                 )
             }
+            #expect(applied)
 
             // Verify the operation was applied - value updated (the full logic of RTLM7 is tested elsewhere; we just check for some of its side effects here)
             #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate)?.stringValue == "new")
@@ -1336,9 +1344,10 @@ struct InternalDefaultLiveMapTests {
             #expect(subscriberInvocations.map(\.0) == [.init(update: ["key1": .updated])])
         }
 
-        // @specOneOf(3/3) RTLM15c - We test this spec point for each possible operation
+        // @specOneOf(3/4) RTLM15c - We test this spec point for each possible operation
         // @spec RTLM15d3 - Tests MAP_REMOVE operation application
         // @spec RTLM15d3a
+        // @spec RTLM15d3b
         @available(iOS 17.0.0, tvOS 17.0.0, *)
         @Test
         func appliesMapRemoveOperation() async throws {
@@ -1372,15 +1381,17 @@ struct InternalDefaultLiveMapTests {
             )
 
             // Apply MAP_REMOVE operation
-            internalQueue.ably_syncNoDeadlock {
+            let applied = internalQueue.ably_syncNoDeadlock {
                 map.nosync_apply(
                     operation,
+                    source: .channel,
                     objectMessageSerial: "ts1",
                     objectMessageSiteCode: "site1",
                     objectMessageSerialTimestamp: nil,
                     objectsPool: &pool,
                 )
             }
+            #expect(applied)
 
             // Verify the operation was applied - key removed (the full logic of RTLM8 is tested elsewhere; we just check for some of its side effects here)
             #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate) == nil)
@@ -1390,6 +1401,40 @@ struct InternalDefaultLiveMapTests {
             // Verify update was emitted per RTLM15d3a
             let subscriberInvocations = await subscriber.getInvocations()
             #expect(subscriberInvocations.map(\.0) == [.init(update: ["key1": .removed])])
+        }
+
+        // @specOneOf(4/4) RTLM15c - Tests that siteTimeserials is NOT updated when source is LOCAL
+        @Test
+        func doesNotUpdateSiteTimeserialsForLocalSource() throws {
+            let logger = TestLogger()
+            let internalQueue = TestFactories.createInternalQueue()
+            let delegate = MockLiveMapObjectsPoolDelegate(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+
+            let operation = TestFactories.objectOperation(
+                action: .known(.mapSet),
+                mapOp: ObjectsMapOp(key: "key1", data: ObjectData(string: "new")),
+            )
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+
+            // Apply MAP_SET operation with LOCAL source
+            let applied = internalQueue.ably_syncNoDeadlock {
+                map.nosync_apply(
+                    operation,
+                    source: .local,
+                    objectMessageSerial: "ts1",
+                    objectMessageSiteCode: "site1",
+                    objectMessageSerialTimestamp: nil,
+                    objectsPool: &pool,
+                )
+            }
+            #expect(applied)
+
+            // Verify the operation was applied
+            #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate)?.stringValue == "new")
+            // Verify RTLM15c: siteTimeserials should NOT have been updated for LOCAL source
+            #expect(map.testsOnly_siteTimeserials.isEmpty)
         }
 
         // @spec RTLM15d4
@@ -1406,15 +1451,17 @@ struct InternalDefaultLiveMapTests {
 
             // Try to apply a COUNTER_CREATE to the map (not supported)
             var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-            internalQueue.ably_syncNoDeadlock {
+            let applied = internalQueue.ably_syncNoDeadlock {
                 map.nosync_apply(
                     TestFactories.counterCreateOperation(),
+                    source: .channel,
                     objectMessageSerial: "ts1",
                     objectMessageSiteCode: "site1",
                     objectMessageSerialTimestamp: nil,
                     objectsPool: &pool,
                 )
             }
+            #expect(!applied)
 
             // Check no update was emitted
             let subscriberInvocations = await subscriber.getInvocations()
@@ -1431,9 +1478,10 @@ struct InternalDefaultLiveMapTests {
             let internalQueue = TestFactories.createInternalQueue()
             let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             let coreSDK = MockCoreSDK(channelState: channelState, internalQueue: internalQueue)
+            let realtimeObjects = MockRealtimeObjects()
 
             await #expect {
-                try await map.set(key: "test", value: .string("value"), coreSDK: coreSDK)
+                try await map.set(key: "test", value: .string("value"), coreSDK: coreSDK, realtimeObjects: realtimeObjects)
             } throws: { error in
                 guard let errorInfo = error as? ARTErrorInfo else {
                     return false
@@ -1454,7 +1502,7 @@ struct InternalDefaultLiveMapTests {
         // @spec RTLM20e5d
         // @spec RTLM20e5e
         // @spec RTLM20e5f
-        // @spec RTLM20f
+        // @spec RTLM20g
         @Test(arguments: [
             // RTLM20e5a
             (value: { @Sendable internalQueue in .liveMap(.createZeroValued(objectID: "map:test@123", logger: TestLogger(), internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())) }, expectedData: .init(objectId: "map:test@123")),
@@ -1476,13 +1524,15 @@ struct InternalDefaultLiveMapTests {
             let internalQueue = TestFactories.createInternalQueue()
             let map = InternalDefaultLiveMap.createZeroValued(objectID: "map:test@123", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+            let realtimeObjects = MockRealtimeObjects()
 
             var publishedMessage: OutboundObjectMessage?
-            coreSDK.setPublishHandler { messages in
+            realtimeObjects.setPublishAndApplyHandler { messages in
                 publishedMessage = messages.first
+                return .success(())
             }
 
-            try await map.set(key: "testKey", value: value(internalQueue), coreSDK: coreSDK)
+            try await map.set(key: "testKey", value: value(internalQueue), coreSDK: coreSDK, realtimeObjects: realtimeObjects)
 
             let expectedMessage = OutboundObjectMessage(
                 operation: ObjectOperation(
@@ -1498,7 +1548,7 @@ struct InternalDefaultLiveMapTests {
                     ),
                 ),
             )
-            // RTLM20f
+            // RTLM20g
             let message = try #require(publishedMessage)
             #expect(message == expectedMessage)
         }
@@ -1509,13 +1559,14 @@ struct InternalDefaultLiveMapTests {
             let internalQueue = TestFactories.createInternalQueue()
             let map = InternalDefaultLiveMap.createZeroValued(objectID: "map:test@123", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+            let realtimeObjects = MockRealtimeObjects()
 
-            coreSDK.setPublishHandler { _ throws(ARTErrorInfo) in
-                throw LiveObjectsError.other(NSError(domain: "test", code: 0, userInfo: [NSLocalizedDescriptionKey: "Publish failed"])).toARTErrorInfo()
+            realtimeObjects.setPublishAndApplyHandler { _ in
+                .failure(LiveObjectsError.other(NSError(domain: "test", code: 0, userInfo: [NSLocalizedDescriptionKey: "Publish failed"])).toARTErrorInfo())
             }
 
             await #expect {
-                try await map.set(key: "testKey", value: .string("testValue"), coreSDK: coreSDK)
+                try await map.set(key: "testKey", value: .string("testValue"), coreSDK: coreSDK, realtimeObjects: realtimeObjects)
             } throws: { error in
                 guard let errorInfo = error as? ARTErrorInfo else {
                     return false
@@ -1534,9 +1585,10 @@ struct InternalDefaultLiveMapTests {
             let internalQueue = TestFactories.createInternalQueue()
             let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             let coreSDK = MockCoreSDK(channelState: channelState, internalQueue: internalQueue)
+            let realtimeObjects = MockRealtimeObjects()
 
             await #expect {
-                try await map.remove(key: "test", coreSDK: coreSDK)
+                try await map.remove(key: "test", coreSDK: coreSDK, realtimeObjects: realtimeObjects)
             } throws: { error in
                 guard let errorInfo = error as? ARTErrorInfo else {
                     return false
@@ -1551,20 +1603,22 @@ struct InternalDefaultLiveMapTests {
         // @spec RTLM21e2
         // @spec RTLM21e3
         // @spec RTLM21e4
-        // @spec RTLM21f
+        // @spec RTLM21g
         @Test
         func publishesCorrectObjectMessage() async throws {
             let logger = TestLogger()
             let internalQueue = TestFactories.createInternalQueue()
             let map = InternalDefaultLiveMap.createZeroValued(objectID: "map:test@123", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+            let realtimeObjects = MockRealtimeObjects()
 
             var publishedMessages: [OutboundObjectMessage] = []
-            coreSDK.setPublishHandler { messages in
+            realtimeObjects.setPublishAndApplyHandler { messages in
                 publishedMessages.append(contentsOf: messages)
+                return .success(())
             }
 
-            try await map.remove(key: "testKey", coreSDK: coreSDK)
+            try await map.remove(key: "testKey", coreSDK: coreSDK, realtimeObjects: realtimeObjects)
 
             let expectedMessage = OutboundObjectMessage(
                 operation: ObjectOperation(
@@ -1579,7 +1633,7 @@ struct InternalDefaultLiveMapTests {
                     ),
                 ),
             )
-            // RTLM21f
+            // RTLM21g
             #expect(publishedMessages.count == 1)
             #expect(publishedMessages[0] == expectedMessage)
         }
@@ -1590,13 +1644,14 @@ struct InternalDefaultLiveMapTests {
             let internalQueue = TestFactories.createInternalQueue()
             let map = InternalDefaultLiveMap.createZeroValued(objectID: "map:test@123", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+            let realtimeObjects = MockRealtimeObjects()
 
-            coreSDK.setPublishHandler { _ throws(ARTErrorInfo) in
-                throw LiveObjectsError.other(NSError(domain: "test", code: 0, userInfo: [NSLocalizedDescriptionKey: "Publish failed"])).toARTErrorInfo()
+            realtimeObjects.setPublishAndApplyHandler { _ in
+                .failure(LiveObjectsError.other(NSError(domain: "test", code: 0, userInfo: [NSLocalizedDescriptionKey: "Publish failed"])).toARTErrorInfo())
             }
 
             await #expect {
-                try await map.remove(key: "testKey", coreSDK: coreSDK)
+                try await map.remove(key: "testKey", coreSDK: coreSDK, realtimeObjects: realtimeObjects)
             } throws: { error in
                 guard let errorInfo = error as? ARTErrorInfo else {
                     return false

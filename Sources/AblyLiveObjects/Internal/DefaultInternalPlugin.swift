@@ -70,10 +70,10 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
     /// A class that wraps an object message.
     ///
     /// We need this intermediate type because we want object messages to be structs — because they're nicer to work with internally — but a struct can't conform to the class-bound `_AblyPluginSupportPrivate.ObjectMessageProtocol`.
-    private final class ObjectMessageBox<T>: _AblyPluginSupportPrivate.ObjectMessageProtocol where T: Sendable {
+    internal final class ObjectMessageBox<T>: _AblyPluginSupportPrivate.ObjectMessageProtocol where T: Sendable {
         internal let objectMessage: T
 
-        init(objectMessage: T) {
+        internal init(objectMessage: T) {
             self.objectMessage = objectMessage
         }
     }
@@ -143,11 +143,32 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
         )
     }
 
-    internal func nosync_onConnected(withConnectionDetails connectionDetails: (any ConnectionDetailsProtocol)?, channel: any RealtimeChannel) {
-        let gracePeriod = connectionDetails?.objectsGCGracePeriod?.doubleValue ?? InternalDefaultRealtimeObjects.GarbageCollectionOptions.defaultGracePeriod
+    internal func nosync_onChannelStateChanged(_ channel: _AblyPluginSupportPrivate.RealtimeChannel, toState state: _AblyPluginSupportPrivate.RealtimeChannelState, reason: (any _AblyPluginSupportPrivate.PublicErrorInfo)?) {
+        let errorReason = reason.map { ARTErrorInfo.castPluginPublicErrorInfo($0) }
+        nosync_realtimeObjects(for: channel).nosync_onChannelStateChanged(toState: state, reason: errorReason)
+    }
 
+    internal func nosync_onConnected(withConnectionDetails connectionDetails: (any ConnectionDetailsProtocol)?, channel: any RealtimeChannel) {
+        let realtimeObjects = nosync_realtimeObjects(for: channel)
+
+        let gracePeriod = connectionDetails?.objectsGCGracePeriod?.doubleValue ?? InternalDefaultRealtimeObjects.GarbageCollectionOptions.defaultGracePeriod
         // RTO10b
-        nosync_realtimeObjects(for: channel).nosync_setGarbageCollectionGracePeriod(gracePeriod)
+        realtimeObjects.nosync_setGarbageCollectionGracePeriod(gracePeriod)
+
+        // Push the siteCode from connectionDetails
+        let siteCode: String? = {
+            guard let connectionDetails else {
+                return nil
+            }
+
+            // This is a fallback; our ably-cocoa dependency version should ensure that this is never triggered.
+            guard (connectionDetails as AnyObject).responds(to: #selector(ConnectionDetailsProtocol.siteCode)) else {
+                preconditionFailure("ably-cocoa's connectionDetails does not implement siteCode. Please update ably-cocoa to a version that supports apply-on-ACK.")
+            }
+
+            return connectionDetails.siteCode?()
+        }()
+        realtimeObjects.nosync_setSiteCode(siteCode)
     }
 
     // MARK: - Sending `OBJECT` ProtocolMessage
@@ -157,21 +178,31 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
         channel: _AblyPluginSupportPrivate.RealtimeChannel,
         client: _AblyPluginSupportPrivate.RealtimeClient,
         pluginAPI: PluginAPIProtocol,
-        callback: @escaping @Sendable (Result<Void, ARTErrorInfo>) -> Void,
+        callback: @escaping @Sendable (Result<PublishResult, ARTErrorInfo>) -> Void,
     ) {
         let objectMessageBoxes: [ObjectMessageBox<OutboundObjectMessage>] = objectMessages.map { .init(objectMessage: $0) }
         let internalQueue = pluginAPI.internalQueue(for: client)
 
-        pluginAPI.nosync_sendObject(
+        // This is a fallback; our ably-cocoa dependency version should ensure that this is never triggered.
+        guard (pluginAPI as AnyObject).responds(to: #selector(PluginAPIProtocol.nosync_sendObject(withObjectMessages:channel:completionWithResult:))) else {
+            preconditionFailure("ably-cocoa does not implement nosync_sendObjectWithObjectMessages:channel:completionWithResult:. Please update ably-cocoa to a version that supports apply-on-ACK.")
+        }
+
+        pluginAPI.nosync_sendObject!(
             withObjectMessages: objectMessageBoxes,
             channel: channel,
-        ) { error in
+        ) { pluginPublishResult, error in
             dispatchPrecondition(condition: .onQueue(internalQueue))
 
             if let error {
                 callback(.failure(ARTErrorInfo.castPluginPublicErrorInfo(error)))
             } else {
-                callback(.success(()))
+                guard let pluginPublishResult else {
+                    preconditionFailure("Got nil publishResult and nil error")
+                }
+
+                let publishResult = PublishResult(pluginPublishResult: pluginPublishResult)
+                callback(.success(publishResult))
             }
         }
     }

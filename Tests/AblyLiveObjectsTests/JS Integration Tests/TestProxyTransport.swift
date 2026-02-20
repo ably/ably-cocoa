@@ -404,7 +404,7 @@ class TestProxyTransport: ARTWebSocketTransport, @unchecked Sendable {
         msg.action = .connected
         msg.connectionId = "x-xxxxxxxx"
         msg.connectionKey = "xxxxxxx-xxxxxxxxxxxxxx-xxxxxxxx"
-        msg.connectionDetails = ARTConnectionDetails(clientId: clientId, connectionKey: "a8c10!t-3D0O4ejwTdvLkl-b33a8c10", maxMessageSize: 16384, maxFrameSize: 262_144, maxInboundRate: 250, connectionStateTtl: 60, serverId: "testServerId", maxIdleInterval: 15000, objectsGCGracePeriod: 86_400_000)
+        msg.connectionDetails = ARTConnectionDetails(clientId: clientId, connectionKey: "a8c10!t-3D0O4ejwTdvLkl-b33a8c10", maxMessageSize: 16384, maxFrameSize: 262_144, maxInboundRate: 250, connectionStateTtl: 60, serverId: "testServerId", maxIdleInterval: 15000, objectsGCGracePeriod: 86_400_000, siteCode: nil)
         super.receive(msg)
     }
 }
