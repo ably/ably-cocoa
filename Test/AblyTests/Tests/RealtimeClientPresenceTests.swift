@@ -3881,32 +3881,13 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
     }
 
-    // TP3i
+    // TP3i – Verifies that extras are correctly decoded on presence messages received via Realtime.
+    // We use JWT user claims to have the server populate extras.userClaim on the presence message,
+    // confirming that the SDK correctly decodes extras on incoming presence messages.
     func test__119__Presence__presence_message_attributes__extras_should_be_populated_from_user_claims_in_JWT() throws {
         let test = Test()
-        let options = try AblyTests.commonAppSetup(for: test)
-
-        guard let keyParts = options.key?.components(separatedBy: ":"),
-              keyParts.count == 2 else {
-            XCTFail("Invalid API key")
-            return
-        }
-        let keyName = keyParts[0]
-        let keySecret = keyParts[1]
-
         let channelName = test.uniqueChannelName()
         let userClaimValue = "admin"
-
-        // Build an Ably JWT with a user claim for the channel
-        let now = Int(Date().timeIntervalSince1970)
-        let claims: [String: Any] = [
-            "iat": now,
-            "exp": now + 3600,
-            "x-ably-capability": "{\"*\":[\"*\"]}",
-            "x-ably-clientId": "jwtClient",
-            "ably.channel.\(channelName)": userClaimValue,
-        ]
-        let jwtToken = try signJWT(claims: claims, keyName: keyName, keySecret: keySecret)
 
         // Client 1 subscribes to presence on the channel
         let subscribeOptions = try AblyTests.commonAppSetup(for: test)
@@ -3918,34 +3899,35 @@ class RealtimeClientPresenceTests: XCTestCase {
         let channel1 = client1.channels.get(channelName)
         attachAndWaitForInitialPresenceSyncToComplete(client: client1, channel: channel1)
 
-        // Client 2 connects with the JWT and enters presence
+        // Client 2 connects with a JWT containing a user claim for the channel and enters presence
+        let jwtToken = try getJWTToken(for: test, clientId: "jwtClient", extraClaims: ["ably.channel.\(channelName)": userClaimValue])
         let jwtOptions = try AblyTests.clientOptions(for: test)
+        jwtOptions.testOptions.channelNamePrefix = nil
         jwtOptions.token = jwtToken
         let client2 = ARTRealtime(options: jwtOptions)
         defer { client2.dispose(); client2.close() }
         let channel2 = client2.channels.get(channelName)
 
         waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(2, done: done)
+
             channel1.presence.subscribe(.enter) { message in
                 XCTAssertEqual(message.clientId, "jwtClient")
 
                 guard let extras = message.extras as? NSDictionary else {
                     XCTFail("extras should not be nil on presence message")
-                    done()
+                    partialDone()
                     return
                 }
 
                 let userClaim = extras["userClaim"] as? String
                 XCTAssertEqual(userClaim, userClaimValue)
-                done()
+                partialDone()
             }
 
             channel2.presence.enter("online") { error in
-                if let error = error {
-                    XCTFail("presence.enter failed: \(error)")
-                    done()
-                    return
-                }
+                XCTAssertNil(error)
+                partialDone()
             }
         }
     }

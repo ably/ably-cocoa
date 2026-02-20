@@ -586,9 +586,9 @@ func getTestTokenDetails(for test: Test, key: String? = nil, clientId: String? =
     return try result.get()
 }
 
-// Gets a JWT for use in tests. By default this will sign the token locally, but for some cases (e.g. embedded JWTs), it will
+// Gets a JWT for use in tests. By default this will sign the token locally, but for some cases (e.g. embedded JWTs), it will use
 // the echoserver that has this functionality.
-func getJWTToken(for test: Test, invalid: Bool = false, expiresIn: Int = 3600, clientId: String = "testClientIDiOS", capability: String = "{\"*\":[\"*\"]}", jwtType: String = "", encrypted: Int = 0) throws -> String? {
+func getJWTToken(for test: Test, invalid: Bool = false, expiresIn: Int = 3600, clientId: String = "testClientIDiOS", capability: String = "{\"*\":[\"*\"]}", jwtType: String = "", encrypted: Int = 0, extraClaims: [String: Any] = [:]) throws -> String? {
     let options = try AblyTests.commonAppSetup(for: test)
     guard let components = options.key?.components(separatedBy: ":"), let keyName = components.first, var keySecret = components.last else {
         fail("Invalid API key: \(options.key ?? "nil")")
@@ -603,12 +603,15 @@ func getJWTToken(for test: Test, invalid: Bool = false, expiresIn: Int = 3600, c
     }
 
     let now = Int(Date().timeIntervalSince1970)
-    let claims: [String: Any] = [
+    var claims: [String: Any] = [
         "iat": now,
         "exp": now + expiresIn,
         "x-ably-capability": capability,
         "x-ably-clientId": clientId,
     ]
+    for (key, value) in extraClaims {
+        claims[key] = value
+    }
     return try signJWT(claims: claims, keyName: keyName, keySecret: keySecret)
 }
 
