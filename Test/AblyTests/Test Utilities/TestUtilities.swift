@@ -1,4 +1,5 @@
 import Ably
+import CommonCrypto
 import Foundation
 import XCTest
 import Nimble
@@ -585,16 +586,36 @@ func getTestTokenDetails(for test: Test, key: String? = nil, clientId: String? =
     return try result.get()
 }
 
-func getJWTToken(for test: Test, invalid: Bool = false, expiresIn: Int = 3600, clientId: String = "testClientIDiOS", capability: String = "{\"*\":[\"*\"]}", jwtType: String = "", encrypted: Int = 0) throws -> String? {
+// Gets a JWT for use in tests. By default this will sign the token locally, but for some cases (e.g. embedded JWTs), it will use
+// the echoserver that has this functionality.
+func getJWTToken(for test: Test, invalid: Bool = false, expiresIn: Int = 3600, clientId: String = "testClientIDiOS", capability: String = "{\"*\":[\"*\"]}", jwtType: String = "", encrypted: Int = 0, extraClaims: [String: Any] = [:]) throws -> String? {
     let options = try AblyTests.commonAppSetup(for: test)
     guard let components = options.key?.components(separatedBy: ":"), let keyName = components.first, var keySecret = components.last else {
         fail("Invalid API key: \(options.key ?? "nil")")
         return nil
     }
-    if (invalid) {
+    if invalid {
         keySecret = "invalid"
     }
 
+    if !jwtType.isEmpty {
+        return try getEmbeddedJWTTokenViaEchoServer(keyName: keyName, keySecret: keySecret, expiresIn: expiresIn, clientId: clientId, capability: capability, jwtType: jwtType, encrypted: encrypted)
+    }
+
+    let now = Int(Date().timeIntervalSince1970)
+    var claims: [String: Any] = [
+        "iat": now,
+        "exp": now + expiresIn,
+        "x-ably-capability": capability,
+        "x-ably-clientId": clientId,
+    ]
+    for (key, value) in extraClaims {
+        claims[key] = value
+    }
+    return try signJWT(claims: claims, keyName: keyName, keySecret: keySecret)
+}
+
+private func getEmbeddedJWTTokenViaEchoServer(keyName: String, keySecret: String, expiresIn: Int, clientId: String, capability: String, jwtType: String, encrypted: Int) throws -> String? {
     var urlComponents = URLComponents(string: echoServerAddress)
     urlComponents?.queryItems = [
         URLQueryItem(name: "keyName", value: keyName),
@@ -604,12 +625,52 @@ func getJWTToken(for test: Test, invalid: Bool = false, expiresIn: Int = 3600, c
         URLQueryItem(name: "capability", value: capability),
         URLQueryItem(name: "jwtType", value: jwtType),
         URLQueryItem(name: "encrypted", value: String(encrypted)),
-        URLQueryItem(name: "environment", value: getEnvironment())
+        URLQueryItem(name: "environment", value: getEnvironment()),
     ]
 
     let request = NSMutableURLRequest(url: urlComponents!.url!)
     let (responseData, _) = try SynchronousHTTPClient().perform(request)
     return String(data: responseData, encoding: String.Encoding.utf8)
+}
+
+func signJWT(claims: [String: Any], keyName: String, keySecret: String) throws -> String {
+    let header: [String: Any] = [
+        "typ": "JWT",
+        "alg": "HS256",
+        "kid": keyName,
+    ]
+
+    let headerData = try JSONSerialization.data(withJSONObject: header)
+    let claimsData = try JSONSerialization.data(withJSONObject: claims)
+
+    let headerBase64 = base64urlEncode(headerData)
+    let claimsBase64 = base64urlEncode(claimsData)
+
+    let signingInput = "\(headerBase64).\(claimsBase64)"
+    guard let signingInputData = signingInput.data(using: .utf8),
+          let keyData = keySecret.data(using: .utf8) else {
+        throw NSError(domain: AblyTestsErrorDomain, code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to encode JWT signing input"])
+    }
+
+    var hmac = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
+    signingInputData.withUnsafeBytes { inputBytes in
+        keyData.withUnsafeBytes { keyBytes in
+            CCHmac(CCHmacAlgorithm(kCCHmacAlgSHA256),
+                   keyBytes.baseAddress, keyData.count,
+                   inputBytes.baseAddress, signingInputData.count,
+                   &hmac)
+        }
+    }
+    let signatureBase64 = base64urlEncode(Data(hmac))
+
+    return "\(headerBase64).\(claimsBase64).\(signatureBase64)"
+}
+
+func base64urlEncode(_ data: Data) -> String {
+    return data.base64EncodedString()
+        .replacingOccurrences(of: "+", with: "-")
+        .replacingOccurrences(of: "/", with: "_")
+        .replacingOccurrences(of: "=", with: "")
 }
 
 func getKeys(for test: Test) throws -> Dictionary<String, String> {
