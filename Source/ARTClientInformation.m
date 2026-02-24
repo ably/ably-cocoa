@@ -6,7 +6,7 @@
 #import <sys/utsname.h>
 
 NSString *const ARTClientInformationAgentNotVersioned = @"ARTClientInformationAgentNotVersioned";
-NSString *const ARTClientInformation_libraryVersion = @"1.2.57";
+NSString *const ARTClientInformation_libraryVersion = @"1.2.58";
 static NSString *const _libraryName = @"ably-cocoa";
 
 // NSOperatingSystemVersion has NSInteger as version components for some reason, so mitigate it here.
