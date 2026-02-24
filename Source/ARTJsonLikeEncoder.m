@@ -445,6 +445,7 @@
     message.action = [self presenceActionFromInt:action];
 
     message.connectionId = [input artString:@"connectionId"];
+    message.extras = [input objectForKey:@"extras"]; // TP3i
 
     return message;
 }
@@ -751,6 +752,10 @@
     }
     if(message.connectionId) {
         [output setObject:message.connectionId forKey:@"connectionId"];
+    }
+
+    if (message.extras) {
+        [output setObject:message.extras forKey:@"extras"]; // TP3i
     }
 
     int action = [self intFromPresenceMessageAction:message.action];
