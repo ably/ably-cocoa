@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.2.58](https://github.com/ably/ably-cocoa/tree/1.2.58)
+
+### What's Changed
+
+* Decode and encode extras on presence messages (TP3i) by @AndyTWF in https://github.com/ably/ably-cocoa/pull/2186
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.57...1.2.58
+
 ## [1.2.57](https://github.com/ably/ably-cocoa/tree/1.2.57)
 
 ### What's Changed
