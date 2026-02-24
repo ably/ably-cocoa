@@ -107,7 +107,7 @@ struct ObjectsPoolTests {
             )
 
             internalQueue.ably_syncNoDeadlock {
-                pool.nosync_applySyncObjectsPool([.init(state: objectState, objectMessageSerialTimestamp: nil)], logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+                pool.nosync_applySyncObjectsPool(.init(entries: [.init(state: objectState, objectMessageSerialTimestamp: nil)]), logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             }
 
             // Verify the existing map was updated by checking side effects of InternalDefaultLiveMap.replaceData(using:)
@@ -148,7 +148,7 @@ struct ObjectsPoolTests {
             )
 
             internalQueue.ably_syncNoDeadlock {
-                pool.nosync_applySyncObjectsPool([.init(state: objectState, objectMessageSerialTimestamp: nil)], logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+                pool.nosync_applySyncObjectsPool(.init(entries: [.init(state: objectState, objectMessageSerialTimestamp: nil)]), logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             }
 
             // Verify the existing counter was updated by checking side effects of InternalDefaultLiveCounter.replaceData(using:)
@@ -180,7 +180,7 @@ struct ObjectsPoolTests {
             )
 
             internalQueue.ably_syncNoDeadlock {
-                pool.nosync_applySyncObjectsPool([.init(state: objectState, objectMessageSerialTimestamp: nil)], logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+                pool.nosync_applySyncObjectsPool(.init(entries: [.init(state: objectState, objectMessageSerialTimestamp: nil)]), logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             }
 
             // Verify a new counter was created and data was set by checking side effects of InternalDefaultLiveCounter.replaceData(using:)
@@ -211,7 +211,7 @@ struct ObjectsPoolTests {
             )
 
             internalQueue.ably_syncNoDeadlock {
-                pool.nosync_applySyncObjectsPool([.init(state: objectState, objectMessageSerialTimestamp: nil)], logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+                pool.nosync_applySyncObjectsPool(.init(entries: [.init(state: objectState, objectMessageSerialTimestamp: nil)]), logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             }
 
             // Verify a new map was created and data was set by checking side effects of InternalDefaultLiveMap.replaceData(using:)
@@ -241,7 +241,7 @@ struct ObjectsPoolTests {
             let invalidObjectState = TestFactories.objectState(objectId: "invalid")
 
             internalQueue.ably_syncNoDeadlock {
-                pool.nosync_applySyncObjectsPool([invalidObjectState, validObjectState].map { .init(state: $0, objectMessageSerialTimestamp: nil) }, logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+                pool.nosync_applySyncObjectsPool(.init(entries: [invalidObjectState, validObjectState].map { .init(state: $0, objectMessageSerialTimestamp: nil) }), logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             }
 
             // Check that there's no entry for the key that we don't know how to handle, and that it didn't interfere with the insertion of the we one that we do know how to handle
@@ -269,7 +269,7 @@ struct ObjectsPoolTests {
             let objectState = TestFactories.mapObjectState(objectId: "map:hash@1")
 
             internalQueue.ably_syncNoDeadlock {
-                pool.nosync_applySyncObjectsPool([.init(state: objectState, objectMessageSerialTimestamp: nil)], logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+                pool.nosync_applySyncObjectsPool(.init(entries: [.init(state: objectState, objectMessageSerialTimestamp: nil)]), logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             }
 
             // Verify only synced object and root remain
@@ -290,7 +290,7 @@ struct ObjectsPoolTests {
 
             // Sync with empty list (no objects)
             internalQueue.ably_syncNoDeadlock {
-                pool.nosync_applySyncObjectsPool([], logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+                pool.nosync_applySyncObjectsPool(.init(), logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             }
 
             // Verify root is preserved but other objects are removed
@@ -356,7 +356,7 @@ struct ObjectsPoolTests {
             ]
 
             internalQueue.ably_syncNoDeadlock {
-                pool.nosync_applySyncObjectsPool(syncObjects.map { .init(state: $0, objectMessageSerialTimestamp: nil) }, logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+                pool.nosync_applySyncObjectsPool(.init(entries: syncObjects.map { .init(state: $0, objectMessageSerialTimestamp: nil) }), logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             }
 
             // Verify final state

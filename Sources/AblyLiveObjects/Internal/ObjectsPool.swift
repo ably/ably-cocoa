@@ -278,7 +278,7 @@ internal struct ObjectsPool {
 
     /// Applies the objects gathered during an `OBJECT_SYNC` to this `ObjectsPool`, per RTO5c1 and RTO5c2.
     internal mutating func nosync_applySyncObjectsPool(
-        _ syncObjectsPool: [SyncObjectsPoolEntry],
+        _ syncObjectsPool: SyncObjectsPool,
         logger: Logger,
         internalQueue: DispatchQueue,
         userCallbackQueue: DispatchQueue,
