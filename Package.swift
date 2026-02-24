@@ -20,7 +20,7 @@ let package = Package(
         .package(name: "AblyDeltaCodec", url: "https://github.com/ably/delta-codec-cocoa", from: "1.3.5"),
         .package(name: "Nimble", url: "https://github.com/quick/nimble", from: "11.2.2"),
         // TODO: Unpin before release
-        .package(name: "ably-cocoa-plugin-support", url: "https://github.com/ably/ably-cocoa-plugin-support.git", .revision("242fac1d4a829c8a63f9b3f96a71809e1f6eeffc"))
+        .package(name: "ably-cocoa-plugin-support", url: "https://github.com/ably/ably-cocoa-plugin-support.git", .revision("b0ac0e1684b9e5a2c3fb38bcfa68b49f7767b6b4"))
     ],
     targets: [
         .target(

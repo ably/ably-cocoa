@@ -15,6 +15,8 @@ class PluginAPITests: XCTestCase {
     }
 
     class MockInternalLiveObjectsPlugin: NSObject, _AblyPluginSupportPrivate.LiveObjectsInternalPluginProtocol {
+        var compatibleWithProtocolV6: Bool { true }
+
         internal var receivedConnectionDetails: [(connectionDetails: (any ConnectionDetailsProtocol)?, channel: any RealtimeChannel)] = []
 
         func nosync_prepare(_ channel: any RealtimeChannel, client: any RealtimeClient) {
