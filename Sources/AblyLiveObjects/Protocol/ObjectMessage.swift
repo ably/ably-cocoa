@@ -34,27 +34,17 @@ internal struct OutboundObjectMessage: Equatable {
     internal var serialTimestamp: Date? // OM2j
 }
 
-/// A partial version of `ObjectOperation` that excludes the `action` and `objectId` property. Used for encoding initial values which don't include the `action` and where the `objectId` is not yet known.
-///
-/// `ObjectOperation` delegates its encoding and decoding to `PartialObjectOperation`.
-internal struct PartialObjectOperation {
-    internal var mapOp: ObjectsMapOp? // OOP3c
-    internal var counterOp: WireObjectsCounterOp? // OOP3d
-    internal var map: ObjectsMap? // OOP3e
-    internal var counter: WireObjectsCounter? // OOP3f
-    internal var nonce: String? // OOP3g
-    internal var initialValue: String? // OOP3h
-}
-
 internal struct ObjectOperation: Equatable {
     internal var action: WireEnum<ObjectOperationAction> // OOP3a
     internal var objectId: String // OOP3b
-    internal var mapOp: ObjectsMapOp? // OOP3c
-    internal var counterOp: WireObjectsCounterOp? // OOP3d
-    internal var map: ObjectsMap? // OOP3e
-    internal var counter: WireObjectsCounter? // OOP3f
-    internal var nonce: String? // OOP3g
-    internal var initialValue: String? // OOP3h
+    internal var mapCreate: MapCreate? // OOP3j
+    internal var mapSet: MapSet? // OOP3k
+    internal var mapRemove: WireMapRemove? // OOP3l
+    internal var counterCreate: WireCounterCreate? // OOP3m
+    internal var counterInc: WireCounterInc? // OOP3n
+    internal var objectDelete: WireObjectDelete? // OOP3o
+    internal var mapCreateWithObjectId: MapCreateWithObjectId? // OOP3p
+    internal var counterCreateWithObjectId: CounterCreateWithObjectId? // OOP3q
 }
 
 internal struct ObjectData: Equatable {
@@ -66,9 +56,34 @@ internal struct ObjectData: Equatable {
     internal var json: JSONObjectOrArray? // TODO: Needs specification (see https://github.com/ably/ably-liveobjects-swift-plugin/issues/46)
 }
 
-internal struct ObjectsMapOp: Equatable {
-    internal var key: String // OMO2a
-    internal var data: ObjectData? // OMO2b
+internal struct MapSet: Equatable {
+    internal var key: String // MST2a
+    internal var value: ObjectData? // MST2b
+}
+
+internal struct MapCreate: Equatable {
+    internal var semantics: WireEnum<ObjectsMapSemantics> // MCR2a
+    internal var entries: [String: ObjectsMapEntry]? // MCR2b
+}
+
+internal struct MapCreateWithObjectId: Equatable {
+    internal var initialValue: String // MCRO2a
+    internal var nonce: String // MCRO2b
+
+    /// The source `MapCreate` from which this `MapCreateWithObjectId` was derived.
+    /// For local use only (apply-on-ACK per RTLM23); must not be sent over the wire.
+    /// - SeeAlso: RTO11f18
+    internal var derivedFrom: MapCreate?
+}
+
+internal struct CounterCreateWithObjectId: Equatable {
+    internal var initialValue: String // CCRO2a
+    internal var nonce: String // CCRO2b
+
+    /// The source `WireCounterCreate` from which this `CounterCreateWithObjectId` was derived.
+    /// For local use only (apply-on-ACK per RTLC16); must not be sent over the wire.
+    /// - SeeAlso: RTO12f16
+    internal var derivedFrom: WireCounterCreate?
 }
 
 internal struct ObjectsMapEntry: Equatable {
@@ -150,30 +165,22 @@ internal extension ObjectOperation {
         wireObjectOperation: WireObjectOperation,
         format: _AblyPluginSupportPrivate.EncodingFormat
     ) throws(ARTErrorInfo) {
-        // Decode the action and objectId first they're not part of PartialObjectOperation
         action = wireObjectOperation.action
         objectId = wireObjectOperation.objectId
 
-        // Delegate to PartialObjectOperation for decoding
-        let partialOperation = try PartialObjectOperation(
-            partialWireObjectOperation: PartialWireObjectOperation(
-                mapOp: wireObjectOperation.mapOp,
-                counterOp: wireObjectOperation.counterOp,
-                map: wireObjectOperation.map,
-                counter: wireObjectOperation.counter,
-                nonce: wireObjectOperation.nonce,
-                initialValue: wireObjectOperation.initialValue,
-            ),
-            format: format,
-        )
-
-        // Copy the decoded values
-        mapOp = partialOperation.mapOp
-        counterOp = partialOperation.counterOp
-        map = partialOperation.map
-        counter = partialOperation.counter
-        nonce = partialOperation.nonce
-        initialValue = partialOperation.initialValue
+        mapCreate = try wireObjectOperation.mapCreate.map { wireMapCreate throws(ARTErrorInfo) in
+            try .init(wireMapCreate: wireMapCreate, format: format)
+        }
+        mapSet = try wireObjectOperation.mapSet.map { wireMapSet throws(ARTErrorInfo) in
+            try .init(wireMapSet: wireMapSet, format: format)
+        }
+        mapRemove = wireObjectOperation.mapRemove
+        counterCreate = wireObjectOperation.counterCreate
+        counterInc = wireObjectOperation.counterInc
+        objectDelete = wireObjectOperation.objectDelete
+        // Outbound-only — do not access on inbound data
+        mapCreateWithObjectId = nil
+        counterCreateWithObjectId = nil
     }
 
     /// Converts this `ObjectOperation` to a `WireObjectOperation`, applying the data encoding rules of OD4.
@@ -181,66 +188,17 @@ internal extension ObjectOperation {
     /// - Parameters:
     ///   - format: The format to use when applying the encoding rules of OD4.
     func toWire(format: _AblyPluginSupportPrivate.EncodingFormat) -> WireObjectOperation {
-        let partialWireOperation = PartialObjectOperation(
-            mapOp: mapOp,
-            counterOp: counterOp,
-            map: map,
-            counter: counter,
-            nonce: nonce,
-            initialValue: initialValue,
-        ).toWire(format: format)
-
-        // Create WireObjectOperation from PartialWireObjectOperation and add action and objectId
-        return WireObjectOperation(
+        .init(
             action: action,
             objectId: objectId,
-            mapOp: partialWireOperation.mapOp,
-            counterOp: partialWireOperation.counterOp,
-            map: partialWireOperation.map,
-            counter: partialWireOperation.counter,
-            nonce: partialWireOperation.nonce,
-            initialValue: partialWireOperation.initialValue,
-        )
-    }
-}
-
-internal extension PartialObjectOperation {
-    /// Initializes a `PartialObjectOperation` from a `PartialWireObjectOperation`, applying the data decoding rules of OD5.
-    ///
-    /// - Parameters:
-    ///   - format: The format to use when applying the decoding rules of OD5.
-    /// - Throws: `ARTErrorInfo` if JSON or Base64 decoding fails.
-    init(
-        partialWireObjectOperation: PartialWireObjectOperation,
-        format: _AblyPluginSupportPrivate.EncodingFormat
-    ) throws(ARTErrorInfo) {
-        mapOp = try partialWireObjectOperation.mapOp.map { wireObjectsMapOp throws(ARTErrorInfo) in
-            try .init(wireObjectsMapOp: wireObjectsMapOp, format: format)
-        }
-        counterOp = partialWireObjectOperation.counterOp
-        map = try partialWireObjectOperation.map.map { wireMap throws(ARTErrorInfo) in
-            try .init(wireObjectsMap: wireMap, format: format)
-        }
-        counter = partialWireObjectOperation.counter
-
-        // Do not access on inbound data, per OOP3g
-        nonce = nil
-        // Do not access on inbound data, per OOP3h
-        initialValue = nil
-    }
-
-    /// Converts this `PartialObjectOperation` to a `PartialWireObjectOperation`, applying the data encoding rules of OD4.
-    ///
-    /// - Parameters:
-    ///   - format: The format to use when applying the encoding rules of OD4.
-    func toWire(format: _AblyPluginSupportPrivate.EncodingFormat) -> PartialWireObjectOperation {
-        .init(
-            mapOp: mapOp?.toWire(format: format),
-            counterOp: counterOp,
-            map: map?.toWire(format: format),
-            counter: counter,
-            nonce: nonce,
-            initialValue: initialValue,
+            mapCreate: mapCreate?.toWire(format: format),
+            mapSet: mapSet?.toWire(format: format),
+            mapRemove: mapRemove,
+            counterCreate: counterCreate,
+            counterInc: counterInc,
+            objectDelete: objectDelete,
+            mapCreateWithObjectId: mapCreateWithObjectId?.toWire(),
+            counterCreateWithObjectId: counterCreateWithObjectId?.toWire(),
         )
     }
 }
@@ -349,31 +307,63 @@ internal extension ObjectData {
     }
 }
 
-internal extension ObjectsMapOp {
-    /// Initializes a `ObjectsMapOp` from a `WireObjectsMapOp`, applying the data decoding rules of OD5.
-    ///
-    /// - Parameters:
-    ///   - format: The format to use when applying the decoding rules of OD5.
-    /// - Throws: `ARTErrorInfo` if JSON or Base64 decoding fails.
+internal extension MapSet {
     init(
-        wireObjectsMapOp: WireObjectsMapOp,
+        wireMapSet: WireMapSet,
         format: _AblyPluginSupportPrivate.EncodingFormat
     ) throws(ARTErrorInfo) {
-        key = wireObjectsMapOp.key
-        data = try wireObjectsMapOp.data.map { wireObjectData throws(ARTErrorInfo) in
+        key = wireMapSet.key
+        value = try wireMapSet.value.map { wireObjectData throws(ARTErrorInfo) in
             try .init(wireObjectData: wireObjectData, format: format)
         }
     }
 
-    /// Converts this `ObjectsMapOp` to a `WireObjectsMapOp`, applying the data encoding rules of OD4.
-    ///
-    /// - Parameters:
-    ///   - format: The format to use when applying the encoding rules of OD4.
-    func toWire(format: _AblyPluginSupportPrivate.EncodingFormat) -> WireObjectsMapOp {
+    func toWire(format: _AblyPluginSupportPrivate.EncodingFormat) -> WireMapSet {
         .init(
             key: key,
-            data: data?.toWire(format: format),
+            value: value?.toWire(format: format),
         )
+    }
+}
+
+internal extension MapCreate {
+    init(
+        wireMapCreate: WireMapCreate,
+        format: _AblyPluginSupportPrivate.EncodingFormat
+    ) throws(ARTErrorInfo) {
+        semantics = wireMapCreate.semantics
+        entries = try wireMapCreate.entries?.ablyLiveObjects_mapValuesWithTypedThrow { wireMapEntry throws(ARTErrorInfo) in
+            try .init(wireObjectsMapEntry: wireMapEntry, format: format)
+        }
+    }
+
+    func toWire(format: _AblyPluginSupportPrivate.EncodingFormat) -> WireMapCreate {
+        .init(
+            semantics: semantics,
+            entries: entries?.mapValues { $0.toWire(format: format) },
+        )
+    }
+}
+
+internal extension MapCreateWithObjectId {
+    init(wireMapCreateWithObjectId: WireMapCreateWithObjectId) {
+        nonce = wireMapCreateWithObjectId.nonce
+        initialValue = wireMapCreateWithObjectId.initialValue
+    }
+
+    func toWire() -> WireMapCreateWithObjectId {
+        .init(initialValue: initialValue, nonce: nonce)
+    }
+}
+
+internal extension CounterCreateWithObjectId {
+    init(wireCounterCreateWithObjectId: WireCounterCreateWithObjectId) {
+        nonce = wireCounterCreateWithObjectId.nonce
+        initialValue = wireCounterCreateWithObjectId.initialValue
+    }
+
+    func toWire() -> WireCounterCreateWithObjectId {
+        .init(initialValue: initialValue, nonce: nonce)
     }
 }
 
@@ -522,12 +512,14 @@ extension ObjectOperation: CustomDebugStringConvertible {
 
         parts.append("action: \(action)")
         parts.append("objectId: \(objectId)")
-        if let mapOp { parts.append("mapOp: \(mapOp)") }
-        if let counterOp { parts.append("counterOp: \(counterOp)") }
-        if let map { parts.append("map: \(map)") }
-        if let counter { parts.append("counter: \(counter)") }
-        if let nonce { parts.append("nonce: \(nonce)") }
-        if let initialValue { parts.append("initialValue: \(initialValue)") }
+        if let mapCreate { parts.append("mapCreate: \(mapCreate)") }
+        if let mapSet { parts.append("mapSet: \(mapSet)") }
+        if let mapRemove { parts.append("mapRemove: \(mapRemove)") }
+        if let counterCreate { parts.append("counterCreate: \(counterCreate)") }
+        if let counterInc { parts.append("counterInc: \(counterInc)") }
+        if let objectDelete { parts.append("objectDelete: \(objectDelete)") }
+        if let mapCreateWithObjectId { parts.append("mapCreateWithObjectId: \(mapCreateWithObjectId)") }
+        if let counterCreateWithObjectId { parts.append("counterCreateWithObjectId: \(counterCreateWithObjectId)") }
 
         return "{ " + parts.joined(separator: ", ") + " }"
     }
@@ -543,17 +535,6 @@ extension ObjectState: CustomDebugStringConvertible {
         if let createOp { parts.append("createOp: \(createOp)") }
         if let map { parts.append("map: \(map)") }
         if let counter { parts.append("counter: \(counter)") }
-
-        return "{ " + parts.joined(separator: ", ") + " }"
-    }
-}
-
-extension ObjectsMapOp: CustomDebugStringConvertible {
-    internal var debugDescription: String {
-        var parts: [String] = []
-
-        parts.append("key: \(key)")
-        if let data { parts.append("data: \(data)") }
 
         return "{ " + parts.joined(separator: ", ") + " }"
     }
@@ -600,6 +581,59 @@ extension ObjectData: CustomDebugStringConvertible {
         if let number { parts.append("number: \(number)") }
         if let string { parts.append("string: \(string)") }
         if let json { parts.append("json: \(json)") }
+
+        return "{ " + parts.joined(separator: ", ") + " }"
+    }
+}
+
+extension MapSet: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        var parts: [String] = []
+
+        parts.append("key: \(key)")
+        if let value { parts.append("value: \(value)") }
+
+        return "{ " + parts.joined(separator: ", ") + " }"
+    }
+}
+
+extension MapCreate: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        var parts: [String] = []
+
+        parts.append("semantics: \(semantics)")
+        if let entries {
+            let formattedEntries = entries
+                .map { key, entry in
+                    "\(key): \(entry)"
+                }
+                .joined(separator: ", ")
+            parts.append("entries: { \(formattedEntries) }")
+        }
+
+        return "{ " + parts.joined(separator: ", ") + " }"
+    }
+}
+
+extension MapCreateWithObjectId: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        var parts: [String] = []
+
+        parts.append("initialValue: \(initialValue)")
+        parts.append("nonce: \(nonce)")
+        if let derivedFrom { parts.append("derivedFrom: \(derivedFrom)") }
+
+        return "{ " + parts.joined(separator: ", ") + " }"
+    }
+}
+
+extension CounterCreateWithObjectId: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        var parts: [String] = []
+
+        parts.append("initialValue: \(initialValue)")
+        parts.append("nonce: \(nonce)")
+        if let derivedFrom { parts.append("derivedFrom: \(derivedFrom)") }
 
         return "{ " + parts.joined(separator: ", ") + " }"
     }

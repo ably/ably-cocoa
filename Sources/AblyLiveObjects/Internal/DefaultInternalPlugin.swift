@@ -9,7 +9,13 @@ import ObjectiveC.NSObject
 internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.LiveObjectsInternalPluginProtocol {
     private let pluginAPI: _AblyPluginSupportPrivate.PluginAPIProtocol
 
+    internal var compatibleWithProtocolV6: Bool { true }
+
     internal init(pluginAPI: _AblyPluginSupportPrivate.PluginAPIProtocol) {
+        precondition(
+            pluginAPI.usesLiveObjectsProtocolV6,
+            "This version of the LiveObjects plugin requires a version of ably-cocoa that uses LiveObjects protocol v6.",
+        )
         self.pluginAPI = pluginAPI
     }
 

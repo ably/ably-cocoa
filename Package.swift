@@ -21,12 +21,12 @@ let package = Package(
         // TODO: Unpin before release
         .package(
             url: "https://github.com/ably/ably-cocoa.git",
-            revision: "fe6f8cf1e680276f4475229979595512fdc2b9e5",
+            revision: "460c1d11333dd58bbc924a3d153d1364b39bbdf0",
         ),
         // TODO: Unpin before release
         .package(
             url: "https://github.com/ably/ably-cocoa-plugin-support",
-            revision: "8bfbbaad56aa413aa53fc399e6a4ad284177ee84",
+            revision: "f2468ee39f3e18955b0ec4fe41dc5a9906a72633",
         ),
         .package(
             url: "https://github.com/apple/swift-argument-parser",

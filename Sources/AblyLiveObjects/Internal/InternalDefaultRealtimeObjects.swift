@@ -241,7 +241,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
     }
 
     internal func createMap(coreSDK: CoreSDK) async throws(ARTErrorInfo) -> InternalDefaultLiveMap {
-        // RTO11f4b
+        // RTO11f14b
         try await createMap(entries: [:], coreSDK: coreSDK)
     }
 
@@ -303,7 +303,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
     }
 
     internal func createCounter(coreSDK: CoreSDK) async throws(ARTErrorInfo) -> InternalDefaultLiveCounter {
-        // RTO12f2a
+        // RTO12f12a
         try await createCounter(count: 0, coreSDK: coreSDK)
     }
 

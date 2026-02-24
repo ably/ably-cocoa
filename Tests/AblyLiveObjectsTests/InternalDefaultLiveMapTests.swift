@@ -287,7 +287,7 @@ struct InternalDefaultLiveMapTests {
             internalQueue.ably_syncNoDeadlock {
                 _ = map.nosync_replaceData(using: state, objectMessageSerialTimestamp: nil, objectsPool: &pool)
             }
-            // Note that we just check for some basic expected side effects of merging the initial value; RTLM17 is tested in more detail elsewhere
+            // Note that we just check for some basic expected side effects of merging the initial value; RTLM23 is tested in more detail elsewhere
             // Check that it contains the data from the entries (per RTLM6c) and also the createOp (per RTLM6d)
             #expect(try map.get(key: "keyFromMapEntries", coreSDK: coreSDK, delegate: delegate)?.stringValue == "valueFromMapEntries")
             #expect(try map.get(key: "keyFromCreateOp", coreSDK: coreSDK, delegate: delegate)?.stringValue == "valueFromCreateOp")
@@ -621,21 +621,21 @@ struct InternalDefaultLiveMapTests {
 
                 // Verify the operation was discarded - existing data unchanged
                 #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate)?.stringValue == "existing")
-                // Verify that RTLM7c1 didn't happen (i.e. that we didn't create a zero-value object in the pool for object ID "new")
+                // Verify that RTLM7g1 didn't happen (i.e. that we didn't create a zero-value object in the pool for object ID "new")
                 #expect(Set(pool.entries.keys) == ["root"])
                 // Verify return value
                 #expect(update.isNoop)
             }
 
             // @spec RTLM7a2
-            // @specOneOf(1/2) RTLM7c1
+            // @specOneOf(1/2) RTLM7g1
             // @specOneOf(1/2) RTLM7f
             @Test(arguments: [
-                // Case 1: ObjectData refers to a number value (shouldn't modify the ObjectsPool per RTLM7c)
+                // Case 1: ObjectData refers to a number value (shouldn't modify the ObjectsPool per RTLM7g)
                 (operationData: ObjectData(number: NSNumber(value: 42)), expectedCreatedObjectID: nil),
-                // Case 2: ObjectData refers to an object value but the object ID is an empty string (shouldn't modify the ObjectsPool per RTLM7c)
+                // Case 2: ObjectData refers to an object value but the object ID is an empty string (shouldn't modify the ObjectsPool per RTLM7g)
                 (operationData: ObjectData(objectId: ""), expectedCreatedObjectID: nil),
-                // Case 3: ObjectData refers to an object value (should modify the ObjectsPool per RTLM7c and RTLM7c1)
+                // Case 3: ObjectData refers to an object value (should modify the ObjectsPool per RTLM7g and RTLM7g1)
                 (operationData: ObjectData(objectId: "map:referenced@123"), expectedCreatedObjectID: "map:referenced@123"),
             ] as [(operationData: ObjectData, expectedCreatedObjectID: String?)])
             func appliesOperationWhenCanBeApplied(operationData: ObjectData, expectedCreatedObjectID: String?) throws {
@@ -660,7 +660,7 @@ struct InternalDefaultLiveMapTests {
                     objectsPool: &pool,
                 )
 
-                // Update the delegate's pool to include any objects created by the MAP_SET operation (so that when we verify RTLM7b1 using map.get it can return a referenced object)
+                // Update the delegate's pool to include any objects created by the MAP_SET operation (so that when we verify RTLM7b4 using map.get it can return a referenced object)
                 if let expectedCreatedObjectID {
                     delegate.objects[expectedCreatedObjectID] = pool.entries[expectedCreatedObjectID]
                 }
@@ -673,7 +673,7 @@ struct InternalDefaultLiveMapTests {
                     #expect(result?.liveMapValue != nil)
                 }
 
-                // RTLM7a2a: Set ObjectsMapEntry.data to the ObjectData from the operation
+                // RTLM7a2e: Set ObjectsMapEntry.data to the ObjectData from the operation
                 #expect(map.testsOnly_data["key1"]?.data?.number == operationData.number)
                 #expect(map.testsOnly_data["key1"]?.data?.objectId == operationData.objectId)
 
@@ -683,7 +683,7 @@ struct InternalDefaultLiveMapTests {
                 // RTLM7a2c: Set ObjectsMapEntry.tombstone to false
                 #expect(map.testsOnly_data["key1"]?.tombstone == false)
 
-                // RTLM7c/RTLM7c1: Check if zero-value object was created in pool
+                // RTLM7g/RTLM7g1: Check if zero-value object was created in pool
                 if let expectedCreatedObjectID {
                     let createdObject = pool.entries[expectedCreatedObjectID]
                     #expect(createdObject != nil)
@@ -701,16 +701,16 @@ struct InternalDefaultLiveMapTests {
         // MARK: - RTLM7b Tests (No Existing Entry)
 
         struct NoExistingEntryTests {
-            // @spec RTLM7b1
+            // @spec RTLM7b4
             // @spec RTLM7b2
-            // @specOneOf(2/2) RTLM7c1
+            // @specOneOf(2/2) RTLM7g1
             // @specOneOf(2/2) RTLM7f
             @Test(arguments: [
-                // Case 1: ObjectData refers to a number value (shouldn't modify the ObjectsPool per RTLM7c)
+                // Case 1: ObjectData refers to a number value (shouldn't modify the ObjectsPool per RTLM7g)
                 (operationData: ObjectData(number: NSNumber(value: 42)), expectedCreatedObjectID: nil),
-                // Case 2: ObjectData refers to an object value but the object ID is an empty string (shouldn't modify the ObjectsPool per RTLM7c)
+                // Case 2: ObjectData refers to an object value but the object ID is an empty string (shouldn't modify the ObjectsPool per RTLM7g)
                 (operationData: ObjectData(objectId: ""), expectedCreatedObjectID: nil),
-                // Case 3: ObjectData refers to an object value (should modify the ObjectsPool per RTLM7c and RTLM7c1)
+                // Case 3: ObjectData refers to an object value (should modify the ObjectsPool per RTLM7g and RTLM7g1)
                 (operationData: ObjectData(objectId: "map:referenced@123"), expectedCreatedObjectID: "map:referenced@123"),
             ] as [(operationData: ObjectData, expectedCreatedObjectID: String?)])
             func createsNewEntryWhenNoExistingEntry(operationData: ObjectData, expectedCreatedObjectID: String?) throws {
@@ -728,13 +728,13 @@ struct InternalDefaultLiveMapTests {
                     objectsPool: &pool,
                 )
 
-                // Update the delegate's pool to include any objects created by the MAP_SET operation (so that when we verify RTLM7b1 using map.get it can return a referenced object)
+                // Update the delegate's pool to include any objects created by the MAP_SET operation (so that when we verify RTLM7b4 using map.get it can return a referenced object)
                 if let expectedCreatedObjectID {
                     delegate.objects[expectedCreatedObjectID] = pool.entries[expectedCreatedObjectID]
                 }
 
                 // Verify new entry was created
-                // RTLM7b1
+                // RTLM7b4
                 let result = try map.get(key: "newKey", coreSDK: coreSDK, delegate: delegate)
                 if let numberValue = operationData.number {
                     #expect(result?.numberValue == numberValue.doubleValue)
@@ -746,7 +746,7 @@ struct InternalDefaultLiveMapTests {
                 // RTLM7b2
                 #expect(entry.tombstone == false)
 
-                // RTLM7c/RTLM7c1: Check if zero-value object was created in pool
+                // RTLM7g/RTLM7g1: Check if zero-value object was created in pool
                 if let expectedCreatedObjectID {
                     let createdObject = try #require(pool.entries[expectedCreatedObjectID])
                     #expect(createdObject.mapValue != nil)
@@ -760,9 +760,9 @@ struct InternalDefaultLiveMapTests {
             }
         }
 
-        // MARK: - RTLM7c1 Standalone Test (RTO6a Integration)
+        // MARK: - RTLM7g1 Standalone Test (RTO6a Integration)
 
-        // This is a sense check to convince ourselves that when applying a MAP_SET operation that references an object, then, because of RTO6a, if the referenced object already exists in the pool it is not replaced when RTLM7c1 is applied.
+        // This is a sense check to convince ourselves that when applying a MAP_SET operation that references an object, then, because of RTO6a, if the referenced object already exists in the pool it is not replaced when RTLM7g1 is applied.
         @Test
         func doesNotReplaceExistingObjectWhenReferencedByMapSet() throws {
             let logger = TestLogger()
@@ -998,9 +998,9 @@ struct InternalDefaultLiveMapTests {
         }
     }
 
-    /// Tests for the `mergeInitialValue` method, covering RTLM17 specification points
+    /// Tests for the `mergeInitialValue` method, covering RTLM23 specification points
     struct MergeInitialValueTests {
-        // @spec RTLM17a1
+        // @specOneOf(1/2) RTLM23a1 - via mapCreate
         @Test
         func appliesMapSetOperationsFromOperation() throws {
             let logger = TestLogger()
@@ -1022,11 +1022,44 @@ struct InternalDefaultLiveMapTests {
             }
 
             // Note that we just check for some basic expected side effects of applying MAP_SET; RTLM7 is tested in more detail elsewhere
-            // Check that it contains the data from the operation (per RTLM17a1)
+            // Check that it contains the data from the operation (per RTLM23a1)
             #expect(try map.get(key: "keyFromCreateOp", coreSDK: coreSDK, delegate: delegate)?.stringValue == "valueFromCreateOp")
         }
 
-        // @spec RTLM17a2
+        // @specOneOf(2/2) RTLM23a1 - via mapCreateWithObjectId.derivedFrom
+        // @spec RTO11f18
+        @Test
+        func appliesMapSetOperationsFromDerivedFrom() throws {
+            let logger = TestLogger()
+            let internalQueue = TestFactories.createInternalQueue()
+            let delegate = MockLiveMapObjectsPoolDelegate(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+
+            // Apply merge operation with mapCreateWithObjectId.derivedFrom (no direct mapCreate)
+            let operation = TestFactories.objectOperation(
+                action: .known(.mapCreate),
+                mapCreateWithObjectId: .init(
+                    initialValue: "arbitrary",
+                    nonce: "arbitrary",
+                    derivedFrom: MapCreate(
+                        semantics: .known(.lww),
+                        entries: [
+                            "keyFromCreateOp": TestFactories.stringMapEntry(key: "keyFromCreateOp", value: "valueFromCreateOp").entry,
+                        ],
+                    ),
+                ),
+            )
+            internalQueue.ably_syncNoDeadlock {
+                _ = map.nosync_mergeInitialValue(from: operation, objectsPool: &pool)
+            }
+
+            // Check that it contains the data from the derived operation (per RTLM23a1)
+            #expect(try map.get(key: "keyFromCreateOp", coreSDK: coreSDK, delegate: delegate)?.stringValue == "valueFromCreateOp")
+        }
+
+        // @spec RTLM23a2
         @Test
         func appliesMapRemoveOperationsFromOperation() throws {
             let logger = TestLogger()
@@ -1064,7 +1097,7 @@ struct InternalDefaultLiveMapTests {
             #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate) == nil)
         }
 
-        // @spec RTLM17c
+        // @spec RTLM23c
         @Test
         func returnedUpdateMergesOperationUpdates() throws {
             let logger = TestLogger()
@@ -1082,7 +1115,7 @@ struct InternalDefaultLiveMapTests {
             )
             var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
-            // Apply merge operation with MAP_CREATE and MAP_REMOVE entries (copied from RTLM17a1 and RTLM17a2 test cases)
+            // Apply merge operation with MAP_CREATE and MAP_REMOVE entries (copied from RTLM23a1 and RTLM23a2 test cases)
             let operation = TestFactories.mapCreateOperation(
                 objectId: "arbitrary-id",
                 entries: [
@@ -1093,7 +1126,7 @@ struct InternalDefaultLiveMapTests {
                     ),
                     "keyThatWillNotBeRemoved": TestFactories.mapEntry(
                         tombstone: true,
-                        timeserial: "ts0", // Less than existing entry's timeserial "ts1" so MAP_REMOVE will be a no-op (this lets us test that no-ops are excluded from return value per RTLM17c)
+                        timeserial: "ts0", // Less than existing entry's timeserial "ts1" so MAP_REMOVE will be a no-op (this lets us test that no-ops are excluded from return value per RTLM23c)
                         data: ObjectData(),
                     ),
                     "keyFromCreateOp": TestFactories.stringMapEntry(key: "keyFromCreateOp", value: "valueFromCreateOp").entry,
@@ -1103,11 +1136,11 @@ struct InternalDefaultLiveMapTests {
                 map.nosync_mergeInitialValue(from: operation, objectsPool: &pool)
             }
 
-            // Verify merged return value per RTLM17c
+            // Verify merged return value per RTLM23c
             #expect(try #require(update.update).update == ["keyThatWillBeRemoved": .removed, "keyFromCreateOp": .updated])
         }
 
-        // @spec RTLM17b
+        // @spec RTLM23b
         @Test
         func setsCreateOperationIsMergedToTrue() {
             let logger = TestLogger()
@@ -1180,7 +1213,7 @@ struct InternalDefaultLiveMapTests {
             let operation = TestFactories.mapCreateOperation(entries: ["key2": TestFactories.stringMapEntry(key: "key2", value: "value2").entry])
             let update = map.testsOnly_applyMapCreateOperation(operation, objectsPool: &pool)
 
-            // Verify the operation was applied - initial value merged. (The full logic of RTLM17 is tested elsewhere; we just check for some of its side effects here.)
+            // Verify the operation was applied - initial value merged. (The full logic of RTLM23 is tested elsewhere; we just check for some of its side effects here.)
             #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate)?.stringValue == "testValue") // Original data
             #expect(try map.get(key: "key2", coreSDK: coreSDK, delegate: delegate)?.stringValue == "value2") // From merge
             #expect(map.testsOnly_createOperationIsMerged)
@@ -1217,7 +1250,7 @@ struct InternalDefaultLiveMapTests {
 
             let operation = TestFactories.objectOperation(
                 action: .known(.mapSet),
-                mapOp: ObjectsMapOp(key: "key1", data: ObjectData(string: "new")),
+                mapSet: MapSet(key: "key1", value: ObjectData(string: "new")),
             )
 
             // Apply operation with serial "ts1" which is lexicographically less than existing "ts2" and thus will be applied per RTLO4a (this is a non-pathological case of RTOL4a, that spec point being fully tested elsewhere)
@@ -1286,9 +1319,9 @@ struct InternalDefaultLiveMapTests {
         }
 
         // @specOneOf(2/4) RTLM15c - We test this spec point for each possible operation
-        // @spec RTLM15d2 - Tests MAP_SET operation application
-        // @spec RTLM15d2a
-        // @spec RTLM15d2b
+        // @spec RTLM15d6 - Tests MAP_SET operation application
+        // @spec RTLM15d6a
+        // @spec RTLM15d6b
         @available(iOS 17.0.0, tvOS 17.0.0, *)
         @Test
         func appliesMapSetOperation() async throws {
@@ -1318,7 +1351,7 @@ struct InternalDefaultLiveMapTests {
 
             let operation = TestFactories.objectOperation(
                 action: .known(.mapSet),
-                mapOp: ObjectsMapOp(key: "key1", data: ObjectData(string: "new")),
+                mapSet: MapSet(key: "key1", value: ObjectData(string: "new")),
             )
 
             // Apply MAP_SET operation
@@ -1339,15 +1372,15 @@ struct InternalDefaultLiveMapTests {
             // Verify RTLM15c side-effect: site timeserial was updated
             #expect(map.testsOnly_siteTimeserials == ["site1": "ts1"])
 
-            // Verify update was emitted per RTLM15d2a
+            // Verify update was emitted per RTLM15d6a
             let subscriberInvocations = await subscriber.getInvocations()
             #expect(subscriberInvocations.map(\.0) == [.init(update: ["key1": .updated])])
         }
 
         // @specOneOf(3/4) RTLM15c - We test this spec point for each possible operation
-        // @spec RTLM15d3 - Tests MAP_REMOVE operation application
-        // @spec RTLM15d3a
-        // @spec RTLM15d3b
+        // @spec RTLM15d7 - Tests MAP_REMOVE operation application
+        // @spec RTLM15d7a
+        // @spec RTLM15d7b
         @available(iOS 17.0.0, tvOS 17.0.0, *)
         @Test
         func appliesMapRemoveOperation() async throws {
@@ -1377,7 +1410,7 @@ struct InternalDefaultLiveMapTests {
 
             let operation = TestFactories.objectOperation(
                 action: .known(.mapRemove),
-                mapOp: ObjectsMapOp(key: "key1", data: ObjectData()),
+                mapRemove: WireMapRemove(key: "key1"),
             )
 
             // Apply MAP_REMOVE operation
@@ -1398,7 +1431,7 @@ struct InternalDefaultLiveMapTests {
             // Verify RTLM15c side-effect: site timeserial was updated
             #expect(map.testsOnly_siteTimeserials == ["site1": "ts1"])
 
-            // Verify update was emitted per RTLM15d3a
+            // Verify update was emitted per RTLM15d7a
             let subscriberInvocations = await subscriber.getInvocations()
             #expect(subscriberInvocations.map(\.0) == [.init(update: ["key1": .removed])])
         }
@@ -1414,7 +1447,7 @@ struct InternalDefaultLiveMapTests {
 
             let operation = TestFactories.objectOperation(
                 action: .known(.mapSet),
-                mapOp: ObjectsMapOp(key: "key1", data: ObjectData(string: "new")),
+                mapSet: MapSet(key: "key1", value: ObjectData(string: "new")),
             )
             var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
@@ -1495,28 +1528,28 @@ struct InternalDefaultLiveMapTests {
         // @specUntested RTLM20e1 - Not needed with Swift's type system
         // @spec RTLM20e2
         // @spec RTLM20e3
-        // @spec RTLM20e4
-        // @spec RTLM20e5a
-        // @spec RTLM20e5b
-        // @spec RTLM20e5c
-        // @spec RTLM20e5d
-        // @spec RTLM20e5e
-        // @spec RTLM20e5f
+        // @spec RTLM20e6
+        // @spec RTLM20e7a
+        // @spec RTLM20e7b
+        // @spec RTLM20e7c
+        // @spec RTLM20e7d
+        // @spec RTLM20e7e
+        // @spec RTLM20e7f
         // @spec RTLM20g
         @Test(arguments: [
-            // RTLM20e5a
+            // RTLM20e7a
             (value: { @Sendable internalQueue in .liveMap(.createZeroValued(objectID: "map:test@123", logger: TestLogger(), internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())) }, expectedData: .init(objectId: "map:test@123")),
             (value: { @Sendable internalQueue in .liveCounter(.createZeroValued(objectID: "counter:test@123", logger: TestLogger(), internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())) }, expectedData: .init(objectId: "counter:test@123")),
-            // RTLM20e5b
+            // RTLM20e7b
             (value: { @Sendable _ in .jsonArray(["test"]) }, expectedData: .init(json: .array(["test"]))),
             (value: { @Sendable _ in .jsonObject(["foo": "bar"]) }, expectedData: .init(json: .object(["foo": "bar"]))),
-            // RTLM20e5c
+            // RTLM20e7c
             (value: { @Sendable _ in .string("test") }, expectedData: .init(string: "test")),
-            // RTLM20e5d
+            // RTLM20e7d
             (value: { @Sendable _ in .number(42.5) }, expectedData: .init(number: NSNumber(value: 42.5))),
-            // RTLM20e5e
+            // RTLM20e7e
             (value: { @Sendable _ in .bool(true) }, expectedData: .init(boolean: true)),
-            // RTLM20e5f
+            // RTLM20e7f
             (value: { @Sendable _ in .data(Data([0x01, 0x02])) }, expectedData: .init(bytes: Data([0x01, 0x02]))),
         ] as [(value: @Sendable (DispatchQueue) -> InternalLiveMapValue, expectedData: ObjectData)])
         func publishesCorrectObjectMessageForDifferentValueTypes(value: @escaping @Sendable (DispatchQueue) -> InternalLiveMapValue, expectedData: ObjectData) async throws {
@@ -1540,11 +1573,11 @@ struct InternalDefaultLiveMapTests {
                     action: .known(.mapSet),
                     // RTLM20e3
                     objectId: "map:test@123",
-                    mapOp: ObjectsMapOp(
-                        // RTLM20e4
+                    mapSet: MapSet(
+                        // RTLM20e6
                         key: "testKey",
-                        // RTLM20e5
-                        data: expectedData,
+                        // RTLM20e7
+                        value: expectedData,
                     ),
                 ),
             )
@@ -1602,7 +1635,7 @@ struct InternalDefaultLiveMapTests {
         // @specUntested RTLM21e1 - Not needed with Swift's type system
         // @spec RTLM21e2
         // @spec RTLM21e3
-        // @spec RTLM21e4
+        // @spec RTLM21e5
         // @spec RTLM21g
         @Test
         func publishesCorrectObjectMessage() async throws {
@@ -1626,10 +1659,9 @@ struct InternalDefaultLiveMapTests {
                     action: .known(.mapRemove),
                     // RTLM21e3
                     objectId: "map:test@123",
-                    mapOp: ObjectsMapOp(
-                        // RTLM21e4
+                    mapRemove: WireMapRemove(
+                        // RTLM21e5
                         key: "testKey",
-                        data: nil,
                     ),
                 ),
             )

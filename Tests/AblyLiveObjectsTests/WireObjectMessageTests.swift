@@ -112,12 +112,6 @@ enum WireObjectMessageTests {
                 operation: WireObjectOperation(
                     action: .known(.mapCreate),
                     objectId: "obj1",
-                    mapOp: nil,
-                    counterOp: nil,
-                    map: nil,
-                    counter: nil,
-                    nonce: nil,
-                    initialValue: nil,
                 ),
                 object: nil,
                 serial: "s1",
@@ -159,35 +153,33 @@ enum WireObjectMessageTests {
     }
 
     struct WireObjectOperationTests {
-        // @spec OOP3g
-        // @spec OOP3h
-        // @spec OOP3i
         @Test
         func decodesAllFields() throws {
             let wire: [String: WireValue] = [
                 "action": 0, // mapCreate
                 "objectId": "obj1",
-                "mapOp": ["key": "key1", "data": ["string": "value1"]],
-                "counterOp": ["amount": 42],
-                "map": ["semantics": 0, "entries": ["key1": ["data": ["string": "value1"], "tombstone": false]]],
-                "counter": ["count": 42],
-                "nonce": "nonce1",
+                "mapCreate": ["semantics": 0, "entries": ["key1": ["data": ["string": "value1"], "tombstone": false]]],
+                "mapSet": ["key": "key1", "value": ["string": "value1"]],
+                "mapRemove": ["key": "key2"],
+                "counterCreate": ["count": 42],
+                "counterInc": ["number": 10],
+                "objectDelete": [:],
             ]
             let op = try WireObjectOperation(wireObject: wire)
             #expect(op.action == .known(.mapCreate))
             #expect(op.objectId == "obj1")
-            #expect(op.mapOp?.key == "key1")
-            #expect(op.mapOp?.data?.string == "value1")
-            #expect(op.counterOp?.amount == 42)
-            #expect(op.map?.semantics == .known(.lww))
-            #expect(op.map?.entries?["key1"]?.data?.string == "value1")
-            #expect(op.map?.entries?["key1"]?.tombstone == false)
-            #expect(op.counter?.count == 42)
-
-            // Per OOP3g we should not try and extract this
-            #expect(op.nonce == nil)
-            // Per OOP3h we should not try and extract this
-            #expect(op.initialValue == nil)
+            #expect(op.mapCreate?.semantics == .known(.lww))
+            #expect(op.mapCreate?.entries?["key1"]?.data?.string == "value1")
+            #expect(op.mapCreate?.entries?["key1"]?.tombstone == false)
+            #expect(op.mapSet?.key == "key1")
+            #expect(op.mapSet?.value?.string == "value1")
+            #expect(op.mapRemove?.key == "key2")
+            #expect(op.counterCreate?.count == 42)
+            #expect(op.counterInc?.number == 10)
+            #expect(op.objectDelete != nil)
+            // Outbound-only — do not access on inbound data
+            #expect(op.mapCreateWithObjectId == nil)
+            #expect(op.counterCreateWithObjectId == nil)
         }
 
         @Test
@@ -199,12 +191,14 @@ enum WireObjectMessageTests {
             let op = try WireObjectOperation(wireObject: wire)
             #expect(op.action == .known(.mapCreate))
             #expect(op.objectId == "obj1")
-            #expect(op.mapOp == nil)
-            #expect(op.counterOp == nil)
-            #expect(op.map == nil)
-            #expect(op.counter == nil)
-            #expect(op.nonce == nil)
-            #expect(op.initialValue == nil)
+            #expect(op.mapCreate == nil)
+            #expect(op.mapSet == nil)
+            #expect(op.mapRemove == nil)
+            #expect(op.counterCreate == nil)
+            #expect(op.counterInc == nil)
+            #expect(op.objectDelete == nil)
+            #expect(op.mapCreateWithObjectId == nil)
+            #expect(op.counterCreateWithObjectId == nil)
         }
 
         @Test
@@ -222,25 +216,22 @@ enum WireObjectMessageTests {
             let op = WireObjectOperation(
                 action: .known(.mapCreate),
                 objectId: "obj1",
-                mapOp: WireObjectsMapOp(key: "key1", data: WireObjectData(string: "value1")),
-                counterOp: WireObjectsCounterOp(amount: 42),
-                map: WireObjectsMap(
+                mapCreate: WireMapCreate(
                     semantics: .known(.lww),
                     entries: ["key1": WireObjectsMapEntry(tombstone: false, timeserial: nil, data: WireObjectData(string: "value1"))],
                 ),
-                counter: WireObjectsCounter(count: 42),
-                nonce: "nonce1",
-                initialValue: nil,
+                mapSet: WireMapSet(key: "key1", value: WireObjectData(string: "value1")),
+                counterCreate: WireCounterCreate(count: 42),
+                counterInc: WireCounterInc(number: 10),
             )
             let wire = op.toWireObject
             #expect(wire == [
                 "action": 0,
                 "objectId": "obj1",
-                "mapOp": ["key": "key1", "data": ["string": "value1"]],
-                "counterOp": ["amount": 42],
-                "map": ["semantics": 0, "entries": ["key1": ["data": ["string": "value1"], "tombstone": false]]],
-                "counter": ["count": 42],
-                "nonce": "nonce1",
+                "mapCreate": ["semantics": 0, "entries": ["key1": ["data": ["string": "value1"], "tombstone": false]]],
+                "mapSet": ["key": "key1", "value": ["string": "value1"]],
+                "counterCreate": ["count": 42],
+                "counterInc": ["number": 10],
             ])
         }
 
@@ -249,12 +240,6 @@ enum WireObjectMessageTests {
             let op = WireObjectOperation(
                 action: .known(.mapCreate),
                 objectId: "obj1",
-                mapOp: nil,
-                counterOp: nil,
-                map: nil,
-                counter: nil,
-                nonce: nil,
-                initialValue: nil,
             )
             let wire = op.toWireObject
             #expect(wire == [
@@ -312,12 +297,6 @@ enum WireObjectMessageTests {
                 createOp: WireObjectOperation(
                     action: .known(.mapCreate),
                     objectId: "obj1",
-                    mapOp: nil,
-                    counterOp: nil,
-                    map: nil,
-                    counter: nil,
-                    nonce: nil,
-                    initialValue: nil,
                 ),
                 map: WireObjectsMap(
                     semantics: .known(.lww),
@@ -414,44 +393,44 @@ enum WireObjectMessageTests {
         }
     }
 
-    struct WireMapOpTests {
+    struct WireMapSetTests {
         @Test
         func decodesAllFields() throws {
             let json: [String: WireValue] = [
                 "key": "key1",
-                "data": ["string": "value1"],
+                "value": ["string": "value1"],
             ]
-            let op = try WireObjectsMapOp(wireObject: json)
+            let op = try WireMapSet(wireObject: json)
             #expect(op.key == "key1")
-            #expect(op.data?.string == "value1")
+            #expect(op.value?.string == "value1")
         }
 
         @Test
         func decodesWithOptionalFieldsAbsent() throws {
             let json: [String: WireValue] = ["key": "key1"]
-            let op = try WireObjectsMapOp(wireObject: json)
+            let op = try WireMapSet(wireObject: json)
             #expect(op.key == "key1")
-            #expect(op.data == nil)
+            #expect(op.value == nil)
         }
 
         @Test
         func encodesAllFields() {
-            let op = WireObjectsMapOp(
+            let op = WireMapSet(
                 key: "key1",
-                data: WireObjectData(string: "value1"),
+                value: WireObjectData(string: "value1"),
             )
             let wire = op.toWireObject
             #expect(wire == [
                 "key": "key1",
-                "data": ["string": "value1"],
+                "value": ["string": "value1"],
             ])
         }
 
         @Test
         func encodesWithOptionalFieldsNil() {
-            let op = WireObjectsMapOp(
+            let op = WireMapSet(
                 key: "key1",
-                data: nil,
+                value: nil,
             )
             let wire = op.toWireObject
             #expect(wire == [
@@ -460,19 +439,172 @@ enum WireObjectMessageTests {
         }
     }
 
-    struct WireCounterOpTests {
+    struct WireMapRemoveTests {
         @Test
         func decodesAllFields() throws {
-            let json: [String: WireValue] = ["amount": 42]
-            let op = try WireObjectsCounterOp(wireObject: json)
-            #expect(op.amount == 42)
+            let json: [String: WireValue] = ["key": "key1"]
+            let op = try WireMapRemove(wireObject: json)
+            #expect(op.key == "key1")
         }
 
         @Test
         func encodesAllFields() {
-            let op = WireObjectsCounterOp(amount: 42)
+            let op = WireMapRemove(key: "key1")
             let wire = op.toWireObject
-            #expect(wire == ["amount": 42])
+            #expect(wire == ["key": "key1"])
+        }
+    }
+
+    struct WireMapCreateTests {
+        @Test
+        func decodesAllFields() throws {
+            let json: [String: WireValue] = [
+                "semantics": 0,
+                "entries": ["key1": ["data": ["string": "value1"], "tombstone": false]],
+            ]
+            let op = try WireMapCreate(wireObject: json)
+            #expect(op.semantics == .known(.lww))
+            #expect(op.entries?["key1"]?.data?.string == "value1")
+            #expect(op.entries?["key1"]?.tombstone == false)
+        }
+
+        @Test
+        func decodesWithOptionalFieldsAbsent() throws {
+            let json: [String: WireValue] = ["semantics": 0]
+            let op = try WireMapCreate(wireObject: json)
+            #expect(op.semantics == .known(.lww))
+            #expect(op.entries == nil)
+        }
+
+        @Test
+        func encodesAllFields() {
+            let op = WireMapCreate(
+                semantics: .known(.lww),
+                entries: ["key1": WireObjectsMapEntry(tombstone: false, timeserial: nil, data: WireObjectData(string: "value1"))],
+            )
+            let wire = op.toWireObject
+            #expect(wire == [
+                "semantics": 0,
+                "entries": ["key1": ["data": ["string": "value1"], "tombstone": false]],
+            ])
+        }
+
+        @Test
+        func encodesWithOptionalFieldsNil() {
+            let op = WireMapCreate(
+                semantics: .known(.lww),
+                entries: nil,
+            )
+            let wire = op.toWireObject
+            #expect(wire == ["semantics": 0])
+        }
+    }
+
+    struct WireCounterCreateTests {
+        @Test
+        func decodesAllFields() throws {
+            let json: [String: WireValue] = ["count": 42]
+            let op = try WireCounterCreate(wireObject: json)
+            #expect(op.count == 42)
+        }
+
+        @Test
+        func decodesWithOptionalFieldsAbsent() throws {
+            let json: [String: WireValue] = [:]
+            let op = try WireCounterCreate(wireObject: json)
+            #expect(op.count == nil)
+        }
+
+        @Test
+        func encodesAllFields() {
+            let op = WireCounterCreate(count: 42)
+            let wire = op.toWireObject
+            #expect(wire == ["count": 42])
+        }
+
+        @Test
+        func encodesWithOptionalFieldsNil() {
+            let op = WireCounterCreate(count: nil)
+            let wire = op.toWireObject
+            #expect(wire.isEmpty)
+        }
+    }
+
+    struct WireCounterIncTests {
+        @Test
+        func decodesAllFields() throws {
+            let json: [String: WireValue] = ["number": 42]
+            let op = try WireCounterInc(wireObject: json)
+            #expect(op.number == 42)
+        }
+
+        @Test
+        func encodesAllFields() {
+            let op = WireCounterInc(number: 42)
+            let wire = op.toWireObject
+            #expect(wire == ["number": 42])
+        }
+    }
+
+    struct WireObjectDeleteTests {
+        @Test
+        func decodesEmptyObject() throws {
+            let json: [String: WireValue] = [:]
+            let op = try WireObjectDelete(wireObject: json)
+            _ = op // just verify it decodes without error
+        }
+
+        @Test
+        func encodesEmptyObject() {
+            let op = WireObjectDelete()
+            let wire = op.toWireObject
+            #expect(wire.isEmpty)
+        }
+    }
+
+    struct WireMapCreateWithObjectIdTests {
+        @Test
+        func decodesAllFields() throws {
+            let json: [String: WireValue] = [
+                "nonce": "abc123",
+                "initialValue": "someJSON",
+            ]
+            let op = try WireMapCreateWithObjectId(wireObject: json)
+            #expect(op.nonce == "abc123")
+            #expect(op.initialValue == "someJSON")
+        }
+
+        @Test
+        func encodesAllFields() {
+            let op = WireMapCreateWithObjectId(initialValue: "someJSON", nonce: "abc123")
+            let wire = op.toWireObject
+            #expect(wire == [
+                "nonce": "abc123",
+                "initialValue": "someJSON",
+            ])
+        }
+    }
+
+    struct WireCounterCreateWithObjectIdTests {
+        @Test
+        func decodesAllFields() throws {
+            let json: [String: WireValue] = [
+                "nonce": "abc123",
+                "initialValue": "someJSON",
+            ]
+            let op = try WireCounterCreateWithObjectId(wireObject: json)
+            #expect(op.nonce == "abc123")
+            #expect(op.initialValue == "someJSON")
+        }
+
+        @Test
+        func encodesAllFields() {
+            let op = WireCounterCreateWithObjectId(initialValue: "someJSON", nonce: "abc123")
+            let wire = op.toWireObject
+            #expect(wire == [
+                "nonce": "abc123",
+                "initialValue": "someJSON",
+            ])
         }
     }
 

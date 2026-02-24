@@ -1693,7 +1693,7 @@ private struct ObjectsIntegrationTests {
                             channel: channel,
                             serial: lexicoTimeserial(seriesId: "aaa", timestamp: 5, counter: 0),
                             siteCode: "aaa",
-                            state: [objectsHelper.counterIncOp(objectId: counterResult1.objectId, amount: 1)],
+                            state: [objectsHelper.counterIncOp(objectId: counterResult1.objectId, number: 1)],
                         )
 
                         // Objects should still be deleted
@@ -1830,7 +1830,7 @@ private struct ObjectsIntegrationTests {
                                 channel: channel,
                                 serial: testCase.serial,
                                 siteCode: testCase.siteCode,
-                                state: [objectsHelper.counterIncOp(objectId: counterId, amount: testCase.amount)],
+                                state: [objectsHelper.counterIncOp(objectId: counterId, number: testCase.amount)],
                             )
                         }
 
@@ -1957,7 +1957,7 @@ private struct ObjectsIntegrationTests {
                                 channel: channel,
                                 serial: lexicoTimeserial(seriesId: "bbb", timestamp: 1, counter: 0),
                                 siteCode: "bbb",
-                                state: [objectsHelper.counterIncOp(objectId: counterId, amount: 1)],
+                                state: [objectsHelper.counterIncOp(objectId: counterId, number: 1)],
                             )
                             await objectsHelper.processObjectOperationMessageOnChannel(
                                 channel: channel,
@@ -2440,7 +2440,7 @@ private struct ObjectsIntegrationTests {
                                 channel: channel,
                                 serial: operation.serial,
                                 siteCode: operation.siteCode,
-                                state: [objectsHelper.counterIncOp(objectId: counterId, amount: Int(operation.amount))],
+                                state: [objectsHelper.counterIncOp(objectId: counterId, number: Int(operation.amount))],
                             )
                         }
 
@@ -4416,7 +4416,7 @@ private struct ObjectsIntegrationTests {
                 channel: channel,
                 serial: injectedSerial,
                 siteCode: counterCreateSiteCode,
-                state: [objectsHelper.counterIncOp(objectId: counterId, amount: 100)],
+                state: [objectsHelper.counterIncOp(objectId: counterId, number: 100)],
             )
 
             // Step 9: Assert counter.value == 115
