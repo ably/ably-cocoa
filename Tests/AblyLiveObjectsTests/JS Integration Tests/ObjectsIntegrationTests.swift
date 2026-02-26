@@ -735,6 +735,137 @@ private struct ObjectsIntegrationTests {
                 ),
                 .init(
                     disabled: false,
+                    allTransportsAndProtocols: false,
+                    description: "OBJECT_SYNC sequence builds object tree across multiple sync messages",
+                    action: { ctx throws in
+                        let root = ctx.root
+                        let objectsHelper = ctx.objectsHelper
+                        let channel = ctx.channel
+
+                        let counterId = objectsHelper.fakeCounterObjectId()
+                        let mapId = objectsHelper.fakeMapObjectId()
+
+                        // send three separate OBJECT_SYNC messages: one for root, one for counter, one for map
+                        await objectsHelper.processObjectStateMessageOnChannel(
+                            channel: channel,
+                            syncSerial: "serial:cursor1",
+                            state: [
+                                objectsHelper.mapObject(
+                                    objectId: "root",
+                                    siteTimeserials: ["aaa": lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0)],
+                                    initialEntries: [
+                                        "stringKey": .object([
+                                            "timeserial": .string(lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0)),
+                                            "data": .object(["string": .string("hello")]),
+                                        ]),
+                                        "counter": .object([
+                                            "timeserial": .string(lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0)),
+                                            "data": .object(["objectId": .string(counterId)]),
+                                        ]),
+                                        "map": .object([
+                                            "timeserial": .string(lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0)),
+                                            "data": .object(["objectId": .string(mapId)]),
+                                        ]),
+                                    ],
+                                ),
+                            ],
+                        )
+
+                        await objectsHelper.processObjectStateMessageOnChannel(
+                            channel: channel,
+                            syncSerial: "serial:cursor2",
+                            state: [
+                                objectsHelper.counterObject(
+                                    objectId: counterId,
+                                    siteTimeserials: ["aaa": lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0)],
+                                    initialCount: 10,
+                                    materialisedCount: 5,
+                                ),
+                            ],
+                        )
+
+                        await objectsHelper.processObjectStateMessageOnChannel(
+                            channel: channel,
+                            syncSerial: "serial:", // end sync sequence
+                            state: [
+                                objectsHelper.mapObject(
+                                    objectId: mapId,
+                                    siteTimeserials: ["aaa": lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0)],
+                                    initialEntries: [
+                                        "foo": .object([
+                                            "timeserial": .string(lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0)),
+                                            "data": .object(["string": .string("bar")]),
+                                        ]),
+                                    ],
+                                    materialisedEntries: [
+                                        "baz": .object([
+                                            "timeserial": .string(lexicoTimeserial(seriesId: "bbb", timestamp: 0, counter: 0)),
+                                            "data": .object(["string": .string("qux")]),
+                                        ]),
+                                    ],
+                                ),
+                            ],
+                        )
+
+                        #expect(try #require(root.get(key: "stringKey")?.stringValue) == "hello", "Check root has correct string value")
+                        let counter = try #require(root.get(key: "counter")?.liveCounterValue)
+                        #expect(try counter.value == 15, "Check counter has correct aggregated value")
+                        let map = try #require(root.get(key: "map")?.liveMapValue)
+                        #expect(try #require(map.get(key: "foo")?.stringValue) == "bar", "Check map has initial entries")
+                        #expect(try #require(map.get(key: "baz")?.stringValue) == "qux", "Check map has materialised entries")
+                    },
+                ),
+                .init(
+                    disabled: false,
+                    allTransportsAndProtocols: false,
+                    description: "OBJECT_SYNC does not break when receiving an unknown object type",
+                    action: { ctx throws in
+                        let objectsHelper = ctx.objectsHelper
+                        let channel = ctx.channel
+                        let objects = ctx.objects
+
+                        // first message: unknown object type (no counter or map field set)
+                        await objectsHelper.processObjectStateMessageOnChannel(
+                            channel: channel,
+                            syncSerial: "serial:cursor",
+                            state: [
+                                [
+                                    "object": .object([
+                                        "objectId": .string("unknown:object123"),
+                                        "siteTimeserials": .object(["aaa": .string(lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0))]),
+                                        "tombstone": .bool(false),
+                                        // intentionally not setting counter or map fields
+                                    ]),
+                                ],
+                            ],
+                        )
+
+                        // second message: root with a key, ends sync sequence
+                        await objectsHelper.processObjectStateMessageOnChannel(
+                            channel: channel,
+                            syncSerial: "serial:",
+                            state: [
+                                objectsHelper.mapObject(
+                                    objectId: "root",
+                                    siteTimeserials: ["aaa": lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0)],
+                                    initialEntries: [
+                                        "foo": .object([
+                                            "timeserial": .string(lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0)),
+                                            "data": .object(["string": .string("bar")]),
+                                        ]),
+                                    ],
+                                ),
+                            ],
+                        )
+
+                        let root = try await objects.getRoot()
+
+                        // verify root has the expected key — SDK should not break due to unknown object type
+                        #expect(try #require(root.get(key: "foo")?.stringValue) == "bar", "Check root has correct value after unknown object type in sync")
+                    },
+                ),
+                .init(
+                    disabled: false,
                     allTransportsAndProtocols: true,
                     description: "LiveCounter is initialized with initial value from OBJECT_SYNC sequence",
                     action: { ctx in
