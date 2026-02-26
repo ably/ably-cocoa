@@ -268,6 +268,7 @@ struct TestFactories {
         object: ObjectState? = nil,
         serial: String? = nil,
         siteCode: String? = nil,
+        serialTimestamp: Date? = nil,
     ) -> InboundObjectMessage {
         InboundObjectMessage(
             id: id,
@@ -279,6 +280,7 @@ struct TestFactories {
             object: object,
             serial: serial,
             siteCode: siteCode,
+            serialTimestamp: serialTimestamp,
         )
     }
 

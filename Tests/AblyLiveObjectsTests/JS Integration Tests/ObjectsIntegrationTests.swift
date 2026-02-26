@@ -818,6 +818,107 @@ private struct ObjectsIntegrationTests {
                 .init(
                     disabled: false,
                     allTransportsAndProtocols: false,
+                    description: "partial OBJECT_SYNC merges map entries across multiple messages for the same objectId",
+                    action: { ctx throws in
+                        let root = ctx.root
+                        let objectsHelper = ctx.objectsHelper
+                        let channel = ctx.channel
+
+                        let mapId = objectsHelper.fakeMapObjectId()
+
+                        // assign map object to root
+                        await objectsHelper.processObjectStateMessageOnChannel(
+                            channel: channel,
+                            syncSerial: "serial:cursor1",
+                            state: [
+                                objectsHelper.mapObject(
+                                    objectId: "root",
+                                    siteTimeserials: ["aaa": lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0)],
+                                    initialEntries: [
+                                        "map": .object([
+                                            "timeserial": .string(lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0)),
+                                            "data": .object(["objectId": .string(mapId)]),
+                                        ]),
+                                    ],
+                                ),
+                            ],
+                        )
+
+                        // send partial sync messages for the same map object, each with different materialised entries.
+                        // initialEntries are identical across all partial messages for the same object — a server guarantee.
+                        let partialMessages: [(syncSerial: String, materialisedEntries: [String: WireValue])] = [
+                            (
+                                syncSerial: "serial:cursor2",
+                                materialisedEntries: [
+                                    "key1": .object([
+                                        "timeserial": .string(lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0)),
+                                        "data": .object(["number": .number(1)]),
+                                    ]),
+                                    "key2": .object([
+                                        "timeserial": .string(lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0)),
+                                        "data": .object(["string": .string("two")]),
+                                    ]),
+                                ]
+                            ),
+                            (
+                                syncSerial: "serial:cursor3",
+                                materialisedEntries: [
+                                    "key3": .object([
+                                        "timeserial": .string(lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0)),
+                                        "data": .object(["number": .number(3)]),
+                                    ]),
+                                    "key4": .object([
+                                        "timeserial": .string(lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0)),
+                                        "data": .object(["boolean": .bool(true)]),
+                                    ]),
+                                ]
+                            ),
+                            (
+                                syncSerial: "serial:", // end sync sequence
+                                materialisedEntries: [
+                                    "key5": .object([
+                                        "timeserial": .string(lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0)),
+                                        "data": .object(["string": .string("five")]),
+                                    ]),
+                                ]
+                            ),
+                        ]
+
+                        for partial in partialMessages {
+                            await objectsHelper.processObjectStateMessageOnChannel(
+                                channel: channel,
+                                syncSerial: partial.syncSerial,
+                                state: [
+                                    objectsHelper.mapObject(
+                                        objectId: mapId,
+                                        siteTimeserials: ["aaa": lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0)],
+                                        initialEntries: [
+                                            "initialKey": .object([
+                                                "timeserial": .string(lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0)),
+                                                "data": .object(["string": .string("initial")]),
+                                            ]),
+                                        ],
+                                        materialisedEntries: partial.materialisedEntries,
+                                    ),
+                                ],
+                            )
+                        }
+
+                        let map = try #require(root.get(key: "map")?.liveMapValue)
+
+                        #expect(try #require(map.get(key: "initialKey")?.stringValue) == "initial", "Check keys from the create operation are present")
+
+                        // check that materialised entries from all partial messages were merged
+                        #expect(try #require(map.get(key: "key1")?.numberValue) == 1, "Check key1 from first partial sync")
+                        #expect(try #require(map.get(key: "key2")?.stringValue) == "two", "Check key2 from first partial sync")
+                        #expect(try #require(map.get(key: "key3")?.numberValue) == 3, "Check key3 from second partial sync")
+                        #expect(try #require(map.get(key: "key4")?.boolValue as Bool?) == true, "Check key4 from second partial sync")
+                        #expect(try #require(map.get(key: "key5")?.stringValue) == "five", "Check key5 from third partial sync")
+                    },
+                ),
+                .init(
+                    disabled: false,
+                    allTransportsAndProtocols: false,
                     description: "OBJECT_SYNC does not break when receiving an unknown object type",
                     action: { ctx throws in
                         let objectsHelper = ctx.objectsHelper
