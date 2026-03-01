@@ -134,9 +134,6 @@
                                                              name:outboundAnnotation.name
                                                             count:outboundAnnotation.count
                                                              data:outboundAnnotation.data
-                                                         encoding:nil
-                                                        timestamp:nil
-                                                           serial:nil
                                                     messageSerial:messageSerial // RSAN1c2
                                                              type:outboundAnnotation.type
                                                            extras:outboundAnnotation.extras];
@@ -157,7 +154,7 @@ art_dispatch_sync(_queue, ^{
     if (annotationSize > maxSize) {
         if (callback) {
             callback([ARTErrorInfo createWithCode:ARTErrorMaxMessageLengthExceeded
-                                       message:[NSString stringWithFormat:@"Annotation size of %ld bytes exceeds maxMessageSize of %ld bytes", (long)annotationSize, (long)maxSize]]);
+                                          message:[NSString stringWithFormat:@"Annotation size of %ld bytes exceeds maxMessageSize of %ld bytes", (long)annotationSize, (long)maxSize]]);
         }
         return;
     }
