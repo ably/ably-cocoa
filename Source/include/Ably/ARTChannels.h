@@ -4,6 +4,8 @@
 @class ARTRestChannel;
 @class ARTChannelOptions;
 
+NS_ASSUME_NONNULL_BEGIN
+
 /**
  * Creates and destroys `ARTRestChannel` and `ARTRealtimeChannel` objects.
  */
@@ -50,3 +52,5 @@ NS_SWIFT_SENDABLE
 - (id<NSFastEnumeration>)copyIntoIteratorWithMapper:(id (^)(ChannelType))mapper;
 
 @end
+
+NS_ASSUME_NONNULL_END

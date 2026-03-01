@@ -6,12 +6,16 @@
 #import "ARTRestChannel.h"
 #import "ARTGCD.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface ARTChannels() {
     __weak id<ARTChannelsDelegate> _delegate; // weak because delegates outlive their counterpart
     dispatch_queue_t _queue;
 }
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 @implementation ARTChannels
 

@@ -79,11 +79,15 @@
 
 #pragma mark - ARTRealtimeAnnotationsInternal
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface ARTRealtimeAnnotationsInternal ()
 
-@property (nonnull, nonatomic, readonly) ARTInternalLog *logger;
+@property (nonatomic, readonly) ARTInternalLog *logger;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 @implementation ARTRealtimeAnnotationsInternal {
     __weak ARTRealtimeChannelInternal *_channel; // weak because channel owns self

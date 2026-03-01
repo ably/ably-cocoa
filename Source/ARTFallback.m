@@ -10,9 +10,13 @@ void (^const ARTFallback_shuffleArray)(NSMutableArray *) = ^void(NSMutableArray 
     }
 };
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface ARTFallback ()
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 @implementation ARTFallback
 
