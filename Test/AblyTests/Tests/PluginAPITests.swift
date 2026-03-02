@@ -126,7 +126,7 @@ class PluginAPITests: XCTestCase {
 
         let connectedProtocolMessage = ARTProtocolMessage()
         connectedProtocolMessage.action = .connected
-        let connectionDetails = ARTConnectionDetails(clientId: nil, connectionKey: nil, maxMessageSize: 100, maxFrameSize: 100, maxInboundRate: 100, connectionStateTtl: 100, serverId: "", maxIdleInterval: 100, objectsGCGracePeriod: 1500) // all arbitrary except objectsGCGracePeriod
+        let connectionDetails = ARTConnectionDetails(clientId: nil, connectionKey: nil, maxMessageSize: 100, maxFrameSize: 100, maxInboundRate: 100, connectionStateTtl: 100, serverId: "", maxIdleInterval: 100, objectsGCGracePeriod: 1500, siteCode: nil) // all arbitrary except objectsGCGracePeriod
         connectedProtocolMessage.connectionDetails = connectionDetails
         transport.receive(connectedProtocolMessage)
 
@@ -177,7 +177,7 @@ class PluginAPITests: XCTestCase {
 
         let connectedProtocolMessage = ARTProtocolMessage()
         connectedProtocolMessage.action = .connected
-        let connectionDetails = ARTConnectionDetails(clientId: nil, connectionKey: nil, maxMessageSize: 100, maxFrameSize: 100, maxInboundRate: 100, connectionStateTtl: 100, serverId: "", maxIdleInterval: 100, objectsGCGracePeriod: 1500) // all arbitrary except objectsGCGracePeriod
+        let connectionDetails = ARTConnectionDetails(clientId: nil, connectionKey: nil, maxMessageSize: 100, maxFrameSize: 100, maxInboundRate: 100, connectionStateTtl: 100, serverId: "", maxIdleInterval: 100, objectsGCGracePeriod: 1500, siteCode: nil) // all arbitrary except objectsGCGracePeriod
         connectedProtocolMessage.connectionDetails = connectionDetails
         transport.receive(connectedProtocolMessage)
 

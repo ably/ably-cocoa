@@ -2,8 +2,12 @@
 
 @import Foundation;
 @import _AblyPluginSupportPrivate;
+#import "ARTTypes.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+/// Converts an `ARTRealtimeChannelState` to the equivalent `APRealtimeChannelState`.
+APRealtimeChannelState ARTConvertToPluginChannelState(ARTRealtimeChannelState ourRealtimeChannelState);
 
 /// Our implementation of `APPluginAPIProtocol`, which allows Ably-authored plugins to access the internals of this SDK.
 @interface ARTPluginAPI: NSObject <APPluginAPIProtocol>

@@ -1,4 +1,5 @@
 #import "ARTPublishResult.h"
+#import "ARTPublishResult+Private.h"
 #import "ARTPublishResultSerial.h"
 
 @implementation ARTPublishResult
