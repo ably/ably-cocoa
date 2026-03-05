@@ -607,6 +607,22 @@ private struct ObjectsIntegrationTests {
             let objectSyncSequenceScenarios: [TestScenario<Context>] = [
                 .init(
                     disabled: false,
+                    allTransportsAndProtocols: false,
+                    description: "on ATTACHED without HAS_OBJECTS clears local state",
+                    action: { ctx in
+                        // set a key on root so we can verify it gets cleared after ATTACHED
+                        try await ctx.root.set(key: "foo", value: "bar")
+                        #expect(try #require(ctx.root.get(key: "foo")?.stringValue) == "bar", "Check root has key before ATTACHED")
+
+                        // inject ATTACHED without HAS_OBJECTS flag
+                        await injectAttachedMessage(channel: ctx.channel, hasObjects: false)
+
+                        // local state should be cleared — root should have no keys
+                        #expect(try ctx.root.size == 0, "Check root has no keys after ATTACHED without HAS_OBJECTS")
+                    },
+                ),
+                .init(
+                    disabled: false,
                     allTransportsAndProtocols: true,
                     description: "OBJECT_SYNC sequence builds object tree on channel attachment",
                     action: { ctx in
