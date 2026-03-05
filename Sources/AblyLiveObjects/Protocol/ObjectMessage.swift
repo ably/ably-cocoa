@@ -5,7 +5,7 @@ import Foundation
 // This file contains the ObjectMessage types that we use within the codebase. We convert them to and from the corresponding wire types (e.g. `InboundWireObjectMessage`) for sending and receiving over the wire.
 
 /// An `ObjectMessage` received in the `state` property of an `OBJECT` or `OBJECT_SYNC` `ProtocolMessage`.
-internal struct InboundObjectMessage {
+internal struct InboundObjectMessage: Equatable {
     internal var id: String? // OM2a
     internal var clientId: String? // OM2b
     internal var connectionId: String? // OM2c
