@@ -84,6 +84,17 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
         }
     }
 
+    /// Returns the number of buffered object operations if in the SYNCING state, or nil otherwise.
+    internal var testsOnly_bufferedObjectOperationsCount: Int? {
+        mutableStateMutex.withSync { mutableState in
+            if case let .syncing(syncingData) = mutableState.state {
+                syncingData.bufferedObjectOperations.count
+            } else {
+                nil
+            }
+        }
+    }
+
     // These drive the testsOnly_waitingForSyncEvents property that informs the test suite when `getRoot()` is waiting for the object sync sequence to complete per RTO1c.
     private let waitingForSyncEvents: AsyncStream<Void>
     private let waitingForSyncEventsContinuation: AsyncStream<Void>.Continuation
@@ -728,8 +739,12 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
             onChannelAttachedHasObjects = hasObjects
 
             // We will subsequently transition to .synced either by the completion of the RTO4a OBJECT_SYNC, or by the RTO4b no-HAS_OBJECTS case below
-            if state.toObjectsSyncState != .syncing {
-                // RTO4c
+            switch state {
+            case let .syncing(syncingData):
+                // RTO4d
+                syncingData.bufferedObjectOperations = []
+            case .initialized, .synced:
+                // RTO4c, RTO4d
                 transition(to: .syncing(.init(bufferedObjectOperations: [], syncSequence: nil)), userCallbackQueue: userCallbackQueue)
             }
 
@@ -743,7 +758,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
 
             // I have, for now, not directly implemented the "perform the actions for object sync completion" of RTO4b4 since my implementation doesn't quite match the model given there; here you only have a SyncObjectsPool if you have an OBJECT_SYNC in progress, which you might not have upon receiving an ATTACHED. Instead I've just implemented what seem like the relevant side effects. Can revisit this if "the actions for object sync completion" get more complex.
 
-            // RTO4b3, RTO4b4, RTO4b5, RTO5c3, RTO5c4, RTO5c5, RTO5c9, RTO5c8
+            // RTO4b3, RTO4b4, RTO5c3, RTO5c4, RTO5c5, RTO5c9, RTO5c8
             appliedOnAckSerials.removeAll()
             transition(to: .synced, userCallbackQueue: userCallbackQueue)
 
@@ -784,9 +799,8 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
                 // Figure out whether to continue any existing sync sequence or start a new one
                 let isNewSyncSequence = syncCursor == nil || syncingData.syncSequence?.id != syncCursor?.sequenceID
                 if isNewSyncSequence {
-                    // RTO5a2a, RTO5a2b: new sequence started, discard previous. Else we continue the existing sequence per RTO5a3
+                    // RTO5a2a: new sequence started, discard previous. Else we continue the existing sequence per RTO5a3
                     syncingData.syncSequence = nil
-                    syncingData.bufferedObjectOperations = []
                 }
             }
 
