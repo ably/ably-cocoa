@@ -17,6 +17,11 @@ class PluginAPITests: XCTestCase {
     class MockInternalLiveObjectsPlugin: NSObject, _AblyPluginSupportPrivate.LiveObjectsInternalPluginProtocol {
         internal var receivedConnectionDetails: [(connectionDetails: (any ConnectionDetailsProtocol)?, channel: any RealtimeChannel)] = []
 
+        /// Resets all recorded mock state. Called in `setUp()` since this is a shared static instance.
+        func clearState() {
+            receivedConnectionDetails.removeAll()
+        }
+
         func nosync_prepare(_ channel: any RealtimeChannel, client: any RealtimeClient) {
             // no-op
         }
@@ -44,6 +49,11 @@ class PluginAPITests: XCTestCase {
         func nosync_onConnected(withConnectionDetails connectionDetails: (any ConnectionDetailsProtocol)?, channel: any RealtimeChannel) {
             receivedConnectionDetails.append((connectionDetails, channel))
         }
+    }
+
+    override func setUp() {
+        super.setUp()
+        MockLiveObjectsPlugin._internalPlugin.clearState()
     }
 
     // MARK: - Server time
