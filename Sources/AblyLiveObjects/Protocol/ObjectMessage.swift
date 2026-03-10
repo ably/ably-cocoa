@@ -45,6 +45,7 @@ internal struct ObjectOperation: Equatable {
     internal var objectDelete: WireObjectDelete? // OOP3o
     internal var mapCreateWithObjectId: MapCreateWithObjectId? // OOP3p
     internal var counterCreateWithObjectId: CounterCreateWithObjectId? // OOP3q
+    internal var mapClear: WireMapClear? // OOP3r
 }
 
 internal struct ObjectData: Equatable {
@@ -96,6 +97,7 @@ internal struct ObjectsMapEntry: Equatable {
 internal struct ObjectsMap: Equatable {
     internal var semantics: WireEnum<ObjectsMapSemantics> // OMP3a
     internal var entries: [String: ObjectsMapEntry]? // OMP3b
+    internal var clearTimeserial: String? // OMP3c
 }
 
 internal struct ObjectState: Equatable {
@@ -178,6 +180,7 @@ internal extension ObjectOperation {
         counterCreate = wireObjectOperation.counterCreate
         counterInc = wireObjectOperation.counterInc
         objectDelete = wireObjectOperation.objectDelete
+        mapClear = wireObjectOperation.mapClear
         // Outbound-only — do not access on inbound data
         mapCreateWithObjectId = nil
         counterCreateWithObjectId = nil
@@ -199,6 +202,7 @@ internal extension ObjectOperation {
             objectDelete: objectDelete,
             mapCreateWithObjectId: mapCreateWithObjectId?.toWire(),
             counterCreateWithObjectId: counterCreateWithObjectId?.toWire(),
+            mapClear: mapClear,
         )
     }
 }
@@ -414,6 +418,7 @@ internal extension ObjectsMap {
         entries = try wireObjectsMap.entries?.ablyLiveObjects_mapValuesWithTypedThrow { wireMapEntry throws(ARTErrorInfo) in
             try .init(wireObjectsMapEntry: wireMapEntry, format: format)
         }
+        clearTimeserial = wireObjectsMap.clearTimeserial
     }
 
     /// Converts this `ObjectsMap` to a `WireObjectsMap`, applying the data encoding rules of OD4.
@@ -424,6 +429,7 @@ internal extension ObjectsMap {
         .init(
             semantics: semantics,
             entries: entries?.mapValues { $0.toWire(format: format) },
+            clearTimeserial: clearTimeserial,
         )
     }
 }
@@ -520,6 +526,7 @@ extension ObjectOperation: CustomDebugStringConvertible {
         if let objectDelete { parts.append("objectDelete: \(objectDelete)") }
         if let mapCreateWithObjectId { parts.append("mapCreateWithObjectId: \(mapCreateWithObjectId)") }
         if let counterCreateWithObjectId { parts.append("counterCreateWithObjectId: \(counterCreateWithObjectId)") }
+        if let mapClear { parts.append("mapClear: \(mapClear)") }
 
         return "{ " + parts.joined(separator: ", ") + " }"
     }
@@ -553,6 +560,7 @@ extension ObjectsMap: CustomDebugStringConvertible {
                 .joined(separator: ", ")
             parts.append("entries: { \(formattedEntries) }")
         }
+        if let clearTimeserial { parts.append("clearTimeserial: \(clearTimeserial)") }
 
         return "{ " + parts.joined(separator: ", ") + " }"
     }

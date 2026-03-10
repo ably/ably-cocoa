@@ -164,6 +164,7 @@ enum WireObjectMessageTests {
                 "counterCreate": ["count": 42],
                 "counterInc": ["number": 10],
                 "objectDelete": [:],
+                "mapClear": [:],
             ]
             let op = try WireObjectOperation(wireObject: wire)
             #expect(op.action == .known(.mapCreate))
@@ -177,6 +178,7 @@ enum WireObjectMessageTests {
             #expect(op.counterCreate?.count == 42)
             #expect(op.counterInc?.number == 10)
             #expect(op.objectDelete != nil)
+            #expect(op.mapClear != nil)
             // Outbound-only — do not access on inbound data
             #expect(op.mapCreateWithObjectId == nil)
             #expect(op.counterCreateWithObjectId == nil)
@@ -197,6 +199,7 @@ enum WireObjectMessageTests {
             #expect(op.counterCreate == nil)
             #expect(op.counterInc == nil)
             #expect(op.objectDelete == nil)
+            #expect(op.mapClear == nil)
             #expect(op.mapCreateWithObjectId == nil)
             #expect(op.counterCreateWithObjectId == nil)
         }

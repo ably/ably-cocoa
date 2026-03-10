@@ -96,6 +96,19 @@ func waitForCounterUpdate(_ updates: AsyncStream<LiveCounterUpdate>) async {
     _ = await updates.first { _ in true }
 }
 
+/// Waits for a MAP_CLEAR operation to be applied to a LiveMap, by waiting for an update where
+/// all of the specified keys have `.removed` status.
+///
+/// The JS equivalent subscribes and checks `message.operation.action === 'map.clear'`, but Swift's
+/// `LiveMapUpdate` doesn't expose the operation action — it only provides per-key changes via
+/// `update: [String: LiveMapUpdateAction]`. So we use the per-key `.removed` entries as a proxy
+/// instead.
+func waitForMapClear(_ updates: AsyncStream<LiveMapUpdate>, expectedRemovedKeys: Set<String>) async {
+    _ = await updates.first { update in
+        expectedRemovedKeys.allSatisfy { update.update[$0] == .removed }
+    }
+}
+
 // Note that Cursor decided to implement this in a different way to the waitForObjectSync that I'd already implemented; TODO pick one of the two approaches (this one might be cleaner).
 func waitForObjectOperation(_ objects: any RealtimeObjects, _ action: ObjectOperationAction) async throws {
     // Cast to access internal API for testing
@@ -1237,6 +1250,160 @@ private struct ObjectsIntegrationTests {
                         )
 
                         _ = try await counterSubPromise
+                    },
+                ),
+                .init(
+                    disabled: false,
+                    allTransportsAndProtocols: false,
+                    description: "OBJECT_SYNC sequence with clearTimeserial records the clearTimeserial",
+                    action: { ctx in
+                        let root = ctx.root
+                        let objectsHelper = ctx.objectsHelper
+                        let channel = ctx.channel
+
+                        let clearTimeserial = lexicoTimeserial(seriesId: "aaa", timestamp: 5, counter: 0)
+
+                        // send OBJECT_SYNC with a map that has clearTimeserial and no entries
+                        await objectsHelper.processObjectStateMessageOnChannel(
+                            channel: channel,
+                            syncSerial: "serial:", // empty cursor so sync completes immediately
+                            state: [
+                                objectsHelper.mapObject(
+                                    objectId: "root",
+                                    siteTimeserials: ["aaa": lexicoTimeserial(seriesId: "aaa", timestamp: 5, counter: 0)],
+                                    clearTimeserial: clearTimeserial,
+                                ),
+                            ],
+                        )
+
+                        #expect(try root.size == 0, "Check root is empty after sync")
+
+                        // verify subsequent MAP_SETs are filtered based on clearTimeserial.
+                        // use different sites so operations pass siteTimeserials check
+                        let ops: [(serial: String, siteCode: String, key: String, applied: Bool)] = [
+                            (serial: lexicoTimeserial(seriesId: "bbb", timestamp: 4, counter: 0), siteCode: "bbb", key: "earlyKey", applied: false), // < clearTimeserial
+                            (serial: lexicoTimeserial(seriesId: "ccc", timestamp: 6, counter: 0), siteCode: "ccc", key: "laterKey", applied: true), // > clearTimeserial
+                        ]
+
+                        for op in ops {
+                            await objectsHelper.processObjectOperationMessageOnChannel(
+                                channel: channel,
+                                serial: op.serial,
+                                siteCode: op.siteCode,
+                                state: [objectsHelper.mapSetOp(objectId: "root", key: op.key, data: .object(["string": .string("value")]))],
+                            )
+
+                            if op.applied {
+                                let value = try #require(root.get(key: op.key)?.stringValue)
+                                #expect(value == "value", "Check MAP_SET for \"\(op.key)\" is applied")
+                            } else {
+                                let value = try root.get(key: op.key)
+                                #expect(value == nil, "Check MAP_SET for \"\(op.key)\" is rejected")
+                            }
+                        }
+                    },
+                ),
+                .init(
+                    disabled: false,
+                    allTransportsAndProtocols: false,
+                    description: "OBJECT_SYNC sequence with clearTimeserial does not surface initial entries from createOp",
+                    action: { ctx in
+                        let root = ctx.root
+                        let objectsHelper = ctx.objectsHelper
+                        let channel = ctx.channel
+
+                        let clearTimeserial = lexicoTimeserial(seriesId: "aaa", timestamp: 5, counter: 0)
+
+                        // send OBJECT_SYNC with a map that has clearTimeserial and initial entries via createOp.
+                        // initial entries do not have timeserials set, so they should all be considered
+                        // as predating the clear and not be surfaced to the end user.
+                        await objectsHelper.processObjectStateMessageOnChannel(
+                            channel: channel,
+                            syncSerial: "serial:", // empty cursor so sync completes immediately
+                            state: [
+                                objectsHelper.mapObject(
+                                    objectId: "root",
+                                    siteTimeserials: ["aaa": lexicoTimeserial(seriesId: "aaa", timestamp: 5, counter: 0)],
+                                    initialEntries: [
+                                        "foo": .object(["data": .object(["string": .string("bar")])]),
+                                        "baz": .object(["data": .object(["number": .number(NSNumber(value: 123))])]),
+                                    ],
+                                    clearTimeserial: clearTimeserial,
+                                ),
+                            ],
+                        )
+
+                        let fooValue = try root.get(key: "foo")
+                        #expect(fooValue == nil, "Check \"foo\" from initialEntries is not visible")
+                        let bazValue = try root.get(key: "baz")
+                        #expect(bazValue == nil, "Check \"baz\" from initialEntries is not visible")
+                        #expect(try root.size == 0, "Check root has no visible keys")
+                    },
+                ),
+                .init(
+                    disabled: false,
+                    allTransportsAndProtocols: false,
+                    description: "OBJECT_SYNC sequence with clearTimeserial and materialised entries processes entries correctly",
+                    action: { ctx in
+                        let root = ctx.root
+                        let objectsHelper = ctx.objectsHelper
+                        let channel = ctx.channel
+
+                        let clearTimeserial = lexicoTimeserial(seriesId: "aaa", timestamp: 5, counter: 0)
+
+                        // check that even with clearTimeserial set, the entries from materialised entries are
+                        // processed correctly.
+                        await objectsHelper.processObjectStateMessageOnChannel(
+                            channel: channel,
+                            syncSerial: "serial:", // empty cursor so sync completes immediately
+                            state: [
+                                objectsHelper.mapObject(
+                                    objectId: "root",
+                                    siteTimeserials: ["aaa": lexicoTimeserial(seriesId: "aaa", timestamp: 8, counter: 0)],
+                                    materialisedEntries: [
+                                        // entry set after the clear - should be visible
+                                        "lateKey": .object([
+                                            "timeserial": .string(lexicoTimeserial(seriesId: "aaa", timestamp: 8, counter: 0)),
+                                            "data": .object(["string": .string("late")]),
+                                        ]),
+                                    ],
+                                    clearTimeserial: clearTimeserial,
+                                ),
+                            ],
+                        )
+
+                        let lateKeyValue = try #require(root.get(key: "lateKey")?.stringValue)
+                        #expect(lateKeyValue == "late", "Check lateKey is visible (postdates clear)")
+                        #expect(try root.size == 1, "Check root has 1 visible key")
+                    },
+                ),
+                .init(
+                    disabled: false,
+                    allTransportsAndProtocols: false,
+                    description: "reattach with HAS_OBJECTS=false resets clearTimeserial to null on root map",
+                    action: { ctx in
+                        let root = ctx.root
+                        let objectsHelper = ctx.objectsHelper
+                        let channel = ctx.channel
+
+                        // apply MAP_CLEAR to set clearTimeserial on root
+                        await objectsHelper.processObjectOperationMessageOnChannel(
+                            channel: channel,
+                            serial: lexicoTimeserial(seriesId: "aaa", timestamp: 10, counter: 0),
+                            siteCode: "aaa",
+                            state: [objectsHelper.mapClearOp(objectId: "root")],
+                        )
+
+                        // verify clearTimeserial is set
+                        let internallyTypedRoot = try #require(root as? PublicDefaultLiveMap)
+                        let internalRoot = internallyTypedRoot.proxied
+                        #expect(internalRoot.testsOnly_clearTimeserial == lexicoTimeserial(seriesId: "aaa", timestamp: 10, counter: 0), "Check clearTimeserial is set after MAP_CLEAR")
+
+                        // simulate reattach with HAS_OBJECTS=false, which resets root to a zero-value
+                        await injectAttachedMessage(channel: channel)
+
+                        // clearTimeserial should be now set to null for root
+                        #expect(internalRoot.testsOnly_clearTimeserial == nil, "Check clearTimeserial is null after reattach with HAS_OBJECTS=false")
                     },
                 ),
             ]
@@ -2389,6 +2556,392 @@ private struct ObjectsIntegrationTests {
                         )
 
                         _ = try await (mapSubPromise, counterSubPromise)
+                    },
+                ),
+                .init(
+                    disabled: false,
+                    allTransportsAndProtocols: false,
+                    description: "can apply MAP_CLEAR object operation messages on root",
+                    action: { ctx in
+                        let root = ctx.root
+                        let objects = ctx.objects
+                        let objectsHelper = ctx.objectsHelper
+
+                        // set some keys on root
+                        try await root.set(key: "foo", value: "bar")
+                        try await root.set(key: "baz", value: 42)
+
+                        // verify keys exist before clear
+                        let fooValue = try #require(root.get(key: "foo")?.stringValue)
+                        #expect(fooValue == "bar", "Check foo exists before MAP_CLEAR")
+                        let bazValue = try #require(root.get(key: "baz")?.numberValue)
+                        #expect(bazValue == 42, "Check baz exists before MAP_CLEAR")
+                        #expect(try root.size == 2, "Check root has 2 keys before MAP_CLEAR")
+
+                        // send MAP_CLEAR
+                        let clearAppliedPromiseUpdates = try root.updates()
+                        async let clearAppliedPromise: Void = waitForMapClear(clearAppliedPromiseUpdates, expectedRemovedKeys: ["foo", "baz"])
+                        try await objectsHelper.sendMapClearOnChannel(objects: objects, objectId: "root")
+                        await clearAppliedPromise
+
+                        // verify all keys are cleared
+                        #expect(try root.size == 0, "Check root has 0 keys after MAP_CLEAR")
+                        let fooAfterClear = try root.get(key: "foo")
+                        #expect(fooAfterClear == nil, "Check foo does not exist after MAP_CLEAR")
+                        let bazAfterClear = try root.get(key: "baz")
+                        #expect(bazAfterClear == nil, "Check baz does not exist after MAP_CLEAR")
+                    },
+                ),
+                .init(
+                    disabled: false,
+                    allTransportsAndProtocols: false,
+                    // MAP_CLEAR is currently server-initiated and only emitted for root objects,
+                    // but the client must be future-proof and support it for any map object.
+                    description: "can apply MAP_CLEAR object operation messages on non-root map objects",
+                    action: { ctx in
+                        let root = ctx.root
+                        let objects = ctx.objects
+                        let objectsHelper = ctx.objectsHelper
+                        let channel = ctx.channel
+
+                        // create a non-root map with entries
+                        try await root.set(key: "map", value: .liveMap(objects.createMap(entries: ["foo": "bar", "baz": 42])))
+
+                        let map = try #require(try root.get(key: "map")?.liveMapValue)
+                        #expect(try map.size == 2, "Check map has 2 keys before MAP_CLEAR")
+                        let mapFooValue = try #require(map.get(key: "foo")?.stringValue)
+                        #expect(mapFooValue == "bar", "Check \"foo\" key has correct value")
+                        let mapBazValue = try #require(map.get(key: "baz")?.numberValue)
+                        #expect(mapBazValue == 42, "Check \"baz\" key has correct value")
+
+                        // apply MAP_CLEAR on non-root map via internal API call,
+                        // as the server won't accept MAP_CLEAR for non-root object ids.
+                        let internalMap = try #require(map as? PublicDefaultLiveMap)
+                        await objectsHelper.processObjectOperationMessageOnChannel(
+                            channel: channel,
+                            serial: lexicoTimeserial(seriesId: "zzz", timestamp: 99_999_999_999_999, counter: 0),
+                            siteCode: "zzz",
+                            state: [objectsHelper.mapClearOp(objectId: internalMap.proxied.testsOnly_objectID)],
+                        )
+
+                        // verify all keys are cleared
+                        #expect(try map.size == 0, "Check map has 0 keys after MAP_CLEAR")
+                        let mapFooAfterClear = try map.get(key: "foo")
+                        #expect(mapFooAfterClear == nil, "Check \"foo\" key does not exist after MAP_CLEAR")
+                        let mapBazAfterClear = try map.get(key: "baz")
+                        #expect(mapBazAfterClear == nil, "Check \"baz\" key does not exist after MAP_CLEAR")
+                    },
+                ),
+                .init(
+                    disabled: false,
+                    allTransportsAndProtocols: false,
+                    description: "MAP_CLEAR with older serial than current clearTimeserial is a noop",
+                    action: { ctx in
+                        let root = ctx.root
+                        let objectsHelper = ctx.objectsHelper
+                        let channel = ctx.channel
+
+                        await objectsHelper.processObjectOperationMessageOnChannel(
+                            channel: channel,
+                            serial: lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0),
+                            siteCode: "aaa",
+                            state: [objectsHelper.mapSetOp(objectId: "root", key: "foo", data: .object(["string": .string("bar")]))],
+                        )
+
+                        // apply a sequence of operations and check expected state after each
+                        let steps: [(op: [String: WireValue], serial: String, siteCode: String, description: String, expectedSize: Int, expectedKeys: [String: String])] = [
+                            (
+                                op: objectsHelper.mapClearOp(objectId: "root"),
+                                serial: lexicoTimeserial(seriesId: "aaa", timestamp: 10, counter: 0),
+                                siteCode: "aaa",
+                                description: "first MAP_CLEAR",
+                                expectedSize: 0,
+                                expectedKeys: [:]
+                            ),
+                            (
+                                op: objectsHelper.mapSetOp(objectId: "root", key: "key1", data: .object(["string": .string("value")])),
+                                serial: lexicoTimeserial(seriesId: "aaa", timestamp: 11, counter: 0),
+                                siteCode: "aaa",
+                                description: "MAP_SET #1 after clear",
+                                expectedSize: 1,
+                                expectedKeys: ["key1": "value"]
+                            ),
+                            (
+                                op: objectsHelper.mapClearOp(objectId: "root"),
+                                serial: lexicoTimeserial(seriesId: "bbb", timestamp: 0, counter: 0), // different site so siteTimeserials check passes, older than first clear - noop
+                                siteCode: "bbb",
+                                description: "second MAP_CLEAR with older serial (noop)",
+                                expectedSize: 1,
+                                expectedKeys: ["key1": "value"]
+                            ),
+                        ]
+
+                        for step in steps {
+                            await objectsHelper.processObjectOperationMessageOnChannel(
+                                channel: channel,
+                                serial: step.serial,
+                                siteCode: step.siteCode,
+                                state: [step.op],
+                            )
+
+                            #expect(try root.size == step.expectedSize, "Check map size after \(step.description)")
+                            for (key, value) in step.expectedKeys {
+                                let keyValue = try #require(root.get(key: key)?.stringValue)
+                                #expect(keyValue == value, "Check \"\(key)\" after \(step.description)")
+                            }
+                        }
+                    },
+                ),
+                .init(
+                    disabled: false,
+                    allTransportsAndProtocols: false,
+                    description: "MAP_CLEAR does not remove entries with serial greater than clearTimeserial",
+                    action: { ctx in
+                        let root = ctx.root
+                        let objectsHelper = ctx.objectsHelper
+                        let channel = ctx.channel
+
+                        // set keys with different timeserials
+                        let keys: [(key: String, serial: String, siteCode: String, survivesClear: Bool)] = [
+                            (key: "key1", serial: lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0), siteCode: "aaa", survivesClear: false), // different site, earlier CGO, cleared
+                            (key: "key2", serial: lexicoTimeserial(seriesId: "aaa", timestamp: 999, counter: 0), siteCode: "aaa", survivesClear: true), // different site, later CGO, survives
+                            (key: "key3", serial: lexicoTimeserial(seriesId: "bbb", timestamp: 5, counter: 0), siteCode: "bbb", survivesClear: false), // same site, earlier CGO, cleared
+                            (key: "key4", serial: lexicoTimeserial(seriesId: "ccc", timestamp: 0, counter: 0), siteCode: "ccc", survivesClear: false), // different site, earlier CGO, cleared
+                            (key: "key5", serial: lexicoTimeserial(seriesId: "ccc", timestamp: 999, counter: 0), siteCode: "ccc", survivesClear: true), // different site, later CGO, survives
+                        ]
+
+                        for keyEntry in keys {
+                            await objectsHelper.processObjectOperationMessageOnChannel(
+                                channel: channel,
+                                serial: keyEntry.serial,
+                                siteCode: keyEntry.siteCode,
+                                state: [objectsHelper.mapSetOp(objectId: "root", key: keyEntry.key, data: .object(["string": .string(keyEntry.key)]))],
+                            )
+                        }
+
+                        #expect(try root.size == keys.count, "Check map has correct number of keys before MAP_CLEAR")
+
+                        // apply MAP_CLEAR with serial between existing keys
+                        await objectsHelper.processObjectOperationMessageOnChannel(
+                            channel: channel,
+                            serial: lexicoTimeserial(seriesId: "bbb", timestamp: 6, counter: 0),
+                            siteCode: "bbb",
+                            state: [objectsHelper.mapClearOp(objectId: "root")],
+                        )
+
+                        var expectedToSurviveCount = 0
+                        for keyEntry in keys {
+                            expectedToSurviveCount += keyEntry.survivesClear ? 1 : 0
+                            if keyEntry.survivesClear {
+                                let keyValue = try #require(root.get(key: keyEntry.key)?.stringValue)
+                                #expect(keyValue == keyEntry.key, "Check \(keyEntry.key) survives MAP_CLEAR")
+                            } else {
+                                let keyValue = try root.get(key: keyEntry.key)
+                                #expect(keyValue == nil, "Check \(keyEntry.key) is cleared")
+                            }
+                        }
+                        #expect(try root.size == expectedToSurviveCount, "Check map has \(expectedToSurviveCount) keys after MAP_CLEAR")
+                    },
+                ),
+                .init(
+                    disabled: false,
+                    allTransportsAndProtocols: false,
+                    description: "MAP_CLEAR object operation messages are applied based on the site timeserials vector of the object",
+                    action: { ctx in
+                        let root = ctx.root
+                        let objectsHelper = ctx.objectsHelper
+                        let channel = ctx.channel
+
+                        let mapIds = [
+                            objectsHelper.fakeMapObjectId(),
+                            objectsHelper.fakeMapObjectId(),
+                            objectsHelper.fakeMapObjectId(),
+                            objectsHelper.fakeMapObjectId(),
+                            objectsHelper.fakeMapObjectId(),
+                        ]
+
+                        for (i, mapId) in mapIds.enumerated() {
+                            // for each map, send two operations:
+                            // 1. create a map with visible data that can be verified after MAP_CLEAR.
+                            // use earliest possible timeserial to ensure entries can be cleared by MAP_CLEAR ops
+                            await objectsHelper.processObjectOperationMessageOnChannel(
+                                channel: channel,
+                                serial: lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0),
+                                siteCode: "aaa",
+                                state: [
+                                    objectsHelper.mapCreateOp(
+                                        objectId: mapId,
+                                        entries: ["foo": .object(["timeserial": .string(lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0)), "data": .object(["string": .string("bar")])])],
+                                    ),
+                                ],
+                            )
+                            // 2. send a no-op remove to establish site 'ccc' in the map's siteTimeserials at a known serial,
+                            // which the MAP_CLEAR ops below will be compared against
+                            await objectsHelper.processObjectOperationMessageOnChannel(
+                                channel: channel,
+                                serial: lexicoTimeserial(seriesId: "ccc", timestamp: 5, counter: 0),
+                                siteCode: "ccc",
+                                state: [objectsHelper.mapRemoveOp(objectId: mapId, key: "baz")],
+                            )
+
+                            // set map on root
+                            await objectsHelper.processObjectOperationMessageOnChannel(
+                                channel: channel,
+                                serial: lexicoTimeserial(seriesId: "aaa", timestamp: Int64(i), counter: 0),
+                                siteCode: "aaa",
+                                state: [objectsHelper.mapSetOp(objectId: "root", key: mapId, data: .object(["objectId": .string(mapId)]))],
+                            )
+                        }
+
+                        // inject MAP_CLEAR operations with various timeserial values
+                        // relative to the lexicoTimeserial('ccc', 5, 0) from the remove op above
+                        let ops: [(serial: String, siteCode: String, cleared: Bool)] = [
+                            (serial: lexicoTimeserial(seriesId: "ccc", timestamp: 4, counter: 0), siteCode: "ccc", cleared: false), // existing site, earlier CGO, not applied
+                            (serial: lexicoTimeserial(seriesId: "ccc", timestamp: 5, counter: 0), siteCode: "ccc", cleared: false), // existing site, same CGO, not applied
+                            (serial: lexicoTimeserial(seriesId: "ccc", timestamp: 6, counter: 0), siteCode: "ccc", cleared: true), // existing site, later CGO, applied
+                            (serial: lexicoTimeserial(seriesId: "bbb", timestamp: 1, counter: 0), siteCode: "bbb", cleared: true), // different site, earlier CGO, applied
+                            (serial: lexicoTimeserial(seriesId: "ddd", timestamp: 9, counter: 0), siteCode: "ddd", cleared: true), // different site, later CGO, applied
+                        ]
+
+                        for (i, op) in ops.enumerated() {
+                            let mapId = mapIds[i]
+
+                            await objectsHelper.processObjectOperationMessageOnChannel(
+                                channel: channel,
+                                serial: op.serial,
+                                siteCode: op.siteCode,
+                                state: [objectsHelper.mapClearOp(objectId: mapId)],
+                            )
+
+                            let map = try #require(try root.get(key: mapId)?.liveMapValue)
+                            if op.cleared {
+                                #expect(try map.size == 0, "Check map #\(i + 1) is cleared")
+                            } else {
+                                #expect(try map.size == 1, "Check map #\(i + 1) is not cleared")
+                                let fooValue = try #require(map.get(key: "foo")?.stringValue)
+                                #expect(fooValue == "bar", "Check map #\(i + 1) retains \"foo\" key")
+                            }
+                        }
+                    },
+                ),
+                .init(
+                    disabled: false,
+                    allTransportsAndProtocols: false,
+                    description: "MAP_SET with serial <= clearTimeserial is ignored after MAP_CLEAR",
+                    action: { ctx in
+                        let root = ctx.root
+                        let objectsHelper = ctx.objectsHelper
+                        let channel = ctx.channel
+
+                        // apply MAP_CLEAR, stores clearTimeserial on a map
+                        await objectsHelper.processObjectOperationMessageOnChannel(
+                            channel: channel,
+                            serial: lexicoTimeserial(seriesId: "aaa", timestamp: 10, counter: 0),
+                            siteCode: "aaa",
+                            state: [objectsHelper.mapClearOp(objectId: "root")],
+                        )
+
+                        // inject MAP_SET operations with various serials relative to clearTimeserial.
+                        // use different site codes to pass siteTimeserials check
+                        let ops: [(serial: String, siteCode: String, key: String, applied: Bool)] = [
+                            (serial: lexicoTimeserial(seriesId: "bbb", timestamp: 5, counter: 0), siteCode: "bbb", key: "early", applied: false), // earlier than clear, ignored
+                            (serial: lexicoTimeserial(seriesId: "aaa", timestamp: 10, counter: 0), siteCode: "aaa", key: "equal", applied: false), // equal to clear, ignored
+                            (serial: lexicoTimeserial(seriesId: "bbb", timestamp: 999, counter: 0), siteCode: "bbb", key: "later", applied: true), // later than clear, applied
+                        ]
+
+                        for op in ops {
+                            await objectsHelper.processObjectOperationMessageOnChannel(
+                                channel: channel,
+                                serial: op.serial,
+                                siteCode: op.siteCode,
+                                state: [objectsHelper.mapSetOp(objectId: "root", key: op.key, data: .object(["string": .string("value")]))],
+                            )
+
+                            if op.applied {
+                                let value = try #require(root.get(key: op.key)?.stringValue)
+                                #expect(value == "value", "Check MAP_SET for \"\(op.key)\" is applied")
+                            } else {
+                                let value = try root.get(key: op.key)
+                                #expect(value == nil, "Check MAP_SET for \"\(op.key)\" is ignored")
+                            }
+                        }
+                    },
+                ),
+                .init(
+                    disabled: false,
+                    allTransportsAndProtocols: false,
+                    description: "MAP_REMOVE with serial <= clearTimeserial is ignored after MAP_CLEAR",
+                    action: { ctx in
+                        let root = ctx.root
+                        let objectsHelper = ctx.objectsHelper
+                        let channel = ctx.channel
+
+                        // apply MAP_CLEAR, stores clearTimeserial on a map
+                        await objectsHelper.processObjectOperationMessageOnChannel(
+                            channel: channel,
+                            serial: lexicoTimeserial(seriesId: "aaa", timestamp: 10, counter: 0),
+                            siteCode: "aaa",
+                            state: [objectsHelper.mapClearOp(objectId: "root")],
+                        )
+
+                        // inject MAP_REMOVE operations with various serials relative to clearTimeserial.
+                        // use different site codes to pass siteTimeserials check
+                        let ops: [(serial: String, siteCode: String, key: String, applied: Bool)] = [
+                            (serial: lexicoTimeserial(seriesId: "bbb", timestamp: 5, counter: 0), siteCode: "bbb", key: "early", applied: false), // earlier than clear, ignored
+                            (serial: lexicoTimeserial(seriesId: "aaa", timestamp: 10, counter: 0), siteCode: "aaa", key: "equal", applied: false), // equal to clear, ignored
+                            (serial: lexicoTimeserial(seriesId: "bbb", timestamp: 999, counter: 0), siteCode: "bbb", key: "later", applied: true), // later than clear, applied
+                        ]
+
+                        for op in ops {
+                            await objectsHelper.processObjectOperationMessageOnChannel(
+                                channel: channel,
+                                serial: op.serial,
+                                siteCode: op.siteCode,
+                                state: [objectsHelper.mapRemoveOp(objectId: "root", key: op.key)],
+                            )
+
+                            let internallyTypedRoot = try #require(root as? PublicDefaultLiveMap)
+                            let internalRoot = internallyTypedRoot.proxied
+                            let underlyingData = internalRoot.testsOnly_data
+                            if op.applied {
+                                let mapEntry = try #require(underlyingData[op.key])
+                                #expect(mapEntry.tombstone == true, "Check MAP_REMOVE for \"\(op.key)\" is tombstoned")
+                            } else {
+                                #expect(underlyingData[op.key] == nil, "Check MAP_REMOVE for \"\(op.key)\" is ignored")
+                            }
+                        }
+                    },
+                ),
+                .init(
+                    disabled: false,
+                    allTransportsAndProtocols: false,
+                    description: "MAP_CLEAR removes entries from internal data map",
+                    action: { ctx in
+                        let root = ctx.root
+                        let objectsHelper = ctx.objectsHelper
+                        let channel = ctx.channel
+
+                        // set a key on root so the clear has something to remove
+                        await objectsHelper.processObjectOperationMessageOnChannel(
+                            channel: channel,
+                            serial: lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0),
+                            siteCode: "aaa",
+                            state: [objectsHelper.mapSetOp(objectId: "root", key: "foo", data: .object(["string": .string("bar")]))],
+                        )
+                        #expect(try root.get(key: "foo") != nil, "Check \"foo\" exists before clear")
+
+                        await objectsHelper.processObjectOperationMessageOnChannel(
+                            channel: channel,
+                            serial: lexicoTimeserial(seriesId: "aaa", timestamp: 5, counter: 0),
+                            siteCode: "aaa",
+                            state: [objectsHelper.mapClearOp(objectId: "root")],
+                        )
+
+                        // entry should be fully removed from internal data
+                        let internallyTypedRoot = try #require(root as? PublicDefaultLiveMap)
+                        let internalRoot = internallyTypedRoot.proxied
+                        let underlyingData = internalRoot.testsOnly_data
+                        #expect(underlyingData["foo"] == nil, "Check \"foo\" is removed from internal data")
                     },
                 ),
             ]
@@ -3793,6 +4346,7 @@ private struct ObjectsIntegrationTests {
     @available(iOS 17.0.0, tvOS 17.0.0, *)
     enum SubscriptionCallbacksScenarios: Scenarios {
         struct Context {
+            var objects: any RealtimeObjects
             var root: any LiveMap
             var objectsHelper: ObjectsHelper
             var channelName: String
@@ -3994,6 +4548,37 @@ private struct ObjectsIntegrationTests {
                     )
 
                     await subscriptionPromise
+                },
+            ),
+            .init(
+                disabled: false,
+                allTransportsAndProtocols: false,
+                // Deviation from JS: The JS test checks event.message.operation.action === 'map.clear'
+                // (operation metadata), but Swift's LiveMapUpdate has no operation action field — it
+                // only exposes per-key changes via update: [String: LiveMapUpdateAction]. So instead
+                // of checking the operation action, this test verifies that the subscription update
+                // contains .removed entries for each key that existed on the map before the clear.
+                // This is something the JS test doesn't verify (it only checks operation metadata,
+                // not the per-key update entries).
+                description: "can subscribe to the incoming MAP_CLEAR operation on a LiveMap",
+                action: { ctx in
+                    let root = ctx.root
+                    let objects = ctx.objects
+                    let objectsHelper = ctx.objectsHelper
+
+                    let updates = try root.updates()
+                    async let subscriptionPromise: Void = {
+                        let update = try #require(await updates.first { _ in true })
+                        // verify per-key removed entries for all keys that existed before the clear.
+                        // the test setup creates sampleMap and sampleCounter on root, so those are
+                        // the keys that should be removed.
+                        #expect(update.update[ctx.sampleMapKey] == .removed, "Check \"\(ctx.sampleMapKey)\" key has .removed action after MAP_CLEAR")
+                        #expect(update.update[ctx.sampleCounterKey] == .removed, "Check \"\(ctx.sampleCounterKey)\" key has .removed action after MAP_CLEAR")
+                    }()
+
+                    try await objectsHelper.sendMapClearOnChannel(objects: objects, objectId: "root")
+
+                    try await subscriptionPromise
                 },
             ),
             .init(
@@ -4264,6 +4849,7 @@ private struct ObjectsIntegrationTests {
 
             try await testCase.scenario.action(
                 .init(
+                    objects: objects,
                     root: root,
                     objectsHelper: objectsHelper,
                     channelName: testCase.channelName,

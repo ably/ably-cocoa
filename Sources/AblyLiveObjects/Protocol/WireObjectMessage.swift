@@ -151,6 +151,7 @@ internal enum ObjectOperationAction: Int {
     case counterCreate = 3
     case counterInc = 4
     case objectDelete = 5
+    case mapClear = 6
 }
 
 // OMP2
@@ -169,6 +170,7 @@ internal struct WireObjectOperation {
     internal var objectDelete: WireObjectDelete? // OOP3o
     internal var mapCreateWithObjectId: WireMapCreateWithObjectId? // OOP3p
     internal var counterCreateWithObjectId: WireCounterCreateWithObjectId? // OOP3q
+    internal var mapClear: WireMapClear? // OOP3r
 }
 
 extension WireObjectOperation: WireObjectCodable {
@@ -183,6 +185,7 @@ extension WireObjectOperation: WireObjectCodable {
         case objectDelete
         case mapCreateWithObjectId
         case counterCreateWithObjectId
+        case mapClear
     }
 
     internal init(wireObject: [String: WireValue]) throws(ARTErrorInfo) {
@@ -195,6 +198,7 @@ extension WireObjectOperation: WireObjectCodable {
         counterCreate = try wireObject.optionalDecodableValueForKey(WireKey.counterCreate.rawValue)
         counterInc = try wireObject.optionalDecodableValueForKey(WireKey.counterInc.rawValue)
         objectDelete = try wireObject.optionalDecodableValueForKey(WireKey.objectDelete.rawValue)
+        mapClear = try wireObject.optionalDecodableValueForKey(WireKey.mapClear.rawValue)
         // Outbound-only — do not access on inbound data
         mapCreateWithObjectId = nil
         counterCreateWithObjectId = nil
@@ -229,6 +233,9 @@ extension WireObjectOperation: WireObjectCodable {
         }
         if let counterCreateWithObjectId {
             result[WireKey.counterCreateWithObjectId.rawValue] = .object(counterCreateWithObjectId.toWireObject)
+        }
+        if let mapClear {
+            result[WireKey.mapClear.rawValue] = .object(mapClear.toWireObject)
         }
 
         return result
@@ -292,12 +299,14 @@ extension WireObjectState: WireObjectCodable {
 internal struct WireObjectsMap {
     internal var semantics: WireEnum<ObjectsMapSemantics> // OMP3a
     internal var entries: [String: WireObjectsMapEntry]? // OMP3b
+    internal var clearTimeserial: String? // OMP3c
 }
 
 extension WireObjectsMap: WireObjectCodable {
     internal enum WireKey: String {
         case semantics
         case entries
+        case clearTimeserial
     }
 
     internal init(wireObject: [String: WireValue]) throws(ARTErrorInfo) {
@@ -308,6 +317,7 @@ extension WireObjectsMap: WireObjectCodable {
             }
             return try WireObjectsMapEntry(wireObject: object)
         }
+        clearTimeserial = try wireObject.optionalStringValueForKey(WireKey.clearTimeserial.rawValue)
     }
 
     internal var toWireObject: [String: WireValue] {
@@ -317,6 +327,9 @@ extension WireObjectsMap: WireObjectCodable {
 
         if let entries {
             result[WireKey.entries.rawValue] = .object(entries.mapValues { .object($0.toWireObject) })
+        }
+        if let clearTimeserial {
+            result[WireKey.clearTimeserial.rawValue] = .string(clearTimeserial)
         }
 
         return result
@@ -475,6 +488,20 @@ internal struct WireObjectDelete: Equatable {
 }
 
 extension WireObjectDelete: WireObjectCodable {
+    internal init(wireObject _: [String: WireValue]) throws(ARTErrorInfo) {
+        // No fields to decode
+    }
+
+    internal var toWireObject: [String: WireValue] {
+        [:]
+    }
+}
+
+internal struct WireMapClear: Equatable {
+    // Empty struct
+}
+
+extension WireMapClear: WireObjectCodable {
     internal init(wireObject _: [String: WireValue]) throws(ARTErrorInfo) {
         // No fields to decode
     }

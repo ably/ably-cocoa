@@ -17,6 +17,7 @@ final class ObjectsHelper: Sendable {
         case counterCreate = 3
         case counterInc = 4
         case objectDelete = 5
+        case mapClear = 6
 
         var stringValue: String {
             switch self {
@@ -32,6 +33,8 @@ final class ObjectsHelper: Sendable {
                 "COUNTER_INC"
             case .objectDelete:
                 "OBJECT_DELETE"
+            case .mapClear:
+                "MAP_CLEAR"
             }
         }
     }
@@ -219,6 +222,36 @@ final class ObjectsHelper: Sendable {
         ]
     }
 
+    /// Sends a MAP_CLEAR operation to the server via `testsOnly_publish`.
+    ///
+    /// MAP_CLEAR is server-initiated and has no production client-side API,
+    /// but it is enabled over realtime connections on non-prod clusters for testing.
+    func sendMapClearOnChannel(objects: any RealtimeObjects, objectId: String) async throws {
+        guard let internallyTypedObjects = objects as? PublicDefaultRealtimeObjects else {
+            preconditionFailure("Expected PublicDefaultRealtimeObjects")
+        }
+        try await internallyTypedObjects.testsOnly_publish(objectMessages: [
+            OutboundObjectMessage(
+                operation: ObjectOperation(
+                    action: .known(.mapClear),
+                    objectId: objectId,
+                    mapClear: WireMapClear(),
+                ),
+            ),
+        ])
+    }
+
+    /// Creates a map clear operation
+    func mapClearOp(objectId: String) -> [String: WireValue] {
+        [
+            "operation": .object([
+                "action": .number(NSNumber(value: Actions.mapClear.rawValue)),
+                "objectId": .string(objectId),
+                "mapClear": .object([:]),
+            ]),
+        ]
+    }
+
     /// Creates a map object structure
     func mapObject(
         objectId: String,
@@ -226,15 +259,22 @@ final class ObjectsHelper: Sendable {
         initialEntries: [String: WireValue]? = nil,
         materialisedEntries: [String: WireValue]? = nil,
         tombstone: Bool = false,
+        clearTimeserial: String? = nil,
     ) -> [String: WireValue] {
+        var mapDict: [String: WireValue] = [
+            "semantics": .number(NSNumber(value: 0)),
+            "entries": .object(materialisedEntries ?? [:]),
+        ]
+
+        if let clearTimeserial {
+            mapDict["clearTimeserial"] = .string(clearTimeserial)
+        }
+
         var object: [String: WireValue] = [
             "objectId": .string(objectId),
             "siteTimeserials": .object(siteTimeserials.mapValues { .string($0) }),
             "tombstone": .bool(tombstone),
-            "map": .object([
-                "semantics": .number(NSNumber(value: 0)),
-                "entries": .object(materialisedEntries ?? [:]),
-            ]),
+            "map": .object(mapDict),
         ]
 
         if let initialEntries {
