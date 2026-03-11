@@ -3,11 +3,11 @@
     "pins": [
       {
         "package": "ably-cocoa-plugin-support",
-        "repositoryURL": "https://github.com/ably/ably-cocoa-plugin-support",
+        "repositoryURL": "https://github.com/ably/ably-cocoa-plugin-support.git",
         "state": {
           "branch": null,
-          "revision": "dd118432a6e023c3d2c8a051299e8081a06db036",
-          "version": "1.0.0"
+          "revision": "f2468ee39f3e18955b0ec4fe41dc5a9906a72633",
+          "version": null
         }
       },
       {

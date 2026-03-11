@@ -8,6 +8,8 @@
 #import "ARTClientOptions+Private.h"
 #import "ARTErrorInfo+Private.h"
 #import "ARTConnectionDetails+Private.h"
+#import "ARTPublishResult+Private.h"
+#import "ARTPublishResultSerial+Private.h"
 
 static ARTErrorInfo *_ourPublicErrorInfo(id<APPublicErrorInfo> pluginPublicErrorInfo) {
     if (![pluginPublicErrorInfo isKindOfClass:[ARTErrorInfo class]]) {
@@ -51,7 +53,7 @@ static ARTInternalLog *_internalLogger(id<APLogger> pluginLogger) {
     return (ARTInternalLog *)pluginLogger;
 }
 
-static APRealtimeChannelState _convertOurRealtimeChannelState(ARTRealtimeChannelState ourRealtimeChannelState) {
+APRealtimeChannelState ARTConvertToPluginChannelState(ARTRealtimeChannelState ourRealtimeChannelState) {
     switch (ourRealtimeChannelState) {
     case ARTRealtimeChannelInitialized:
         return APRealtimeChannelStateInitialized;
@@ -69,7 +71,7 @@ static APRealtimeChannelState _convertOurRealtimeChannelState(ARTRealtimeChannel
         return APRealtimeChannelStateFailed;
     }
 
-    [NSException raise:NSInternalInconsistencyException format:@"_convertOurRealtimeChannelState failed to map %lu", ourRealtimeChannelState];
+    [NSException raise:NSInternalInconsistencyException format:@"ARTConvertToPluginChannelState failed to map %lu", ourRealtimeChannelState];
 }
 
 static ARTLogLevel _convertPluginLogLevel(APLogLevel pluginLogLevel) {
@@ -92,6 +94,10 @@ static ARTLogLevel _convertPluginLogLevel(APLogLevel pluginLogLevel) {
 }
 
 @implementation ARTPluginAPI
+
+- (BOOL)usesLiveObjectsProtocolV6 {
+    return YES;
+}
 
 + (void)registerSelf {
     static dispatch_once_t onceToken;
@@ -159,11 +165,25 @@ static ARTLogLevel _convertPluginLogLevel(APLogLevel pluginLogLevel) {
                                                          completion:completion];
 }
 
+- (void)nosync_sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
+                                    channel:(id<APRealtimeChannel>)channel
+                       completionWithResult:(void (^)(id<APPublishResultProtocol> _Nullable publishResult, id<APPublicErrorInfo> _Nullable error))completion {
+    ARTRealtimeChannelInternal *internalChannel = _internalRealtimeChannel(channel);
+    dispatch_assert_queue(internalChannel.queue);
+
+    [internalChannel sendObjectWithObjectMessages:objectMessages
+                             completionWithResult:^(ARTPublishResult *publishResult, ARTErrorInfo *error) {
+        if (completion) {
+            completion(publishResult, error);
+        }
+    }];
+}
+
 - (APRealtimeChannelState)nosync_stateForChannel:(id<APRealtimeChannel>)channel {
     ARTRealtimeChannelInternal *internalChannel = _internalRealtimeChannel(channel);
     dispatch_assert_queue(internalChannel.queue);
 
-    return _convertOurRealtimeChannelState(internalChannel.state_nosync);
+    return ARTConvertToPluginChannelState(internalChannel.state_nosync);
 }
 
 - (void)nosync_fetchServerTimeForClient:(id<APRealtimeClient>)client

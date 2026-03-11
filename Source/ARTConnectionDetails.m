@@ -10,7 +10,8 @@
               connectionStateTtl:(NSTimeInterval)connectionStateTtl
                         serverId:(NSString *)serverId
                  maxIdleInterval:(NSTimeInterval)maxIdleInterval
-            objectsGCGracePeriod:(nullable NSNumber *)objectsGCGracePeriod {
+            objectsGCGracePeriod:(nullable NSNumber *)objectsGCGracePeriod
+                        siteCode:(nullable NSString *)siteCode {
     if (self = [super init]) {
         _clientId = clientId;
         _connectionKey = connectionKey;
@@ -21,6 +22,7 @@
         _serverId = serverId;
         _maxIdleInterval = maxIdleInterval;
         _objectsGCGracePeriod = objectsGCGracePeriod;
+        _siteCode = siteCode;
     }
     return self;
 }
