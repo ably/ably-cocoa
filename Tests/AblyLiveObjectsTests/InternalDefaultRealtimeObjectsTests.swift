@@ -126,7 +126,6 @@ struct InternalDefaultRealtimeObjectsTests {
 
         // @spec RTO5a2
         // @spec RTO5a2a
-        // @spec RTO5a2b
         @Test
         func newSequenceIdDiscardsInFlightSync() async throws {
             let internalQueue = TestFactories.createInternalQueue()
@@ -144,13 +143,6 @@ struct InternalDefaultRealtimeObjectsTests {
             }
 
             #expect(realtimeObjects.testsOnly_hasSyncSequence)
-
-            // Inject an OBJECT; it will get buffered per RTO8a and subsequently discarded per RTO5a2b
-            internalQueue.ably_syncNoDeadlock {
-                realtimeObjects.nosync_handleObjectProtocolMessage(objectMessages: [
-                    TestFactories.mapCreateOperationMessage(objectId: "map:3@789"),
-                ])
-            }
 
             // Start new sequence with different ID (RTO5a2)
             let secondMessages = [TestFactories.simpleMapMessage(objectId: "map:2@456")]
@@ -175,7 +167,6 @@ struct InternalDefaultRealtimeObjectsTests {
             // Verify only the second sequence's objects were applied (RTO5a2a - previous cleared)
             let pool = realtimeObjects.testsOnly_objectsPool
             #expect(pool.entries["map:1@123"] == nil) // From discarded first sequence
-            #expect(pool.entries["map:3@789"] == nil) // Check we discarded the OBJECT that was buffered during discarded first sequence (RTO5a2b)
             #expect(pool.entries["map:2@456"] != nil) // From completed second sequence
             #expect(!realtimeObjects.testsOnly_hasSyncSequence)
         }
@@ -366,9 +357,10 @@ struct InternalDefaultRealtimeObjectsTests {
     struct OnChannelAttachedTests {
         // MARK: - RTO4a Tests
 
-        // @spec RTO4a - Checks that when the `HAS_OBJECTS` flag is 1 (i.e. the server will shortly perform an `OBJECT_SYNC` sequence) we don't modify any internal state
+        // @spec RTO4a - Checks that when the `HAS_OBJECTS` flag is 1 (i.e. the server will shortly perform an `OBJECT_SYNC` sequence) we don't modify the objects pool or sync sequence
+        // @specOneOf(1/2) RTO4d
         @Test
-        func doesNotModifyStateWhenHasObjectsIsTrue() {
+        func handlesHasObjectTrue() {
             let internalQueue = TestFactories.createInternalQueue()
             let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
 
@@ -389,12 +381,21 @@ struct InternalDefaultRealtimeObjectsTests {
 
             #expect(realtimeObjects.testsOnly_hasSyncSequence)
 
+            // Inject a buffered OBJECT operation
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectProtocolMessage(objectMessages: [
+                    TestFactories.mapCreateOperationMessage(objectId: "map:buffered@789"),
+                ])
+            }
+
+            #expect(realtimeObjects.testsOnly_bufferedObjectOperationsCount == 1)
+
             // When: onChannelAttached is called with hasObjects = true
             internalQueue.ably_syncNoDeadlock {
                 realtimeObjects.nosync_onChannelAttached(hasObjects: true)
             }
 
-            // Then: Nothing should be modified
+            // Then:
             #expect(realtimeObjects.testsOnly_onChannelAttachedHasObjects == true)
 
             // Verify ObjectsPool is unchanged
@@ -405,6 +406,9 @@ struct InternalDefaultRealtimeObjectsTests {
 
             // Verify sync sequence is still active
             #expect(realtimeObjects.testsOnly_hasSyncSequence)
+
+            // RTO4d: Verify buffered object operations were cleared
+            #expect(realtimeObjects.testsOnly_bufferedObjectOperationsCount == 0)
         }
 
         // MARK: - RTO4b Tests
@@ -414,7 +418,7 @@ struct InternalDefaultRealtimeObjectsTests {
         // @spec RTO4b2a
         // @spec RTO4b3
         // @spec RTO4b4
-        // @spec RTO4b5
+        // @specOneOf(2/2) RTO4d
         @available(iOS 17.0.0, tvOS 17.0.0, *)
         @Test
         func handlesHasObjectsFalse() async throws {
@@ -490,7 +494,7 @@ struct InternalDefaultRealtimeObjectsTests {
             #expect(newRoot as AnyObject === originalPool.root as AnyObject) // Should be same instance
             #expect(newRoot.testsOnly_data.isEmpty) // Should be zero-valued (empty)
 
-            // RTO4b3, RTO4b4, RTO4b5: SyncObjectsPool must be cleared, sync sequence cleared, BufferedObjectOperations cleared, appliedOnAckSerials cleared
+            // RTO4b3, RTO4b4, RTO4d: SyncObjectsPool must be cleared, sync sequence cleared, BufferedObjectOperations cleared, appliedOnAckSerials cleared
             #expect(!realtimeObjects.testsOnly_hasSyncSequence)
             #expect(realtimeObjects.testsOnly_appliedOnAckSerials.isEmpty)
         }

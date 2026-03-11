@@ -352,15 +352,14 @@ private final class AckInterceptor: @unchecked Sendable {
     }
 }
 
-/// Injects an ATTACHED protocol message into the channel, optionally with the HAS_OBJECTS flag.
-/// This triggers a sync sequence when `hasObjects` is true.
-private func injectAttachedMessage(channel: ARTRealtimeChannel, hasObjects: Bool) async {
+/// Injects an ATTACHED protocol message into the channel with the given flags.
+private func injectAttachedMessage(channel: ARTRealtimeChannel, flags: ARTProtocolMessageFlag = []) async {
     await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
         channel.internal.queue.async {
             let pm = ARTProtocolMessage()
             pm.action = .attached
             pm.channel = channel.name
-            pm.flags = hasObjects ? Int64(1 << 7) : 0 // ARTProtocolMessageFlagHasObjects
+            pm.flags = Int64(flags.rawValue)
             channel.internal.onChannelMessage(pm)
             continuation.resume()
         }
@@ -605,6 +604,22 @@ private struct ObjectsIntegrationTests {
 
         static let scenarios: [TestScenario<Context>] = {
             let objectSyncSequenceScenarios: [TestScenario<Context>] = [
+                .init(
+                    disabled: false,
+                    allTransportsAndProtocols: false,
+                    description: "on ATTACHED without HAS_OBJECTS clears local state",
+                    action: { ctx in
+                        // set a key on root so we can verify it gets cleared after ATTACHED
+                        try await ctx.root.set(key: "foo", value: "bar")
+                        #expect(try #require(ctx.root.get(key: "foo")?.stringValue) == "bar", "Check root has key before ATTACHED")
+
+                        // inject ATTACHED without HAS_OBJECTS flag
+                        await injectAttachedMessage(channel: ctx.channel)
+
+                        // local state should be cleared — root should have no keys
+                        #expect(try ctx.root.size == 0, "Check root has no keys after ATTACHED without HAS_OBJECTS")
+                    },
+                ),
                 .init(
                     disabled: false,
                     allTransportsAndProtocols: true,
@@ -2256,12 +2271,11 @@ private struct ObjectsIntegrationTests {
                 .init(
                     disabled: false,
                     allTransportsAndProtocols: false,
-                    description: "buffered object operation messages are discarded when new OBJECT_SYNC sequence starts",
+                    description: "buffered object operation messages are discarded on ATTACHED",
                     action: { ctx in
                         let root = ctx.root
                         let objectsHelper = ctx.objectsHelper
                         let channel = ctx.channel
-                        let client = ctx.client
 
                         // Start new sync sequence with a cursor so client will wait for the next OBJECT_SYNC messages
                         await objectsHelper.processObjectStateMessageOnChannel(
@@ -2269,36 +2283,133 @@ private struct ObjectsIntegrationTests {
                             syncSerial: "serial:cursor",
                         )
 
-                        // Inject operations, expect them to be discarded when sync with new sequence id starts
-                        // Note that unlike in the JS test we do not perform this concurrently because if we were to do that in Swift Concurrency we would not be able to guarantee that the operations are applied in the correct order (if they're not then messages will be discarded due to serials being out of order)
-                        for (i, keyData) in primitiveKeyData.enumerated() {
-                            var wireData = keyData.data.mapValues { WireValue(jsonValue: $0) }
+                        // Inject operation during sync sequence, expect it to be discarded when ATTACHED arrives
+                        await objectsHelper.processObjectOperationMessageOnChannel(
+                            channel: channel,
+                            serial: lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0),
+                            siteCode: "aaa",
+                            state: [objectsHelper.mapSetOp(objectId: "root", key: "foo", data: .object(["string": .string("bar")]))],
+                        )
 
-                            if let bytesValue = wireData["bytes"], client.internal.options.useBinaryProtocol {
-                                let bytesString = try #require(bytesValue.stringValue)
-                                wireData["bytes"] = try .data(#require(.init(base64Encoded: bytesString)))
-                            }
+                        // Any ATTACHED message must clear buffered operations and start a new sync sequence
+                        await injectAttachedMessage(channel: channel, flags: .hasObjects)
 
-                            await objectsHelper.processObjectOperationMessageOnChannel(
-                                channel: channel,
-                                serial: lexicoTimeserial(seriesId: "aaa", timestamp: Int64(i), counter: 0),
-                                siteCode: "aaa",
-                                state: [objectsHelper.mapSetOp(objectId: "root", key: keyData.key, data: .object(wireData))],
-                            )
-                        }
+                        // Inject another operation that should be applied when sync ends
+                        await objectsHelper.processObjectOperationMessageOnChannel(
+                            channel: channel,
+                            serial: lexicoTimeserial(seriesId: "bbb", timestamp: 0, counter: 0),
+                            siteCode: "bbb",
+                            state: [objectsHelper.mapSetOp(objectId: "root", key: "baz", data: .object(["string": .string("qux")]))],
+                        )
 
-                        // Start new sync with new sequence id
+                        // End sync
+                        await objectsHelper.processObjectStateMessageOnChannel(
+                            channel: channel,
+                            syncSerial: "serial:",
+                        )
+
+                        // Check root doesn't have data from operations received before ATTACHED
+                        let fooValue = try root.get(key: "foo")
+                        #expect(fooValue == nil, "Check buffered ops before ATTACHED were discarded and not applied on root")
+
+                        // Check root has data from operations received after ATTACHED
+                        #expect(try #require(root.get(key: "baz")?.stringValue) == "qux", "Check root has data from operations received after ATTACHED")
+                    },
+                ),
+                .init(
+                    // Note: This comment re regression test is preserved from the JS test it's copied from, but this bug never actually existed in the Swift implementation.
+                    // Regression test: an earlier implementation did not clear buffered operations when receiving
+                    // an ATTACHED with RESUMED=true on an already-attached channel. The RESUMED flag is irrelevant
+                    // — buffering is determined by HAS_OBJECTS, and any ATTACHED must clear buffered operations.
+                    disabled: false,
+                    allTransportsAndProtocols: false,
+                    description: "buffered object operation messages are discarded when already-attached channel receives ATTACHED with RESUMED flag",
+                    action: { ctx in
+                        let root = ctx.root
+                        let objectsHelper = ctx.objectsHelper
+                        let channel = ctx.channel
+
+                        // Channel is already attached from the test setup
+                        #expect(channel.state == .attached, "Check channel is already attached before test begins")
+
+                        // Start new sync sequence with a cursor so client will wait for the next OBJECT_SYNC messages
+                        await objectsHelper.processObjectStateMessageOnChannel(
+                            channel: channel,
+                            syncSerial: "serial:cursor",
+                        )
+
+                        // Inject operation, expect it to be discarded when ATTACHED arrives (even with RESUMED)
+                        await objectsHelper.processObjectOperationMessageOnChannel(
+                            channel: channel,
+                            serial: lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0),
+                            siteCode: "aaa",
+                            state: [objectsHelper.mapSetOp(objectId: "root", key: "foo", data: .object(["string": .string("bar")]))],
+                        )
+
+                        // The RESUMED flag is irrelevant for LiveObjects buffering — any ATTACHED must clear
+                        // buffered operations and start a new sync sequence
+                        await injectAttachedMessage(channel: channel, flags: [.hasObjects, .resumed])
+
+                        // Inject another operation after ATTACHED
+                        await objectsHelper.processObjectOperationMessageOnChannel(
+                            channel: channel,
+                            serial: lexicoTimeserial(seriesId: "bbb", timestamp: 0, counter: 0),
+                            siteCode: "bbb",
+                            state: [objectsHelper.mapSetOp(objectId: "root", key: "baz", data: .object(["string": .string("qux")]))],
+                        )
+
+                        // End sync
+                        await objectsHelper.processObjectStateMessageOnChannel(
+                            channel: channel,
+                            syncSerial: "serial:",
+                        )
+
+                        // Check root doesn't have data from operations received before ATTACHED
+                        let fooValue = try root.get(key: "foo")
+                        #expect(fooValue == nil, "Check buffered ops before RESUMED ATTACHED were discarded and not applied on root")
+
+                        // Check root has data from operations received after ATTACHED
+                        #expect(try #require(root.get(key: "baz")?.stringValue) == "qux", "Check root has data from operations received after RESUMED ATTACHED")
+                    },
+                ),
+                .init(
+                    // Regression test: an earlier implementation incorrectly cleared buffered operations when a new
+                    // OBJECT_SYNC sequence started. Only an ATTACHED message should clear buffered operations, not
+                    // a new OBJECT_SYNC sequence.
+                    disabled: false,
+                    allTransportsAndProtocols: false,
+                    description: "buffered object operation messages are NOT discarded on new OBJECT_SYNC sequence",
+                    action: { ctx in
+                        let root = ctx.root
+                        let objectsHelper = ctx.objectsHelper
+                        let channel = ctx.channel
+
+                        // Start new sync sequence with a cursor so client will wait for the next OBJECT_SYNC messages
+                        await objectsHelper.processObjectStateMessageOnChannel(
+                            channel: channel,
+                            syncSerial: "serial:cursor",
+                        )
+
+                        // Inject operation during first sync sequence
+                        await objectsHelper.processObjectOperationMessageOnChannel(
+                            channel: channel,
+                            serial: lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0),
+                            siteCode: "aaa",
+                            state: [objectsHelper.mapSetOp(objectId: "root", key: "foo", data: .object(["string": .string("bar")]))],
+                        )
+
+                        // Start new sync with new sequence id — buffered operations should NOT be discarded
                         await objectsHelper.processObjectStateMessageOnChannel(
                             channel: channel,
                             syncSerial: "otherserial:cursor",
                         )
 
-                        // Inject another operation that should be applied when latest sync ends
+                        // Inject another operation during second sync sequence
                         await objectsHelper.processObjectOperationMessageOnChannel(
                             channel: channel,
                             serial: lexicoTimeserial(seriesId: "bbb", timestamp: 0, counter: 0),
                             siteCode: "bbb",
-                            state: [objectsHelper.mapSetOp(objectId: "root", key: "foo", data: .object(["string": .string("bar")]))],
+                            state: [objectsHelper.mapSetOp(objectId: "root", key: "baz", data: .object(["string": .string("qux")]))],
                         )
 
                         // End sync
@@ -2307,13 +2418,59 @@ private struct ObjectsIntegrationTests {
                             syncSerial: "otherserial:",
                         )
 
-                        // Check root doesn't have data from operations received during first sync
-                        for keyData in primitiveKeyData {
-                            #expect(try root.get(key: keyData.key) == nil, "Check \"\(keyData.key)\" key doesn't exist on root when OBJECT_SYNC has ended")
-                        }
+                        // Check root has data from operations received during first sync sequence
+                        let fooStringValue = try #require(root.get(key: "foo")?.stringValue)
+                        #expect(fooStringValue == "bar", "Check root has data from operations received during first OBJECT_SYNC sequence")
 
                         // Check root has data from operations received during second sync
-                        #expect(try #require(root.get(key: "foo")?.stringValue) == "bar", "Check root has data from operations received during second OBJECT_SYNC sequence")
+                        let bazStringValue = try #require(root.get(key: "baz")?.stringValue)
+                        #expect(bazStringValue == "qux", "Check root has data from operations received during second OBJECT_SYNC sequence")
+                    },
+                ),
+                .init(
+                    disabled: false,
+                    allTransportsAndProtocols: false,
+                    description: "operations are buffered when OBJECT_SYNC is received after completed sync without expected preceding ATTACHED",
+                    action: { ctx in
+                        let root = ctx.root
+                        let objectsHelper = ctx.objectsHelper
+                        let channel = ctx.channel
+
+                        // Complete an initial sync sequence first
+                        await objectsHelper.processObjectStateMessageOnChannel(
+                            channel: channel,
+                            syncSerial: "serial:",
+                        )
+
+                        // Simulate receiving OBJECT_SYNC without preceding ATTACHED.
+                        // Normally, for server-initiated resync the server is expected to send ATTACHED with RESUMED=false first.
+                        // However, if that doesn't happen, the client handles it as a best-effort case by starting to buffer from this point.
+                        await objectsHelper.processObjectStateMessageOnChannel(
+                            channel: channel,
+                            syncSerial: "resync:cursor",
+                        )
+
+                        // Inject operations during this server-initiated resync — they should be buffered
+                        await objectsHelper.processObjectOperationMessageOnChannel(
+                            channel: channel,
+                            serial: lexicoTimeserial(seriesId: "aaa", timestamp: 0, counter: 0),
+                            siteCode: "aaa",
+                            state: [objectsHelper.mapSetOp(objectId: "root", key: "foo", data: .object(["string": .string("bar")]))],
+                        )
+
+                        // Check root doesn't have data yet — operations should be buffered during resync
+                        let fooValueDuringResync = try root.get(key: "foo")
+                        #expect(fooValueDuringResync == nil, "Check \"foo\" key doesn't exist during server-initiated resync")
+
+                        // End the resync
+                        await objectsHelper.processObjectStateMessageOnChannel(
+                            channel: channel,
+                            syncSerial: "resync:",
+                        )
+
+                        // Check buffered operations are now applied
+                        let fooStringValue = try #require(root.get(key: "foo")?.stringValue)
+                        #expect(fooStringValue == "bar", "Check root has correct value for \"foo\" key after server-initiated resync completed")
                     },
                 ),
                 .init(
@@ -2475,7 +2632,7 @@ private struct ObjectsIntegrationTests {
                 .init(
                     disabled: false,
                     allTransportsAndProtocols: false,
-                    description: "subsequent object operation messages are applied immediately after OBJECT_SYNC ended and buffers are applied",
+                    description: "subsequent object operation messages are applied immediately after OBJECT_SYNC ended and buffered operations are applied",
                     action: { ctx in
                         let root = ctx.root
                         let objectsHelper = ctx.objectsHelper
@@ -4450,7 +4607,7 @@ private struct ObjectsIntegrationTests {
             let counterId = internalCounter.proxied.testsOnly_objectID
 
             // Inject ATTACHED with HAS_OBJECTS to trigger SYNCING state
-            await injectAttachedMessage(channel: channel, hasObjects: true)
+            await injectAttachedMessage(channel: channel, flags: .hasObjects)
 
             // Set up ACK interceptor so we can control when the ACK is delivered
             let ackInterceptor = AckInterceptor(client: client)
@@ -4524,7 +4681,7 @@ private struct ObjectsIntegrationTests {
             let counterId = internalCounter.proxied.testsOnly_objectID
 
             // Inject ATTACHED+HAS_OBJECTS to trigger sync
-            await injectAttachedMessage(channel: channel, hasObjects: true)
+            await injectAttachedMessage(channel: channel, flags: .hasObjects)
 
             // Complete sync with state that uses a fake siteCode.
             // Using a clearly fake siteCode ensures the echo (which has the real siteCode)
@@ -4589,7 +4746,7 @@ private struct ObjectsIntegrationTests {
             try await root.set(key: "counter", value: .liveCounter(counter))
 
             // Inject ATTACHED+HAS_OBJECTS to trigger SYNCING state
-            await injectAttachedMessage(channel: channel, hasObjects: true)
+            await injectAttachedMessage(channel: channel, flags: .hasObjects)
 
             // Set up ACK interceptor and start increment
             let ackInterceptor = AckInterceptor(client: client)
