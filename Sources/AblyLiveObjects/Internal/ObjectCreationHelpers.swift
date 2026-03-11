@@ -13,11 +13,6 @@ internal enum ObjectCreationHelpers {
         /// We include this property separately as a non-nil value, instead of expecting the caller to fish the nullable value out of ``objectMessage``.
         internal var objectID: String
 
-        /// The operation that should be merged into any created LiveCounter.
-        ///
-        /// We include this property separately as a non-nil value, instead of expecting the caller to fish the nullable value out of ``objectMessage``.
-        internal var operation: ObjectOperation
-
         /// The ObjectMessage that must be sent in order for Realtime to create the object.
         internal var objectMessage: OutboundObjectMessage
     }
@@ -28,11 +23,6 @@ internal enum ObjectCreationHelpers {
         ///
         /// We include this property separately as a non-nil value, instead of expecting the caller to fish the nullable value out of ``objectMessage``.
         internal var objectID: String
-
-        /// The operation that should be merged into any created LiveMap.
-        ///
-        /// We include this property separately as a non-nil value, instead of expecting the caller to fish the nullable value out of ``objectMessage``.
-        internal var operation: ObjectOperation
 
         /// The ObjectMessage that must be sent in order for Realtime to create the object.
         internal var objectMessage: OutboundObjectMessage
@@ -52,13 +42,11 @@ internal enum ObjectCreationHelpers {
         count: Double,
         timestamp: Date,
     ) -> CounterCreationOperation {
-        // RTO12f2: Create initial value for the new LiveCounter
-        let initialValue = PartialObjectOperation(
-            counter: WireObjectsCounter(count: NSNumber(value: count)),
-        )
+        // RTO12f12: Create initial value for the new LiveCounter
+        let counterCreate = WireCounterCreate(count: NSNumber(value: count))
 
-        // RTO12f3: Create an initial value JSON string as described in RTO13
-        let initialValueJSONString = createInitialValueJSONString(from: initialValue)
+        // RTO12f13: Create an initial value JSON string as described in RTO12f13
+        let initialValueJSONString = createInitialValueJSONString(from: counterCreate)
 
         // RTO12f4: Create a unique nonce as a random string
         let nonce = generateNonce()
@@ -78,9 +66,11 @@ internal enum ObjectCreationHelpers {
         let operation = ObjectOperation(
             action: .known(.counterCreate),
             objectId: objectId,
-            counter: WireObjectsCounter(count: NSNumber(value: count)),
-            nonce: nonce,
-            initialValue: initialValueJSONString,
+            counterCreateWithObjectId: .init(
+                initialValue: initialValueJSONString,
+                nonce: nonce,
+                derivedFrom: counterCreate, // RTO12f16
+            ),
         )
 
         // Create the OutboundObjectMessage
@@ -90,7 +80,6 @@ internal enum ObjectCreationHelpers {
 
         return CounterCreationOperation(
             objectID: objectId,
-            operation: operation,
             objectMessage: objectMessage,
         )
     }
@@ -104,20 +93,19 @@ internal enum ObjectCreationHelpers {
         entries: [String: InternalLiveMapValue],
         timestamp: Date,
     ) -> MapCreationOperation {
-        // RTO11f4: Create initial value for the new LiveMap
+        // RTO11f14: Create initial value for the new LiveMap
         let mapEntries = entries.mapValues { liveMapValue -> ObjectsMapEntry in
             ObjectsMapEntry(data: liveMapValue.nosync_toObjectData)
         }
 
-        let initialValue = PartialObjectOperation(
-            map: ObjectsMap(
-                semantics: .known(.lww),
-                entries: mapEntries,
-            ),
+        let semantics = ObjectsMapSemantics.lww
+        let mapCreate = MapCreate(
+            semantics: .known(semantics),
+            entries: mapEntries,
         )
 
-        // RTO11f5: Create an initial value JSON string as described in RTO13
-        let initialValueJSONString = createInitialValueJSONString(from: initialValue)
+        // RTO11f15: Create an initial value JSON string as described in RTO11f15
+        let initialValueJSONString = createInitialValueJSONString(from: mapCreate.toWire(format: .json))
 
         // RTO11f6: Create a unique nonce as a random string
         let nonce = generateNonce()
@@ -134,16 +122,14 @@ internal enum ObjectCreationHelpers {
         )
 
         // RTO11f9-13: Set ObjectMessage.operation fields
-        let semantics = ObjectsMapSemantics.lww
         let operation = ObjectOperation(
             action: .known(.mapCreate),
             objectId: objectId,
-            map: ObjectsMap(
-                semantics: .known(semantics),
-                entries: mapEntries,
+            mapCreateWithObjectId: .init(
+                initialValue: initialValueJSONString,
+                nonce: nonce,
+                derivedFrom: mapCreate, // RTO11f18
             ),
-            nonce: nonce,
-            initialValue: initialValueJSONString,
         )
 
         // Create the OutboundObjectMessage
@@ -153,7 +139,6 @@ internal enum ObjectCreationHelpers {
 
         return MapCreationOperation(
             objectID: objectId,
-            operation: operation,
             objectMessage: objectMessage,
             semantics: semantics,
         )
@@ -161,11 +146,9 @@ internal enum ObjectCreationHelpers {
 
     // MARK: - Private Helper Methods
 
-    /// Creates an initial value JSON string from a PartialObjectOperation, per RTO13.
-    private static func createInitialValueJSONString(from initialValue: PartialObjectOperation) -> String {
-        // RTO13b: Encode the initial value using OM4 encoding
-        let partialWireObjectOperation = initialValue.toWire(format: .json)
-        let jsonObject = partialWireObjectOperation.toWireObject.mapValues { wireValue in
+    /// Encodes a wire-encodable object to a JSON string for use as an initial value, per RTO11f15 and RTO12f13.
+    private static func createInitialValueJSONString(from encodable: some WireObjectEncodable) -> String {
+        let jsonObject: [String: JSONValue] = encodable.toWireObject.mapValues { wireValue in
             do {
                 return try wireValue.toJSONValue
             } catch {
@@ -174,7 +157,6 @@ internal enum ObjectCreationHelpers {
             }
         }
 
-        // RTO13c
         return JSONObjectOrArray.object(jsonObject).toJSONString
     }
 

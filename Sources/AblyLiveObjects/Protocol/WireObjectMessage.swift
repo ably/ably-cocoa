@@ -158,113 +158,78 @@ internal enum ObjectsMapSemantics: Int {
     case lww = 0
 }
 
-/// A partial version of `WireObjectOperation` that excludes the `action` and `objectId` property. Used for encoding initial values which don't include the `action` and where the `objectId` is not yet known.
-///
-/// `WireObjectOperation` delegates its encoding and decoding to `PartialWireObjectOperation`.
-internal struct PartialWireObjectOperation {
-    internal var mapOp: WireObjectsMapOp? // OOP3c
-    internal var counterOp: WireObjectsCounterOp? // OOP3d
-    internal var map: WireObjectsMap? // OOP3e
-    internal var counter: WireObjectsCounter? // OOP3f
-    internal var nonce: String? // OOP3g
-    internal var initialValue: String? // OOP3h
-}
-
-extension PartialWireObjectOperation: WireObjectCodable {
-    internal enum WireKey: String {
-        case mapOp
-        case counterOp
-        case map
-        case counter
-        case nonce
-        case initialValue
-    }
-
-    internal init(wireObject: [String: WireValue]) throws(ARTErrorInfo) {
-        mapOp = try wireObject.optionalDecodableValueForKey(WireKey.mapOp.rawValue)
-        counterOp = try wireObject.optionalDecodableValueForKey(WireKey.counterOp.rawValue)
-        map = try wireObject.optionalDecodableValueForKey(WireKey.map.rawValue)
-        counter = try wireObject.optionalDecodableValueForKey(WireKey.counter.rawValue)
-
-        // Do not access on inbound data, per OOP3g
-        nonce = nil
-        // Do not access on inbound data, per OOP3h
-        initialValue = nil
-    }
-
-    internal var toWireObject: [String: WireValue] {
-        var result: [String: WireValue] = [:]
-
-        if let mapOp {
-            result[WireKey.mapOp.rawValue] = .object(mapOp.toWireObject)
-        }
-        if let counterOp {
-            result[WireKey.counterOp.rawValue] = .object(counterOp.toWireObject)
-        }
-        if let map {
-            result[WireKey.map.rawValue] = .object(map.toWireObject)
-        }
-        if let counter {
-            result[WireKey.counter.rawValue] = .object(counter.toWireObject)
-        }
-        if let nonce {
-            result[WireKey.nonce.rawValue] = .string(nonce)
-        }
-        if let initialValue {
-            result[WireKey.initialValue.rawValue] = .string(initialValue)
-        }
-
-        return result
-    }
-}
-
 internal struct WireObjectOperation {
     internal var action: WireEnum<ObjectOperationAction> // OOP3a
     internal var objectId: String // OOP3b
-    internal var mapOp: WireObjectsMapOp? // OOP3c
-    internal var counterOp: WireObjectsCounterOp? // OOP3d
-    internal var map: WireObjectsMap? // OOP3e
-    internal var counter: WireObjectsCounter? // OOP3f
-    internal var nonce: String? // OOP3g
-    internal var initialValue: String? // OOP3h
+    internal var mapCreate: WireMapCreate? // OOP3j
+    internal var mapSet: WireMapSet? // OOP3k
+    internal var mapRemove: WireMapRemove? // OOP3l
+    internal var counterCreate: WireCounterCreate? // OOP3m
+    internal var counterInc: WireCounterInc? // OOP3n
+    internal var objectDelete: WireObjectDelete? // OOP3o
+    internal var mapCreateWithObjectId: WireMapCreateWithObjectId? // OOP3p
+    internal var counterCreateWithObjectId: WireCounterCreateWithObjectId? // OOP3q
 }
 
 extension WireObjectOperation: WireObjectCodable {
     internal enum WireKey: String {
         case action
         case objectId
+        case mapCreate
+        case mapSet
+        case mapRemove
+        case counterCreate
+        case counterInc
+        case objectDelete
+        case mapCreateWithObjectId
+        case counterCreateWithObjectId
     }
 
     internal init(wireObject: [String: WireValue]) throws(ARTErrorInfo) {
-        // Decode the action and objectId first since they're not part of PartialWireObjectOperation
         action = try wireObject.wireEnumValueForKey(WireKey.action.rawValue)
         objectId = try wireObject.stringValueForKey(WireKey.objectId.rawValue)
 
-        // Delegate to PartialWireObjectOperation for decoding
-        let partialOperation = try PartialWireObjectOperation(wireObject: wireObject)
-
-        // Copy the decoded values
-        mapOp = partialOperation.mapOp
-        counterOp = partialOperation.counterOp
-        map = partialOperation.map
-        counter = partialOperation.counter
-        nonce = partialOperation.nonce
-        initialValue = partialOperation.initialValue
+        mapCreate = try wireObject.optionalDecodableValueForKey(WireKey.mapCreate.rawValue)
+        mapSet = try wireObject.optionalDecodableValueForKey(WireKey.mapSet.rawValue)
+        mapRemove = try wireObject.optionalDecodableValueForKey(WireKey.mapRemove.rawValue)
+        counterCreate = try wireObject.optionalDecodableValueForKey(WireKey.counterCreate.rawValue)
+        counterInc = try wireObject.optionalDecodableValueForKey(WireKey.counterInc.rawValue)
+        objectDelete = try wireObject.optionalDecodableValueForKey(WireKey.objectDelete.rawValue)
+        // Outbound-only — do not access on inbound data
+        mapCreateWithObjectId = nil
+        counterCreateWithObjectId = nil
     }
 
     internal var toWireObject: [String: WireValue] {
-        var result = PartialWireObjectOperation(
-            mapOp: mapOp,
-            counterOp: counterOp,
-            map: map,
-            counter: counter,
-            nonce: nonce,
-            initialValue: initialValue,
-        ).toWireObject
+        var result: [String: WireValue] = [
+            WireKey.action.rawValue: .number(action.rawValue as NSNumber),
+            WireKey.objectId.rawValue: .string(objectId),
+        ]
 
-        // Add the objectId field
-        result[WireKey.action.rawValue] = .number(action.rawValue as NSNumber)
-        result[WireKey.objectId.rawValue] = .string(objectId)
+        if let mapCreate {
+            result[WireKey.mapCreate.rawValue] = .object(mapCreate.toWireObject)
+        }
+        if let mapSet {
+            result[WireKey.mapSet.rawValue] = .object(mapSet.toWireObject)
+        }
+        if let mapRemove {
+            result[WireKey.mapRemove.rawValue] = .object(mapRemove.toWireObject)
+        }
+        if let counterCreate {
+            result[WireKey.counterCreate.rawValue] = .object(counterCreate.toWireObject)
+        }
+        if let counterInc {
+            result[WireKey.counterInc.rawValue] = .object(counterInc.toWireObject)
+        }
+        if let objectDelete {
+            result[WireKey.objectDelete.rawValue] = .object(objectDelete.toWireObject)
+        }
+        if let mapCreateWithObjectId {
+            result[WireKey.mapCreateWithObjectId.rawValue] = .object(mapCreateWithObjectId.toWireObject)
+        }
+        if let counterCreateWithObjectId {
+            result[WireKey.counterCreateWithObjectId.rawValue] = .object(counterCreateWithObjectId.toWireObject)
+        }
 
         return result
     }
@@ -324,55 +289,6 @@ extension WireObjectState: WireObjectCodable {
     }
 }
 
-internal struct WireObjectsMapOp {
-    internal var key: String // OMO2a
-    internal var data: WireObjectData? // OMO2b
-}
-
-extension WireObjectsMapOp: WireObjectCodable {
-    internal enum WireKey: String {
-        case key
-        case data
-    }
-
-    internal init(wireObject: [String: WireValue]) throws(ARTErrorInfo) {
-        key = try wireObject.stringValueForKey(WireKey.key.rawValue)
-        data = try wireObject.optionalDecodableValueForKey(WireKey.data.rawValue)
-    }
-
-    internal var toWireObject: [String: WireValue] {
-        var result: [String: WireValue] = [
-            WireKey.key.rawValue: .string(key),
-        ]
-
-        if let data {
-            result[WireKey.data.rawValue] = .object(data.toWireObject)
-        }
-
-        return result
-    }
-}
-
-internal struct WireObjectsCounterOp: Equatable {
-    internal var amount: NSNumber // OCO2a
-}
-
-extension WireObjectsCounterOp: WireObjectCodable {
-    internal enum WireKey: String {
-        case amount
-    }
-
-    internal init(wireObject: [String: WireValue]) throws(ARTErrorInfo) {
-        amount = try wireObject.numberValueForKey(WireKey.amount.rawValue)
-    }
-
-    internal var toWireObject: [String: WireValue] {
-        [
-            WireKey.amount.rawValue: .number(amount),
-        ]
-    }
-}
-
 internal struct WireObjectsMap {
     internal var semantics: WireEnum<ObjectsMapSemantics> // OMP3a
     internal var entries: [String: WireObjectsMapEntry]? // OMP3b
@@ -426,6 +342,193 @@ extension WireObjectsCounter: WireObjectCodable {
             result[WireKey.count.rawValue] = .number(count)
         }
         return result
+    }
+}
+
+internal struct WireMapSet {
+    internal var key: String // MST2a
+    internal var value: WireObjectData? // MST2b
+}
+
+extension WireMapSet: WireObjectCodable {
+    internal enum WireKey: String {
+        case key
+        case value
+    }
+
+    internal init(wireObject: [String: WireValue]) throws(ARTErrorInfo) {
+        key = try wireObject.stringValueForKey(WireKey.key.rawValue)
+        value = try wireObject.optionalDecodableValueForKey(WireKey.value.rawValue)
+    }
+
+    internal var toWireObject: [String: WireValue] {
+        var result: [String: WireValue] = [
+            WireKey.key.rawValue: .string(key),
+        ]
+
+        if let value {
+            result[WireKey.value.rawValue] = .object(value.toWireObject)
+        }
+
+        return result
+    }
+}
+
+internal struct WireMapRemove: Equatable {
+    internal var key: String // MRM2a
+}
+
+extension WireMapRemove: WireObjectCodable {
+    internal enum WireKey: String {
+        case key
+    }
+
+    internal init(wireObject: [String: WireValue]) throws(ARTErrorInfo) {
+        key = try wireObject.stringValueForKey(WireKey.key.rawValue)
+    }
+
+    internal var toWireObject: [String: WireValue] {
+        [
+            WireKey.key.rawValue: .string(key),
+        ]
+    }
+}
+
+internal struct WireMapCreate {
+    internal var semantics: WireEnum<ObjectsMapSemantics> // MCR2a
+    internal var entries: [String: WireObjectsMapEntry]? // MCR2b
+}
+
+extension WireMapCreate: WireObjectCodable {
+    internal enum WireKey: String {
+        case semantics
+        case entries
+    }
+
+    internal init(wireObject: [String: WireValue]) throws(ARTErrorInfo) {
+        semantics = try wireObject.wireEnumValueForKey(WireKey.semantics.rawValue)
+        entries = try wireObject.optionalObjectValueForKey(WireKey.entries.rawValue)?.ablyLiveObjects_mapValuesWithTypedThrow { value throws(ARTErrorInfo) in
+            guard case let .object(object) = value else {
+                throw WireValueDecodingError.wrongTypeForKey(WireKey.entries.rawValue, actualValue: value).toARTErrorInfo()
+            }
+            return try WireObjectsMapEntry(wireObject: object)
+        }
+    }
+
+    internal var toWireObject: [String: WireValue] {
+        var result: [String: WireValue] = [
+            WireKey.semantics.rawValue: .number(semantics.rawValue as NSNumber),
+        ]
+
+        if let entries {
+            result[WireKey.entries.rawValue] = .object(entries.mapValues { .object($0.toWireObject) })
+        }
+
+        return result
+    }
+}
+
+internal struct WireCounterCreate: Equatable {
+    internal var count: NSNumber? // CCR2a
+}
+
+extension WireCounterCreate: WireObjectCodable {
+    internal enum WireKey: String {
+        case count
+    }
+
+    internal init(wireObject: [String: WireValue]) throws(ARTErrorInfo) {
+        count = try wireObject.optionalNumberValueForKey(WireKey.count.rawValue)
+    }
+
+    internal var toWireObject: [String: WireValue] {
+        var result: [String: WireValue] = [:]
+        if let count {
+            result[WireKey.count.rawValue] = .number(count)
+        }
+        return result
+    }
+}
+
+internal struct WireCounterInc: Equatable {
+    internal var number: NSNumber // CIN2a
+}
+
+extension WireCounterInc: WireObjectCodable {
+    internal enum WireKey: String {
+        case number
+    }
+
+    internal init(wireObject: [String: WireValue]) throws(ARTErrorInfo) {
+        number = try wireObject.numberValueForKey(WireKey.number.rawValue)
+    }
+
+    internal var toWireObject: [String: WireValue] {
+        [
+            WireKey.number.rawValue: .number(number),
+        ]
+    }
+}
+
+internal struct WireObjectDelete: Equatable {
+    // Empty struct
+}
+
+extension WireObjectDelete: WireObjectCodable {
+    internal init(wireObject _: [String: WireValue]) throws(ARTErrorInfo) {
+        // No fields to decode
+    }
+
+    internal var toWireObject: [String: WireValue] {
+        [:]
+    }
+}
+
+internal struct WireMapCreateWithObjectId: Equatable {
+    internal var initialValue: String // MCRO2a
+    internal var nonce: String // MCRO2b
+}
+
+extension WireMapCreateWithObjectId: WireObjectCodable {
+    internal enum WireKey: String {
+        case nonce
+        case initialValue
+    }
+
+    internal init(wireObject: [String: WireValue]) throws(ARTErrorInfo) {
+        nonce = try wireObject.stringValueForKey(WireKey.nonce.rawValue)
+        initialValue = try wireObject.stringValueForKey(WireKey.initialValue.rawValue)
+    }
+
+    internal var toWireObject: [String: WireValue] {
+        [
+            WireKey.nonce.rawValue: .string(nonce),
+            WireKey.initialValue.rawValue: .string(initialValue),
+        ]
+    }
+}
+
+internal struct WireCounterCreateWithObjectId: Equatable {
+    internal var initialValue: String // CCRO2a
+    internal var nonce: String // CCRO2b
+}
+
+extension WireCounterCreateWithObjectId: WireObjectCodable {
+    internal enum WireKey: String {
+        case nonce
+        case initialValue
+    }
+
+    internal init(wireObject: [String: WireValue]) throws(ARTErrorInfo) {
+        nonce = try wireObject.stringValueForKey(WireKey.nonce.rawValue)
+        initialValue = try wireObject.stringValueForKey(WireKey.initialValue.rawValue)
+    }
+
+    internal var toWireObject: [String: WireValue] {
+        [
+            WireKey.nonce.rawValue: .string(nonce),
+            WireKey.initialValue.rawValue: .string(initialValue),
+        ]
     }
 }
 
@@ -570,12 +673,6 @@ extension WireObjectsCounter: CustomDebugStringConvertible {
     }
 }
 
-extension WireObjectsCounterOp: CustomDebugStringConvertible {
-    internal var debugDescription: String {
-        "{ amount: \(amount) }"
-    }
-}
-
 extension WireObjectsMapEntry: CustomDebugStringConvertible {
     internal var debugDescription: String {
         var parts: [String] = []
@@ -601,5 +698,74 @@ extension WireObjectData: CustomDebugStringConvertible {
         if let json { parts.append("json: \(json)") }
 
         return "{ " + parts.joined(separator: ", ") + " }"
+    }
+}
+
+extension WireMapSet: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        var parts: [String] = []
+
+        parts.append("key: \(key)")
+        if let value { parts.append("value: \(value)") }
+
+        return "{ " + parts.joined(separator: ", ") + " }"
+    }
+}
+
+extension WireMapRemove: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        "{ key: \(key) }"
+    }
+}
+
+extension WireMapCreate: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        var parts: [String] = []
+
+        parts.append("semantics: \(semantics)")
+        if let entries {
+            let formattedEntries = entries
+                .map { key, entry in
+                    "\(key): \(entry)"
+                }
+                .joined(separator: ", ")
+            parts.append("entries: { \(formattedEntries) }")
+        }
+
+        return "{ " + parts.joined(separator: ", ") + " }"
+    }
+}
+
+extension WireCounterCreate: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        if let count {
+            "{ count: \(count) }"
+        } else {
+            "{ count: nil }"
+        }
+    }
+}
+
+extension WireCounterInc: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        "{ number: \(number) }"
+    }
+}
+
+extension WireObjectDelete: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        "{ }"
+    }
+}
+
+extension WireMapCreateWithObjectId: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        "{ initialValue: \(initialValue), nonce: \(nonce) }"
+    }
+}
+
+extension WireCounterCreateWithObjectId: CustomDebugStringConvertible {
+    internal var debugDescription: String {
+        "{ initialValue: \(initialValue), nonce: \(nonce) }"
     }
 }

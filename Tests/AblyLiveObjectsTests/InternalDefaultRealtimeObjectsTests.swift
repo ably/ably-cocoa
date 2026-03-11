@@ -855,7 +855,7 @@ struct InternalDefaultRealtimeObjectsTests {
                 // Send an echoed OBJECT message with the same serial
                 let echoMessage = TestFactories.counterIncOperationMessage(
                     objectId: counter.testsOnly_objectID,
-                    amount: 10,
+                    number: 10,
                     serial: serial,
                 )
                 internalQueue.ably_syncNoDeadlock {
@@ -907,7 +907,7 @@ struct InternalDefaultRealtimeObjectsTests {
                 let incrementSerial = "serial_inc"
                 let echoMessage = TestFactories.counterIncOperationMessage(
                     objectId: objectId,
-                    amount: 5,
+                    number: 5,
                     serial: incrementSerial,
                     siteCode: siteCode,
                 )
@@ -1196,7 +1196,7 @@ struct InternalDefaultRealtimeObjectsTests {
                 // Create a COUNTER_INC operation message
                 let operationMessage = TestFactories.counterIncOperationMessage(
                     objectId: objectId,
-                    amount: 10,
+                    number: 10,
                     serial: "ts2", // Higher than existing "ts1"
                     siteCode: "site1",
                 )
@@ -1262,7 +1262,7 @@ struct InternalDefaultRealtimeObjectsTests {
                 // Inject second OBJECT ProtocolMessage during sync (RTO8a)
                 let secondObjectMessage = TestFactories.counterIncOperationMessage(
                     objectId: "counter:1@456",
-                    amount: 10,
+                    number: 10,
                     serial: "ts4", // Higher than sync data "ts2"
                     siteCode: "site1",
                 )
@@ -1372,9 +1372,10 @@ struct InternalDefaultRealtimeObjectsTests {
             let objectID = try #require(publishedMessage.operation?.objectId)
             #expect(objectID.hasPrefix("map:"))
             #expect(objectID.contains("1754042434000")) // check contains the server timestamp in milliseconds per RTO11f7
-            #expect(publishedMessage.operation?.map?.entries == [
-                "stringKey": .init(data: .init(string: "stringValue")),
-            ])
+            #expect(publishedMessage.operation?.mapCreateWithObjectId != nil)
+            let mapInitialValueString = try #require(publishedMessage.operation?.mapCreateWithObjectId?.initialValue)
+            let mapInitialValue = try #require(try JSONObjectOrArray(jsonString: mapInitialValueString).objectValue)
+            #expect(mapInitialValue["entries"] == .object(["stringKey": .object(["data": .object(["string": "stringValue"])])]))
 
             // Sense check that create op was applied locally by publishAndApply (
             #expect(returnedMap.testsOnly_data == ["stringKey": InternalObjectsMapEntry(data: ObjectData(string: "stringValue"))])
@@ -1383,7 +1384,7 @@ struct InternalDefaultRealtimeObjectsTests {
 
         // @specUntested RTO11h3d - This spec point covers a logic error so let's not try to test
 
-        // @spec RTO11f4b
+        // @spec RTO11f14b
         @Test
         func withNoEntriesArgumentCreatesEmptyMap() async throws {
             let internalQueue = TestFactories.createInternalQueue()
@@ -1410,9 +1411,10 @@ struct InternalDefaultRealtimeObjectsTests {
             #expect(publishedMessages.count == 1)
             let publishedMessage = publishedMessages[0]
 
-            // Verify map operation has empty entries per RTO11f4b
-            let mapOperation = publishedMessage.operation?.map
-            #expect(mapOperation?.entries?.isEmpty == true)
+            // Verify map operation has empty entries per RTO11f14b
+            let mapInitialValueString = try #require(publishedMessage.operation?.mapCreateWithObjectId?.initialValue)
+            let mapInitialValue = try #require(try JSONObjectOrArray(jsonString: mapInitialValueString).objectValue)
+            #expect(mapInitialValue["entries"] == .object([:]))
 
             // Verify LiveMap has expected entries
             #expect(result.testsOnly_data.isEmpty)
@@ -1520,7 +1522,10 @@ struct InternalDefaultRealtimeObjectsTests {
             let objectID = try #require(publishedMessage.operation?.objectId)
             #expect(objectID.hasPrefix("counter:"))
             #expect(objectID.contains("1754042434000")) // check contains the server timestamp in milliseconds per RTO12f5
-            #expect(publishedMessage.operation?.counter?.count == 10.5)
+            #expect(publishedMessage.operation?.counterCreateWithObjectId != nil)
+            let counterInitialValueString = try #require(publishedMessage.operation?.counterCreateWithObjectId?.initialValue)
+            let counterInitialValue = try #require(try JSONObjectOrArray(jsonString: counterInitialValueString).objectValue)
+            #expect(counterInitialValue["count"] == .number(10.5))
 
             // Sense check that create op was applied locally by publishAndApply
             #expect(try returnedCounter.value(coreSDK: coreSDK) == 10.5)
@@ -1529,7 +1534,7 @@ struct InternalDefaultRealtimeObjectsTests {
 
         // @specUntested RTO12h3d - This spec point covers a logic error so let's not try to test
 
-        // @spec RTO12f2a
+        // @specOneOf(2/2) RTO12f12a
         @Test
         func withNoEntriesArgumentCreatesWithZeroValue() async throws {
             let internalQueue = TestFactories.createInternalQueue()
@@ -1556,10 +1561,10 @@ struct InternalDefaultRealtimeObjectsTests {
             #expect(publishedMessages.count == 1)
             let publishedMessage = publishedMessages[0]
 
-            // Verify counter operation has zero count per RTO12f2a
-            let counterOperation = publishedMessage.operation?.counter
-            // swiftlint:disable:next empty_count
-            #expect(counterOperation?.count == 0)
+            // Verify counter operation has zero count per RTO12f12a
+            let counterInitialValueString = try #require(publishedMessage.operation?.counterCreateWithObjectId?.initialValue)
+            let counterInitialValue = try #require(try JSONObjectOrArray(jsonString: counterInitialValueString).objectValue)
+            #expect(counterInitialValue["count"] == .number(0))
 
             // Verify LiveCounter has zero value
             #expect(try result.value(coreSDK: coreSDK) == 0)

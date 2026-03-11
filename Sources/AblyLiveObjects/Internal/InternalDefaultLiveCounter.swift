@@ -124,9 +124,9 @@ internal final class InternalDefaultLiveCounter: Sendable {
                             action: .known(.counterInc),
                             // RTLC12e3
                             objectId: mutableState.liveObjectMutableState.objectID,
-                            counterOp: .init(
-                                // RTLC12e4
-                                amount: .init(value: amount),
+                            counterInc: .init(
+                                // RTLC12e5
+                                number: .init(value: amount),
                             ),
                         ),
                     )
@@ -223,7 +223,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
         }
     }
 
-    /// Merges the initial value from an ObjectOperation into this LiveCounter, per RTLC10.
+    /// Merges the initial value from an ObjectOperation into this LiveCounter, per RTLC16.
     internal func nosync_mergeInitialValue(from operation: ObjectOperation) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
         mutableStateMutex.withoutSync { mutableState in
             mutableState.mergeInitialValue(from: operation)
@@ -238,7 +238,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
     }
 
     /// Test-only method to apply a COUNTER_INC operation, per RTLC9.
-    internal func testsOnly_applyCounterIncOperation(_ operation: WireObjectsCounterOp?) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
+    internal func testsOnly_applyCounterIncOperation(_ operation: WireCounterInc?) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
         mutableStateMutex.withSync { mutableState in
             mutableState.applyCounterIncOperation(operation)
         }
@@ -352,7 +352,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
             // RTLC6c: Set data to the value of ObjectState.counter.count, or to 0 if it does not exist
             data = state.counter?.count?.doubleValue ?? 0
 
-            // RTLC6d: If ObjectState.createOp is present, merge the initial value into the LiveCounter as described in RTLC10
+            // RTLC6d: If ObjectState.createOp is present, merge the initial value into the LiveCounter as described in RTLC16
             // Discard the LiveCounterUpdate object returned by the merge operation
             if let createOp = state.createOp {
                 _ = mergeInitialValue(from: createOp)
@@ -362,21 +362,25 @@ internal final class InternalDefaultLiveCounter: Sendable {
             return ObjectDiffHelpers.calculateCounterDiff(previousData: previousData, newData: data)
         }
 
-        /// Merges the initial value from an ObjectOperation into this LiveCounter, per RTLC10.
+        /// Merges the initial value from an ObjectOperation into this LiveCounter, per RTLC16.
         internal mutating func mergeInitialValue(from operation: ObjectOperation) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
             let update: LiveObjectUpdate<DefaultLiveCounterUpdate>
 
-            // RTLC10a: Add ObjectOperation.counter.count to data, if it exists
-            if let operationCount = operation.counter?.count?.doubleValue {
+            // RTLC16: Resolve counterCreate from either the direct property or the one
+            // from which counterCreateWithObjectId was derived (RTO12f16)
+            let counterCreate = operation.counterCreate ?? operation.counterCreateWithObjectId?.derivedFrom
+
+            // RTLC16a: Add counterCreate.count to data, if it exists
+            if let operationCount = counterCreate?.count?.doubleValue {
                 data += operationCount
-                // RTLC10c
+                // RTLC16c
                 update = .update(DefaultLiveCounterUpdate(amount: operationCount))
             } else {
-                // RTLC10d
+                // RTLC16d
                 update = .noop
             }
 
-            // RTLC10b: Set the private flag createOperationIsMerged to true
+            // RTLC16b: Set the private flag createOperationIsMerged to true
             liveObjectMutableState.createOperationIsMerged = true
 
             return update
@@ -425,11 +429,11 @@ internal final class InternalDefaultLiveCounter: Sendable {
                 // RTLC7d1b
                 return true
             case .known(.counterInc):
-                // RTLC7d2
-                let update = applyCounterIncOperation(operation.counterOp)
-                // RTLC7d2a
+                // RTLC7d5
+                let update = applyCounterIncOperation(operation.counterInc)
+                // RTLC7d5a
                 liveObjectMutableState.emit(update, on: userCallbackQueue)
-                // RTLC7d2b
+                // RTLC7d5b
                 return true
             case .known(.objectDelete):
                 let dataBeforeApplyingOperation = data
@@ -469,14 +473,14 @@ internal final class InternalDefaultLiveCounter: Sendable {
         }
 
         /// Applies a `COUNTER_INC` operation, per RTLC9.
-        internal mutating func applyCounterIncOperation(_ operation: WireObjectsCounterOp?) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
+        internal mutating func applyCounterIncOperation(_ operation: WireCounterInc?) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
             guard let operation else {
-                // RTL9e
+                // RTLC9h
                 return .noop
             }
 
-            // RTLC9b, RTLC9d
-            let amount = operation.amount.doubleValue
+            // RTLC9f, RTLC9g
+            let amount = operation.number.doubleValue
             data += amount
             return .update(DefaultLiveCounterUpdate(amount: amount))
         }
