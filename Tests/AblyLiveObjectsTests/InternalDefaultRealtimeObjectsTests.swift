@@ -182,11 +182,26 @@ struct InternalDefaultRealtimeObjectsTests {
 
         // MARK: - RTO5c: Post-Sync Behavior Tests
 
-        // A smoke test that the RTO5c post-sync behaviours get performed. They are tested in more detail in the ObjectsPool.applySyncObjectsPool tests.
+        // A smoke test that the RTO5c post-sync behaviours performed inside ObjectsPool.applySyncObjectsPool get performed (they are tested in more detail there). Also the primary test for post-sync behaviours that exist outside of applySyncObjectsPool, such as RTO5c9.
+        // @spec RTO5c9
         @Test
         func performsPostSyncSteps() async throws {
             let internalQueue = TestFactories.createInternalQueue()
             let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+
+            // Transition to synced state so that createCounter can work
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelAttached(hasObjects: false)
+                realtimeObjects.nosync_setSiteCode("site1")
+            }
+
+            // Populate appliedOnAckSerials by performing a local operation (RTO5c9 setup)
+            coreSDK.setPublishHandler { messages in
+                PublishResult(serials: messages.map { _ in "serial_abc" })
+            }
+            _ = try await realtimeObjects.createCounter(count: 1, coreSDK: coreSDK)
+            #expect(!realtimeObjects.testsOnly_appliedOnAckSerials.isEmpty)
 
             // Perform sync with only one object (RTO5a5 case)
             let syncMessages = [TestFactories.mapObjectMessage(objectId: "map:synced@1")]
@@ -202,6 +217,9 @@ struct InternalDefaultRealtimeObjectsTests {
             let finalPool = realtimeObjects.testsOnly_objectsPool
             #expect(finalPool.entries["root"] != nil) // Root preserved
             #expect(finalPool.entries["map:synced@1"] != nil) // Synced object added
+
+            // Verify appliedOnAckSerials is cleared (RTO5c9)
+            #expect(realtimeObjects.testsOnly_appliedOnAckSerials.isEmpty)
         }
 
         // MARK: - Error Handling Tests
@@ -425,6 +443,16 @@ struct InternalDefaultRealtimeObjectsTests {
             let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
             try originalPool.root.subscribe(listener: rootSubscriber.createListener(), coreSDK: coreSDK)
 
+            // Populate appliedOnAckSerials by performing a local operation (RTO5c9 setup)
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_setSiteCode("site1")
+            }
+            coreSDK.setPublishHandler { messages in
+                PublishResult(serials: messages.map { _ in "serial_abc" })
+            }
+            _ = try await realtimeObjects.createCounter(count: 1, coreSDK: coreSDK)
+            #expect(!realtimeObjects.testsOnly_appliedOnAckSerials.isEmpty)
+
             // Set up an in-progress sync sequence
             internalQueue.ably_syncNoDeadlock {
                 realtimeObjects.nosync_handleObjectSyncProtocolMessage(
@@ -462,8 +490,9 @@ struct InternalDefaultRealtimeObjectsTests {
             #expect(newRoot as AnyObject === originalPool.root as AnyObject) // Should be same instance
             #expect(newRoot.testsOnly_data.isEmpty) // Should be zero-valued (empty)
 
-            // RTO4b3, RTO4b4, RTO4b5: SyncObjectsPool must be cleared, sync sequence cleared, BufferedObjectOperations cleared
+            // RTO4b3, RTO4b4, RTO4b5: SyncObjectsPool must be cleared, sync sequence cleared, BufferedObjectOperations cleared, appliedOnAckSerials cleared
             #expect(!realtimeObjects.testsOnly_hasSyncSequence)
+            #expect(realtimeObjects.testsOnly_appliedOnAckSerials.isEmpty)
         }
 
         // MARK: - Edge Cases and Integration Tests
@@ -799,6 +828,107 @@ struct InternalDefaultRealtimeObjectsTests {
         struct ApplyOperationTests {
             // @specUntested RTO9a1 - There is no way to check that it was a no-op since there are no side effects that this spec point tells us not to apply
             // @specUntested RTO9a2b - There is no way to check that it was a no-op since there are no side effects that this spec point tells us not to apply
+
+            // MARK: - RTO9a3 Tests
+
+            // @spec RTO9a3 - Tests that an OBJECT message whose serial is in appliedOnAckSerials is discarded, and the serial is removed from the set
+            @Test
+            func skipsObjectMessageAlreadyAppliedOnAck() async throws {
+                let internalQueue = TestFactories.createInternalQueue()
+                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+                let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+
+                // Transition to synced state
+                internalQueue.ably_syncNoDeadlock {
+                    realtimeObjects.nosync_onChannelAttached(hasObjects: false)
+                    realtimeObjects.nosync_setSiteCode("site1")
+                }
+
+                // Populate appliedOnAckSerials by performing a local createCounter
+                let serial = "serial_abc"
+                coreSDK.setPublishHandler { messages in
+                    PublishResult(serials: messages.map { _ in serial })
+                }
+                let counter = try await realtimeObjects.createCounter(count: 42, coreSDK: coreSDK)
+                #expect(realtimeObjects.testsOnly_appliedOnAckSerials.contains(serial))
+
+                // Send an echoed OBJECT message with the same serial
+                let echoMessage = TestFactories.counterIncOperationMessage(
+                    objectId: counter.testsOnly_objectID,
+                    amount: 10,
+                    serial: serial,
+                )
+                internalQueue.ably_syncNoDeadlock {
+                    realtimeObjects.nosync_handleObjectProtocolMessage(objectMessages: [echoMessage])
+                }
+
+                // Verify the operation was skipped (counter value unchanged)
+                #expect(try counter.value(coreSDK: coreSDK) == 42)
+
+                // Verify the serial was removed from appliedOnAckSerials
+                #expect(!realtimeObjects.testsOnly_appliedOnAckSerials.contains(serial))
+            }
+
+            // MARK: - RTO9a2a4 Tests
+
+            // @spec RTO9a2a4 - Tests that when source is LOCAL but the operation is not applied, the serial is not added to appliedOnAckSerials.
+            //
+            // This covers the scenario where an operation's echo is received from the server (as a channel-sourced OBJECT message)
+            // before the ACK arrives from publish. The echo updates the object's siteTimeserials (per RTLC7c / RTLM15c), so when
+            // the ACK subsequently triggers a local apply, canApplyOperation (RTLO4a6) rejects it because the serial is not newer
+            // than the existing siteTimeserial.
+            //
+            // It's important that the serial is not added to appliedOnAckSerials in this case, because the echo has already been
+            // processed as a normal channel-sourced message, so no future echo will arrive to trigger RTO9a3 to clear it. Adding
+            // it would cause appliedOnAckSerials to grow unboundedly.
+            @Test
+            func doesNotAddToAppliedOnAckSerialsWhenOperationIsNotApplied() async throws {
+                let internalQueue = TestFactories.createInternalQueue()
+                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+                let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+
+                // Transition to synced state
+                let siteCode = "site1"
+                internalQueue.ably_syncNoDeadlock {
+                    realtimeObjects.nosync_onChannelAttached(hasObjects: false)
+                    realtimeObjects.nosync_setSiteCode(siteCode)
+                }
+
+                // Create a counter so we have an object to operate on
+                coreSDK.setPublishHandler { messages in
+                    PublishResult(serials: messages.map { _ in "serial_create" })
+                }
+                let counter = try await realtimeObjects.createCounter(count: 42, coreSDK: coreSDK)
+                let objectId = counter.testsOnly_objectID
+
+                // Simulate the echo arriving before the ACK: a channel-sourced COUNTER_INC
+                // with the same serial that the ACK will return. This sets siteTimeserials
+                // on the counter (RTLC7c).
+                let incrementSerial = "serial_inc"
+                let echoMessage = TestFactories.counterIncOperationMessage(
+                    objectId: objectId,
+                    amount: 5,
+                    serial: incrementSerial,
+                    siteCode: siteCode,
+                )
+                internalQueue.ably_syncNoDeadlock {
+                    realtimeObjects.nosync_handleObjectProtocolMessage(objectMessages: [echoMessage])
+                }
+
+                // Now perform the local increment whose ACK returns the same serial.
+                // canApplyOperation (RTLO4a6) will reject it because the serial is not
+                // newer than the siteTimeserial that the echo already set.
+                coreSDK.setPublishHandler { messages in
+                    PublishResult(serials: messages.map { _ in incrementSerial })
+                }
+                try await counter.increment(amount: 5, coreSDK: coreSDK, realtimeObjects: realtimeObjects)
+
+                // Verify the serial was NOT added to appliedOnAckSerials
+                #expect(!realtimeObjects.testsOnly_appliedOnAckSerials.contains(incrementSerial))
+
+                // Verify the increment was only applied once (via the echo), not double-applied
+                #expect(try counter.value(coreSDK: coreSDK) == 47)
+            }
 
             // MARK: - RTO9a2a1 Tests
 
@@ -1167,6 +1297,8 @@ struct InternalDefaultRealtimeObjectsTests {
                 let map = try #require(finalPool.entries["map:1@123"]?.mapValue)
                 let counter = try #require(finalPool.entries["counter:1@456"]?.counterValue)
 
+                // Note: the siteTimeserials check here is a side-effect of RTLM15c and RTLC7c that shows us that the CHANNEL source is being used per RTO5c6
+
                 // Verify the buffered operations were applied after sync completion (RTO5c6)
                 // Check that MAP_SET operation was applied to the map
                 let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
@@ -1203,19 +1335,24 @@ struct InternalDefaultRealtimeObjectsTests {
         }
 
         // @spec RTO11f7
-        // @spec RTO11g
-        // @spec RTO11h3a
-        // @spec RTO11h3b
+        // @spec RTO11i
         @Test
         func publishesObjectMessageAndCreatesMap() async throws {
             let internalQueue = TestFactories.createInternalQueue()
             let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
             let coreSDK = MockCoreSDK(channelState: .attached, serverTime: .init(timeIntervalSince1970: 1_754_042_434), internalQueue: internalQueue)
 
+            // Transition to synced state (required for publishAndApply)
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelAttached(hasObjects: false)
+                realtimeObjects.nosync_setSiteCode("site1")
+            }
+
             // Track published messages
             var publishedMessages: [OutboundObjectMessage] = []
             coreSDK.setPublishHandler { messages in
                 publishedMessages.append(contentsOf: messages)
+                return PublishResult(serials: messages.map { _ in "serial_\(UUID().uuidString)" })
             }
 
             // Call createMap
@@ -1226,7 +1363,7 @@ struct InternalDefaultRealtimeObjectsTests {
                 coreSDK: coreSDK,
             )
 
-            // Verify ObjectMessage was published (RTO11g)
+            // Verify ObjectMessage was published (RTO11i)
             #expect(publishedMessages.count == 1)
             let publishedMessage = publishedMessages[0]
 
@@ -1239,12 +1376,12 @@ struct InternalDefaultRealtimeObjectsTests {
                 "stringKey": .init(data: .init(string: "stringValue")),
             ])
 
-            // Verify initial value was merged per RTO11h3a
+            // Sense check that create op was applied locally by publishAndApply (
             #expect(returnedMap.testsOnly_data == ["stringKey": InternalObjectsMapEntry(data: ObjectData(string: "stringValue"))])
-
-            // Verify object was added to pool per RTO11h3b
             #expect(realtimeObjects.testsOnly_objectsPool.entries[objectID]?.mapValue === returnedMap)
         }
+
+        // @specUntested RTO11h3d - This spec point covers a logic error so let's not try to test
 
         // @spec RTO11f4b
         @Test
@@ -1253,10 +1390,17 @@ struct InternalDefaultRealtimeObjectsTests {
             let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
             let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
 
+            // Transition to synced state (required for publishAndApply)
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelAttached(hasObjects: false)
+                realtimeObjects.nosync_setSiteCode("site1")
+            }
+
             // Track published messages
             var publishedMessages: [OutboundObjectMessage] = []
             coreSDK.setPublishHandler { messages in
                 publishedMessages.append(contentsOf: messages)
+                return PublishResult(serials: messages.map { _ in "serial_\(UUID().uuidString)" })
             }
 
             // Call createMap with no entries
@@ -1281,6 +1425,12 @@ struct InternalDefaultRealtimeObjectsTests {
             let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
             let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
 
+            // Transition to synced state (required for publishAndApply)
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelAttached(hasObjects: false)
+                realtimeObjects.nosync_setSiteCode("site1")
+            }
+
             // Track published messages and the generated objectId
             var publishedMessages: [OutboundObjectMessage] = []
             var maybeGeneratedObjectID: String?
@@ -1297,6 +1447,7 @@ struct InternalDefaultRealtimeObjectsTests {
                     // This simulates the object already existing when createMap tries to get it, before the publish operation completes (e.g. because it has been populated by receipt of an OBJECT)
                     maybeExistingObject = realtimeObjects.testsOnly_createZeroValueLiveObject(forObjectID: objectID)?.mapValue
                 }
+                return PublishResult(serials: messages.map { _ in nil })
             }
 
             // Call createMap - the publishHandler will create the object with the generated ID
@@ -1337,25 +1488,30 @@ struct InternalDefaultRealtimeObjectsTests {
         }
 
         // @spec RTO12f5
-        // @spec RTO12g
-        // @spec RTO12h3a
-        // @spec RTO12h3b
+        // @spec RTO12i
         @Test
         func publishesObjectMessageAndCreatesCounter() async throws {
             let internalQueue = TestFactories.createInternalQueue()
             let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
             let coreSDK = MockCoreSDK(channelState: .attached, serverTime: .init(timeIntervalSince1970: 1_754_042_434), internalQueue: internalQueue)
 
+            // Transition to synced state (required for publishAndApply)
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelAttached(hasObjects: false)
+                realtimeObjects.nosync_setSiteCode("site1")
+            }
+
             // Track published messages
             var publishedMessages: [OutboundObjectMessage] = []
             coreSDK.setPublishHandler { messages in
                 publishedMessages.append(contentsOf: messages)
+                return PublishResult(serials: messages.map { _ in "serial_\(UUID().uuidString)" })
             }
 
             // Call createCounter
             let returnedCounter = try await realtimeObjects.createCounter(count: 10.5, coreSDK: coreSDK)
 
-            // Verify ObjectMessage was published (RTO12g)
+            // Verify ObjectMessage was published (RTO12i)
             #expect(publishedMessages.count == 1)
             let publishedMessage = publishedMessages[0]
 
@@ -1366,12 +1522,12 @@ struct InternalDefaultRealtimeObjectsTests {
             #expect(objectID.contains("1754042434000")) // check contains the server timestamp in milliseconds per RTO12f5
             #expect(publishedMessage.operation?.counter?.count == 10.5)
 
-            // Verify initial value was merged per RTO12h3a
+            // Sense check that create op was applied locally by publishAndApply
             #expect(try returnedCounter.value(coreSDK: coreSDK) == 10.5)
-
-            // Verify object was added to pool per RTO12h3b
             #expect(realtimeObjects.testsOnly_objectsPool.entries[objectID]?.counterValue === returnedCounter)
         }
+
+        // @specUntested RTO12h3d - This spec point covers a logic error so let's not try to test
 
         // @spec RTO12f2a
         @Test
@@ -1380,10 +1536,17 @@ struct InternalDefaultRealtimeObjectsTests {
             let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
             let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
 
+            // Transition to synced state (required for publishAndApply)
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelAttached(hasObjects: false)
+                realtimeObjects.nosync_setSiteCode("site1")
+            }
+
             // Track published messages
             var publishedMessages: [OutboundObjectMessage] = []
             coreSDK.setPublishHandler { messages in
                 publishedMessages.append(contentsOf: messages)
+                return PublishResult(serials: messages.map { _ in "serial_\(UUID().uuidString)" })
             }
 
             // Call createCounter with no count
@@ -1409,6 +1572,12 @@ struct InternalDefaultRealtimeObjectsTests {
             let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
             let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
 
+            // Transition to synced state (required for publishAndApply)
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelAttached(hasObjects: false)
+                realtimeObjects.nosync_setSiteCode("site1")
+            }
+
             // Track published messages and the generated objectId
             var publishedMessages: [OutboundObjectMessage] = []
             var maybeGeneratedObjectID: String?
@@ -1425,6 +1594,7 @@ struct InternalDefaultRealtimeObjectsTests {
                     // This simulates the object already existing when createMap tries to get it, before the publish operation completes (e.g. because it has been populated by receipt of an OBJECT)
                     maybeExistingObject = realtimeObjects.testsOnly_createZeroValueLiveObject(forObjectID: objectID)?.counterValue
                 }
+                return PublishResult(serials: messages.map { _ in nil })
             }
 
             // Call createCounter - the publishHandler will create the object with the generated ID
@@ -1617,6 +1787,240 @@ struct InternalDefaultRealtimeObjectsTests {
 
             // Then: It emits the expected sequence of sync events
             #expect(receivedSyncEvents == scenario.expectedSyncEvents)
+        }
+    }
+
+    /// Tests for `nosync_publishAndApply`, covering RTO20 specification points.
+    struct PublishAndApplyTests {
+        // @spec RTO20b
+        @Test
+        func publishFailurePropagatesError() async throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+
+            // Configure publish to throw an error
+            let publishError = ARTErrorInfo.create(withCode: 40000, message: "publish failed")
+            coreSDK.setPublishHandler { _ throws(ARTErrorInfo) in
+                throw publishError
+            }
+
+            let thrownError = try await #require(throws: ARTErrorInfo.self) {
+                try await realtimeObjects.createMap(entries: ["key": .string("value")], coreSDK: coreSDK)
+            }
+            #expect(thrownError === publishError)
+        }
+
+        // @spec RTO20c1
+        @Test
+        func missingSiteCodeSkipsLocalApply() async throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+
+            // Transition to synced state without setting siteCode
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelAttached(hasObjects: false)
+            }
+
+            coreSDK.setPublishHandler { messages in
+                PublishResult(serials: messages.map { _ in "serial_abc" })
+            }
+
+            // The publish succeeds, but the local apply is skipped because siteCode is
+            // missing. createMap then fails because the object isn't in the pool.
+            let error = try await #require(throws: ARTErrorInfo.self) {
+                try await realtimeObjects.createMap(entries: ["key": .string("value")], coreSDK: coreSDK)
+            }
+            #expect(error.code == 50000)
+            #expect(error.statusCode == 500)
+        }
+
+        // @spec RTO20c2
+        @Test
+        func mismatchedSerialsLengthSkipsLocalApply() async throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+
+            // Transition to synced state
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelAttached(hasObjects: false)
+                realtimeObjects.nosync_setSiteCode("site1")
+            }
+
+            // Return wrong number of serials
+            coreSDK.setPublishHandler { _ in
+                PublishResult(serials: ["serial1", "serial2"])
+            }
+
+            // The publish succeeds, but the local apply is skipped because the serials
+            // length doesn't match. createMap then fails because the object isn't in the pool.
+            let error = try await #require(throws: ARTErrorInfo.self) {
+                try await realtimeObjects.createMap(entries: ["key": .string("value")], coreSDK: coreSDK)
+            }
+            #expect(error.code == 50000)
+            #expect(error.statusCode == 500)
+        }
+
+        // @spec RTO20d1
+        @Test
+        func nullSerialSkipsLocalApplication() async throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+
+            // Transition to synced state
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelAttached(hasObjects: false)
+                realtimeObjects.nosync_setSiteCode("site1")
+            }
+
+            // Pre-create a map in the pool so that createMap's RTO11h2 lookup succeeds
+            // even when the operation is skipped due to nil serial
+            var preCreatedObjectID: String?
+            coreSDK.setPublishHandler { messages in
+                // Extract the generated objectId and pre-create the object in the pool
+                if let objectID = messages.first?.operation?.objectId {
+                    preCreatedObjectID = objectID
+                    _ = realtimeObjects.testsOnly_createZeroValueLiveObject(forObjectID: objectID)
+                }
+                // Return nil serial (conflation) — RTO20d1 says the operation should be skipped
+                return PublishResult(serials: [nil])
+            }
+
+            let returnedMap = try await realtimeObjects.createMap(entries: ["key": .string("value")], coreSDK: coreSDK)
+
+            let objectID = try #require(preCreatedObjectID)
+
+            // The map exists in the pool (pre-created) but its data should be empty because
+            // the MAP_CREATE was never applied locally (serial was nil)
+            #expect(returnedMap.testsOnly_data.isEmpty)
+            #expect(realtimeObjects.testsOnly_objectsPool.entries[objectID]?.mapValue === returnedMap)
+        }
+
+        // @spec RTO20b
+        // @spec RTO20d2
+        // @spec RTO20d2a
+        // @spec RTO20d2b
+        // @spec RTO20d3
+        // @spec RTO20f
+        @Test
+        func constructsSyntheticMessageAndAppliesWithLocalSource() async throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+
+            // Transition to synced state
+            let serial = "serial_abc"
+            let siteCode = "site1"
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelAttached(hasObjects: false)
+                realtimeObjects.nosync_setSiteCode(siteCode)
+            }
+
+            // RTO20b: Capture the outbound message published via the core SDK, and return a real serial
+            var capturedOutboundMessages: [OutboundObjectMessage] = []
+            coreSDK.setPublishHandler { messages in
+                capturedOutboundMessages = messages
+                return PublishResult(serials: messages.map { _ in serial })
+            }
+
+            let returnedMap = try await realtimeObjects.createMap(entries: ["key": .string("value")], coreSDK: coreSDK)
+
+            // RTO20b: Verify the outbound message was published with the expected operation
+            // and without serial or siteCode (those are populated on the synthetic message)
+            let outboundMessage = try #require(capturedOutboundMessages.first)
+            let outboundOperation = try #require(outboundMessage.operation)
+            #expect(outboundOperation.action == .known(.mapCreate))
+            #expect(outboundMessage.serial == nil)
+            #expect(outboundMessage.siteCode == nil)
+
+            // RTO20f: The synthetic message was applied (data is present)
+            #expect(returnedMap.testsOnly_data == ["key": InternalObjectsMapEntry(data: ObjectData(string: "value"))])
+
+            // RTO20f: The synthetic message was applied with source LOCAL
+            // (confirmed because siteTimeserials were not updated, per RTLM15c / RTLC7c)
+            #expect(returnedMap.testsOnly_siteTimeserials.isEmpty)
+
+            // RTO20d2a: The serial from PublishResult was used in the synthetic message
+            // (confirmed because RTO9a2a4 adds it to appliedOnAckSerials upon successful apply)
+            #expect(realtimeObjects.testsOnly_appliedOnAckSerials.contains(serial))
+
+            // RTO20d2b: The siteCode from connectionDetails was used in the synthetic message
+            // (confirmed because canApplyOperation (RTLO4a3) requires a non-empty siteCode for
+            // the apply to succeed, which it did per the checks above)
+        }
+
+        // @spec RTO20e
+        @Test
+        func waitsForSyncStateToBecomeSynced() async throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+
+            // Set siteCode but leave sync state as SYNCING (hasObjects: true triggers SYNCING, and
+            // without completing the sync sequence we remain in SYNCING)
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelAttached(hasObjects: true)
+                realtimeObjects.nosync_setSiteCode("site1")
+            }
+
+            // Simulate the sync completing after the publish ACK.
+            coreSDK.setPublishCallbackHandler { messages, callback in
+                let result = PublishResult(serials: messages.map { _ in "serial_xyz" })
+
+                internalQueue.async {
+                    callback(.success(result))
+
+                    internalQueue.async {
+                        realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                            objectMessages: [],
+                            protocolMessageChannelSerial: nil,
+                        )
+                    }
+                }
+            }
+            let returnedCounter = try await realtimeObjects.createCounter(count: 42, coreSDK: coreSDK)
+
+            // Verify the operation was applied
+            #expect(try returnedCounter.value(coreSDK: coreSDK) == 42)
+        }
+
+        // @spec RTO20e1
+        @Test(arguments: [
+            _AblyPluginSupportPrivate.RealtimeChannelState.detached,
+            _AblyPluginSupportPrivate.RealtimeChannelState.suspended,
+            _AblyPluginSupportPrivate.RealtimeChannelState.failed,
+        ])
+        func channelStateChangeWhileWaitingForSync(channelState: _AblyPluginSupportPrivate.RealtimeChannelState) async throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+
+            // Set siteCode but leave sync state as SYNCING
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelAttached(hasObjects: true)
+                realtimeObjects.nosync_setSiteCode("site1")
+            }
+
+            // Simulate a channel state change arriving after the publish ACK.
+            coreSDK.setPublishCallbackHandler { messages, callback in
+                let result = PublishResult(serials: messages.map { _ in "serial_xyz" })
+
+                internalQueue.async {
+                    callback(.success(result))
+
+                    internalQueue.async {
+                        realtimeObjects.nosync_onChannelStateChanged(toState: channelState, reason: nil)
+                    }
+                }
+            }
+            let error = try await #require(throws: ARTErrorInfo.self) {
+                try await realtimeObjects.createCounter(count: 5, coreSDK: coreSDK)
+            }
+            #expect(error.code == 92008)
+            #expect(error.statusCode == 400)
         }
     }
 }

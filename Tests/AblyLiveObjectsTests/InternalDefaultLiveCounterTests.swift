@@ -408,15 +408,17 @@ struct InternalDefaultLiveCounterTests {
             var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Apply operation with serial "ts1" which is lexicographically less than existing "ts2" and thus will be applied per RTLO4a (this is a non-pathological case of RTOL4a, that spec point being fully tested elsewhere)
-            internalQueue.ably_syncNoDeadlock {
+            let applied = internalQueue.ably_syncNoDeadlock {
                 counter.nosync_apply(
                     operation,
+                    source: .channel,
                     objectMessageSerial: "ts1", // Less than existing "ts2"
                     objectMessageSiteCode: "site1",
                     objectMessageSerialTimestamp: nil,
                     objectsPool: &pool,
                 )
             }
+            #expect(!applied)
 
             // Check that the COUNTER_INC side-effects didn't happen:
             // Verify the operation was discarded - data unchanged (should still be 5 from creation)
@@ -425,9 +427,10 @@ struct InternalDefaultLiveCounterTests {
             #expect(counter.testsOnly_siteTimeserials == ["site1": "ts2"])
         }
 
-        // @specOneOf(1/2) RTLC7c - We test this spec point for each possible operation
+        // @specOneOf(1/3) RTLC7c - We test this spec point for each possible operation
         // @spec RTLC7d1 - Tests COUNTER_CREATE operation application
         // @spec RTLC7d1a
+        // @spec RTLC7d1b
         @available(iOS 17.0.0, tvOS 17.0.0, *)
         @Test
         func appliesCounterCreateOperation() async throws {
@@ -443,15 +446,17 @@ struct InternalDefaultLiveCounterTests {
             var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Apply COUNTER_CREATE operation
-            internalQueue.ably_syncNoDeadlock {
+            let applied = internalQueue.ably_syncNoDeadlock {
                 counter.nosync_apply(
                     operation,
+                    source: .channel,
                     objectMessageSerial: "ts1",
                     objectMessageSiteCode: "site1",
                     objectMessageSerialTimestamp: nil,
                     objectsPool: &pool,
                 )
             }
+            #expect(applied)
 
             // Verify the operation was applied - initial value merged (the full logic of RTLC8 is tested elsewhere; we just check for some of its side effects here)
             #expect(try counter.value(coreSDK: coreSDK) == 15)
@@ -464,9 +469,10 @@ struct InternalDefaultLiveCounterTests {
             #expect(subscriberInvocations.map(\.0) == [.init(amount: 15)])
         }
 
-        // @specOneOf(2/2) RTLC7c - We test this spec point for each possible operation
+        // @specOneOf(2/3) RTLC7c - We test this spec point for each possible operation
         // @spec RTLC7d2 - Tests COUNTER_INC operation application
         // @spec RTLC7d2a
+        // @spec RTLC7d2b
         @available(iOS 17.0.0, tvOS 17.0.0, *)
         @Test
         func appliesCounterIncOperation() async throws {
@@ -491,15 +497,17 @@ struct InternalDefaultLiveCounterTests {
             var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Apply COUNTER_INC operation
-            internalQueue.ably_syncNoDeadlock {
+            let applied = internalQueue.ably_syncNoDeadlock {
                 counter.nosync_apply(
                     operation,
+                    source: .channel,
                     objectMessageSerial: "ts1",
                     objectMessageSiteCode: "site1",
                     objectMessageSerialTimestamp: nil,
                     objectsPool: &pool,
                 )
             }
+            #expect(applied)
 
             // Verify the operation was applied - amount added to data (the full logic of RTLC9 is tested elsewhere; we just check for some of its side effects here)
             #expect(try counter.value(coreSDK: coreSDK) == 15) // 5 + 10
@@ -509,6 +517,39 @@ struct InternalDefaultLiveCounterTests {
             // Verify update was emitted per RTLC7d2a
             let subscriberInvocations = await subscriber.getInvocations()
             #expect(subscriberInvocations.map(\.0) == [.init(amount: 10)])
+        }
+
+        // @specOneOf(3/3) RTLC7c - Tests that siteTimeserials is NOT updated when source is LOCAL
+        @Test
+        func doesNotUpdateSiteTimeserialsForLocalSource() throws {
+            let logger = TestLogger()
+            let internalQueue = TestFactories.createInternalQueue()
+            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+
+            let operation = TestFactories.objectOperation(
+                action: .known(.counterInc),
+                counterOp: TestFactories.counterOp(amount: 10),
+            )
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+
+            // Apply COUNTER_INC operation with LOCAL source
+            let applied = internalQueue.ably_syncNoDeadlock {
+                counter.nosync_apply(
+                    operation,
+                    source: .local,
+                    objectMessageSerial: "ts1",
+                    objectMessageSiteCode: "site1",
+                    objectMessageSerialTimestamp: nil,
+                    objectsPool: &pool,
+                )
+            }
+            #expect(applied)
+
+            // Verify the operation was applied
+            #expect(try counter.value(coreSDK: coreSDK) == 10)
+            // Verify RTLC7c: siteTimeserials should NOT have been updated for LOCAL source
+            #expect(counter.testsOnly_siteTimeserials.isEmpty)
         }
 
         // @spec RTLC7d3
@@ -525,15 +566,17 @@ struct InternalDefaultLiveCounterTests {
 
             // Try to apply a MAP_CREATE to the counter (not supported)
             var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-            internalQueue.ably_syncNoDeadlock {
+            let applied = internalQueue.ably_syncNoDeadlock {
                 counter.nosync_apply(
                     TestFactories.mapCreateOperation(),
+                    source: .channel,
                     objectMessageSerial: "ts1",
                     objectMessageSiteCode: "site1",
                     objectMessageSerialTimestamp: nil,
                     objectsPool: &pool,
                 )
             }
+            #expect(!applied)
 
             // Check no update was emitted
             let subscriberInvocations = await subscriber.getInvocations()
@@ -550,9 +593,10 @@ struct InternalDefaultLiveCounterTests {
             let internalQueue = TestFactories.createInternalQueue()
             let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             let coreSDK = MockCoreSDK(channelState: channelState, internalQueue: internalQueue)
+            let realtimeObjects = MockRealtimeObjects()
 
             await #expect {
-                try await counter.increment(amount: 10, coreSDK: coreSDK)
+                try await counter.increment(amount: 10, coreSDK: coreSDK, realtimeObjects: realtimeObjects)
             } throws: { error in
                 guard let errorInfo = error as? ARTErrorInfo else {
                     return false
@@ -573,9 +617,10 @@ struct InternalDefaultLiveCounterTests {
             let internalQueue = TestFactories.createInternalQueue()
             let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+            let realtimeObjects = MockRealtimeObjects()
 
             await #expect {
-                try await counter.increment(amount: amount, coreSDK: coreSDK)
+                try await counter.increment(amount: amount, coreSDK: coreSDK, realtimeObjects: realtimeObjects)
             } throws: { error in
                 guard let errorInfo = error as? ARTErrorInfo else {
                     return false
@@ -588,20 +633,22 @@ struct InternalDefaultLiveCounterTests {
         // @spec RTLC12e2
         // @spec RTLC12e3
         // @spec RTLC12e4
-        // @spec RTLC12f
+        // @spec RTLC12g
         @Test
         func publishesCorrectObjectMessage() async throws {
             let logger = TestLogger()
             let internalQueue = TestFactories.createInternalQueue()
             let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "counter:test@123", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+            let realtimeObjects = MockRealtimeObjects()
 
             var publishedMessages: [OutboundObjectMessage] = []
-            coreSDK.setPublishHandler { messages in
+            realtimeObjects.setPublishAndApplyHandler { messages in
                 publishedMessages.append(contentsOf: messages)
+                return .success(())
             }
 
-            try await counter.increment(amount: 10.5, coreSDK: coreSDK)
+            try await counter.increment(amount: 10.5, coreSDK: coreSDK, realtimeObjects: realtimeObjects)
 
             let expectedMessage = OutboundObjectMessage(
                 operation: ObjectOperation(
@@ -613,7 +660,7 @@ struct InternalDefaultLiveCounterTests {
                     counterOp: WireObjectsCounterOp(amount: NSNumber(value: 10.5)),
                 ),
             )
-            // RTLC12f
+            // RTLC12g
             #expect(publishedMessages.count == 1)
             #expect(publishedMessages[0] == expectedMessage)
         }
@@ -624,13 +671,14 @@ struct InternalDefaultLiveCounterTests {
             let internalQueue = TestFactories.createInternalQueue()
             let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "counter:test@123", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+            let realtimeObjects = MockRealtimeObjects()
 
-            coreSDK.setPublishHandler { _ throws(ARTErrorInfo) in
-                throw LiveObjectsError.other(NSError(domain: "test", code: 0, userInfo: [NSLocalizedDescriptionKey: "Publish failed"])).toARTErrorInfo()
+            realtimeObjects.setPublishAndApplyHandler { _ in
+                .failure(LiveObjectsError.other(NSError(domain: "test", code: 0, userInfo: [NSLocalizedDescriptionKey: "Publish failed"])).toARTErrorInfo())
             }
 
             await #expect {
-                try await counter.increment(amount: 10, coreSDK: coreSDK)
+                try await counter.increment(amount: 10, coreSDK: coreSDK, realtimeObjects: realtimeObjects)
             } throws: { error in
                 guard let errorInfo = error as? ARTErrorInfo else {
                     return false
@@ -649,15 +697,17 @@ struct InternalDefaultLiveCounterTests {
             let internalQueue = TestFactories.createInternalQueue()
             let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "counter:test@123", logger: TestLogger(), internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+            let realtimeObjects = MockRealtimeObjects()
 
             var publishedMessages: [OutboundObjectMessage] = []
-            coreSDK.setPublishHandler { messages in
+            realtimeObjects.setPublishAndApplyHandler { messages in
                 publishedMessages.append(contentsOf: messages)
+                return .success(())
             }
 
-            try await counter.decrement(amount: 10.5, coreSDK: coreSDK)
+            try await counter.decrement(amount: 10.5, coreSDK: coreSDK, realtimeObjects: realtimeObjects)
 
-            // RTLC12f
+            // RTLC12g
             #expect(publishedMessages.count == 1)
             #expect(publishedMessages[0].operation?.counterOp?.amount == -10.5 /* i.e. assert the amount gets negated */ )
         }

@@ -19,6 +19,8 @@ internal struct InboundObjectMessage {
 }
 
 /// An `ObjectMessage` to be sent in the `state` property of an `OBJECT` `ProtocolMessage`.
+///
+/// - Important: When adding new fields, also update ``InboundObjectMessage/createSynthetic(from:serial:siteCode:)``.
 internal struct OutboundObjectMessage: Equatable {
     internal var id: String? // OM2a
     internal var clientId: String? // OM2b

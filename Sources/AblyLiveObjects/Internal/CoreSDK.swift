@@ -6,7 +6,7 @@ import Ably
 /// This provides us with a mockable interface to ably-cocoa, and it also allows internal components and their tests not to need to worry about some of the boring details of how we bridge Swift types to `_AblyPluginSupportPrivate`'s Objective-C API (i.e. boxing).
 internal protocol CoreSDK: AnyObject, Sendable {
     /// Implements the internal `#publish` method of RTO15.
-    func nosync_publish(objectMessages: [OutboundObjectMessage], callback: @escaping @Sendable (Result<Void, ARTErrorInfo>) -> Void)
+    func nosync_publish(objectMessages: [OutboundObjectMessage], callback: @escaping @Sendable (Result<PublishResult, ARTErrorInfo>) -> Void)
 
     /// Implements the server time fetch of RTO16, including the storing and usage of the local clock offset.
     func nosync_fetchServerTime(callback: @escaping @Sendable (Result<Date, ARTErrorInfo>) -> Void)
@@ -14,7 +14,7 @@ internal protocol CoreSDK: AnyObject, Sendable {
     /// Replaces the implementation of ``nosync_publish(objectMessages:callback:)``.
     ///
     /// Used by integration tests, for example to disable `ObjectMessage` publishing so that a test can verify that a behaviour is not a side effect of an `ObjectMessage` sent by the SDK.
-    func testsOnly_overridePublish(with newImplementation: @escaping ([OutboundObjectMessage]) async throws(ARTErrorInfo) -> Void)
+    func testsOnly_overridePublish(with newImplementation: @escaping ([OutboundObjectMessage]) async throws(ARTErrorInfo) -> PublishResult)
 
     /// Returns the current state of the Realtime channel that this wraps.
     var nosync_channelState: _AblyPluginSupportPrivate.RealtimeChannelState { get }
@@ -34,7 +34,7 @@ internal final class DefaultCoreSDK: CoreSDK {
     /// This enables the `testsOnly_overridePublish(with:)` test hook.
     ///
     /// - Note: This should be `throws(ARTErrorInfo)` but that causes a compilation error of "Runtime support for typed throws function types is only available in macOS 15.0.0 or newer".
-    private nonisolated(unsafe) var overriddenPublishImplementation: (([OutboundObjectMessage]) async throws -> Void)?
+    private nonisolated(unsafe) var overriddenPublishImplementation: (([OutboundObjectMessage]) async throws -> PublishResult)?
 
     internal init(
         channel: _AblyPluginSupportPrivate.RealtimeChannel,
@@ -50,7 +50,7 @@ internal final class DefaultCoreSDK: CoreSDK {
 
     // MARK: - CoreSDK conformance
 
-    internal func nosync_publish(objectMessages: [OutboundObjectMessage], callback: @escaping @Sendable (Result<Void, ARTErrorInfo>) -> Void) {
+    internal func nosync_publish(objectMessages: [OutboundObjectMessage], callback: @escaping @Sendable (Result<PublishResult, ARTErrorInfo>) -> Void) {
         logger.log("nosync_publish(objectMessages: \(LoggingUtilities.formatObjectMessagesForLogging(objectMessages)))", level: .debug)
 
         // Use the overridden implementation if supplied
@@ -61,8 +61,8 @@ internal final class DefaultCoreSDK: CoreSDK {
             let queue = pluginAPI.internalQueue(for: client)
             Task {
                 do {
-                    try await overriddenImplementation(objectMessages)
-                    queue.async { callback(.success(())) }
+                    let publishResult = try await overriddenImplementation(objectMessages)
+                    queue.async { callback(.success(publishResult)) }
                 } catch {
                     guard let artErrorInfo = error as? ARTErrorInfo else {
                         preconditionFailure("Expected ARTErrorInfo, got \(error)")
@@ -83,7 +83,7 @@ internal final class DefaultCoreSDK: CoreSDK {
         )
     }
 
-    internal func testsOnly_overridePublish(with newImplementation: @escaping ([OutboundObjectMessage]) async throws(ARTErrorInfo) -> Void) {
+    internal func testsOnly_overridePublish(with newImplementation: @escaping ([OutboundObjectMessage]) async throws(ARTErrorInfo) -> PublishResult) {
         mutex.withLock {
             overriddenPublishImplementation = newImplementation
         }

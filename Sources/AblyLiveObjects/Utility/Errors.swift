@@ -9,6 +9,10 @@ internal enum LiveObjectsError {
     case objectsOperationFailedInvalidChannelState(operationDescription: String, channelState: _AblyPluginSupportPrivate.RealtimeChannelState)
     case counterInitialValueInvalid(value: Double)
     case counterIncrementAmountInvalid(amount: Double)
+    /// RTO20e1: The channel entered a non-`ATTACHED` state whilst a `publishAndApply` call was waiting for objects sync to complete.
+    case publishAndApplyFailedChannelStateChanged(channelState: _AblyPluginSupportPrivate.RealtimeChannelState, reason: ARTErrorInfo?)
+    /// RTO11h3d, RTO12h3d: A newly created object was not found in the pool after `publishAndApply`.
+    case newlyCreatedObjectNotInPool(objectID: String)
     case other(Error)
 
     /// The ``ARTErrorInfo/code`` that should be returned for this error.
@@ -19,6 +23,11 @@ internal enum LiveObjectsError {
         case .counterInitialValueInvalid, .counterIncrementAmountInvalid:
             // RTO12f1, RTLC12e1
             .invalidParameterValue
+        case .publishAndApplyFailedChannelStateChanged:
+            // RTO20e1
+            .unableToApplyObjectsOperationSyncDidNotComplete
+        case .newlyCreatedObjectNotInPool:
+            .internalError
         case .other:
             .badRequest
         }
@@ -30,8 +39,11 @@ internal enum LiveObjectsError {
         case .objectsOperationFailedInvalidChannelState,
              .counterInitialValueInvalid,
              .counterIncrementAmountInvalid,
+             .publishAndApplyFailedChannelStateChanged,
              .other:
             400
+        case .newlyCreatedObjectNotInPool:
+            500
         }
     }
 
@@ -44,17 +56,43 @@ internal enum LiveObjectsError {
             "Invalid counter initial value (must be a finite number): \(value)"
         case let .counterIncrementAmountInvalid(amount: amount):
             "Invalid counter increment amount (must be a finite number): \(amount)"
+        case let .publishAndApplyFailedChannelStateChanged(channelState: channelState, reason: _):
+            // RTO20e1
+            "operation could not be applied locally: channel entered \(channelState) state whilst waiting for objects sync to complete"
+        case let .newlyCreatedObjectNotInPool(objectID: objectID):
+            "Newly created object \(objectID) not found in pool after publishAndApply"
         case let .other(error):
             "\(error)"
         }
     }
 
+    /// The ``ARTErrorInfo/cause`` that should be returned for this error.
+    internal var cause: ARTErrorInfo? {
+        switch self {
+        case let .publishAndApplyFailedChannelStateChanged(channelState: _, reason: reason):
+            // RTO20e1
+            reason
+        case .objectsOperationFailedInvalidChannelState,
+             .counterInitialValueInvalid,
+             .counterIncrementAmountInvalid,
+             .newlyCreatedObjectNotInPool,
+             .other:
+            nil
+        }
+    }
+
     internal func toARTErrorInfo() -> ARTErrorInfo {
-        ARTErrorInfo.create(
+        var userInfo: [String: Any] = [liveObjectsErrorUserInfoKey: self]
+        if let cause {
+            // Note that here we're making use of an implementation detail of ably-cocoa (the fact that this user info key populates `ARTErrorInfo.cause`).
+            userInfo[NSUnderlyingErrorKey] = cause
+        }
+
+        return ARTErrorInfo.create(
             withCode: Int(code.rawValue),
             status: statusCode,
             message: localizedDescription,
-            additionalUserInfo: [liveObjectsErrorUserInfoKey: self],
+            additionalUserInfo: userInfo,
         )
     }
 }
