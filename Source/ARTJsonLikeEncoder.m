@@ -1096,7 +1096,8 @@
                                        connectionStateTtl:millisecondsToTimeInterval([input artInteger:@"connectionStateTtl"])
                                                  serverId:[input artString:@"serverId"]
                                           maxIdleInterval:millisecondsToTimeInterval([input artInteger:@"maxIdleInterval"])
-                                     objectsGCGracePeriod:objectsGCGracePeriod];
+                                     objectsGCGracePeriod:objectsGCGracePeriod
+                                                 siteCode:[input artString:@"siteCode"]];
 }
 
 - (ARTChannelMetrics *)channelMetricsFromDictionary:(NSDictionary *)input {

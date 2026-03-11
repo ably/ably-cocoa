@@ -17,6 +17,7 @@
 #endif
 
 @class ARTProtocolMessage;
+@class ARTPublishResult;
 @class ARTRealtimePresenceInternal;
 @class ARTRealtimeAnnotationsInternal;
 @class ARTChannelStateChangeParams;
@@ -158,6 +159,10 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
 /// Provides the implementation for `-[ARTPluginAPI sendObjectWithObjectMessages:completion:]`. See documentation for that method in `APPluginAPIProtocol`.
 - (void)sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
                           completion:(ARTCallback)completion;
+
+/// Provides the implementation for `-[ARTPluginAPI sendObjectWithObjectMessages:completionWithResult:]`. See documentation for that method in `APPluginAPIProtocol`.
+- (void)sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
+                completionWithResult:(void (^)(ARTPublishResult *_Nullable publishResult, ARTErrorInfo *_Nullable error))completion;
 #endif
 
 @end
