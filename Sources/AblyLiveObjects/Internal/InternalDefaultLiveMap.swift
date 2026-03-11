@@ -873,7 +873,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         internal mutating func resetData(userCallbackQueue: DispatchQueue) {
             // RTO4b2
             let previousData = data
-            data = [:]
+            resetDataToZeroValued()
 
             // RTO4b2a
             let mapUpdate = DefaultLiveMapUpdate(update: previousData.mapValues { _ in .removed })
