@@ -278,7 +278,7 @@ internal struct ObjectsPool {
 
     /// Applies the objects gathered during an `OBJECT_SYNC` to this `ObjectsPool`, per RTO5c1 and RTO5c2.
     internal mutating func nosync_applySyncObjectsPool(
-        _ syncObjectsPool: [SyncObjectsPoolEntry],
+        _ syncObjectsPool: SyncObjectsPool,
         logger: Logger,
         internalQueue: DispatchQueue,
         userCallbackQueue: DispatchQueue,
@@ -293,17 +293,21 @@ internal struct ObjectsPool {
         var updatesToExistingObjects: [ObjectsPool.Entry.DeferredUpdate] = []
 
         // RTO5c1: For each ObjectState member in the SyncObjectsPool list
-        for syncObjectsPoolEntry in syncObjectsPool {
-            receivedObjectIds.insert(syncObjectsPoolEntry.state.objectId)
+        for objectMessage in syncObjectsPool {
+            // Every message yielded by SyncObjectsPool is guaranteed to have a non-nil `.object` with `.map` or `.counter`.
+            guard let state = objectMessage.object else {
+                preconditionFailure("SyncObjectsPool yielded a message with nil object")
+            }
+            receivedObjectIds.insert(state.objectId)
 
             // RTO5c1a: If an object with ObjectState.objectId exists in the internal ObjectsPool
-            if let existingEntry = entries[syncObjectsPoolEntry.state.objectId] {
-                logger.log("Updating existing object with ID: \(syncObjectsPoolEntry.state.objectId)", level: .debug)
+            if let existingEntry = entries[state.objectId] {
+                logger.log("Updating existing object with ID: \(state.objectId)", level: .debug)
 
                 // RTO5c1a1: Override the internal data for the object as per RTLC6, RTLM6
                 let deferredUpdate = existingEntry.nosync_replaceData(
-                    using: syncObjectsPoolEntry.state,
-                    objectMessageSerialTimestamp: syncObjectsPoolEntry.objectMessageSerialTimestamp,
+                    using: state,
+                    objectMessageSerialTimestamp: objectMessage.serialTimestamp,
                     objectsPool: &self,
                     userCallbackQueue: userCallbackQueue,
                 )
@@ -311,54 +315,15 @@ internal struct ObjectsPool {
                 updatesToExistingObjects.append(deferredUpdate)
             } else {
                 // RTO5c1b: If an object with ObjectState.objectId does not exist in the internal ObjectsPool
-                logger.log("Creating new object with ID: \(syncObjectsPoolEntry.state.objectId)", level: .debug)
-
-                // RTO5c1b1: Create a new LiveObject using the data from ObjectState and add it to the internal ObjectsPool:
-                let newEntry: Entry?
-
-                if syncObjectsPoolEntry.state.counter != nil {
-                    // RTO5c1b1a: If ObjectState.counter is present, create a zero-value LiveCounter,
-                    // set its private objectId equal to ObjectState.objectId and override its internal data per RTLC6
-                    let counter = InternalDefaultLiveCounter.createZeroValued(
-                        objectID: syncObjectsPoolEntry.state.objectId,
-                        logger: logger,
-                        internalQueue: internalQueue,
-                        userCallbackQueue: userCallbackQueue,
-                        clock: clock,
-                    )
-                    _ = counter.nosync_replaceData(
-                        using: syncObjectsPoolEntry.state,
-                        objectMessageSerialTimestamp: syncObjectsPoolEntry.objectMessageSerialTimestamp,
-                    )
-                    newEntry = .counter(counter)
-                } else if let objectsMap = syncObjectsPoolEntry.state.map {
-                    // RTO5c1b1b: If ObjectState.map is present, create a zero-value LiveMap,
-                    // set its private objectId equal to ObjectState.objectId, set its private semantics
-                    // equal to ObjectState.map.semantics and override its internal data per RTLM6
-                    let map = InternalDefaultLiveMap.createZeroValued(
-                        objectID: syncObjectsPoolEntry.state.objectId,
-                        semantics: objectsMap.semantics,
-                        logger: logger,
-                        internalQueue: internalQueue,
-                        userCallbackQueue: userCallbackQueue,
-                        clock: clock,
-                    )
-                    _ = map.nosync_replaceData(
-                        using: syncObjectsPoolEntry.state,
-                        objectMessageSerialTimestamp: syncObjectsPoolEntry.objectMessageSerialTimestamp,
-                        objectsPool: &self,
-                    )
-                    newEntry = .map(map)
-                } else {
-                    // RTO5c1b1c: Otherwise, log a warning that an unsupported object state message has been received, and discard the current ObjectState without taking any action
-                    logger.log("Unsupported object state message received for objectId: \(syncObjectsPoolEntry.state.objectId)", level: .warn)
-                    newEntry = nil
-                }
-
-                if let newEntry {
-                    // Note that we will never replace the root object here, and thus never break the RTO3b invariant that the root object is always a map. This is because the pool always contains a root object and thus we always go through the RTO5c1a branch of the `if` above.
-                    entries[syncObjectsPoolEntry.state.objectId] = newEntry
-                }
+                // (The nosync_createObjectFromSync precondition that this is not the root object is satisfied because the pool always contains a root object. The precondition that state has counter or map is satisfied because SyncObjectsPool guarantees this for every yielded message.)
+                nosync_createObjectFromSync(
+                    state: state,
+                    objectMessage: objectMessage,
+                    logger: logger,
+                    internalQueue: internalQueue,
+                    userCallbackQueue: userCallbackQueue,
+                    clock: clock,
+                )
             }
         }
 
@@ -378,6 +343,65 @@ internal struct ObjectsPool {
         }
 
         logger.log("applySyncObjectsPool completed. Pool now contains \(entries.count) objects", level: .debug)
+    }
+
+    /// Creates a new object from a sync entry and adds it to the pool, per RTO5c1b.
+    ///
+    /// - Precondition: `state.objectId` must not be the root object ID, in order to preserve the RTO3b invariant that the root is always a map.
+    /// - Precondition: `state` must have either `.counter` or `.map` populated.
+    private mutating func nosync_createObjectFromSync(
+        state: ObjectState,
+        objectMessage: InboundObjectMessage,
+        logger: Logger,
+        internalQueue: DispatchQueue,
+        userCallbackQueue: DispatchQueue,
+        clock: SimpleClock,
+    ) {
+        precondition(state.objectId != ObjectsPool.rootKey)
+
+        logger.log("Creating new object with ID: \(state.objectId)", level: .debug)
+
+        // RTO5c1b1: Create a new LiveObject using the data from ObjectState and add it to the internal ObjectsPool:
+        let newEntry: Entry
+
+        if state.counter != nil {
+            // RTO5c1b1a: If ObjectState.counter is present, create a zero-value LiveCounter,
+            // set its private objectId equal to ObjectState.objectId and override its internal data per RTLC6
+            let counter = InternalDefaultLiveCounter.createZeroValued(
+                objectID: state.objectId,
+                logger: logger,
+                internalQueue: internalQueue,
+                userCallbackQueue: userCallbackQueue,
+                clock: clock,
+            )
+            _ = counter.nosync_replaceData(
+                using: state,
+                objectMessageSerialTimestamp: objectMessage.serialTimestamp,
+            )
+            newEntry = .counter(counter)
+        } else if let objectsMap = state.map {
+            // RTO5c1b1b: If ObjectState.map is present, create a zero-value LiveMap,
+            // set its private objectId equal to ObjectState.objectId, set its private semantics
+            // equal to ObjectState.map.semantics and override its internal data per RTLM6
+            let map = InternalDefaultLiveMap.createZeroValued(
+                objectID: state.objectId,
+                semantics: objectsMap.semantics,
+                logger: logger,
+                internalQueue: internalQueue,
+                userCallbackQueue: userCallbackQueue,
+                clock: clock,
+            )
+            _ = map.nosync_replaceData(
+                using: state,
+                objectMessageSerialTimestamp: objectMessage.serialTimestamp,
+                objectsPool: &self,
+            )
+            newEntry = .map(map)
+        } else {
+            preconditionFailure("state for objectId \(state.objectId) has neither counter nor map")
+        }
+
+        entries[state.objectId] = newEntry
     }
 
     /// Removes all entries except the root, and clears the root's data. This is to be used when an `ATTACHED` ProtocolMessage indicates that the only object in a channel is an empty root map, per RTO4b.

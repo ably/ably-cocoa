@@ -109,7 +109,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
         internal var id: String
 
         /// The `ObjectMessage`s gathered during this sync sequence.
-        internal var syncObjectsPool: [SyncObjectsPoolEntry]
+        internal var syncObjectsPool: SyncObjectsPool
     }
 
     internal init(
@@ -804,16 +804,8 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
                 }
             }
 
-            let syncObjectsPoolEntries = objectMessages.compactMap { objectMessage in
-                if let object = objectMessage.object {
-                    SyncObjectsPoolEntry(state: object, objectMessageSerialTimestamp: objectMessage.serialTimestamp)
-                } else {
-                    nil
-                }
-            }
-
             // If populated, this contains a full set of sync data for the channel, and should be applied to the ObjectsPool.
-            let completedSyncObjectsPool: [SyncObjectsPoolEntry]?
+            let completedSyncObjectsPool: SyncObjectsPool?
             // The SyncSequence, if any, to store in the SYNCING state that results from this OBJECT_SYNC.
             let syncSequenceForSyncingState: SyncSequence?
 
@@ -823,15 +815,17 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
                 } else {
                     nil
                 }
-                var updatedSyncSequence = syncSequenceToContinue ?? .init(id: syncCursor.sequenceID, syncObjectsPool: [])
-                // RTO5b
-                updatedSyncSequence.syncObjectsPool.append(contentsOf: syncObjectsPoolEntries)
+                var updatedSyncSequence = syncSequenceToContinue ?? .init(id: syncCursor.sequenceID, syncObjectsPool: .init())
+                // RTO5f
+                updatedSyncSequence.syncObjectsPool.accumulate(objectMessages, logger: logger)
                 syncSequenceForSyncingState = updatedSyncSequence
 
                 completedSyncObjectsPool = syncCursor.isEndOfSequence ? updatedSyncSequence.syncObjectsPool : nil
             } else {
                 // RTO5a5: The sync data is contained entirely within this single OBJECT_SYNC
-                completedSyncObjectsPool = syncObjectsPoolEntries
+                var pool = SyncObjectsPool()
+                pool.accumulate(objectMessages, logger: logger)
+                completedSyncObjectsPool = pool
                 syncSequenceForSyncingState = nil
             }
 

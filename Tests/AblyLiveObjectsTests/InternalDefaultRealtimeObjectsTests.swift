@@ -60,7 +60,7 @@ struct InternalDefaultRealtimeObjectsTests {
         // @spec RTO5a1
         // @spec RTO5a3
         // @spec RTO5a4
-        // @spec RTO5b
+        // @spec RTO5f
         // @spec RTO5c3
         // @spec RTO5c4
         // @spec RTO5c5

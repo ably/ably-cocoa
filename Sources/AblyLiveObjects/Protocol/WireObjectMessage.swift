@@ -631,7 +631,7 @@ extension WireObjectData: WireObjectCodable {
 /// A type that can be either a string or binary data.
 ///
 /// Used to represent the values that `WireObjectData.bytes` might hold, after being encoded per OD4 or before being decoded per OD5.
-internal enum StringOrData: WireCodable {
+internal enum StringOrData: Equatable, WireCodable {
     case string(String)
     case data(Data)
 
