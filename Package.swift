@@ -72,6 +72,9 @@ let package = Package(
                     package: "ably-cocoa-plugin-support",
                 ),
             ],
+            exclude: [
+                "CLAUDE.md",
+            ],
             resources: [
                 .copy("ably-common"),
             ],
