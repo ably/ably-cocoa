@@ -19,8 +19,7 @@ let package = Package(
         .package(name: "msgpack", url: "https://github.com/rvi/msgpack-objective-C", from: "0.4.0"),
         .package(name: "AblyDeltaCodec", url: "https://github.com/ably/delta-codec-cocoa", from: "1.3.5"),
         .package(name: "Nimble", url: "https://github.com/quick/nimble", from: "11.2.2"),
-        // TODO: Unpin before release
-        .package(name: "ably-cocoa-plugin-support", url: "https://github.com/ably/ably-cocoa-plugin-support.git", .revision("36c529db38154d01537e782f7ed4aa7535fb3237"))
+        .package(name: "ably-cocoa-plugin-support", url: "https://github.com/ably/ably-cocoa-plugin-support.git", from: "2.0.0")
     ],
     targets: [
         .target(

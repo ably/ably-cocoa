@@ -157,22 +157,12 @@ static ARTLogLevel _convertPluginLogLevel(APLogLevel pluginLogLevel) {
 
 - (void)nosync_sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
                                     channel:(id<APRealtimeChannel>)channel
-                                 completion:(void (^)(id<APPublicErrorInfo> _Nullable))completion {
-    ARTRealtimeChannelInternal *internalChannel = _internalRealtimeChannel(channel);
-    dispatch_assert_queue(internalChannel.queue);
-
-    [_internalRealtimeChannel(channel) sendObjectWithObjectMessages:objectMessages
-                                                         completion:completion];
-}
-
-- (void)nosync_sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
-                                    channel:(id<APRealtimeChannel>)channel
-                       completionWithResult:(void (^)(id<APPublishResultProtocol> _Nullable publishResult, id<APPublicErrorInfo> _Nullable error))completion {
+                                 completion:(void (^)(id<APPublishResultProtocol> _Nullable publishResult, id<APPublicErrorInfo> _Nullable error))completion {
     ARTRealtimeChannelInternal *internalChannel = _internalRealtimeChannel(channel);
     dispatch_assert_queue(internalChannel.queue);
 
     [internalChannel sendObjectWithObjectMessages:objectMessages
-                             completionWithResult:^(ARTPublishResult *publishResult, ARTErrorInfo *error) {
+                                       completion:^(ARTPublishResult *publishResult, ARTErrorInfo *error) {
         if (completion) {
             completion(publishResult, error);
         }

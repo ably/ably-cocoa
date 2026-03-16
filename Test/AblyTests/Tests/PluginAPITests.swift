@@ -217,7 +217,7 @@ class PluginAPITests: XCTestCase {
         try internalQueue.sync {
             let newConnectionDetails = try XCTUnwrap(pluginAPI.nosync_latestConnectionDetails(for: pluginRealtimeClient))
             XCTAssertEqual(newConnectionDetails.objectsGCGracePeriod, 1500)
-            XCTAssertEqual(newConnectionDetails.siteCode?(), "us-east-1-A")
+            XCTAssertEqual(newConnectionDetails.siteCode, "us-east-1-A")
         }
     }
 
@@ -327,7 +327,7 @@ class PluginAPITests: XCTestCase {
         let pluginChannel = channel.internal as! _AblyPluginSupportPrivate.RealtimeChannel
         let internalQueue = client.internal.queue
 
-        // When: We call nosync_sendObject (completion variant) with a mock object message
+        // When: We call nosync_sendObject with a mock object message
         // (We don't wait for the completion handler; constructing a valid object message that
         // the server would ACK is out of scope for this test; we'll leave that for the LiveObjects
         // plugin tests)
@@ -339,29 +339,13 @@ class PluginAPITests: XCTestCase {
         // Then: The SDK asks the mock plugin to encode the object message (which encodes
         // MockObjectMessage.identifier under the key "mockMessageIdentifier"), and sends the
         // result in an OBJECT protocol message
-        var objectMessages = transport.protocolMessagesSent.filter { $0.action == .object }
+        let objectMessages = transport.protocolMessagesSent.filter { $0.action == .object }
         XCTAssertEqual(objectMessages.count, 1)
 
-        var lastRawData = try XCTUnwrap(transport.rawDataSent.last)
-        var json = try XCTUnwrap(JSONSerialization.jsonObject(with: lastRawData) as? [String: Any])
-        var state = try XCTUnwrap(json["state"] as? [[String: Any]])
+        let lastRawData = try XCTUnwrap(transport.rawDataSent.last)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: lastRawData) as? [String: Any])
+        let state = try XCTUnwrap(json["state"] as? [[String: Any]])
         XCTAssertEqual(state.count, 1)
         XCTAssertEqual(state[0]["mockMessageIdentifier"] as? String, mockObjectMessage1.identifier)
-
-        // When: We call nosync_sendObject (completionWithResult variant) with another mock object message
-        let mockObjectMessage2 = MockInternalLiveObjectsPlugin.MockObjectMessage()
-        internalQueue.sync {
-            pluginAPI.nosync_sendObject?(withObjectMessages: [mockObjectMessage2], channel: pluginChannel, completionWithResult: nil)
-        }
-
-        // Then: The result is likewise sent in an OBJECT protocol message
-        objectMessages = transport.protocolMessagesSent.filter { $0.action == .object }
-        XCTAssertEqual(objectMessages.count, 2)
-
-        lastRawData = try XCTUnwrap(transport.rawDataSent.last)
-        json = try XCTUnwrap(JSONSerialization.jsonObject(with: lastRawData) as? [String: Any])
-        state = try XCTUnwrap(json["state"] as? [[String: Any]])
-        XCTAssertEqual(state.count, 1)
-        XCTAssertEqual(state[0]["mockMessageIdentifier"] as? String, mockObjectMessage2.identifier)
     }
 }
