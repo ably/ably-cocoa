@@ -294,6 +294,49 @@ struct InternalDefaultLiveMapTests {
             #expect(map.testsOnly_createOperationIsMerged)
         }
 
+        // @specOneOf(1/2) RTLM6i
+        @Test
+        func setsClearTimeserialFromObjectState() {
+            let logger = TestLogger()
+            let internalQueue = TestFactories.createInternalQueue()
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let state = TestFactories.objectState(
+                objectId: "arbitrary-id",
+                map: TestFactories.objectsMap(clearTimeserial: "01234567890@abcdefghijklm"),
+            )
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            internalQueue.ably_syncNoDeadlock {
+                _ = map.nosync_replaceData(using: state, objectMessageSerialTimestamp: nil, objectsPool: &pool)
+            }
+            #expect(map.testsOnly_clearTimeserial == "01234567890@abcdefghijklm")
+        }
+
+        // @specOneOf(2/2) RTLM6i
+        @Test
+        func setsClearTimeserialToNilWhenNotProvided() {
+            let logger = TestLogger()
+            let internalQueue = TestFactories.createInternalQueue()
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+
+            // First, set a clearTimeserial
+            let stateWithClear = TestFactories.objectState(
+                objectId: "arbitrary-id",
+                map: TestFactories.objectsMap(clearTimeserial: "01234567890@abcdefghijklm"),
+            )
+            internalQueue.ably_syncNoDeadlock {
+                _ = map.nosync_replaceData(using: stateWithClear, objectMessageSerialTimestamp: nil, objectsPool: &pool)
+            }
+            #expect(map.testsOnly_clearTimeserial == "01234567890@abcdefghijklm")
+
+            // Then, replace with state that has no clearTimeserial
+            let stateWithoutClear = TestFactories.objectState(objectId: "arbitrary-id")
+            internalQueue.ably_syncNoDeadlock {
+                _ = map.nosync_replaceData(using: stateWithoutClear, objectMessageSerialTimestamp: nil, objectsPool: &pool)
+            }
+            #expect(map.testsOnly_clearTimeserial == nil)
+        }
+
         /// Tests for RTLM6h (diff calculation on replaceData)
         struct DiffCalculationTests {
             // @specOneOf(1/2) RTLM6h - Tests that replaceData returns the diff calculated via RTLM22
@@ -591,6 +634,62 @@ struct InternalDefaultLiveMapTests {
 
     /// Tests for `MAP_SET` operations, covering RTLM7 specification points
     struct MapSetOperationTests {
+        // MARK: - RTLM7h Tests (clearTimeserial check)
+
+        // @spec RTLM7h
+        @Test(arguments: [
+            // serial < clearTimeserial: discard
+            (operationSerial: "ts4" as String?, clearTimeserial: "ts5", expectedApplied: false),
+            // serial == clearTimeserial: discard
+            (operationSerial: "ts5" as String?, clearTimeserial: "ts5", expectedApplied: false),
+            // serial > clearTimeserial: allow
+            (operationSerial: "ts6" as String?, clearTimeserial: "ts5", expectedApplied: true),
+            // serial is nil: discard
+            (operationSerial: nil as String?, clearTimeserial: "ts5", expectedApplied: false),
+        ] as [(operationSerial: String?, clearTimeserial: String, expectedApplied: Bool)])
+        func checksClearTimeserialBeforeApplying(operationSerial: String?, clearTimeserial: String, expectedApplied: Bool) throws {
+            let logger = TestLogger()
+            let internalQueue = TestFactories.createInternalQueue()
+            let delegate = MockLiveMapObjectsPoolDelegate(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            // Given: a map with the specified clearTimeserial
+            let map = InternalDefaultLiveMap(
+                testsOnly_data: [:],
+                objectID: "arbitrary",
+                logger: logger,
+                internalQueue: internalQueue,
+                userCallbackQueue: .main,
+                clock: MockSimpleClock(),
+            )
+
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            internalQueue.ably_syncNoDeadlock {
+                _ = map.nosync_replaceData(
+                    using: TestFactories.objectState(
+                        map: TestFactories.objectsMap(clearTimeserial: clearTimeserial),
+                    ),
+                    objectMessageSerialTimestamp: nil,
+                    objectsPool: &pool,
+                )
+            }
+
+            // When: applying a MAP_SET operation with the specified serial
+            let update = map.testsOnly_applyMapSetOperation(
+                key: "key1",
+                operationTimeserial: operationSerial,
+                operationData: ObjectData(string: "new"),
+                objectsPool: &pool,
+            )
+
+            // Then: the operation is applied or discarded as expected
+            #expect(update.isNoop == !expectedApplied)
+            if expectedApplied {
+                #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate)?.stringValue == "new")
+            } else {
+                #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate) == nil)
+            }
+        }
+
         // MARK: - RTLM7a Tests (Existing Entry)
 
         struct ExistingEntryTests {
@@ -811,6 +910,65 @@ struct InternalDefaultLiveMapTests {
 
     /// Tests for `MAP_REMOVE` operations, covering RTLM8 specification points
     struct MapRemoveOperationTests {
+        // MARK: - RTLM8g Tests (clearTimeserial check)
+
+        // @spec RTLM8g
+        @Test(arguments: [
+            // serial < clearTimeserial: discard
+            (operationSerial: "ts4" as String?, clearTimeserial: "ts5", expectedApplied: false),
+            // serial == clearTimeserial: discard
+            (operationSerial: "ts5" as String?, clearTimeserial: "ts5", expectedApplied: false),
+            // serial > clearTimeserial: allow
+            (operationSerial: "ts6" as String?, clearTimeserial: "ts5", expectedApplied: true),
+            // serial is nil: discard
+            (operationSerial: nil as String?, clearTimeserial: "ts5", expectedApplied: false),
+        ] as [(operationSerial: String?, clearTimeserial: String, expectedApplied: Bool)])
+        func checksClearTimeserialBeforeApplying(operationSerial: String?, clearTimeserial: String, expectedApplied: Bool) throws {
+            let logger = TestLogger()
+            let internalQueue = TestFactories.createInternalQueue()
+            let delegate = MockLiveMapObjectsPoolDelegate(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+
+            // Given: a map with an existing entry and the specified clearTimeserial
+            let map = InternalDefaultLiveMap(
+                testsOnly_data: ["key1": TestFactories.internalMapEntry(timeserial: "ts1", data: ObjectData(string: "existing"))],
+                objectID: "arbitrary",
+                logger: logger,
+                internalQueue: internalQueue,
+                userCallbackQueue: .main,
+                clock: MockSimpleClock(),
+            )
+
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            internalQueue.ably_syncNoDeadlock {
+                _ = map.nosync_replaceData(
+                    using: TestFactories.objectState(
+                        map: TestFactories.objectsMap(
+                            entries: ["key1": TestFactories.stringMapEntry(key: "key1", value: "existing").entry],
+                            clearTimeserial: clearTimeserial,
+                        ),
+                    ),
+                    objectMessageSerialTimestamp: nil,
+                    objectsPool: &pool,
+                )
+            }
+
+            // When: applying a MAP_REMOVE operation with the specified serial
+            let update = map.testsOnly_applyMapRemoveOperation(
+                key: "key1",
+                operationTimeserial: operationSerial,
+                operationSerialTimestamp: nil,
+            )
+
+            // Then: the operation is applied or discarded as expected
+            #expect(update.isNoop == !expectedApplied)
+            if expectedApplied {
+                #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate) == nil)
+            } else {
+                #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate)?.stringValue == "existing")
+            }
+        }
+
         // MARK: - RTLM8a Tests (Existing Entry)
 
         struct ExistingEntryTests {
@@ -1223,6 +1381,111 @@ struct InternalDefaultLiveMapTests {
         }
     }
 
+    /// Tests for `MAP_CLEAR` operations, covering RTLM24 specification points
+    struct MapClearOperationTests {
+        // MARK: - RTLM24c Tests (clearTimeserial check)
+
+        // @spec RTLM24c
+        @Test(arguments: [
+            // serial < clearTimeserial: discard
+            (operationSerial: "ts4" as String?, clearTimeserial: "ts5", expectedApplied: false),
+            // serial == clearTimeserial: discard
+            (operationSerial: "ts5" as String?, clearTimeserial: "ts5", expectedApplied: false),
+            // serial > clearTimeserial: allow
+            (operationSerial: "ts6" as String?, clearTimeserial: "ts5", expectedApplied: true),
+            // serial is nil: discard
+            (operationSerial: nil as String?, clearTimeserial: "ts5", expectedApplied: false),
+        ] as [(operationSerial: String?, clearTimeserial: String, expectedApplied: Bool)])
+        func checksClearTimeserialBeforeApplying(operationSerial: String?, clearTimeserial: String, expectedApplied: Bool) throws {
+            let logger = TestLogger()
+            let internalQueue = TestFactories.createInternalQueue()
+            let delegate = MockLiveMapObjectsPoolDelegate(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+
+            // Given: a map with an existing entry and the specified clearTimeserial
+            let map = InternalDefaultLiveMap(
+                testsOnly_data: ["key1": TestFactories.internalMapEntry(timeserial: "ts1", data: ObjectData(string: "existing"))],
+                objectID: "arbitrary",
+                logger: logger,
+                internalQueue: internalQueue,
+                userCallbackQueue: .main,
+                clock: MockSimpleClock(),
+            )
+
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            internalQueue.ably_syncNoDeadlock {
+                _ = map.nosync_replaceData(
+                    using: TestFactories.objectState(
+                        map: TestFactories.objectsMap(
+                            entries: ["key1": TestFactories.stringMapEntry(key: "key1", value: "existing").entry],
+                            clearTimeserial: clearTimeserial,
+                        ),
+                    ),
+                    objectMessageSerialTimestamp: nil,
+                    objectsPool: &pool,
+                )
+            }
+
+            // When: applying a MAP_CLEAR operation with the specified serial
+            let update = map.testsOnly_applyMapClearOperation(serial: operationSerial)
+
+            // Then: the operation is applied or discarded as expected
+            #expect(update.isNoop == !expectedApplied)
+            if expectedApplied {
+                #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate) == nil)
+            } else {
+                #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate)?.stringValue == "existing")
+            }
+        }
+
+        // MARK: - RTLM24 Tests (MAP_CLEAR operation application)
+
+        // @spec RTLM24
+        // @spec RTLM24d
+        // @spec RTLM24e
+        // @spec RTLM24e1
+        // @spec RTLM24e1a
+        // @spec RTLM24e1b
+        // @spec RTLM24f
+        @Test
+        func appliesMapClearOperation() throws {
+            let logger = TestLogger()
+            let internalQueue = TestFactories.createInternalQueue()
+
+            // Given: a map with multiple entries at different timeserials, including one with nil timeserial
+            let map = InternalDefaultLiveMap(
+                testsOnly_data: [
+                    "olderThanClear": TestFactories.internalMapEntry(timeserial: "ts1", data: ObjectData(string: "value1")),
+                    // Note that this shouldn't happen in real life — timeserials are unique
+                    "equalToClear": TestFactories.internalMapEntry(timeserial: "ts3", data: ObjectData(string: "value2")),
+                    "newerThanClear": TestFactories.internalMapEntry(timeserial: "ts5", data: ObjectData(string: "value3")),
+                    "nilTimeserial": TestFactories.internalMapEntry(timeserial: nil, data: ObjectData(string: "value4")),
+                ],
+                objectID: "arbitrary",
+                logger: logger,
+                internalQueue: internalQueue,
+                userCallbackQueue: .main,
+                clock: MockSimpleClock(),
+            )
+
+            // When: applying a MAP_CLEAR operation with serial "ts3"
+            let update = map.testsOnly_applyMapClearOperation(serial: "ts3")
+
+            // Then: entries with timeserial < "ts3" or nil are removed from internal data, others remain
+            #expect(Set(map.testsOnly_data.keys) == ["equalToClear", "newerThanClear"])
+
+            // RTLM24f: update contains exactly the removed keys
+            let mapUpdate = try #require(update.update)
+            #expect(mapUpdate.update == [
+                "olderThanClear": .removed,
+                "nilTimeserial": .removed,
+            ])
+
+            // RTLM24d: clearTimeserial should be set
+            #expect(map.testsOnly_clearTimeserial == "ts3")
+        }
+    }
+
     /// Tests for the `apply(_ operation:, …)` method, covering RTLM15 specification points
     struct ApplyOperationTests {
         // @spec RTLM15b - Tests that an operation does not get applied when canApplyOperation returns nil
@@ -1273,7 +1536,7 @@ struct InternalDefaultLiveMapTests {
             #expect(map.testsOnly_siteTimeserials == ["site1": "ts2"])
         }
 
-        // @specOneOf(1/4) RTLM15c - We test this spec point for each possible operation
+        // @specOneOf(1/5) RTLM15c - We test this spec point for each possible operation
         // @spec RTLM15d1 - Tests MAP_CREATE operation application
         // @spec RTLM15d1a
         // @spec RTLM15d1b
@@ -1318,7 +1581,7 @@ struct InternalDefaultLiveMapTests {
             #expect(subscriberInvocations.map(\.0) == [.init(update: ["key1": .updated])])
         }
 
-        // @specOneOf(2/4) RTLM15c - We test this spec point for each possible operation
+        // @specOneOf(2/5) RTLM15c - We test this spec point for each possible operation
         // @spec RTLM15d6 - Tests MAP_SET operation application
         // @spec RTLM15d6a
         // @spec RTLM15d6b
@@ -1377,7 +1640,7 @@ struct InternalDefaultLiveMapTests {
             #expect(subscriberInvocations.map(\.0) == [.init(update: ["key1": .updated])])
         }
 
-        // @specOneOf(3/4) RTLM15c - We test this spec point for each possible operation
+        // @specOneOf(3/5) RTLM15c - We test this spec point for each possible operation
         // @spec RTLM15d7 - Tests MAP_REMOVE operation application
         // @spec RTLM15d7a
         // @spec RTLM15d7b
@@ -1436,7 +1699,67 @@ struct InternalDefaultLiveMapTests {
             #expect(subscriberInvocations.map(\.0) == [.init(update: ["key1": .removed])])
         }
 
-        // @specOneOf(4/4) RTLM15c - Tests that siteTimeserials is NOT updated when source is LOCAL
+        // @specOneOf(4/5) RTLM15c - We test this spec point for each possible operation
+        // @spec RTLM15d8
+        // @spec RTLM15d8a
+        // @spec RTLM15d8b
+        @available(iOS 17.0.0, tvOS 17.0.0, *)
+        @Test
+        func appliesMapClearOperation() async throws {
+            let logger = TestLogger()
+            let internalQueue = TestFactories.createInternalQueue()
+            let delegate = MockLiveMapObjectsPoolDelegate(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+
+            let subscriber = Subscriber<DefaultLiveMapUpdate, SubscribeResponse>(callbackQueue: .main)
+            try map.subscribe(listener: subscriber.createListener(), coreSDK: coreSDK)
+
+            // Set initial data
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let (key1, entry1) = TestFactories.stringMapEntry(key: "key1", value: "existing", timeserial: nil)
+            internalQueue.ably_syncNoDeadlock {
+                _ = map.nosync_replaceData(
+                    using: TestFactories.mapObjectState(
+                        siteTimeserials: [:],
+                        entries: [key1: entry1],
+                    ),
+                    objectMessageSerialTimestamp: nil,
+                    objectsPool: &pool,
+                )
+            }
+            #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate)?.stringValue == "existing")
+
+            let operation = TestFactories.objectOperation(
+                action: .known(.mapClear),
+                mapClear: WireMapClear(),
+            )
+
+            // Apply MAP_CLEAR operation
+            let applied = internalQueue.ably_syncNoDeadlock {
+                map.nosync_apply(
+                    operation,
+                    source: .channel,
+                    objectMessageSerial: "ts1",
+                    objectMessageSiteCode: "site1",
+                    objectMessageSerialTimestamp: nil,
+                    objectsPool: &pool,
+                )
+            }
+            #expect(applied)
+
+            // Verify the operation was applied (the full logic of RTLM24 is tested elsewhere; we just check for some of its side effects here)
+            #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate) == nil)
+            #expect(map.testsOnly_clearTimeserial == "ts1")
+            // Verify RTLM15c side-effect: site timeserial was updated
+            #expect(map.testsOnly_siteTimeserials == ["site1": "ts1"])
+
+            // Verify update was emitted per RTLM15d8a
+            let subscriberInvocations = await subscriber.getInvocations()
+            #expect(subscriberInvocations.map(\.0) == [.init(update: ["key1": .removed])])
+        }
+
+        // @specOneOf(5/5) RTLM15c - Tests that siteTimeserials is NOT updated when source is LOCAL
         @Test
         func doesNotUpdateSiteTimeserialsForLocalSource() throws {
             let logger = TestLogger()

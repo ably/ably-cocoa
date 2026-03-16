@@ -35,6 +35,12 @@ internal final class InternalDefaultLiveMap: Sendable {
         }
     }
 
+    internal var testsOnly_clearTimeserial: String? {
+        mutableStateMutex.withSync { mutableState in
+            mutableState.clearTimeserial
+        }
+    }
+
     private let logger: Logger
     private let userCallbackQueue: DispatchQueue
     private let clock: SimpleClock
@@ -396,6 +402,15 @@ internal final class InternalDefaultLiveMap: Sendable {
         }
     }
 
+    /// Test-only method to apply a MAP_CLEAR operation, per RTLM24.
+    internal func testsOnly_applyMapClearOperation(serial: String?) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
+        mutableStateMutex.withSync { mutableState in
+            mutableState.applyMapClearOperation(
+                serial: serial,
+            )
+        }
+    }
+
     /// Resets the map's data, per RTO4b2. This is to be used when an `ATTACHED` ProtocolMessage indicates that the only object in a channel is an empty root map.
     internal func nosync_resetData() {
         mutableStateMutex.withoutSync { mutableState in
@@ -452,6 +467,9 @@ internal final class InternalDefaultLiveMap: Sendable {
         /// The "private `semantics` field" of RTO5c1b1b.
         internal var semantics: WireEnum<ObjectsMapSemantics>?
 
+        /// RTLM25
+        internal var clearTimeserial: String?
+
         /// Replaces the internal data of this map with the provided ObjectState, per RTLM6.
         ///
         /// - Parameters:
@@ -491,6 +509,9 @@ internal final class InternalDefaultLiveMap: Sendable {
 
             // RTLM6g: Store the current data value as previousData for use in RTLM6h
             let previousData = data
+
+            // RTLM6i
+            clearTimeserial = state.map?.clearTimeserial
 
             // RTLM6b: Set the private flag createOperationIsMerged to false
             liveObjectMutableState.createOperationIsMerged = false
@@ -702,6 +723,15 @@ internal final class InternalDefaultLiveMap: Sendable {
                 liveObjectMutableState.emit(.update(.init(update: dataBeforeApplyingOperation.mapValues { _ in .removed })), on: userCallbackQueue)
                 // RTLM15d5b
                 return true
+            case .known(.mapClear):
+                // RTLM15d8
+                let update = applyMapClearOperation(
+                    serial: applicableOperation.objectMessageSerial,
+                )
+                // RTLM15d8a
+                liveObjectMutableState.emit(update, on: userCallbackQueue)
+                // RTLM15d8b
+                return true
             default:
                 // RTLM15d4
                 logger.log("Operation \(operation) has unsupported action for LiveMap; discarding", level: .warn)
@@ -720,6 +750,11 @@ internal final class InternalDefaultLiveMap: Sendable {
             userCallbackQueue: DispatchQueue,
             clock: SimpleClock,
         ) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
+            // RTLM7h
+            if let clearTimeserial, operationTimeserial.map({ $0 <= clearTimeserial }) ?? true {
+                return .noop
+            }
+
             // RTLM7a: If an entry exists in the private data for the specified key
             if let existingEntry = data[key] {
                 // RTLM7a1: If the operation cannot be applied as per RTLM9, discard the operation
@@ -761,6 +796,11 @@ internal final class InternalDefaultLiveMap: Sendable {
         /// Applies a `MAP_REMOVE` operation to a key, per RTLM8.
         internal mutating func applyMapRemoveOperation(key: String, operationTimeserial: String?, operationSerialTimestamp: Date?, logger: Logger, clock: SimpleClock) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
             // (Note that, where the spec tells us to set ObjectsMapEntry.data to nil, we actually set it to an empty ObjectData, which is equivalent, since it contains no data)
+
+            // RTLM8g
+            if let clearTimeserial, operationTimeserial.map({ $0 <= clearTimeserial }) ?? true {
+                return .noop
+            }
 
             // Calculate the tombstonedAt for the new or updated entry per RTLM8f
             let tombstonedAt: Date?
@@ -869,11 +909,44 @@ internal final class InternalDefaultLiveMap: Sendable {
             )
         }
 
+        /// Applies a `MAP_CLEAR` operation, per RTLM24.
+        internal mutating func applyMapClearOperation(
+            serial: String?,
+        ) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
+            guard let serial else {
+                return .noop
+            }
+
+            // RTLM24c
+            if let clearTimeserial, serial <= clearTimeserial {
+                return .noop
+            }
+
+            // RTLM24d
+            clearTimeserial = serial
+
+            // RTLM24e, RTLM24e1: entry timeserial is nil, or serial > entry timeserial
+            let keysToRemove = data.filter { _, entry in
+                guard let entryTimeserial = entry.timeserial else {
+                    return true
+                }
+                return serial > entryTimeserial
+            }.keys
+
+            for key in keysToRemove {
+                data.removeValue(forKey: key)
+            }
+
+            // RTLM24e1b, RTLM24f
+            let removedKeys = Dictionary(uniqueKeysWithValues: keysToRemove.map { ($0, LiveMapUpdateAction.removed) })
+            return .update(DefaultLiveMapUpdate(update: removedKeys))
+        }
+
         /// Resets the map's data and emits a `removed` event for the existing keys, per RTO4b2 and RTO4b2a. This is to be used when an `ATTACHED` ProtocolMessage indicates that the only object in a channel is an empty root map.
         internal mutating func resetData(userCallbackQueue: DispatchQueue) {
             // RTO4b2
             let previousData = data
-            data = [:]
+            resetDataToZeroValued()
 
             // RTO4b2a
             let mapUpdate = DefaultLiveMapUpdate(update: previousData.mapValues { _ in .removed })
@@ -884,6 +957,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         mutating func resetDataToZeroValued() {
             // RTLM4
             data = [:]
+            clearTimeserial = nil
         }
 
         /// Releases entries that were tombstoned more than `gracePeriod` ago, per RTLM19.

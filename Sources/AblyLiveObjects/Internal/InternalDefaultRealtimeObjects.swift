@@ -957,7 +957,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
             switch operation.action {
             case let .known(action):
                 switch action {
-                case .mapCreate, .mapSet, .mapRemove, .counterCreate, .counterInc, .objectDelete:
+                case .mapCreate, .mapSet, .mapRemove, .counterCreate, .counterInc, .objectDelete, .mapClear:
                     // RTO9a2a3
                     let applied = entry.nosync_apply(
                         operation,

@@ -443,6 +443,11 @@ struct InternalDefaultRealtimeObjectsTests {
             let originalPool = realtimeObjects.testsOnly_objectsPool
             #expect(Set(originalPool.root.testsOnly_data.keys) == ["existingMap", "existingCounter"])
 
+            // Give root a non-nil clearTimeserial so we can verify it gets nilled out per RTLM4
+            // (using a serial before the entry timeserials so entries survive)
+            _ = originalPool.root.testsOnly_applyMapClearOperation(serial: "aaa")
+            #expect(originalPool.root.testsOnly_clearTimeserial == "aaa")
+
             let rootSubscriber = Subscriber<DefaultLiveMapUpdate, SubscribeResponse>(callbackQueue: .main)
             let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
             try originalPool.root.subscribe(listener: rootSubscriber.createListener(), coreSDK: coreSDK)
@@ -493,6 +498,7 @@ struct InternalDefaultRealtimeObjectsTests {
             let newRoot = newPool.root
             #expect(newRoot as AnyObject === originalPool.root as AnyObject) // Should be same instance
             #expect(newRoot.testsOnly_data.isEmpty) // Should be zero-valued (empty)
+            #expect(newRoot.testsOnly_clearTimeserial == nil) // RTLM4: zero-value LiveMap has clearTimeserial set to null
 
             // RTO4b3, RTO4b4, RTO4d: SyncObjectsPool must be cleared, sync sequence cleared, BufferedObjectOperations cleared, appliedOnAckSerials cleared
             #expect(!realtimeObjects.testsOnly_hasSyncSequence)
@@ -968,7 +974,7 @@ struct InternalDefaultRealtimeObjectsTests {
 
             // TODO: Understand what to do with OBJECT_DELETE (https://github.com/ably/specification/pull/343#discussion_r2193126548)
 
-            // @specOneOf(1/5) RTO9a2a3 - Tests MAP_CREATE operation application
+            // @specOneOf(1/6) RTO9a2a3 - Tests MAP_CREATE operation application
             @Test
             func appliesMapCreateOperation() throws {
                 let internalQueue = TestFactories.createInternalQueue()
@@ -1020,7 +1026,7 @@ struct InternalDefaultRealtimeObjectsTests {
 
             // MARK: - RTO9a2a3 Tests for MAP_SET
 
-            // @specOneOf(2/5) RTO9a2a3 - Tests MAP_SET operation application
+            // @specOneOf(2/6) RTO9a2a3 - Tests MAP_SET operation application
             @Test
             func appliesMapSetOperation() throws {
                 let internalQueue = TestFactories.createInternalQueue()
@@ -1071,7 +1077,7 @@ struct InternalDefaultRealtimeObjectsTests {
 
             // MARK: - RTO9a2a3 Tests for MAP_REMOVE
 
-            // @specOneOf(3/5) RTO9a2a3 - Tests MAP_REMOVE operation application
+            // @specOneOf(3/6) RTO9a2a3 - Tests MAP_REMOVE operation application
             @Test
             func appliesMapRemoveOperation() throws {
                 let internalQueue = TestFactories.createInternalQueue()
@@ -1121,7 +1127,7 @@ struct InternalDefaultRealtimeObjectsTests {
 
             // MARK: - RTO9a2a3 Tests for COUNTER_CREATE
 
-            // @specOneOf(4/5) RTO9a2a3 - Tests COUNTER_CREATE operation application
+            // @specOneOf(4/6) RTO9a2a3 - Tests COUNTER_CREATE operation application
             @Test
             func appliesCounterCreateOperation() throws {
                 let internalQueue = TestFactories.createInternalQueue()
@@ -1170,7 +1176,7 @@ struct InternalDefaultRealtimeObjectsTests {
 
             // MARK: - RTO9a2a3 Tests for COUNTER_INC
 
-            // @specOneOf(5/5) RTO9a2a3 - Tests COUNTER_INC operation application
+            // @specOneOf(5/6) RTO9a2a3 - Tests COUNTER_INC operation application
             @Test
             func appliesCounterIncOperation() throws {
                 let internalQueue = TestFactories.createInternalQueue()
@@ -1215,6 +1221,56 @@ struct InternalDefaultRealtimeObjectsTests {
                 let finalValue = try counter.value(coreSDK: coreSDK)
                 #expect(finalValue == 15) // 5 + 10
                 #expect(counter.testsOnly_siteTimeserials["site1"] == "ts2")
+            }
+
+            // MARK: - RTO9a2a3 Tests for MAP_CLEAR
+
+            // @specOneOf(6/6) RTO9a2a3 - Tests MAP_CLEAR operation application
+            @Test
+            func appliesMapClearOperation() throws {
+                let internalQueue = TestFactories.createInternalQueue()
+                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+                let objectId = "map:test@123"
+
+                // Create a map object in the pool first
+                let (entryKey, entry) = TestFactories.stringMapEntry(key: "existingKey", value: "existingValue")
+                internalQueue.ably_syncNoDeadlock {
+                    realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                        objectMessages: [
+                            TestFactories.mapObjectMessage(
+                                objectId: objectId,
+                                siteTimeserials: ["site1": "ts1"],
+                                entries: [entryKey: entry],
+                            ),
+                        ],
+                        protocolMessageChannelSerial: nil,
+                    )
+                }
+
+                // Verify the object exists and has initial data
+                let map = try #require(realtimeObjects.testsOnly_objectsPool.entries[objectId]?.mapValue)
+                let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+                let initialValue = try #require(map.get(key: "existingKey", coreSDK: coreSDK, delegate: realtimeObjects)?.stringValue)
+                #expect(initialValue == "existingValue")
+
+                // Create a MAP_CLEAR operation message
+                let operationMessage = TestFactories.mapClearOperationMessage(
+                    objectId: objectId,
+                    serial: "ts2", // Higher than existing "ts1"
+                    siteCode: "site1",
+                )
+
+                // Handle the object protocol message
+                internalQueue.ably_syncNoDeadlock {
+                    realtimeObjects.nosync_handleObjectProtocolMessage(objectMessages: [operationMessage])
+                }
+
+                // Verify the operation was applied by checking for side effects
+                // The full logic of applying the operation is tested in RTLM15; we just check for some of its side effects here
+                let finalValue = try map.get(key: "existingKey", coreSDK: coreSDK, delegate: realtimeObjects)
+                #expect(finalValue == nil) // Key should be removed by MAP_CLEAR
+                #expect(map.testsOnly_clearTimeserial == "ts2")
+                #expect(map.testsOnly_siteTimeserials["site1"] == "ts2")
             }
         }
 

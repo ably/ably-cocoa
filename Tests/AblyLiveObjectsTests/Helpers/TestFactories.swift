@@ -346,6 +346,7 @@ struct TestFactories {
         objectDelete: WireObjectDelete? = nil,
         mapCreateWithObjectId: MapCreateWithObjectId? = nil,
         counterCreateWithObjectId: CounterCreateWithObjectId? = nil,
+        mapClear: WireMapClear? = nil,
     ) -> ObjectOperation {
         ObjectOperation(
             action: action,
@@ -358,6 +359,7 @@ struct TestFactories {
             objectDelete: objectDelete,
             mapCreateWithObjectId: mapCreateWithObjectId,
             counterCreateWithObjectId: counterCreateWithObjectId,
+            mapClear: mapClear,
         )
     }
 
@@ -533,10 +535,12 @@ struct TestFactories {
     static func objectsMap(
         semantics: WireEnum<ObjectsMapSemantics> = .known(.lww),
         entries: [String: ObjectsMapEntry]? = nil,
+        clearTimeserial: String? = nil,
     ) -> ObjectsMap {
         ObjectsMap(
             semantics: semantics,
             entries: entries,
+            clearTimeserial: clearTimeserial,
         )
     }
 
@@ -593,6 +597,23 @@ struct TestFactories {
                 action: .known(.mapRemove),
                 objectId: objectId,
                 mapRemove: WireMapRemove(key: key),
+            ),
+            serial: serial,
+            siteCode: siteCode,
+        )
+    }
+
+    /// Creates an InboundObjectMessage with a MAP_CLEAR operation
+    static func mapClearOperationMessage(
+        objectId: String = "map:test@123",
+        serial: String = "ts1",
+        siteCode: String = "site1",
+    ) -> InboundObjectMessage {
+        inboundObjectMessage(
+            operation: objectOperation(
+                action: .known(.mapClear),
+                objectId: objectId,
+                mapClear: WireMapClear(),
             ),
             serial: serial,
             siteCode: siteCode,
