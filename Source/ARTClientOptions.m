@@ -251,7 +251,12 @@ NSString *ARTDefaultEnvironment = nil;
         return nil;
     }
 
-    return [publicPlugin internalPlugin];
+    id<APLiveObjectsInternalPluginProtocol> plugin = [publicPlugin internalPlugin];
+    if (!plugin.compatibleWithProtocolV6) {
+        [NSException raise:NSInternalInconsistencyException
+                    format:@"This version of ably-cocoa requires a LiveObjects plugin compatible with protocol v6."];
+    }
+    return plugin;
 }
 #endif
 

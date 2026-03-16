@@ -30,6 +30,8 @@ class PluginAPITests: XCTestCase {
             receivedStateChanges.removeAll()
         }
 
+        var compatibleWithProtocolV6: Bool { true }
+
         func nosync_prepare(_ channel: any RealtimeChannel, client: any RealtimeClient) {
             // no-op
         }

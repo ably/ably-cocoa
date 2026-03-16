@@ -95,6 +95,10 @@ static ARTLogLevel _convertPluginLogLevel(APLogLevel pluginLogLevel) {
 
 @implementation ARTPluginAPI
 
+- (BOOL)usesLiveObjectsProtocolV6 {
+    return YES;
+}
+
 + (void)registerSelf {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
