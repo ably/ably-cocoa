@@ -268,6 +268,7 @@ struct TestFactories {
         object: ObjectState? = nil,
         serial: String? = nil,
         siteCode: String? = nil,
+        serialTimestamp: Date? = nil,
     ) -> InboundObjectMessage {
         InboundObjectMessage(
             id: id,
@@ -279,6 +280,7 @@ struct TestFactories {
             object: object,
             serial: serial,
             siteCode: siteCode,
+            serialTimestamp: serialTimestamp,
         )
     }
 
@@ -336,22 +338,28 @@ struct TestFactories {
     static func objectOperation(
         action: WireEnum<ObjectOperationAction> = .known(.mapCreate),
         objectId: String = "test:object@123",
-        mapOp: ObjectsMapOp? = nil,
-        counterOp: WireObjectsCounterOp? = nil,
-        map: ObjectsMap? = nil,
-        counter: WireObjectsCounter? = nil,
-        nonce: String? = nil,
-        initialValue: String? = nil,
+        mapCreate: MapCreate? = nil,
+        mapSet: MapSet? = nil,
+        mapRemove: WireMapRemove? = nil,
+        counterCreate: WireCounterCreate? = nil,
+        counterInc: WireCounterInc? = nil,
+        objectDelete: WireObjectDelete? = nil,
+        mapCreateWithObjectId: MapCreateWithObjectId? = nil,
+        counterCreateWithObjectId: CounterCreateWithObjectId? = nil,
+        mapClear: WireMapClear? = nil,
     ) -> ObjectOperation {
         ObjectOperation(
             action: action,
             objectId: objectId,
-            mapOp: mapOp,
-            counterOp: counterOp,
-            map: map,
-            counter: counter,
-            nonce: nonce,
-            initialValue: initialValue,
+            mapCreate: mapCreate,
+            mapSet: mapSet,
+            mapRemove: mapRemove,
+            counterCreate: counterCreate,
+            counterInc: counterInc,
+            objectDelete: objectDelete,
+            mapCreateWithObjectId: mapCreateWithObjectId,
+            counterCreateWithObjectId: counterCreateWithObjectId,
+            mapClear: mapClear,
         )
     }
 
@@ -363,7 +371,7 @@ struct TestFactories {
         objectOperation(
             action: .known(.mapCreate),
             objectId: objectId,
-            map: ObjectsMap(
+            mapCreate: MapCreate(
                 semantics: .known(.lww),
                 entries: entries,
             ),
@@ -378,13 +386,13 @@ struct TestFactories {
         objectOperation(
             action: .known(.counterCreate),
             objectId: objectId,
-            counter: WireObjectsCounter(count: count.map { NSNumber(value: $0) }),
+            counterCreate: WireCounterCreate(count: count.map { NSNumber(value: $0) }),
         )
     }
 
-    /// Creates a WireObjectsCounterOp
-    static func counterOp(amount: Int = 10) -> WireObjectsCounterOp {
-        WireObjectsCounterOp(amount: NSNumber(value: amount))
+    /// Creates a WireCounterInc
+    static func counterInc(number: Int = 10) -> WireCounterInc {
+        WireCounterInc(number: NSNumber(value: number))
     }
 
     // MARK: - ObjectsMapEntry Factory
@@ -527,10 +535,12 @@ struct TestFactories {
     static func objectsMap(
         semantics: WireEnum<ObjectsMapSemantics> = .known(.lww),
         entries: [String: ObjectsMapEntry]? = nil,
+        clearTimeserial: String? = nil,
     ) -> ObjectsMap {
         ObjectsMap(
             semantics: semantics,
             entries: entries,
+            clearTimeserial: clearTimeserial,
         )
     }
 
@@ -565,9 +575,9 @@ struct TestFactories {
             operation: objectOperation(
                 action: .known(.mapSet),
                 objectId: objectId,
-                mapOp: ObjectsMapOp(
+                mapSet: MapSet(
                     key: key,
-                    data: ObjectData(string: value),
+                    value: ObjectData(string: value),
                 ),
             ),
             serial: serial,
@@ -586,7 +596,24 @@ struct TestFactories {
             operation: objectOperation(
                 action: .known(.mapRemove),
                 objectId: objectId,
-                mapOp: ObjectsMapOp(key: key),
+                mapRemove: WireMapRemove(key: key),
+            ),
+            serial: serial,
+            siteCode: siteCode,
+        )
+    }
+
+    /// Creates an InboundObjectMessage with a MAP_CLEAR operation
+    static func mapClearOperationMessage(
+        objectId: String = "map:test@123",
+        serial: String = "ts1",
+        siteCode: String = "site1",
+    ) -> InboundObjectMessage {
+        inboundObjectMessage(
+            operation: objectOperation(
+                action: .known(.mapClear),
+                objectId: objectId,
+                mapClear: WireMapClear(),
             ),
             serial: serial,
             siteCode: siteCode,
@@ -630,7 +657,7 @@ struct TestFactories {
     /// Creates an InboundObjectMessage with a COUNTER_INC operation
     static func counterIncOperationMessage(
         objectId: String = "counter:test@123",
-        amount: Int = 10,
+        number: Int = 10,
         serial: String = "ts1",
         siteCode: String = "site1",
     ) -> InboundObjectMessage {
@@ -638,7 +665,7 @@ struct TestFactories {
             operation: objectOperation(
                 action: .known(.counterInc),
                 objectId: objectId,
-                counterOp: counterOp(amount: amount),
+                counterInc: counterInc(number: number),
             ),
             serial: serial,
             siteCode: siteCode,

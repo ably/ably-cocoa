@@ -35,6 +35,12 @@ internal final class InternalDefaultLiveMap: Sendable {
         }
     }
 
+    internal var testsOnly_clearTimeserial: String? {
+        mutableStateMutex.withSync { mutableState in
+            mutableState.clearTimeserial
+        }
+    }
+
     private let logger: Logger
     private let userCallbackQueue: DispatchQueue
     private let clock: SimpleClock
@@ -172,11 +178,11 @@ internal final class InternalDefaultLiveMap: Sendable {
                             action: .known(.mapSet),
                             // RTLM20e3
                             objectId: mutableState.liveObjectMutableState.objectID,
-                            mapOp: .init(
-                                // RTLM20e4
+                            mapSet: .init(
+                                // RTLM20e6
                                 key: key,
-                                // RTLM20e5
-                                data: value.nosync_toObjectData,
+                                // RTLM20e7
+                                value: value.nosync_toObjectData,
                             ),
                         ),
                     )
@@ -205,8 +211,8 @@ internal final class InternalDefaultLiveMap: Sendable {
                             action: .known(.mapRemove),
                             // RTLM21e3
                             objectId: mutableState.liveObjectMutableState.objectID,
-                            mapOp: .init(
-                                // RTLM21e4
+                            mapRemove: .init(
+                                // RTLM21e5
                                 key: key,
                             ),
                         ),
@@ -303,7 +309,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         }
     }
 
-    /// Merges the initial value from an ObjectOperation into this LiveMap, per RTLM17.
+    /// Merges the initial value from an ObjectOperation into this LiveMap, per RTLM23.
     internal func nosync_mergeInitialValue(from operation: ObjectOperation, objectsPool: inout ObjectsPool) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
         mutableStateMutex.withoutSync { mutableState in
             mutableState.mergeInitialValue(
@@ -396,6 +402,15 @@ internal final class InternalDefaultLiveMap: Sendable {
         }
     }
 
+    /// Test-only method to apply a MAP_CLEAR operation, per RTLM24.
+    internal func testsOnly_applyMapClearOperation(serial: String?) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
+        mutableStateMutex.withSync { mutableState in
+            mutableState.applyMapClearOperation(
+                serial: serial,
+            )
+        }
+    }
+
     /// Resets the map's data, per RTO4b2. This is to be used when an `ATTACHED` ProtocolMessage indicates that the only object in a channel is an empty root map.
     internal func nosync_resetData() {
         mutableStateMutex.withoutSync { mutableState in
@@ -452,6 +467,9 @@ internal final class InternalDefaultLiveMap: Sendable {
         /// The "private `semantics` field" of RTO5c1b1b.
         internal var semantics: WireEnum<ObjectsMapSemantics>?
 
+        /// RTLM25
+        internal var clearTimeserial: String?
+
         /// Replaces the internal data of this map with the provided ObjectState, per RTLM6.
         ///
         /// - Parameters:
@@ -492,6 +510,9 @@ internal final class InternalDefaultLiveMap: Sendable {
             // RTLM6g: Store the current data value as previousData for use in RTLM6h
             let previousData = data
 
+            // RTLM6i
+            clearTimeserial = state.map?.clearTimeserial
+
             // RTLM6b: Set the private flag createOperationIsMerged to false
             liveObjectMutableState.createOperationIsMerged = false
 
@@ -516,7 +537,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                 return .init(objectsMapEntry: entry, tombstonedAt: tombstonedAt)
             } ?? [:]
 
-            // RTLM6d: If ObjectState.createOp is present, merge the initial value into the LiveMap as described in RTLM17
+            // RTLM6d: If ObjectState.createOp is present, merge the initial value into the LiveMap as described in RTLM23
             // Discard the LiveMapUpdate object returned by the merge operation
             if let createOp = state.createOp {
                 _ = mergeInitialValue(
@@ -533,7 +554,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             return ObjectDiffHelpers.calculateMapDiff(previousData: previousData, newData: data)
         }
 
-        /// Merges the initial value from an ObjectOperation into this LiveMap, per RTLM17.
+        /// Merges the initial value from an ObjectOperation into this LiveMap, per RTLM23.
         internal mutating func mergeInitialValue(
             from operation: ObjectOperation,
             objectsPool: inout ObjectsPool,
@@ -542,12 +563,16 @@ internal final class InternalDefaultLiveMap: Sendable {
             userCallbackQueue: DispatchQueue,
             clock: SimpleClock,
         ) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
-            // RTLM17a: For each key–ObjectsMapEntry pair in ObjectOperation.map.entries
-            let perKeyUpdates: [LiveObjectUpdate<DefaultLiveMapUpdate>] = if let entries = operation.map?.entries {
+            // RTLM23: Resolve mapCreate from either the direct property or the one
+            // from which mapCreateWithObjectId was derived (RTO11f18)
+            let mapCreate = operation.mapCreate ?? operation.mapCreateWithObjectId?.derivedFrom
+
+            // RTLM23a: For each key–ObjectsMapEntry pair in mapCreate.entries
+            let perKeyUpdates: [LiveObjectUpdate<DefaultLiveMapUpdate>] = if let entries = mapCreate?.entries {
                 entries.map { key, entry in
                     if entry.tombstone == true {
-                        // RTLM17a2: If ObjectsMapEntry.tombstone is true, apply the MAP_REMOVE operation
-                        // as described in RTLM8, passing in the current key as ObjectsMapOp, ObjectsMapEntry.timeserial as the operation's serial, and ObjectsMapEntry.serialTimestamp as the operation's serial timestamp
+                        // RTLM23a2: If ObjectsMapEntry.tombstone is true, apply the MAP_REMOVE operation
+                        // as described in RTLM8, passing in the current key as MapRemove, ObjectsMapEntry.timeserial as the operation's serial, and ObjectsMapEntry.serialTimestamp as the operation's serial timestamp
                         applyMapRemoveOperation(
                             key: key,
                             operationTimeserial: entry.timeserial,
@@ -556,8 +581,8 @@ internal final class InternalDefaultLiveMap: Sendable {
                             clock: clock,
                         )
                     } else {
-                        // RTLM17a1: If ObjectsMapEntry.tombstone is false, apply the MAP_SET operation
-                        // as described in RTLM7, passing in ObjectsMapEntry.data and the current key as ObjectsMapOp, and ObjectsMapEntry.timeserial as the operation's serial
+                        // RTLM23a1: If ObjectsMapEntry.tombstone is false, apply the MAP_SET operation
+                        // as described in RTLM7, passing in ObjectsMapEntry.data and the current key as MapSet, and ObjectsMapEntry.timeserial as the operation's serial
                         applyMapSetOperation(
                             key: key,
                             operationTimeserial: entry.timeserial,
@@ -574,10 +599,10 @@ internal final class InternalDefaultLiveMap: Sendable {
                 []
             }
 
-            // RTLM17b: Set the private flag createOperationIsMerged to true
+            // RTLM23b: Set the private flag createOperationIsMerged to true
             liveObjectMutableState.createOperationIsMerged = true
 
-            // RTLM17c: Merge the updates, skipping no-ops
+            // RTLM23c: Merge the updates, skipping no-ops
             // I don't love having to use uniqueKeysWithValues, when I shouldn't have to. I should be able to reason _statically_ that there are no overlapping keys. The problem that we're trying to use LiveMapUpdate throughout instead of something more communicative. But I don't know what's to come in the spec so I don't want to mess with this internal interface.
             let filteredPerKeyUpdates = perKeyUpdates.compactMap { update -> LiveMapUpdate? in
                 switch update {
@@ -642,46 +667,46 @@ internal final class InternalDefaultLiveMap: Sendable {
                 // RTLM15d1b
                 return true
             case .known(.mapSet):
-                guard let mapOp = operation.mapOp else {
-                    logger.log("Could not apply MAP_SET since operation.mapOp is missing", level: .warn)
+                guard let mapSet = operation.mapSet else {
+                    logger.log("Could not apply MAP_SET since operation.mapSet is missing", level: .warn)
                     return false
                 }
-                guard let data = mapOp.data else {
-                    logger.log("Could not apply MAP_SET since operation.data is missing", level: .warn)
+                guard let value = mapSet.value else {
+                    logger.log("Could not apply MAP_SET since operation.mapSet.value is missing", level: .warn)
                     return false
                 }
 
-                // RTLM15d2
+                // RTLM15d6
                 let update = applyMapSetOperation(
-                    key: mapOp.key,
+                    key: mapSet.key,
                     operationTimeserial: applicableOperation.objectMessageSerial,
-                    operationData: data,
+                    operationData: value,
                     objectsPool: &objectsPool,
                     logger: logger,
                     internalQueue: internalQueue,
                     userCallbackQueue: userCallbackQueue,
                     clock: clock,
                 )
-                // RTLM15d2a
+                // RTLM15d6a
                 liveObjectMutableState.emit(update, on: userCallbackQueue)
-                // RTLM15d2b
+                // RTLM15d6b
                 return true
             case .known(.mapRemove):
-                guard let mapOp = operation.mapOp else {
+                guard let mapRemove = operation.mapRemove else {
                     return false
                 }
 
-                // RTLM15d3
+                // RTLM15d7
                 let update = applyMapRemoveOperation(
-                    key: mapOp.key,
+                    key: mapRemove.key,
                     operationTimeserial: applicableOperation.objectMessageSerial,
                     operationSerialTimestamp: objectMessageSerialTimestamp,
                     logger: logger,
                     clock: clock,
                 )
-                // RTLM15d3a
+                // RTLM15d7a
                 liveObjectMutableState.emit(update, on: userCallbackQueue)
-                // RTLM15d3b
+                // RTLM15d7b
                 return true
             case .known(.objectDelete):
                 let dataBeforeApplyingOperation = data
@@ -697,6 +722,15 @@ internal final class InternalDefaultLiveMap: Sendable {
                 // RTLM15d5a
                 liveObjectMutableState.emit(.update(.init(update: dataBeforeApplyingOperation.mapValues { _ in .removed })), on: userCallbackQueue)
                 // RTLM15d5b
+                return true
+            case .known(.mapClear):
+                // RTLM15d8
+                let update = applyMapClearOperation(
+                    serial: applicableOperation.objectMessageSerial,
+                )
+                // RTLM15d8a
+                liveObjectMutableState.emit(update, on: userCallbackQueue)
+                // RTLM15d8b
                 return true
             default:
                 // RTLM15d4
@@ -716,6 +750,11 @@ internal final class InternalDefaultLiveMap: Sendable {
             userCallbackQueue: DispatchQueue,
             clock: SimpleClock,
         ) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
+            // RTLM7h
+            if let clearTimeserial, operationTimeserial.map({ $0 <= clearTimeserial }) ?? true {
+                return .noop
+            }
+
             // RTLM7a: If an entry exists in the private data for the specified key
             if let existingEntry = data[key] {
                 // RTLM7a1: If the operation cannot be applied as per RTLM9, discard the operation
@@ -723,7 +762,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                     return .noop
                 }
                 // RTLM7a2: Otherwise, apply the operation
-                // RTLM7a2a: Set ObjectsMapEntry.data to the ObjectData from the operation
+                // RTLM7a2e: Set ObjectsMapEntry.data to the MapSet.value
                 // RTLM7a2b: Set ObjectsMapEntry.timeserial to the operation's serial
                 // RTLM7a2c: Set ObjectsMapEntry.tombstone to false (same as RTLM7a2d: Set ObjectsMapEntry.tombstonedAt to nil)
                 var updatedEntry = existingEntry
@@ -733,14 +772,14 @@ internal final class InternalDefaultLiveMap: Sendable {
                 data[key] = updatedEntry
             } else {
                 // RTLM7b: If an entry does not exist in the private data for the specified key
-                // RTLM7b1: Create a new entry in data for the specified key with the provided ObjectData and the operation's serial
+                // RTLM7b4: Create a new entry in data for the specified key with the provided ObjectData and the operation's serial
                 // RTLM7b2: Set ObjectsMapEntry.tombstone for the new entry to false (same as RTLM7b3: Set tombstonedAt to nil)
                 data[key] = InternalObjectsMapEntry(tombstonedAt: nil, timeserial: operationTimeserial, data: operationData)
             }
 
-            // RTLM7c: If the operation has a non-empty ObjectData.objectId attribute
+            // RTLM7g: If MapSet.value.objectId is non-empty
             if let objectId = operationData?.objectId, !objectId.isEmpty {
-                // RTLM7c1: Create a zero-value LiveObject in the internal ObjectsPool per RTO6
+                // RTLM7g1: Create a zero-value LiveObject in the internal ObjectsPool per RTO6
                 _ = objectsPool.createZeroValueObject(
                     forObjectID: objectId,
                     logger: logger,
@@ -757,6 +796,11 @@ internal final class InternalDefaultLiveMap: Sendable {
         /// Applies a `MAP_REMOVE` operation to a key, per RTLM8.
         internal mutating func applyMapRemoveOperation(key: String, operationTimeserial: String?, operationSerialTimestamp: Date?, logger: Logger, clock: SimpleClock) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
             // (Note that, where the spec tells us to set ObjectsMapEntry.data to nil, we actually set it to an empty ObjectData, which is equivalent, since it contains no data)
+
+            // RTLM8g
+            if let clearTimeserial, operationTimeserial.map({ $0 <= clearTimeserial }) ?? true {
+                return .noop
+            }
 
             // Calculate the tombstonedAt for the new or updated entry per RTLM8f
             let tombstonedAt: Date?
@@ -865,11 +909,44 @@ internal final class InternalDefaultLiveMap: Sendable {
             )
         }
 
+        /// Applies a `MAP_CLEAR` operation, per RTLM24.
+        internal mutating func applyMapClearOperation(
+            serial: String?,
+        ) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
+            guard let serial else {
+                return .noop
+            }
+
+            // RTLM24c
+            if let clearTimeserial, serial <= clearTimeserial {
+                return .noop
+            }
+
+            // RTLM24d
+            clearTimeserial = serial
+
+            // RTLM24e, RTLM24e1: entry timeserial is nil, or serial > entry timeserial
+            let keysToRemove = data.filter { _, entry in
+                guard let entryTimeserial = entry.timeserial else {
+                    return true
+                }
+                return serial > entryTimeserial
+            }.keys
+
+            for key in keysToRemove {
+                data.removeValue(forKey: key)
+            }
+
+            // RTLM24e1b, RTLM24f
+            let removedKeys = Dictionary(uniqueKeysWithValues: keysToRemove.map { ($0, LiveMapUpdateAction.removed) })
+            return .update(DefaultLiveMapUpdate(update: removedKeys))
+        }
+
         /// Resets the map's data and emits a `removed` event for the existing keys, per RTO4b2 and RTO4b2a. This is to be used when an `ATTACHED` ProtocolMessage indicates that the only object in a channel is an empty root map.
         internal mutating func resetData(userCallbackQueue: DispatchQueue) {
             // RTO4b2
             let previousData = data
-            data = [:]
+            resetDataToZeroValued()
 
             // RTO4b2a
             let mapUpdate = DefaultLiveMapUpdate(update: previousData.mapValues { _ in .removed })
@@ -880,6 +957,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         mutating func resetDataToZeroValued() {
             // RTLM4
             data = [:]
+            clearTimeserial = nil
         }
 
         /// Releases entries that were tombstoned more than `gracePeriod` ago, per RTLM19.

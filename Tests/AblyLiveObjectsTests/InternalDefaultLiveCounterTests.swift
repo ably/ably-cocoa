@@ -62,7 +62,7 @@ struct InternalDefaultLiveCounterTests {
 
         /// Tests for the case where createOp is not present
         struct WithoutCreateOpTests {
-            // @spec RTLC6b - Tests the case without createOp, as RTLC10b takes precedence when createOp exists
+            // @spec RTLC6b - Tests the case without createOp, as RTLC16b takes precedence when createOp exists
             @Test
             func setsCreateOperationIsMergedToFalse() {
                 // Given: A counter whose createOperationIsMerged is true
@@ -129,9 +129,9 @@ struct InternalDefaultLiveCounterTests {
             }
         }
 
-        /// Tests for RTLC10 (merge initial value from createOp)
+        /// Tests for RTLC16 (merge initial value from createOp)
         struct WithCreateOpTests {
-            // @spec RTLC10 - Tests that replaceData merges initial value when createOp is present
+            // @spec RTLC16 - Tests that replaceData merges initial value when createOp is present
             @Test
             func mergesInitialValueWhenCreateOpPresent() throws {
                 let logger = TestLogger()
@@ -145,7 +145,7 @@ struct InternalDefaultLiveCounterTests {
                 internalQueue.ably_syncNoDeadlock {
                     _ = counter.nosync_replaceData(using: state, objectMessageSerialTimestamp: nil)
                 }
-                #expect(try counter.value(coreSDK: coreSDK) == 15) // First sets to 5 (RTLC6c) then adds 10 (RTLC10a)
+                #expect(try counter.value(coreSDK: coreSDK) == 15) // First sets to 5 (RTLC6c) then adds 10 (RTLC16a)
                 #expect(counter.testsOnly_createOperationIsMerged)
             }
         }
@@ -209,10 +209,10 @@ struct InternalDefaultLiveCounterTests {
         }
     }
 
-    /// Tests for the `mergeInitialValue` method, covering RTLC10 specification points
+    /// Tests for the `mergeInitialValue` method, covering RTLC16 specification points
     struct MergeInitialValueTests {
-        // @specOneOf(1/2) RTLC10a - with count
-        // @spec RTLC10c
+        // @specOneOf(1/3) RTLC16a - with count via counterCreate
+        // @specOneOf(1/2) RTLC16c
         @Test
         func addsCounterCountToData() throws {
             let logger = TestLogger()
@@ -238,8 +238,43 @@ struct InternalDefaultLiveCounterTests {
             #expect(try #require(update.update).amount == 10)
         }
 
-        // @specOneOf(2/2) RTLC10a - no count
-        // @spec RTLC10d
+        // @specOneOf(2/3) RTLC16a - with count via counterCreateWithObjectId.derivedFrom
+        // @specOneOf(2/2) RTLC16c
+        // @spec RTO12f16
+        @Test
+        func addsCounterCountToDataFromDerivedFrom() throws {
+            let logger = TestLogger()
+            let internalQueue = TestFactories.createInternalQueue()
+            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+
+            // Set initial data
+            internalQueue.ably_syncNoDeadlock {
+                _ = counter.nosync_replaceData(using: TestFactories.counterObjectState(count: 5), objectMessageSerialTimestamp: nil)
+            }
+            #expect(try counter.value(coreSDK: coreSDK) == 5)
+
+            // Apply merge operation with counterCreateWithObjectId.derivedFrom (no direct counterCreate)
+            let operation = TestFactories.objectOperation(
+                action: .known(.counterCreate),
+                counterCreateWithObjectId: .init(
+                    initialValue: "arbitrary",
+                    nonce: "arbitrary",
+                    derivedFrom: WireCounterCreate(count: NSNumber(value: 10)),
+                ),
+            )
+            let update = internalQueue.ably_syncNoDeadlock {
+                counter.nosync_mergeInitialValue(from: operation)
+            }
+
+            #expect(try counter.value(coreSDK: coreSDK) == 15) // 5 + 10
+
+            // Check return value
+            #expect(try #require(update.update).amount == 10)
+        }
+
+        // @specOneOf(3/3) RTLC16a - no count
+        // @spec RTLC16d
         @Test
         func doesNotModifyDataWhenCounterCountDoesNotExist() throws {
             let logger = TestLogger()
@@ -256,7 +291,7 @@ struct InternalDefaultLiveCounterTests {
             // Apply merge operation with no count
             let operation = TestFactories.objectOperation(
                 action: .known(.counterCreate),
-                counter: nil, // Test value - must be nil
+                counterCreate: nil, // Test value - must be nil
             )
             let update = internalQueue.ably_syncNoDeadlock {
                 counter.nosync_mergeInitialValue(from: operation)
@@ -268,7 +303,7 @@ struct InternalDefaultLiveCounterTests {
             #expect(update.isNoop)
         }
 
-        // @spec RTLC10b
+        // @spec RTLC16b
         @Test
         func setsCreateOperationIsMergedToTrue() {
             let logger = TestLogger()
@@ -332,7 +367,7 @@ struct InternalDefaultLiveCounterTests {
             let operation = TestFactories.counterCreateOperation(count: 10)
             let update = counter.testsOnly_applyCounterCreateOperation(operation)
 
-            // Verify the operation was applied - initial value merged. (The full logic of RTLC10 is tested elsewhere; we just check for some of its side effects here.)
+            // Verify the operation was applied - initial value merged. (The full logic of RTLC16 is tested elsewhere; we just check for some of its side effects here.)
             #expect(try counter.value(coreSDK: coreSDK) == 15) // 5 + 10
             #expect(counter.testsOnly_createOperationIsMerged)
 
@@ -343,24 +378,24 @@ struct InternalDefaultLiveCounterTests {
 
     /// Tests for `COUNTER_INC` operations, covering RTLC9 specification points
     struct CounterIncOperationTests {
-        // @spec RTLC9b
-        // @spec RTLC9d
-        // @spec RTLC9e
+        // @spec RTLC9f
+        // @spec RTLC9g
+        // @spec RTLC9h
         @Test(
             arguments: [
                 (
-                    operation: TestFactories.counterOp(amount: 10),
+                    operation: TestFactories.counterInc(number: 10),
                     expectedValue: 15.0, // 5 + 10
-                    expectedUpdate: .update(.init(amount: 10)) // RTLC9d
+                    expectedUpdate: .update(.init(amount: 10)) // RTLC9g
                 ),
                 (
-                    operation: nil as WireObjectsCounterOp?,
+                    operation: nil as WireCounterInc?,
                     expectedValue: 5.0, // unchanged
-                    expectedUpdate: .noop // RTLC9e
+                    expectedUpdate: .noop // RTLC9h
                 ),
-            ] as [(operation: WireObjectsCounterOp?, expectedValue: Double, expectedUpdate: LiveObjectUpdate<DefaultLiveCounterUpdate>)],
+            ] as [(operation: WireCounterInc?, expectedValue: Double, expectedUpdate: LiveObjectUpdate<DefaultLiveCounterUpdate>)],
         )
-        func addsAmountToData(operation: WireObjectsCounterOp?, expectedValue: Double, expectedUpdate: LiveObjectUpdate<DefaultLiveCounterUpdate>) throws {
+        func addsAmountToData(operation: WireCounterInc?, expectedValue: Double, expectedUpdate: LiveObjectUpdate<DefaultLiveCounterUpdate>) throws {
             let logger = TestLogger()
             let internalQueue = TestFactories.createInternalQueue()
             let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
@@ -403,7 +438,7 @@ struct InternalDefaultLiveCounterTests {
 
             let operation = TestFactories.objectOperation(
                 action: .known(.counterInc),
-                counterOp: TestFactories.counterOp(amount: 10),
+                counterInc: TestFactories.counterInc(number: 10),
             )
             var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
@@ -470,9 +505,9 @@ struct InternalDefaultLiveCounterTests {
         }
 
         // @specOneOf(2/3) RTLC7c - We test this spec point for each possible operation
-        // @spec RTLC7d2 - Tests COUNTER_INC operation application
-        // @spec RTLC7d2a
-        // @spec RTLC7d2b
+        // @spec RTLC7d5 - Tests COUNTER_INC operation application
+        // @spec RTLC7d5a
+        // @spec RTLC7d5b
         @available(iOS 17.0.0, tvOS 17.0.0, *)
         @Test
         func appliesCounterIncOperation() async throws {
@@ -492,7 +527,7 @@ struct InternalDefaultLiveCounterTests {
 
             let operation = TestFactories.objectOperation(
                 action: .known(.counterInc),
-                counterOp: TestFactories.counterOp(amount: 10),
+                counterInc: TestFactories.counterInc(number: 10),
             )
             var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
@@ -514,7 +549,7 @@ struct InternalDefaultLiveCounterTests {
             // Verify RTLC7c side-effect: site timeserial was updated
             #expect(counter.testsOnly_siteTimeserials == ["site1": "ts1"])
 
-            // Verify update was emitted per RTLC7d2a
+            // Verify update was emitted per RTLC7d5a
             let subscriberInvocations = await subscriber.getInvocations()
             #expect(subscriberInvocations.map(\.0) == [.init(amount: 10)])
         }
@@ -529,7 +564,7 @@ struct InternalDefaultLiveCounterTests {
 
             let operation = TestFactories.objectOperation(
                 action: .known(.counterInc),
-                counterOp: TestFactories.counterOp(amount: 10),
+                counterInc: TestFactories.counterInc(number: 10),
             )
             var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
@@ -632,7 +667,7 @@ struct InternalDefaultLiveCounterTests {
 
         // @spec RTLC12e2
         // @spec RTLC12e3
-        // @spec RTLC12e4
+        // @spec RTLC12e5
         // @spec RTLC12g
         @Test
         func publishesCorrectObjectMessage() async throws {
@@ -656,8 +691,8 @@ struct InternalDefaultLiveCounterTests {
                     action: .known(.counterInc),
                     // RTLC12e3
                     objectId: "counter:test@123",
-                    // RTLC12e4
-                    counterOp: WireObjectsCounterOp(amount: NSNumber(value: 10.5)),
+                    // RTLC12e5
+                    counterInc: WireCounterInc(number: NSNumber(value: 10.5)),
                 ),
             )
             // RTLC12g
@@ -709,7 +744,7 @@ struct InternalDefaultLiveCounterTests {
 
             // RTLC12g
             #expect(publishedMessages.count == 1)
-            #expect(publishedMessages[0].operation?.counterOp?.amount == -10.5 /* i.e. assert the amount gets negated */ )
+            #expect(publishedMessages[0].operation?.counterInc?.number == -10.5 /* i.e. assert the amount gets negated */ )
         }
     }
 }

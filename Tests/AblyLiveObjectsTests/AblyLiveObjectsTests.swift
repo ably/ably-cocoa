@@ -88,15 +88,21 @@ struct AblyLiveObjectsTests {
 
         // 5. Now, send an OBJECT ProtocolMessage that creates a new Map. This confirms that Ably is using us to encode this ProtocolMessage's contained ObjectMessages.
 
-        // (This objectId comes from copying that which was given in an expected value in an error message from Realtime)
-        let realtimeCreatedMapObjectID = "map:iC4Nq8EbTSEmw-_tDJdVV8HfiBvJGpZmO_WbGbh0_-4@\(currentAblyTimestamp)"
+        let initialValueJSON = #"{"mapCreate":{"semantics":0}}"#
+        let realtimeCreatedMapObjectID = ObjectCreationHelpers.testsOnly_createObjectID(
+            type: "map",
+            initialValue: initialValueJSON,
+            nonce: "1",
+            timestamp: Date(timeIntervalSince1970: Double(currentAblyTimestamp) / 1000),
+        )
 
         try await channel.testsOnly_nonTypeErasedObjects.testsOnly_publish(objectMessages: [
             OutboundObjectMessage(
                 operation: .init(
                     action: .known(.mapCreate),
                     objectId: realtimeCreatedMapObjectID,
-                    nonce: "1",
+                    mapCreate: .init(semantics: .known(.lww), entries: nil),
+                    mapCreateWithObjectId: .init(initialValue: initialValueJSON, nonce: "1"),
                 ),
             ),
         ])
