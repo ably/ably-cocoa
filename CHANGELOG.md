@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.2.59](https://github.com/ably/ably-cocoa/tree/1.2.59)
+
+## What's Changed
+
+Adds support for the upcoming version 0.4.0 of the [LiveObjects plugin](https://github.com/ably/ably-liveobjects-swift-plugin) and removes support for earlier versions of the plugin.
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.58...1.2.59
+
 ## [1.2.58](https://github.com/ably/ably-cocoa/tree/1.2.58)
 
 ### What's Changed
