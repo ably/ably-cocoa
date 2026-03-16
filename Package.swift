@@ -18,10 +18,9 @@ let package = Package(
         ),
     ],
     dependencies: [
-        // TODO: Unpin before release
         .package(
             url: "https://github.com/ably/ably-cocoa.git",
-            revision: "5e4cca89749ec051a57c5758412c080f049fcf42",
+            from: "1.2.59",
         ),
         .package(
             url: "https://github.com/ably/ably-cocoa-plugin-support",
