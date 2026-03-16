@@ -161,20 +161,7 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
         // RTO10b
         realtimeObjects.nosync_setGarbageCollectionGracePeriod(gracePeriod)
 
-        // Push the siteCode from connectionDetails
-        let siteCode: String? = {
-            guard let connectionDetails else {
-                return nil
-            }
-
-            // This is a fallback; our ably-cocoa dependency version should ensure that this is never triggered.
-            guard (connectionDetails as AnyObject).responds(to: #selector(ConnectionDetailsProtocol.siteCode)) else {
-                preconditionFailure("ably-cocoa's connectionDetails does not implement siteCode. Please update ably-cocoa to a version that supports apply-on-ACK.")
-            }
-
-            return connectionDetails.siteCode?()
-        }()
-        realtimeObjects.nosync_setSiteCode(siteCode)
+        realtimeObjects.nosync_setSiteCode(connectionDetails?.siteCode)
     }
 
     // MARK: - Sending `OBJECT` ProtocolMessage
@@ -189,12 +176,7 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
         let objectMessageBoxes: [ObjectMessageBox<OutboundObjectMessage>] = objectMessages.map { .init(objectMessage: $0) }
         let internalQueue = pluginAPI.internalQueue(for: client)
 
-        // This is a fallback; our ably-cocoa dependency version should ensure that this is never triggered.
-        guard (pluginAPI as AnyObject).responds(to: #selector(PluginAPIProtocol.nosync_sendObject(withObjectMessages:channel:completionWithResult:))) else {
-            preconditionFailure("ably-cocoa does not implement nosync_sendObjectWithObjectMessages:channel:completionWithResult:. Please update ably-cocoa to a version that supports apply-on-ACK.")
-        }
-
-        pluginAPI.nosync_sendObject!(
+        pluginAPI.nosync_sendObject(
             withObjectMessages: objectMessageBoxes,
             channel: channel,
         ) { pluginPublishResult, error in
