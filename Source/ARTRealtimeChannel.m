@@ -470,17 +470,7 @@ art_dispatch_sync(_queue, ^{
 
 #ifdef ABLY_SUPPORTS_PLUGINS
 - (void)sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
-                          completion:(ARTCallback)completion {
-    [self sendObjectWithObjectMessages:objectMessages
-                  completionWithResult:^(ARTPublishResult *publishResult, ARTErrorInfo *error) {
-        if (completion) {
-            completion(error);
-        }
-    }];
-}
-
-- (void)sendObjectWithObjectMessages:(NSArray<id<APObjectMessageProtocol>> *)objectMessages
-                completionWithResult:(void (^)(ARTPublishResult *_Nullable publishResult, ARTErrorInfo *_Nullable error))completion {
+                          completion:(void (^)(ARTPublishResult *_Nullable publishResult, ARTErrorInfo *_Nullable error))completion {
     ARTProtocolMessage *pm = [[ARTProtocolMessage alloc] init];
     pm.action = ARTProtocolMessageObject;
     pm.channel = self.name;
@@ -741,9 +731,7 @@ art_dispatch_sync(_queue, ^{
 
 #ifdef ABLY_SUPPORTS_PLUGINS
     id<APLiveObjectsInternalPluginProtocol> plugin = self.realtime.options.liveObjectsPlugin;
-    if ([plugin respondsToSelector:@selector(nosync_onChannelStateChanged:toState:reason:)]) {
-        [plugin nosync_onChannelStateChanged:self toState:ARTConvertToPluginChannelState(state) reason:params.errorInfo];
-    }
+    [plugin nosync_onChannelStateChanged:self toState:ARTConvertToPluginChannelState(state) reason:params.errorInfo];
 #endif
 
     if (channelRetryListener) {
