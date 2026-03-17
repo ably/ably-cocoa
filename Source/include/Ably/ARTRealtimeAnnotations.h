@@ -72,7 +72,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * Note that if you want to receive individual realtime annotations (instead of just the rolled-up summaries), you will need to request the `ARTChannelModeAnnotationSubscribe`  in `ARTChannelOptions`, since they are not delivered by default. In general, most clients will not bother with subscribing to individual annotations, and will instead just look at the summary updates.
  *
- * @param callback  A callback containing received annotation.
+ * @param callback A callback containing received annotation.
  *
  * @return An event listener object.
  */
@@ -84,7 +84,7 @@ NS_ASSUME_NONNULL_BEGIN
  * Note that if you want to receive individual realtime annotations (instead of just the rolled-up summaries), you will need to request the `ARTChannelModeAnnotationSubscribe` in `ARTChannelOptions`, since they are not delivered by default. In general, most clients will not bother with subscribing to individual annotations, and will instead just look at the summary updates.
  *
  * @param type A type of the `ARTAnnotation` to register the listener for.
- * @param callback  A callback containing received annotation.
+ * @param callback A callback containing received annotation.
  *
  * @return An event listener object.
  */
