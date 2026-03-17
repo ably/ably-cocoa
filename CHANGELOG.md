@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.2.60](https://github.com/ably/ably-cocoa/tree/1.2.60)
+
+### What's Changed
+
+Adds missing `onAttach` callback variants to `ARTRealtimeAnnotations` subscribe ([#2199](https://github.com/ably/ably-cocoa/pull/2199)).
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.59...1.2.60
+
 ## [1.2.59](https://github.com/ably/ably-cocoa/tree/1.2.59)
 
 ## What's Changed
