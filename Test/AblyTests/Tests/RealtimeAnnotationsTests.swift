@@ -232,6 +232,103 @@ class RealtimeAnnotationsTests: XCTestCase {
         }
     }
 
+    // RTAN4d, RTL7g
+    func test__annotations_subscribe_should_implicitly_attach_the_channel_if_options_attachOnSubscribe_is_true() throws {
+        let test = Test()
+        let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
+        defer { client.dispose(); client.close() }
+        let channel = client.channels.get(test.uniqueChannelName())
+
+        // Initialized
+        XCTAssertEqual(channel.state, ARTRealtimeChannelState.initialized)
+        channel.annotations.subscribe { _ in }
+        XCTAssertEqual(channel.state, ARTRealtimeChannelState.attaching)
+        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+
+        // Detaching
+        channel.detach()
+        channel.annotations.subscribe { _ in }
+        XCTAssertEqual(channel.state, ARTRealtimeChannelState.detaching)
+        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+
+        // Detached
+        channel.detach()
+        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.detached), timeout: testTimeout)
+        channel.annotations.subscribe { _ in }
+        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+    }
+
+    // RTAN4d, RTL7h
+    func test__annotations_subscribe_should_not_implicitly_attach_the_channel_if_options_attachOnSubscribe_is_false() throws {
+        let test = Test()
+        let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
+        defer { client.dispose(); client.close() }
+
+        let channelOptions = ARTRealtimeChannelOptions()
+        channelOptions.attachOnSubscribe = false
+        let channel = client.channels.get(test.uniqueChannelName(), options: channelOptions)
+
+        // Initialized
+        XCTAssertEqual(channel.state, ARTRealtimeChannelState.initialized)
+        channel.annotations.subscribe(attachCallback: { _ in
+            fail("Attach callback should not be called.")
+        }) { _ in }
+        // Make sure that channel stays initialized
+        waitUntil(timeout: testTimeout) { done in
+            delay(1) {
+                XCTAssertEqual(channel.state, ARTRealtimeChannelState.initialized)
+                done()
+            }
+        }
+    }
+
+    // RTAN4d, RTL7g
+    func test__annotations_subscribe_should_result_in_an_error_if_channel_is_in_the_FAILED_state_and_options_attachOnSubscribe_is_true() throws {
+        let test = Test()
+        let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
+        defer { client.dispose(); client.close() }
+
+        let channel = client.channels.get(test.uniqueChannelName())
+        channel.internal.onError(AblyTests.newErrorProtocolMessage())
+        XCTAssertEqual(channel.state, ARTRealtimeChannelState.failed)
+
+        waitUntil(timeout: testTimeout) { done in
+            channel.annotations.subscribe(attachCallback: { errorInfo in
+                XCTAssertNotNil(errorInfo)
+
+                channel.annotations.subscribe("foo", onAttach: { errorInfo in
+                    XCTAssertNotNil(errorInfo)
+                    done()
+                }) { _ in }
+            }) { _ in }
+        }
+    }
+
+    // RTAN4d, RTL7g
+    func test__annotations_subscribe_should_not_result_in_an_error_if_channel_is_in_the_FAILED_state_and_options_attachOnSubscribe_is_false() throws {
+        let test = Test()
+        let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
+        defer { client.dispose(); client.close() }
+
+        let channelOptions = ARTRealtimeChannelOptions()
+        channelOptions.attachOnSubscribe = false
+        let channel = client.channels.get(test.uniqueChannelName(), options: channelOptions)
+
+        channel.internal.onError(AblyTests.newErrorProtocolMessage())
+        XCTAssertEqual(channel.state, ARTRealtimeChannelState.failed)
+
+        channel.annotations.subscribe(attachCallback: { _ in
+            fail("Attach callback should not be called.")
+        }) { _ in }
+        // Make sure that channel stays failed
+        waitUntil(timeout: testTimeout) { done in
+            delay(1) {
+                XCTAssertEqual(channel.state, ARTRealtimeChannelState.failed)
+                done()
+            }
+        }
+    }
+
     // RTAN1a
     func test__publish_annotation_exceeding_max_message_size() throws {
         let test = Test()
