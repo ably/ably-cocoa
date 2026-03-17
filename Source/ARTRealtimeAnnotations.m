@@ -59,8 +59,16 @@
     return [_internal subscribe:callback];
 }
 
+- (ARTEventListener *)subscribeWithAttachCallback:(ARTCallback)onAttach callback:(ARTAnnotationCallback)callback {
+    return [_internal subscribeWithAttachCallback:onAttach callback:callback];
+}
+
 - (ARTEventListener *)subscribe:(NSString *)type callback:(ARTAnnotationCallback)callback {
     return [_internal subscribe:type callback:callback];
+}
+
+- (ARTEventListener *)subscribe:(NSString *)type onAttach:(ARTCallback)onAttach callback:(ARTAnnotationCallback)callback {
+    return [_internal subscribe:type onAttach:onAttach callback:callback];
 }
 
 - (void)unsubscribe {
@@ -185,6 +193,14 @@ art_dispatch_sync(_queue, ^{
             });
         };
     }
+    if (onAttach) {
+        ARTCallback userOnAttach = onAttach;
+        onAttach = ^(ARTErrorInfo *_Nullable e) {
+            art_dispatch_async(self->_userQueue, ^{
+                userOnAttach(e);
+            });
+        };
+    }
 
     __block ARTEventListener *listener = nil;
 
@@ -245,8 +261,16 @@ art_dispatch_sync(_queue, ^{
     return [self _subscribe:nil onAttach:nil callback:cb];
 }
 
+- (ARTEventListener *)subscribeWithAttachCallback:(ARTCallback)onAttach callback:(ARTAnnotationCallback)cb {
+    return [self _subscribe:nil onAttach:onAttach callback:cb];
+}
+
 - (ARTEventListener *)subscribe:(NSString *)type callback:(ARTAnnotationCallback)callback {
     return [self _subscribe:type onAttach:nil callback:callback];
+}
+
+- (ARTEventListener *)subscribe:(NSString *)type onAttach:(ARTCallback)onAttach callback:(ARTAnnotationCallback)callback {
+    return [self _subscribe:type onAttach:onAttach callback:callback];
 }
 
 // RTP7

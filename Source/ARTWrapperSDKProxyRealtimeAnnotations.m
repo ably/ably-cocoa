@@ -28,8 +28,16 @@ NS_ASSUME_NONNULL_END
     return [self.underlyingRealtimeAnnotations subscribe:callback];
 }
 
+- (ARTEventListener *)subscribeWithAttachCallback:(ARTCallback)onAttach callback:(ARTAnnotationCallback)callback {
+    return [self.underlyingRealtimeAnnotations subscribeWithAttachCallback:onAttach callback:callback];
+}
+
 - (ARTEventListener *)subscribe:(NSString *)type callback:(ARTAnnotationCallback)callback {
     return [self.underlyingRealtimeAnnotations subscribe:type callback:callback];
+}
+
+- (ARTEventListener *)subscribe:(NSString *)type onAttach:(ARTCallback)onAttach callback:(ARTAnnotationCallback)callback {
+    return [self.underlyingRealtimeAnnotations subscribe:type onAttach:onAttach callback:callback];
 }
 
 - (void)getForMessage:(ARTMessage *)message query:(ARTAnnotationsQuery *)query callback:(ARTPaginatedAnnotationsCallback)callback {
