@@ -40,11 +40,15 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     return [ARTAPNSDeviceTokenKey stringByAppendingFormat:@"-%@", tokenType ?: ARTAPNSDeviceDefaultTokenType];
 }
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface ARTLocalDevice ()
 
 @property (nullable, nonatomic, readonly) ARTInternalLog *logger;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 @implementation ARTLocalDevice
 

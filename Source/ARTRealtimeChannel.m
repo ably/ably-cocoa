@@ -271,6 +271,8 @@
 
 @end
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface ARTRealtimeChannelInternal () {
     ARTRealtimePresenceInternal *_realtimePresence;
     ARTRealtimeAnnotationsInternal *_realtimeAnnotations;
@@ -286,8 +288,6 @@
 }
 
 @end
-
-NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtimeChannelInternal ()
 

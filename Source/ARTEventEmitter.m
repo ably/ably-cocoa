@@ -46,11 +46,15 @@
 
 #pragma mark - ARTEventListener
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface ARTEventListener ()
 @property (readonly) BOOL invalidated;
 @property (readonly) BOOL timerIsRunning;
 @property (readonly) BOOL hasTimer;
 @end
+
+NS_ASSUME_NONNULL_END
 
 @implementation ARTEventListener {
     NSNotificationCenter *_center;
