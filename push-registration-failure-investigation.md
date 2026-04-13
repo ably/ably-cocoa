@@ -111,3 +111,29 @@ Option 1 is the simplest and safest. The trade-off (orphaning a registration whe
 - The orphaned registration is already useless (the client can't authenticate against it)
 - It only happens once per device during migration from legacy data
 - The user re-registers cleanly on the next `activate()`
+
+## Storage availability
+
+The spec changes above address the immediate problem (detecting and recovering from inconsistent data), but there is a deeper issue: the Keychain can be temporarily unavailable (before first unlock after reboot), and even NSUserDefaults availability depends on the app's data protection class (the default is `NSFileProtectionCompleteUntilFirstUserAuthentication`, which has the same availability window as the Keychain's `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`). The only guaranteed-always-available storage on iOS is a file with `NSFileProtectionNone`, which provides no encryption at rest.
+
+This means even with our spec changes, if the app launches before first unlock, the SDK could end up in a regeneration loop: RSH3h1 discards and resets to `NotActivated`, `activate()` generates new id/secret, the write fails because storage is unavailable, next launch discards again, and so on until the user unlocks.
+
+### Proposed approach for ably-cocoa
+
+**Default storage: always-available, no encryption.** Store the (`id`, `deviceSecret`, `deviceIdentityToken`) tuple in a file with `NSFileProtectionNone` (or equivalent always-available mechanism). This means:
+- `client.device` works synchronously as it does today
+- `activate()` works immediately regardless of device lock state
+- No availability issues, no regeneration loop
+- This is what ably-java and ably-js effectively do today (SharedPreferences / localStorage)
+
+The trade-off is that the device secret is stored unencrypted on disk. The blast radius of a compromised device secret is limited to push operations for that specific device (updating/deleting the registration, subscribing to push channels). It does not grant access to the Ably API key or to publish/subscribe on channels. On a jailbroken/rooted device where the secret could be extracted, the attacker likely has access to far more than just the device secret.
+
+**Pluggable secure storage (optional).** For customers who require encrypted credential storage (e.g. due to regulatory requirements, as raised in [ably-java#593](https://github.com/ably/ably-java/issues/593)), provide a pluggable storage interface. The user supplies their own storage implementation (e.g. backed by the Keychain) which:
+- Exposes an async loading API that can indicate "not yet available"
+- Provides a mechanism for subscribing to availability events (on iOS, this maps to `UIApplication.isProtectedDataAvailable` and `UIProtectedDataDidBecomeAvailable`)
+
+If secure storage is used, `client.device` would need a new async variant, and the state machine (RSH3h) would defer loading rather than discarding when storage is temporarily unavailable. This is a larger piece of work and can be done separately from the immediate fix.
+
+### Impact on the spec
+
+The spec changes we've drafted (RSH3h, RSH8a2, etc.) are compatible with both approaches. RSH8a2 says the tuple must be persisted and loaded atomically but doesn't prescribe a storage mechanism. The choice between always-available storage and pluggable secure storage is an implementation decision for each SDK. A future spec enhancement could add guidance for the "wait for availability" pattern if multiple SDKs need it.
