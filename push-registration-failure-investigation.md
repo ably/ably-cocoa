@@ -134,6 +134,54 @@ The trade-off is that the device secret is stored unencrypted on disk. The blast
 
 If secure storage is used, `client.device` would need a new async variant, and the state machine (RSH3h) would defer loading rather than discarding when storage is temporarily unavailable. This is a larger piece of work and can be done separately from the immediate fix.
 
+### Migrating existing data
+
+The migration from Keychain to always-available storage is closely related to the RSH8a2a legacy data handling:
+
+1. On first launch with the new SDK, check the new always-available storage — empty (nothing migrated yet).
+2. Fall back to loading from old locations (NSUserDefaults for id/token, Keychain for secret).
+3. If everything loads successfully, write to the new storage with the atomicity mechanism (RSH8a2), then proceed normally. Subsequent launches use the new storage and this migration code never runs again.
+4. If the load is partial (e.g. Keychain unavailable before first unlock), the RSH8a2a invariant check catches it (id present, secret absent → violation → RSH3h1 → discard → `NotActivated`).
+5. If all three load but the token might be stale, RSH8a2a2 triggers the `ValidatingDeviceIdentityToken` flow (RSH3i).
+
+The problem case is: the user upgrades the app, and the first launch with the new SDK happens before first unlock. The Keychain is unavailable, so the old secret can't be read, so migration can't complete. The device loses its existing push registration and has to re-activate after unlock.
+
+We considered alternatives to avoid this:
+
+1. **Wait for the Keychain to become available before migrating.** This avoids losing the registration, but `client.device` can't return a complete device until migration is done — there's no way to satisfy the non-nullable `id` contract while waiting. Building an async mechanism just for a one-time migration is disproportionate.
+
+2. **Store a "migration pending" flag and keep trying on each launch.** Don't discard anything until migration succeeds; don't process events until then. Similar problem: `client.device` can't return a complete device during the pending period.
+
+Both alternatives run into the same fundamental issue: if the data isn't available yet, `client.device` can't work synchronously. This is the same problem that the pluggable secure storage would face, and solving it requires a larger change (async device loading) that is out of scope for the immediate fix.
+
+Accepting the one-time sacrifice is pragmatic:
+- It only affects users who upgrade the app AND whose first launch with the new SDK is before first unlock — a narrow window.
+- The outcome (losing the registration, re-registering on next `activate()`) is the same as what's already happening today with the bug, except today it loops indefinitely rather than recovering cleanly.
+- After migration (successful or not), the new always-available storage prevents this class of problem from recurring.
+
 ### Impact on the spec
 
 The spec changes we've drafted (RSH3h, RSH8a2, etc.) are compatible with both approaches. RSH8a2 says the tuple must be persisted and loaded atomically but doesn't prescribe a storage mechanism. The choice between always-available storage and pluggable secure storage is an implementation decision for each SDK. A future spec enhancement could add guidance for the "wait for availability" pattern if multiple SDKs need it.
+
+### Recommended order of work
+
+Steps 1 and 2 are intertwined and should be treated as a single piece of work. The new storage (step 1) needs the migration and integrity checking logic (step 2), because migrating from old storage is where the RSH8a2a invariant checks and RSH3i token validation are needed. And the spec changes (step 2) rely on always-available storage (step 1) to avoid the regeneration loop where the SDK repeatedly discards and regenerates credentials because the Keychain is inaccessible.
+
+1. **Move to always-available storage + implement the spec changes** — store the (`id`, `deviceSecret`, `deviceIdentityToken`) tuple in a file with `NSFileProtectionNone` (or equivalent), with the RSH8a2 atomicity mechanism. Implement RSH3h (load and verify at state machine init), RSH8a2a (legacy data invariant checks and token validation), and RSH3i (`ValidatingDeviceIdentityToken` state). This fixes the root cause and handles migration from old Keychain/NSUserDefaults storage in one release.
+2. **Pluggable secure storage** — future enhancement for customers who require encrypted credential storage, with async device loading. Separate piece of work.
+
+### Privacy manifest
+
+The current privacy manifest (`Source/PrivacyInfo.xcprivacy`) declares:
+- `NSPrivacyCollectedDataTypeDeviceID` (linked, tracking, for app functionality)
+- `NSPrivacyAccessedAPICategoryUserDefaults` with reason `CA92.1`
+
+If we move to a custom file with `NSFileProtectionNone`, the UserDefaults declaration is still needed (for other data and during migration). Custom file I/O does not fall under Apple's "required reason APIs", so no additional privacy manifest declarations are needed for the new storage mechanism.
+
+### Customer expectations around Keychain storage
+
+Keychain storage of the device secret is not documented anywhere as a feature or guarantee — it is not mentioned in the README, public headers, or any public documentation. The only references are in the CHANGELOG as internal implementation changes (removing the SAMKeychain dependency, replacing `SecKeychainItemDelete`).
+
+No customer should reasonably be depending on the device secret being stored in the Keychain. The change should be mentioned in release notes for transparency, but it does not constitute a breaking change in any documented sense.
+
+For customers who do require encrypted credential storage (as raised in [ably-java#593](https://github.com/ably/ably-java/issues/593)), the pluggable secure storage (step 2 above) would provide an explicit, supported mechanism for this — rather than the current situation where it's an undocumented implementation detail.
