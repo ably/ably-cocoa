@@ -307,3 +307,69 @@ Keychain storage of the device secret is not documented anywhere as a feature or
 No customer should reasonably be depending on the device secret being stored in the Keychain. The change should be mentioned in release notes for transparency, but it does not constitute a breaking change in any documented sense.
 
 For customers who do require encrypted credential storage (as raised in [ably-java#593](https://github.com/ably/ably-java/issues/593)), the pluggable secure storage (step 2 above) would provide an explicit, supported mechanism for this — rather than the current situation where it's an undocumented implementation detail.
+
+## Testing plan
+
+TODO: These test plans have not been verified. They are initial proposals to ensure we have a testing strategy; the details need to be validated before implementation.
+
+### Test app
+
+Build a small test app that uses ably-cocoa, registers for push, and displays on screen:
+- Device ID
+- Device secret (truncated)
+- Whether a device identity token is present
+- State machine state
+- Push channel subscription status
+
+The app should include a debug mechanism (e.g. a button) to manually tamper with the persisted state, so we can create specific scenarios without needing to trigger the actual Keychain failure.
+
+### Creating the stale token state directly
+
+This is the easiest way to reproduce the customer's bug. The app should have a debug button that:
+
+1. Records the current token in NSUserDefaults (token=A, issued for id=A)
+2. Generates a new id=B and secret=B
+3. Writes id=B to NSUserDefaults
+4. Writes secret=B to Keychain keyed by B
+5. Leaves token=A in NSUserDefaults untouched
+
+On relaunch, the app has id=B, secret=B (valid pair), token=A (stale) — the exact state the customer is in. This can be used to test whichever recovery direction we implement (A, B, or C).
+
+### Reproducing the actual Keychain failure
+
+This requires a physical device and reproduces the full bug sequence:
+
+1. Install the test app with the current (pre-fix) SDK version
+2. Activate push, confirm registration works
+3. Reboot the device
+4. Send a silent push notification (`content-available: 1`) to the device before unlocking — this wakes the app in the background while the Keychain is still locked. The APNS token is given by iOS independently of the Keychain, so the device should still be reachable for push even after reboot.
+5. The app's device loading code runs: Keychain is inaccessible, id/secret are regenerated, token survives
+6. Unlock the device, launch the app
+7. Observe: the device now has a new id, new secret, stale token — the 40100 error should be reproducible
+
+This confirms the root cause. After implementing the fix, repeat this sequence and verify recovery.
+
+### Reproducing the migration
+
+1. Install the test app with the old SDK version, activate push, confirm registration works
+2. Update the app to the new SDK version (with always-available storage and migration logic)
+3. Launch normally → verify data migrated to new storage, push still works, same device ID
+4. Repeat but with the stale token state (created via debug button before upgrading) → verify the chosen recovery direction handles it
+
+### Reproducing the migration with Keychain unavailable
+
+1. Install with old SDK, activate push
+2. Update to new SDK
+3. Reboot the device
+4. Trigger a background launch before unlocking (silent push)
+5. The migration attempts to read from old storage — Keychain is inaccessible, so the secret can't be migrated
+6. RSH3h1 / RSH8a2a1 invariant check should fire: id present, secret absent → discard, `NotActivated`
+7. Unlock, launch normally → verify the device re-registers cleanly on next `activate()`
+
+### Things to verify in all cases
+
+- After recovery, `activate()` succeeds and push notifications work
+- After recovery, push channel subscriptions can be created
+- No error loop — the 40100 error does not recur
+- After successful migration, subsequent launches do not re-migrate (new storage is used)
+- The state machine state is consistent with the device data at all times
