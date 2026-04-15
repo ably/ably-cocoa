@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		2157A51E2F90250E00C526F5 /* Ably in Frameworks */ = {isa = PBXBuildFile; productRef = 2157A51D2F90250E00C526F5 /* Ably */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		2157A50E2F90238800C526F5 /* LocalDeviceStorageBugTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LocalDeviceStorageBugTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2157A51E2F90250E00C526F5 /* Ably in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = LocalDeviceStorageBugTest;
 			packageProductDependencies = (
+				2157A51D2F90250E00C526F5 /* Ably */,
 			);
 			productName = LocalDeviceStorageBugTest;
 			productReference = 2157A50E2F90238800C526F5 /* LocalDeviceStorageBugTest.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = 2157A5052F90238800C526F5;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				2157A51C2F90250E00C526F5 /* XCLocalSwiftPackageReference "../../../ably-cocoa" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 2157A50F2F90238800C526F5 /* Products */;
 			projectDirPath = "";
@@ -332,6 +341,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		2157A51C2F90250E00C526F5 /* XCLocalSwiftPackageReference "../../../ably-cocoa" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../../../ably-cocoa";
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		2157A51D2F90250E00C526F5 /* Ably */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Ably;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 2157A5062F90238800C526F5 /* Project object */;
 }
