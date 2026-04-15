@@ -104,13 +104,49 @@ This is a narrow case: legacy data, no atomicity mechanism, all three fields pre
 - Pros: simple, no server round-trip needed
 - Cons: unknown consequences — the token exists for a reason (the spec calls it `deviceIdentityToken` / docs call it `updateToken`); unclear what functionality would be lost by not having it; would diverge from the spec's authentication model
 
+### How much do we care about preserving the registration?
+
+A device that reaches the legacy validation path (RSH8a2a2) has legacy data without an atomicity mechanism, all three fields present, but a token that may belong to a different device id. There are two scenarios: either the token is actually valid (the device was never affected by the Keychain bug — e.g. it was never launched in the background before first unlock), or the token is stale (the device has been through one or more cycles of id/secret regeneration). In the latter case, the server may already have multiple orphaned registrations, and the cost of one more is low. In the former case, the registration is still valid and preserving it would avoid an unnecessary re-registration.
+
+Both directions below preserve the device id (and any push channel subscriptions tied to it), since on rejection both end up in the same normal registration flow (RSH3a2b onwards). The `registerCallback` is already used for POST, PUT, and PATCH cases without distinction (RSH3b3a, RSH3d3a, RSH3a2a2), so it works in both directions too.
+
+### Direction A: Validate the token, then re-register if invalid
+
+This is option 1 above, implemented as two new state machine states:
+- `ValidatingDeviceIdentityToken` (RSH3i): on `CalledActivate`, makes a non-mutating GET to check the token
+- `WaitingForDeviceIdentityTokenValidation` (RSH3j): handles the result — if valid, persist with atomicity; if rejected (401), discard token and re-register via RSH3a2b onwards; if other error, report and let the user retry
+
+This is currently written into the spec on the `2026-03-20-investigating-ably-cocoa-push-registration-failures` branch (commits `faa0fb8` through `25e0fd6`).
+
+The spec currently discards all `LocalDevice` details on rejection and re-registers fresh (RSH3j2a/RSH3j2b). There is a TODO in RSH3j2a to investigate whether it's possible instead to preserve the (id, secret) pair and regenerate only the token, since the secret is known to be valid for the current id. One possible approach: use a PATCH authenticated with `X-Ably-DeviceSecret` (like RSH3d3b), which the server accepts (confirmed in `rest_push.ts:322-324`) and which returns a fresh `deviceIdentityToken` (confirmed in `rest_push.ts:1814-1825`). This would preserve the existing registration. If the PATCH fails (e.g. device not registered), fall back to fresh registration. Having a dedicated state makes this kind of special-casing possible, whereas direction B would need to rely on the POST's undocumented upsert behaviour.
+
+Pros:
+- Only re-registers when the token is actually invalid
+- Clear separation of validation and registration
+- The dedicated state provides a path to preserve the registration via PATCH in the future (see TODO in RSH3j2a)
+
+Cons:
+- Adds two new states and three new events for a one-time migration path
+
+### Direction B: Skip validation, just re-register
+
+Instead of validating the token against the server, simply discard it and start in `NotActivated`. On the next `CalledActivate`:
+1. RSH3a2a doesn't apply (no token)
+2. RSH3a2b: device already has id/secret → skip generation
+3. RSH3a2c onwards: normal registration flow
+4. RSH3b3b: POST to `/push/deviceRegistrations` — the server treats this as an upsert (confirmed by reading the realtime server code: `upsertDeviceRegistration` at `rest_push.ts:1768` handles both new and existing registrations via `postDeviceRegistration`)
+5. Server returns a fresh `deviceIdentityToken`
+
+Pros:
+- No new states or events — the existing state machine handles everything
+
+Cons:
+- Every device upgrading from legacy data makes a POST on first activation, even if the token was actually valid (one-time cost)
+- Relies on the server treating POST as an upsert, which is current behaviour but not explicitly part of the spec
+
 ### Current recommendation
 
-Option 1 is the simplest and safest. The trade-off (orphaning a registration when the token is stale) is acceptable because:
-- This is exactly what's already happening today with the bug
-- The orphaned registration is already useless (the client can't authenticate against it)
-- It only happens once per device during migration from legacy data
-- The user re-registers cleanly on the next `activate()`
+Direction B is simpler. Both directions produce the same outcome on rejection (preserve the device id, re-register via the normal flow). The difference is that direction A avoids an unnecessary POST when the token is valid, at the cost of two extra states, three new events, and an extra GET when it isn't. For a one-time migration path, direction B's simplicity is preferable.
 
 ## Storage availability
 
