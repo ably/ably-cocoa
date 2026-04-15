@@ -91,6 +91,14 @@ The relevant spec point is RSH8j (now moved to RSH8a1 as part of this investigat
 | RSH8a1 implementation | Regenerates id/secret but doesn't clear identity token or reset state machine | No implementation; assumes if id loads, secret loads too | No implementation observed |
 | Storage for secret | Keychain (different availability from id) | Same storage as id | Same storage as id (`SharedPreferences`) |
 
+## Spec assumptions about storage
+
+There are two things to note about how the spec relates to storage:
+
+**The spec assumes LocalDevice is a single atomic blob.** It doesn't anticipate implementations splitting storage across mechanisms with different availability characteristics. ably-cocoa does this (Keychain for secret, NSUserDefaults for everything else), and this is the root cause of the bug. We've added RSH8a2 to the spec to acknowledge that implementations may split storage and to define the atomicity requirement, plus RSH8a2a for ably-cocoa's specific legacy situation. However, we have not yet proposed a concrete mechanism for how ably-cocoa would achieve atomicity going forward — that is the "move to always-available storage" work described in the "Storage availability" section below.
+
+**The spec's failure recovery (RSH3h1) is a safety net, not a routine code path.** RSH3h1 handles load failures by discarding everything and starting in `NotActivated`. This works correctly in isolation, but the consequences of it firing routinely are not addressed: orphaned registrations accumulate on the server, push channel subscriptions are lost, and there is no mechanism for cleaning up. Paddy's [comment on #1109](https://github.com/ably/ably-cocoa/issues/1109#issuecomment-934163390) — "we need to use a persistence mechanism for the device registration and secret that is always available" — suggests this was never intended to be a routine occurrence. If ably-cocoa ships the spec changes without also fixing the storage to be always-available, the recovery behaviour would be correct but would fire too frequently, with accumulating side effects.
+
 ## Proposed spec changes
 
 We are drafting spec changes (on the `2026-03-20-investigating-ably-cocoa-push-registration-failures` branch of the specification repo) that address the issues above. The key changes are:
