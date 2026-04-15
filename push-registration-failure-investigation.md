@@ -95,9 +95,26 @@ The relevant spec point is RSH8j (now moved to RSH8a1 as part of this investigat
 
 There are two things to note about how the spec relates to storage:
 
-**The spec assumes LocalDevice is a single atomic blob.** It doesn't anticipate implementations splitting storage across mechanisms with different availability characteristics. ably-cocoa does this (Keychain for secret, NSUserDefaults for everything else), and this is the root cause of the bug. We've added RSH8a2 to the spec to acknowledge that implementations may split storage and to define the atomicity requirement, plus RSH8a2a for ably-cocoa's specific legacy situation. However, we have not yet proposed a concrete mechanism for how ably-cocoa would achieve atomicity going forward — that is the "move to always-available storage" work described in the "Storage availability" section below.
+**The spec assumes LocalDevice is a single atomic blob.** It doesn't anticipate implementations splitting storage across mechanisms with different availability characteristics. ably-cocoa does this (Keychain for secret, NSUserDefaults for everything else), and this is the root cause of the bug. Our proposed RSH8a2 would acknowledge that implementations may split storage and define the atomicity requirement, plus RSH8a2a for ably-cocoa's specific legacy situation. However, we have not yet proposed a concrete mechanism for how ably-cocoa would achieve atomicity going forward — that is the "move to always-available storage" work described in the "Storage availability" section below.
 
 **The spec's failure recovery (RSH3h1) is a safety net, not a routine code path.** RSH3h1 handles load failures by discarding everything and starting in `NotActivated`. This works correctly in isolation, but the consequences of it firing routinely are not addressed: orphaned registrations accumulate on the server, push channel subscriptions are lost, and there is no mechanism for cleaning up. Paddy's [comment on #1109](https://github.com/ably/ably-cocoa/issues/1109#issuecomment-934163390) — "we need to use a persistence mechanism for the device registration and secret that is always available" — suggests this was never intended to be a routine occurrence. If ably-cocoa ships the spec changes without also fixing the storage to be always-available, the recovery behaviour would be correct but would fire too frequently, with accumulating side effects.
+
+### What should be stored atomically?
+
+The proposed RSH8a2 specifies atomicity for the (`id`, `deviceSecret`, `deviceIdentityToken`) tuple. But it's worth considering whether the spec's model actually implies a larger atomic unit.
+
+The state machine state carries assumptions about which LocalDevice properties exist — e.g. `WaitingForNewPushDeviceDetails` assumes id, secret, and token are all present. Our proposed RSH3h says "the persisted activation state is only valid if the LocalDevice details it depends on are available." This means the state machine state and the LocalDevice data are logically one unit: if one changes without the other, the assumptions are violated.
+
+Looking at the full set of persisted items:
+
+- **(`id`, `deviceSecret`, `deviceIdentityToken`)**: critical. Out-of-sync state causes the 40100 error and the broken error loop that prompted this investigation. RSH8a2 proposes atomicity for this tuple.
+- **`clientId`**: has a fallback (loaded from the identity token if missing, `ARTLocalDevice.m:90-93`). If out of sync with the rest, the worst case is RSH3a2a1 detecting a mismatch and firing `SyncRegistrationFailed` with error 61002, which the state machine handles.
+- **APNS tokens**: issued by Apple for the physical device, not tied to the Ably device id. Always valid for the physical device regardless of which Ably device id is in use. Re-validated against the platform on each launch (RSH8i). Can't meaningfully be "out of sync" with the device id.
+- **State machine state and pending events**: if lost, defaults to `NotActivated` with an empty queue. Self-corrects on next `activate()` — causes an unnecessary re-sync or re-registration but not a broken state.
+
+So the (`id`, `deviceSecret`, `deviceIdentityToken`) tuple is the only group where atomicity is critical for correctness. The other items either self-correct or have fallbacks. However, the state machine state is logically part of the same unit — it just happens that losing it is recoverable.
+
+In ably-java and ably-js, everything is stored in the same mechanism (SharedPreferences / localStorage), so atomicity is effectively achieved by accident. If ably-cocoa is redesigning its storage, it may be simplest to store the entire set as one blob rather than reasoning about which subsets need atomicity. This would also avoid future bugs if new persisted fields are added that have dependencies we haven't anticipated.
 
 ## Proposed spec changes
 
