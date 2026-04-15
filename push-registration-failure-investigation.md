@@ -79,6 +79,24 @@ We are drafting spec changes (on the `2026-03-20-investigating-ably-cocoa-push-r
 - **RSH8a2a**: For legacy data without an atomicity mechanism, check invariants (id and secret both present or both absent, token only if id and secret present).
 - **RSH3i** (`ValidatingRegistration` state): For legacy data that passes the invariant check but can't be locally verified (all three fields present but token may belong to a different id), validate against the server before accepting the data.
 
+### Understanding RSH3a2a — the existing "validation" mechanism
+
+RSH3a2a fires in `NotActivated` when `CalledActivate` is received and the device has a `deviceIdentityToken`. It does a PUT to `/push/deviceRegistrations/:deviceId` with the full device details, authenticating with the token. The spec describes this as "performs a validation of the local DeviceDetails." If the PUT succeeds (`RegistrationSynced`), the device is confirmed as registered. If it fails (`SyncRegistrationFailed`), the state machine goes to `AfterRegistrationSyncFailed`.
+
+**What is it actually validating?** Not the token specifically — it's syncing the device's current state with the server ("am I still registered, and here are my current details"). The token is just the authentication mechanism for this sync. The token's validity is tested as a side effect of authenticating the request.
+
+**When would you be in `NotActivated` with a token?** We traced all the paths into `NotActivated`:
+- RSH3g2c (after deregistration): RSH3g2a clears all device details including the token
+- RSH3b2b (`CalledDeactivate` in `WaitingForPushDeviceDetails`): no token at this stage
+- RSH3b4b (`GettingPushDeviceDetailsFailed`): no token at this stage
+- RSH3c3b (`GettingDeviceRegistrationFailed`): no token at this stage
+
+None of these paths leave a token in place. So RSH3a2a doesn't appear to be reachable through normal state machine transitions. It seems to exist only for the case where the persisted state is `NotActivated` but the device data (including a token) somehow survived — exactly the kind of state/data inconsistency our RSH3h is designed to catch. It's a pre-existing attempt to handle this edge case, but without an explicit acknowledgement of why you'd be in that state.
+
+**Could we hook into it for our recovery?** If we kept the token and started in `NotActivated`, RSH3a2a would fire automatically on the next `CalledActivate`. If the token is valid, the PUT succeeds and we're done — the existing mechanism handles it. The problem is when the token is invalid: the PUT fails with 401, `SyncRegistrationFailed` fires, the state goes to `AfterRegistrationSyncFailed`, and from there the next `CalledActivate` does the same as RSH3a2a again (RSH3f1a) (RSH3f1a) — the same loop we identified at the start of this investigation. RSH3a2a's failure path has no special handling for 401; it just loops.
+
+A possible approach: modify `AfterRegistrationSyncFailed` (or `WaitingForRegistrationSync`) to detect that the sync failed with a 401, discard the token, and fall through to RSH3a2b onwards (fresh registration with existing id/secret). This would fix the loop for all cases — not just legacy migration — meaning any device that ends up with a mismatched token would self-recover through the existing state machine. However, this would be a change to the general sync failure handling, not scoped to the legacy migration case. We have not yet explored this option in the spec changes.
+
 ### The legacy validation problem
 
 In ably-cocoa, the `deviceSecret` is stored in the Keychain keyed by device ID, so if we can load a secret for a given id, we know they match. The `deviceIdentityToken` is stored in `NSUserDefaults` under a fixed key, not keyed by device id. So we can have all three fields present and loadable, but the token may have been issued for a previous device id that was since overwritten.
@@ -130,6 +148,8 @@ Cons:
 
 ### Direction B: Skip validation, just re-register
 
+Not yet written into the spec.
+
 Instead of validating the token against the server, simply discard it and start in `NotActivated`. On the next `CalledActivate`:
 1. RSH3a2a doesn't apply (no token)
 2. RSH3a2b: device already has id/secret → skip generation
@@ -144,9 +164,29 @@ Cons:
 - Every device upgrading from legacy data makes a POST on first activation, even if the token was actually valid (one-time cost)
 - Relies on the server treating POST as an upsert, which is current behaviour but not explicitly part of the spec
 
+### Direction C: Hook into the existing RSH3a2a validation mechanism
+
+Not yet written into the spec.
+
+In the RSH8a2a2 case (legacy data, all three present, no atomicity), instead of discarding the token, keep it and start in `NotActivated`. On `CalledActivate`, RSH3a2a fires automatically — it does a PUT to sync the device details with the server, authenticating with the token. If the token is valid, the PUT succeeds and we're done with no additional mechanism needed.
+
+The problem is the failure path: if the token is invalid (401), RSH3a2a fires `SyncRegistrationFailed`, which leads to `AfterRegistrationSyncFailed`, which on the next `CalledActivate` does the same as RSH3a2a again (RSH3f1a) — the same loop we identified at the start. To make this work, we'd need to modify the sync failure handling: if the sync fails with a 401, discard the token and fall through to RSH3a2b onwards (fresh registration with existing id/secret).
+
+This change would not be scoped to the legacy migration case — it would fix the loop for *all* cases where a device ends up with a mismatched token, making it a general improvement to the state machine's resilience. However, it requires a better understanding of what RSH3a2a is for and whether modifying its failure path would have unintended consequences (see "Understanding RSH3a2a" above).
+
+Pros:
+- No new states or events for the migration case — uses the existing validation mechanism
+- Fixes the token-mismatch loop for all cases, not just legacy migration
+- If the token is valid, no unnecessary re-registration or server round-trip beyond what RSH3a2a already does
+
+Cons:
+- Requires modifying the general sync failure handling (AfterRegistrationSyncFailed / WaitingForRegistrationSync), which affects all devices, not just those migrating from legacy data
+- RSH3a2a's purpose and reachability are not fully understood (see above) — we need more clarity before changing its failure path
+- By the time we're in `AfterRegistrationSyncFailed` with a 401, the context of why we got here is lost. We can't distinguish "401 because we kept a stale token during legacy migration" from some other 401 during a sync. This means we can't produce a helpful log message about legacy recovery, and if there's a case where discarding the token on 401 is the wrong response, we've applied it too broadly.
+
 ### Current recommendation
 
-Direction B is simpler. Both directions produce the same outcome on rejection (preserve the device id, re-register via the normal flow). The difference is that direction A avoids an unnecessary POST when the token is valid, at the cost of two extra states, three new events, and an extra GET when it isn't. For a one-time migration path, direction B's simplicity is preferable.
+We have not yet reached a decision. Direction A is fully specced and works but adds complexity for a one-time migration. Direction B is simpler but relies on undocumented server behaviour. Direction C is the most elegant and fixes the problem generally, but requires more investigation into RSH3a2a and the consequences of modifying the sync failure path.
 
 ## Storage availability
 
