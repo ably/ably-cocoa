@@ -35,6 +35,27 @@ The device is now in an inconsistent state: new ID, new secret, old identity tok
 
 Each time this happens, it can also create a new orphaned registration on the server, explaining the multiple registrations the customer sees.
 
+### Full inventory of persisted data in ably-cocoa
+
+This is a comprehensive list of everything ably-cocoa persists. All persistence goes through `ARTLocalDeviceStorage`, which provides two storage mechanisms: `objectForKey:`/`setObject:forKey:` (backed by NSUserDefaults) and `secretForDevice:`/`setSecret:forDevice:` (backed by the Keychain, keyed by device ID). Everything persisted is push-related:
+
+| Key | Storage | What it is | Consequence of loss |
+|---|---|---|---|
+| `ARTDeviceId` | NSUserDefaults | Device UUID | If lost without also losing the secret and token, causes the mismatch bug. If lost alongside everything else, device re-registers on next `activate()`. |
+| `ARTDeviceSecret` | Keychain (`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`), keyed by device ID | Device secret for authenticating push operations | Unavailable before first unlock. Loss triggers id/secret regeneration in current code, which is the root cause of this bug. |
+| `ARTDeviceIdentityToken` | NSUserDefaults | Token returned by server after registration, used for authenticating push operations | Stored under a fixed key (not keyed by device ID), so survives id regeneration — this is the stale-token problem. If lost on its own, the device would need to re-register to get a new one. |
+| `ARTClientId` | NSUserDefaults | Client identity associated with the device | If lost, falls back to the identity token's client ID (existing code at `ARTLocalDevice.m:90-93`). Low severity. |
+| `ARTAPNSDeviceToken-default` | NSUserDefaults | APNS device token (default) | Recoverable from the platform — iOS provides a new one via `registerForRemoteNotifications`. Loss triggers a `GotPushDeviceDetails` event and a PATCH to update the server. Note: Apple's guidance is to ["never cache device tokens in local storage"](https://developer.apple.com/documentation/usernotifications/registering_your_app_with_apns), but this is better interpreted as "don't trust cached tokens without re-validating" — RSH8i requires validation against the platform on each launch. See [specification#25](https://github.com/ably/specification/issues/25). |
+| `ARTAPNSDeviceToken-location` | NSUserDefaults | APNS device token (location) | Same as above. |
+| `ARTPushActivationCurrentState` | NSUserDefaults | Persisted state machine state (archived object) | Defaults to `NotActivated` if lost. Device re-syncs or re-registers on next `activate()`. Causes unnecessary REST calls but is self-correcting. |
+| `ARTPushActivationPendingEvents` | NSUserDefaults | Queued state machine events (archived array) | Defaults to empty array if lost. Pending events are dropped — may cause missed transitions but state machine recovers on next `activate()`. |
+
+**Storage mechanisms and their failure modes:**
+
+- **NSUserDefaults**: Backed by a plist file. Availability depends on the app's data protection class — the default is `NSFileProtectionCompleteUntilFirstUserAuthentication`, which has a similar availability window to the Keychain's `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`. Can also fail due to plist corruption. In practice, much more reliable than the Keychain, but not guaranteed always-available.
+- **Keychain** (`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`): Not available until the user unlocks the device after a reboot. This is the primary cause of the bug. Read failures return nil without distinguishing "not found" from "inaccessible." Write failures are also possible when inaccessible.
+- **`NSFileProtectionNone`** (proposed): Always available, no encryption at rest. Would eliminate the availability issue entirely but stores secrets in plain text on disk.
+
 ### Historical context
 
 The Keychain accessibility attribute was changed from `kSecAttrAccessibleAlwaysThisDeviceOnly` (always available, but deprecated since iOS 12) to `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly` in commit `a9e4b24` (Aug 2021). This was labelled "Catalyst kSecAttr warning fix" — it fixed a deprecation warning but introduced the before-first-unlock failure window.
