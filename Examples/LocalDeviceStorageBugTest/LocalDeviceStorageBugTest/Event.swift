@@ -248,6 +248,12 @@ enum Event: Codable {
         /// Useful for detecting whether device details (e.g. ID, secret) have
         /// changed as a result of the SDK being unable to load persisted data.
         var localDevice: CodableLocalDevice
+
+        /// The contents of `UserDefaults.standard` after activation completed.
+        /// Compared with the dump in `appLaunched`, this shows whether the SDK
+        /// wrote new values during activation even if the file was previously
+        /// unavailable.
+        var userDefaultsContents: String
     }
 
     struct PushSubscribeAttempt: Codable {
@@ -283,6 +289,12 @@ enum Event: Codable {
         /// detail of `NSUserDefaults` and not guaranteed by Apple. This is
         /// where the SDK persists device details via `ARTLocalDeviceStorage`.
         var userDefaultsFileProtection: String
+
+        /// The entire contents of `UserDefaults.standard`, serialised as a
+        /// JSON string internally but inlined as a dictionary in the Ably
+        /// message payload by `toAblyData()`. Useful for seeing exactly what
+        /// the SDK has persisted (or failed to persist) at launch time.
+        var userDefaultsContents: String
     }
 
     struct ProtectedDataAvailability: Codable {
@@ -386,6 +398,19 @@ enum Event: Codable {
     /// message data.
     func toAblyData() -> Any {
         let jsonData = try! JSONEncoder().encode(self)
-        return try! JSONSerialization.jsonObject(with: jsonData)
+        var dict = try! JSONSerialization.jsonObject(with: jsonData) as! [String: Any]
+
+        // Inline JSON strings that should be dictionaries in the payload.
+        for key in ["appLaunched", "pushActivateResult"] {
+            if var nested = dict[key] as? [String: Any],
+               let contentsString = nested["userDefaultsContents"] as? String,
+               let contentsData = contentsString.data(using: .utf8),
+               let contentsParsed = try? JSONSerialization.jsonObject(with: contentsData) {
+                nested["userDefaultsContents"] = contentsParsed
+                dict[key] = nested
+            }
+        }
+
+        return dict
     }
 }
