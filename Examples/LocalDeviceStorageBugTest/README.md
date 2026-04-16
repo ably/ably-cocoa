@@ -51,7 +51,11 @@ Attempt events include a `reason` (`userTappedButton` or `appLaunch`). Result ev
    ```sh
    ably apps channel-rules create --name "LocalDeviceStorageBugTest-events" --persisted
    ```
-3. Open `LocalDeviceStorageBugTest.xcodeproj` in Xcode.
+3. Enable push on the push-test channel so that `push.subscribeDevice` works:
+   ```sh
+   ably apps channel-rules create --name "push-test" --push-enabled
+   ```
+4. Open `LocalDeviceStorageBugTest.xcodeproj` in Xcode.
 4. Build and run on a physical device (PushKit does not deliver tokens on the simulator).
 
 To observe the events being published, subscribe to the `LocalDeviceStorageBugTest-events` channel (e.g. `ably channels subscribe LocalDeviceStorageBugTest-events`).
