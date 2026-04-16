@@ -40,12 +40,14 @@ All events published to the channel are defined by the `Event` enum in `Event.sw
 
 Current events:
 
+- **`appLaunched`** — published before any other event. Includes `protectedDataAvailable` indicating whether the device was unlocked at launch time.
 - **`ablyLog`** — a log message from the SDK (level and message text), captured via a custom `ARTLog` handler on `mainAbly`.
 - **`voipTokenUpdated`** — PushKit provided a new VoIP device token.
 - **`voipPushReceived`** — a VoIP push notification was received.
 - **`voipTokenInvalidated`** — PushKit invalidated the VoIP device token.
 - **`pushActivateAttempt`** / **`pushActivateResult`** — a call to `push.activate()` and its outcome. Linked by an attempt ID.
 - **`pushSubscribeAttempt`** / **`pushSubscribeResult`** — a call to `push.subscribeDevice` and its outcome. Linked by an attempt ID.
+- **`protectedDataAvailability`** — published when protected data availability changes after launch (device locked/unlocked).
 
 Attempt events include a `reason` (`userTappedButton` or `appLaunch`). Result events include the full `ARTErrorInfo` on failure.
 
