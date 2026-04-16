@@ -21,11 +21,11 @@ AUTH_KEY_ID="${APNS_AUTH_KEY_ID:?Set APNS_AUTH_KEY_ID to your key ID}"
 TEAM_ID="${APNS_TEAM_ID:?Set APNS_TEAM_ID to your team ID}"
 APNS_HOST="${APNS_HOST:-api.sandbox.push.apple.com}"
 
-# Step 1: Fetch the latest voipToken from channel history
-echo "Fetching latest voipToken from ${CHANNEL_NAME}..."
+# Step 1: Fetch the latest voipTokenUpdated event from channel history
+echo "Fetching latest voipTokenUpdated from ${CHANNEL_NAME}..."
 
 TOKEN=$(ably channels history "$CHANNEL_NAME" --json --limit 100 \
-    | jq -r '.messages[] | select(.name == "voipToken") | .data.token' \
+    | jq -r '.messages[] | select(.name == "voipTokenUpdated") | .data.voipTokenUpdated.token' \
     | head -1)
 
 if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
