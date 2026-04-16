@@ -22,6 +22,15 @@ The app provides two buttons:
 
 Each shows its result (success or error) in the UI.
 
+### Settings
+
+A settings section provides toggles to automatically perform these actions on app launch:
+
+- **Auto-activate push on launch**
+- **Auto-subscribe to push channel on launch**
+
+When both are enabled, the app activates first and then subscribes after activation succeeds. Settings are stored in a JSON file with `FileProtectionType.none`, so they are readable even when the device is locked (before first unlock). This is important because the app can be launched by a VoIP push before the user has unlocked the device.
+
 ### Events
 
 All events published to the channel are defined by the `Event` enum in `Event.swift`. Every event payload includes an `appLaunchID` (a random UUID generated once per launch) so events from the same launch can be correlated. Current events:
@@ -33,7 +42,7 @@ All events published to the channel are defined by the `Event` enum in `Event.sw
 - **`pushActivateAttempt`** / **`pushActivateResult`** — a call to `push.activate()` and its outcome. Linked by an attempt ID.
 - **`pushSubscribeAttempt`** / **`pushSubscribeResult`** — a call to `push.subscribeDevice` and its outcome. Linked by an attempt ID.
 
-Attempt events include a `reason` (currently `userTappedButton`, intended to later include automatic triggers). Result events include the full `ARTErrorInfo` on failure.
+Attempt events include a `reason` (`userTappedButton` or `appLaunch`). Result events include the full `ARTErrorInfo` on failure.
 
 ## Setup
 
