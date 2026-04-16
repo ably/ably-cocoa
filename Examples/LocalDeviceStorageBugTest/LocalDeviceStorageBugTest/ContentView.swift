@@ -238,7 +238,10 @@ struct ContentView: View {
 
     private func setUp() {
         // Set up event logging Ably instance (Realtime, to preserve message ordering)
+        let clientId = "appInstallation-\(appInstallationID)"
+
         let eventLoggingOptions = ARTClientOptions(key: Secrets.ablyAPIKey)
+        eventLoggingOptions.clientId = clientId
         let eventLogging = ARTRealtime(options: eventLoggingOptions)
         let eventsChannel = eventLogging.channels.get(eventsChannelName)
         self.eventLoggingAbly = eventLogging
@@ -255,8 +258,11 @@ struct ContentView: View {
         // Set up push activation delegate
         self.pushActivationHandler = PushActivationHandler()
 
-        // Set up main Ably instance with custom log handler that publishes to the events channel
+        // Set up main Ably instance with custom log handler that publishes to the events channel.
+        // Use the appInstallationID as the clientId so that multiple device registrations from
+        // the same installation can be correlated (which is the failure mode we're investigating).
         let mainOptions = ARTClientOptions(key: Secrets.ablyAPIKey)
+        mainOptions.clientId = clientId
         mainOptions.logHandler = EventLoggingLogHandler(eventsChannel: eventsChannel)
         mainOptions.logLevel = .verbose
         mainOptions.pushRegistererDelegate = pushActivationHandler

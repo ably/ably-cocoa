@@ -6,7 +6,7 @@ A minimal iOS app for investigating push registration failures in ably-cocoa.
 
 The app creates two Ably client instances:
 
-- **`mainAbly`** (`ARTRealtime`) — the client under test.
+- **`mainAbly`** (`ARTRealtime`) — the client under test. Its `clientId` is set to `appInstallation-<appInstallationID>` so that multiple device registrations from the same installation are easy to identify in the Ably dashboard — this is the failure mode under investigation (device ID gets unnecessarily recreated).
 - **`eventLoggingAbly`** (`ARTRealtime`) — used solely to log events emitted by the app, by publishing them to the `LocalDeviceStorageBugTest-events` channel. Uses a Realtime connection to preserve message ordering.
 
 ### VoIP push
