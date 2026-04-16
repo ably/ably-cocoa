@@ -93,6 +93,9 @@ enum ActionReason: String, Codable {
 
 /// An event emitted by the app, published to the events channel for external observation.
 enum Event: Codable {
+    /// The app has launched. Published before any other event.
+    case appLaunched(AppLaunched)
+
     /// A log message emitted by `mainAbly`'s custom log handler.
     case ablyLog(Log)
 
@@ -116,6 +119,9 @@ enum Event: Codable {
 
     /// A call to `push.subscribeDevice` completed.
     case pushSubscribeResult(PushSubscribeResult)
+
+    /// The availability of protected data changed after launch.
+    case protectedDataAvailability(ProtectedDataAvailability)
 
     // MARK: - Payload types
 
@@ -179,11 +185,22 @@ enum Event: Codable {
         var error: CodableErrorInfo?
     }
 
+    struct AppLaunched: Codable {
+        /// Whether protected data was available at launch time.
+        var protectedDataAvailable: Bool
+    }
+
+    struct ProtectedDataAvailability: Codable {
+        /// Whether protected data is now available.
+        var isAvailable: Bool
+    }
+
     // MARK: - Codable
 
     private enum CodingKeys: String, CodingKey {
         case appInstallationID
         case appLaunchID
+        case appLaunched
         case ablyLog
         case voipTokenUpdated
         case voipPushReceived
@@ -192,6 +209,7 @@ enum Event: Codable {
         case pushActivateResult
         case pushSubscribeAttempt
         case pushSubscribeResult
+        case protectedDataAvailability
     }
 
     func encode(to encoder: Encoder) throws {
@@ -199,6 +217,8 @@ enum Event: Codable {
         try container.encode(appInstallationID, forKey: .appInstallationID)
         try container.encode(appLaunchID, forKey: .appLaunchID)
         switch self {
+        case .appLaunched(let launched):
+            try container.encode(launched, forKey: .appLaunched)
         case .ablyLog(let log):
             try container.encode(log, forKey: .ablyLog)
         case .voipTokenUpdated(let token):
@@ -215,12 +235,16 @@ enum Event: Codable {
             try container.encode(attempt, forKey: .pushSubscribeAttempt)
         case .pushSubscribeResult(let result):
             try container.encode(result, forKey: .pushSubscribeResult)
+        case .protectedDataAvailability(let availability):
+            try container.encode(availability, forKey: .protectedDataAvailability)
         }
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        if let log = try container.decodeIfPresent(Log.self, forKey: .ablyLog) {
+        if let launched = try container.decodeIfPresent(AppLaunched.self, forKey: .appLaunched) {
+            self = .appLaunched(launched)
+        } else if let log = try container.decodeIfPresent(Log.self, forKey: .ablyLog) {
             self = .ablyLog(log)
         } else if let token = try container.decodeIfPresent(VoIPToken.self, forKey: .voipTokenUpdated) {
             self = .voipTokenUpdated(token)
@@ -236,6 +260,8 @@ enum Event: Codable {
             self = .pushSubscribeAttempt(attempt)
         } else if let result = try container.decodeIfPresent(PushSubscribeResult.self, forKey: .pushSubscribeResult) {
             self = .pushSubscribeResult(result)
+        } else if let availability = try container.decodeIfPresent(ProtectedDataAvailability.self, forKey: .protectedDataAvailability) {
+            self = .protectedDataAvailability(availability)
         } else {
             throw DecodingError.dataCorrupted(
                 .init(codingPath: decoder.codingPath, debugDescription: "No matching event case")
@@ -248,6 +274,7 @@ enum Event: Codable {
     /// The Ably message event name for this event.
     var name: String {
         switch self {
+        case .appLaunched: "appLaunched"
         case .ablyLog: "ablyLog"
         case .voipTokenUpdated: "voipTokenUpdated"
         case .voipPushReceived: "voipPushReceived"
@@ -256,6 +283,7 @@ enum Event: Codable {
         case .pushActivateResult: "pushActivateResult"
         case .pushSubscribeAttempt: "pushSubscribeAttempt"
         case .pushSubscribeResult: "pushSubscribeResult"
+        case .protectedDataAvailability: "protectedDataAvailability"
         }
     }
 

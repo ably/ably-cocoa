@@ -243,6 +243,11 @@ struct ContentView: View {
         self.eventLoggingAbly = eventLogging
         self.eventsChannel = eventsChannel
 
+        // Publish the app launched event before setting up anything else
+        eventsChannel.publish(.appLaunched(.init(
+            protectedDataAvailable: UIApplication.shared.isProtectedDataAvailable
+        )))
+
         // Set up PushKit VoIP registration and CallKit handler
         self.pushHandler = PushHandler(eventsChannel: eventsChannel)
 
@@ -257,6 +262,27 @@ struct ContentView: View {
         let main = ARTRealtime(options: mainOptions)
         self.mainAbly = main
         mainAblyInstance = main
+
+        // Observe subsequent protected data availability changes
+        NotificationCenter.default.addObserver(
+            forName: UIApplication.protectedDataDidBecomeAvailableNotification,
+            object: nil,
+            queue: .main
+        ) { _ in
+            self.eventsChannel?.publish(.protectedDataAvailability(.init(
+                isAvailable: true
+            )))
+        }
+
+        NotificationCenter.default.addObserver(
+            forName: UIApplication.protectedDataWillBecomeUnavailableNotification,
+            object: nil,
+            queue: .main
+        ) { _ in
+            self.eventsChannel?.publish(.protectedDataAvailability(.init(
+                isAvailable: false
+            )))
+        }
 
         // Perform automatic actions based on settings
         if settings.autoActivatePush {
