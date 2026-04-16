@@ -14,9 +14,22 @@
 		2157A50E2F90238800C526F5 /* LocalDeviceStorageBugTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LocalDeviceStorageBugTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		21B9EEBB2F902D060021591A /* Exceptions for "LocalDeviceStorageBugTest" folder in "LocalDeviceStorageBugTest" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 2157A50D2F90238800C526F5 /* LocalDeviceStorageBugTest */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		2157A5102F90238800C526F5 /* LocalDeviceStorageBugTest */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				21B9EEBB2F902D060021591A /* Exceptions for "LocalDeviceStorageBugTest" folder in "LocalDeviceStorageBugTest" target */,
+			);
 			path = LocalDeviceStorageBugTest;
 			sourceTree = "<group>";
 		};
@@ -260,11 +273,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = LocalDeviceStorageBugTest/LocalDeviceStorageBugTest.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = XXY98AVDR6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = LocalDeviceStorageBugTest/Info.plist;
+				INFOPLIST_KEY_NSVoIPUsageDescription = "This app uses VoIP to deterministically test what happens when the app is launched before first unlock.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -292,11 +308,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = LocalDeviceStorageBugTest/LocalDeviceStorageBugTest.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = XXY98AVDR6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = LocalDeviceStorageBugTest/Info.plist;
+				INFOPLIST_KEY_NSVoIPUsageDescription = "This app uses VoIP to deterministically test what happens when the app is launched before first unlock.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
