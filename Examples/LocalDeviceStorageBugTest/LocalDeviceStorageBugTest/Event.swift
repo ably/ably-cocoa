@@ -1,6 +1,24 @@
 import Foundation
 import Ably
 
+/// A unique identifier for this app installation, persisted across launches
+/// but not across reinstallations. Stored in a file with no data protection.
+let appInstallationID: String = {
+    let fileURL = FileManager.default
+        .urls(for: .documentDirectory, in: .userDomainMask).first!
+        .appendingPathComponent("installation-id.txt")
+    if let existing = try? String(contentsOf: fileURL, encoding: .utf8), !existing.isEmpty {
+        return existing
+    }
+    let id = UUID().uuidString
+    try! id.write(to: fileURL, atomically: true, encoding: .utf8)
+    try! FileManager.default.setAttributes(
+        [.protectionKey: FileProtectionType.none],
+        ofItemAtPath: fileURL.path
+    )
+    return id
+}()
+
 /// A unique identifier for this app launch, included in every event payload.
 let appLaunchID = UUID().uuidString
 
@@ -164,6 +182,7 @@ enum Event: Codable {
     // MARK: - Codable
 
     private enum CodingKeys: String, CodingKey {
+        case appInstallationID
         case appLaunchID
         case ablyLog
         case voipTokenUpdated
@@ -177,6 +196,7 @@ enum Event: Codable {
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(appInstallationID, forKey: .appInstallationID)
         try container.encode(appLaunchID, forKey: .appLaunchID)
         switch self {
         case .ablyLog(let log):

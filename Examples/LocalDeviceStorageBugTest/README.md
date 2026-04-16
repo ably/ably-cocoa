@@ -33,7 +33,12 @@ When both are enabled, the app activates first and then subscribes after activat
 
 ### Events
 
-All events published to the channel are defined by the `Event` enum in `Event.swift`. Every event payload includes an `appLaunchID` (a random UUID generated once per launch) so events from the same launch can be correlated. Current events:
+All events published to the channel are defined by the `Event` enum in `Event.swift`. Every event payload includes:
+
+- **`appInstallationID`** — a UUID generated on first launch and persisted in an unprotected file. Stable across launches but reset on reinstallation.
+- **`appLaunchID`** — a UUID generated fresh each launch.
+
+Current events:
 
 - **`ablyLog`** — a log message from the SDK (level and message text), captured via a custom `ARTLog` handler on `mainAbly`.
 - **`voipTokenUpdated`** — PushKit provided a new VoIP device token.
