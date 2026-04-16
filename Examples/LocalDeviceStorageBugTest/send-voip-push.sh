@@ -24,7 +24,7 @@ APNS_HOST="${APNS_HOST:-api.sandbox.push.apple.com}"
 # Step 1: Fetch the latest voipTokenUpdated event from channel history
 echo "Fetching latest voipTokenUpdated from ${CHANNEL_NAME}..."
 
-TOKEN=$(ably channels history "$CHANNEL_NAME" --json --limit 100 \
+TOKEN=$(ably channels history "$CHANNEL_NAME" --json --limit 1000 \
     | jq -r '.messages[] | select(.name == "voipTokenUpdated") | .data.voipTokenUpdated.token' \
     | head -1)
 
