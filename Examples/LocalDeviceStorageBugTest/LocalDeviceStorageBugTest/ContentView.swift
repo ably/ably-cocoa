@@ -33,7 +33,7 @@ nonisolated class EventLoggingLogHandler: ARTLog {
         @unknown default: levelString = "unknown"
         }
 
-        eventsChannel.publish(.log(.init(level: levelString, message: message)))
+        eventsChannel.publish(.ablyLog(.init(level: levelString, message: message)))
     }
 }
 

@@ -3,7 +3,7 @@ import Foundation
 /// An event emitted by the app, published to the events channel for external observation.
 enum Event: Codable {
     /// A log message emitted by `mainAbly`'s custom log handler.
-    case log(Log)
+    case ablyLog(Log)
 
     /// PushKit provided a new VoIP device token.
     case voipTokenUpdated(VoIPToken)
@@ -39,7 +39,7 @@ enum Event: Codable {
     // MARK: - Codable
 
     private enum CodingKeys: String, CodingKey {
-        case log
+        case ablyLog
         case voipTokenUpdated
         case voipPushReceived
         case voipTokenInvalidated
@@ -48,8 +48,8 @@ enum Event: Codable {
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
-        case .log(let log):
-            try container.encode(log, forKey: .log)
+        case .ablyLog(let log):
+            try container.encode(log, forKey: .ablyLog)
         case .voipTokenUpdated(let token):
             try container.encode(token, forKey: .voipTokenUpdated)
         case .voipPushReceived(let push):
@@ -61,8 +61,8 @@ enum Event: Codable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        if let log = try container.decodeIfPresent(Log.self, forKey: .log) {
-            self = .log(log)
+        if let log = try container.decodeIfPresent(Log.self, forKey: .ablyLog) {
+            self = .ablyLog(log)
         } else if let token = try container.decodeIfPresent(VoIPToken.self, forKey: .voipTokenUpdated) {
             self = .voipTokenUpdated(token)
         } else if let push = try container.decodeIfPresent(VoIPPush.self, forKey: .voipPushReceived) {
@@ -81,7 +81,7 @@ enum Event: Codable {
     /// The Ably message event name for this event.
     var name: String {
         switch self {
-        case .log: "log"
+        case .ablyLog: "ablyLog"
         case .voipTokenUpdated: "voipTokenUpdated"
         case .voipPushReceived: "voipPushReceived"
         case .voipTokenInvalidated: "voipTokenInvalidated"
