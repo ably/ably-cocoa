@@ -24,16 +24,21 @@ APNS_HOST="${APNS_HOST:-api.sandbox.push.apple.com}"
 # Step 1: Fetch the latest voipTokenUpdated event from channel history
 echo "Fetching latest voipTokenUpdated from ${CHANNEL_NAME}..."
 
-TOKEN=$(ably channels history "$CHANNEL_NAME" --json --limit 1000 \
-    | jq -r '.messages[] | select(.name == "voipTokenUpdated") | .data.voipTokenUpdated.token' \
-    | head -1)
+TOKEN_EVENT=$(ably channels history "$CHANNEL_NAME" --json --limit 1000 \
+    | jq -r '[.messages[] | select(.name == "voipTokenUpdated")] | first')
 
-if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
-    echo "Error: no voipToken found in channel history" >&2
+if [ -z "$TOKEN_EVENT" ] || [ "$TOKEN_EVENT" = "null" ]; then
+    echo "Error: no voipTokenUpdated found in channel history" >&2
     exit 1
 fi
 
-echo "Found VoIP token: ${TOKEN}"
+TOKEN=$(echo "$TOKEN_EVENT" | jq -r '.data.voipTokenUpdated.token')
+INSTALLATION_ID=$(echo "$TOKEN_EVENT" | jq -r '.data.appInstallationID')
+LAUNCH_ID=$(echo "$TOKEN_EVENT" | jq -r '.data.appLaunchID')
+
+echo "Installation ID: ${INSTALLATION_ID}"
+echo "Launch ID:       ${LAUNCH_ID}"
+echo "VoIP token:      ${TOKEN}"
 
 # Step 2: Generate an APNs JWT
 JWT=$(python3 -c "
