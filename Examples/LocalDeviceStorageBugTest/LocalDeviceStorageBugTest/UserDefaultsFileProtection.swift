@@ -23,3 +23,36 @@ func userDefaultsFileProtection() -> String {
         return "error: \(error.localizedDescription)"
     }
 }
+
+/// Returns the entire contents of `UserDefaults.standard` as a JSON string.
+///
+/// Values that are not directly JSON-serialisable (e.g. `Data`) are
+/// converted to a string representation.
+func userDefaultsContentsSanitisedJSON() -> String {
+    let dict = UserDefaults.standard.dictionaryRepresentation()
+    let sanitised = dict.mapValues { makeJSONSafe($0) }
+    guard let data = try? JSONSerialization.data(withJSONObject: sanitised, options: [.sortedKeys]),
+          let json = String(data: data, encoding: .utf8) else {
+        return "{}"
+    }
+    return json
+}
+
+private func makeJSONSafe(_ value: Any) -> Any {
+    switch value {
+    case let data as Data:
+        return "<Data: \(data.count) bytes>"
+    case let date as Date:
+        return date.description
+    case let array as [Any]:
+        return array.map { makeJSONSafe($0) }
+    case let dict as [String: Any]:
+        return dict.mapValues { makeJSONSafe($0) }
+    case is String, is Bool, is Int, is Double, is Float:
+        return value
+    case let number as NSNumber:
+        return number
+    default:
+        return String(describing: value)
+    }
+}

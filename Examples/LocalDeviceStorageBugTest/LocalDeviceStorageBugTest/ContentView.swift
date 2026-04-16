@@ -181,7 +181,8 @@ struct ContentView: View {
             eventsChannel?.publish(.pushActivateResult(.init(
                 attemptID: attemptID,
                 error: error.map { CodableErrorInfo($0) },
-                localDevice: CodableLocalDevice(mainAbly!.device)
+                localDevice: CodableLocalDevice(mainAbly!.device),
+                userDefaultsContents: userDefaultsContentsSanitisedJSON()
             )))
             if let error {
                 activateResult = .failure(error)
@@ -250,7 +251,8 @@ struct ContentView: View {
         // Publish the app launched event before setting up anything else
         eventsChannel.publish(.appLaunched(.init(
             protectedDataAvailable: UIApplication.shared.isProtectedDataAvailable,
-            userDefaultsFileProtection: userDefaultsFileProtection()
+            userDefaultsFileProtection: userDefaultsFileProtection(),
+            userDefaultsContents: userDefaultsContentsSanitisedJSON()
         )))
 
         // Set up PushKit VoIP registration and CallKit handler

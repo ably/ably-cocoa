@@ -40,12 +40,12 @@ All events published to the channel are defined by the `Event` enum in `Event.sw
 
 Current events:
 
-- **`appLaunched`** — published before any other event. Includes `protectedDataAvailable` (whether the device was unlocked at launch time) and `userDefaultsFileProtection` (the file protection level of the `NSUserDefaults` plist, where `ARTLocalDeviceStorage` persists device details).
+- **`appLaunched`** — published before any other event. Includes `protectedDataAvailable` (whether the device was unlocked at launch time), `userDefaultsFileProtection` (the file protection level of the `NSUserDefaults` plist, where `ARTLocalDeviceStorage` persists device details), and `userDefaultsContents` (a full dump of `UserDefaults.standard` so we can see exactly what the SDK has or hasn't persisted).
 - **`ablyLog`** — a log message from the SDK (level and message text), captured via a custom `ARTLog` handler on `mainAbly`.
 - **`voipTokenUpdated`** — PushKit provided a new VoIP device token.
 - **`voipPushReceived`** — a VoIP push notification was received.
 - **`voipTokenInvalidated`** — PushKit invalidated the VoIP device token.
-- **`pushActivateAttempt`** / **`pushActivateResult`** — a call to `push.activate()` and its outcome. Linked by an attempt ID. The result includes a snapshot of the `ARTLocalDevice`, so that changes to device details (e.g. ID, secret) can be detected — this is useful for identifying cases where the SDK was unable to load persisted data (e.g. when launched before first unlock).
+- **`pushActivateAttempt`** / **`pushActivateResult`** — a call to `push.activate()` and its outcome. Linked by an attempt ID. The result includes a snapshot of the `ARTLocalDevice` and a dump of `UserDefaults.standard`, so that changes to device details (e.g. ID, secret) and persisted data can be detected by comparing with the `appLaunched` dump — this is useful for identifying cases where the SDK was unable to load persisted data (e.g. when launched before first unlock) and whether it wrote new values during activation.
 - **`pushSubscribeAttempt`** / **`pushSubscribeResult`** — a call to `push.subscribeDevice` and its outcome. Linked by an attempt ID.
 - **`protectedDataAvailability`** — published when protected data availability changes after launch (device locked/unlocked).
 
