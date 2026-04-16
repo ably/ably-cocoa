@@ -68,6 +68,9 @@ final class CodableErrorInfo: Codable {
 enum ActionReason: String, Codable {
     /// The user tapped a button in the UI.
     case userTappedButton
+
+    /// The action was triggered automatically on app launch, based on settings.
+    case appLaunch
 }
 
 /// An event emitted by the app, published to the events channel for external observation.

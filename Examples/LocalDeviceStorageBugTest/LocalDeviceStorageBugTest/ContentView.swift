@@ -124,6 +124,7 @@ struct ContentView: View {
     @State private var pushHandler: PushHandler?
     @State private var pushActivationHandler: PushActivationHandler?
 
+    @State private var settings = AppSettingsStore.shared.load()
     @State private var activateResult: Result<Void, ARTErrorInfo>?
     @State private var subscribeResult: Result<Void, ARTErrorInfo>?
 
@@ -149,6 +150,19 @@ struct ContentView: View {
             .disabled(mainAbly == nil)
 
             resultView(subscribeResult, successText: "Subscribed to \(pushChannelName)")
+
+            Divider()
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Settings")
+                    .font(.headline)
+
+                Toggle("Auto-activate push on launch", isOn: $settings.autoActivatePush)
+                    .onChange(of: settings.autoActivatePush) { saveSettings() }
+
+                Toggle("Auto-subscribe to push channel on launch", isOn: $settings.autoSubscribeToPushChannel)
+                    .onChange(of: settings.autoSubscribeToPushChannel) { saveSettings() }
+            }
         }
         .padding()
         .task {
@@ -156,7 +170,7 @@ struct ContentView: View {
         }
     }
 
-    private func activatePush(reason: ActionReason) {
+    private func activatePush(reason: ActionReason, then completion: (() -> Void)? = nil) {
         let attemptID = UUID().uuidString
         eventsChannel?.publish(.pushActivateAttempt(.init(
             id: attemptID,
@@ -172,6 +186,7 @@ struct ContentView: View {
                 activateResult = .failure(error)
             } else {
                 activateResult = .success(())
+                completion?()
             }
         }
 
@@ -216,6 +231,10 @@ struct ContentView: View {
         .font(.caption)
     }
 
+    private func saveSettings() {
+        AppSettingsStore.shared.save(settings)
+    }
+
     private func setUp() {
         // Set up event logging Ably instance (Realtime, to preserve message ordering)
         let eventLoggingOptions = ARTClientOptions(key: Secrets.ablyAPIKey)
@@ -238,5 +257,16 @@ struct ContentView: View {
         let main = ARTRealtime(options: mainOptions)
         self.mainAbly = main
         mainAblyInstance = main
+
+        // Perform automatic actions based on settings
+        if settings.autoActivatePush {
+            activatePush(reason: .appLaunch) {
+                if settings.autoSubscribeToPushChannel {
+                    subscribeToPushChannel(reason: .appLaunch)
+                }
+            }
+        } else if settings.autoSubscribeToPushChannel {
+            subscribeToPushChannel(reason: .appLaunch)
+        }
     }
 }
