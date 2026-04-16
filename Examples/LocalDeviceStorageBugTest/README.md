@@ -47,8 +47,12 @@ Attempt events include a `reason` (`userTappedButton` or `appLaunch`). Result ev
 ## Setup
 
 1. Copy `Secrets.example.swift` to `LocalDeviceStorageBugTest/Secrets.swift` and insert your Ably API key. (`Secrets.swift` is gitignored.)
-2. Open `LocalDeviceStorageBugTest.xcodeproj` in Xcode.
-3. Build and run on a physical device (PushKit does not deliver tokens on the simulator).
+2. Enable message persistence on the events channel so that `send-voip-push.sh` (and anything else reading history) can find events beyond the default 2-minute retention:
+   ```sh
+   ably apps channel-rules create --name "LocalDeviceStorageBugTest-events" --persisted
+   ```
+3. Open `LocalDeviceStorageBugTest.xcodeproj` in Xcode.
+4. Build and run on a physical device (PushKit does not deliver tokens on the simulator).
 
 To observe the events being published, subscribe to the `LocalDeviceStorageBugTest-events` channel (e.g. `ably channels subscribe LocalDeviceStorageBugTest-events`).
 
