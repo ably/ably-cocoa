@@ -11,6 +11,7 @@ import PushKit
 import CallKit
 
 private let eventsChannelName = "LocalDeviceStorageBugTest-events"
+private let pushChannelName = "push-test"
 
 /// Custom log handler that publishes log messages to the events channel via `eventLoggingAbly`.
 nonisolated class EventLoggingLogHandler: ARTLog {
@@ -103,19 +104,116 @@ class PushHandler: NSObject, PKPushRegistryDelegate, CXProviderDelegate {
     }
 }
 
+/// Receives push activation/deactivation results from the SDK.
+class PushActivationHandler: NSObject, ARTPushRegistererDelegate {
+    var onActivate: (@MainActor (ARTErrorInfo?) -> Void)?
+
+    func didActivateAblyPush(_ error: ARTErrorInfo?) {
+        MainActor.assumeIsolated {
+            onActivate?(error)
+        }
+    }
+
+    func didDeactivateAblyPush(_ error: ARTErrorInfo?) {}
+}
+
 struct ContentView: View {
     @State private var eventLoggingAbly: ARTRealtime?
+    @State private var eventsChannel: ARTRealtimeChannel?
     @State private var mainAbly: ARTRealtime?
     @State private var pushHandler: PushHandler?
+    @State private var pushActivationHandler: PushActivationHandler?
+
+    @State private var activateResult: Result<Void, ARTErrorInfo>?
+    @State private var subscribeResult: Result<Void, ARTErrorInfo>?
 
     var body: some View {
-        VStack {
+        VStack(spacing: 16) {
             Text("LocalDeviceStorageBugTest")
+                .font(.headline)
+
+            Divider()
+
+            Button("Activate Push") {
+                activatePush(reason: .userTappedButton)
+            }
+            .disabled(mainAbly == nil)
+
+            resultView(activateResult, successText: "Activated")
+
+            Divider()
+
+            Button("Subscribe to Push Channel") {
+                subscribeToPushChannel(reason: .userTappedButton)
+            }
+            .disabled(mainAbly == nil)
+
+            resultView(subscribeResult, successText: "Subscribed to \(pushChannelName)")
         }
         .padding()
         .task {
             setUp()
         }
+    }
+
+    private func activatePush(reason: ActionReason) {
+        let attemptID = UUID().uuidString
+        eventsChannel?.publish(.pushActivateAttempt(.init(
+            id: attemptID,
+            reason: reason
+        )))
+
+        pushActivationHandler?.onActivate = { error in
+            eventsChannel?.publish(.pushActivateResult(.init(
+                attemptID: attemptID,
+                error: error.map { CodableErrorInfo($0) }
+            )))
+            if let error {
+                activateResult = .failure(error)
+            } else {
+                activateResult = .success(())
+            }
+        }
+
+        mainAbly?.push.activate()
+    }
+
+    private func subscribeToPushChannel(reason: ActionReason) {
+        let attemptID = UUID().uuidString
+        eventsChannel?.publish(.pushSubscribeAttempt(.init(
+            id: attemptID,
+            reason: reason,
+            channelName: pushChannelName
+        )))
+
+        mainAbly?.channels.get(pushChannelName).push.subscribeDevice { error in
+            eventsChannel?.publish(.pushSubscribeResult(.init(
+                attemptID: attemptID,
+                channelName: pushChannelName,
+                error: error.map { CodableErrorInfo($0) }
+            )))
+            if let error {
+                subscribeResult = .failure(error)
+            } else {
+                subscribeResult = .success(())
+            }
+        }
+    }
+
+    private func resultView(_ result: Result<Void, ARTErrorInfo>?, successText: String) -> some View {
+        Group {
+            switch result {
+            case nil:
+                EmptyView()
+            case .success:
+                Text(successText)
+                    .foregroundStyle(.green)
+            case .failure(let error):
+                Text("Error: \(error.message)")
+                    .foregroundStyle(.red)
+            }
+        }
+        .font(.caption)
     }
 
     private func setUp() {
@@ -124,15 +222,21 @@ struct ContentView: View {
         let eventLogging = ARTRealtime(options: eventLoggingOptions)
         let eventsChannel = eventLogging.channels.get(eventsChannelName)
         self.eventLoggingAbly = eventLogging
+        self.eventsChannel = eventsChannel
 
         // Set up PushKit VoIP registration and CallKit handler
         self.pushHandler = PushHandler(eventsChannel: eventsChannel)
+
+        // Set up push activation delegate
+        self.pushActivationHandler = PushActivationHandler()
 
         // Set up main Ably instance with custom log handler that publishes to the events channel
         let mainOptions = ARTClientOptions(key: Secrets.ablyAPIKey)
         mainOptions.logHandler = EventLoggingLogHandler(eventsChannel: eventsChannel)
         mainOptions.logLevel = .verbose
+        mainOptions.pushRegistererDelegate = pushActivationHandler
         let main = ARTRealtime(options: mainOptions)
         self.mainAbly = main
+        mainAblyInstance = main
     }
 }
