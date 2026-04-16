@@ -249,7 +249,8 @@ struct ContentView: View {
 
         // Publish the app launched event before setting up anything else
         eventsChannel.publish(.appLaunched(.init(
-            protectedDataAvailable: UIApplication.shared.isProtectedDataAvailable
+            protectedDataAvailable: UIApplication.shared.isProtectedDataAvailable,
+            userDefaultsFileProtection: userDefaultsFileProtection()
         )))
 
         // Set up PushKit VoIP registration and CallKit handler
