@@ -79,3 +79,7 @@ APNS_TEAM_ID=XXXXXXXXXX \
 ```
 
 This uses the sandbox APNs endpoint by default. Set `APNS_HOST=api.push.apple.com` for production.
+
+## Known reproduction issues
+
+- **iPad**: Sending a VoIP push to an iPad does not appear to show the incoming call screen or launch the app before first unlock. The same flow works on an iPhone. The reason is not yet known.
