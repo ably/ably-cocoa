@@ -275,6 +275,14 @@ enum Event: Codable {
     struct AppLaunched: Codable {
         /// Whether protected data was available at launch time.
         var protectedDataAvailable: Bool
+
+        /// The file protection level of the UserDefaults plist, or an error
+        /// string if it could not be read (e.g. the file does not yet exist on
+        /// a fresh install before any defaults have been written). The plist
+        /// path (`Library/Preferences/<bundle-id>.plist`) is an implementation
+        /// detail of `NSUserDefaults` and not guaranteed by Apple. This is
+        /// where the SDK persists device details via `ARTLocalDeviceStorage`.
+        var userDefaultsFileProtection: String
     }
 
     struct ProtectedDataAvailability: Codable {

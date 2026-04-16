@@ -40,7 +40,7 @@ All events published to the channel are defined by the `Event` enum in `Event.sw
 
 Current events:
 
-- **`appLaunched`** — published before any other event. Includes `protectedDataAvailable` indicating whether the device was unlocked at launch time.
+- **`appLaunched`** — published before any other event. Includes `protectedDataAvailable` (whether the device was unlocked at launch time) and `userDefaultsFileProtection` (the file protection level of the `NSUserDefaults` plist, where `ARTLocalDeviceStorage` persists device details).
 - **`ablyLog`** — a log message from the SDK (level and message text), captured via a custom `ARTLog` handler on `mainAbly`.
 - **`voipTokenUpdated`** — PushKit provided a new VoIP device token.
 - **`voipPushReceived`** — a VoIP push notification was received.
