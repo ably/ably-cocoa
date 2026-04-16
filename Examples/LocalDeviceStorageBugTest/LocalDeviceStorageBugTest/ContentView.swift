@@ -180,7 +180,8 @@ struct ContentView: View {
         pushActivationHandler?.onActivate = { error in
             eventsChannel?.publish(.pushActivateResult(.init(
                 attemptID: attemptID,
-                error: error.map { CodableErrorInfo($0) }
+                error: error.map { CodableErrorInfo($0) },
+                localDevice: CodableLocalDevice(mainAbly!.device)
             )))
             if let error {
                 activateResult = .failure(error)

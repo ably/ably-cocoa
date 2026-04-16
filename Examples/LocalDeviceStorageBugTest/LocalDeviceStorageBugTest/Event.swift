@@ -82,6 +82,88 @@ final class CodableErrorInfo: Codable {
     }
 }
 
+/// A `Codable` representation of `ARTLocalDevice`.
+struct CodableLocalDevice: Codable {
+    /// The unique device ID.
+    var id: String
+
+    /// The client ID the device is connected to Ably with.
+    var clientId: String?
+
+    /// The platform (e.g. "ios").
+    var platform: String
+
+    /// The form factor (e.g. "phone", "tablet").
+    var formFactor: String
+
+    /// Key-value metadata for the device.
+    var metadata: [String: String]
+
+    /// The push registration details.
+    var push: CodablePushDetails
+
+    /// The device identity token details, if available.
+    var identityTokenDetails: CodableIdentityTokenDetails?
+
+    /// The device secret, if available.
+    var secret: String?
+
+    init(_ device: ARTLocalDevice) {
+        self.id = device.id as String
+        self.clientId = device.clientId
+        self.platform = device.platform
+        self.formFactor = device.formFactor
+        self.metadata = device.metadata
+        self.push = CodablePushDetails(device.push)
+        self.identityTokenDetails = device.identityTokenDetails.map { CodableIdentityTokenDetails($0) }
+        self.secret = device.secret as String?
+    }
+}
+
+/// A `Codable` representation of `ARTDevicePushDetails`.
+struct CodablePushDetails: Codable {
+    /// The push transport and address.
+    var recipient: [String: String]
+
+    /// The current state of the push registration.
+    var state: String?
+
+    /// The most recent error when the state is Failing or Failed.
+    var errorReason: CodableErrorInfo?
+
+    init(_ details: ARTDevicePushDetails) {
+        self.recipient = (details.recipient as NSDictionary as? [String: String]) ?? [:]
+        self.state = details.state
+        self.errorReason = details.errorReason.map { CodableErrorInfo($0) }
+    }
+}
+
+/// A `Codable` representation of `ARTDeviceIdentityTokenDetails`.
+struct CodableIdentityTokenDetails: Codable {
+    /// The token string.
+    var token: String
+
+    /// When the token was issued.
+    var issued: Date
+
+    /// When the token expires.
+    var expires: Date
+
+    /// The capability JSON string.
+    var capability: String
+
+    /// The client ID assigned to the token, if any.
+    var clientId: String?
+
+    init(_ details: ARTDeviceIdentityTokenDetails) {
+        self.token = details.token
+        self.issued = details.issued
+        self.expires = details.expires
+        self.capability = details.capability
+        self.clientId = details.clientId
+    }
+}
+
 /// The reason an action was performed (e.g. push activation, channel subscription).
 enum ActionReason: String, Codable {
     /// The user tapped a button in the UI.
@@ -161,6 +243,11 @@ enum Event: Codable {
 
         /// The error, or `nil` on success.
         var error: CodableErrorInfo?
+
+        /// The state of the local device at the time the result was received.
+        /// Useful for detecting whether device details (e.g. ID, secret) have
+        /// changed as a result of the SDK being unable to load persisted data.
+        var localDevice: CodableLocalDevice
     }
 
     struct PushSubscribeAttempt: Codable {

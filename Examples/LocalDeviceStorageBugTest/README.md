@@ -45,7 +45,7 @@ Current events:
 - **`voipTokenUpdated`** — PushKit provided a new VoIP device token.
 - **`voipPushReceived`** — a VoIP push notification was received.
 - **`voipTokenInvalidated`** — PushKit invalidated the VoIP device token.
-- **`pushActivateAttempt`** / **`pushActivateResult`** — a call to `push.activate()` and its outcome. Linked by an attempt ID.
+- **`pushActivateAttempt`** / **`pushActivateResult`** — a call to `push.activate()` and its outcome. Linked by an attempt ID. The result includes a snapshot of the `ARTLocalDevice`, so that changes to device details (e.g. ID, secret) can be detected — this is useful for identifying cases where the SDK was unable to load persisted data (e.g. when launched before first unlock).
 - **`pushSubscribeAttempt`** / **`pushSubscribeResult`** — a call to `push.subscribeDevice` and its outcome. Linked by an attempt ID.
 - **`protectedDataAvailability`** — published when protected data availability changes after launch (device locked/unlocked).
 
