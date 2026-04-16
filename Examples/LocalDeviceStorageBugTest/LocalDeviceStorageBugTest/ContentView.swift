@@ -33,10 +33,7 @@ nonisolated class EventLoggingLogHandler: ARTLog {
         @unknown default: levelString = "unknown"
         }
 
-        eventsChannel.publish("log", data: [
-            "level": levelString,
-            "message": message,
-        ])
+        eventsChannel.publish(.log(.init(level: levelString, message: message)))
     }
 }
 
@@ -66,15 +63,15 @@ class PushHandler: NSObject, PKPushRegistryDelegate, CXProviderDelegate {
 
     func pushRegistry(_ registry: PKPushRegistry, didUpdate pushCredentials: PKPushCredentials, for type: PKPushType) {
         let token = pushCredentials.token.map { String(format: "%02x", $0) }.joined()
-        eventsChannel.publish("voipToken", data: [
-            "token": token,
-        ])
+        eventsChannel.publish(.voipTokenUpdated(.init(token: token)))
     }
 
     func pushRegistry(_ registry: PKPushRegistry, didReceiveIncomingPushWith payload: PKPushPayload, for type: PKPushType, completion: @escaping () -> Void) {
-        eventsChannel.publish("voipPush", data: [
-            "payload": payload.dictionaryPayload,
-        ])
+        let payloadJSON = String(
+            data: try! JSONSerialization.data(withJSONObject: payload.dictionaryPayload),
+            encoding: .utf8
+        )!
+        eventsChannel.publish(.voipPushReceived(.init(payloadJSON: payloadJSON)))
 
         // Must report a call to CallKit when receiving a VoIP push, or iOS will terminate the app.
         let update = CXCallUpdate()
@@ -90,7 +87,7 @@ class PushHandler: NSObject, PKPushRegistryDelegate, CXProviderDelegate {
     }
 
     func pushRegistry(_ registry: PKPushRegistry, didInvalidatePushTokenFor type: PKPushType) {
-        eventsChannel.publish("voipTokenInvalidated", data: nil)
+        eventsChannel.publish(.voipTokenInvalidated)
     }
 
     // MARK: - CXProviderDelegate
