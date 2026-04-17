@@ -31,6 +31,7 @@
 #import "ARTPush+Private.h"
 #import "ARTLocalDevice+Private.h"
 #import "ARTLocalDeviceStorage.h"
+#import "ARTThrowingLocalDeviceStorage.h"
 #import "ARTNSMutableRequest+ARTRest.h"
 #import "ARTHTTPPaginatedResponse+Private.h"
 #import "ARTNSError+ARTUtils.h"
@@ -186,8 +187,13 @@ NS_ASSUME_NONNULL_END
         _queue = options.internalDispatchQueue;
         _userQueue = options.dispatchQueue;
 #if TARGET_OS_IOS
-        _storage = [ARTLocalDeviceStorage newWithLogger:_logger
-                                              logValues:_options.testOptions.logLocalDeviceStorageValues];
+        if (_options.testOptions.disableLocalDevice) {
+            _storage = [[ARTThrowingLocalDeviceStorage alloc] init];
+        }
+        else {
+            _storage = [ARTLocalDeviceStorage newWithLogger:_logger
+                                                  logValues:_options.testOptions.logLocalDeviceStorageValues];
+        }
 #endif
         _http = [[ARTHttp alloc] initWithQueue:_queue logger:_logger];
         ARTLogVerbose(_logger, @"RS:%p %p alloc HTTP", self, _http);
@@ -785,6 +791,10 @@ art_dispatch_async(_queue, ^{
 }
 
 - (ARTLocalDevice *)device_nosync {
+    if (_options.testOptions.disableLocalDevice) {
+        [NSException raise:NSInternalInconsistencyException
+                    format:@"device_nosync invoked on a client configured with disableLocalDevice"];
+    }
     __block ARTLocalDevice *ret;
     art_dispatch_sync([ARTRestInternal deviceAccessQueue], ^{
         ret = [self sharedDevice_onlyCallOnDeviceAccessQueue];

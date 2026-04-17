@@ -26,6 +26,7 @@
     copied.reconnectionRealtimeHost = self.reconnectionRealtimeHost;
     copied.jitterCoefficientGenerator = self.jitterCoefficientGenerator;
     copied.logLocalDeviceStorageValues = self.logLocalDeviceStorageValues;
+    copied.disableLocalDevice = self.disableLocalDevice;
 
     return copied;
 }
