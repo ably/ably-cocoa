@@ -83,3 +83,4 @@ This uses the sandbox APNs endpoint by default. Set `APNS_HOST=api.push.apple.co
 ## Known reproduction issues
 
 - **iPad**: Sending a VoIP push to an iPad does not appear to show the incoming call screen or launch the app before first unlock. The same flow works on an iPhone. The reason is not yet known.
+- **Slow launch before first unlock**: When the app is launched by a VoIP push before first unlock, it can take 10–15 seconds for the call screen to appear. This appears to be normal iOS behaviour. Rarely, it doesn't appear at all; sending the push again seems to work.
