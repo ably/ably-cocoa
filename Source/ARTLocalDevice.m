@@ -76,6 +76,12 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     NSString *deviceSecret = deviceId == nil ? nil : [storage secretForDevice:deviceId];
 
     if (deviceId == nil || deviceSecret == nil) {
+        if (deviceId == nil) {
+            ARTLogDebug(logger, @"Generating device ID and secret: no stored device ID");
+        }
+        else {
+            ARTLogError(logger, @"Regenerating device ID and secret: stored device ID %@ has no secret", deviceId);
+        }
         [device generateAndPersistPairOfDeviceIdAndSecret]; // Should be removed later once spec issue #180 resolved.
     }
     else {
