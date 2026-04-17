@@ -43,6 +43,13 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic) id<ARTJitterCoefficientGenerator> jitterCoefficientGenerator;
 
+/**
+ When `YES`, `ARTLocalDeviceStorage` log lines include the fetched or
+ written value itself. Off by default because persisted values include
+ the device secret and the identity token. Initial value is `NO`.
+ */
+@property (nonatomic) BOOL logLocalDeviceStorageValues;
+
 @end
 
 NS_ASSUME_NONNULL_END
