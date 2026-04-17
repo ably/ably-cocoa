@@ -310,7 +310,7 @@ For customers who do require encrypted credential storage (as raised in [ably-ja
 
 ## Testing plan
 
-TODO: These test plans have not been verified. They are initial proposals to ensure we have a testing strategy; the details need to be validated before implementation.
+> **Note**: The testing plans below are outdated and should be updated to refer to the test app in `Examples/LocalDeviceStorageBugTest/` once we understand the issue better. See that app's [README](Examples/LocalDeviceStorageBugTest/README.md) for its current capabilities.
 
 ### Test app
 
