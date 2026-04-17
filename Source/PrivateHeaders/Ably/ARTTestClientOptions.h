@@ -50,6 +50,17 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic) BOOL logLocalDeviceStorageValues;
 
+/**
+ When `YES`, the `ARTRestInternal` is wired with a storage implementation
+ whose every method raises, and the `device_nosync` / push activation
+ entrypoints raise early. Intended for clients that should not
+ participate in local-device or push functionality at all (e.g. a
+ second Ably client in the same process whose only job is to emit
+ diagnostic events, where otherwise whichever client touches the
+ shared device first "wins" its logger). Initial value is `NO`.
+ */
+@property (nonatomic) BOOL disableLocalDevice;
+
 @end
 
 NS_ASSUME_NONNULL_END

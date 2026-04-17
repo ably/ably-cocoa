@@ -12,6 +12,8 @@
 #import "ARTPushAdmin.h"
 #import "ARTPushActivationEvent.h"
 #import "ARTClientOptions+Private.h"
+#import "ARTClientOptions+TestConfiguration.h"
+#import "ARTTestClientOptions.h"
 #import "ARTPushAdmin+Private.h"
 #import "ARTLocalDevice+Private.h"
 #import "ARTDeviceStorage.h"
@@ -109,6 +111,11 @@
     if (!block) {
         [NSException raise:NSInvalidArgumentException
                     format:@"block is nil."];
+    }
+
+    if (_rest.options.testOptions.disableLocalDevice) {
+        [NSException raise:NSInternalInconsistencyException
+                    format:@"getActivationMachine: invoked on a client configured with disableLocalDevice"];
     }
 
     if (![_activationMachineLock lockBeforeDate:[NSDate dateWithTimeIntervalSinceNow:60]]) {

@@ -24,6 +24,8 @@
 #import "ARTLocalDeviceStorage.h"
 #import "ARTLocalDevice+Private.h"
 #import "ARTDeviceDetails+Private.h"
+#import "ARTClientOptions+TestConfiguration.h"
+#import "ARTTestClientOptions.h"
 
 @implementation ARTAuth {
     ARTQueuedDealloc *_dealloc;
@@ -849,6 +851,9 @@ art_dispatch_sync(_queue, ^{
 
 #if TARGET_OS_IOS
 - (void)setLocalDeviceClientId_nosync:(NSString *)clientId {
+    if (_rest.options.testOptions.disableLocalDevice) {
+        return;
+    }
     if (clientId == nil || [clientId isEqualToString:@"*"] || [clientId isEqualToString:_rest.device_nosync.clientId]) {
         return;
     }
