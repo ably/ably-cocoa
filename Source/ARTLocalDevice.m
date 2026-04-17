@@ -83,8 +83,9 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
         device.secret = deviceSecret;
     }
 
-    id identityTokenDetailsInfo = [storage objectForKey:ARTDeviceIdentityTokenKey];
-    ARTDeviceIdentityTokenDetails *identityTokenDetails = [ARTDeviceIdentityTokenDetails art_unarchiveFromData:identityTokenDetailsInfo withLogger:logger];
+    ARTDeviceIdentityTokenDetails *identityTokenDetails = [ARTDeviceIdentityTokenDetails art_unarchiveFromStorage:storage
+                                                                                                              key:ARTDeviceIdentityTokenKey
+                                                                                                       withLogger:logger];
     device->_identityTokenDetails = identityTokenDetails;
 
     NSString *clientId = [storage objectForKey:ARTClientIdKey];
