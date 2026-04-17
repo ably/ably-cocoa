@@ -4,25 +4,53 @@
 
 @implementation ARTLocalDeviceStorage {
     ARTInternalLog *_logger;
+    BOOL _logValues;
 }
 
-- (instancetype)initWithLogger:(ARTInternalLog *)logger {
+- (instancetype)initWithLogger:(ARTInternalLog *)logger logValues:(BOOL)logValues {
     if (self = [super init]) {
         _logger = logger;
+        _logValues = logValues;
     }
     return self;
 }
 
-+ (instancetype)newWithLogger:(ARTInternalLog *)logger {
-    return [[self alloc] initWithLogger:logger];
++ (instancetype)newWithLogger:(ARTInternalLog *)logger logValues:(BOOL)logValues {
+    return [[self alloc] initWithLogger:logger logValues:logValues];
+}
+
+- (id)valueToLogForValue:(id)value {
+    if (!_logValues) {
+        return @"(retracted)";
+    }
+    if ([value isKindOfClass:[NSData class]]) {
+        // `NSData`'s default `description` is a hex-ish dump that's
+        // awkward to read or paste back for inspection. Render as
+        // base64 with a prefix that makes the encoding explicit.
+        return [NSString stringWithFormat:@"<NSData base64:%@>", [(NSData *)value base64EncodedStringWithOptions:0]];
+    }
+    return value;
 }
 
 - (nullable id)objectForKey:(NSString *)key {
-    return [NSUserDefaults.standardUserDefaults objectForKey:key];
+    id value = [NSUserDefaults.standardUserDefaults objectForKey:key];
+    if (value == nil) {
+        ARTLogDebug(_logger, @"UserDefaults read miss for key %@", key);
+    }
+    else {
+        ARTLogDebug(_logger, @"UserDefaults read hit for key %@: %@", key, [self valueToLogForValue:value]);
+    }
+    return value;
 }
 
 - (void)setObject:(nullable id)value forKey:(NSString *)key {
     [NSUserDefaults.standardUserDefaults setObject:value forKey:key];
+    if (value == nil) {
+        ARTLogDebug(_logger, @"UserDefaults deleted for key %@", key);
+    }
+    else {
+        ARTLogDebug(_logger, @"UserDefaults written for key %@: %@", key, [self valueToLogForValue:value]);
+    }
 }
 
 - (NSString *)secretForDevice:(ARTDeviceId *)deviceId {
@@ -30,10 +58,13 @@
     NSString *value = [self keychainGetPasswordForService:ARTDeviceSecretKey account:(NSString *)deviceId error:&error];
 
     if ([error code] == errSecItemNotFound) {
-        ARTLogDebug(_logger, @"Device Secret not found");
+        ARTLogDebug(_logger, @"Device Secret read miss for device %@", deviceId);
     }
     else if (error) {
-        ARTLogError(_logger, @"Device Secret couldn't be read (%@)", [error localizedDescription]);
+        ARTLogError(_logger, @"Device Secret couldn't be read for device %@ (%@)", deviceId, [error localizedDescription]);
+    }
+    else {
+        ARTLogDebug(_logger, @"Device Secret read hit for device %@: %@", deviceId, [self valueToLogForValue:value]);
     }
 
     return value;
@@ -45,17 +76,23 @@
         [self keychainDeletePasswordForService:ARTDeviceSecretKey account:(NSString *)deviceId error:&error];
 
         if ([error code] == errSecItemNotFound) {
-            ARTLogWarn(_logger, @"Device Secret can't be deleted because it doesn't exist");
+            ARTLogWarn(_logger, @"Device Secret can't be deleted for device %@ because it doesn't exist", deviceId);
         }
         else if (error) {
-            ARTLogError(_logger, @"Device Secret couldn't be updated (%@)", [error localizedDescription]);
+            ARTLogError(_logger, @"Device Secret couldn't be deleted for device %@ (%@)", deviceId, [error localizedDescription]);
+        }
+        else {
+            ARTLogDebug(_logger, @"Device Secret deleted for device %@", deviceId);
         }
     }
     else {
         [self keychainSetPassword:value forService:ARTDeviceSecretKey account:(NSString *)deviceId error:&error];
 
         if (error) {
-            ARTLogError(_logger, @"Device Secret couldn't be updated (%@)", [error localizedDescription]);
+            ARTLogError(_logger, @"Device Secret couldn't be written for device %@: %@ (%@)", deviceId, [self valueToLogForValue:value], [error localizedDescription]);
+        }
+        else {
+            ARTLogDebug(_logger, @"Device Secret written for device %@: %@", deviceId, [self valueToLogForValue:value]);
         }
     }
 }

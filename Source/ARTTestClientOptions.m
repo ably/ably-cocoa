@@ -25,6 +25,7 @@
     copied.transportFactory = self.transportFactory;
     copied.reconnectionRealtimeHost = self.reconnectionRealtimeHost;
     copied.jitterCoefficientGenerator = self.jitterCoefficientGenerator;
+    copied.logLocalDeviceStorageValues = self.logLocalDeviceStorageValues;
 
     return copied;
 }
