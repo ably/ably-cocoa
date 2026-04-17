@@ -51,8 +51,9 @@ NS_ASSUME_NONNULL_END
         _userQueue = _rest.userQueue;
         _logger = logger;
         // Unarchiving
-        NSData *stateData = [rest.storage objectForKey:ARTPushActivationCurrentStateKey];
-        _current = [ARTPushActivationState art_unarchiveFromData:stateData withLogger:logger];
+        _current = [ARTPushActivationState art_unarchiveFromStorage:rest.storage
+                                                                key:ARTPushActivationCurrentStateKey
+                                                         withLogger:logger];
         if (!_current) {
             _current = [[ARTPushActivationStateNotActivated alloc] initWithMachine:self logger:logger];
         } else {
@@ -61,8 +62,9 @@ NS_ASSUME_NONNULL_END
             }
             _current.machine = self;
         }
-        NSData *pendingEventsData = [rest.storage objectForKey:ARTPushActivationPendingEventsKey];
-        _pendingEvents = [ARTPushActivationEvent art_unarchiveFromData:pendingEventsData withLogger:logger];
+        _pendingEvents = [ARTPushActivationEvent art_unarchiveFromStorage:rest.storage
+                                                                      key:ARTPushActivationPendingEventsKey
+                                                               withLogger:logger];
         if (!_pendingEvents) {
             _pendingEvents = [NSMutableArray array];
         }

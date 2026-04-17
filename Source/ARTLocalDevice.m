@@ -7,6 +7,7 @@
 #import "ARTDeviceIdentityTokenDetails+Private.h"
 #import "ARTCrypto+Private.h"
 #import "ARTInternalLog.h"
+#import "ARTTypes+Private.h"
 
 NSString *const ARTDevicePlatform = @"ios";
 
@@ -75,6 +76,12 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     NSString *deviceSecret = deviceId == nil ? nil : [storage secretForDevice:deviceId];
 
     if (deviceId == nil || deviceSecret == nil) {
+        if (deviceId == nil) {
+            ARTLogDebug(logger, @"Generating device ID and secret: no stored device ID");
+        }
+        else {
+            ARTLogError(logger, @"Regenerating device ID and secret: stored device ID %@ has no secret", deviceId);
+        }
         [device generateAndPersistPairOfDeviceIdAndSecret]; // Should be removed later once spec issue #180 resolved.
     }
     else {
@@ -82,8 +89,9 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
         device.secret = deviceSecret;
     }
 
-    id identityTokenDetailsInfo = [storage objectForKey:ARTDeviceIdentityTokenKey];
-    ARTDeviceIdentityTokenDetails *identityTokenDetails = [ARTDeviceIdentityTokenDetails unarchive:identityTokenDetailsInfo withLogger:logger];
+    ARTDeviceIdentityTokenDetails *identityTokenDetails = [ARTDeviceIdentityTokenDetails art_unarchiveFromStorage:storage
+                                                                                                              key:ARTDeviceIdentityTokenKey
+                                                                                                       withLogger:logger];
     device->_identityTokenDetails = identityTokenDetails;
 
     NSString *clientId = [storage objectForKey:ARTClientIdKey];
@@ -172,7 +180,7 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
 }
 
 - (void)setAndPersistIdentityTokenDetails:(ARTDeviceIdentityTokenDetails *)tokenDetails {
-    [self.storage setObject:[tokenDetails archiveWithLogger:self.logger]
+    [self.storage setObject:[tokenDetails art_archiveWithLogger:self.logger]
                      forKey:ARTDeviceIdentityTokenKey];
     _identityTokenDetails = tokenDetails;
     if (self.clientId == nil) {
