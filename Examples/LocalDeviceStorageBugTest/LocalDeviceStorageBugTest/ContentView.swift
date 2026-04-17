@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Ably
+import Ably.Private
 import PushKit
 import CallKit
 
@@ -19,7 +20,13 @@ nonisolated class EventLoggingLogHandler: ARTLog {
 
     init(eventsChannel: ARTRealtimeChannel) {
         self.eventsChannel = eventsChannel
-        super.init()
+        // Claude's speculation: with `import Ably.Private` in this file,
+        // `ARTLog -init` (which is `[self initCapturingOutput:true]`)
+        // reaches a Swift-synthesised trap body for the unoverridden
+        // `init(capturingOutput:)` on this subclass, firing a fatal
+        // error. Calling the 3-arg terminal designated initialiser
+        // directly avoids the self-dispatch and sidesteps the trap.
+        super.init(capturingOutput: true, historyLines: 100)
     }
 
     override func log(_ message: String, with level: ARTLogLevel) {
