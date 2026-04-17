@@ -250,6 +250,12 @@ struct ContentView: View {
 
         let eventLoggingOptions = ARTClientOptions(key: Secrets.ablyAPIKey)
         eventLoggingOptions.clientId = clientId
+        // This client exists only to publish diagnostic events. Disable
+        // local-device functionality so that the first access to
+        // `rest.device_nosync` doesn't bind the shared `ARTLocalDevice`
+        // to this client's storage/logger and steal the main client's
+        // device-storage activity out of its logs.
+        eventLoggingOptions.testOptions.disableLocalDevice = true
         let eventLogging = ARTRealtime(options: eventLoggingOptions)
         let eventsChannel = eventLogging.channels.get(eventsChannelName)
         self.eventLoggingAbly = eventLogging
@@ -276,6 +282,12 @@ struct ContentView: View {
         mainOptions.logHandler = EventLoggingLogHandler(eventsChannel: eventsChannel)
         mainOptions.logLevel = .verbose
         mainOptions.pushRegistererDelegate = pushActivationHandler
+        // Include the actual persisted values in the storage-access log
+        // lines (rather than the default `(retracted)` placeholder).
+        // We're investigating what's being read/written, so we need
+        // visibility. This is a debug build of a test app; the values
+        // never leave this client's logs.
+        mainOptions.testOptions.logLocalDeviceStorageValues = true
         let main = ARTRealtime(options: mainOptions)
         self.mainAbly = main
         mainAblyInstance = main
