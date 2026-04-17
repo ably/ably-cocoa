@@ -65,16 +65,6 @@ NS_ASSUME_NONNULL_END
     return true;
 }
 
-#pragma mark - Archive/Unarchive
-
-- (NSData *)archive {
-    return [self art_archiveWithLogger:self.logger];
-}
-
-+ (ARTPushActivationState *)unarchive:(NSData *)data withLogger:(nullable ARTInternalLog *)logger {
-    return [self art_unarchiveFromData:data withLogger:logger];
-}
-
 @end
 
 #pragma mark - Persistent State

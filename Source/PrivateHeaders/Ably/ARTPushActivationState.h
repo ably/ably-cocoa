@@ -17,9 +17,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable ARTPushActivationState *)transition:(ARTPushActivationEvent *)event;
 
-- (NSData *)archive;
-+ (nullable ARTPushActivationState *)unarchive:(NSData *)data withLogger:(nullable ARTInternalLog *)logger;
-
 @end
 
 /// Persistent State

@@ -9,9 +9,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTPushActivationEvent : NSObject <NSSecureCoding>
 
-- (NSData *)archiveWithLogger:(nullable ARTInternalLog *)logger;
-+ (nullable ARTPushActivationState *)unarchive:(NSData *)data withLogger:(nullable ARTInternalLog *)logger;
-
 @end
 
 /// Event with Error info

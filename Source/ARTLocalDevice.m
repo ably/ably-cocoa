@@ -7,6 +7,7 @@
 #import "ARTDeviceIdentityTokenDetails+Private.h"
 #import "ARTCrypto+Private.h"
 #import "ARTInternalLog.h"
+#import "ARTTypes+Private.h"
 
 NSString *const ARTDevicePlatform = @"ios";
 
@@ -83,7 +84,7 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     }
 
     id identityTokenDetailsInfo = [storage objectForKey:ARTDeviceIdentityTokenKey];
-    ARTDeviceIdentityTokenDetails *identityTokenDetails = [ARTDeviceIdentityTokenDetails unarchive:identityTokenDetailsInfo withLogger:logger];
+    ARTDeviceIdentityTokenDetails *identityTokenDetails = [ARTDeviceIdentityTokenDetails art_unarchiveFromData:identityTokenDetailsInfo withLogger:logger];
     device->_identityTokenDetails = identityTokenDetails;
 
     NSString *clientId = [storage objectForKey:ARTClientIdKey];
@@ -172,7 +173,7 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
 }
 
 - (void)setAndPersistIdentityTokenDetails:(ARTDeviceIdentityTokenDetails *)tokenDetails {
-    [self.storage setObject:[tokenDetails archiveWithLogger:self.logger]
+    [self.storage setObject:[tokenDetails art_archiveWithLogger:self.logger]
                      forKey:ARTDeviceIdentityTokenKey];
     _identityTokenDetails = tokenDetails;
     if (self.clientId == nil) {

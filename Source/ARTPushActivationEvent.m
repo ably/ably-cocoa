@@ -30,16 +30,6 @@ NSString *const ARTCoderIdentityTokenDetailsKey = @"identityTokenDetails";
     return true;
 }
 
-#pragma mark - Archive/Unarchive
-
-- (NSData *)archiveWithLogger:(nullable ARTInternalLog *)logger {
-    return [self art_archiveWithLogger:logger];
-}
-
-+ (ARTPushActivationEvent *)unarchive:(NSData *)data withLogger:(ARTInternalLog *)logger {
-    return [self art_unarchiveFromData:data withLogger:logger];
-}
-
 @end
 
 #pragma mark - Event with Error info
