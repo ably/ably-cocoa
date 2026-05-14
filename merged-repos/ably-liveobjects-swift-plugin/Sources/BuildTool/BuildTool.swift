@@ -5,8 +5,9 @@ import Table
 
 @main
 @available(macOS 14, *)
-struct BuildTool: AsyncParsableCommand {
+struct LiveObjectsBuildTool: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
+        commandName: "liveobjects-build-tool",
         subcommands: [
             BuildLibrary.self,
             BuildLibraryForTesting.self,

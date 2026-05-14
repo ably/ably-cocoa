@@ -23,9 +23,9 @@ let package = Package(
         .package(name: "msgpack", url: "https://github.com/rvi/msgpack-objective-C", from: "0.4.0"),
         .package(name: "AblyDeltaCodec", url: "https://github.com/ably/delta-codec-cocoa", from: "1.3.5"),
         .package(name: "Nimble", url: "https://github.com/quick/nimble", from: "11.2.2"),
-        // The next three are used only by the BuildTool executable target,
-        // which is a developer/CI tool. None of them are linked into the
-        // Ably or AblyLiveObjects library products.
+        // The next three are used only by the LiveObjectsBuildTool
+        // executable target, which is a developer/CI tool. None of them are
+        // linked into the Ably or AblyLiveObjects library products.
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.5.0"),
         .package(url: "https://github.com/apple/swift-async-algorithms", from: "1.0.1"),
         .package(url: "https://github.com/JanGorman/Table.git", from: "1.1.1"),
@@ -109,7 +109,7 @@ let package = Package(
         // (swift-argument-parser, swift-async-algorithms, Table) do not
         // affect them at build time.
         .executableTarget(
-            name: "BuildTool",
+            name: "LiveObjectsBuildTool",
             dependencies: [
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),

@@ -35,7 +35,7 @@ jobs:
         run: swift build --target AblyLiveObjects
 
       - name: Run AblyLiveObjects unit tests
-        run: swift run BuildTool test-library --platform macOS --only-unit-tests
+        run: swift run LiveObjectsBuildTool test-library --platform macOS --only-unit-tests
 
   build-release-configuration-spm:
     name: SPM, `release` configuration (Xcode ${{ matrix.xcode-version }})
@@ -74,10 +74,10 @@ jobs:
           xcode-version: ${{ matrix.xcode-version }}
 
       - name: Build for testing
-        run: swift run BuildTool build-library-for-testing --platform ${{ matrix.platform }}
+        run: swift run LiveObjectsBuildTool build-library-for-testing --platform ${{ matrix.platform }}
 
       - name: Run unit tests
-        run: swift run BuildTool test-library --platform ${{ matrix.platform }} --only-unit-tests --without-building
+        run: swift run LiveObjectsBuildTool test-library --platform ${{ matrix.platform }} --only-unit-tests --without-building
 
   build-release-configuration-xcode:
     name: Xcode, `release` configuration, ${{ matrix.platform }} (Xcode ${{ matrix.xcode-version }})
@@ -97,4 +97,4 @@ jobs:
           xcode-version: ${{ matrix.xcode-version }}
 
       - name: Build library
-        run: swift run BuildTool build-library --platform ${{ matrix.platform }} --configuration release
+        run: swift run LiveObjectsBuildTool build-library --platform ${{ matrix.platform }} --configuration release
