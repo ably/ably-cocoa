@@ -15,7 +15,7 @@ on:
       - main
 
 jobs:
-  build-and-test-spm:
+  liveobjects-build-and-test-spm:
     name: SPM (Xcode ${{ matrix.xcode-version }})
     runs-on: macos-15
     strategy:
@@ -37,7 +37,7 @@ jobs:
       - name: Run AblyLiveObjects unit tests
         run: swift run LiveObjectsBuildTool test-library --platform macOS --only-unit-tests
 
-  build-release-configuration-spm:
+  liveobjects-build-release-configuration-spm:
     name: SPM, `release` configuration (Xcode ${{ matrix.xcode-version }})
     runs-on: macos-15
     strategy:
@@ -56,7 +56,7 @@ jobs:
       - name: Build the AblyLiveObjects library in release configuration
         run: swift build --target AblyLiveObjects --configuration release
 
-  build-and-test-xcode:
+  liveobjects-build-and-test-xcode:
     name: Xcode, ${{ matrix.platform }} (Xcode ${{ matrix.xcode-version }})
     runs-on: macos-15
     strategy:
@@ -79,7 +79,7 @@ jobs:
       - name: Run unit tests
         run: swift run LiveObjectsBuildTool test-library --platform ${{ matrix.platform }} --only-unit-tests --without-building
 
-  build-release-configuration-xcode:
+  liveobjects-build-release-configuration-xcode:
     name: Xcode, `release` configuration, ${{ matrix.platform }} (Xcode ${{ matrix.xcode-version }})
     runs-on: macos-15
     strategy:
