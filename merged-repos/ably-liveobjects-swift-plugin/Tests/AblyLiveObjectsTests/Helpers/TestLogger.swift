@@ -18,6 +18,8 @@ final class TestLogger: NSObject, AblyLiveObjects.Logger {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 private extension _AblyPluginSupportPrivate.LogLevel {
     var toOSLogType: OSLogType {
         // Not much thought has gone into this conversion

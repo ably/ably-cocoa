@@ -2,6 +2,8 @@ import Ably
 
 // Helpers for using ably-cocoa with Swift concurrency and typed throws.
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension ARTRealtimeChannelProtocol {
     func attachAsync() async throws(ARTErrorInfo) {
         try await withCheckedContinuation { (continuation: CheckedContinuation<Result<Void, ARTErrorInfo>, _>) in
@@ -28,6 +30,8 @@ extension ARTRealtimeChannelProtocol {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension ARTRestProtocol {
     func requestAsync(_ method: String, path: String, params: [String: String]?, body: Any?, headers: [String: String]?) async throws(ARTErrorInfo) -> ARTHTTPPaginatedResponse {
         try await withCheckedContinuation { (continuation: CheckedContinuation<Result<ARTHTTPPaginatedResponse, ARTErrorInfo>, _>) in
@@ -49,6 +53,8 @@ extension ARTRestProtocol {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension ARTConnectionProtocol {
     @discardableResult
     func onceAsync(_ event: ARTRealtimeConnectionEvent) async -> ARTConnectionStateChange {

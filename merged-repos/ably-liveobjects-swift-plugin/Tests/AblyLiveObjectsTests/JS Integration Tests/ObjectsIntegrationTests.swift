@@ -9,10 +9,12 @@ import Testing
 
 // MARK: - Top-level helpers
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 private func realtimeWithObjects(options: ClientHelper.PartialClientOptions) async throws -> ARTRealtime {
     try await ClientHelper.realtimeWithObjects(options: options)
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 private func channelOptionsWithObjects() -> ARTRealtimeChannelOptions {
     ClientHelper.channelOptionsWithObjects()
 }
@@ -25,6 +27,7 @@ private func channelOptionsWithObjects() -> ARTRealtimeChannelOptions {
 //    |____________| |_| |________| |_|
 //          |         |        |     |
 //    timestamp   counter  seriesId  idx
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 private func lexicoTimeserial(seriesId: String, timestamp: Int64, counter: Int, index: Int? = nil) -> String {
     let paddedTimestamp = String(format: "%014d", timestamp)
     let paddedCounter = String(format: "%03d", counter)
@@ -140,6 +143,7 @@ func waitForObjectSync(_ realtime: ARTRealtime) async throws {
 
 // MARK: - ARTProtocolMessage test-only extension
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension ARTProtocolMessage {
     /// Extract `InboundObjectMessage`s from the protocol message's state array.
     var testsOnly_inboundObjectMessages: [InboundObjectMessage] {
@@ -178,6 +182,7 @@ extension ARTProtocolMessage {
 ///   handler.
 /// - ``releaseFirst()``: replays only the first held OBJECT message.
 /// - ``restore()``: removes the interceptor, restoring normal message handling.
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 private final class EchoInterceptor: @unchecked Sendable {
     private let transport: TestProxyTransport
     private let channel: ARTRealtimeChannel
@@ -294,6 +299,7 @@ private final class EchoInterceptor: @unchecked Sendable {
 ///   waits for one. Only one call can be pending at a time; subsequent calls will trap.
 /// - ``releaseAll()``: replays all held ACKs through the client's internal ACK handler.
 /// - ``restore()``: removes the interceptor, restoring normal message handling.
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 private final class AckInterceptor: @unchecked Sendable {
     private let transport: TestProxyTransport
     private let client: ARTRealtime
@@ -366,6 +372,7 @@ private final class AckInterceptor: @unchecked Sendable {
 }
 
 /// Injects an ATTACHED protocol message into the channel with the given flags.
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 private func injectAttachedMessage(channel: ARTRealtimeChannel, flags: ARTProtocolMessageFlag = []) async {
     await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
         channel.internal.queue.async {
@@ -469,6 +476,7 @@ private let countersFixtures: [(name: String, count: Double?)] = [
 // MARK: - Support for parameterised tests
 
 /// The output of `forScenarios`. One element of the one-dimensional arguments array that is passed to a Swift Testing test.
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 private struct TestCase<Context>: Identifiable, CustomStringConvertible {
     var disabled: Bool
     var scenario: TestScenario<Context>
@@ -493,12 +501,14 @@ private struct TestCase<Context>: Identifiable, CustomStringConvertible {
 }
 
 /// Enables `TestCase`'s conformance to `Identifiable`.
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 private struct TestCaseID: Encodable, Hashable {
     var description: String
     var options: ClientHelper.PartialClientOptions?
 }
 
 /// The input to `forScenarios`.
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 private struct TestScenario<Context> {
     var disabled: Bool
     var allTransportsAndProtocols: Bool
@@ -506,6 +516,7 @@ private struct TestScenario<Context> {
     var action: @Sendable (Context) async throws -> Void
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 private func forScenarios<Context>(_ scenarios: [TestScenario<Context>]) -> [TestCase<Context>] {
     scenarios.map { scenario -> [TestCase<Context>] in
         var clientOptions = ClientHelper.PartialClientOptions(logIdentifier: "client1")
@@ -528,11 +539,13 @@ private func forScenarios<Context>(_ scenarios: [TestScenario<Context>]) -> [Tes
     .flatMap(\.self)
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 private protocol Scenarios {
     associatedtype Context
     static var scenarios: [TestScenario<Context>] { get }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 private extension Scenarios {
     static var testCases: [TestCase<Context>] {
         forScenarios(scenarios)
@@ -544,6 +557,7 @@ private extension Scenarios {
 /// Creates the fixtures on ``objectsFixturesChannel`` if not yet created.
 ///
 /// This fulfils the role of JS's `before` hook.
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 private actor ObjectsFixturesTrait: SuiteTrait, TestScoping {
     private actor SetupManager {
         private var setupTask: Task<Void, Error>?
@@ -571,6 +585,7 @@ private actor ObjectsFixturesTrait: SuiteTrait, TestScoping {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension Trait where Self == ObjectsFixturesTrait {
     static var objectsFixtures: Self { Self() }
 }

@@ -2,6 +2,8 @@ import _AblyPluginSupportPrivate
 @testable import AblyLiveObjects
 import Testing
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 private extension SyncObjectsPool {
     /// Test-only convenience to create a `SyncObjectsPool` from an array of `(state, serialTimestamp)` pairs,
     /// wrapping each in an `InboundObjectMessage` and calling `accumulate`.
