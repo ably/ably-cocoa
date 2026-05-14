@@ -1,4 +1,4 @@
-// swift-tools-version:5.3.0
+// swift-tools-version: 6.1
 
 import PackageDescription
 
@@ -14,20 +14,30 @@ let package = Package(
             name: "Ably",
             targets: ["Ably"]
         ),
+        .library(
+            name: "AblyLiveObjects",
+            targets: ["AblyLiveObjects"]
+        ),
     ],
     dependencies: [
         .package(name: "msgpack", url: "https://github.com/rvi/msgpack-objective-C", from: "0.4.0"),
         .package(name: "AblyDeltaCodec", url: "https://github.com/ably/delta-codec-cocoa", from: "1.3.5"),
         .package(name: "Nimble", url: "https://github.com/quick/nimble", from: "11.2.2"),
-        .package(name: "ably-cocoa-plugin-support", url: "https://github.com/ably/ably-cocoa-plugin-support.git", from: "2.0.0")
     ],
     targets: [
+        // Private plugin-support API surface used by Ably-authored plugins
+        // (e.g. AblyLiveObjects). Folded in from the former
+        // ably-cocoa-plugin-support package.
+        .target(
+            name: "_AblyPluginSupportPrivate",
+            path: "merged-repos/ably-cocoa-plugin-support/Sources/_AblyPluginSupportPrivate"
+        ),
         .target(
             name: "Ably",
             dependencies: [
                 .byName(name: "msgpack"),
                 .byName(name: "AblyDeltaCodec"),
-                .product(name: "_AblyPluginSupportPrivate", package: "ably-cocoa-plugin-support")
+                .byName(name: "_AblyPluginSupportPrivate"),
             ],
             path: "Source",
             exclude: [
@@ -52,6 +62,23 @@ let package = Package(
                 .headerSearchPath("SocketRocket/Internal/IOConsumer"),
             ]
         ),
+        // LiveObjects functionality, folded in from the former
+        // ably-liveobjects-swift-plugin package. Requires a higher OS floor
+        // than ably-cocoa's package-wide minimum — gated via @available
+        // on public/internal declarations rather than per-target platforms
+        // (which SPM does not support).
+        .target(
+            name: "AblyLiveObjects",
+            dependencies: [
+                .byName(name: "Ably"),
+                .byName(name: "_AblyPluginSupportPrivate"),
+            ],
+            path: "merged-repos/ably-liveobjects-swift-plugin/Sources/AblyLiveObjects",
+            exclude: [
+                ".swiftformat",
+                ".swiftlint.yml",
+            ]
+        ),
         .testTarget(
             name: "AblyTests",
             dependencies: [
@@ -59,7 +86,7 @@ let package = Package(
                 .byName(name: "AblyTesting"),
                 .byName(name: "AblyTestingObjC"),
                 .byName(name: "Nimble"),
-                .product(name: "_AblyPluginSupportPrivate", package: "ably-cocoa-plugin-support")
+                .byName(name: "_AblyPluginSupportPrivate"),
             ],
             path: "Test/AblyTests",
             resources: [
@@ -94,4 +121,3 @@ let package = Package(
         )
     ]
 )
-
