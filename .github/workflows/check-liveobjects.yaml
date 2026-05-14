@@ -1,0 +1,57 @@
+# Check workflow for the AblyLiveObjects library product. Adapted from the
+# former ably-liveobjects-swift-plugin repo's check.yaml. Only the
+# SPM-based jobs are wired up here; the xcodebuild-based and Swift-DocC
+# jobs from the original need further work to function in the merged
+# repo (see commit message and merged-repos/.../.github/workflows/check.yaml
+# for the original spec).
+
+name: Check LiveObjects
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-test-spm:
+    name: SPM (Xcode ${{ matrix.xcode-version }})
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        xcode-version: ['16.4']
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ matrix.xcode-version }}
+
+      - name: Build the AblyLiveObjects library
+        run: swift build --target AblyLiveObjects
+
+      - name: Run AblyLiveObjects unit tests
+        run: swift test --filter AblyLiveObjectsTests --skip ObjectsIntegrationTests
+
+  build-release-configuration-spm:
+    name: SPM, `release` configuration (Xcode ${{ matrix.xcode-version }})
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        xcode-version: ['16.4']
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ matrix.xcode-version }}
+
+      - name: Build the AblyLiveObjects library in release configuration
+        run: swift build --target AblyLiveObjects --configuration release
