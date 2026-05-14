@@ -36,6 +36,7 @@ import ObjectiveC.NSObject
 /// // …and so on
 /// ```
 @objc
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 public class Plugin: NSObject {
     /// The `_AblyPluginSupportPrivate.PluginAPIProtocol` that the LiveObjects plugin should use by default (i.e. when one hasn't been injected for test purposes).
     internal static let defaultPluginAPI = _AblyPluginSupportPrivate.DependencyStore.sharedInstance().fetchPluginAPI()

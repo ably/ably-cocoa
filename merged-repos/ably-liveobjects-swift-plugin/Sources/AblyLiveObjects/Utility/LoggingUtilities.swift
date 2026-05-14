@@ -1,5 +1,6 @@
 import Foundation
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal enum LoggingUtilities {
     /// Formats an array of object messages for logging with one message per line.
     /// - Parameter objectMessages: The array of object messages to format

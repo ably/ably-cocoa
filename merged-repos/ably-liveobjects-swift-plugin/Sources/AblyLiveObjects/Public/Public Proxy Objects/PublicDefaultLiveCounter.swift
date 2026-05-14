@@ -4,6 +4,7 @@ import Ably
 /// Our default implementation of ``LiveCounter``.
 ///
 /// This is largely a wrapper around ``InternalDefaultLiveCounter``.
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal final class PublicDefaultLiveCounter: LiveCounter {
     internal let proxied: InternalDefaultLiveCounter
 

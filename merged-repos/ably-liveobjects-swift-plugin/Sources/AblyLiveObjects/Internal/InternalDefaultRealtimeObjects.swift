@@ -2,6 +2,7 @@ internal import _AblyPluginSupportPrivate
 import Ably
 
 /// Protocol that abstracts `InternalDefaultRealtimeObjects`, for testability.
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal protocol InternalRealtimeObjectsProtocol: LiveMapObjectsPoolDelegate {
     /// Per RTO20.
     ///
@@ -16,6 +17,7 @@ internal protocol InternalRealtimeObjectsProtocol: LiveMapObjectsPoolDelegate {
 }
 
 /// This provides the implementation behind ``PublicDefaultRealtimeObjects``, via internal versions of the ``RealtimeObjects`` API.
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeObjectsProtocol {
     private let mutableStateMutex: DispatchQueueMutex<MutableState>
 

@@ -13,6 +13,7 @@ internal indirect enum ExtendedJSONValue<Number, Extra> {
 
 // MARK: - Bridging with Foundation
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal extension ExtendedJSONValue {
     /// Creates an `ExtendedJSONValue` from an object.
     ///
@@ -66,6 +67,7 @@ internal extension ExtendedJSONValue {
 
 // MARK: - Transforming the extra data
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal extension ExtendedJSONValue {
     /// Converts this `ExtendedJSONValue<Number, Extra>` to an `ExtendedJSONValue<NewNumber, NewExtra>` using given transformations.
     func map<NewNumber, NewExtra, Failure>(number transformNumber: @escaping (Number) throws(Failure) -> NewNumber, extra transformExtra: @escaping (Extra) throws(Failure) -> NewExtra) throws(Failure) -> ExtendedJSONValue<NewNumber, NewExtra> {

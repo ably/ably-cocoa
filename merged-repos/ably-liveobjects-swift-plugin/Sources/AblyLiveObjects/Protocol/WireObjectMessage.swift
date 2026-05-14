@@ -5,6 +5,7 @@ import Foundation
 // This file contains the ObjectMessage types that we send and receive over the wire. We convert them to and from the corresponding non-wire types (e.g. `InboundObjectMessage`) for use within the codebase.
 
 /// An `ObjectMessage` received in the `state` property of an `OBJECT` or `OBJECT_SYNC` `ProtocolMessage`.
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal struct InboundWireObjectMessage {
     // TODO: Spec has `id`, `connectionId`, `timestamp`, `clientId`, `serial`, `sideCode` as non-nullable but I don't think this is right; raised https://github.com/ably/specification/issues/334
     internal var id: String? // OM2a
@@ -20,6 +21,7 @@ internal struct InboundWireObjectMessage {
 }
 
 /// An `ObjectMessage` to be sent in the `state` property of an `OBJECT` `ProtocolMessage`.
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal struct OutboundWireObjectMessage {
     internal var id: String? // OM2a
     internal var clientId: String? // OM2b
@@ -34,6 +36,7 @@ internal struct OutboundWireObjectMessage {
 }
 
 /// The keys for decoding an `InboundWireObjectMessage` or encoding an `OutboundWireObjectMessage`.
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal enum WireObjectMessageWireKey: String {
     case id
     case clientId
@@ -47,6 +50,7 @@ internal enum WireObjectMessageWireKey: String {
     case serialTimestamp
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal extension InboundWireObjectMessage {
     /// An error that can occur when decoding an ``InboundWireObjectMessage``.
     enum DecodingError: Error {
@@ -104,6 +108,7 @@ internal extension InboundWireObjectMessage {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension OutboundWireObjectMessage: WireObjectEncodable {
     internal var toWireObject: [String: WireValue] {
         var result: [String: WireValue] = [:]
@@ -144,6 +149,7 @@ extension OutboundWireObjectMessage: WireObjectEncodable {
 }
 
 // OOP2
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal enum ObjectOperationAction: Int {
     case mapCreate = 0
     case mapSet = 1
@@ -155,10 +161,12 @@ internal enum ObjectOperationAction: Int {
 }
 
 // OMP2
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal enum ObjectsMapSemantics: Int {
     case lww = 0
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal struct WireObjectOperation {
     internal var action: WireEnum<ObjectOperationAction> // OOP3a
     internal var objectId: String // OOP3b
@@ -173,6 +181,7 @@ internal struct WireObjectOperation {
     internal var mapClear: WireMapClear? // OOP3r
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension WireObjectOperation: WireObjectCodable {
     internal enum WireKey: String {
         case action
@@ -242,6 +251,7 @@ extension WireObjectOperation: WireObjectCodable {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal struct WireObjectState {
     internal var objectId: String // OST2a
     internal var siteTimeserials: [String: String] // OST2b
@@ -251,6 +261,7 @@ internal struct WireObjectState {
     internal var counter: WireObjectsCounter? // OST2f
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension WireObjectState: WireObjectCodable {
     internal enum WireKey: String {
         case objectId
@@ -296,12 +307,14 @@ extension WireObjectState: WireObjectCodable {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal struct WireObjectsMap {
     internal var semantics: WireEnum<ObjectsMapSemantics> // OMP3a
     internal var entries: [String: WireObjectsMapEntry]? // OMP3b
     internal var clearTimeserial: String? // OMP3c
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension WireObjectsMap: WireObjectCodable {
     internal enum WireKey: String {
         case semantics
@@ -336,10 +349,12 @@ extension WireObjectsMap: WireObjectCodable {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal struct WireObjectsCounter: Equatable {
     internal var count: NSNumber? // OCN2a
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension WireObjectsCounter: WireObjectCodable {
     internal enum WireKey: String {
         case count
@@ -358,11 +373,13 @@ extension WireObjectsCounter: WireObjectCodable {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal struct WireMapSet {
     internal var key: String // MST2a
     internal var value: WireObjectData? // MST2b
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension WireMapSet: WireObjectCodable {
     internal enum WireKey: String {
         case key
@@ -387,10 +404,12 @@ extension WireMapSet: WireObjectCodable {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal struct WireMapRemove: Equatable {
     internal var key: String // MRM2a
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension WireMapRemove: WireObjectCodable {
     internal enum WireKey: String {
         case key
@@ -407,11 +426,13 @@ extension WireMapRemove: WireObjectCodable {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal struct WireMapCreate {
     internal var semantics: WireEnum<ObjectsMapSemantics> // MCR2a
     internal var entries: [String: WireObjectsMapEntry]? // MCR2b
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension WireMapCreate: WireObjectCodable {
     internal enum WireKey: String {
         case semantics
@@ -441,10 +462,12 @@ extension WireMapCreate: WireObjectCodable {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal struct WireCounterCreate: Equatable {
     internal var count: NSNumber? // CCR2a
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension WireCounterCreate: WireObjectCodable {
     internal enum WireKey: String {
         case count
@@ -463,10 +486,12 @@ extension WireCounterCreate: WireObjectCodable {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal struct WireCounterInc: Equatable {
     internal var number: NSNumber // CIN2a
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension WireCounterInc: WireObjectCodable {
     internal enum WireKey: String {
         case number
@@ -483,10 +508,12 @@ extension WireCounterInc: WireObjectCodable {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal struct WireObjectDelete: Equatable {
     // Empty struct
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension WireObjectDelete: WireObjectCodable {
     internal init(wireObject _: [String: WireValue]) throws(ARTErrorInfo) {
         // No fields to decode
@@ -497,10 +524,12 @@ extension WireObjectDelete: WireObjectCodable {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal struct WireMapClear: Equatable {
     // Empty struct
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension WireMapClear: WireObjectCodable {
     internal init(wireObject _: [String: WireValue]) throws(ARTErrorInfo) {
         // No fields to decode
@@ -511,11 +540,13 @@ extension WireMapClear: WireObjectCodable {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal struct WireMapCreateWithObjectId: Equatable {
     internal var initialValue: String // MCRO2a
     internal var nonce: String // MCRO2b
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension WireMapCreateWithObjectId: WireObjectCodable {
     internal enum WireKey: String {
         case nonce
@@ -535,11 +566,13 @@ extension WireMapCreateWithObjectId: WireObjectCodable {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal struct WireCounterCreateWithObjectId: Equatable {
     internal var initialValue: String // CCRO2a
     internal var nonce: String // CCRO2b
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension WireCounterCreateWithObjectId: WireObjectCodable {
     internal enum WireKey: String {
         case nonce
@@ -559,6 +592,7 @@ extension WireCounterCreateWithObjectId: WireObjectCodable {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal struct WireObjectsMapEntry {
     internal var tombstone: Bool? // OME2a
     internal var timeserial: String? // OME2b
@@ -566,6 +600,7 @@ internal struct WireObjectsMapEntry {
     internal var serialTimestamp: Date? // OME2d
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension WireObjectsMapEntry: WireObjectCodable {
     internal enum WireKey: String {
         case tombstone
@@ -601,6 +636,7 @@ extension WireObjectsMapEntry: WireObjectCodable {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal struct WireObjectData {
     internal var objectId: String? // OD2a
     internal var boolean: Bool? // OD2c
@@ -610,6 +646,7 @@ internal struct WireObjectData {
     internal var json: String? // TODO: Needs specification (see https://github.com/ably/ably-liveobjects-swift-plugin/issues/46)
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension WireObjectData: WireObjectCodable {
     internal enum WireKey: String {
         case objectId
@@ -658,6 +695,7 @@ extension WireObjectData: WireObjectCodable {
 /// A type that can be either a string or binary data.
 ///
 /// Used to represent the values that `WireObjectData.bytes` might hold, after being encoded per OD4 or before being decoded per OD5.
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal enum StringOrData: Equatable, WireCodable {
     case string(String)
     case data(Data)
@@ -690,6 +728,7 @@ internal enum StringOrData: Equatable, WireCodable {
 
 // MARK: - CustomDebugStringConvertible
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension WireObjectsCounter: CustomDebugStringConvertible {
     internal var debugDescription: String {
         if let count {
@@ -700,6 +739,7 @@ extension WireObjectsCounter: CustomDebugStringConvertible {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension WireObjectsMapEntry: CustomDebugStringConvertible {
     internal var debugDescription: String {
         var parts: [String] = []
@@ -713,6 +753,7 @@ extension WireObjectsMapEntry: CustomDebugStringConvertible {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension WireObjectData: CustomDebugStringConvertible {
     internal var debugDescription: String {
         var parts: [String] = []
@@ -728,6 +769,7 @@ extension WireObjectData: CustomDebugStringConvertible {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension WireMapSet: CustomDebugStringConvertible {
     internal var debugDescription: String {
         var parts: [String] = []
@@ -739,12 +781,14 @@ extension WireMapSet: CustomDebugStringConvertible {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension WireMapRemove: CustomDebugStringConvertible {
     internal var debugDescription: String {
         "{ key: \(key) }"
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension WireMapCreate: CustomDebugStringConvertible {
     internal var debugDescription: String {
         var parts: [String] = []
@@ -763,6 +807,7 @@ extension WireMapCreate: CustomDebugStringConvertible {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension WireCounterCreate: CustomDebugStringConvertible {
     internal var debugDescription: String {
         if let count {
@@ -773,24 +818,28 @@ extension WireCounterCreate: CustomDebugStringConvertible {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension WireCounterInc: CustomDebugStringConvertible {
     internal var debugDescription: String {
         "{ number: \(number) }"
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension WireObjectDelete: CustomDebugStringConvertible {
     internal var debugDescription: String {
         "{ }"
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension WireMapCreateWithObjectId: CustomDebugStringConvertible {
     internal var debugDescription: String {
         "{ initialValue: \(initialValue), nonce: \(nonce) }"
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension WireCounterCreateWithObjectId: CustomDebugStringConvertible {
     internal var debugDescription: String {
         "{ initialValue: \(initialValue), nonce: \(nonce) }"

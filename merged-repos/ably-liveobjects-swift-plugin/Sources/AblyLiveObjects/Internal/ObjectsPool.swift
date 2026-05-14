@@ -3,6 +3,7 @@ internal import _AblyPluginSupportPrivate
 /// Maintains the list of objects present on a channel, as described by RTO3.
 ///
 /// Note that this is a value type.
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal struct ObjectsPool {
     /// The possible `ObjectsPool` entries, as described by RTO3a.
     internal enum Entry {

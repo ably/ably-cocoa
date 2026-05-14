@@ -1,3 +1,4 @@
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal enum LiveObjectUpdate<Update: Sendable>: Sendable {
     case noop // RTLO4b4
     case update(Update) // RTLO4b4a
@@ -23,4 +24,5 @@ internal enum LiveObjectUpdate<Update: Sendable>: Sendable {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 extension LiveObjectUpdate: Equatable where Update: Equatable {}

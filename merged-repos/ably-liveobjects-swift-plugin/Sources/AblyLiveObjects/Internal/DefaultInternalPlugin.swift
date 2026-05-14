@@ -6,6 +6,7 @@ import ObjectiveC.NSObject
 
 /// The default implementation of `_AblyPluginSupportPrivate`'s `LiveObjectsInternalPluginProtocol`. Implements the interface that ably-cocoa uses to access the functionality provided by the LiveObjects plugin.
 @objc
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.LiveObjectsInternalPluginProtocol {
     private let pluginAPI: _AblyPluginSupportPrivate.PluginAPIProtocol
 

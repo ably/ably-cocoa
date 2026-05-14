@@ -3,6 +3,7 @@ import Foundation
 /// The RTO5f collection of objects gathered during an `OBJECT_SYNC` sequence, ready to be applied to the `ObjectsPool`.
 ///
 /// Every stored message is guaranteed to have a non-nil `.object` with either `.map` or `.counter` populated.
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal struct SyncObjectsPool: Collection {
     /// Keyed by `objectId`. Every value has a non-nil `.object` with either `.map` or `.counter` populated; the
     /// `accumulate` method enforces this invariant.

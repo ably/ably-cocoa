@@ -1,6 +1,7 @@
 import Foundation
 
 /// Helper methods for calculating diffs between LiveObject data values.
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal enum ObjectDiffHelpers {
     /// Calculates the diff between two LiveCounter data values, per RTLC14.
     ///

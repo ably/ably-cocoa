@@ -4,6 +4,7 @@ import Ably
 /// The class that provides the public API for interacting with LiveObjects, via the ``ARTRealtimeChannel/objects`` property.
 ///
 /// This is largely a wrapper around ``InternalDefaultRealtimeObjects``.
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal final class PublicDefaultRealtimeObjects: RealtimeObjects {
     private let proxied: InternalDefaultRealtimeObjects
     internal var testsOnly_proxied: InternalDefaultRealtimeObjects {

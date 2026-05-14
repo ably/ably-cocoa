@@ -3,6 +3,7 @@ internal import _AblyPluginSupportPrivate
 /// Provides RTLO spec point functionality common to all LiveObjects.
 ///
 /// This exists in addition to ``LiveObjectMutableState`` to enable polymorphism.
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal protocol InternalLiveObject<Update> {
     associatedtype Update: Sendable
 
@@ -12,6 +13,7 @@ internal protocol InternalLiveObject<Update> {
     mutating func resetDataToZeroValued()
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal extension InternalLiveObject {
     /// Convenience method for tombstoning a `LiveObject`, as specified in RTLO4e.
     mutating func tombstone(

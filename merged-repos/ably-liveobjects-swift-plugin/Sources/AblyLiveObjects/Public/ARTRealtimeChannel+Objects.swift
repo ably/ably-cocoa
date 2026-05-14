@@ -1,6 +1,7 @@
 internal import _AblyPluginSupportPrivate
 import Ably
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 public extension ARTRealtimeChannel {
     /// A ``RealtimeObjects`` object.
     var objects: RealtimeObjects {

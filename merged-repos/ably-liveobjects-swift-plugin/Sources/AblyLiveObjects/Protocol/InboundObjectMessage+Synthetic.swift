@@ -1,3 +1,4 @@
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal extension InboundObjectMessage {
     /// Creates a synthetic inbound message from an outbound message, per RTO20d2 and RTO20d3.
     ///

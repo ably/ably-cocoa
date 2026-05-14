@@ -2,6 +2,7 @@ internal import _AblyPluginSupportPrivate
 import Ably
 
 /// Upcasts an instance of an `_AblyPluginSupportPrivate` marker protocol to the concrete type that this marker protocol represents.
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal func castPluginPublicMarkerProtocolValue<T>(_ pluginMarkerProtocolValue: Any, to _: T.Type) -> T {
     guard let actualPublicValue = pluginMarkerProtocolValue as? T else {
         preconditionFailure("Expected \(T.self), got \(type(of: pluginMarkerProtocolValue))")
@@ -10,6 +11,7 @@ internal func castPluginPublicMarkerProtocolValue<T>(_ pluginMarkerProtocolValue
     return actualPublicValue
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal extension ARTRealtimeChannel {
     /// Downcasts this `ARTRealtimeChannel` to its `_AblyPluginSupportPrivate` equivalent type `PublicRealtimeChannel`.
     ///
@@ -21,6 +23,7 @@ internal extension ARTRealtimeChannel {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal extension ARTClientOptions {
     /// Downcasts this `ARTClientOptions` to its `_AblyPluginSupportPrivate` marker protocol type `PublicClientOptions`.
     ///
@@ -37,6 +40,7 @@ internal extension ARTClientOptions {
     }
 }
 
+@available(macOS 10.15, iOS 13, tvOS 13, *)
 internal extension ARTErrorInfo {
     /// Downcasts this `ARTErrorInfo` to its `_AblyPluginSupportPrivate` marker protocol type `PublicErrorInfo`.
     ///
