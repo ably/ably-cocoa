@@ -80,6 +80,23 @@ let package = Package(
             ]
         ),
         .testTarget(
+            name: "AblyLiveObjectsTests",
+            dependencies: [
+                .byName(name: "AblyLiveObjects"),
+                .byName(name: "Ably"),
+                .byName(name: "_AblyPluginSupportPrivate"),
+            ],
+            path: "merged-repos/ably-liveobjects-swift-plugin/Tests/AblyLiveObjectsTests",
+            exclude: [
+                ".swiftformat",
+                ".swiftlint.yml",
+                "CLAUDE.md",
+            ],
+            resources: [
+                .copy("ably-common"),
+            ]
+        ),
+        .testTarget(
             name: "AblyTests",
             dependencies: [
                 .byName(name: "Ably"),
@@ -91,7 +108,11 @@ let package = Package(
             path: "Test/AblyTests",
             resources: [
                 .copy("ably-common")
-            ]
+            ],
+            // Pre-existing test code is written against Swift 5 mode; the
+            // tools-version bump to 6.1 would otherwise promote the
+            // existing strict-concurrency warnings to errors.
+            swiftSettings: [.swiftLanguageMode(.v5)]
         ),
         // A handful of tests written in Objective-C (they can't be part of AblyTests because SPM doesn't allow mixed-language targets).
         .testTarget(
@@ -109,7 +130,8 @@ let package = Package(
             dependencies: [
                 .byName(name: "Ably"),
             ],
-            path: "Test/AblyTesting"
+            path: "Test/AblyTesting",
+            swiftSettings: [.swiftLanguageMode(.v5)]
         ),
         // Provides test helpers written in Objective-C (they can't be part of AblyTests because SPM doesn't allow mixed-language targets).
         .target(
