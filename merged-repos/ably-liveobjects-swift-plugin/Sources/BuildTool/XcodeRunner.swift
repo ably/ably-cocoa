@@ -9,6 +9,13 @@ enum XcodeRunner {
             arguments.append(action)
         }
 
+        // Always point xcodebuild at ably-cocoa's workspace rather than
+        // letting it auto-discover. Without this, xcodebuild would pick up
+        // Ably.xcodeproj (which has no AblyLiveObjects scheme). The workspace
+        // exposes the SPM package's schemes alongside ably-cocoa's Xcode
+        // project ones.
+        arguments.append(contentsOf: ["-workspace", "Ably.xcworkspace"])
+
         if let configuration {
             arguments.append(contentsOf: ["-configuration", configuration.rawValue])
         }
