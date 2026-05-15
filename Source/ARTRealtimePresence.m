@@ -18,6 +18,9 @@
 #import "ARTClientOptions.h"
 #import "ARTRealtimeChannelOptions.h"
 #import "ARTGCD.h"
+#import "ARTTimeProvider.h"
+#import "ARTTestClientOptions.h"
+#import "ARTClientOptions+TestConfiguration.h"
 
 #pragma mark - ARTRealtimePresenceQuery
 
@@ -187,6 +190,8 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
     NSMutableDictionary<NSString *, ARTPresenceMessage *> *_internalMembers; // RTP17h
 
     NSMutableDictionary<NSString *, ARTPresenceMessage *> *_beforeSyncMembers; // RTP19
+
+    id<ARTTimeProvider> _timeProvider;
 }
 
 - (instancetype)initWithChannel:(ARTRealtimeChannelInternal *)channel logger:(ARTInternalLog *)logger {
@@ -197,6 +202,7 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
         _queue = _realtime.rest.queue;
         _pendingPresence = [NSMutableArray array];
         _logger = logger;
+        _timeProvider = _realtime.rest.options.testOptions.timeProvider;
         _eventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
         _dataEncoder = _channel.dataEncoder;
         _members = [NSMutableDictionary new];
@@ -756,7 +762,7 @@ art_dispatch_sync(_queue, ^{
 - (void)didRemovedMemberNoLongerPresent:(ARTPresenceMessage *)pm {
     pm.action = ARTPresenceLeave;
     pm.id = nil;
-    pm.timestamp = [NSDate date];
+    pm.timestamp = [_timeProvider wallClockNow];
     [self broadcast:pm];
     ARTLogDebug(self.logger, @"RT:%p C:%p (%@) member \"%@\" no longer present", _realtime, _channel, _channel.name, pm.memberKey);
 }
