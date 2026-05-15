@@ -56,6 +56,7 @@
 #import "ARTConnectRetryState.h"
 #import "ARTWrapperSDKProxyRealtime+Private.h"
 #import "ARTConnectionDetails+Private.h"
+#import "ARTTimeProvider.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -204,6 +205,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) ARTConnectRetryState *connectRetryState;
 @property (nonatomic, readonly) ARTInternalLog *logger;
+@property (nonatomic, readonly) id<ARTTimeProvider> timeProvider;
 
 // Redeclaration as readwrite
 @property (nullable, readwrite, nonatomic) ARTConnectionDetails *latestConnectionDetails;
@@ -245,6 +247,7 @@ typedef NS_ENUM(NSUInteger, ARTNetworkState) {
         NSAssert(options, @"ARTRealtime: No options provided");
 
         _logger = [[ARTInternalLog alloc] initWithClientOptions:options];
+        _timeProvider = options.testOptions.timeProvider;
         _rest = [[ARTRestInternal alloc] initWithOptions:options realtime:self logger:_logger];
         _userQueue = _rest.userQueue;
         _queue = _rest.queue;

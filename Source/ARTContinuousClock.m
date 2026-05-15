@@ -11,20 +11,6 @@
 
 @end
 
-@implementation ARTContinuousClock
-
-- (ARTContinuousClockInstant *)now {
-    const uint64_t time = clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW);
-    return [[ARTContinuousClockInstant alloc] initWithTime:time];
-}
-
-- (ARTContinuousClockInstant *)addingDuration:(NSTimeInterval)duration toInstant:(ARTContinuousClockInstant *)instant {
-    const uint64_t time = instant.timeInNanosecondsSinceClockReferenceInstant + duration * NSEC_PER_SEC;
-    return [[ARTContinuousClockInstant alloc] initWithTime:time];
-}
-
-@end
-
 @implementation ARTContinuousClockInstant
 
 - (NSString *)description {

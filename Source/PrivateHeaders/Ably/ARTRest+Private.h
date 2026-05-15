@@ -9,7 +9,7 @@
 @class ARTInternalLog;
 @class ARTRealtimeInternal;
 @class ARTAuthInternal;
-@class ARTContinuousClockInstant;
+@protocol APContinuousClockInstant;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -42,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) id<ARTHTTPExecutor> httpExecutor;
 @property (nonatomic, readonly, getter=getBaseUrl) NSURL *baseUrl;
 @property (nullable, nonatomic, copy) NSString *currentFallbackHost;
-@property (nullable, readonly, nonatomic) ARTContinuousClockInstant *fallbackRetryExpiration;
+@property (nullable, readonly, nonatomic) id<APContinuousClockInstant> fallbackRetryExpiration;
 
 @property (nonatomic) dispatch_queue_t queue;
 @property (nonatomic) dispatch_queue_t userQueue;

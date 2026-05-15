@@ -1,33 +1,14 @@
 @import Foundation;
 @import _AblyPluginSupportPrivate;
 
-@class ARTContinuousClockInstant;
-
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- A clock that increments monotonically, including while the system is asleep.
+ The concrete implementation of `APContinuousClockInstant` used by `ARTSystemTimeProvider`.
 
- - Note: We don't give this one an `NS_SWIFT_NAME`, to avoid confusion with the Swift standard library type also named `ContinuousClock`.
- */
-@interface ARTContinuousClock: NSObject
+ Represents an instant on a continuous clock — a clock that keeps incrementing while the system is asleep.
 
-/**
- Returns the current instant in time.
- */
-- (ARTContinuousClockInstant *)now;
-
-/**
- Returns the instant in time that occurs after a given duration has elapsed in relation to a given instant in time.
- */
-- (ARTContinuousClockInstant *)addingDuration:(NSTimeInterval)duration toInstant:(ARTContinuousClockInstant *)instant;
-
-@end
-
-/**
- Represents an instant in time, as described by an instance of `ARTContinuousClock`.
-
- Conforms to `APContinuousClockInstant` so that instances may cross the plugin boundary as instants of the unified clock abstraction.
+ - Note: We don't give this an `NS_SWIFT_NAME`, to avoid confusion with the Swift standard library type also named `ContinuousClock`.
  */
 @interface ARTContinuousClockInstant: NSObject <APContinuousClockInstant>
 

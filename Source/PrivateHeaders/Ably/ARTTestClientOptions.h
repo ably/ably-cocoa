@@ -2,6 +2,7 @@
 
 @protocol ARTRealtimeTransportFactory;
 @protocol ARTJitterCoefficientGenerator;
+@protocol ARTTimeProvider;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -42,6 +43,11 @@ NS_ASSUME_NONNULL_BEGIN
  Initial value is an instance of `ARTDefaultJitterCoefficientGenerator`.
  */
 @property (nonatomic) id<ARTJitterCoefficientGenerator> jitterCoefficientGenerator;
+
+/**
+ The unified time-provider abstraction consumed by all of ably-cocoa's time-dependent internal code. Tests install a fake-time implementation here to control wall-clock, continuous-clock, and scheduler behaviour. Initial value is an instance of `ARTSystemTimeProvider`.
+ */
+@property (nonatomic) id<ARTTimeProvider> timeProvider;
 
 /**
  When `YES`, `ARTLocalDeviceStorage` log lines include the fetched or
