@@ -1,8 +1,14 @@
 #import <Foundation/Foundation.h>
+@import _AblyPluginSupportPrivate;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTScheduledBlockHandle : NSObject
+/**
+ A handle to a block scheduled via `artDispatchScheduled` (and, via `ARTSystemTimeProvider`, via `-[ARTTimeProvider scheduleAfter:queue:block:]`).
+
+ Conforms to `APSchedulerHandle` so that handles may cross the plugin boundary.
+ */
+@interface ARTScheduledBlockHandle : NSObject <APSchedulerHandle>
 - (instancetype)initWithDelay:(NSTimeInterval)delay queue:(dispatch_queue_t)queue block:(dispatch_block_t)block;
 - (void)cancel;
 @end

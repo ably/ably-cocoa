@@ -10,7 +10,7 @@ class ContinuousClockTests: XCTestCase {
         usleep(UInt32(0.25 * Double(USEC_PER_SEC)))
         let postSleepNow = clock.now()
 
-        XCTAssertTrue(postSleepNow.isAfter(preSleepNow))
+        XCTAssertTrue(postSleepNow.is(after: preSleepNow))
     }
 
     func test_advancedBy() {
@@ -24,7 +24,7 @@ class ContinuousClockTests: XCTestCase {
         usleep(UInt32(0.5 * Double(USEC_PER_SEC)))
 
         let postSleepNow = clock.now()
-        XCTAssertFalse(advancedByQuarterSecond.isAfter(postSleepNow))
-        XCTAssertTrue(advancedByOneSecond.isAfter(postSleepNow))
+        XCTAssertFalse(advancedByQuarterSecond.is(after: postSleepNow))
+        XCTAssertTrue(advancedByOneSecond.is(after: postSleepNow))
     }
 }

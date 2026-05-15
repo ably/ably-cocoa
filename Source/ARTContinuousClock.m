@@ -2,8 +2,6 @@
 
 @interface ARTContinuousClockInstant ()
 
-- (instancetype)initWithTime:(uint64_t)time NS_DESIGNATED_INITIALIZER;
-
 /**
  The value returned by `clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW)` at this instant.
 
@@ -41,8 +39,14 @@
     return self;
 }
 
-- (BOOL)isAfter:(ARTContinuousClockInstant *)other {
-    return self.timeInNanosecondsSinceClockReferenceInstant > other.timeInNanosecondsSinceClockReferenceInstant;
+- (BOOL)isAfter:(id<APContinuousClockInstant>)other {
+    ARTContinuousClockInstant *const concreteOther = (ARTContinuousClockInstant *)other;
+    return self.timeInNanosecondsSinceClockReferenceInstant > concreteOther.timeInNanosecondsSinceClockReferenceInstant;
+}
+
+- (id<APContinuousClockInstant>)addingDuration:(NSTimeInterval)duration {
+    const uint64_t time = self.timeInNanosecondsSinceClockReferenceInstant + duration * NSEC_PER_SEC;
+    return [[ARTContinuousClockInstant alloc] initWithTime:time];
 }
 
 @end

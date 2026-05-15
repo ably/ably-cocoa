@@ -1,4 +1,5 @@
 @import Foundation;
+@import _AblyPluginSupportPrivate;
 
 @class ARTContinuousClockInstant;
 
@@ -25,15 +26,27 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  Represents an instant in time, as described by an instance of `ARTContinuousClock`.
+
+ Conforms to `APContinuousClockInstant` so that instances may cross the plugin boundary as instants of the unified clock abstraction.
  */
-@interface ARTContinuousClockInstant: NSObject
+@interface ARTContinuousClockInstant: NSObject <APContinuousClockInstant>
 
 - (instancetype)init NS_UNAVAILABLE;
 
 /**
- Returns `YES` if and only if the instant in time represented by `other` occurs after that represented by the receiver.
+ Designated initialiser; `time` is a value in the same units as `clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW)`.
  */
-- (BOOL)isAfter:(ARTContinuousClockInstant *)other NS_SWIFT_NAME(isAfter(_:));
+- (instancetype)initWithTime:(uint64_t)time NS_DESIGNATED_INITIALIZER;
+
+/**
+ Returns `YES` if and only if the instant in time represented by the receiver occurs after that represented by `other`.
+ */
+- (BOOL)isAfter:(id<APContinuousClockInstant>)other;
+
+/**
+ Returns a new instant representing the receiver advanced by `duration` seconds.
+ */
+- (id<APContinuousClockInstant>)addingDuration:(NSTimeInterval)duration;
 
 @end
 

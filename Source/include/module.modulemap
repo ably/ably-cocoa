@@ -115,6 +115,8 @@ module Ably {
         header "../PrivateHeaders/Ably/ARTDataEncoder.h"
         header "../PrivateHeaders/Ably/ARTRealtimeTransportFactory.h"
         header "../PrivateHeaders/Ably/ARTContinuousClock.h"
+        header "../PrivateHeaders/Ably/ARTTimeProvider.h"
+        header "../PrivateHeaders/Ably/ARTSystemTimeProvider.h"
         header "../PrivateHeaders/Ably/ARTWebSocketFactory.h"
         header "../PrivateHeaders/Ably/ARTAttachRetryState.h"
         header "../PrivateHeaders/Ably/ARTConnectRetryState.h"
