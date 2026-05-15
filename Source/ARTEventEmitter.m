@@ -5,6 +5,7 @@
 #import "ARTRealtimeChannel.h"
 #import "ARTGCD.h"
 #import "ARTInternalLog.h"
+#import "ARTTimeProvider.h"
 
 @implementation NSMutableArray (AsSet)
 
@@ -57,7 +58,7 @@
     __weak ARTEventEmitter *_eventHandler; // weak because eventEmitter owns self
     NSTimeInterval _timeoutDeadline;
     void (^_timeoutBlock)(void);
-    ARTScheduledBlockHandle *_work;
+    id<APSchedulerHandle> _work;
 }
 
 - (instancetype)initWithId:(NSString *)eventId observer:(id<NSObject>)observer handler:(ARTEventEmitter *)eventHandler center:(NSNotificationCenter *)center {
@@ -136,20 +137,20 @@
     _timerIsRunning = true;
 
     __weak ARTEventListener *weakSelf = self;
-    _work = artDispatchScheduled(_timeoutDeadline, [_eventHandler queue], ^{
+    _work = [_eventHandler.timeProvider scheduleAfter:_timeoutDeadline queue:_eventHandler.queue block:^{
         [weakSelf timeout];
-    });
+    }];
 }
 
 - (void)stopTimer {
-    artDispatchCancel(_work);
+    [_work cancel];
     _timerIsRunning = false;
     _timeoutBlock = nil;
     _work = nil;
 }
 
 - (void)restartTimer {
-    artDispatchCancel(_work);
+    [_work cancel];
     _timerIsRunning = false;
     [self startTimer];
 }
@@ -160,17 +161,18 @@
 
 @implementation ARTEventEmitter
 
-- (instancetype)initWithQueue:(dispatch_queue_t)queue {
-    self = [self initWithQueues:queue userQueue:nil];
+- (instancetype)initWithQueue:(dispatch_queue_t)queue timeProvider:(id<ARTTimeProvider>)timeProvider {
+    self = [self initWithQueues:queue userQueue:nil timeProvider:timeProvider];
     return self;
 }
 
-- (instancetype)initWithQueues:(dispatch_queue_t)queue userQueue:(dispatch_queue_t)userQueue {
+- (instancetype)initWithQueues:(dispatch_queue_t)queue userQueue:(dispatch_queue_t)userQueue timeProvider:(id<ARTTimeProvider>)timeProvider {
     self = [super init];
     if (self) {
         _notificationCenter = [[NSNotificationCenter alloc] init];
         _queue = queue;
         _userQueue = userQueue;
+        _timeProvider = timeProvider;
         [self resetListeners];
     }
     return self;
@@ -317,7 +319,7 @@
 }
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest logger:(ARTInternalLog *)logger {
-    if (self = [super initWithQueue:rest.queue]) {
+    if (self = [super initWithQueue:rest.queue timeProvider:rest.timeProvider]) {
         _rest = rest;
         _queue = rest.queue;
         _userQueue = rest.userQueue;
@@ -432,12 +434,12 @@ art_dispatch_sync(_queue, ^{
 
 @implementation ARTInternalEventEmitter
 
-- (instancetype)initWithQueue:(dispatch_queue_t)queue {
-   return [super initWithQueue:queue];
+- (instancetype)initWithQueue:(dispatch_queue_t)queue timeProvider:(id<ARTTimeProvider>)timeProvider {
+   return [super initWithQueue:queue timeProvider:timeProvider];
 }
 
-- (instancetype)initWithQueues:(dispatch_queue_t)queue userQueue:(dispatch_queue_t)userQueue {
-    return [super initWithQueues:queue userQueue:userQueue];
+- (instancetype)initWithQueues:(dispatch_queue_t)queue userQueue:(dispatch_queue_t)userQueue timeProvider:(id<ARTTimeProvider>)timeProvider {
+    return [super initWithQueues:queue userQueue:userQueue timeProvider:timeProvider];
 }
 
 @end

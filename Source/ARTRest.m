@@ -157,7 +157,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTRestInternal ()
 
 @property (nonatomic, readonly) ARTInternalLog *logger;
-@property (nonatomic, readonly) id<ARTTimeProvider> timeProvider;
 
 @end
 

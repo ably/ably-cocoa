@@ -251,9 +251,9 @@ typedef NS_ENUM(NSUInteger, ARTNetworkState) {
         _rest = [[ARTRestInternal alloc] initWithOptions:options realtime:self logger:_logger];
         _userQueue = _rest.userQueue;
         _queue = _rest.queue;
-        _internalEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
-        _connectedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
-        _pingEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
+        _internalEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue timeProvider:_timeProvider];
+        _connectedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue timeProvider:_timeProvider];
+        _pingEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue timeProvider:_timeProvider];
         _channels = [[ARTRealtimeChannelsInternal alloc] initWithRealtime:self logger:self.logger];
         _transport = nil;
         _networkState = ARTNetworkStateIsUnknown;

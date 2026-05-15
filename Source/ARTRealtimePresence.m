@@ -203,12 +203,12 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
         _pendingPresence = [NSMutableArray array];
         _logger = logger;
         _timeProvider = _realtime.rest.options.testOptions.timeProvider;
-        _eventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
+        _eventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue timeProvider:_timeProvider];
         _dataEncoder = _channel.dataEncoder;
         _members = [NSMutableDictionary new];
         _internalMembers = [NSMutableDictionary new];
         _syncState = ARTPresenceSyncInitialized;
-        _syncEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
+        _syncEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue timeProvider:_timeProvider];
     }
     return self;
 }

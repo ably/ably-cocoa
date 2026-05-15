@@ -10,6 +10,7 @@
 @class ARTRealtimeInternal;
 @class ARTAuthInternal;
 @protocol APContinuousClockInstant;
+@protocol ARTTimeProvider;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -46,6 +47,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic) dispatch_queue_t queue;
 @property (nonatomic) dispatch_queue_t userQueue;
+
+@property (nonatomic, readonly) id<ARTTimeProvider> timeProvider;
 
 /**
  Provides access to the instance's logger. As the name says, this property should only be used in the following cases:

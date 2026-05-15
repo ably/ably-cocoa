@@ -16,7 +16,7 @@
 - (id<APSchedulerHandle>)scheduleAfter:(NSTimeInterval)delay
                                  queue:(dispatch_queue_t)queue
                                  block:(dispatch_block_t)block {
-    return artDispatchScheduled(delay, queue, block);
+    return [[ARTScheduledBlockHandle alloc] initWithDelay:delay queue:queue block:block];
 }
 
 @end

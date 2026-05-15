@@ -4,7 +4,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- A handle to a block scheduled via `artDispatchScheduled` (and, via `ARTSystemTimeProvider`, via `-[ARTTimeProvider scheduleAfter:queue:block:]`).
+ A handle to a block scheduled via `-[ARTTimeProvider scheduleAfter:queue:block:]` (when backed by `ARTSystemTimeProvider`).
 
  Conforms to `APSchedulerHandle` so that handles may cross the plugin boundary.
  */
@@ -12,13 +12,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDelay:(NSTimeInterval)delay queue:(dispatch_queue_t)queue block:(dispatch_block_t)block;
 - (void)cancel;
 @end
-
-ARTScheduledBlockHandle *artDispatchScheduled(NSTimeInterval seconds, dispatch_queue_t queue, dispatch_block_t block);
-static inline void artDispatchCancel(ARTScheduledBlockHandle *handle) {
-    if (handle) {
-        [handle cancel];
-    }
-}
 
 /// Like `dispatch_sync`, but throws an `NSException` if the queue is `nil` at runtime.
 ///

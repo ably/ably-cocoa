@@ -81,7 +81,7 @@ NS_ASSUME_NONNULL_END
         _logger = logger;
         _options = [options copy];
         _resumeKey = resumeKey;
-        _stateEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_workQueue];
+        _stateEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_workQueue timeProvider:rest.timeProvider];
         _webSocketFactory = webSocketFactory;
 
         ARTLogVerbose(self.logger, @"R:%p WS:%p alloc", _delegate, self);

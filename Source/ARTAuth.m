@@ -120,7 +120,7 @@ NS_ASSUME_NONNULL_END
         _logger = logger;
         _timeProvider = options.testOptions.timeProvider;
         _protocolClientId = nil;
-        _cancelationEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
+        _cancelationEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue timeProvider:_timeProvider];
         _tokenParams = options.defaultTokenParams ? : [[ARTTokenParams alloc] initWithOptions:self.options];
         _authorizationsCount = 0;
         [self validate:options];
