@@ -8,7 +8,13 @@ NS_ASSUME_NONNULL_BEGIN
 
  All time-dependent code in ably-cocoa MUST go through an injected `ARTTimeProvider` rather than calling clock or scheduler primitives directly. This indirection allows the Universal Test Suite to install a fake-time implementation that controls all clock-dependent behaviour across both ably-cocoa and any plugins.
 
- See ably-cocoa's `CONTRIBUTING.md` for details on what is and is not permitted in new code.
+ In particular, new code MUST NOT:
+
+ - call `[NSDate date]` / `Date()` directly — use `-wallClockNow`;
+ - call `clock_gettime_nsec_np` / `mach_continuous_time` directly — use `-continuousClockNow`;
+ - call `dispatch_after`, `NSTimer`, or `dispatch_source_set_timer` directly — use `-scheduleAfter:queue:block:`.
+
+ See ably-cocoa's `CONTRIBUTING.md`, section "Time-related operations", for the full convention and for the standard pattern by which a class obtains its `ARTTimeProvider`.
  */
 @protocol ARTTimeProvider <NSObject>
 
