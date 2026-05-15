@@ -645,7 +645,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 }
 
 - (void)clearConnectionStateIfInactive {
-    NSTimeInterval intervalSinceLast = [[NSDate date] timeIntervalSinceDate:_lastActivity];
+    NSTimeInterval intervalSinceLast = [[_timeProvider wallClockNow] timeIntervalSinceDate:_lastActivity];
     if (intervalSinceLast > (_maxIdleInterval + _connectionStateTtl)) {
         [self.connection setId:nil];
         [self.connection setKey:nil];
@@ -738,7 +738,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         case ARTRealtimeDisconnected: {
             [self closeAndReleaseTransport];
             if (!_connectionLostAt) {
-                _connectionLostAt = [NSDate date];
+                _connectionLostAt = [_timeProvider wallClockNow];
                 ARTLogVerbose(self.logger, @"RT:%p set connection lost time; expected suspension at %@ (ttl=%f)", self, [self suspensionTime], self.connectionStateTtl);
             }
 
@@ -945,7 +945,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
             }
             if (message.connectionDetails && message.connectionDetails.maxIdleInterval) {
                 _maxIdleInterval = message.connectionDetails.maxIdleInterval;
-                _lastActivity = [NSDate date];
+                _lastActivity = [_timeProvider wallClockNow];
                 [self setIdleTimer];
             }
             ARTConnectionStateChangeParams *const params = [[ARTConnectionStateChangeParams alloc] initWithErrorInfo:message.error];
@@ -1255,7 +1255,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 }
 
 - (BOOL)isSuspendMode {
-    NSDate *currentTime = [NSDate date];
+    NSDate *currentTime = [_timeProvider wallClockNow];
     return [currentTime timeIntervalSinceDate:[self suspensionTime]] > 0;
 }
 
@@ -1557,7 +1557,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 
 - (void)onActivity {
     ARTLogVerbose(self.logger, @"R:%p activity", self);
-    _lastActivity = [NSDate date];
+    _lastActivity = [_timeProvider wallClockNow];
     [self setIdleTimer];
 }
 
@@ -1569,7 +1569,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     artDispatchCancel(_idleTimer);
 
     _idleTimer = artDispatchScheduled(self.options.testOptions.realtimeRequestTimeout + self.maxIdleInterval, _rest.queue, ^{
-        ARTLogError(self.logger, @"R:%p No activity seen from realtime in %f seconds; assuming connection has dropped", self, [[NSDate date] timeIntervalSinceDate:self->_lastActivity]);
+        ARTLogError(self.logger, @"R:%p No activity seen from realtime in %f seconds; assuming connection has dropped", self, [[self->_timeProvider wallClockNow] timeIntervalSinceDate:self->_lastActivity]);
 
         ARTErrorInfo *idleTimerExpired = [ARTErrorInfo createWithCode:ARTErrorDisconnected status:408 message:@"Idle timer expired"];
         ARTConnectionStateChangeParams *const params = [[ARTConnectionStateChangeParams alloc] initWithErrorInfo:idleTimerExpired];
