@@ -1,6 +1,8 @@
 #import "ARTLog+Private.h"
 #import "ARTNSDate+ARTUtil.h"
 #import "ARTGCD.h"
+#import "ARTSystemTimeProvider.h"
+#import "ARTTimeProvider.h"
 
 static const char *logLevelName(ARTLogLevel level) {
     switch(level) {
@@ -87,13 +89,14 @@ static const char *logLevelName(ARTLogLevel level) {
         _history = [[NSMutableArray alloc] init];
         _historyLines = historyLines;
         _queue = dispatch_queue_create("io.ably.log", DISPATCH_QUEUE_SERIAL);
+        _timeProvider = [[ARTSystemTimeProvider alloc] init];
     }
     return self;
 }
 
 - (void)log:(NSString *const)message withLevel:(const ARTLogLevel)level {
     art_dispatch_sync(_queue, ^{
-        ARTLogLine *logLine = [[ARTLogLine alloc] initWithDate:[NSDate date] level:level message:message];
+        ARTLogLine *logLine = [[ARTLogLine alloc] initWithDate:[self->_timeProvider wallClockNow] level:level message:message];
         if (level >= self.logLevel) {
             NSLog(@"%@", [logLine toString]);
             if (self->_captured) {
