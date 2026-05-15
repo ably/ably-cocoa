@@ -20,6 +20,7 @@
 @class ARTProtocolMessage;
 @class ARTConnectionInternal;
 @class ARTRealtimeChannelsInternal;
+@protocol ARTTimeProvider;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -58,6 +59,11 @@ NS_ASSUME_NONNULL_BEGIN
 ///
 /// Provides the implementation for `-[ARTPluginAPI nosync_latestConnectionDetailsForClient:]`. See documentation for that method in `APPluginAPIProtocol`.
 @property (nullable, readonly, nonatomic) ARTConnectionDetails *latestConnectionDetails;
+
+/// The time provider used by this client; sourced from `options.testOptions.timeProvider` at `-init` time.
+///
+/// Provides the implementation for `-[ARTPluginAPI wallClockNowForClient:]`, `-[ARTPluginAPI continuousClockNowForClient:]`, and `-[ARTPluginAPI scheduleForClient:after:queue:block:]`. See documentation for those methods in `APPluginAPIProtocol`.
+@property (nonatomic, readonly) id<ARTTimeProvider> timeProvider;
 
 - (void)timeWithWrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
                       completion:(ARTDateTimeCallback)callback;

@@ -205,7 +205,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) ARTConnectRetryState *connectRetryState;
 @property (nonatomic, readonly) ARTInternalLog *logger;
-@property (nonatomic, readonly) id<ARTTimeProvider> timeProvider;
 
 // Redeclaration as readwrite
 @property (nullable, readwrite, nonatomic) ARTConnectionDetails *latestConnectionDetails;
