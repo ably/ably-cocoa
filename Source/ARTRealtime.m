@@ -234,9 +234,9 @@ typedef NS_ENUM(NSUInteger, ARTNetworkState) {
     __weak ARTEventListener *_connectionRetryFromSuspendedListener;
     __weak ARTEventListener *_connectionRetryFromDisconnectedListener;
     __weak ARTEventListener *_connectingTimeoutListener;
-    ARTScheduledBlockHandle *_authenitcatingTimeoutWork;
+    id<APSchedulerHandle> _authenitcatingTimeoutWork;
     NSObject<ARTCancellable> *_authTask;
-    ARTScheduledBlockHandle *_idleTimer;
+    id<APSchedulerHandle> _idleTimer;
     dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;
 }
@@ -1057,7 +1057,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     [_connectingTimeoutListener stopTimer];
     _connectingTimeoutListener = nil;
     // Cancel auth scheduled work
-    artDispatchCancel(_authenitcatingTimeoutWork);
+    [_authenitcatingTimeoutWork cancel];
     _authenitcatingTimeoutWork = nil;
     [_authTask cancel];
     _authTask = nil;
@@ -1073,7 +1073,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     [_connectingTimeoutListener stopTimer];
     _connectingTimeoutListener = nil;
     // Cancel auth scheduled work
-    artDispatchCancel(_authenitcatingTimeoutWork);
+    [_authenitcatingTimeoutWork cancel];
     _authenitcatingTimeoutWork = nil;
     [_authTask cancel];
     _authTask = nil;
@@ -1145,9 +1145,9 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
             [self.auth setTokenDetails:nil];
 
             // Schedule timeout handler
-            _authenitcatingTimeoutWork = artDispatchScheduled(self.options.testOptions.realtimeRequestTimeout, _rest.queue, ^{
+            _authenitcatingTimeoutWork = [_timeProvider scheduleAfter:self.options.testOptions.realtimeRequestTimeout queue:_rest.queue block:^{
                 [self onConnectionTimeOut];
-            });
+            }];
 
             id<ARTAuthDelegate> delegate = self.auth.delegate;
             if (newConnection) {
@@ -1157,7 +1157,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
             @try {
                 _authTask = [self.auth _authorize:nil options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
                     // Cancel scheduled work
-                    artDispatchCancel(self->_authenitcatingTimeoutWork);
+                    [self->_authenitcatingTimeoutWork cancel];
                     self->_authenitcatingTimeoutWork = nil;
                     self->_authTask = nil;
 
@@ -1566,19 +1566,19 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         ARTLogVerbose(self.logger, @"R:%p set idle timer had been ignored", self);
         return;
     }
-    artDispatchCancel(_idleTimer);
+    [_idleTimer cancel];
 
-    _idleTimer = artDispatchScheduled(self.options.testOptions.realtimeRequestTimeout + self.maxIdleInterval, _rest.queue, ^{
+    _idleTimer = [_timeProvider scheduleAfter:self.options.testOptions.realtimeRequestTimeout + self.maxIdleInterval queue:_rest.queue block:^{
         ARTLogError(self.logger, @"R:%p No activity seen from realtime in %f seconds; assuming connection has dropped", self, [[self->_timeProvider wallClockNow] timeIntervalSinceDate:self->_lastActivity]);
 
         ARTErrorInfo *idleTimerExpired = [ARTErrorInfo createWithCode:ARTErrorDisconnected status:408 message:@"Idle timer expired"];
         ARTConnectionStateChangeParams *const params = [[ARTConnectionStateChangeParams alloc] initWithErrorInfo:idleTimerExpired];
         [self performTransitionToDisconnectedOrSuspendedWithParams:params];
-    });
+    }];
 }
 
 - (void)stopIdleTimer {
-    artDispatchCancel(_idleTimer);
+    [_idleTimer cancel];
     _idleTimer = nil;
 }
 
