@@ -243,7 +243,7 @@ class PushTests: XCTestCase {
         storage.simulateOnNextRead(string: "testId", for: ARTDeviceIdKey)
         storage.simulateOnNextRead(string: "testSecret", for: ARTDeviceSecretKey)
         storage.simulateOnNextRead(string: testToken, for: ARTAPNSDeviceTokenKey)
-        storage.simulateOnNextRead(data: testIdentity.archive(withLogger: nil), for: ARTDeviceIdentityTokenKey)
+        storage.simulateOnNextRead(data: testIdentity.art_archive(withLogger: nil)!, for: ARTDeviceIdentityTokenKey)
 
         let device = rest.device
 
@@ -355,7 +355,7 @@ class PushTests: XCTestCase {
         stateMachine.delegate = delegate
 
         storage.simulateOnNextRead(string: testDeviceToken, for: ARTAPNSDeviceTokenKey)
-        storage.simulateOnNextRead(data: testDeviceIdentity.archive(withLogger: nil), for: ARTDeviceIdentityTokenKey)
+        storage.simulateOnNextRead(data: testDeviceIdentity.art_archive(withLogger: nil)!, for: ARTDeviceIdentityTokenKey)
 
         XCTAssertEqual(realtime.device.clientId, testDeviceIdentity.clientId)
 

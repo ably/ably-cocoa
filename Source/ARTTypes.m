@@ -1,6 +1,7 @@
 #import "ARTTypes.h"
 #import "ARTTypes+Private.h"
 #import "ARTInternalLog.h"
+#import "ARTDeviceStorage.h"
 
 // MARK: Global helper functions
 
@@ -491,6 +492,17 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
         return [NSKeyedUnarchiver unarchiveObjectWithData:data];
     }
 #endif
+}
+
++ (nullable id)art_unarchiveFromStorage:(id<ARTDeviceStorage>)storage
+                                    key:(NSString *)key
+                             withLogger:(nullable ARTInternalLog *)logger {
+    NSData *data = [storage objectForKey:key];
+    if (data == nil) {
+        ARTLogDebug(logger, @"%@ unarchive skipped: no persisted data for key %@", self, key);
+        return nil;
+    }
+    return [self art_unarchiveFromData:data withLogger:logger];
 }
 
 @end

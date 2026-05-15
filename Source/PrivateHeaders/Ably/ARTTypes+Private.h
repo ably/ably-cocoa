@@ -3,6 +3,7 @@
 
 @class ARTRetryAttempt;
 @class ARTInternalLog;
+@protocol ARTDeviceStorage;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -45,6 +46,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface NSObject (ARTArchive)
 - (nullable NSData *)art_archiveWithLogger:(nullable ARTInternalLog *)logger;
 + (nullable id)art_unarchiveFromData:(NSData *)data withLogger:(nullable ARTInternalLog *)logger;
++ (nullable id)art_unarchiveFromStorage:(id<ARTDeviceStorage>)storage
+                                    key:(NSString *)key
+                             withLogger:(nullable ARTInternalLog *)logger;
 @end
 
 NS_ASSUME_NONNULL_END

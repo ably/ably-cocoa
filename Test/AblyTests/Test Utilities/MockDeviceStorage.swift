@@ -14,7 +14,7 @@ class MockDeviceStorage: NSObject, ARTDeviceStorage {
     init(startWith state: ARTPushActivationState? = nil) {
         super.init()
         if let state = state {
-            simulateOnNextRead(data: state.archive(), for: ARTPushActivationCurrentStateKey)
+            simulateOnNextRead(data: state.art_archive(withLogger: nil)!, for: ARTPushActivationCurrentStateKey)
         }
     }
 

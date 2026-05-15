@@ -46,6 +46,12 @@
 		210F67A629E9D93D007B9345 /* ARTRealtimeTransportFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 210F67A529E9D93D007B9345 /* ARTRealtimeTransportFactory.m */; };
 		210F67A729E9D93D007B9345 /* ARTRealtimeTransportFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 210F67A529E9D93D007B9345 /* ARTRealtimeTransportFactory.m */; };
 		210F67A829E9D93D007B9345 /* ARTRealtimeTransportFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 210F67A529E9D93D007B9345 /* ARTRealtimeTransportFactory.m */; };
+		2111231E2F92A9D100A2765A /* ARTThrowingLocalDeviceStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = 2111231D2F92A9D100A2765A /* ARTThrowingLocalDeviceStorage.m */; };
+		2111231F2F92A9D100A2765A /* ARTThrowingLocalDeviceStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = 2111231D2F92A9D100A2765A /* ARTThrowingLocalDeviceStorage.m */; };
+		211123202F92A9D100A2765A /* ARTThrowingLocalDeviceStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = 2111231D2F92A9D100A2765A /* ARTThrowingLocalDeviceStorage.m */; };
+		211123232F92A9FB00A2765A /* ARTThrowingLocalDeviceStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = 211123222F92A9FB00A2765A /* ARTThrowingLocalDeviceStorage.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		211123242F92A9FB00A2765A /* ARTThrowingLocalDeviceStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = 211123222F92A9FB00A2765A /* ARTThrowingLocalDeviceStorage.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		211123252F92A9FB00A2765A /* ARTThrowingLocalDeviceStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = 211123222F92A9FB00A2765A /* ARTThrowingLocalDeviceStorage.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		21113B5129DC6AAF00652C86 /* ARTTestClientOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = 21113B5029DC6AAF00652C86 /* ARTTestClientOptions.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		21113B5229DC6AAF00652C86 /* ARTTestClientOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = 21113B5029DC6AAF00652C86 /* ARTTestClientOptions.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		21113B5329DC6AAF00652C86 /* ARTTestClientOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = 21113B5029DC6AAF00652C86 /* ARTTestClientOptions.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -1137,6 +1143,8 @@
 		21088DC62A5355510033C722 /* ARTConnectRetryState.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTConnectRetryState.m; sourceTree = "<group>"; };
 		210F67A129E9D718007B9345 /* ARTRealtimeTransportFactory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTRealtimeTransportFactory.h; path = PrivateHeaders/Ably/ARTRealtimeTransportFactory.h; sourceTree = "<group>"; };
 		210F67A529E9D93D007B9345 /* ARTRealtimeTransportFactory.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTRealtimeTransportFactory.m; sourceTree = "<group>"; };
+		2111231D2F92A9D100A2765A /* ARTThrowingLocalDeviceStorage.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTThrowingLocalDeviceStorage.m; sourceTree = "<group>"; };
+		211123222F92A9FB00A2765A /* ARTThrowingLocalDeviceStorage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTThrowingLocalDeviceStorage.h; path = PrivateHeaders/Ably/ARTThrowingLocalDeviceStorage.h; sourceTree = "<group>"; };
 		21113B5029DC6AAF00652C86 /* ARTTestClientOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTTestClientOptions.h; path = PrivateHeaders/Ably/ARTTestClientOptions.h; sourceTree = "<group>"; };
 		21113B5429DC6ACD00652C86 /* ARTTestClientOptions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTTestClientOptions.m; sourceTree = "<group>"; };
 		2114D4262D4BC5470032839A /* AblyInternal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AblyInternal.h; path = include/Ably/AblyInternal.h; sourceTree = "<group>"; };
@@ -2120,6 +2128,8 @@
 				D777EEDF206285CF002EBA03 /* ARTDeviceIdentityTokenDetails.m */,
 				D7DEAFCF1E65926D00D23F24 /* ARTLocalDevice.h */,
 				EBFFAC181E97919C003E7326 /* ARTLocalDevice+Private.h */,
+				211123222F92A9FB00A2765A /* ARTThrowingLocalDeviceStorage.h */,
+				2111231D2F92A9D100A2765A /* ARTThrowingLocalDeviceStorage.m */,
 				D7DEAFD01E65926D00D23F24 /* ARTLocalDevice.m */,
 				D75F49C2205ACFEC003DE04F /* ARTDeviceStorage.h */,
 				D7DF73881EA645300013CD36 /* ARTLocalDeviceStorage.h */,
@@ -2235,6 +2245,7 @@
 				EB89D4091C61C5ED007FA5B7 /* ARTRealtimeChannels.h in Headers */,
 				96E408431A38939E00087F77 /* ARTProtocolMessage.h in Headers */,
 				5CC1D9D42E7C2C77005DC3ED /* ARTMessageVersion.h in Headers */,
+				211123232F92A9FB00A2765A /* ARTThrowingLocalDeviceStorage.h in Headers */,
 				D78D780921271FB10016808B /* ARTHTTPPaginatedResponse+Private.h in Headers */,
 				21447D3B254A2ECB00B3905A /* ARTSRWebSocket.h in Headers */,
 				EBB721CB2376B454001C3550 /* ARTURLSession.h in Headers */,
@@ -2493,6 +2504,7 @@
 				D710D60D21949DDB008F54AD /* ARTDataQuery.h in Headers */,
 				D710D58221949D28008F54AD /* ARTTokenParams.h in Headers */,
 				D710D51921949C42008F54AD /* ARTDeviceDetails.h in Headers */,
+				211123242F92A9FB00A2765A /* ARTThrowingLocalDeviceStorage.h in Headers */,
 				84D04C342DE8A4F4000E8AE2 /* ARTRealtimeAnnotations.h in Headers */,
 				D710D50621949C18008F54AD /* ARTConnection+Private.h in Headers */,
 				D710D54E21949C66008F54AD /* ARTNSMutableRequest+ARTPush.h in Headers */,
@@ -2711,6 +2723,7 @@
 				D710D61721949DDC008F54AD /* ARTDataQuery.h in Headers */,
 				D710D5A821949D2A008F54AD /* ARTTokenParams.h in Headers */,
 				D710D52B21949C44008F54AD /* ARTDeviceDetails.h in Headers */,
+				211123252F92A9FB00A2765A /* ARTThrowingLocalDeviceStorage.h in Headers */,
 				84D04C332DE8A4F4000E8AE2 /* ARTRealtimeAnnotations.h in Headers */,
 				D710D51221949C19008F54AD /* ARTConnection+Private.h in Headers */,
 				D710D55421949C67008F54AD /* ARTNSMutableRequest+ARTPush.h in Headers */,
@@ -3124,6 +3137,7 @@
 				D7F1D3781BF4DE72001A4B5E /* ARTRealtimePresence.m in Sources */,
 				21C2BE5D2F0D5B0100AE5E41 /* ARTMessageSendStatus.m in Sources */,
 				D7DF738B1EA645300013CD36 /* ARTLocalDeviceStorage.m in Sources */,
+				2111231E2F92A9D100A2765A /* ARTThrowingLocalDeviceStorage.m in Sources */,
 				D7B621911E4A6E0200684474 /* ARTPush.m in Sources */,
 				D70C36C6233E6831002FD6E3 /* ARTFormEncode.m in Sources */,
 				D7AE18D31E5B410F00478D82 /* ARTPushChannelSubscriptions.m in Sources */,
@@ -3273,6 +3287,7 @@
 				D710D5D521949D78008F54AD /* ARTClientOptions.m in Sources */,
 				21C2BE5E2F0D5B0100AE5E41 /* ARTMessageSendStatus.m in Sources */,
 				D710D5D621949D78008F54AD /* ARTChannel.m in Sources */,
+				211123202F92A9D100A2765A /* ARTThrowingLocalDeviceStorage.m in Sources */,
 				D70C36C7233E6831002FD6E3 /* ARTFormEncode.m in Sources */,
 				D710D5D121949D78008F54AD /* ARTAuthDetails.m in Sources */,
 				D710D4EC21949C0D008F54AD /* ARTRealtime.m in Sources */,
@@ -3422,6 +3437,7 @@
 				D710D5FC21949D79008F54AD /* ARTChannel.m in Sources */,
 				21C2BE5F2F0D5B0100AE5E41 /* ARTMessageSendStatus.m in Sources */,
 				D70C36C8233E6831002FD6E3 /* ARTFormEncode.m in Sources */,
+				2111231F2F92A9D100A2765A /* ARTThrowingLocalDeviceStorage.m in Sources */,
 				D710D5F721949D79008F54AD /* ARTAuthDetails.m in Sources */,
 				D710D4FC21949C0E008F54AD /* ARTRealtime.m in Sources */,
 				D710D4FD21949C0E008F54AD /* ARTRealtimeChannel.m in Sources */,

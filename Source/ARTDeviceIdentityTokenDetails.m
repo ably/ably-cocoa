@@ -64,14 +64,4 @@ NSString *const ARTCoderClientIdKey = @"clientId";
     return true;
 }
 
-#pragma mark - Archive/Unarchive
-
-- (NSData *)archiveWithLogger:(nullable ARTInternalLog *)logger {
-    return [self art_archiveWithLogger:logger];
-}
-
-+ (ARTDeviceIdentityTokenDetails *)unarchive:(NSData *)data withLogger:(nullable ARTInternalLog *)logger {
-    return [self art_unarchiveFromData:data withLogger:logger];
-}
-
 @end
