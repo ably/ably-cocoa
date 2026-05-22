@@ -81,6 +81,16 @@ class AblyTests {
         checkError(errorInfo, withAlternative: "")
     }
 
+    /// Removes the on-disk `LocalDevice` file used by the real device storage,
+    /// so a test (or suite `setUp`) starts from a clean device/state-machine
+    /// slate rather than inheriting state another test persisted.
+    class func clearOnDiskDeviceStorage() {
+        #if os(iOS)
+        let deviceFileURL = ARTLocalDeviceStorage.defaultBaseDirectoryURL().appendingPathComponent("LocalDevice.plist")
+        try? FileManager.default.removeItem(at: deviceFileURL)
+        #endif
+    }
+
     static var testApplication: [String: Any]?
 
     struct QueueIdentity {

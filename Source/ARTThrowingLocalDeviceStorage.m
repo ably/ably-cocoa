@@ -13,15 +13,14 @@
                 format:@"%@ invoked with key %@ on a client configured with disableLocalDevice", NSStringFromSelector(_cmd), key];
 }
 
-- (nullable NSString *)secretForDevice:(ARTDeviceId *)deviceId {
+- (void)removeAll {
     [NSException raise:NSInternalInconsistencyException
-                format:@"%@ invoked for device %@ on a client configured with disableLocalDevice", NSStringFromSelector(_cmd), deviceId];
-    return nil;
+                format:@"%@ invoked on a client configured with disableLocalDevice", NSStringFromSelector(_cmd)];
 }
 
-- (void)setSecret:(nullable NSString *)value forDevice:(ARTDeviceId *)deviceId {
+- (void)performBatchUpdate:(NS_NOESCAPE void (^)(id<ARTDeviceStorage>))block {
     [NSException raise:NSInternalInconsistencyException
-                format:@"%@ invoked for device %@ on a client configured with disableLocalDevice", NSStringFromSelector(_cmd), deviceId];
+                format:@"%@ invoked on a client configured with disableLocalDevice", NSStringFromSelector(_cmd)];
 }
 
 @end

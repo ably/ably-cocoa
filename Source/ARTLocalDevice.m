@@ -8,6 +8,7 @@
 #import "ARTCrypto+Private.h"
 #import "ARTInternalLog.h"
 #import "ARTTypes+Private.h"
+#import "ARTPushActivationStateMachine+Private.h"
 
 NSString *const ARTDevicePlatform = @"ios";
 
@@ -57,12 +58,23 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     return self;
 }
 
-- (void)generateAndPersistPairOfDeviceIdAndSecret {
-    self.id = [self.class generateId];
-    self.secret = [self.class generateSecret];
-
-    [_storage setObject:self.id forKey:ARTDeviceIdKey];
-    [_storage setSecret:self.secret forDevice:self.id];
+// RSH8b helper. Only generates a new (id, deviceSecret) pair and persists it.
+// Decision about when generation should happen and what else to clear belongs to the caller.
+// If `writer` is omitted, device's storage is used (for standalone calls).
+- (void)generateAndPersistPairOfDeviceIdAndSecretForStorage:(id<ARTDeviceStorage>)writer {
+    NSString *newId = [self.class generateId];
+    NSString *newSecret = [self.class generateSecret];
+    self.id = newId;
+    self.secret = newSecret;
+    // The inner batch makes the helper safe to call standalone: id and
+    // secret reach disk together rather than as two separate flushes. When
+    // a caller is already inside its own batch (e.g. `resetDetails`) the
+    // nested batch is just a counter bump — the outer batch still owns the
+    // single flush.
+    [(writer ?: _storage) performBatchUpdate:^(id<ARTDeviceStorage> writer) {
+        [writer setObject:newId forKey:ARTDeviceIdKey];
+        [writer setObject:newSecret forKey:ARTDeviceSecretKey];
+    }];
 }
 
 + (instancetype)deviceWithStorage:(id<ARTDeviceStorage>)storage logger:(nullable ARTInternalLog *)logger {
@@ -73,72 +85,61 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     device.push.recipient[@"transportType"] = ARTDevicePushTransportType;
 
     NSString *deviceId = [storage objectForKey:ARTDeviceIdKey];
-    NSString *deviceSecret = deviceId == nil ? nil : [storage secretForDevice:deviceId];
+    NSString *deviceSecret = [storage objectForKey:ARTDeviceSecretKey];
 
-    if (deviceId == nil || deviceSecret == nil) {
-        if (deviceId == nil) {
-            ARTLogDebug(logger, @"Generating device ID and secret: no stored device ID");
-        }
-        else {
-            ARTLogError(logger, @"Regenerating device ID and secret: stored device ID %@ has no secret", deviceId);
-        }
-        [device generateAndPersistPairOfDeviceIdAndSecret]; // Should be removed later once spec issue #180 resolved.
-    }
-    else {
+    // RSH8a
+    if (deviceId && deviceSecret) {
         device.id = deviceId;
         device.secret = deviceSecret;
+
+        ARTDeviceIdentityTokenDetails *identityTokenDetails = [ARTDeviceIdentityTokenDetails art_unarchiveFromStorage:storage
+                                                                                                                  key:ARTDeviceIdentityTokenKey
+                                                                                                           withLogger:logger];
+        device->_identityTokenDetails = identityTokenDetails;
+
+        NSString *clientId = [storage objectForKey:ARTClientIdKey];
+        if (clientId == nil && identityTokenDetails.clientId != nil) {
+            clientId = identityTokenDetails.clientId; // Older versions of the SDK did not persist clientId, so as a fallback when loading data persisted by these versions we use the clientId of the stored identity token
+            [storage setObject:clientId forKey:ARTClientIdKey];
+        }
+        device.clientId = clientId;
+
+        NSArray *supportedTokenTypes = @[
+            ARTAPNSDeviceDefaultTokenType,
+            ARTAPNSDeviceLocationTokenType
+        ];
+
+        for (NSString *tokenType in supportedTokenTypes) {
+            NSString *token = [ARTLocalDevice apnsDeviceTokenOfType:tokenType fromStorage:storage];
+            [device setAPNSDeviceToken:token tokenType:tokenType];
+        }
     }
-
-    ARTDeviceIdentityTokenDetails *identityTokenDetails = [ARTDeviceIdentityTokenDetails art_unarchiveFromStorage:storage
-                                                                                                              key:ARTDeviceIdentityTokenKey
-                                                                                                       withLogger:logger];
-    device->_identityTokenDetails = identityTokenDetails;
-
-    NSString *clientId = [storage objectForKey:ARTClientIdKey];
-    if (clientId == nil && identityTokenDetails.clientId != nil) {
-        clientId = identityTokenDetails.clientId; // Older versions of the SDK did not persist clientId, so as a fallback when loading data persisted by these versions we use the clientId of the stored identity token
-        [storage setObject:clientId forKey:ARTClientIdKey];
-    }
-    device.clientId = clientId;
-
-    NSArray *supportedTokenTypes = @[
-        ARTAPNSDeviceDefaultTokenType,
-        ARTAPNSDeviceLocationTokenType
-    ];
-
-    for (NSString *tokenType in supportedTokenTypes) {
-        NSString *token = [ARTLocalDevice apnsDeviceTokenOfType:tokenType fromStorage:storage];
-        [device setAPNSDeviceToken:token tokenType:tokenType];
+    else {
+        // RSH8b, RSH8k2
+        ARTLogDebug(logger, @"LocalDevice: generating a fresh id+secret pair");
+        [device generateAndPersistPairOfDeviceIdAndSecretForStorage:nil];
     }
     return device;
 }
 
 - (void)setupDetailsWithClientId:(NSString *)clientId {
-    NSString *deviceId = self.id;
-    NSString *deviceSecret = self.secret;
-
-    if (deviceId == nil || deviceSecret == nil) {
-        [self generateAndPersistPairOfDeviceIdAndSecret];
-    }
-
     self.clientId = clientId;
     [_storage setObject:clientId forKey:ARTClientIdKey];
 }
 
 - (void)resetDetails {
-    // Should be replaced later to resetting device's id/secret once spec issue #180 resolved.
-    [self generateAndPersistPairOfDeviceIdAndSecret];
+    [_storage performBatchUpdate:^(id<ARTDeviceStorage> writer) {
+        // Wipe everything persisted, then regenerate — all in the same batch,
+        // so the id+secret regeneration lands together with the wipe.
+        [writer removeAll];
+        [self generateAndPersistPairOfDeviceIdAndSecretForStorage:writer];
 
-    self.clientId = nil;
-    [_storage setObject:nil forKey:ARTClientIdKey];
-    [self setAndPersistIdentityTokenDetails:nil];
-    NSArray *supportedTokenTypes = @[
-        ARTAPNSDeviceDefaultTokenType,
-        ARTAPNSDeviceLocationTokenType
-    ];
-    for (NSString *tokenType in supportedTokenTypes) {
-        [self setAndPersistAPNSDeviceToken:nil tokenType:tokenType];
-    }
+        // Mirror the persistent clear in the in-memory device state.
+        self.clientId = nil;
+        _identityTokenDetails = nil;
+        [self setAPNSDeviceToken:nil tokenType:ARTAPNSDeviceDefaultTokenType];
+        [self setAPNSDeviceToken:nil tokenType:ARTAPNSDeviceLocationTokenType];
+    }];
 }
 
 + (NSString *)generateId {
@@ -180,13 +181,18 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
 }
 
 - (void)setAndPersistIdentityTokenDetails:(ARTDeviceIdentityTokenDetails *)tokenDetails {
-    [self.storage setObject:[tokenDetails art_archiveWithLogger:self.logger]
-                     forKey:ARTDeviceIdentityTokenKey];
+    NSData *tokenData = [tokenDetails art_archiveWithLogger:self.logger];
+    BOOL adoptClientId = (self.clientId == nil && tokenDetails.clientId != nil);
     _identityTokenDetails = tokenDetails;
-    if (self.clientId == nil) {
+    if (adoptClientId) {
         self.clientId = tokenDetails.clientId;
-        [self.storage setObject:tokenDetails.clientId forKey:ARTClientIdKey];
     }
+    [self.storage performBatchUpdate:^(id<ARTDeviceStorage> writer) {
+        [writer setObject:tokenData forKey:ARTDeviceIdentityTokenKey];
+        if (adoptClientId) {
+            [writer setObject:tokenDetails.clientId forKey:ARTClientIdKey];
+        }
+    }];
 }
 
 - (BOOL)isRegistered {
