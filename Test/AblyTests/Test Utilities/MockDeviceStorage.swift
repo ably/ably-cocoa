@@ -39,21 +39,10 @@ class MockDeviceStorage: NSObject, ARTDeviceStorage {
         }
     }
 
-    func secret(forDevice deviceId: ARTDeviceId) -> String? {
-        return accessQueue.sync {
-            keysRead.append(ARTDeviceSecretKey)
-            if let value = simulateString[ARTDeviceSecretKey] {
-                defer { simulateString.removeValue(forKey: ARTDeviceSecretKey) }
-                return value
-            }
-            return nil
-        }
-    }
-
-    func setSecret(_ value: String?, forDevice deviceId: ARTDeviceId) {
-        accessQueue.sync {
-            _ = keysWritten.updateValue(value, forKey: ARTDeviceSecretKey)
-        }
+    func performBatchUpdate(_ block: (ARTDeviceStorage) -> Void) {
+        // The mock records every key write individually; there is no on-disk
+        // flush to defer, so atomic batches just run the block synchronously.
+        block(self)
     }
 
     func simulateOnNextRead(data value: Data, `for` key: String) {

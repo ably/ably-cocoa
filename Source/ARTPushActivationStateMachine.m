@@ -16,12 +16,15 @@
 #import "ARTAuth+Private.h"
 #import "ARTGCD.h"
 
+// These keys are referenced by `ARTLocalDeviceStorage` (built on all
+// platforms) for key routing, so the symbols must be defined regardless of
+// `TARGET_OS_IOS`. The rest of the state machine is iOS-only.
+NSString *const ARTPushActivationCurrentStateKey = @"ARTPushActivationCurrentState";
+NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEvents";
+
 #if TARGET_OS_IOS
 
 #import <UIKit/UIKit.h>
-
-NSString *const ARTPushActivationCurrentStateKey = @"ARTPushActivationCurrentState";
-NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEvents";
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -155,13 +158,17 @@ art_dispatch_async(_queue, ^{
 }
 
 - (void)persist {
-    // Archiving
+    NSData *stateData = nil;
     if ([_current isKindOfClass:[ARTPushActivationPersistentState class]]) {
-        [self.rest.storage setObject:[_current art_archiveWithLogger:_logger]
-                              forKey:ARTPushActivationCurrentStateKey];
+        stateData = [_current art_archiveWithLogger:_logger];
     }
-    [self.rest.storage setObject:[_pendingEvents art_archiveWithLogger:_logger]
-                          forKey:ARTPushActivationPendingEventsKey];
+    NSData *eventsData = [_pendingEvents art_archiveWithLogger:_logger];
+    [self.rest.storage performBatchUpdate:^(id<ARTDeviceStorage> writer) {
+        if (stateData != nil) {
+            [writer setObject:stateData forKey:ARTPushActivationCurrentStateKey];
+        }
+        [writer setObject:eventsData forKey:ARTPushActivationPendingEventsKey];
+    }];
 }
 
 - (void)deviceRegistration:(ARTErrorInfo *)error {

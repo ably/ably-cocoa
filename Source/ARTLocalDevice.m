@@ -58,11 +58,19 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
 }
 
 - (void)generateAndPersistPairOfDeviceIdAndSecret {
-    self.id = [self.class generateId];
-    self.secret = [self.class generateSecret];
-
-    [_storage setObject:self.id forKey:ARTDeviceIdKey];
-    [_storage setSecret:self.secret forDevice:self.id];
+    NSString *newId = [self.class generateId];
+    NSString *newSecret = [self.class generateSecret];
+    self.id = newId;
+    self.secret = newSecret;
+    // The inner batch makes the helper safe to call standalone: id and
+    // secret reach disk together rather than as two separate flushes. When
+    // a caller is already inside its own batch (e.g. `resetDetails`) the
+    // nested batch is just a counter bump — the outer batch still owns the
+    // single flush.
+    [_storage performBatchUpdate:^(id<ARTDeviceStorage> writer) {
+        [writer setObject:newId forKey:ARTDeviceIdKey];
+        [writer setObject:newSecret forKey:ARTDeviceSecretKey];
+    }];
 }
 
 + (instancetype)deviceWithStorage:(id<ARTDeviceStorage>)storage logger:(nullable ARTInternalLog *)logger {
@@ -73,7 +81,7 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     device.push.recipient[@"transportType"] = ARTDevicePushTransportType;
 
     NSString *deviceId = [storage objectForKey:ARTDeviceIdKey];
-    NSString *deviceSecret = deviceId == nil ? nil : [storage secretForDevice:deviceId];
+    NSString *deviceSecret = [storage objectForKey:ARTDeviceSecretKey];
 
     if (deviceId == nil || deviceSecret == nil) {
         if (deviceId == nil) {
@@ -114,31 +122,31 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
 }
 
 - (void)setupDetailsWithClientId:(NSString *)clientId {
-    NSString *deviceId = self.id;
-    NSString *deviceSecret = self.secret;
-
-    if (deviceId == nil || deviceSecret == nil) {
-        [self generateAndPersistPairOfDeviceIdAndSecret];
-    }
-
-    self.clientId = clientId;
-    [_storage setObject:clientId forKey:ARTClientIdKey];
+    [_storage performBatchUpdate:^(id<ARTDeviceStorage> writer) {
+        if (self.id == nil || self.secret == nil) {
+            [self generateAndPersistPairOfDeviceIdAndSecret];
+        }
+        self.clientId = clientId;
+        [writer setObject:clientId forKey:ARTClientIdKey];
+    }];
 }
 
 - (void)resetDetails {
     // Should be replaced later to resetting device's id/secret once spec issue #180 resolved.
-    [self generateAndPersistPairOfDeviceIdAndSecret];
+    [_storage performBatchUpdate:^(id<ARTDeviceStorage> writer) {
+        [self generateAndPersistPairOfDeviceIdAndSecret];
 
-    self.clientId = nil;
-    [_storage setObject:nil forKey:ARTClientIdKey];
-    [self setAndPersistIdentityTokenDetails:nil];
-    NSArray *supportedTokenTypes = @[
-        ARTAPNSDeviceDefaultTokenType,
-        ARTAPNSDeviceLocationTokenType
-    ];
-    for (NSString *tokenType in supportedTokenTypes) {
-        [self setAndPersistAPNSDeviceToken:nil tokenType:tokenType];
-    }
+        self.clientId = nil;
+        [writer setObject:nil forKey:ARTClientIdKey];
+        [self setAndPersistIdentityTokenDetails:nil];
+        NSArray *supportedTokenTypes = @[
+            ARTAPNSDeviceDefaultTokenType,
+            ARTAPNSDeviceLocationTokenType
+        ];
+        for (NSString *tokenType in supportedTokenTypes) {
+            [self setAndPersistAPNSDeviceToken:nil tokenType:tokenType];
+        }
+    }];
 }
 
 + (NSString *)generateId {
@@ -180,13 +188,18 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
 }
 
 - (void)setAndPersistIdentityTokenDetails:(ARTDeviceIdentityTokenDetails *)tokenDetails {
-    [self.storage setObject:[tokenDetails art_archiveWithLogger:self.logger]
-                     forKey:ARTDeviceIdentityTokenKey];
+    NSData *tokenData = [tokenDetails art_archiveWithLogger:self.logger];
+    BOOL adoptClientId = (self.clientId == nil && tokenDetails.clientId != nil);
     _identityTokenDetails = tokenDetails;
-    if (self.clientId == nil) {
+    if (adoptClientId) {
         self.clientId = tokenDetails.clientId;
-        [self.storage setObject:tokenDetails.clientId forKey:ARTClientIdKey];
     }
+    [self.storage performBatchUpdate:^(id<ARTDeviceStorage> writer) {
+        [writer setObject:tokenData forKey:ARTDeviceIdentityTokenKey];
+        if (adoptClientId) {
+            [writer setObject:tokenDetails.clientId forKey:ARTClientIdKey];
+        }
+    }];
 }
 
 - (BOOL)isRegistered {
