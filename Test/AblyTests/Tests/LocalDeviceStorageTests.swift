@@ -92,17 +92,20 @@ final class LocalDeviceStorageTests: XCTestCase {
 
     // MARK: bug fix — id regeneration writes id + secret + nil-token atomically
 
-    func test_regeneratingDeviceIdClearsStaleIdentityToken() {
-        // Storage starts with an id and an identity token but no secret —
-        // the precise inconsistent state the issue's bug scenario produces
-        // when the legacy keychain is unreadable. The fix guarantees that
-        // a regeneration triggered by this state writes a fresh (id, secret)
-        // pair and clears the stale identity token in the same batch.
+    func test_localDeviceLoadFailureDiscardsAllPersistedData() {
+        // Storage starts with an id, an identity token, a clientId, an APNS
+        // token and persisted state-machine data — but no device secret. This
+        // is the inconsistent state RSH8a1 must recover from: loading id or
+        // deviceSecret has failed, so all persisted LocalDevice attributes
+        // AND all persisted Activation State Machine data must be discarded.
         let storage = makeStorage()
         storage.performBatchUpdate { writer in
             writer.setObject("old-id", forKey: ARTDeviceIdKey)
             writer.setObject(Data("old-token-archive".utf8), forKey: ARTDeviceIdentityTokenKey)
             writer.setObject("client-x", forKey: ARTClientIdKey)
+            writer.setObject("apns-default", forKey: "ARTAPNSDeviceToken-default")
+            writer.setObject(Data("state-archive".utf8), forKey: ARTPushActivationCurrentStateKey)
+            writer.setObject(Data("events-archive".utf8), forKey: ARTPushActivationPendingEventsKey)
         }
 
         let rest = ARTRest(key: "fake:key")
@@ -113,19 +116,27 @@ final class LocalDeviceStorageTests: XCTestCase {
         rest.internal.resetDeviceSingleton()
 
         // Triggers `+[ARTLocalDevice deviceWithStorage:logger:]`, which sees
-        // an id with no secret and calls `-generateAndPersistPairOfDeviceIdAndSecret`.
+        // a missing secret and applies RSH8a1: discard everything, then
+        // eagerly generate a fresh (id, secret) pair (RSH8k2 note).
         let device = rest.device
 
         XCTAssertNotEqual(device.id, "old-id")
         XCTAssertNotNil(device.secret)
         XCTAssertNil(device.identityTokenDetails)
-        XCTAssertNil(storage.object(forKey: ARTDeviceIdentityTokenKey))
+        XCTAssertNil(device.clientId)
 
-        // And the same is reflected on disk.
+        // Every key other than the freshly generated (id, secret) must be
+        // cleared, both in the in-memory cache and on disk.
         let reloaded = makeStorage()
-        XCTAssertEqual(reloaded.object(forKey: ARTDeviceIdKey) as? String, device.id)
-        XCTAssertEqual(reloaded.object(forKey: ARTDeviceSecretKey) as? String, device.secret)
-        XCTAssertNil(reloaded.object(forKey: ARTDeviceIdentityTokenKey))
+        for storageToCheck in [storage as ARTDeviceStorage, reloaded as ARTDeviceStorage] {
+            XCTAssertEqual(storageToCheck.object(forKey: ARTDeviceIdKey) as? String, device.id)
+            XCTAssertEqual(storageToCheck.object(forKey: ARTDeviceSecretKey) as? String, device.secret)
+            XCTAssertNil(storageToCheck.object(forKey: ARTDeviceIdentityTokenKey))
+            XCTAssertNil(storageToCheck.object(forKey: ARTClientIdKey))
+            XCTAssertNil(storageToCheck.object(forKey: "ARTAPNSDeviceToken-default"))
+            XCTAssertNil(storageToCheck.object(forKey: ARTPushActivationCurrentStateKey))
+            XCTAssertNil(storageToCheck.object(forKey: ARTPushActivationPendingEventsKey))
+        }
     }
 
     func test_batchUpdateDoesNotReachDiskMidBatch() throws {

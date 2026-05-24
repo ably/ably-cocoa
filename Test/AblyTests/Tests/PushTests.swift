@@ -354,6 +354,11 @@ class PushTests: XCTestCase {
         let delegate = StateMachineDelegate()
         stateMachine.delegate = delegate
 
+        // Per RSH8a1 the load path discards everything when `id` or
+        // `deviceSecret` can't be loaded, so to exercise the identity-token
+        // path we must simulate a consistent (id, secret, token) triple.
+        storage.simulateOnNextRead(string: "testId", for: ARTDeviceIdKey)
+        storage.simulateOnNextRead(string: "testSecret", for: ARTDeviceSecretKey)
         storage.simulateOnNextRead(string: testDeviceToken, for: ARTAPNSDeviceTokenKey)
         storage.simulateOnNextRead(data: testDeviceIdentity.art_archive(withLogger: nil)!, for: ARTDeviceIdentityTokenKey)
 
