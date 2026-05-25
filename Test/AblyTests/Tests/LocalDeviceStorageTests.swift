@@ -172,14 +172,10 @@ final class LocalDeviceStorageTests: XCTestCase {
     func test_migratesLegacyUserDefaultsOnFirstInit() {
         let defaults = UserDefaults.standard
 
-        // Device-identity legacy data — without a keychain secret, the tuple
-        // is structurally broken and must be discarded.
         defaults.set("legacy-device", forKey: ARTDeviceIdKey)
         defaults.set("legacy-client", forKey: ARTClientIdKey)
-        defaults.set(Data("legacy-token-archive".utf8), forKey: ARTDeviceIdentityTokenKey)
-
-        // Push-runtime legacy data — independent of the secret; migrates
-        // as-is.
+        let identityTokenData = Data("legacy-token-archive".utf8)
+        defaults.set(identityTokenData, forKey: ARTDeviceIdentityTokenKey)
         let stateData = Data("state-archive".utf8)
         let eventsData = Data("events-archive".utf8)
         defaults.set(stateData, forKey: ARTPushActivationCurrentStateKey)
@@ -187,18 +183,28 @@ final class LocalDeviceStorageTests: XCTestCase {
         defaults.set("apns-default-token", forKey: "ARTAPNSDeviceToken-default")
         defaults.set("apns-location-token", forKey: "ARTAPNSDeviceToken-location")
 
-        let storage = makeStorage()
+        // Keychain reader returns the legacy secret — the happy path lets
+        // every field cross into the new file together.
+        let reader: ARTLegacyKeychainSecretReader = { deviceId, outStatus in
+            outStatus?.pointee = errSecSuccess
+            return deviceId == "legacy-device" ? "legacy-secret" : nil
+        }
+        let storage = ARTLocalDeviceStorage(
+            baseDirectoryURL: tempDirectory,
+            logger: nil,
+            logValues: false,
+            legacyKeychainReader: reader
+        )
 
-        // Device details and state machine are discarded (no secret → broken).
-        XCTAssertNil(storage.object(forKey: ARTDeviceIdKey))
-        XCTAssertNil(storage.object(forKey: ARTClientIdKey))
-        XCTAssertNil(storage.object(forKey: ARTDeviceIdentityTokenKey))
-        XCTAssertNil(storage.object(forKey: ARTPushActivationCurrentStateKey))
-        XCTAssertNil(storage.object(forKey: ARTPushActivationPendingEventsKey))
-        XCTAssertNil(storage.object(forKey: "ARTAPNSDeviceToken-default"))
-        XCTAssertNil(storage.object(forKey: "ARTAPNSDeviceToken-location"))
+        XCTAssertEqual(storage.object(forKey: ARTDeviceIdKey) as? String, "legacy-device")
+        XCTAssertEqual(storage.object(forKey: ARTDeviceSecretKey) as? String, "legacy-secret")
+        XCTAssertEqual(storage.object(forKey: ARTDeviceIdentityTokenKey) as? Data, identityTokenData)
+        XCTAssertEqual(storage.object(forKey: ARTClientIdKey) as? String, "legacy-client")
+        XCTAssertEqual(storage.object(forKey: ARTPushActivationCurrentStateKey) as? Data, stateData)
+        XCTAssertEqual(storage.object(forKey: ARTPushActivationPendingEventsKey) as? Data, eventsData)
+        XCTAssertEqual(storage.object(forKey: "ARTAPNSDeviceToken-default") as? String, "apns-default-token")
+        XCTAssertEqual(storage.object(forKey: "ARTAPNSDeviceToken-location") as? String, "apns-location-token")
 
-        // All legacy UserDefaults entries are cleaned up.
         for key in [
             ARTDeviceIdKey,
             ARTClientIdKey,
@@ -212,56 +218,44 @@ final class LocalDeviceStorageTests: XCTestCase {
         }
     }
 
-    func test_migrationDefersWhenLegacyKeychainIsLocked() {
+    func test_discardsLegacyDataWhenKeychainSecretIsUnavailable() {
         let defaults = UserDefaults.standard
+
         defaults.set("legacy-device", forKey: ARTDeviceIdKey)
         defaults.set("legacy-client", forKey: ARTClientIdKey)
         defaults.set(Data("legacy-token-archive".utf8), forKey: ARTDeviceIdentityTokenKey)
+        defaults.set(Data("state-archive".utf8), forKey: ARTPushActivationCurrentStateKey)
+        defaults.set(Data("events-archive".utf8), forKey: ARTPushActivationPendingEventsKey)
+        defaults.set("apns-default-token", forKey: "ARTAPNSDeviceToken-default")
+        defaults.set("apns-location-token", forKey: "ARTAPNSDeviceToken-location")
 
-        // First init: keychain reader reports `errSecInteractionNotAllowed`,
-        // the "device locked before first unlock" status the issue is about.
-        // The migration must defer — no file written, no legacy entries
-        // cleaned up.
-        let lockedReader: ARTLegacyKeychainSecretReader = { _, outStatus in
+        // Keychain reader returns no secret — the realistic cause is the
+        // device being locked before first unlock. RSH8a1 discards every
+        // legacy field together; the device-fetch path will start clean.
+        let reader: ARTLegacyKeychainSecretReader = { _, outStatus in
             outStatus?.pointee = errSecInteractionNotAllowed
             return nil
-        }
-        _ = ARTLocalDeviceStorage(
-            baseDirectoryURL: tempDirectory,
-            logger: nil,
-            logValues: false,
-            legacyKeychainReader: lockedReader
-        )
-
-        let fileURL = tempDirectory.appendingPathComponent("LocalDevice.plist")
-        XCTAssertFalse(FileManager.default.fileExists(atPath: fileURL.path),
-                       "migration must not write the file when the keychain is locked")
-        XCTAssertEqual(defaults.object(forKey: ARTDeviceIdKey) as? String, "legacy-device",
-                       "legacy entries must be preserved for the next attempt")
-        XCTAssertEqual(defaults.object(forKey: ARTClientIdKey) as? String, "legacy-client")
-        XCTAssertNotNil(defaults.object(forKey: ARTDeviceIdentityTokenKey))
-
-        // Second init: keychain now returns the legacy secret. Migration
-        // succeeds, the file is written, and legacy entries are cleaned up.
-        let unlockedReader: ARTLegacyKeychainSecretReader = { deviceId, outStatus in
-            outStatus?.pointee = errSecSuccess
-            return deviceId == "legacy-device" ? "legacy-secret" : nil
         }
         let storage = ARTLocalDeviceStorage(
             baseDirectoryURL: tempDirectory,
             logger: nil,
             logValues: false,
-            legacyKeychainReader: unlockedReader
+            legacyKeychainReader: reader
         )
 
-        XCTAssertEqual(storage.object(forKey: ARTDeviceIdKey) as? String, "legacy-device")
-        XCTAssertEqual(storage.object(forKey: ARTDeviceSecretKey) as? String, "legacy-secret")
-        XCTAssertEqual(storage.object(forKey: ARTClientIdKey) as? String, "legacy-client")
-        XCTAssertNotNil(storage.object(forKey: ARTDeviceIdentityTokenKey))
-        XCTAssertTrue(FileManager.default.fileExists(atPath: fileURL.path))
-        XCTAssertNil(defaults.object(forKey: ARTDeviceIdKey))
-        XCTAssertNil(defaults.object(forKey: ARTClientIdKey))
-        XCTAssertNil(defaults.object(forKey: ARTDeviceIdentityTokenKey))
+        for key in [
+            ARTDeviceIdKey,
+            ARTDeviceSecretKey,
+            ARTDeviceIdentityTokenKey,
+            ARTClientIdKey,
+            ARTPushActivationCurrentStateKey,
+            ARTPushActivationPendingEventsKey,
+            "ARTAPNSDeviceToken-default",
+            "ARTAPNSDeviceToken-location",
+        ] {
+            XCTAssertNil(storage.object(forKey: key), "key \(key) survived migration")
+            XCTAssertNil(defaults.object(forKey: key), "legacy key \(key) still in UserDefaults")
+        }
     }
 
     // MARK: helpers

@@ -185,9 +185,7 @@ static NSString *const ARTLegacyAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 /// generates a fresh (id, secret) pair against an empty file.
 ///
 /// The realistic reason for `legacySecret` to be absent when an `id` exists
-/// is that the device hasn't been unlocked since reboot, so the keychain is
-/// temporarily inaccessible. In that case we defer migration to the next
-/// init.
+/// is that the device hasn't been unlocked since reboot, so the keychain is inaccessible.
 - (void)migrateLegacyData {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
 
@@ -216,12 +214,9 @@ static NSString *const ARTLegacyAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
         else {
             legacySecret = [self readLegacyKeychainSecretForDevice:legacyDeviceId status:&status];
         }
-        // Defer if the keychain is locked (device hasn't been unlocked since
-        // reboot) — the next init will retry. Any other failure is treated
-        // as the legacy secret being absent.
-        if (status == errSecInteractionNotAllowed || status == errSecNotAvailable) {
-            ARTLogWarn(_logger, @"ARTLocalDeviceStorage: legacy keychain locked (status=%d); deferring migration", (int)status);
-            return;
+        // Any failure is treated as the legacy secret being absent.
+        if (status != errSecSuccess) {
+            ARTLogWarn(_logger, @"ARTLocalDeviceStorage: legacy keychain value is unavailable for device id %@ (status=%d)", legacyDeviceId, (int)status);
         }
     }
 
@@ -244,12 +239,7 @@ static NSString *const ARTLegacyAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
         migrated[ARTPushActivationPendingEventsKey] = legacyPendingEvents;
     }
     else {
-        if (legacyDeviceId != nil) {
-            ARTLogWarn(_logger, @"ARTLocalDeviceStorage: legacy device id %@ has no secret; discarding legacy device details and state machine data", legacyDeviceId);
-        }
-        else {
-            ARTLogWarn(_logger, @"ARTLocalDeviceStorage: legacy device data is incomplete; discarding legacy device details and state machine data");
-        }
+        ARTLogWarn(_logger, @"ARTLocalDeviceStorage: legacy device data is incomplete; discarding legacy device details and state machine data");
     }
 
     NSError *saveError = nil;
