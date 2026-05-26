@@ -39,7 +39,7 @@ jobs:
 
     steps:
       - name: Check out repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2.7.0
         with:
           persist-credentials: false
 
@@ -53,7 +53,7 @@ jobs:
         run: ./Scripts/log-environment-information.sh
 
       - name: Check out xcparse repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
         with:
           repository: ably-forks/xcparse
           ref: emit-test-case-info
@@ -66,8 +66,8 @@ jobs:
           cd xcparse
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
-      - name: "actions/cache@v3 (xcparse binary)"
-        uses: actions/cache@v3
+      - name: "actions/cache (xcparse binary)"
+        uses: actions/cache@6f8efc29b200d32929f49075959781ed54ec270c # v3.5.0
         with:
           path: xcparse/.build/debug/xcparse
           key: ${{ runner.os }}-xcparse-${{ steps.get-xcparse-commit-sha.outputs.sha }}
@@ -96,21 +96,21 @@ jobs:
       
       - name: Upload Static Analyzer Reports
         if: ${{ failure() && steps.analyzer-output.outcome == 'failure' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: static-analyzer-reports-${{ matrix.lane }}
           path: ./derived_data/**/report-*.html
       
       - name: Upload Xcodebuild Logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: xcodebuild-logs-${{ matrix.lane }}
           path: ~/Library/Developer/Xcode/DerivedData/*/Logs
 
       - name: Upload Test Output
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: test-output-${{ matrix.lane }}
           path: fastlane/test_output
