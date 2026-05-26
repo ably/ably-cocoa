@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Set up editorconfig-checker
         uses: editorconfig-checker/action-editorconfig-checker@main

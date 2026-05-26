@@ -22,7 +22,9 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
-        
+        with:
+          persist-credentials: false
+
       - name: Select Xcode (16.4)
         run: |
           sudo xcode-select -s /Applications/Xcode_16.4.app
