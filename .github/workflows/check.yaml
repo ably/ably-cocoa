@@ -18,6 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           submodules: true
 
       # This step can be removed once the runners' default version of Xcode is 16.4 or above
@@ -47,6 +48,7 @@ jobs:
   #    steps:
   #      - uses: actions/checkout@v4
   #        with:
+  #          persist-credentials: false
   #          submodules: true
   #
   #      # This step can be removed once the runners' default version of Xcode is 16.4 or above
@@ -66,6 +68,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           submodules: true
 
       # This step can be removed once the runners' default version of Xcode is 16.4 or above
@@ -87,6 +90,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           submodules: true
       - uses: maxim-lobanov/setup-xcode@v1
         with:
@@ -107,6 +111,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           submodules: true
       - uses: maxim-lobanov/setup-xcode@v1
         with:
@@ -127,6 +132,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           submodules: true
       - uses: maxim-lobanov/setup-xcode@v1
         with:
@@ -147,6 +153,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           submodules: true
 
       # This step can be removed once the runners' default version of Xcode is 16.4 or above
@@ -185,6 +192,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           submodules: true
       - uses: maxim-lobanov/setup-xcode@v1
         with:
@@ -205,6 +213,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           submodules: true
       - uses: maxim-lobanov/setup-xcode@v1
         with:
@@ -224,6 +233,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           submodules: true
 
       # This step can be removed once the runners' default version of Xcode is 16.4 or above
