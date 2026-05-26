@@ -162,10 +162,14 @@ jobs:
       # We run these as two separate steps so that we can easily see the execution time of each step.
 
       - name: Build for testing
-        run: swift run BuildTool build-library-for-testing --platform ${{ matrix.platform }}
+        env:
+          PLATFORM: ${{ matrix.platform }}
+        run: swift run BuildTool build-library-for-testing --platform "$PLATFORM"
 
       - name: Run tests
-        run: swift run BuildTool test-library --platform ${{ matrix.platform }} --without-building
+        env:
+          PLATFORM: ${{ matrix.platform }}
+        run: swift run BuildTool test-library --platform "$PLATFORM" --without-building
 
   code-coverage:
     name: Generate code coverage
@@ -227,7 +231,9 @@ jobs:
           xcode-version: ${{ matrix.tooling.xcodeVersion }}
 
       - name: Build library
-        run: swift run BuildTool build-library --platform ${{ matrix.platform }} --configuration release
+        env:
+          PLATFORM: ${{ matrix.platform }}
+        run: swift run BuildTool build-library --platform "$PLATFORM" --configuration release
 
   check-example-app:
     name: Example app, ${{matrix.platform}} (Xcode ${{ matrix.tooling.xcodeVersion }})
@@ -251,7 +257,9 @@ jobs:
           xcode-version: ${{ matrix.tooling.xcodeVersion }}
 
       - name: Build example app
-        run: swift run BuildTool build-example-app --platform ${{ matrix.platform }}
+        env:
+          PLATFORM: ${{ matrix.platform }}
+        run: swift run BuildTool build-example-app --platform "$PLATFORM"
 
   check-documentation:
     runs-on: macos-15
@@ -284,9 +292,11 @@ jobs:
 
       # Build the documentation using Swift DocC
       - name: Build documentation
+        env:
+          HOSTING_BASE_PATH: ${{ steps.preupload.outputs.base-path }}
         run: |
           swift package generate-documentation --target AblyLiveObjects --disable-indexing \
-          --hosting-base-path "${{ steps.preupload.outputs.base-path }}" \
+          --hosting-base-path "$HOSTING_BASE_PATH" \
           --transform-for-static-hosting
         working-directory: ${{ github.workspace }}
 
