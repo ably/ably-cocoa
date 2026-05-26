@@ -22,19 +22,19 @@ jobs:
       MINT_LINK_PATH: .mint/bin
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           persist-credentials: false
           submodules: true
 
       # This step can be removed once the runners' default version of Xcode is 16.4 or above
-      - uses: maxim-lobanov/setup-xcode@v1
+      - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
         with:
           xcode-version: 16.4
 
       # We use caching for Mint because at the time of writing SwiftLint took about 5 minutes to build in CI, which is unacceptably slow.
       # https://github.com/actions/cache/blob/40c3b67b2955d93d83b27ed164edd0756bc24049/examples.md#swift---mint
-      - uses: actions/cache@v4
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: .mint
           key: ${{ runner.os }}-mint-${{ hashFiles('**/Mintfile') }}
@@ -52,13 +52,13 @@ jobs:
   #  spec-coverage:
   #    runs-on: macos-15
   #    steps:
-  #      - uses: actions/checkout@v4
+  #      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
   #        with:
   #          persist-credentials: false
   #          submodules: true
   #
   #      # This step can be removed once the runners' default version of Xcode is 16.4 or above
-  #      - uses: maxim-lobanov/setup-xcode@v1
+  #      - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
   #        with:
   #          xcode-version: 16.4
   #
@@ -76,13 +76,13 @@ jobs:
     outputs:
       matrix: ${{ steps.generation-step.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           persist-credentials: false
           submodules: true
 
       # This step can be removed once the runners' default version of Xcode is 16.4 or above
-      - uses: maxim-lobanov/setup-xcode@v1
+      - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
         with:
           xcode-version: 16.4
 
@@ -102,11 +102,11 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrices.outputs.matrix).withoutPlatform }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           persist-credentials: false
           submodules: true
-      - uses: maxim-lobanov/setup-xcode@v1
+      - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
         with:
           xcode-version: ${{ matrix.tooling.xcodeVersion }}
 
@@ -127,11 +127,11 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrices.outputs.matrix).withoutPlatform }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           persist-credentials: false
           submodules: true
-      - uses: maxim-lobanov/setup-xcode@v1
+      - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
         with:
           xcode-version: ${{ matrix.tooling.xcodeVersion }}
 
@@ -151,11 +151,11 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrices.outputs.matrix).withPlatform }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           persist-credentials: false
           submodules: true
-      - uses: maxim-lobanov/setup-xcode@v1
+      - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
         with:
           xcode-version: ${{ matrix.tooling.xcodeVersion }}
 
@@ -180,13 +180,13 @@ jobs:
       checks: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           persist-credentials: false
           submodules: true
 
       # This step can be removed once the runners' default version of Xcode is 16.4 or above
-      - uses: maxim-lobanov/setup-xcode@v1
+      - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
         with:
           xcode-version: 16.4
 
@@ -200,7 +200,7 @@ jobs:
       # - offer more fine-grained configuration about which data to include in the report (I only care about code coverage, not test results, and I don't care about code coverage of the AblyLiveObjectsTests target)
       #
       # but it'll do for now (we can always fork or have another look for tooling later).
-      - uses: slidoapp/xcresulttool@v3.1.0
+      - uses: slidoapp/xcresulttool@9c51e32ae0320e0ca9b63240e4da8e974ac573e3 # v3.1.0
         with:
           path: CodeCoverage.xcresult
           # This title will be used for the sidebar item that this job adds to GitHub results page for this workflow
@@ -222,11 +222,11 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrices.outputs.matrix).withPlatform }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           persist-credentials: false
           submodules: true
-      - uses: maxim-lobanov/setup-xcode@v1
+      - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
         with:
           xcode-version: ${{ matrix.tooling.xcodeVersion }}
 
@@ -248,11 +248,11 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrices.outputs.matrix).withPlatform }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           persist-credentials: false
           submodules: true
-      - uses: maxim-lobanov/setup-xcode@v1
+      - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
         with:
           xcode-version: ${{ matrix.tooling.xcodeVersion }}
 
@@ -270,20 +270,20 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           persist-credentials: false
           submodules: true
 
       # This step can be removed once the runners' default version of Xcode is 16.4 or above
-      - uses: maxim-lobanov/setup-xcode@v1
+      - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
         with:
           xcode-version: 16.4
 
       # Dry run upload-action to get base-path url
       - name: Dry-Run Upload (to get url)
         id: preupload
-        uses: ably/sdk-upload-action@v2
+        uses: ably/sdk-upload-action@4e694297f208b72b5a9f6b1248a1556f19f821d6 # v2
         with:
           mode: preempt
           sourcePath: .build/plugins/Swift-DocC/outputs/AblyLiveObjects.doccarchive # Path to the Swift DocC output folder
@@ -302,7 +302,7 @@ jobs:
 
       # Configure AWS credentials for uploading documentation
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
         with:
           aws-region: eu-west-2
           role-to-assume: arn:aws:iam::${{ secrets.ABLY_AWS_ACCOUNT_ID_SDK }}:role/ably-sdk-builds-ably-liveobjects-swift-plugin
@@ -310,7 +310,7 @@ jobs:
 
       # Upload the generated documentation
       - name: Upload Documentation
-        uses: ably/sdk-upload-action@v2
+        uses: ably/sdk-upload-action@4e694297f208b72b5a9f6b1248a1556f19f821d6 # v2
         with:
           sourcePath: .build/plugins/Swift-DocC/outputs/AblyLiveObjects.doccarchive # Path to the Swift DocC output folder
           githubToken: ${{ secrets.GITHUB_TOKEN }}
