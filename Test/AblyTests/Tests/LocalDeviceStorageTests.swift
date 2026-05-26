@@ -1,6 +1,7 @@
 #if os(iOS)
 import Ably
 import Ably.Private
+import Security
 import XCTest
 
 final class LocalDeviceStorageTests: XCTestCase {
@@ -87,6 +88,7 @@ final class LocalDeviceStorageTests: XCTestCase {
         let reloaded = makeStorage()
         XCTAssertEqual(reloaded.object(forKey: ARTDeviceIdKey) as? String, "device-1")
         XCTAssertEqual(reloaded.object(forKey: ARTDeviceSecretKey) as? String, "secret-1")
+        XCTAssertEqual(reloaded.object(forKey: ARTDeviceIdentityTokenKey) as? Data, Data("token".utf8))
         XCTAssertEqual(reloaded.object(forKey: ARTClientIdKey) as? String, "client-1")
     }
 

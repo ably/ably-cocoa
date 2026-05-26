@@ -1,4 +1,5 @@
 #import "ARTLocalDeviceStorage.h"
+#import <Security/Security.h>
 #import "ARTAtomicFileStorage.h"
 #import "ARTInternalLog.h"
 #import "ARTLocalDevice+Private.h"
@@ -126,15 +127,15 @@ static NSString *const ARTLegacyAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 
 - (void)performBatchUpdate:(NS_NOESCAPE void (^)(id<ARTDeviceStorage>))block {
     [_lock lock];
+    _batchDepth++;
     @try {
-        _batchDepth++;
         block(self);
+    }
+    @finally {
         _batchDepth--;
         if (_batchDepth == 0) {
             [self flushIfModified];
         }
-    }
-    @finally {
         [_lock unlock];
     }
 }
