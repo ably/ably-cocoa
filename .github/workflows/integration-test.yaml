@@ -11,6 +11,9 @@ on:
 # - Changes made to this file needs to replicated across other integration-test-*.yaml files.
 # - The Fastlane lane name is duplicated in more than one place within this workflow.
 
+permissions:
+  contents: read
+
 jobs:
   check:
     runs-on: macos-15
@@ -58,7 +61,7 @@ jobs:
         name: Get xcparse commit SHA
         run: |
           cd xcparse
-          echo "::set-output name=sha::$(git rev-parse HEAD)"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: "actions/cache@v3 (xcparse binary)"
         uses: actions/cache@v3

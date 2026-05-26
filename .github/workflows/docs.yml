@@ -13,6 +13,7 @@ jobs:
     runs-on: macos-15
     
     permissions:
+      contents: read
       deployments: write
       id-token: write
       
