@@ -27,6 +27,13 @@
         "identifier" : "AblyTestsObjC",
         "name" : "AblyTestsObjC"
       }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "UTS",
+        "name" : "UTS"
+      }
     }
   ],
   "version" : 1

@@ -66,6 +66,28 @@ let package = Package(
                 .copy("ably-common")
             ]
         ),
+        // Universal Test Suite (UTS)
+        // A standalone Swift Testing suite (import Testing / @Suite) derived from the language-neutral
+        // specs in the `ably/specification` repo (uts/). Deliberately does not depend on Nimble or XCTest.
+        .testTarget(
+            name: "UTS",
+            dependencies: [
+                .byName(name: "Ably"),
+                .product(name: "_AblyPluginSupportPrivate", package: "ably-cocoa-plugin-support")
+            ],
+            path: "Test/UTS",
+            exclude: [
+                "README.md",
+                "deviations.md"
+            ],
+            swiftSettings: [
+                // Build the UTS suite in the Swift 6 language mode (strict concurrency checking) so the
+                // compiler catches data races in the harness/tests. The package manifest is still
+                // swift-tools-version 5.3, which predates `.swiftLanguageMode`, so this is applied via
+                // the compiler flag. Only affects this test target (not the shipped product).
+                .unsafeFlags(["-swift-version", "6"])
+            ]
+        ),
         // A handful of tests written in Objective-C (they can't be part of AblyTests because SPM doesn't allow mixed-language targets).
         .testTarget(
             name: "AblyTestsObjC",
