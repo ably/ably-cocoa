@@ -66,9 +66,9 @@ Map the spec path to a test path:
 | `.../uts/rest/unit/<name>.md` | `Test/UTS/Tests/<Name>Tests.swift` |
 | `.../uts/realtime/unit/<sub>/<name>.md` | `Test/UTS/Tests/<Name>Tests.swift` |
 
-Class name: take the file name, strip a trailing `_test`, convert `snake_case` → `PascalCase`, append `Tests`. Example: `connection_recovery_test.md` → `ConnectionRecoveryTests`. All test classes are flat under `Test/UTS/Tests/` (no per-category subfolders) and subclass `UTSTestCase`.
+Class name: take the file name, strip a trailing `_test`, convert `snake_case` → `PascalCase`, append `Tests`. Example: `connection_recovery_test.md` → `ConnectionRecoveryTests`. All test classes are flat under `Test/UTS/Tests/` (no per-category subfolders); each is a **Swift Testing** suite — `@Suite(.serialized) final class <Name>Tests: UTSTestCase` (the suite framework is Swift Testing / `import Testing`, **not** XCTest; `.serialized` runs the suite's tests in order, matching the harness's per-test isolation).
 
-If a suitable class already exists, add the new test methods to it rather than creating a duplicate.
+If a suitable suite already exists, add the new test methods to it rather than creating a duplicate.
 
 ---
 
@@ -108,7 +108,7 @@ let client = makeRealtime { options in
 }
 client.connect()
 awaitConnectionState(client, .connected)
-let ws = try XCTUnwrap(wsProvider.activeConnection)   // the spec's active_connection
+let ws = try #require(wsProvider.activeConnection)   // the spec's active_connection
 ```
 
 When attempts need different behaviour (e.g. first succeeds, reconnects refused), branch on a counter inside the handler:
@@ -153,7 +153,7 @@ let wsProvider = MockWebSocketProvider(onConnectionAttempt: { connection in
     connection.sendToClient(.connected(connectionId: "c", connectionKey: "k"))
 })
 // ... after awaitConnectionState(client, .connected):
-XCTAssertEqual(capturedConnectionAttempts[0].queryParams["recover"], "...")
+#expect(capturedConnectionAttempts[0].queryParams["recover"] == "...")
 ```
 
 ### Inspecting outgoing frames
@@ -161,13 +161,13 @@ XCTAssertEqual(capturedConnectionAttempts[0].queryParams["recover"], "...")
 Frames the SDK sent are decoded and recorded on the socket as `sentMessages`. Capture after the channel/connection state confirms the send happened:
 
 ```swift
-let ws = try XCTUnwrap(wsProvider.activeConnection)   // the spec's active_connection
+let ws = try #require(wsProvider.activeConnection)   // the spec's active_connection
 channelOne.attach()
 ws.sendToClient(.attached(channel: "channel-one", channelSerial: "serial-1"))
 awaitChannelState(channelOne, .attached)
 let attachFrames = ws.sentMessages.filter { $0.action == .attach && $0.channel == "channel-one" }
-XCTAssertEqual(attachFrames.count, 1)
-XCTAssertEqual(attachFrames.first?.channelSerial, "serial-1")
+#expect(attachFrames.count == 1)
+#expect(attachFrames.first?.channelSerial == "serial-1")
 ```
 
 ### Mock method reference
@@ -230,7 +230,7 @@ To assert "an error is logged", inject a `CapturingLog` and check it:
 let log = CapturingLog()
 let client = makeRealtime { $0.key = "..."; $0.logHandler = log }
 // ...
-XCTAssertTrue(log.contains(level: .error, message: "recovery key"))
+#expect(log.contains(level: .error, message: "recovery key"))
 ```
 
 ### Comments and assertion fidelity
@@ -241,7 +241,7 @@ Translate every spec `ASSERT`/`AWAIT` into a Swift assertion at the same place. 
 
 ```swift
 // The recovery key should round-trip the connection id        ← spec comment, copied verbatim
-XCTAssertEqual(recovered.connectionId, "connection-1")
+#expect(recovered.connectionId == "connection-1")
 
 // ASSERT connection.errorReason IS null
 // (no assertion: ARTConnection exposes no errorReason getter in this state — see deviations.md)
@@ -249,26 +249,45 @@ XCTAssertEqual(recovered.connectionId, "connection-1")
 
 A dropped or weakened assertion that is *not* annotated this way is a bug — Step 7 re-checks for it.
 
-### Assertions
+### Assertions (Swift Testing)
+
+Use Swift Testing macros (`import Testing`) — **never** XCTest:
 
 | Pseudocode | Swift |
 |---|---|
-| `ASSERT x == y` | `XCTAssertEqual(x, y)` |
-| `ASSERT x IS NOT null` | `let x = try XCTUnwrap(optional)` (or `XCTAssertNotNil`) |
-| `ASSERT x IS null` | `XCTAssertNil(x)` |
-| `ASSERT "k" IN map` / `NOT IN` | `XCTAssertNotNil(map["k"])` / `XCTAssertNil(map["k"])` |
-| `ASSERT list.length == N` | `XCTAssertEqual(list.count, N)` |
-| `AWAIT op FAILS WITH error` | capture the error in the completion (via an `XCTestExpectation`) and assert `error.code` / `error.statusCode` |
+| `ASSERT x == y` | `#expect(x == y)` |
+| `ASSERT x IS NOT null` | `let x = try #require(optional)` (or `#expect(x != nil)`) |
+| `ASSERT x IS null` | `#expect(x == nil)` |
+| `ASSERT "k" IN map` / `NOT IN` | `#expect(map["k"] != nil)` / `#expect(map["k"] == nil)` |
+| `ASSERT list.length == N` | `#expect(list.count == N)` |
+| `ASSERT x == y (with message)` | `#expect(x == y, "message")` |
+| `AWAIT op FAILS WITH error` | capture the error (see async below) and `#expect(error.code == ...)` / `#expect(error.statusCode == ...)` |
 
-Async REST calls (e.g. `rest.time { ... }`) are awaited with `XCTestExpectation` + `wait(for:timeout:)`.
+`#expect(...)` records a failure and continues; `try #require(...)` unwraps/asserts and stops the test on failure (use it when later lines depend on the value, like XCTUnwrap did).
+
+Async REST calls (e.g. `rest.time { ... }`) — make the `@Test` `async throws` and bridge the completion handler with a continuation rather than `XCTestExpectation`:
+
+```swift
+private func awaitTime(_ rest: ARTRest, sourceLocation: SourceLocation = #_sourceLocation) async -> Date? {
+    await withCheckedContinuation { (continuation: CheckedContinuation<Date?, Never>) in
+        rest.time { date, error in
+            if let error { Issue.record("time() failed: \(error)", sourceLocation: sourceLocation) }
+            continuation.resume(returning: date)   // resume exactly once
+        }
+    }
+}
+```
+
+Inside the harness, report non-assertion failures (timeouts, unexpected errors) with `Issue.record("...", sourceLocation:)` rather than `XCTFail`.
 
 ### Test naming and annotation
 
-- `// UTS: <spec-id>` comment immediately above each `func`.
-- Method name: `test_<SPEC>_<description_with_underscores>` — keep the spec point intact, join words with underscores. Take description from the spec test title. Keep camelCase for symbol names.
+- `// UTS: <spec-id>` comment immediately above each test, then the `@Test` attribute.
+- Method name: `test_<SPEC>_<description_with_underscores>` — keep the spec point intact, join words with underscores. Take the description from the spec test title. Keep camelCase for symbol names. Mark the function `throws` (and `async` if it awaits).
 
 ```swift
 // UTS: realtime/unit/RTN16g/recovery-key-structure-0
+@Test
 func test_RTN16g_createRecoveryKey_returns_a_recovery_key() throws {
     ...
 }
@@ -277,15 +296,18 @@ func test_RTN16g_createRecoveryKey_returns_a_recovery_key() throws {
 ### File template
 
 ```swift
-import XCTest
+import Testing
+import Foundation
 import Ably
 import Ably.Private
 
 /// <Feature> (<spec points>)
 /// Derived from <spec URL>
+@Suite(.serialized)
 final class <Name>Tests: UTSTestCase {
 
     // UTS: <spec-id>
+    @Test
     func test_<SPEC>_<description>() throws {
         let wsProvider = MockWebSocketProvider(onConnectionAttempt: { connection in
             connection.respondWithSuccess()
@@ -299,13 +321,13 @@ final class <Name>Tests: UTSTestCase {
         client.connect()
         awaitConnectionState(client, .connected)
 
-        XCTAssertEqual(client.connection.state, .connected)
+        #expect(client.connection.state == .connected)
         closeClient(client)
     }
 }
 ```
 
-Put helper methods for the test class into extension at the bottom of the file.
+Put helper methods for the suite into an extension at the bottom of the file.
 
 ---
 
@@ -322,10 +344,12 @@ Fix any compilation errors and recompile until clean.
 ## Step 6 — Run tests
 
 ```bash
-swift test --filter UTS.<ClassName>
-# or a single test:
-swift test --filter UTS.<ClassName>/<test_method_name>
+swift test --filter <ClassName>
+# or a single test (Swift Testing matches the function name):
+swift test --filter <ClassName>/<test_method_name>
 ```
+
+(`--filter` takes a regex over test names; `swift test --filter UTS` runs the whole suite.)
 
 Handle failures using this decision tree (see [reference doc](https://github.com/ably/specification/blob/main/uts/docs/writing-derived-tests.md)):
 
@@ -342,21 +366,23 @@ Test fails
 
 ### Deviation patterns
 
-**Env-gated skip (preferred)** — test contains spec-correct assertions but is skipped by default:
+**Env-gated skip (preferred)** — test contains spec-correct assertions but is disabled by default via the Swift Testing `.enabled(if:)` trait, so it only runs when `RUN_DEVIATIONS` is set:
 
 ```swift
 // DEVIATION: see deviations.md
-try XCTSkipUnless(ProcessInfo.processInfo.environment["RUN_DEVIATIONS"] != nil)
-// ... spec-correct setup and assertions (run only when RUN_DEVIATIONS is set) ...
+@Test(.enabled(if: ProcessInfo.processInfo.environment["RUN_DEVIATIONS"] != nil))
+func test_<SPEC>_...() throws {
+    // ... spec-correct setup and assertions ...
+}
 ```
 
-Reproduce with `RUN_DEVIATIONS=1 swift test --filter UTS.<ClassName>/<method>`.
+Reproduce with `RUN_DEVIATIONS=1 swift test --filter <ClassName>/<method>`.
 
 **Adapted assertion** — assert the SDK's actual behaviour to prevent regressions:
 
 ```swift
 // DEVIATION: spec requires code 40106, SDK returns 40160 — see deviations.md
-XCTAssertEqual(error.code, 40160)
+#expect(error.code == 40160)
 ```
 
 **Never use the accommodate-both pattern** Every test must assert either spec behaviour or the SDK's actual behaviour — never both at once.
@@ -379,7 +405,7 @@ Append to `Test/UTS/deviations.md` under the matching section (Failing Tests / A
 Re-read the original spec and the generated Swift test side-by-side. Fix anything that fails a check before declaring the task done.
 
 - **Coverage** — every spec test-case ID has a `func` with a matching `// UTS:` comment and a descriptive name.
-- **Assertion completeness** — every `ASSERT`/`AWAIT`/observable outcome has a direct `XCTAssert*` / `awaitConnectionState` / `awaitChannelState` / `poll`; none silently dropped or weakened to a comment.
+- **Assertion completeness** — every `ASSERT`/`AWAIT`/observable outcome has a direct `#expect` / `#require` / `awaitConnectionState` / `awaitChannelState` / `poll`; none silently dropped or weakened to a comment.
 - **Setup fidelity** — client options, mock responses, timer setup, and the order of channel operations match the spec.
 - **Spec comments copied** — the pseudocode's inline `#` comments are carried over as `//` comments at the matching steps.
 

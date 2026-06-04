@@ -1,18 +1,23 @@
-import XCTest
+import Foundation
+import Testing
 import Ably
 import Ably.Private
 
 /// Base class for UTS-derived unit tests.
 ///
+/// UTS suites are Swift Testing suites that subclass this (`@Suite(.serialized) final class FooTests: UTSTestCase`).
+/// Swift Testing creates a fresh instance per `@Test`, so each test gets its own clients/mocks and
+/// `deinit` tears them down.
+///
 /// Provides the cocoa mappings of the UTS harness primitives:
-/// - `installMock(_:)` — the spec's `install_mock`: registers the `MockWebSocketProvider` so the
-///   next client built by `makeRealtime()` picks it up. The mock is never passed to the client
-///   constructor (a mistake per `uts/docs/writing-test-specs.md`).
+/// - `installMock(_:)` — the spec's `install_mock`: registers the `MockWebSocketProvider` / `MockHTTP`
+///   so the next client built by `makeRealtime()` / `makeRest()` picks it up. The mock is never
+///   passed to the client constructor (a mistake per `uts/docs/writing-test-specs.md`).
 /// - `awaitConnectionState` / `awaitChannelState` — the spec's `AWAIT_STATE`: proceed immediately
 ///   if the condition already holds, otherwise poll until it does or the timeout expires.
 /// - `advanceTime(byMilliseconds:)` — fake-timer advancement (`ADVANCE_TIME`).
 /// - protocol-message builders, and cleanup of clients and scheduled timers.
-class UTSTestCase: XCTestCase {
+class UTSTestCase {
 
     /// Default `AWAIT_STATE` timeout. Generous: with a frozen `FakeTimeProvider` the SDK settles in
     /// microseconds, so this only bites when a state genuinely never arrives (a real failure).
@@ -52,9 +57,9 @@ class UTSTestCase: XCTestCase {
     /// Builds an `ARTRealtime` wired to the currently installed `MockWebSocketProvider` and the
     /// shared `FakeTimeProvider`. `autoConnect` defaults to `false`, matching the UTS specs. A
     /// provider must be installed first via `installMock(_:)`.
-    func makeRealtime(configure: (ARTClientOptions) -> Void = { _ in }, file: StaticString = #file, line: UInt = #line) -> ARTRealtime {
+    func makeRealtime(configure: (ARTClientOptions) -> Void = { _ in }, sourceLocation: SourceLocation = #_sourceLocation) -> ARTRealtime {
         guard let wsProvider = installedWebSocketProvider else {
-            XCTFail("No MockWebSocketProvider installed — call installMock(_:) before makeRealtime()", file: file, line: line)
+            Issue.record("No MockWebSocketProvider installed — call installMock(_:) before makeRealtime()", sourceLocation: sourceLocation)
             fatalError("No MockWebSocketProvider installed")
         }
 
@@ -81,9 +86,9 @@ class UTSTestCase: XCTestCase {
 
     /// Builds an `ARTRest` whose HTTP layer is the currently installed `MockHTTP` (so requests are
     /// intercepted, not sent over the network). A mock must be installed first via `installMock(_:)`.
-    func makeRest(configure: (ARTClientOptions) -> Void = { _ in }, file: StaticString = #file, line: UInt = #line) -> ARTRest {
+    func makeRest(configure: (ARTClientOptions) -> Void = { _ in }, sourceLocation: SourceLocation = #_sourceLocation) -> ARTRest {
         guard let mockHTTP = installedMockHTTP else {
-            XCTFail("No MockHTTP installed — call installMock(_:) before makeRest()", file: file, line: line)
+            Issue.record("No MockHTTP installed — call installMock(_:) before makeRest()", sourceLocation: sourceLocation)
             fatalError("No MockHTTP installed")
         }
 
@@ -111,10 +116,9 @@ class UTSTestCase: XCTestCase {
     func awaitConnectionState(_ client: ARTRealtime,
                               _ expected: ARTRealtimeConnectionState,
                               timeout: TimeInterval = defaultAwaitTimeout,
-                              file: StaticString = #file,
-                              line: UInt = #line) {
+                              sourceLocation: SourceLocation = #_sourceLocation) {
         poll("connection.state == \(ARTRealtimeConnectionStateToStr(expected))",
-             timeout: timeout, file: file, line: line) {
+             timeout: timeout, sourceLocation: sourceLocation) {
             client.connection.state == expected
         }
     }
@@ -123,10 +127,9 @@ class UTSTestCase: XCTestCase {
     func awaitChannelState(_ channel: ARTRealtimeChannel,
                            _ expected: ARTRealtimeChannelState,
                            timeout: TimeInterval = defaultAwaitTimeout,
-                           file: StaticString = #file,
-                           line: UInt = #line) {
+                           sourceLocation: SourceLocation = #_sourceLocation) {
         poll("channel '\(channel.name)'.state == \(ARTRealtimeChannelStateToStr(expected))",
-             timeout: timeout, file: file, line: line) {
+             timeout: timeout, sourceLocation: sourceLocation) {
             channel.state == expected
         }
     }
@@ -137,13 +140,12 @@ class UTSTestCase: XCTestCase {
     @discardableResult
     func poll(_ description: String,
               timeout: TimeInterval = defaultAwaitTimeout,
-              file: StaticString = #file,
-              line: UInt = #line,
+              sourceLocation: SourceLocation = #_sourceLocation,
               until condition: () -> Bool) -> Bool {
         let deadline = Date().addingTimeInterval(timeout)
         while !condition() {
             if Date() >= deadline {
-                XCTFail("Timed out after \(timeout)s awaiting: \(description)", file: file, line: line)
+                Issue.record("Timed out after \(timeout)s awaiting: \(description)", sourceLocation: sourceLocation)
                 return false
             }
             Thread.sleep(forTimeInterval: 0.0005)
@@ -155,9 +157,9 @@ class UTSTestCase: XCTestCase {
 
     /// Advances the fake clock (UTS `ADVANCE_TIME`). Requires `enableFakeTimers()` to have been
     /// called — otherwise clients are on the real clock and there is nothing to advance.
-    func advanceTime(byMilliseconds milliseconds: Double, file: StaticString = #file, line: UInt = #line) {
+    func advanceTime(byMilliseconds milliseconds: Double, sourceLocation: SourceLocation = #_sourceLocation) {
         guard let timeProvider else {
-            XCTFail("advanceTime requires enableFakeTimers() before makeRealtime()", file: file, line: line)
+            Issue.record("advanceTime requires enableFakeTimers() before makeRealtime()", sourceLocation: sourceLocation)
             return
         }
         timeProvider.advanceTime(byMilliseconds: milliseconds)
@@ -170,15 +172,12 @@ class UTSTestCase: XCTestCase {
 
     // MARK: Cleanup
 
-    override func tearDown() {
+    /// Per-test teardown. Swift Testing releases the suite instance after each `@Test`, so this runs
+    /// once per test: it closes any clients and cancels surviving fake timers (the leak safety net).
+    deinit {
         for client in clients {
             client.close()
         }
         timeProvider?.cancelAllScheduled()
-        timeProvider = nil
-        clients.removeAll()
-        installedWebSocketProvider = nil
-        installedMockHTTP = nil
-        super.tearDown()
     }
 }

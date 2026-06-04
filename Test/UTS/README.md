@@ -1,7 +1,7 @@
 # UTS — Universal Test Suite (ably-cocoa)
 
 Tests derived from the language-neutral specs in [`ably/specification`](https://github.com/ably/specification) under [`uts/`](https://github.com/ably/specification/blob/main/uts).
-This is a **standalone XCTest target** (`UTS`), separate from `AblyTests`, and deliberately does **not** depend on Nimble.
+This is a **standalone Swift Testing target** (`UTS`), separate from `AblyTests`, and deliberately does **not** depend on Nimble or XCTest.
 
 ## Layout
 

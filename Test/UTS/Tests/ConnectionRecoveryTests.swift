@@ -1,12 +1,15 @@
-import XCTest
+import Testing
+import Foundation
 import Ably
 import Ably.Private
 
 /// Connection Recovery (RTN16)
 /// Derived from https://github.com/ably/specification/blob/main/uts/realtime/unit/connection/connection_recovery_test.md
+@Suite(.serialized)
 final class ConnectionRecoveryTests: UTSTestCase {
 
     // UTS: realtime/unit/RTN16g/recovery-key-structure-0
+    @Test
     func test_RTN16g_RTN16g1_createRecoveryKey_returns_string_with_connectionKey_msgSerial_and_channel_with_channelSerial_pairs() throws {
         let wsProvider = MockWebSocketProvider(onConnectionAttempt: { connection in
             connection.respondWithSuccess()
@@ -22,7 +25,7 @@ final class ConnectionRecoveryTests: UTSTestCase {
         awaitConnectionState(client, .connected)
 
         // Get the WebSocket connection for sending mock responses
-        let wsConnection = try XCTUnwrap(wsProvider.activeConnection)
+        let wsConnection = try #require(wsProvider.activeConnection)
 
         // Get two channels and simulate attaching them (including one with unicode name)
         let channelA = client.channels.get("channel-alpha")
@@ -39,34 +42,35 @@ final class ConnectionRecoveryTests: UTSTestCase {
         awaitChannelState(channelB, .attached)
 
         // Create recovery key
-        // Recovery key is not null (asserted by XCTUnwrap)
-        let recoveryKeyString = try XCTUnwrap(client.connection.createRecoveryKey())
+        // Recovery key is not null (asserted by #require)
+        let recoveryKeyString = try #require(client.connection.createRecoveryKey())
 
         // Deserialize the recovery key (JSON format per ably-js reference)
         let recoveryKey = try parseRecoveryKey(recoveryKeyString)
 
         // Contains connectionKey
-        XCTAssertEqual(recoveryKey["connectionKey"] as? String, "key-abc-123")
+        #expect(recoveryKey["connectionKey"] as? String == "key-abc-123")
 
         // Contains msgSerial (starts at 0 since no messages were sent)
-        XCTAssertEqual(recoveryKey["msgSerial"] as? Int, 0)
+        #expect(recoveryKey["msgSerial"] as? Int == 0)
 
         // Contains channelSerials map with both channels
-        let channelSerials = try XCTUnwrap(recoveryKey["channelSerials"] as? [String: String])
-        XCTAssertEqual(channelSerials["channel-alpha"], "serial-a-001")
+        let channelSerials = try #require(recoveryKey["channelSerials"] as? [String: String])
+        #expect(channelSerials["channel-alpha"] == "serial-a-001")
 
         // RTN16g1: Unicode channel name is correctly encoded in the serialized key
-        XCTAssertEqual(channelSerials["channel-éàü-世界"], "serial-b-002")
+        #expect(channelSerials["channel-éàü-世界"] == "serial-b-002")
 
         // Verify round-trip: re-serializing and deserializing preserves the unicode name
         let reSerialized = try JSONSerialization.data(withJSONObject: recoveryKey)
-        let reParsed = try XCTUnwrap(JSONSerialization.jsonObject(with: reSerialized) as? [String: Any])
-        XCTAssertEqual((reParsed["channelSerials"] as? [String: String])?["channel-éàü-世界"], "serial-b-002")
+        let reParsed = try #require(JSONSerialization.jsonObject(with: reSerialized) as? [String: Any])
+        #expect((reParsed["channelSerials"] as? [String: String])?["channel-éàü-世界"] == "serial-b-002")
 
         closeClient(client)
     }
 
     // UTS: realtime/unit/RTN16g2/recovery-key-null-inactive-0
+    @Test
     func test_RTN16g2_createRecoveryKey_returns_null_in_inactive_states_and_before_first_connect() throws {
         let wsProvider = MockWebSocketProvider(onConnectionAttempt: { connection in
             connection.respondWithSuccess()
@@ -78,23 +82,23 @@ final class ConnectionRecoveryTests: UTSTestCase {
         }
 
         // Before connecting (INITIALIZED state, no connectionKey)
-        XCTAssertNil(client.connection.createRecoveryKey())
+        #expect(client.connection.createRecoveryKey() == nil)
 
         // Connect and verify recovery key is available when CONNECTED
         client.connect()
         awaitConnectionState(client, .connected)
-        XCTAssertNotNil(client.connection.createRecoveryKey())
+        #expect(client.connection.createRecoveryKey() != nil)
 
         // Transition to CLOSING then CLOSED
         client.connection.close()
         awaitConnectionState(client, .closing)
-        XCTAssertNil(client.connection.createRecoveryKey())
+        #expect(client.connection.createRecoveryKey() == nil)
 
-        let wsConnection = try XCTUnwrap(wsProvider.activeConnection)
+        let wsConnection = try #require(wsProvider.activeConnection)
         wsConnection.sendToClientAndClose(.closed())
 
         awaitConnectionState(client, .closed)
-        XCTAssertNil(client.connection.createRecoveryKey())
+        #expect(client.connection.createRecoveryKey() == nil)
 
         // All null cases verified inline above.
         // For FAILED and SUSPENDED states, create separate clients to test:
@@ -112,10 +116,10 @@ final class ConnectionRecoveryTests: UTSTestCase {
         awaitConnectionState(clientFailed, .connected)
 
         // Trigger FAILED via fatal ERROR
-        let wsConnFailed = try XCTUnwrap(failedProvider.activeConnection)
+        let wsConnFailed = try #require(failedProvider.activeConnection)
         wsConnFailed.sendToClientAndClose(.error(code: 50000, statusCode: 500, message: "Fatal error"))
         awaitConnectionState(clientFailed, .failed)
-        XCTAssertNil(clientFailed.connection.createRecoveryKey())
+        #expect(clientFailed.connection.createRecoveryKey() == nil)
 
         // --- Test SUSPENDED state ---
         // All connections fail after initial, to force SUSPENDED.
@@ -145,7 +149,7 @@ final class ConnectionRecoveryTests: UTSTestCase {
         clientSuspended.connect()
         awaitConnectionState(clientSuspended, .connected)
 
-        let wsConnSuspended = try XCTUnwrap(suspendedProvider.activeConnection)
+        let wsConnSuspended = try #require(suspendedProvider.activeConnection)
         wsConnSuspended.simulateDisconnect()
 
         // Advance time until SUSPENDED (connectionStateTtl expires)
@@ -157,12 +161,13 @@ final class ConnectionRecoveryTests: UTSTestCase {
         }
 
         awaitConnectionState(clientSuspended, .suspended)
-        XCTAssertNil(clientSuspended.connection.createRecoveryKey())
+        #expect(clientSuspended.connection.createRecoveryKey() == nil)
 
         closeClient(clientSuspended)
     }
 
     // UTS: realtime/unit/RTN16k/recover-query-param-0
+    @Test
     func test_RTN16k_recover_option_adds_recover_query_param_to_WebSocket_URL() throws {
         // Construct a valid recoveryKey
         let recoveryKey = """
@@ -202,7 +207,7 @@ final class ConnectionRecoveryTests: UTSTestCase {
         awaitConnectionState(client, .connected)
 
         // Simulate disconnect and reconnection
-        let wsConnection = try XCTUnwrap(wsProvider.activeConnection)
+        let wsConnection = try #require(wsProvider.activeConnection)
         wsConnection.simulateDisconnect()
 
         // Advance to fire the immediate reconnect timer
@@ -210,21 +215,22 @@ final class ConnectionRecoveryTests: UTSTestCase {
         // Wait for resume reconnection
         awaitConnectionState(client, .connected)
 
-        XCTAssertEqual(capturedConnectionAttempts.count, 2)
+        #expect(capturedConnectionAttempts.count == 2)
 
         // First connection attempt includes recover param with connectionKey from recoveryKey
-        XCTAssertEqual(capturedConnectionAttempts[0].queryParams["recover"], "recovered-key-xyz")
+        #expect(capturedConnectionAttempts[0].queryParams["recover"] == "recovered-key-xyz")
         // First connection attempt does NOT include resume param
-        XCTAssertNil(capturedConnectionAttempts[0].queryParams["resume"])
+        #expect(capturedConnectionAttempts[0].queryParams["resume"] == nil)
 
         // Second connection attempt uses resume (not recover) since client is now connected
-        XCTAssertEqual(capturedConnectionAttempts[1].queryParams["resume"], "new-key-after-recovery")
-        XCTAssertNil(capturedConnectionAttempts[1].queryParams["recover"])
+        #expect(capturedConnectionAttempts[1].queryParams["resume"] == "new-key-after-recovery")
+        #expect(capturedConnectionAttempts[1].queryParams["recover"] == nil)
 
         closeClient(client)
     }
 
     // UTS: realtime/unit/RTN16f/recover-initializes-msgserial-0
+    @Test
     func test_RTN16f_recover_option_initializes_msgSerial_from_recoveryKey() throws {
         // Construct a recoveryKey with msgSerial of 42
         let recoveryKey = """
@@ -252,7 +258,7 @@ final class ConnectionRecoveryTests: UTSTestCase {
         awaitConnectionState(client, .connected)
 
         // Get WebSocket connection reference
-        let wsConnection = try XCTUnwrap(wsProvider.activeConnection)
+        let wsConnection = try #require(wsProvider.activeConnection)
 
         // Attach the recovered channel
         let channel = client.channels.get("test-channel")
@@ -273,13 +279,14 @@ final class ConnectionRecoveryTests: UTSTestCase {
         wsConnection.sendToClient(.ack(msgSerial: 42, count: 1))
 
         // The first message published uses msgSerial from the recoveryKey
-        XCTAssertNotNil(messageFrame)
-        XCTAssertEqual(messageFrame?.msgSerial?.intValue, 42)
+        #expect(messageFrame != nil)
+        #expect(messageFrame?.msgSerial?.intValue == 42)
 
         closeClient(client)
     }
 
     // UTS: realtime/unit/RTN16f1/malformed-recovery-key-0
+    @Test
     func test_RTN16f1_malformed_recoveryKey_logs_error_and_connects_normally() throws {
         var capturedConnectionAttempts: [MockWebSocket] = []
         let wsProvider = MockWebSocketProvider(onConnectionAttempt: { connection in
@@ -302,27 +309,28 @@ final class ConnectionRecoveryTests: UTSTestCase {
         awaitConnectionState(client, .connected)
 
         // Connection succeeded normally
-        XCTAssertEqual(client.connection.state, .connected)
-        XCTAssertEqual(client.connection.id, "fresh-conn")
-        XCTAssertEqual(client.connection.key, "fresh-key")
+        #expect(client.connection.state == .connected)
+        #expect(client.connection.id == "fresh-conn")
+        #expect(client.connection.key == "fresh-key")
 
-        let attempt = try XCTUnwrap(capturedConnectionAttempts.first)
+        let attempt = try #require(capturedConnectionAttempts.first)
         // No recover param was sent (malformed key was rejected)
-        XCTAssertNil(attempt.queryParams["recover"])
+        #expect(attempt.queryParams["recover"] == nil)
 
         // Also no resume param (this is a fresh connection)
-        XCTAssertNil(attempt.queryParams["resume"])
+        #expect(attempt.queryParams["resume"] == nil)
 
         // Only one connection attempt (normal connection, no retries)
-        XCTAssertEqual(capturedConnectionAttempts.count, 1)
+        #expect(capturedConnectionAttempts.count == 1)
 
         // An error is logged about the malformed recovery key (captured via the injected logHandler).
-        XCTAssertTrue(log.contains(level: .error, message: "recovery key"), "expected an error-level log mentioning the malformed recovery key")
+        #expect(log.contains(level: .error, message: "recovery key"), "expected an error-level log mentioning the malformed recovery key")
 
         closeClient(client)
     }
 
     // UTS: realtime/unit/RTN16j/recover-channel-serials-0
+    @Test
     func test_RTN16j_recover_option_instantiates_channels_from_recoveryKey_with_correct_channelSerials() throws {
         // Construct a recoveryKey with multiple channels
         let recoveryKey = """
@@ -356,19 +364,19 @@ final class ConnectionRecoveryTests: UTSTestCase {
         let channelUnicode = client.channels.get("channel-üñîçöðé")
 
         // Each channel has its channelSerial set from the recoveryKey
-        XCTAssertEqual(channelOne.properties.channelSerial, "serial-1-abc")
-        XCTAssertEqual(channelTwo.properties.channelSerial, "serial-2-def")
-        XCTAssertEqual(channelUnicode.properties.channelSerial, "serial-3-unicode")
+        #expect(channelOne.properties.channelSerial == "serial-1-abc")
+        #expect(channelTwo.properties.channelSerial == "serial-2-def")
+        #expect(channelUnicode.properties.channelSerial == "serial-3-unicode")
 
         // RTN16i: Channels are NOT automatically attached — the user must explicitly attach them.
         // They should be in INITIALIZED state (the library instantiated them but didn't attach).
-        XCTAssertEqual(channelOne.state, .initialized)
-        XCTAssertEqual(channelTwo.state, .initialized)
-        XCTAssertEqual(channelUnicode.state, .initialized)
+        #expect(channelOne.state == .initialized)
+        #expect(channelTwo.state == .initialized)
+        #expect(channelUnicode.state == .initialized)
 
         // When the user attaches, the ATTACH message should include the channelSerial
         // (this enables the server to resume the channel from the correct point)
-        let wsConnection = try XCTUnwrap(wsProvider.activeConnection)
+        let wsConnection = try #require(wsProvider.activeConnection)
 
         channelOne.attach()
 
@@ -377,8 +385,8 @@ final class ConnectionRecoveryTests: UTSTestCase {
             wsConnection.sentMessages.contains { $0.action == .attach && $0.channel == "channel-one" }
         }
         let sentFrames = wsConnection.sentMessages.filter { $0.action == .attach && $0.channel == "channel-one" }
-        XCTAssertEqual(sentFrames.count, 1)
-        XCTAssertEqual(sentFrames.first?.channelSerial, "serial-1-abc")
+        #expect(sentFrames.count == 1)
+        #expect(sentFrames.first?.channelSerial == "serial-1-abc")
 
         // Complete the attachment
         wsConnection.sendToClient(.attached(channel: "channel-one", channelSerial: "serial-1-abc-updated"))
@@ -393,7 +401,7 @@ extension ConnectionRecoveryTests {
 
     /// Parses a JSON recovery key string into a dictionary.
     private func parseRecoveryKey(_ string: String) throws -> [String: Any] {
-        let data = try XCTUnwrap(string.data(using: .utf8))
-        return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let data = try #require(string.data(using: .utf8))
+        return try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
     }
 }

@@ -5,7 +5,7 @@ This file records gaps found while running UTS-derived tests against ably-cocoa,
 gated behind the `RUN_DEVIATIONS` environment variable so normal runs stay green:
 
 ```swift
-try XCTSkipUnless(ProcessInfo.processInfo.environment["RUN_DEVIATIONS"] != nil)
+@Test(.enabled(if: ProcessInfo.processInfo.environment["RUN_DEVIATIONS"] != nil))
 ```
 
 Reproduce a single deviation with:
