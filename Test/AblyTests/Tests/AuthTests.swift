@@ -53,7 +53,7 @@ private func createAuthUrlTestsOptions(for test: Test) throws -> ARTClientOption
 }
 
 private func createJsonEncoder() -> ARTJsonLikeEncoder {
-    let encoder = ARTJsonLikeEncoder()
+    let encoder = ARTJsonLikeEncoder(delegate: ARTJsonEncoder(), timeProvider: SystemTimeProvider())
     encoder.delegate = ARTJsonEncoder()
     return encoder
 }

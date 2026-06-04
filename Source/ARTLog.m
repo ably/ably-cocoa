@@ -1,6 +1,8 @@
 #import "ARTLog+Private.h"
 #import "ARTNSDate+ARTUtil.h"
 #import "ARTGCD.h"
+#import "ARTSystemTimeProvider.h"
+#import "ARTTimeProvider.h"
 
 static const char *logLevelName(ARTLogLevel level) {
     switch(level) {
@@ -67,6 +69,7 @@ static const char *logLevelName(ARTLogLevel level) {
     NSMutableArray<ARTLogLine *> *_history;
     NSUInteger _historyLines;
     dispatch_queue_t _queue;
+    id<ARTTimeProvider> _timeProvider;
 }
 
 - (instancetype)init {
@@ -86,14 +89,16 @@ static const char *logLevelName(ARTLogLevel level) {
         }
         _history = [[NSMutableArray alloc] init];
         _historyLines = historyLines;
+        // Note that we don't provide the ability to mock the time provider used for log timestamps; doing so is more likely to cause confusion to those reading log messages than it is to be useful.
         _queue = dispatch_queue_create("io.ably.log", DISPATCH_QUEUE_SERIAL);
+        _timeProvider = [[ARTSystemTimeProvider alloc] init];
     }
     return self;
 }
 
 - (void)log:(NSString *const)message withLevel:(const ARTLogLevel)level {
     art_dispatch_sync(_queue, ^{
-        ARTLogLine *logLine = [[ARTLogLine alloc] initWithDate:[NSDate date] level:level message:message];
+        ARTLogLine *logLine = [[ARTLogLine alloc] initWithDate:[self->_timeProvider wallClockNow] level:level message:message];
         if (level >= self.logLevel) {
             NSLog(@"%@", [logLine toString]);
             if (self->_captured) {

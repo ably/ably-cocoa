@@ -1,6 +1,7 @@
 #import "ARTMessage.h"
 #import "ARTJsonEncoder.h"
 #import "ARTJsonLikeEncoder.h"
+#import "ARTSystemTimeProvider.h"
 #import "ARTBaseMessage+Private.h"
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTInternalLog.h"
@@ -80,7 +81,7 @@ NSString *ARTMessageActionToStr(ARTMessageAction action) {
 @implementation ARTMessage (Decoding)
 
 + (instancetype)fromEncoded:(NSDictionary *)jsonObject channelOptions:(ARTChannelOptions *)options error:(NSError **)error {
-    ARTJsonLikeEncoder *jsonEncoder = [[ARTJsonLikeEncoder alloc] initWithDelegate:[[ARTJsonEncoder alloc] init]];
+    ARTJsonLikeEncoder *jsonEncoder = [[ARTJsonLikeEncoder alloc] initWithDelegate:[[ARTJsonEncoder alloc] init] timeProvider:[[ARTSystemTimeProvider alloc] init]];
     NSError *encoderError = nil;
     ARTDataEncoder *decoder = [[ARTDataEncoder alloc] initWithCipherParams:options.cipher logger:ARTInternalLog.sharedClassMethodLogger_readDocumentationBeforeUsing error:&encoderError];
     if (encoderError != nil) {
@@ -110,7 +111,7 @@ NSString *ARTMessageActionToStr(ARTMessageAction action) {
 }
 
 + (NSArray<ARTMessage *> *)fromEncodedArray:(NSArray<NSDictionary *> *)jsonArray channelOptions:(ARTChannelOptions *)options error:(NSError **)error {
-    ARTJsonLikeEncoder *jsonEncoder = [[ARTJsonLikeEncoder alloc] initWithDelegate:[[ARTJsonEncoder alloc] init]];
+    ARTJsonLikeEncoder *jsonEncoder = [[ARTJsonLikeEncoder alloc] initWithDelegate:[[ARTJsonEncoder alloc] init] timeProvider:[[ARTSystemTimeProvider alloc] init]];
     NSError *encoderError = nil;
     ARTDataEncoder *decoder = [[ARTDataEncoder alloc] initWithCipherParams:options.cipher logger:ARTInternalLog.sharedClassMethodLogger_readDocumentationBeforeUsing error:&encoderError];
     if (encoderError != nil) {

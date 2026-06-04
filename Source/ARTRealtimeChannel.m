@@ -318,10 +318,10 @@ NS_ASSUME_NONNULL_END
         _realtimePresence = [[ARTRealtimePresenceInternal alloc] initWithChannel:self logger:self.logger];
         _realtimeAnnotations = [[ARTRealtimeAnnotationsInternal alloc] initWithChannel:self logger:self.logger];
         _statesEventEmitter = [[ARTPublicEventEmitter alloc] initWithRest:_realtime.rest logger:logger];
-        _messagesEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueues:_queue userQueue:_userQueue];
-        _attachedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
-        _detachedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
-        _internalEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
+        _messagesEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueues:_queue userQueue:_userQueue timeProvider:_realtime.rest.timeProvider];
+        _attachedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue timeProvider:_realtime.rest.timeProvider];
+        _detachedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue timeProvider:_realtime.rest.timeProvider];
+        _internalEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue timeProvider:_realtime.rest.timeProvider];
         const id<ARTRetryDelayCalculator> attachRetryDelayCalculator = [[ARTBackoffRetryDelayCalculator alloc] initWithInitialRetryTimeout:realtime.options.channelRetryTimeout
                                                                                                                 jitterCoefficientGenerator:realtime.options.testOptions.jitterCoefficientGenerator];
         _attachRetryState = [[ARTAttachRetryState alloc] initWithRetryDelayCalculator:attachRetryDelayCalculator

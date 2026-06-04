@@ -3,6 +3,7 @@
 #import "ARTFallback+Private.h"
 #import "ARTRealtimeTransportFactory.h"
 #import "ARTJitterCoefficientGenerator.h"
+#import "ARTSystemTimeProvider.h"
 
 @implementation ARTTestClientOptions
 
@@ -12,6 +13,7 @@
         _shuffleArray = ARTFallback_shuffleArray;
         _transportFactory = [[ARTDefaultRealtimeTransportFactory alloc] init];
         _jitterCoefficientGenerator = [[ARTDefaultJitterCoefficientGenerator alloc] init];
+        _timeProvider = [[ARTSystemTimeProvider alloc] init];
     }
 
     return self;
@@ -27,6 +29,7 @@
     copied.jitterCoefficientGenerator = self.jitterCoefficientGenerator;
     copied.logLocalDeviceStorageValues = self.logLocalDeviceStorageValues;
     copied.disableLocalDevice = self.disableLocalDevice;
+    copied.timeProvider = self.timeProvider;
 
     return copied;
 }
