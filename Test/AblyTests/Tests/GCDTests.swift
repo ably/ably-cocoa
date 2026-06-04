@@ -12,11 +12,11 @@ class GCDTests: XCTestCase {
         weak var weakObject = object
 
         // prepare schedule block
-        var scheduledBlock: ARTScheduledBlockHandle? = artDispatchScheduled(0, .main) { [object] in
+        var scheduledBlock: ARTScheduledBlockHandle? = ARTScheduledBlockHandle(delay: 0, queue: .main, block: { [object] in
             // retain counter +1 -> sum: 2
             _ = object
             invokedExpectation.fulfill()
-        }
+        })
 
         // invoke block
         _ = scheduledBlock

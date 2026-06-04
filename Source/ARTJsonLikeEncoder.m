@@ -1,6 +1,10 @@
 #import <Foundation/Foundation.h>
 
 #import "ARTJsonLikeEncoder.h"
+#import "ARTSystemTimeProvider.h"
+#import "ARTTimeProvider.h"
+#import "ARTClientOptions+TestConfiguration.h"
+#import "ARTTestClientOptions.h"
 
 #import "ARTMessage.h"
 #import "ARTMessage+Private.h"
@@ -44,6 +48,7 @@
 @implementation ARTJsonLikeEncoder {
     __weak ARTRestInternal *_rest; // weak because rest owns self
     ARTInternalLog *_logger;
+    id<ARTTimeProvider> _timeProvider;
 }
 
 - (instancetype)init {
@@ -55,6 +60,7 @@
         _rest = nil;
         _logger = nil;
         _delegate = delegate;
+        _timeProvider = [[ARTSystemTimeProvider alloc] init];
     }
     return self;
 }
@@ -64,6 +70,7 @@
         _rest = nil;
         _logger = logger;
         _delegate = delegate;
+        _timeProvider = [[ARTSystemTimeProvider alloc] init];
     }
     return self;
 }
@@ -73,6 +80,7 @@
         _rest = rest;
         _logger = logger;
         _delegate = delegate;
+        _timeProvider = rest.options.testOptions.timeProvider;
     }
     return self;
 }
@@ -871,7 +879,7 @@
     if (tokenRequest.timestamp)
         timestamp = [NSNumber numberWithUnsignedLongLong:dateToMilliseconds(tokenRequest.timestamp)];
     else
-        timestamp = [NSNumber numberWithUnsignedLongLong:dateToMilliseconds([NSDate date])];
+        timestamp = [NSNumber numberWithUnsignedLongLong:dateToMilliseconds([_timeProvider wallClockNow])];
 
     NSMutableDictionary *dictionary = [@{
              @"keyName":tokenRequest.keyName ? tokenRequest.keyName : @"",

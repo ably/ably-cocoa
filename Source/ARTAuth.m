@@ -22,6 +22,9 @@
 #import "ARTFormEncode.h"
 #import "ARTInternalLog.h"
 #import "ARTLocalDeviceStorage.h"
+#import "ARTTimeProvider.h"
+#import "ARTTestClientOptions.h"
+#import "ARTClientOptions+TestConfiguration.h"
 #import "ARTLocalDevice+Private.h"
 #import "ARTDeviceDetails+Private.h"
 #import "ARTClientOptions+TestConfiguration.h"
@@ -104,6 +107,7 @@ NS_ASSUME_NONNULL_END
     NSString *_protocolClientId;
     NSInteger _authorizationsCount;
     ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_cancelationEventEmitter;
+    id<ARTTimeProvider> _timeProvider;
 }
 
 - (instancetype)init:(ARTRestInternal *)rest withOptions:(ARTClientOptions *)options logger:(ARTInternalLog *)logger {
@@ -114,8 +118,9 @@ NS_ASSUME_NONNULL_END
         _tokenDetails = options.tokenDetails;
         _options = options;
         _logger = logger;
+        _timeProvider = options.testOptions.timeProvider;
         _protocolClientId = nil;
-        _cancelationEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
+        _cancelationEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue timeProvider:_timeProvider];
         _tokenParams = options.defaultTokenParams ? : [[ARTTokenParams alloc] initWithOptions:self.options];
         _authorizationsCount = 0;
         [self validate:options];
@@ -761,7 +766,7 @@ art_dispatch_sync(_queue, ^{
 }
 
 - (NSDate *)currentDate {
-    return [[NSDate date] dateByAddingTimeInterval:_timeOffset.doubleValue];
+    return [[_timeProvider wallClockNow] dateByAddingTimeInterval:_timeOffset.doubleValue];
 }
 
 - (BOOL)hasTimeOffset {

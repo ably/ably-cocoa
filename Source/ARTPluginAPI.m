@@ -10,6 +10,7 @@
 #import "ARTConnectionDetails+Private.h"
 #import "ARTPublishResult+Private.h"
 #import "ARTPublishResultSerial+Private.h"
+#import "ARTTimeProvider.h"
 
 static ARTErrorInfo *_ourPublicErrorInfo(id<APPublicErrorInfo> pluginPublicErrorInfo) {
     if (![pluginPublicErrorInfo isKindOfClass:[ARTErrorInfo class]]) {
@@ -200,6 +201,21 @@ static ARTLogLevel _convertPluginLogLevel(APLogLevel pluginLogLevel) {
                              withLevel:_convertPluginLogLevel(level)
                              file:fileName
                              line:line];
+}
+
+- (NSDate *)wallClockNowForClient:(id<APRealtimeClient>)client {
+    return [_internalRealtimeClient(client).timeProvider wallClockNow];
+}
+
+- (id<ARTContinuousClockInstantProtocol>)continuousClockNowForClient:(id<APRealtimeClient>)client {
+    return [_internalRealtimeClient(client).timeProvider continuousClockNow];
+}
+
+- (id<ARTSchedulerHandle>)scheduleForClient:(id<APRealtimeClient>)client
+                                     after:(NSTimeInterval)delay
+                                     queue:(dispatch_queue_t)queue
+                                     block:(dispatch_block_t)block {
+    return [_internalRealtimeClient(client).timeProvider scheduleAfter:delay queue:queue block:block];
 }
 
 @end

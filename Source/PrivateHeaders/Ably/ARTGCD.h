@@ -1,18 +1,17 @@
 #import <Foundation/Foundation.h>
+#import "ARTSchedulerHandle.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTScheduledBlockHandle : NSObject
+/**
+ A handle to a block scheduled via `-[ARTTimeProvider scheduleAfter:queue:block:]` (when backed by `ARTSystemTimeProvider`).
+
+ Conforms to `ARTSchedulerHandle` so that handles may be returned across the `ARTTimeProvider` boundary.
+ */
+@interface ARTScheduledBlockHandle : NSObject <ARTSchedulerHandle>
 - (instancetype)initWithDelay:(NSTimeInterval)delay queue:(dispatch_queue_t)queue block:(dispatch_block_t)block;
 - (void)cancel;
 @end
-
-ARTScheduledBlockHandle *artDispatchScheduled(NSTimeInterval seconds, dispatch_queue_t queue, dispatch_block_t block);
-static inline void artDispatchCancel(ARTScheduledBlockHandle *handle) {
-    if (handle) {
-        [handle cancel];
-    }
-}
 
 /// Like `dispatch_sync`, but throws an `NSException` if the queue is `nil` at runtime.
 ///

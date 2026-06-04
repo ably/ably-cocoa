@@ -2,28 +2,12 @@
 
 @interface ARTContinuousClockInstant ()
 
-- (instancetype)initWithTime:(uint64_t)time NS_DESIGNATED_INITIALIZER;
-
 /**
  The value returned by `clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW)` at this instant.
 
  We choose `clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW)` as it gives us a clock that increments whilst the system is asleep. Its use is recommended by the documentation for `mach_continuous_time`.
  */
 @property (nonatomic, readonly) uint64_t timeInNanosecondsSinceClockReferenceInstant;
-
-@end
-
-@implementation ARTContinuousClock
-
-- (ARTContinuousClockInstant *)now {
-    const uint64_t time = clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW);
-    return [[ARTContinuousClockInstant alloc] initWithTime:time];
-}
-
-- (ARTContinuousClockInstant *)addingDuration:(NSTimeInterval)duration toInstant:(ARTContinuousClockInstant *)instant {
-    const uint64_t time = instant.timeInNanosecondsSinceClockReferenceInstant + duration * NSEC_PER_SEC;
-    return [[ARTContinuousClockInstant alloc] initWithTime:time];
-}
 
 @end
 
@@ -41,8 +25,21 @@
     return self;
 }
 
-- (BOOL)isAfter:(ARTContinuousClockInstant *)other {
-    return self.timeInNanosecondsSinceClockReferenceInstant > other.timeInNanosecondsSinceClockReferenceInstant;
+- (BOOL)isAfter:(id<ARTContinuousClockInstantProtocol>)other {
+    // `other` is only ever an instant produced by the same `ARTContinuousClockInstant` (a single
+    // client has a single time provider, and instants aren't mixed across providers). Guard the
+    // downcast so a misuse fails fast with a clear message rather than reading invalid memory.
+    if (![other isKindOfClass:[ARTContinuousClockInstant class]]) {
+        [NSException raise:NSInvalidArgumentException
+                    format:@"Cannot compare an ARTContinuousClockInstant with a %@", [other class]];
+    }
+    ARTContinuousClockInstant *const concreteOther = (ARTContinuousClockInstant *)other;
+    return self.timeInNanosecondsSinceClockReferenceInstant > concreteOther.timeInNanosecondsSinceClockReferenceInstant;
+}
+
+- (id<ARTContinuousClockInstantProtocol>)addingDuration:(NSTimeInterval)duration {
+    const uint64_t time = self.timeInNanosecondsSinceClockReferenceInstant + duration * NSEC_PER_SEC;
+    return [[ARTContinuousClockInstant alloc] initWithTime:time];
 }
 
 @end
