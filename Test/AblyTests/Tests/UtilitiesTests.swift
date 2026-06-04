@@ -1,4 +1,5 @@
 import Ably
+import Ably.Private
 import AblyTestingObjC
 import Foundation
 import Nimble
@@ -6,7 +7,7 @@ import XCTest
 
 private var jsonEncoder: ARTJsonLikeEncoder!
 
-private var eventEmitter = ARTInternalEventEmitter<NSString, AnyObject>(queue: AblyTests.queue)
+private var eventEmitter = ARTInternalEventEmitter<NSString, AnyObject>(queue: AblyTests.queue, timeProvider: ARTSystemTimeProvider())
 private var receivedFoo1: Int?
 private var receivedFoo2: Int?
 private var receivedBar: Int?
@@ -299,7 +300,7 @@ class UtilitiesTests: XCTestCase {
     }
 
     func beforeEach__Utilities__EventEmitter() {
-        eventEmitter = ARTInternalEventEmitter(queue: AblyTests.queue)
+        eventEmitter = ARTInternalEventEmitter(queue: AblyTests.queue, timeProvider: ARTSystemTimeProvider())
         receivedFoo1 = nil
         receivedFoo2 = nil
         receivedBar = nil

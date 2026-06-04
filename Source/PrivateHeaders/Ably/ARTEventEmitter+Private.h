@@ -1,6 +1,8 @@
 #import <Ably/ARTEventEmitter.h>
 #import "ARTRest+Private.h"
 
+@protocol ARTTimeProvider;
+
 NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - ARTEventListener
@@ -35,6 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSNotificationCenter *notificationCenter;
 @property (nonatomic, readonly) dispatch_queue_t queue;
 @property (nullable, nonatomic, readonly) dispatch_queue_t userQueue;
+@property (nonatomic, readonly) id<ARTTimeProvider> timeProvider;
 
 @property (readonly, atomic) NSMutableDictionary<NSString *, NSMutableArray<ARTEventListener *> *> *listeners;
 @property (readonly, atomic) NSMutableArray<ARTEventListener *> *anyListeners;
@@ -50,8 +53,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTInternalEventEmitter<EventType:id<ARTEventIdentification>, ItemType> : ARTEventEmitter<EventType, ItemType>
 
-- (instancetype)initWithQueue:(dispatch_queue_t)queue;
-- (instancetype)initWithQueues:(dispatch_queue_t)queue userQueue:(_Nullable dispatch_queue_t)userQueue;
+- (instancetype)initWithQueue:(dispatch_queue_t)queue timeProvider:(id<ARTTimeProvider>)timeProvider;
+- (instancetype)initWithQueues:(dispatch_queue_t)queue userQueue:(_Nullable dispatch_queue_t)userQueue timeProvider:(id<ARTTimeProvider>)timeProvider;
 
 @end
 

@@ -56,6 +56,7 @@
 #import "ARTConnectRetryState.h"
 #import "ARTWrapperSDKProxyRealtime+Private.h"
 #import "ARTConnectionDetails+Private.h"
+#import "ARTTimeProvider.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -232,9 +233,9 @@ typedef NS_ENUM(NSUInteger, ARTNetworkState) {
     __weak ARTEventListener *_connectionRetryFromSuspendedListener;
     __weak ARTEventListener *_connectionRetryFromDisconnectedListener;
     __weak ARTEventListener *_connectingTimeoutListener;
-    ARTScheduledBlockHandle *_authenitcatingTimeoutWork;
+    id<ARTSchedulerHandle> _authenitcatingTimeoutWork;
     NSObject<ARTCancellable> *_authTask;
-    ARTScheduledBlockHandle *_idleTimer;
+    id<ARTSchedulerHandle> _idleTimer;
     dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;
 }
@@ -245,12 +246,13 @@ typedef NS_ENUM(NSUInteger, ARTNetworkState) {
         NSAssert(options, @"ARTRealtime: No options provided");
 
         _logger = [[ARTInternalLog alloc] initWithClientOptions:options];
+        _timeProvider = options.testOptions.timeProvider;
         _rest = [[ARTRestInternal alloc] initWithOptions:options realtime:self logger:_logger];
         _userQueue = _rest.userQueue;
         _queue = _rest.queue;
-        _internalEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
-        _connectedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
-        _pingEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
+        _internalEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue timeProvider:_timeProvider];
+        _connectedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue timeProvider:_timeProvider];
+        _pingEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue timeProvider:_timeProvider];
         _channels = [[ARTRealtimeChannelsInternal alloc] initWithRealtime:self logger:self.logger];
         _transport = nil;
         _networkState = ARTNetworkStateIsUnknown;
@@ -642,7 +644,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 }
 
 - (void)clearConnectionStateIfInactive {
-    NSTimeInterval intervalSinceLast = [[NSDate date] timeIntervalSinceDate:_lastActivity];
+    NSTimeInterval intervalSinceLast = [[_timeProvider wallClockNow] timeIntervalSinceDate:_lastActivity];
     if (intervalSinceLast > (_maxIdleInterval + _connectionStateTtl)) {
         [self.connection setId:nil];
         [self.connection setKey:nil];
@@ -735,7 +737,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         case ARTRealtimeDisconnected: {
             [self closeAndReleaseTransport];
             if (!_connectionLostAt) {
-                _connectionLostAt = [NSDate date];
+                _connectionLostAt = [_timeProvider wallClockNow];
                 ARTLogVerbose(self.logger, @"RT:%p set connection lost time; expected suspension at %@ (ttl=%f)", self, [self suspensionTime], self.connectionStateTtl);
             }
 
@@ -942,7 +944,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
             }
             if (message.connectionDetails && message.connectionDetails.maxIdleInterval) {
                 _maxIdleInterval = message.connectionDetails.maxIdleInterval;
-                _lastActivity = [NSDate date];
+                _lastActivity = [_timeProvider wallClockNow];
                 [self setIdleTimer];
             }
             ARTConnectionStateChangeParams *const params = [[ARTConnectionStateChangeParams alloc] initWithErrorInfo:message.error];
@@ -1054,7 +1056,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     [_connectingTimeoutListener stopTimer];
     _connectingTimeoutListener = nil;
     // Cancel auth scheduled work
-    artDispatchCancel(_authenitcatingTimeoutWork);
+    [_authenitcatingTimeoutWork cancel];
     _authenitcatingTimeoutWork = nil;
     [_authTask cancel];
     _authTask = nil;
@@ -1070,7 +1072,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     [_connectingTimeoutListener stopTimer];
     _connectingTimeoutListener = nil;
     // Cancel auth scheduled work
-    artDispatchCancel(_authenitcatingTimeoutWork);
+    [_authenitcatingTimeoutWork cancel];
     _authenitcatingTimeoutWork = nil;
     [_authTask cancel];
     _authTask = nil;
@@ -1142,9 +1144,9 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
             [self.auth setTokenDetails:nil];
 
             // Schedule timeout handler
-            _authenitcatingTimeoutWork = artDispatchScheduled(self.options.testOptions.realtimeRequestTimeout, _rest.queue, ^{
+            _authenitcatingTimeoutWork = [_timeProvider scheduleAfter:self.options.testOptions.realtimeRequestTimeout queue:_rest.queue block:^{
                 [self onConnectionTimeOut];
-            });
+            }];
 
             id<ARTAuthDelegate> delegate = self.auth.delegate;
             if (newConnection) {
@@ -1154,7 +1156,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
             @try {
                 _authTask = [self.auth _authorize:nil options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
                     // Cancel scheduled work
-                    artDispatchCancel(self->_authenitcatingTimeoutWork);
+                    [self->_authenitcatingTimeoutWork cancel];
                     self->_authenitcatingTimeoutWork = nil;
                     self->_authTask = nil;
 
@@ -1252,7 +1254,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 }
 
 - (BOOL)isSuspendMode {
-    NSDate *currentTime = [NSDate date];
+    NSDate *currentTime = [_timeProvider wallClockNow];
     return [currentTime timeIntervalSinceDate:[self suspensionTime]] > 0;
 }
 
@@ -1554,7 +1556,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 
 - (void)onActivity {
     ARTLogVerbose(self.logger, @"R:%p activity", self);
-    _lastActivity = [NSDate date];
+    _lastActivity = [_timeProvider wallClockNow];
     [self setIdleTimer];
 }
 
@@ -1563,19 +1565,19 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         ARTLogVerbose(self.logger, @"R:%p set idle timer had been ignored", self);
         return;
     }
-    artDispatchCancel(_idleTimer);
+    [_idleTimer cancel];
 
-    _idleTimer = artDispatchScheduled(self.options.testOptions.realtimeRequestTimeout + self.maxIdleInterval, _rest.queue, ^{
-        ARTLogError(self.logger, @"R:%p No activity seen from realtime in %f seconds; assuming connection has dropped", self, [[NSDate date] timeIntervalSinceDate:self->_lastActivity]);
+    _idleTimer = [_timeProvider scheduleAfter:self.options.testOptions.realtimeRequestTimeout + self.maxIdleInterval queue:_rest.queue block:^{
+        ARTLogError(self.logger, @"R:%p No activity seen from realtime in %f seconds; assuming connection has dropped", self, [[self->_timeProvider wallClockNow] timeIntervalSinceDate:self->_lastActivity]);
 
         ARTErrorInfo *idleTimerExpired = [ARTErrorInfo createWithCode:ARTErrorDisconnected status:408 message:@"Idle timer expired"];
         ARTConnectionStateChangeParams *const params = [[ARTConnectionStateChangeParams alloc] initWithErrorInfo:idleTimerExpired];
         [self performTransitionToDisconnectedOrSuspendedWithParams:params];
-    });
+    }];
 }
 
 - (void)stopIdleTimer {
-    artDispatchCancel(_idleTimer);
+    [_idleTimer cancel];
     _idleTimer = nil;
 }
 

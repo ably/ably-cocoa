@@ -51,25 +51,6 @@
 
 @end
 
-ARTScheduledBlockHandle *artDispatchScheduled(NSTimeInterval seconds, dispatch_queue_t queue, dispatch_block_t block) {
-    // We don't pass the block directly; instead, we put it in a property, and
-    // read it back from the property once the timer fires. This gives us the
-    // chance to set the property to nil when cancelling the timer, thus
-    // releasing our retain on the block early. dispatch_block_cancel doesn't do
-    // this, it retains the block even if you cancel the dispatch until the
-    // dispatch time passes. (How this is a good idea escapes me.)
-    //
-    // From Apple's documentation [1]:
-    //
-    // > Release of any resources associated with the block object is delayed
-    // > until execution of the block object is next attempted (or any execution
-    // > already in progress completes).
-    //
-    // https://developer.apple.com/documentation/dispatch/1431058-dispatch_block_cancel
-
-    return [[ARTScheduledBlockHandle alloc] initWithDelay:seconds queue:queue block:block];
-}
-
 void art_dispatch_sync(dispatch_queue_t queue, DISPATCH_NOESCAPE dispatch_block_t block) {
     if (!queue) {
         [NSException raise:NSInvalidArgumentException format: @"nil queue passed to art_dispatch_sync"];
