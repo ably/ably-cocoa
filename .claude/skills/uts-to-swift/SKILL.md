@@ -129,7 +129,7 @@ let wsProvider = MockWebSocketProvider(onConnectionAttempt: { connection in
 ### Mock setup — HTTP
 
 ```swift
-var capturedRequests: [PendingHTTPRequest] = []
+let capturedRequests = Captured<PendingHTTPRequest>()
 let mockHTTP = MockHTTP(
     onConnectionAttempt: { connection in connection.respondWithSuccess() },
     onRequest: { request in
@@ -143,10 +143,10 @@ let rest = makeRest { $0.key = "app.key:secret" }
 
 ### Capturing connection attempts / requests (the spec's local-array pattern)
 
-Per the spec ("Common Mistakes": use a **local** `captured_requests` array, not a mock property), append to a local `var` inside the handler and assert on that. Read it only after the operation has settled (after `awaitConnectionState` / the awaited completion):
+Per the spec ("Common Mistakes": use a **local** `captured_*` collector, not a mock property). The handler closures run on the SDK's queues, so the target is built in the Swift 6 language mode and the closures are `@Sendable` — a plain `var array` captured into them is a compile error (a data race). Use the harness's thread-safe `Captured<T>` instead: it's still test-local, but lock-guarded. Read it only after the operation has settled (after `awaitConnectionState` / the awaited completion):
 
 ```swift
-var capturedConnectionAttempts: [MockWebSocket] = []
+let capturedConnectionAttempts = Captured<MockWebSocket>()
 let wsProvider = MockWebSocketProvider(onConnectionAttempt: { connection in
     capturedConnectionAttempts.append(connection)
     connection.respondWithSuccess()
@@ -155,6 +155,8 @@ let wsProvider = MockWebSocketProvider(onConnectionAttempt: { connection in
 // ... after awaitConnectionState(client, .connected):
 #expect(capturedConnectionAttempts[0].queryParams["recover"] == "...")
 ```
+
+`Captured<T>` exposes `append`, `all`, `count`, `first`, and `subscript(Int)`. For a "first attempt vs. later" branch, append at the top of the handler and switch on `capturedConnectionAttempts.count` (don't keep a separate mutable `var` counter — that won't compile in a `@Sendable` closure).
 
 ### Inspecting outgoing frames
 

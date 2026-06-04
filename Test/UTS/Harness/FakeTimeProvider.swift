@@ -1,7 +1,6 @@
 import Foundation
-import Ably
-import Ably.Private
-import _AblyPluginSupportPrivate
+@preconcurrency import Ably
+@preconcurrency import Ably.Private
 
 /// A deterministic `ARTTimeProvider` for UTS unit tests.
 ///
@@ -13,7 +12,7 @@ import _AblyPluginSupportPrivate
 /// means this provider doubles as the timer-leak safety net the UTS derived-tests guide asks for:
 /// `cancelAllScheduled()` in teardown cancels every surviving timer, including ones the SDK may
 /// have orphaned and which are no longer reachable through its public API.
-final class FakeTimeProvider: NSObject, ARTTimeProvider {
+final class FakeTimeProvider: NSObject, ARTTimeProvider, @unchecked Sendable {
     /// A point on / duration of the continuous clock, in the same units as `clock_gettime_nsec_np`.
     private typealias Nanoseconds = UInt64
 
@@ -25,13 +24,13 @@ final class FakeTimeProvider: NSObject, ARTTimeProvider {
     /// Continuous-clock origin.
     private var continuousNanoseconds: Nanoseconds = 1_000_000_000
 
-    private final class ScheduledBlock {
+    private final class ScheduledBlock: @unchecked Sendable {
         let fireAtNanoseconds: Nanoseconds
         let queue: DispatchQueue
-        let block: () -> Void
+        let block: @Sendable () -> Void
         var isCancelled = false
 
-        init(fireAtNanoseconds: Nanoseconds, queue: DispatchQueue, block: @escaping () -> Void) {
+        init(fireAtNanoseconds: Nanoseconds, queue: DispatchQueue, block: @escaping @Sendable () -> Void) {
             self.fireAtNanoseconds = fireAtNanoseconds
             self.queue = queue
             self.block = block
@@ -76,7 +75,7 @@ final class FakeTimeProvider: NSObject, ARTTimeProvider {
         withLock { ARTContinuousClockInstant(time: continuousNanoseconds) }
     }
 
-    func schedule(after delay: TimeInterval, queue: DispatchQueue, block: @escaping () -> Void) -> SchedulerHandle {
+    func schedule(after delay: TimeInterval, queue: DispatchQueue, block: @escaping @Sendable () -> Void) -> SchedulerHandle {
         withLock {
             rememberQueue(queue)
             let fireAt = continuousNanoseconds + Nanoseconds(max(0, delay) * 1_000_000_000)

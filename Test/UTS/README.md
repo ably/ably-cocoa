@@ -1,20 +1,25 @@
 # UTS — Universal Test Suite (ably-cocoa)
 
 Tests derived from the language-neutral specs in [`ably/specification`](https://github.com/ably/specification) under [`uts/`](https://github.com/ably/specification/blob/main/uts).
-This is a **standalone Swift Testing target** (`UTS`), separate from `AblyTests`, and deliberately does **not** depend on Nimble or XCTest.
+This is a **standalone Swift Testing target** (`UTS`), separate from `AblyTests`, and deliberately does **not** depend on Nimble or XCTest. It is built in the **Swift 6 language mode** (strict concurrency checking) so the compiler catches data races in the harness and tests.
 
 ## Layout
 
 ```
 Test/UTS/
   Harness/
-    UTSTestCase.swift        # base case: installMock, makeRealtime, awaitConnectionState/awaitChannelState, advanceTime, message builders
-    MockWebSocket.swift      # MockWebSocketProvider (the spec's mock_ws) + MockWebSocket (fake socket) + factories
-    FakeTimeProvider.swift   # deterministic ARTTimeProvider (enable_fake_timers / ADVANCE_TIME)
-    NoOpReachability.swift   # disables OS network monitoring in unit tests
+    UTSTestCase.swift             # base case: installMock, makeRealtime/makeRest, awaitConnectionState/awaitChannelState, advanceTime
+    MockWebSocket.swift           # MockWebSocketProvider (the spec's mock_ws) + MockWebSocket (fake socket) + factories
+    MockHTTP.swift                # MockHTTP (fake ARTHTTPExecutor) + PendingHTTPConnection / PendingHTTPRequest
+    FakeTimeProvider.swift        # deterministic ARTTimeProvider (enable_fake_timers / ADVANCE_TIME)
+    Captured.swift                # thread-safe collector for the spec's local captured_* arrays (Swift 6 safe)
+    CapturingLog.swift            # ARTLog that records log lines for assertions
+    NoOpReachability.swift        # disables OS network monitoring in unit tests
+    ARTProtocolMessage+UTS.swift  # protocol-message builders (.connected/.attached/.error/.ack/.closed)
   Tests/
-    ConnectionRecoveryTests.swift   # RTN16 (pilot: 3 tests)
-  deviations.md              # SDK deviations found during evaluation
+    ConnectionRecoveryTests.swift # RTN16
+    TimeTests.swift               # RSC16
+  deviations.md                   # SDK deviations found during evaluation
 ```
 
 ## How the harness maps the UTS primitives

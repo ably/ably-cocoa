@@ -79,6 +79,13 @@ let package = Package(
             exclude: [
                 "README.md",
                 "deviations.md"
+            ],
+            swiftSettings: [
+                // Build the UTS suite in the Swift 6 language mode (strict concurrency checking) so the
+                // compiler catches data races in the harness/tests. The package manifest is still
+                // swift-tools-version 5.3, which predates `.swiftLanguageMode`, so this is applied via
+                // the compiler flag. Only affects this test target (not the shipped product).
+                .unsafeFlags(["-swift-version", "6"])
             ]
         ),
         // A handful of tests written in Objective-C (they can't be part of AblyTests because SPM doesn't allow mixed-language targets).

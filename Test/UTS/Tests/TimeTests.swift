@@ -12,7 +12,7 @@ final class TimeTests: UTSTestCase {
     @Test
     func test_RSC16_time_returns_server_time() async throws {
         let serverTimeMs = 1_704_067_200_000 // 2024-01-01 00:00:00 UTC
-        var capturedRequests: [PendingHTTPRequest] = []
+        let capturedRequests = Captured<PendingHTTPRequest>()
         let mockHTTP = MockHTTP(
             onConnectionAttempt: { connection in connection.respondWithSuccess() },
             onRequest: { request in
@@ -41,7 +41,7 @@ final class TimeTests: UTSTestCase {
     // UTS: rest/unit/RSC16/request-format-get-time-1
     @Test
     func test_RSC16_time_request_format() async throws {
-        var capturedRequests: [PendingHTTPRequest] = []
+        let capturedRequests = Captured<PendingHTTPRequest>()
         let mockHTTP = MockHTTP(
             onConnectionAttempt: { connection in connection.respondWithSuccess() },
             onRequest: { request in
@@ -71,7 +71,7 @@ final class TimeTests: UTSTestCase {
     // UTS: rest/unit/RSC16/no-auth-required-2
     @Test
     func test_RSC16_time_does_not_require_authentication() async throws {
-        var capturedRequests: [PendingHTTPRequest] = []
+        let capturedRequests = Captured<PendingHTTPRequest>()
         let mockHTTP = MockHTTP(
             onConnectionAttempt: { connection in connection.respondWithSuccess() },
             onRequest: { request in
@@ -100,7 +100,7 @@ final class TimeTests: UTSTestCase {
     // UTS: rest/unit/RSC16/works-without-tls-3
     @Test
     func test_RSC16_time_works_without_TLS() async throws {
-        var capturedRequests: [PendingHTTPRequest] = []
+        let capturedRequests = Captured<PendingHTTPRequest>()
         let mockHTTP = MockHTTP(
             onConnectionAttempt: { connection in connection.respondWithSuccess() },
             onRequest: { request in

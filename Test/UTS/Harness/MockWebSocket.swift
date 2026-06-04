@@ -1,6 +1,9 @@
 import Foundation
-import Ably
-import Ably.Private
+// Ably's Objective-C API isn't Sendable-audited; import it preconcurrency so interop with its
+// non-Sendable types (ARTProtocolMessage, the ARTWebSocket delegate, …) is a warning, not an error,
+// while our own harness/test code stays fully checked under the Swift 6 language mode.
+@preconcurrency import Ably
+@preconcurrency import Ably.Private
 
 /// The UTS `mock_ws` — the object test code interacts with. It outlives any single socket
 /// (the SDK creates a new `MockWebSocket` for every connection attempt), holding the
@@ -14,8 +17,8 @@ import Ably.Private
 /// `onConnectionAttempt` is the handler-based pattern from the spec: it receives the `MockWebSocket`
 /// for each connection the SDK opens, and configures the simulated server's response
 /// (`respondWithSuccess()` + `sendToClient(...)`).
-final class MockWebSocketProvider {
-    typealias ConnectionAttemptHandler = (MockWebSocket) -> Void
+final class MockWebSocketProvider: @unchecked Sendable {
+    typealias ConnectionAttemptHandler = @Sendable (MockWebSocket) -> Void
 
     private let onConnectionAttempt: ConnectionAttemptHandler?
     private let lock = NSLock()
@@ -47,7 +50,7 @@ final class MockWebSocketProvider {
 /// A single simulated WebSocket connection. Conforms to `ARTWebSocket` so the real
 /// `ARTWebSocketTransport` can drive it, and exposes the UTS server-side API
 /// (`respondWithSuccess`, `sendToClient`, `simulateDisconnect`, …) for tests.
-final class MockWebSocket: NSObject, ARTWebSocket {
+final class MockWebSocket: NSObject, ARTWebSocket, @unchecked Sendable {
 
     // MARK: ARTWebSocket
 
@@ -171,7 +174,7 @@ final class MockWebSocket: NSObject, ARTWebSocket {
     /// `ARTWebSocket` contract (the real `ARTSRWebSocket` calls its delegate on this queue). It is
     /// always set before any server-side method runs: the transport sets it synchronously in
     /// `setupWebSocket`, before `onConnectionAttempt` (and any later test call) fires.
-    private func deliverToDelegate(_ block: @escaping () -> Void) {
+    private func deliverToDelegate(_ block: @escaping @Sendable () -> Void) {
         guard let queue = delegateDispatchQueue else {
             assertionFailure("MockWebSocket delegate callback before delegateDispatchQueue was set")
             return

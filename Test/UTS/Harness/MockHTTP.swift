@@ -1,6 +1,6 @@
 import Foundation
-import Ably
-import Ably.Private
+@preconcurrency import Ably
+@preconcurrency import Ably.Private
 
 /// The UTS `MockHttpClient` — a fake `ARTHTTPExecutor` that intercepts the SDK's outgoing HTTP
 /// requests so tests can observe them and inject responses, with no real network. Installed via
@@ -11,9 +11,9 @@ import Ably.Private
 /// fires once, before the first request, derived from that request's URL.
 /// `respond_with_refused`, `timeout`, `dns_error` there make every request fail with the corresponding `NSError`;
 /// a successful (or absent) connection handler lets requests through to `onRequest`.
-final class MockHTTP: NSObject, ARTHTTPExecutor {
-    typealias ConnectionHandler = (PendingHTTPConnection) -> Void
-    typealias RequestHandler = (PendingHTTPRequest) -> Void
+final class MockHTTP: NSObject, ARTHTTPExecutor, @unchecked Sendable {
+    typealias ConnectionHandler = @Sendable (PendingHTTPConnection) -> Void
+    typealias RequestHandler = @Sendable (PendingHTTPRequest) -> Void
 
     private let onConnectionAttempt: ConnectionHandler?
     private let onRequest: RequestHandler?
@@ -63,7 +63,7 @@ final class MockHTTP: NSObject, ARTHTTPExecutor {
 
 /// A connection attempt (UTS `PendingConnection`). The cocoa HTTP seam doesn't expose real TCP, so
 /// this is derived from the first request's URL and its outcome is applied to all requests.
-final class PendingHTTPConnection {
+final class PendingHTTPConnection: @unchecked Sendable {
     let host: String
     let port: Int
     let tls: Bool
@@ -92,7 +92,7 @@ final class PendingHTTPConnection {
 }
 
 /// A request the SDK made (UTS `PendingRequest`): inspectable, and respondable by the test.
-final class PendingHTTPRequest {
+final class PendingHTTPRequest: @unchecked Sendable {
     let request: URLRequest
     private let completion: ((HTTPURLResponse?, Data?, Error?) -> Void)?
 

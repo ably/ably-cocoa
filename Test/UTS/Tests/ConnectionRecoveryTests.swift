@@ -125,10 +125,10 @@ final class ConnectionRecoveryTests: UTSTestCase {
         // All connections fail after initial, to force SUSPENDED.
         // (Spec uses a shared connection_attempt_count; we use a provider-local counter so the
         //  initial attempt succeeds and every reconnect is refused — the spec's stated intent.)
-        var suspendedAttemptCount = 0
+        let suspendedAttempts = Captured<MockWebSocket>()
         let suspendedProvider = MockWebSocketProvider(onConnectionAttempt: { connection in
-            suspendedAttemptCount += 1
-            if suspendedAttemptCount == 1 {
+            suspendedAttempts.append(connection)
+            if suspendedAttempts.count == 1 {
                 connection.respondWithSuccess()
                 // connectionStateTtl is in seconds here (2s); the spec's 2000 is the wire value (ms).
                 connection.sendToClient(.connected(connectionId: "conn-s", connectionKey: "key-s", connectionStateTtl: 2))
@@ -177,13 +177,11 @@ final class ConnectionRecoveryTests: UTSTestCase {
           "channelSerials": {}
         }
         """
-        var capturedConnectionAttempts: [MockWebSocket] = []
-        var connectionAttemptCount = 0
+        let capturedConnectionAttempts = Captured<MockWebSocket>()
         let wsProvider = MockWebSocketProvider(onConnectionAttempt: { connection in
             capturedConnectionAttempts.append(connection)
-            connectionAttemptCount += 1
             connection.respondWithSuccess()
-            if connectionAttemptCount == 1 {
+            if capturedConnectionAttempts.count == 1 {
                 // First connection: successful recovery (same connectionId as implied by recoveryKey)
                 connection.sendToClient(.connected(connectionId: "recovered-conn-id", connectionKey: "new-key-after-recovery"))
             } else {
@@ -288,7 +286,7 @@ final class ConnectionRecoveryTests: UTSTestCase {
     // UTS: realtime/unit/RTN16f1/malformed-recovery-key-0
     @Test
     func test_RTN16f1_malformed_recoveryKey_logs_error_and_connects_normally() throws {
-        var capturedConnectionAttempts: [MockWebSocket] = []
+        let capturedConnectionAttempts = Captured<MockWebSocket>()
         let wsProvider = MockWebSocketProvider(onConnectionAttempt: { connection in
             capturedConnectionAttempts.append(connection)
             connection.respondWithSuccess()
