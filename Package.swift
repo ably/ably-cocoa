@@ -67,8 +67,8 @@ let package = Package(
             ]
         ),
         // Universal Test Suite (UTS)
-        // A standalone XCTest suite derived from the language-neutral specs in the
-        // `ably/specification` repo (uts/). Deliberately does not depend on Nimble.
+        // A standalone Swift Testing suite (import Testing / @Suite) derived from the language-neutral
+        // specs in the `ably/specification` repo (uts/). Deliberately does not depend on Nimble or XCTest.
         .testTarget(
             name: "UTS",
             dependencies: [

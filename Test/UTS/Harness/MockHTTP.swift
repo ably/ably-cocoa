@@ -56,7 +56,17 @@ final class MockHTTP: NSObject, ARTHTTPExecutor, @unchecked Sendable {
             callback?(nil, nil, failure)
             return NoopCancellable()
         }
-        onRequest?(PendingHTTPRequest(request: request, completion: callback))
+        guard let onRequest else {
+            // No request handler installed: fail fast rather than leaving the SDK (and the test
+            // awaiting this request) hanging forever with the callback never invoked.
+            assertionFailure("MockHTTP received a request but no onRequest handler is installed")
+            let error = NSError(domain: "io.ably.uts.MockHTTP", code: 0, userInfo: [
+                NSLocalizedDescriptionKey: "MockHTTP has no onRequest handler installed",
+            ])
+            callback?(nil, nil, error)
+            return NoopCancellable()
+        }
+        onRequest(PendingHTTPRequest(request: request, completion: callback))
         return NoopCancellable()
     }
 }

@@ -26,6 +26,13 @@
 }
 
 - (BOOL)isAfter:(id<ARTContinuousClockInstantProtocol>)other {
+    // `other` is only ever an instant produced by the same `ARTContinuousClockInstant` (a single
+    // client has a single time provider, and instants aren't mixed across providers). Guard the
+    // downcast so a misuse fails fast with a clear message rather than reading invalid memory.
+    if (![other isKindOfClass:[ARTContinuousClockInstant class]]) {
+        [NSException raise:NSInvalidArgumentException
+                    format:@"Cannot compare an ARTContinuousClockInstant with a %@", [other class]];
+    }
     ARTContinuousClockInstant *const concreteOther = (ARTContinuousClockInstant *)other;
     return self.timeInNanosecondsSinceClockReferenceInstant > concreteOther.timeInNanosecondsSinceClockReferenceInstant;
 }

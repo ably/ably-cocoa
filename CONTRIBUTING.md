@@ -78,8 +78,8 @@ All time-dependent code in ably-cocoa goes through the injectable `ARTTimeProvid
 New code MUST obtain time and scheduling primitives from an injected `id<ARTTimeProvider>` rather than calling system primitives directly. In particular:
 
 - Don't call `[NSDate date]` (or `Date()` from Swift) directly. Use `[timeProvider wallClockNow]`.
-- Don't call `clock_gettime_nsec_np`, `mach_continuous_time`, or similar continuous-clock primitives directly. Use `[timeProvider continuousClockNow]`, which returns an `id<APContinuousClockInstant>` that supports `isAfter:` and `addingDuration:`.
-- Don't call `dispatch_after`, `NSTimer`, or `dispatch_source_set_timer` directly to run something after a delay. Use `[timeProvider scheduleAfter:queue:block:]`, which returns an `id<APSchedulerHandle>` that supports `cancel`.
+- Don't call `clock_gettime_nsec_np`, `mach_continuous_time`, or similar continuous-clock primitives directly. Use `[timeProvider continuousClockNow]`, which returns an `id<ARTContinuousClockInstantProtocol>` that supports `isAfter:` and `addingDuration:`.
+- Don't call `dispatch_after`, `NSTimer`, or `dispatch_source_set_timer` directly to run something after a delay. Use `[timeProvider scheduleAfter:queue:block:]`, which returns an `id<ARTSchedulerHandle>` that supports `cancel`.
 
 Internal classes obtain their `ARTTimeProvider` by reading `options.testOptions.timeProvider` in their `-init` (the default value is an `ARTSystemTimeProvider`, backed by real system primitives) and stash it as an ivar, following the same threading pattern used for `logger` and the internal dispatch queue. Downstream consumers (e.g. `ARTEventEmitter`) receive the provider as an init parameter from their owning class.
 
