@@ -74,9 +74,7 @@
         }
 
         NSDataWritingOptions options = NSDataWritingAtomic;
-#if TARGET_OS_IPHONE
-        options |= NSDataWritingFileProtectionNone;
-#endif
+        options |= NSDataWritingFileProtectionNone; // avoiding issue #1257
 
         NSError *writeError = nil;
         BOOL ok = [data writeToURL:_fileURL options:options error:&writeError];

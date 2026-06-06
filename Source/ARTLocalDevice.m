@@ -72,9 +72,7 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
 
 // RSH8b helper. Generates a new (id, deviceSecret) pair and persists it —
 // nothing more. Decisions about when generation should happen and what else
-// to clear alongside it belong to the caller; today that's `resetDetails`,
-// which is the single recovery/reset path used by both RSH8a1 (load failure)
-// and the state machine's deactivation transitions.
+// to clear alongside it belong to the caller.
 - (void)generateAndPersistPairOfDeviceIdAndSecret {
     NSString *newId = [self.class generateId];
     NSString *newSecret = [self.class generateSecret];
@@ -129,9 +127,9 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
         }
     }
     else {
-        // RSH8a1
-        ARTLogDebug(logger, @"LocalDevice: fresh install or incomplete persisted device data; discarding everything and generating fresh id+secret");
-        [device resetDetails];
+        // RSH8b, RSH8k2
+        ARTLogDebug(logger, @"LocalDevice: generating a fresh id+secret pair");
+        [device generateAndPersistPairOfDeviceIdAndSecret];
     }
     return device;
 }

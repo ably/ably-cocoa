@@ -1,6 +1,7 @@
 #if os(iOS)
 import Ably
 import Ably.Private
+import AblyTesting
 import Security
 import XCTest
 
@@ -24,8 +25,10 @@ final class LocalDeviceStorageTests: XCTestCase {
         try super.tearDownWithError()
     }
 
-    // MARK: round-trip
+    // MARK: Storage read/write
 
+    // RSH8a: the persisted LocalDevice attributes must survive a storage
+    // round-trip — i.e. what's written is what a fresh instance loads back.
     func test_writesAndReadsThroughTheProtocol() {
         let storage = makeStorage()
 
@@ -48,9 +51,9 @@ final class LocalDeviceStorageTests: XCTestCase {
         XCTAssertEqual(reloaded.object(forKey: ARTClientIdKey) as? String, "client-1")
     }
 
-    // MARK: atomic file protection
+    // MARK: file protection
 
-    func test_fileIsCreatedWithFileProtectionNoneOnIOS() throws {
+    func test_storageFileIsCreatedWithFileProtectionNone() throws {
         let storage = makeStorage()
         storage.setObject("device-1", forKey: ARTDeviceIdKey)
         storage.setObject("secret-1", forKey: ARTDeviceSecretKey)
@@ -73,6 +76,10 @@ final class LocalDeviceStorageTests: XCTestCase {
 
     // MARK: atomicity of performBatchUpdate
 
+    // ARTDeviceStorage atomicity contract: a `performBatchUpdate` persists all
+    // of its mutations together in a single flush (so e.g. a
+    // `deviceIdentityToken` is never paired with a `deviceId` it doesn't
+    // belong to).
     func test_atomicUpdateWritesAllKeysInOneFlush() {
         let storage = makeStorage()
 
@@ -92,55 +99,86 @@ final class LocalDeviceStorageTests: XCTestCase {
         XCTAssertEqual(reloaded.object(forKey: ARTClientIdKey) as? String, "client-1")
     }
 
-    // MARK: bug fix — id regeneration writes id + secret + nil-token atomically
+    // MARK: RSH3h ordering
 
-    func test_localDeviceLoadFailureDiscardsAllPersistedData() {
-        // Storage starts with an id, an identity token, a clientId, an APNS
-        // token and persisted state-machine data — but no device secret. This
-        // is the inconsistent state RSH8a1 must recover from: loading id or
-        // deviceSecret has failed, so all persisted LocalDevice attributes
-        // AND all persisted Activation State Machine data must be discarded.
-        let storage = makeStorage()
-        storage.performBatchUpdate { writer in
-            writer.setObject("old-id", forKey: ARTDeviceIdKey)
-            writer.setObject(Data("old-token-archive".utf8), forKey: ARTDeviceIdentityTokenKey)
-            writer.setObject("client-x", forKey: ARTClientIdKey)
-            writer.setObject("apns-default", forKey: "ARTAPNSDeviceToken-default")
-            writer.setObject(Data("state-archive".utf8), forKey: ARTPushActivationCurrentStateKey)
-            writer.setObject(Data("events-archive".utf8), forKey: ARTPushActivationPendingEventsKey)
+    // In this test the device data is *complete* (legacy id + keychain secret migrate
+    // successfully), so the persisted Activation State Machine state survives
+    // RSH3h step (1) and the machine constructed in step (2) resumes it.
+    func test_RSH3h_persistedActivationStateResumesWhenDeviceDataIsComplete() {
+        let logger = InternalLog(core: MockInternalLogCore())
+        let archivedState = archivedWaitingForDeviceRegistrationState(logger: logger)
+
+        let defaults = UserDefaults.standard
+        defaults.set("legacy-device", forKey: ARTDeviceIdKey)
+        defaults.set(archivedState, forKey: ARTPushActivationCurrentStateKey)
+        // Keychain secret is available, so migration carries the device data —
+        // and the activation state — into the new file.
+        let reader: ARTLegacyKeychainSecretReader = { _, outStatus in
+            outStatus?.pointee = errSecSuccess
+            return "legacy-secret"
         }
+        let storage = makeStorage(keychainSecretReader: reader)
 
         let rest = ARTRest(key: "fake:key")
         rest.internal.storage = storage
-        // The device is held in a static cached by `ARTRest`; reset it so the
-        // next access reloads it through `storage` and not whatever was cached
-        // by an earlier test in the run.
         rest.internal.resetDeviceSingleton()
+        defer { rest.internal.resetDeviceSingleton() }
 
-        // Triggers `+[ARTLocalDevice deviceWithStorage:logger:]`, which sees
-        // a missing secret and applies RSH8a1: discard everything, then
-        // eagerly generate a fresh (id, secret) pair (RSH8k2 note).
+        // RSH3h step (1): initialise the LocalDevice (RSH8a) — device data is
+        // valid, so the persisted state is retained.
         let device = rest.device
+        XCTAssertEqual(device.id, "legacy-device")
+        XCTAssertEqual(device.secret, "legacy-secret")
+        XCTAssertEqual(storage.object(forKey: ARTDeviceIdKey) as? String, device.id)
+        XCTAssertEqual(storage.object(forKey: ARTDeviceSecretKey) as? String, device.secret)
 
-        XCTAssertNotEqual(device.id, "old-id")
-        XCTAssertNotNil(device.secret)
-        XCTAssertNil(device.identityTokenDetails)
-        XCTAssertNil(device.clientId)
-
-        // Every key other than the freshly generated (id, secret) must be
-        // cleared, both in the in-memory cache and on disk.
-        let reloaded = makeStorage()
-        for storageToCheck in [storage as ARTDeviceStorage, reloaded as ARTDeviceStorage] {
-            XCTAssertEqual(storageToCheck.object(forKey: ARTDeviceIdKey) as? String, device.id)
-            XCTAssertEqual(storageToCheck.object(forKey: ARTDeviceSecretKey) as? String, device.secret)
-            XCTAssertNil(storageToCheck.object(forKey: ARTDeviceIdentityTokenKey))
-            XCTAssertNil(storageToCheck.object(forKey: ARTClientIdKey))
-            XCTAssertNil(storageToCheck.object(forKey: "ARTAPNSDeviceToken-default"))
-            XCTAssertNil(storageToCheck.object(forKey: ARTPushActivationCurrentStateKey))
-            XCTAssertNil(storageToCheck.object(forKey: ARTPushActivationPendingEventsKey))
-        }
+        // RSH3h step (2): the state machine resumes the persisted state.
+        let stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: logger)
+        XCTAssertTrue(stateMachine.current is ARTPushActivationStateWaitingForDeviceRegistration)
     }
 
+    // RSH3h + RSH8a1: here the device data is *incomplete* (legacy id present
+    // but the keychain secret can't be read), so step (1) discards the persisted
+    // Activation State Machine data, and the machine constructed in step (2)
+    // must come up in NotActivated — even though a non-NotActivated state was
+    // persisted.
+    func test_RSH3h_persistedActivationStateDiscardedWhenDeviceDataIsIncomplete() {
+        let logger = InternalLog(core: MockInternalLogCore())
+        let archivedState = archivedWaitingForDeviceRegistrationState(logger: logger)
+
+        let defaults = UserDefaults.standard
+        defaults.set("legacy-device", forKey: ARTDeviceIdKey)
+        defaults.set(archivedState, forKey: ARTPushActivationCurrentStateKey)
+
+        // Keychain secret is unavailable, so RSH8a1 discards the whole legacy
+        // record — including the activation state — during migration.
+        let reader: ARTLegacyKeychainSecretReader = { _, outStatus in
+            outStatus?.pointee = errSecInteractionNotAllowed
+            return nil
+        }
+        let storage = makeStorage(keychainSecretReader: reader)
+
+        let rest = ARTRest(key: "fake:key")
+        rest.internal.storage = storage
+        rest.internal.resetDeviceSingleton()
+        defer { rest.internal.resetDeviceSingleton() }
+
+        // RSH3h step (1): initialise the LocalDevice (RSH8a);
+        // The incomplete device data triggers RSH8a1, so no activation state is persisted:
+        _ = rest.device
+        let device = rest.device
+        XCTAssertEqual(device.id.count, 36) // a freshly generated UUID
+        XCTAssertNotNil(device.secret)
+        XCTAssertEqual(storage.object(forKey: ARTDeviceIdKey) as? String, device.id)
+        XCTAssertEqual(storage.object(forKey: ARTDeviceSecretKey) as? String, device.secret)
+
+        // RSH3h step (2): with no persisted state, the machine starts NotActivated.
+        let stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: logger)
+        XCTAssertTrue(stateMachine.current is ARTPushActivationStateNotActivated)
+    }
+
+    // ARTDeviceStorage atomicity contract: mid-batch mutations are not visible
+    // on disk until the outermost `performBatchUpdate` commits.
     func test_batchUpdateDoesNotReachDiskMidBatch() throws {
         let storage = makeStorage()
 
@@ -171,6 +209,8 @@ final class LocalDeviceStorageTests: XCTestCase {
 
     // MARK: legacy migration
 
+    // Not a spec point: backward-compatible migration of the legacy
+    // `NSUserDefaults` + keychain layout into the single persisted file.
     func test_migratesLegacyUserDefaultsOnFirstInit() {
         let defaults = UserDefaults.standard
 
@@ -189,14 +229,9 @@ final class LocalDeviceStorageTests: XCTestCase {
         // every field cross into the new file together.
         let reader: ARTLegacyKeychainSecretReader = { deviceId, outStatus in
             outStatus?.pointee = errSecSuccess
-            return deviceId == "legacy-device" ? "legacy-secret" : nil
+            return "legacy-secret"
         }
-        let storage = ARTLocalDeviceStorage(
-            baseDirectoryURL: tempDirectory,
-            logger: nil,
-            logValues: false,
-            legacyKeychainReader: reader
-        )
+        let storage = makeStorage(keychainSecretReader: reader)
 
         XCTAssertEqual(storage.object(forKey: ARTDeviceIdKey) as? String, "legacy-device")
         XCTAssertEqual(storage.object(forKey: ARTDeviceSecretKey) as? String, "legacy-secret")
@@ -207,6 +242,9 @@ final class LocalDeviceStorageTests: XCTestCase {
         XCTAssertEqual(storage.object(forKey: "ARTAPNSDeviceToken-default") as? String, "apns-default-token")
         XCTAssertEqual(storage.object(forKey: "ARTAPNSDeviceToken-location") as? String, "apns-location-token")
 
+        // The legacy entries are deliberately left in place after migration
+        // (the post-migration cleanup is commented out pending issue #1257), so
+        // they must still be readable from `NSUserDefaults`.
         for key in [
             ARTDeviceIdKey,
             ARTClientIdKey,
@@ -216,10 +254,13 @@ final class LocalDeviceStorageTests: XCTestCase {
             "ARTAPNSDeviceToken-default",
             "ARTAPNSDeviceToken-location",
         ] {
-            XCTAssertNil(defaults.object(forKey: key), "legacy key \(key) still present")
+            XCTAssertNotNil(defaults.object(forKey: key), "legacy key \(key) should be left intact pending #1257")
         }
     }
 
+    // RSH8a1 (applied during migration): if the legacy device secret can't be
+    // read, the whole legacy record is discarded rather than half-migrated, so
+    // the device-fetch path starts clean.
     func test_discardsLegacyDataWhenKeychainSecretIsUnavailable() {
         let defaults = UserDefaults.standard
 
@@ -238,13 +279,10 @@ final class LocalDeviceStorageTests: XCTestCase {
             outStatus?.pointee = errSecInteractionNotAllowed
             return nil
         }
-        let storage = ARTLocalDeviceStorage(
-            baseDirectoryURL: tempDirectory,
-            logger: nil,
-            logValues: false,
-            legacyKeychainReader: reader
-        )
+        let storage = makeStorage(keychainSecretReader: reader)
 
+        // Nothing crosses into the new file: the incomplete legacy record is
+        // discarded wholesale.
         for key in [
             ARTDeviceIdKey,
             ARTDeviceSecretKey,
@@ -256,14 +294,41 @@ final class LocalDeviceStorageTests: XCTestCase {
             "ARTAPNSDeviceToken-location",
         ] {
             XCTAssertNil(storage.object(forKey: key), "key \(key) survived migration")
-            XCTAssertNil(defaults.object(forKey: key), "legacy key \(key) still in UserDefaults")
+        }
+
+        // The legacy entries are deliberately left in place after migration
+        // (the post-migration cleanup is commented out pending issue #1257), so
+        // they must still be readable from `NSUserDefaults`.
+        for key in [
+            ARTDeviceIdKey,
+            ARTClientIdKey,
+            ARTDeviceIdentityTokenKey,
+            ARTPushActivationCurrentStateKey,
+            ARTPushActivationPendingEventsKey,
+            "ARTAPNSDeviceToken-default",
+            "ARTAPNSDeviceToken-location",
+        ] {
+            XCTAssertNotNil(defaults.object(forKey: key), "legacy key \(key) should be left intact pending #1257")
         }
     }
+}
 
-    // MARK: helpers
+// MARK: helpers
 
-    private func makeStorage() -> ARTLocalDeviceStorage {
-        return ARTLocalDeviceStorage(baseDirectoryURL: tempDirectory, logger: nil, logValues: false)
+extension LocalDeviceStorageTests {
+
+    private func makeStorage(keychainSecretReader: ARTLegacyKeychainSecretReader? = nil) -> ARTLocalDeviceStorage {
+        return ARTLocalDeviceStorage(baseDirectoryURL: tempDirectory, logger: nil, logValues: false, legacyKeychainReader: keychainSecretReader)
+    }
+
+    // An archived activation state, used by the RSH3h test so that its survival/absence
+    // is what distinguishes "state retained" from "state discarded".
+    private func archivedWaitingForDeviceRegistrationState(logger: InternalLog) -> Data {
+        let rest = ARTRest(key: "fake:key")
+        rest.internal.storage = MockDeviceStorage()
+        let stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: logger)
+        let state = ARTPushActivationStateWaitingForDeviceRegistration(machine: stateMachine, logger: logger)
+        return state.art_archive(withLogger: nil)!
     }
 
     private func clearLegacyUserDefaults() {

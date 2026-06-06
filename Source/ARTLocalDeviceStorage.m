@@ -249,7 +249,8 @@ static NSString *const ARTLegacyAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
         return;
     }
     _cache = [migrated mutableCopy];
-    [self clearLegacyEntriesForDeviceId:legacyDeviceId];
+    // TODO: Uncomment once issue #1257 is resolved
+    // [self clearLegacyEntriesForDeviceId:legacyDeviceId];
     ARTLogInfo(_logger, @"ARTLocalDeviceStorage: migrated %lu legacy fields", (unsigned long)migrated.count);
 }
 

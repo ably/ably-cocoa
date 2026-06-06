@@ -4,8 +4,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// Reads and writes a single property-list-backed file atomically. On iOS the
-/// file is written with `NSFileProtectionNone` so the data is readable even
+/// Reads and writes a single property-list-backed file atomically.
+/// The file is written with `NSFileProtectionNone` so the data is readable even
 /// before the user has unlocked the device after a reboot.
 ///
 /// This class is thread-safe.

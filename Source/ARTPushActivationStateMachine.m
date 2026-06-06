@@ -53,6 +53,10 @@ NS_ASSUME_NONNULL_END
         _queue = _rest.queue;
         _userQueue = _rest.userQueue;
         _logger = logger;
+
+        // RSH3h: ensure to initialise the device _before_ the state fields are initialised
+        ARTLocalDevice *localDevice = rest.device_nosync;
+
         // Unarchiving
         _current = [ARTPushActivationState art_unarchiveFromStorage:rest.storage
                                                                 key:ARTPushActivationCurrentStateKey
@@ -75,7 +79,7 @@ NS_ASSUME_NONNULL_END
         // Due to bug #966, old versions of the library might have led us to an illegal
         // persisted state: we have a deviceToken, but the persisted push state is WaitingForPushDeviceDetails.
         // So we need to re-emit the GotPushDeviceDetails event that led us there.
-        if ([_current isKindOfClass:[ARTPushActivationStateWaitingForPushDeviceDetails class]] && rest.device_nosync.apnsDeviceToken != nil) {
+        if ([_current isKindOfClass:[ARTPushActivationStateWaitingForPushDeviceDetails class]] && localDevice.apnsDeviceToken != nil) {
             ARTLogDebug(logger, @"ARTPush: re-emitting stored device details for stuck state machine");
             [self handleEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
         }
