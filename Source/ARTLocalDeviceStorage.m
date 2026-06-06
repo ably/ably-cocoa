@@ -195,13 +195,11 @@ static NSString *const ARTLegacyAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
     id legacyIdentityToken = [defaults objectForKey:ARTDeviceIdentityTokenKey];
     id legacyState = [defaults objectForKey:ARTPushActivationCurrentStateKey];
     id legacyPendingEvents = [defaults objectForKey:ARTPushActivationPendingEventsKey];
-    id legacyApnsLegacy = [defaults objectForKey:ARTLegacyAPNSDeviceTokenKey];
     id legacyApnsDefault = [defaults objectForKey:ARTAPNSDeviceTokenKeyOfType(ARTAPNSDeviceDefaultTokenType)];
     id legacyApnsLocation = [defaults objectForKey:ARTAPNSDeviceTokenKeyOfType(ARTAPNSDeviceLocationTokenType)];
 
     BOOL hasLegacy = (legacyDeviceId || legacyClientId || legacyIdentityToken ||
-                      legacyState || legacyPendingEvents ||
-                      legacyApnsLegacy || legacyApnsDefault || legacyApnsLocation);
+                      legacyState || legacyPendingEvents || legacyApnsDefault || legacyApnsLocation);
     if (!hasLegacy) {
         return;
     }
@@ -232,7 +230,6 @@ static NSString *const ARTLegacyAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
         migrated[ARTDeviceIdentityTokenKey] = legacyIdentityToken;
         migrated[ARTClientIdKey] = legacyClientId;
 
-        migrated[ARTLegacyAPNSDeviceTokenKey] = legacyApnsLegacy;
         migrated[ARTAPNSDeviceTokenKeyOfType(ARTAPNSDeviceDefaultTokenType)] = legacyApnsDefault;
         migrated[ARTAPNSDeviceTokenKeyOfType(ARTAPNSDeviceLocationTokenType)] = legacyApnsLocation;
 
