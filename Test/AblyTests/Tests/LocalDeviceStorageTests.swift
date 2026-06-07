@@ -242,6 +242,10 @@ final class LocalDeviceStorageTests: XCTestCase {
         XCTAssertEqual(storage.object(forKey: "ARTAPNSDeviceToken-default") as? String, "apns-default-token")
         XCTAssertEqual(storage.object(forKey: "ARTAPNSDeviceToken-location") as? String, "apns-location-token")
 
+        // The migrated data is flagged as such (see #2207), so future versions
+        // can tell it apart from data generated natively in the new file.
+        XCTAssertEqual(storage.object(forKey: ARTMigratedFromLegacyStorageKey) as? Bool, true)
+
         // The legacy entries are deliberately left in place after migration
         // (the post-migration cleanup is commented out pending issue #1257), so
         // they must still be readable from `NSUserDefaults`.
@@ -295,6 +299,9 @@ final class LocalDeviceStorageTests: XCTestCase {
         ] {
             XCTAssertNil(storage.object(forKey: key), "key \(key) survived migration")
         }
+
+        // Nothing was migrated, so the migration marker is not set either.
+        XCTAssertNil(storage.object(forKey: ARTMigratedFromLegacyStorageKey))
 
         // The legacy entries are deliberately left in place after migration
         // (the post-migration cleanup is commented out pending issue #1257), so

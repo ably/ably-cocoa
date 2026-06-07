@@ -5,6 +5,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// Marker written into the persisted file when its contents were migrated from
+/// the legacy `NSUserDefaults`/keychain layout.
+/// It exists so that, if we later need to deal with legacy out-of-sync issues
+/// (e.g. a `deviceIdentityToken` that doesn't match the migrated `deviceId`),
+/// we can identify migrated data and decide whether to validate it.
+extern NSString *const ARTMigratedFromLegacyStorageKey;
+
 /// Block used during legacy migration to look up the device secret in the
 /// keychain. The real implementation calls `SecItemCopyMatching`; tests
 /// substitute a stub that returns the desired `OSStatus` so that the

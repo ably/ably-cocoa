@@ -10,6 +10,8 @@ static NSString *const ARTLocalDeviceStorageFileName = @"LocalDevice.plist";
 
 static NSString *const ARTLegacyAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 
+NSString *const ARTMigratedFromLegacyStorageKey = @"ARTMigratedFromLegacyStorage";
+
 @implementation ARTLocalDeviceStorage {
     ARTInternalLog *_logger;
     BOOL _logValues;
@@ -235,6 +237,10 @@ static NSString *const ARTLegacyAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 
         migrated[ARTPushActivationCurrentStateKey] = legacyState;
         migrated[ARTPushActivationPendingEventsKey] = legacyPendingEvents;
+
+        // Mark the data as migrated so future versions can tell it apart from
+        // data generated natively in the new file (see #2207).
+        migrated[ARTMigratedFromLegacyStorageKey] = @YES;
     }
     else {
         ARTLogWarn(_logger, @"ARTLocalDeviceStorage: legacy device data is incomplete; discarding legacy device details and state machine data");
