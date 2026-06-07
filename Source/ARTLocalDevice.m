@@ -58,10 +58,10 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     return self;
 }
 
-// RSH8b helper. Generates a new (id, deviceSecret) pair and persists it —
-// nothing more. Decisions about when generation should happen and what else
-// to clear alongside it belong to the caller.
-- (void)generateAndPersistPairOfDeviceIdAndSecret {
+// RSH8b helper. Only generates a new (id, deviceSecret) pair and persists it.
+// Decision about when generation should happen and what else to clear belongs to the caller.
+// If `writer` is omitted, device's storage is used (for standalone calls).
+- (void)generateAndPersistPairOfDeviceIdAndSecretForStorage:(id<ARTDeviceStorage>)writer {
     NSString *newId = [self.class generateId];
     NSString *newSecret = [self.class generateSecret];
     self.id = newId;
@@ -71,7 +71,7 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     // a caller is already inside its own batch (e.g. `resetDetails`) the
     // nested batch is just a counter bump — the outer batch still owns the
     // single flush.
-    [_storage performBatchUpdate:^(id<ARTDeviceStorage> writer) {
+    [(writer ?: _storage) performBatchUpdate:^(id<ARTDeviceStorage> writer) {
         [writer setObject:newId forKey:ARTDeviceIdKey];
         [writer setObject:newSecret forKey:ARTDeviceSecretKey];
     }];
@@ -117,7 +117,7 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     else {
         // RSH8b, RSH8k2
         ARTLogDebug(logger, @"LocalDevice: generating a fresh id+secret pair");
-        [device generateAndPersistPairOfDeviceIdAndSecret];
+        [device generateAndPersistPairOfDeviceIdAndSecretForStorage:nil];
     }
     return device;
 }
@@ -132,7 +132,7 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
         // Wipe everything persisted, then regenerate — all in the same batch,
         // so the id+secret regeneration lands together with the wipe.
         [writer removeAll];
-        [self generateAndPersistPairOfDeviceIdAndSecret];
+        [self generateAndPersistPairOfDeviceIdAndSecretForStorage:writer];
 
         // Mirror the persistent clear in the in-memory device state.
         self.clientId = nil;
