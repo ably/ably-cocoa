@@ -74,7 +74,12 @@
         }
 
         NSDataWritingOptions options = NSDataWritingAtomic;
-        options |= NSDataWritingFileProtectionNone; // avoiding issue #1257
+        // `NSDataWritingFileProtectionNone` is only available on macOS 11+; on
+        // iOS/tvOS it's always available (the `*` branch). Older macOS has no
+        // data-protection concept, so skipping it there is fine. (issue #1257)
+        if (@available(macOS 11.0, *)) {
+            options |= NSDataWritingFileProtectionNone;
+        }
 
         NSError *writeError = nil;
         BOOL ok = [data writeToURL:_fileURL options:options error:&writeError];
