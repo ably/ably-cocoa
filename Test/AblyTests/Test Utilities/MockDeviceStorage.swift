@@ -39,6 +39,13 @@ class MockDeviceStorage: NSObject, ARTDeviceStorage {
         }
     }
 
+    func removeAll() {
+        accessQueue.sync {
+            simulateData.removeAll()
+            simulateString.removeAll()
+        }
+    }
+
     func performBatchUpdate(_ block: (ARTDeviceStorage) -> Void) {
         // The mock records every key write individually; there is no on-disk
         // flush to defer, so atomic batches just run the block synchronously.

@@ -58,18 +58,6 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     return self;
 }
 
-- (void)cleanupStorage {
-    [_storage setObject:nil forKey:ARTDeviceIdKey];
-    [_storage setObject:nil forKey:ARTDeviceSecretKey];
-    [_storage setObject:nil forKey:ARTDeviceIdentityTokenKey];
-    [_storage setObject:nil forKey:ARTClientIdKey];
-    [_storage setObject:nil forKey:ARTAPNSDeviceTokenKey]; // legacy single-token key
-    [_storage setObject:nil forKey:ARTAPNSDeviceTokenKeyOfType(ARTAPNSDeviceDefaultTokenType)];
-    [_storage setObject:nil forKey:ARTAPNSDeviceTokenKeyOfType(ARTAPNSDeviceLocationTokenType)];
-    [_storage setObject:nil forKey:ARTPushActivationCurrentStateKey];
-    [_storage setObject:nil forKey:ARTPushActivationPendingEventsKey];
-}
-
 // RSH8b helper. Generates a new (id, deviceSecret) pair and persists it —
 // nothing more. Decisions about when generation should happen and what else
 // to clear alongside it belong to the caller.
@@ -141,8 +129,9 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
 
 - (void)resetDetails {
     [_storage performBatchUpdate:^(id<ARTDeviceStorage> writer) {
-        [self cleanupStorage];
-        // Same batch — id+secret regeneration lands together with the wipe.
+        // Wipe everything persisted, then regenerate — all in the same batch,
+        // so the id+secret regeneration lands together with the wipe.
+        [writer removeAll];
         [self generateAndPersistPairOfDeviceIdAndSecret];
 
         // Mirror the persistent clear in the in-memory device state.

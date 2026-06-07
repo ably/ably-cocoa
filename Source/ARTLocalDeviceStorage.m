@@ -127,6 +127,16 @@ NSString *const ARTMigratedFromLegacyStorageKey = @"ARTMigratedFromLegacyStorage
     [_lock unlock];
 }
 
+- (void)removeAll {
+    [_lock lock];
+    if (_cache.count > 0) {
+        [_cache removeAllObjects];
+        _isModified = YES;
+    }
+    [self flushIfNotBatching];
+    [_lock unlock];
+}
+
 - (void)performBatchUpdate:(NS_NOESCAPE void (^)(id<ARTDeviceStorage>))block {
     [_lock lock];
     _batchDepth++;
