@@ -169,6 +169,7 @@ NSString *const ARTMigratedFromLegacyStorageKey = @"ARTMigratedFromLegacyStorage
         return;
     }
     _isModified = NO;
+    ARTLogDebug(_logger, @"ARTLocalDeviceStorage: flushed %lu keys: (%@) (to %@)", (unsigned long)_cache.count, [_cache.allKeys componentsJoinedByString:@", "], _store.fileURL.lastPathComponent);
 }
 
 #pragma mark - Legacy migration
@@ -254,7 +255,14 @@ NSString *const ARTMigratedFromLegacyStorageKey = @"ARTMigratedFromLegacyStorage
     _cache = [migrated mutableCopy];
     // TODO: Uncomment once issue #1257 is resolved
     // [self clearLegacyEntriesForDeviceId:legacyDeviceId];
-    ARTLogInfo(_logger, @"ARTLocalDeviceStorage: migrated %lu legacy fields", (unsigned long)migrated.count);
+
+    // Log which fields were migrated. Values go through `valueToLogForValue:`
+    // so secrets/tokens stay retracted unless value logging is explicitly on.
+    NSMutableDictionary *loggableMigrated = [NSMutableDictionary dictionaryWithCapacity:migrated.count];
+    for (NSString *key in migrated) {
+        loggableMigrated[key] = [self valueToLogForValue:migrated[key]];
+    }
+    ARTLogInfo(_logger, @"ARTLocalDeviceStorage: migrated %lu legacy fields: %@", (unsigned long)migrated.count, loggableMigrated);
 }
 
 - (void)clearLegacyEntriesForDeviceId:(nullable NSString *)deviceId {
