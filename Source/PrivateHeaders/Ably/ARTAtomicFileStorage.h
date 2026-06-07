@@ -25,9 +25,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)fileExists;
 
-/// Returns `YES` if the file existed before the call.
-- (BOOL)removeFile;
-
 @end
 
 NS_ASSUME_NONNULL_END

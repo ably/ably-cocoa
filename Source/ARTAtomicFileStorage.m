@@ -101,17 +101,4 @@
     }
 }
 
-- (BOOL)removeFile {
-    [_lock lock];
-    BOOL existed = [[NSFileManager defaultManager] fileExistsAtPath:_fileURL.path];
-    if (existed) {
-        NSError *removeError = nil;
-        if (![[NSFileManager defaultManager] removeItemAtURL:_fileURL error:&removeError]) {
-            ARTLogWarn(_logger, @"ARTAtomicFileStorage: could not remove %@: %@", _fileURL.lastPathComponent, removeError.localizedDescription);
-        }
-    }
-    [_lock unlock];
-    return existed;
-}
-
 @end
