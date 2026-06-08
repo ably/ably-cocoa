@@ -25,7 +25,7 @@ APNS_HOST="${APNS_HOST:-api.sandbox.push.apple.com}"
 echo "Fetching latest voipTokenUpdated from ${CHANNEL_NAME}..."
 
 TOKEN_EVENT=$(ably channels history "$CHANNEL_NAME" --json --limit 1000 \
-    | jq -r '[.messages[] | select(.name == "voipTokenUpdated")] | first')
+    | jq -r 'select(.type == "result") | [.messages[] | select(.name == "voipTokenUpdated")] | first')
 
 if [ -z "$TOKEN_EVENT" ] || [ "$TOKEN_EVENT" = "null" ]; then
     echo "Error: no voipTokenUpdated found in channel history" >&2
