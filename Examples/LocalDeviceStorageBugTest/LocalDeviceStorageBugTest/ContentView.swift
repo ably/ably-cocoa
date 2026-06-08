@@ -116,7 +116,9 @@ class PushActivationHandler: NSObject, ARTPushRegistererDelegate {
     var onActivate: (@MainActor (ARTErrorInfo?) -> Void)?
 
     func didActivateAblyPush(_ error: ARTErrorInfo?) {
-        MainActor.assumeIsolated {
+        // `MainActor.assumeIsolated` is iOS 17+; hop to the main actor with a
+        // Task instead so this compiles against the iOS 16 deployment target.
+        Task { @MainActor in
             onActivate?(error)
         }
     }
@@ -165,10 +167,10 @@ struct ContentView: View {
                     .font(.headline)
 
                 Toggle("Auto-activate push on launch", isOn: $settings.autoActivatePush)
-                    .onChange(of: settings.autoActivatePush) { saveSettings() }
+                    .onChange(of: settings.autoActivatePush) { _ in saveSettings() }
 
                 Toggle("Auto-subscribe to push channel on launch", isOn: $settings.autoSubscribeToPushChannel)
-                    .onChange(of: settings.autoSubscribeToPushChannel) { saveSettings() }
+                    .onChange(of: settings.autoSubscribeToPushChannel) { _ in saveSettings() }
             }
         }
         .padding()
