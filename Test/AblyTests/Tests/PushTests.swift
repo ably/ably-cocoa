@@ -245,6 +245,10 @@ class PushTests: XCTestCase {
         storage.simulateOnNextRead(string: testToken, for: ARTAPNSDeviceTokenKey)
         storage.simulateOnNextRead(data: testIdentity.art_archive(withLogger: nil)!, for: ARTDeviceIdentityTokenKey)
 
+        // `setUp` already created a state machine, which (RSH3h) eagerly loads
+        // the shared device singleton. Reset it so the next access reloads the
+        // device from the persisted state simulated just above.
+        rest.internal.resetDeviceSingleton()
         let device = rest.device
 
         XCTAssertEqual(device.id, "testId")
@@ -344,6 +348,19 @@ class PushTests: XCTestCase {
         )
         realtime.internal.rest.storage = storage
 
+        // Per RSH8a1 the load path discards everything when `id` or
+        // `deviceSecret` can't be loaded, so to exercise the identity-token
+        // path we must simulate a consistent (id, secret, token) triple. This
+        // must be seeded BEFORE the device is loaded — creating the state
+        // machine below initialises the LocalDevice (RSH3h) — and we reset the
+        // shared device singleton so it reloads from this storage rather than
+        // one cached by `setUp`.
+        storage.simulateOnNextRead(string: "testId", for: ARTDeviceIdKey)
+        storage.simulateOnNextRead(string: "testSecret", for: ARTDeviceSecretKey)
+        storage.simulateOnNextRead(string: testDeviceToken, for: ARTAPNSDeviceTokenKey)
+        storage.simulateOnNextRead(data: testDeviceIdentity.art_archive(withLogger: nil)!, for: ARTDeviceIdentityTokenKey)
+        realtime.internal.rest.resetDeviceSingleton()
+
         var stateMachine: ARTPushActivationStateMachine!
         waitUntil(timeout: testTimeout) { done in
             realtime.internal.rest.push.getActivationMachine { machine in
@@ -353,9 +370,6 @@ class PushTests: XCTestCase {
         }
         let delegate = StateMachineDelegate()
         stateMachine.delegate = delegate
-
-        storage.simulateOnNextRead(string: testDeviceToken, for: ARTAPNSDeviceTokenKey)
-        storage.simulateOnNextRead(data: testDeviceIdentity.art_archive(withLogger: nil)!, for: ARTDeviceIdentityTokenKey)
 
         XCTAssertEqual(realtime.device.clientId, testDeviceIdentity.clientId)
 
@@ -400,6 +414,9 @@ class PushTests: XCTestCase {
         }
         let storage = MockDeviceStorage()
         rest.internal.storage = storage
+        // `setUp` already loaded the shared device singleton (RSH3h) against its
+        // own storage; reset it so the device rebinds to this test's storage.
+        rest.internal.resetDeviceSingleton()
         rest.push.internal.activationMachine.delegate = stateMachineDelegate
 
         XCTAssertNil(rest.device.clientId)
@@ -426,6 +443,13 @@ class PushTests: XCTestCase {
         let pushRegistererDelegate = StateMachineDelegate()
         options.pushRegistererDelegate = pushRegistererDelegate
         let rest = ARTRest(options: options)
+        // Use a fresh in-memory storage (and reset the shared device singleton)
+        // so activation starts deterministically from `NotActivated`, rather than
+        // inheriting leftover device/state-machine data persisted in the real
+        // on-disk storage by an earlier test, which can leave the machine
+        // mid-flow and prevent `didActivateAblyPush` from being called.
+        rest.internal.storage = MockDeviceStorage()
+        rest.internal.resetDeviceSingleton()
         waitUntil(timeout: testTimeout) { done in
             pushRegistererDelegate.onDidActivateAblyPush = { _ in
                 done()

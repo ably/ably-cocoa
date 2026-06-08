@@ -1,23 +1,90 @@
 #import "ARTLocalDeviceStorage.h"
+#import <Security/Security.h>
+#import "ARTAtomicFileStorage.h"
 #import "ARTInternalLog.h"
 #import "ARTLocalDevice+Private.h"
+#import "ARTPushActivationStateMachine+Private.h"
+
+static NSString *const ARTLocalDeviceStorageDirectoryName = @"Ably";
+static NSString *const ARTLocalDeviceStorageFileName = @"LocalDevice.plist";
+
+static NSString *const ARTLegacyAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
+
+NSString *const ARTMigratedFromLegacyStorageKey = @"ARTMigratedFromLegacyStorage";
 
 @implementation ARTLocalDeviceStorage {
     ARTInternalLog *_logger;
     BOOL _logValues;
+
+    ARTAtomicFileStorage *_store;
+    NSMutableDictionary<NSString *, id> *_cache;
+
+    NSRecursiveLock *_lock;
+    NSInteger _batchDepth;
+    BOOL _isModified;
+
+    ARTLegacyKeychainSecretReader _legacyKeychainReader;
 }
 
-- (instancetype)initWithLogger:(ARTInternalLog *)logger logValues:(BOOL)logValues {
+#pragma mark - Init
+
+- (instancetype)initWithLogger:(nullable ARTInternalLog *)logger logValues:(BOOL)logValues {
+    return [self initWithBaseDirectoryURL:[ARTLocalDeviceStorage defaultBaseDirectoryURL]
+                                   logger:logger
+                                logValues:logValues];
+}
+
++ (instancetype)newWithLogger:(nullable ARTInternalLog *)logger logValues:(BOOL)logValues {
+    return [[self alloc] initWithLogger:logger logValues:logValues];
+}
+
+- (instancetype)initWithBaseDirectoryURL:(NSURL *)baseDirectoryURL
+                                  logger:(nullable ARTInternalLog *)logger
+                               logValues:(BOOL)logValues {
+    return [self initWithBaseDirectoryURL:baseDirectoryURL
+                                   logger:logger
+                                logValues:logValues
+                     legacyKeychainReader:nil];
+}
+
+- (instancetype)initWithBaseDirectoryURL:(NSURL *)baseDirectoryURL
+                                  logger:(nullable ARTInternalLog *)logger
+                               logValues:(BOOL)logValues
+                    legacyKeychainReader:(nullable ARTLegacyKeychainSecretReader)legacyKeychainReader {
     if (self = [super init]) {
         _logger = logger;
         _logValues = logValues;
+        _lock = [[NSRecursiveLock alloc] init];
+        _lock.name = @"io.ably.ARTLocalDeviceStorage";
+        _legacyKeychainReader = [legacyKeychainReader copy];
+
+        NSURL *fileURL = [baseDirectoryURL URLByAppendingPathComponent:ARTLocalDeviceStorageFileName];
+        _store = [[ARTAtomicFileStorage alloc] initWithFileURL:fileURL logger:logger];
+        _cache = [[_store load] mutableCopy];
+
+        [self migrateLegacyDataIfNeeded];
     }
     return self;
 }
 
-+ (instancetype)newWithLogger:(ARTInternalLog *)logger logValues:(BOOL)logValues {
-    return [[self alloc] initWithLogger:logger logValues:logValues];
++ (NSURL *)defaultBaseDirectoryURL {
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSError *error = nil;
+    NSURL *appSupport = [fm URLForDirectory:NSApplicationSupportDirectory
+                                   inDomain:NSUserDomainMask
+                          appropriateForURL:nil
+                                     create:YES
+                                      error:&error];
+    if (appSupport == nil) {
+        // Fall back to the temp directory if Application Support is somehow
+        // unavailable — the SDK won't persist anything across launches in that
+        // case, but at least won't crash.
+        appSupport = [NSURL fileURLWithPath:NSTemporaryDirectory()];
+    }
+    return [appSupport URLByAppendingPathComponent:ARTLocalDeviceStorageDirectoryName];
 }
+
+#pragma mark - Logging helpers
 
 - (id)valueToLogForValue:(id)value {
     if (!_logValues) {
@@ -32,193 +99,233 @@
     return value;
 }
 
+#pragma mark - ARTDeviceStorage
+
 - (nullable id)objectForKey:(NSString *)key {
-    id value = [NSUserDefaults.standardUserDefaults objectForKey:key];
+    [_lock lock];
+    id value = _cache[key];
     if (value == nil) {
-        ARTLogDebug(_logger, @"UserDefaults read miss for key %@", key);
+        ARTLogDebug(_logger, @"ARTLocalDeviceStorage: read miss for key %@", key);
     }
     else {
-        ARTLogDebug(_logger, @"UserDefaults read hit for key %@: %@", key, [self valueToLogForValue:value]);
+        ARTLogDebug(_logger, @"ARTLocalDeviceStorage: read hit for key %@: %@", key, [self valueToLogForValue:value]);
     }
+    [_lock unlock];
     return value;
 }
 
 - (void)setObject:(nullable id)value forKey:(NSString *)key {
-    [NSUserDefaults.standardUserDefaults setObject:value forKey:key];
+    [_lock lock];
+    [self mutateCacheForKey:key value:value];
     if (value == nil) {
-        ARTLogDebug(_logger, @"UserDefaults deleted for key %@", key);
+        ARTLogDebug(_logger, @"ARTLocalDeviceStorage: deleted key %@", key);
     }
     else {
-        ARTLogDebug(_logger, @"UserDefaults written for key %@: %@", key, [self valueToLogForValue:value]);
+        ARTLogDebug(_logger, @"ARTLocalDeviceStorage: wrote key %@: %@", key, [self valueToLogForValue:value]);
     }
+    [self flushIfNotBatching];
+    [_lock unlock];
 }
 
-- (NSString *)secretForDevice:(ARTDeviceId *)deviceId {
-    NSError *error = nil;
-    NSString *value = [self keychainGetPasswordForService:ARTDeviceSecretKey account:(NSString *)deviceId error:&error];
-
-    if ([error code] == errSecItemNotFound) {
-        ARTLogDebug(_logger, @"Device Secret read miss for device %@", deviceId);
+- (void)removeAll {
+    [_lock lock];
+    if (_cache.count > 0) {
+        [_cache removeAllObjects];
+        _isModified = YES;
     }
-    else if (error) {
-        ARTLogError(_logger, @"Device Secret couldn't be read for device %@ (%@)", deviceId, [error localizedDescription]);
-    }
-    else {
-        ARTLogDebug(_logger, @"Device Secret read hit for device %@: %@", deviceId, [self valueToLogForValue:value]);
-    }
-
-    return value;
+    [self flushIfNotBatching];
+    [_lock unlock];
 }
 
-- (void)setSecret:(NSString *)value forDevice:(ARTDeviceId *)deviceId {
-    NSError *error = nil;
-    if (value == nil) {
-        [self keychainDeletePasswordForService:ARTDeviceSecretKey account:(NSString *)deviceId error:&error];
-
-        if ([error code] == errSecItemNotFound) {
-            ARTLogWarn(_logger, @"Device Secret can't be deleted for device %@ because it doesn't exist", deviceId);
+- (void)performBatchUpdate:(NS_NOESCAPE void (^)(id<ARTDeviceStorage>))block {
+    [_lock lock];
+    _batchDepth++;
+    @try {
+        block(self);
+    }
+    @finally {
+        _batchDepth--;
+        if (_batchDepth == 0) {
+            [self flushIfModified];
         }
-        else if (error) {
-            ARTLogError(_logger, @"Device Secret couldn't be deleted for device %@ (%@)", deviceId, [error localizedDescription]);
+        [_lock unlock];
+    }
+}
+
+#pragma mark - Internal write helpers
+
+- (void)mutateCacheForKey:(NSString *)key value:(nullable id)value {
+    if (value == nil) {
+        if (_cache[key] == nil) return; // no-op
+        [_cache removeObjectForKey:key];
+    }
+    else {
+        if ([_cache[key] isEqual:value]) return; // no-op
+        _cache[key] = value;
+    }
+    _isModified = YES;
+}
+
+- (void)flushIfNotBatching {
+    if (_batchDepth > 0) return;
+    [self flushIfModified];
+}
+
+- (void)flushIfModified {
+    if (!_isModified) return;
+    NSError *error = nil;
+    if (![_store save:_cache error:&error]) {
+        ARTLogError(_logger, @"ARTLocalDeviceStorage: persist failed for %@: %@", _store.fileURL.lastPathComponent, error.localizedDescription);
+        return;
+    }
+    _isModified = NO;
+    ARTLogDebug(_logger, @"ARTLocalDeviceStorage: flushed %lu keys: (%@) (to %@)", (unsigned long)_cache.count, [_cache.allKeys componentsJoinedByString:@", "], _store.fileURL.lastPathComponent);
+}
+
+#pragma mark - Legacy migration
+
+- (void)migrateLegacyDataIfNeeded {
+    if ([_store fileExists]) {
+        return; // already migrated (or new install with the storage already populated)
+    }
+    [self migrateLegacyData];
+}
+
+/// Reads any legacy data from `NSUserDefaults` + the keychain into the new
+/// file. This is where RSH8a1 is enforced against the legacy data: a
+/// successful load of both `id` and `deviceSecret` is the gate that lets any
+/// of the persisted attributes cross into the new file. If the load fails,
+/// every legacy field is discarded together so the device-fetch path
+/// generates a fresh (id, secret) pair against an empty file.
+///
+/// The realistic reason for `legacySecret` to be absent when an `id` exists
+/// is that the device hasn't been unlocked since reboot, so the keychain is inaccessible.
+- (void)migrateLegacyData {
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+
+    NSString *legacyDeviceId = [defaults objectForKey:ARTDeviceIdKey];
+    NSString *legacyClientId = [defaults objectForKey:ARTClientIdKey];
+    id legacyIdentityToken = [defaults objectForKey:ARTDeviceIdentityTokenKey];
+    id legacyState = [defaults objectForKey:ARTPushActivationCurrentStateKey];
+    id legacyPendingEvents = [defaults objectForKey:ARTPushActivationPendingEventsKey];
+    id legacyApnsDefault = [defaults objectForKey:ARTAPNSDeviceTokenKeyOfType(ARTAPNSDeviceDefaultTokenType)];
+    id legacyApnsLocation = [defaults objectForKey:ARTAPNSDeviceTokenKeyOfType(ARTAPNSDeviceLocationTokenType)];
+
+    BOOL hasLegacy = (legacyDeviceId || legacyClientId || legacyIdentityToken ||
+                      legacyState || legacyPendingEvents || legacyApnsDefault || legacyApnsLocation);
+    if (!hasLegacy) {
+        return;
+    }
+
+    NSString *legacySecret = nil;
+    if (legacyDeviceId != nil) {
+        OSStatus status = errSecSuccess;
+        if (_legacyKeychainReader) {
+            legacySecret = _legacyKeychainReader(legacyDeviceId, &status);
         }
         else {
-            ARTLogDebug(_logger, @"Device Secret deleted for device %@", deviceId);
+            legacySecret = [self readLegacyKeychainSecretForDevice:legacyDeviceId status:&status];
         }
+        // Any failure is treated as the legacy secret being absent.
+        if (status != errSecSuccess) {
+            ARTLogWarn(_logger, @"ARTLocalDeviceStorage: legacy keychain value is unavailable for device id %@ (status=%d)", legacyDeviceId, (int)status);
+        }
+    }
+
+    NSMutableDictionary *migrated = [NSMutableDictionary dictionary];
+
+    // RSH8a1: the legacy data crosses into the new file only if id and
+    // secret are both loadable. Otherwise we drop everything and let the
+    // device-fetch path start clean.
+    if (legacyDeviceId != nil && legacySecret != nil) {
+        migrated[ARTDeviceIdKey] = legacyDeviceId;
+        migrated[ARTDeviceSecretKey] = legacySecret;
+        migrated[ARTDeviceIdentityTokenKey] = legacyIdentityToken;
+        migrated[ARTClientIdKey] = legacyClientId;
+
+        migrated[ARTAPNSDeviceTokenKeyOfType(ARTAPNSDeviceDefaultTokenType)] = legacyApnsDefault;
+        migrated[ARTAPNSDeviceTokenKeyOfType(ARTAPNSDeviceLocationTokenType)] = legacyApnsLocation;
+
+        migrated[ARTPushActivationCurrentStateKey] = legacyState;
+        migrated[ARTPushActivationPendingEventsKey] = legacyPendingEvents;
+
+        // Mark the data as migrated so future versions can tell it apart from
+        // data generated natively in the new file (see #2207).
+        migrated[ARTMigratedFromLegacyStorageKey] = @YES;
     }
     else {
-        [self keychainSetPassword:value forService:ARTDeviceSecretKey account:(NSString *)deviceId error:&error];
+        ARTLogWarn(_logger, @"ARTLocalDeviceStorage: legacy device data is incomplete; discarding legacy device details and state machine data");
+    }
 
-        if (error) {
-            ARTLogError(_logger, @"Device Secret couldn't be written for device %@: %@ (%@)", deviceId, [self valueToLogForValue:value], [error localizedDescription]);
-        }
-        else {
-            ARTLogDebug(_logger, @"Device Secret written for device %@: %@", deviceId, [self valueToLogForValue:value]);
-        }
+    NSError *saveError = nil;
+    if (![_store save:migrated error:&saveError]) {
+        ARTLogError(_logger, @"ARTLocalDeviceStorage: failed to write migrated file: %@", saveError.localizedDescription);
+        return;
+    }
+    _cache = [migrated mutableCopy];
+    // TODO: Uncomment once issue #1257 is resolved
+    // [self clearLegacyEntriesForDeviceId:legacyDeviceId];
+
+    // Log which fields were migrated. Values go through `valueToLogForValue:`
+    // so secrets/tokens stay retracted unless value logging is explicitly on.
+    NSMutableDictionary *loggableMigrated = [NSMutableDictionary dictionaryWithCapacity:migrated.count];
+    for (NSString *key in migrated) {
+        loggableMigrated[key] = [self valueToLogForValue:migrated[key]];
+    }
+    ARTLogInfo(_logger, @"ARTLocalDeviceStorage: migrated %lu legacy fields: %@", (unsigned long)migrated.count, loggableMigrated);
+}
+
+- (void)clearLegacyEntriesForDeviceId:(nullable NSString *)deviceId {
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSArray<NSString *> *legacyKeys = @[
+        ARTDeviceIdKey,
+        ARTDeviceIdentityTokenKey,
+        ARTClientIdKey,
+        ARTPushActivationCurrentStateKey,
+        ARTPushActivationPendingEventsKey,
+        ARTLegacyAPNSDeviceTokenKey,
+        ARTAPNSDeviceTokenKeyOfType(ARTAPNSDeviceDefaultTokenType),
+        ARTAPNSDeviceTokenKeyOfType(ARTAPNSDeviceLocationTokenType),
+    ];
+    for (NSString *key in legacyKeys) {
+        [defaults removeObjectForKey:key];
+    }
+    if (deviceId != nil) {
+        [self deleteLegacyKeychainSecretForDevice:deviceId];
     }
 }
 
-#pragma mark - Keychain
+#pragma mark - Legacy keychain (read-and-delete only)
 
-- (nonnull NSMutableDictionary *)newKeychainQueryForService:(nonnull NSString *)serviceName account:(nonnull NSString *)account {
-    NSMutableDictionary *dictionary = [NSMutableDictionary dictionaryWithCapacity:3];
-    [dictionary setObject:(__bridge id)kSecClassGenericPassword forKey:(__bridge id)kSecClass];
-    [dictionary setObject:serviceName forKey:(__bridge id)kSecAttrService];
-    [dictionary setObject:account forKey:(__bridge id)kSecAttrAccount];
-#if TARGET_OS_IPHONE
-    [dictionary setObject:(__bridge id)kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly forKey:(__bridge id)kSecAttrAccessible];
-#endif
-    return dictionary;
-}
-
-- (nonnull NSError *)keychainErrorWithCode:(OSStatus)status {
-    NSString *message = nil;
-    #if TARGET_OS_IPHONE
-    switch (status) {
-        case errSecUnimplemented: {
-            message = @"errSecUnimplemented";
-            break;
-        }
-        case errSecParam: {
-            message = @"errSecParam";
-            break;
-        }
-        case errSecAllocate: {
-            message = @"errSecAllocate";
-            break;
-        }
-        case errSecNotAvailable: {
-            message = @"errSecNotAvailable";
-            break;
-        }
-        case errSecDuplicateItem: {
-            message = @"errSecDuplicateItem";
-            break;
-        }
-        case errSecItemNotFound: {
-            message = @"errSecItemNotFound";
-            break;
-        }
-        case errSecInteractionNotAllowed: {
-            message = @"errSecInteractionNotAllowed";
-            break;
-        }
-        case errSecDecode: {
-            message = @"errSecDecode";
-            break;
-        }
-        case errSecAuthFailed: {
-            message = @"errSecAuthFailed";
-            break;
-        }
-        default: {
-            message = @"errSecDefault";
-        }
-    }
-    #else
-    message = (__bridge_transfer NSString *)SecCopyErrorMessageString(status, NULL);
-    #endif
-    NSDictionary *userInfo = nil;
-    if (message) {
-        userInfo = @{ NSLocalizedDescriptionKey : message };
-    }
-    return [NSError errorWithDomain:[NSString stringWithFormat:@"%@.%@", ARTAblyErrorDomain, @"Keychain"] code:status userInfo:userInfo];
-}
-
-- (nullable NSString *)keychainGetPasswordForService:(nonnull NSString *)serviceName account:(nonnull NSString *)account error:(NSError *__autoreleasing *)error {
-    NSMutableDictionary *query = [self newKeychainQueryForService:serviceName account:account];
-
-    [query setObject:@YES forKey:(__bridge id)kSecReturnData];
-    [query setObject:(__bridge id)kSecMatchLimitOne forKey:(__bridge id)kSecMatchLimit];
+- (nullable NSString *)readLegacyKeychainSecretForDevice:(NSString *)deviceId status:(OSStatus *)outStatus {
+    NSDictionary *query = @{
+        (__bridge id)kSecClass: (__bridge id)kSecClassGenericPassword,
+        (__bridge id)kSecAttrService: ARTDeviceSecretKey,
+        (__bridge id)kSecAttrAccount: deviceId,
+        (__bridge id)kSecReturnData: @YES,
+        (__bridge id)kSecMatchLimit: (__bridge id)kSecMatchLimitOne,
+    };
     CFTypeRef result = NULL;
     OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)query, &result);
-
+    if (outStatus) *outStatus = status;
     if (status != errSecSuccess) {
-        if (error) {
-            *error = [self keychainErrorWithCode:status];
-        }
+        return nil;
     }
-    else {
-        NSData *passwordData = (__bridge_transfer NSData *)result;
-        if ([passwordData length]) {
-            return [[NSString alloc] initWithData:passwordData encoding:NSUTF8StringEncoding];
-        }
-    }
-
-    return nil;
+    NSData *data = (__bridge_transfer NSData *)result;
+    if (data.length == 0) return nil;
+    return [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
 }
 
-- (BOOL)keychainDeletePasswordForService:(NSString *)serviceName account:(NSString *)account error:(NSError *__autoreleasing *)error {
-    NSMutableDictionary *query = [self newKeychainQueryForService:serviceName account:account];
+- (void)deleteLegacyKeychainSecretForDevice:(NSString *)deviceId {
+    NSDictionary *query = @{
+        (__bridge id)kSecClass: (__bridge id)kSecClassGenericPassword,
+        (__bridge id)kSecAttrService: ARTDeviceSecretKey,
+        (__bridge id)kSecAttrAccount: deviceId,
+    };
     OSStatus status = SecItemDelete((__bridge CFDictionaryRef)query);
-    if (status != errSecSuccess && error != NULL) {
-        *error = [self keychainErrorWithCode:status];
+    if (status != errSecSuccess && status != errSecItemNotFound) {
+        ARTLogWarn(_logger, @"ARTLocalDeviceStorage: failed to delete legacy keychain secret for device %@ (status=%d)", deviceId, (int)status);
     }
-    return (status == errSecSuccess);
-}
-
-- (BOOL)keychainSetPassword:(NSString *)password forService:(NSString *)serviceName account:(NSString *)account error:(NSError *__autoreleasing *)error {
-    NSMutableDictionary *query = nil;
-    NSMutableDictionary *searchQuery = [self newKeychainQueryForService:serviceName account:account];
-    NSData *passwordData = [password dataUsingEncoding:NSUTF8StringEncoding];
-
-    OSStatus status;
-    status = SecItemCopyMatching((__bridge CFDictionaryRef)searchQuery, nil);
-    if (status == errSecSuccess) { //item already exists, update it.
-        query = [[NSMutableDictionary alloc] init];
-        [query setObject:passwordData forKey:(__bridge id)kSecValueData];
-        status = SecItemUpdate((__bridge CFDictionaryRef)(searchQuery), (__bridge CFDictionaryRef)(query));
-    }
-    else if (status == errSecItemNotFound) { //item not found, create it.
-        query = [self newKeychainQueryForService:serviceName account:account];
-        [query setObject:passwordData forKey:(__bridge id)kSecValueData];
-        status = SecItemAdd((__bridge CFDictionaryRef)query, NULL);
-    }
-
-    if (status != errSecSuccess && error != NULL) {
-        *error = [self keychainErrorWithCode:status];
-    }
-
-    return (status == errSecSuccess);
 }
 
 @end

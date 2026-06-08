@@ -857,6 +857,11 @@ class PushActivationStateMachineTests: XCTestCase {
         options.clientId = "client1"
         let rest = ARTRest(options: options)
         rest.internal.storage = storage
+        // The device is a process-wide singleton; `setUp`'s `initialStateMachine`
+        // already loaded it against a different storage, so reset it to force a
+        // reload bound to this test's `storage` (otherwise the reset below would
+        // write to the wrong storage and `keysWritten` here would stay empty).
+        rest.internal.resetDeviceSingleton()
         stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: .init(core: MockInternalLogCore()))
 
         rest.internal.setupLocalDevice_nosync()
