@@ -1,6 +1,6 @@
 import Foundation
-@preconcurrency import Ably
-@preconcurrency import Ably.Private
+import Ably
+import Ably.Private
 
 /// The UTS `MockHttpClient` — a fake `ARTHTTPExecutor` that intercepts the SDK's outgoing HTTP
 /// requests so tests can observe them and inject responses, with no real network. Installed via

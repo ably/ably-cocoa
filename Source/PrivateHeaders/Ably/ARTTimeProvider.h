@@ -17,6 +17,8 @@ NS_ASSUME_NONNULL_BEGIN
 
  See ably-cocoa's `CONTRIBUTING.md`, section "Time-related operations", for the full convention and for the standard pattern by which a class obtains its `ARTTimeProvider`.
  */
+NS_SWIFT_NAME(TimeProvider)
+NS_SWIFT_SENDABLE
 @protocol ARTTimeProvider <NSObject>
 
 /**
@@ -36,7 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (id<ARTSchedulerHandle>)scheduleAfter:(NSTimeInterval)delay
                                  queue:(dispatch_queue_t)queue
-                                 block:(dispatch_block_t)block;
+                                 block:(dispatch_block_t NS_SWIFT_SENDABLE)block;
 
 @end
 

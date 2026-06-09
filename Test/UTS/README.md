@@ -15,7 +15,7 @@ Test/UTS/
     Captured.swift                # thread-safe collector for the spec's local captured_* arrays (Swift 6 safe)
     CapturingLog.swift            # ARTLog that records log lines for assertions
     NoOpReachability.swift        # disables OS network monitoring in unit tests
-    ARTProtocolMessage+UTS.swift  # protocol-message builders (.connected/.attached/.error/.ack/.closed)
+    ProtocolMessage.swift         # Sendable server-message factories (.connected/.attached/.error/.ack/.closed)
   Tests/
     ConnectionRecoveryTests.swift # RTN16
     TimeTests.swift               # RSC16

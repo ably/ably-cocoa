@@ -1,9 +1,6 @@
 import Foundation
-// Ably's Objective-C API isn't Sendable-audited; import it preconcurrency so interop with its
-// non-Sendable types (ARTProtocolMessage, the ARTWebSocket delegate, …) is a warning, not an error,
-// while our own harness/test code stays fully checked under the Swift 6 language mode.
-@preconcurrency import Ably
-@preconcurrency import Ably.Private
+import Ably
+import Ably.Private
 
 /// The UTS `mock_ws` — the object test code interacts with. It outlives any single socket
 /// (the SDK creates a new `MockWebSocket` for every connection attempt), holding the
@@ -129,21 +126,21 @@ final class MockWebSocket: NSObject, ARTWebSocket, @unchecked Sendable {
 
     /// Delivers a protocol message to the client, leaving the connection open
     /// (UTS `send_to_client`).
-    func sendToClient(_ message: ARTProtocolMessage) {
+    func sendToClient(_ message: ProtocolMessage) {
         deliverToDelegate { [weak self] in
             guard let self else { return }
             guard self.readyState == .open else { return }
-            self.delegate?.webSocket?(self, didReceiveMessage: message)
+            self.delegate?.webSocket?(self, didReceiveMessage: message.makeProtocolMessage())
         }
     }
 
     /// Delivers a protocol message and then closes the connection (UTS `send_to_client_and_close`).
     /// Used for connection-level `ERROR` (no channel) and `DISCONNECTED`.
-    func sendToClientAndClose(_ message: ARTProtocolMessage) {
+    func sendToClientAndClose(_ message: ProtocolMessage) {
         deliverToDelegate { [weak self] in
             guard let self else { return }
             if self.readyState == .open {
-                self.delegate?.webSocket?(self, didReceiveMessage: message)
+                self.delegate?.webSocket?(self, didReceiveMessage: message.makeProtocolMessage())
             }
             self.readyState = .closed
             self.delegate?.webSocket?(self, didCloseWithCode: WSCloseCode.normal, reason: "Normal Closure", wasClean: true)

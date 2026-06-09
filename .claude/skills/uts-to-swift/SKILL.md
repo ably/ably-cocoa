@@ -189,7 +189,7 @@ let attachFrames = ws.sentMessages.filter { $0.action == .attach && $0.channel =
 
 ### Protocol messages and types
 
-`ARTProtocolMessage` is built via the `+UTS` factories — never construct/populate it inline (add new one if needed instead):
+Server-to-client messages are described with the `Sendable` `ProtocolMessage` factories — `sendToClient`/`sendToClientAndClose` take a `ProtocolMessage` and build the real `ARTProtocolMessage` at delivery, so no non-Sendable value crosses the queue hop. Use these factories; add a new one (and the matching `makeProtocolMessage()` case) if you need another action:
 
 | Pseudocode | Swift |
 |---|---|

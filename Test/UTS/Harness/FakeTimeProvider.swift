@@ -1,6 +1,6 @@
 import Foundation
-@preconcurrency import Ably
-@preconcurrency import Ably.Private
+import Ably
+import Ably.Private
 
 /// A deterministic `ARTTimeProvider` for UTS unit tests.
 ///
@@ -12,7 +12,7 @@ import Foundation
 /// means this provider doubles as the timer-leak safety net the UTS derived-tests guide asks for:
 /// `cancelAllScheduled()` in teardown cancels every surviving timer, including ones the SDK may
 /// have orphaned and which are no longer reachable through its public API.
-final class FakeTimeProvider: NSObject, ARTTimeProvider, @unchecked Sendable {
+final class FakeTimeProvider: NSObject, TimeProvider, @unchecked Sendable {
     /// A point on / duration of the continuous clock, in the same units as `clock_gettime_nsec_np`.
     private typealias Nanoseconds = UInt64
 
