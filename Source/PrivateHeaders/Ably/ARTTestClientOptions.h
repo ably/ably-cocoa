@@ -3,6 +3,7 @@
 @protocol ARTRealtimeTransportFactory;
 @protocol ARTJitterCoefficientGenerator;
 @protocol ARTTimeProvider;
+@protocol ARTHTTPExecutor;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -53,6 +54,11 @@ NS_ASSUME_NONNULL_BEGIN
  The class used to instantiate the `ARTReachability` implementation that `ARTRealtime` uses to monitor network state. Tests install a no-op or controllable implementation here. Initial value is `ARTOSReachability`.
  */
 @property (nonatomic) Class reachabilityClass;
+
+/**
+ An `ARTHTTPExecutor` that `ARTRestInternal` uses for all of its HTTP requests instead of creating its own. Tests install a mock here so that requests are intercepted rather than sent over the network. When `nil` (the initial value), the rest client creates its own `ARTHttp`.
+ */
+@property (nullable, nonatomic) id<ARTHTTPExecutor> httpExecutor;
 
 /**
  When `YES`, `ARTLocalDeviceStorage` log lines include the fetched or

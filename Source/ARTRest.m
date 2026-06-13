@@ -196,7 +196,7 @@ NS_ASSUME_NONNULL_END
 #endif
         _http = [[ARTHttp alloc] initWithQueue:_queue logger:_logger];
         ARTLogVerbose(_logger, @"RS:%p %p alloc HTTP", self, _http);
-        _httpExecutor = _http;
+        _httpExecutor = options.testOptions.httpExecutor ?: _http;
 
         id<ARTEncoder> jsonEncoder = [[ARTJsonLikeEncoder alloc] initWithRest:self delegate:[[ARTJsonEncoder alloc] init] logger:_logger];
         id<ARTEncoder> msgPackEncoder = [[ARTJsonLikeEncoder alloc] initWithRest:self delegate:[[ARTMsgPackEncoder alloc] init] logger:_logger];

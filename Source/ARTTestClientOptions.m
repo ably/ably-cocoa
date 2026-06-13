@@ -33,6 +33,7 @@
     copied.disableLocalDevice = self.disableLocalDevice;
     copied.timeProvider = self.timeProvider;
     copied.reachabilityClass = self.reachabilityClass;
+    copied.httpExecutor = self.httpExecutor;
 
     return copied;
 }
