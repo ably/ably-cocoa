@@ -4,6 +4,7 @@
 #import "ARTRealtimeTransportFactory.h"
 #import "ARTJitterCoefficientGenerator.h"
 #import "ARTSystemTimeProvider.h"
+#import "ARTOSReachability.h"
 
 @implementation ARTTestClientOptions
 
@@ -14,6 +15,7 @@
         _transportFactory = [[ARTDefaultRealtimeTransportFactory alloc] init];
         _jitterCoefficientGenerator = [[ARTDefaultJitterCoefficientGenerator alloc] init];
         _timeProvider = [[ARTSystemTimeProvider alloc] init];
+        _reachabilityClass = [ARTOSReachability class];
     }
 
     return self;
@@ -30,6 +32,7 @@
     copied.logLocalDeviceStorageValues = self.logLocalDeviceStorageValues;
     copied.disableLocalDevice = self.disableLocalDevice;
     copied.timeProvider = self.timeProvider;
+    copied.reachabilityClass = self.reachabilityClass;
 
     return copied;
 }

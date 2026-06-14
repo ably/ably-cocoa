@@ -50,6 +50,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) id<ARTTimeProvider> timeProvider;
 
 /**
+ The class used to instantiate the `ARTReachability` implementation that `ARTRealtime` uses to monitor network state. Tests install a no-op or controllable implementation here. Initial value is `ARTOSReachability`.
+ */
+@property (nonatomic) Class reachabilityClass;
+
+/**
  When `YES`, `ARTLocalDeviceStorage` log lines include the fetched or
  written value itself. Off by default because persisted values include
  the device secret and the identity token. Initial value is `NO`.
