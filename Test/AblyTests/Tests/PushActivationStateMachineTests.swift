@@ -33,18 +33,16 @@ class PushActivationStateMachineTests: XCTestCase {
     override func setUp() {
         super.setUp()
 
+        // Start from a clean on-disk device storage
+        AblyTests.clearOnDiskDeviceStorage()
+
         rest = ARTRest(key: "xxxx:xxxx")
         httpExecutor = MockHTTPExecutor()
         rest.internal.httpExecutor = httpExecutor
         storage = MockDeviceStorage()
         rest.internal.storage = storage
         initialStateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: .init(core: MockInternalLogCore()))
-    }
-
-    override func tearDown() {
         rest.internal.resetDeviceSingleton()
-
-        super.tearDown()
     }
 
     func test__002__Activation_state_machine__should_set_NotActivated_state_as_current_state_when_disk_is_empty() {
@@ -56,9 +54,9 @@ class PushActivationStateMachineTests: XCTestCase {
         rest.internal.storage = storage
         let stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: .init(core: MockInternalLogCore()))
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeviceRegistration.self))
-        XCTAssertEqual(storage.keysRead.count, 2)
+        XCTAssertEqual(storage.keysRead.count, 4) // 2 for state + 2 device key/secret
         XCTAssertEqual(storage.keysRead.filter { $0.hasSuffix("CurrentState") }.count, 1)
-        expect(storage.keysWritten).to(beEmpty())
+        XCTAssertEqual(storage.keysWritten.count, 2) // generated key/secret
     }
 
     func test__004__Activation_state_machine__AfterRegistrationUpdateFailed_state_from_persistence_gets_migrated_to_AfterRegistrationSyncFailed() {
@@ -216,6 +214,7 @@ class PushActivationStateMachineTests: XCTestCase {
         storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForPushDeviceDetails(machine: initialStateMachine, logger: .init(core: MockInternalLogCore())))
         rest.internal.storage = storage
         stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: .init(core: MockInternalLogCore()))
+        rest.internal.resetDeviceSingleton()
     }
 
     // RSH3b1

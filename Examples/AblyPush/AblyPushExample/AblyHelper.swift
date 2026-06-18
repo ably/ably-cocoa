@@ -61,10 +61,15 @@ extension AblyHelper {
     }
 
     func printIdentityToken() {
-        if UserDefaults.standard.value(forKey: "ARTDeviceIdentityToken") != nil {
-            print("IDENTITY TOKEN: exists")
+        let device = realtime.device
+        // identityTokenDetails may be nil if the device hasn't been activated for push
+        if let details = device.identityTokenDetails {
+            // The token is a credential; print only a short prefix so debug
+            // output / device logs don't leak it in full.
+            let preview = details.token.prefix(8)
+            print("Identity token exists for device id \(device.id): \(preview)…")
         } else {
-            print("IDENTITY TOKEN: doesn't exist")
+            print("Identity token doesn't exist")
         }
     }
 

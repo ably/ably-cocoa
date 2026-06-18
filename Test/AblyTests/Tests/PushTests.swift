@@ -36,14 +36,17 @@ class PushTests: XCTestCase {
     override func setUp() {
         super.setUp()
 
+        // Start from a clean on-disk device storage
+        AblyTests.clearOnDiskDeviceStorage()
+
         rest = ARTRest(key: "xxxx:xxxx")
-        rest.internal.resetDeviceSingleton()
         mockHttpExecutor = MockHTTPExecutor()
         rest.internal.httpExecutor = mockHttpExecutor
         storage = MockDeviceStorage()
         rest.internal.storage = storage
         stateMachineDelegate = StateMachineDelegate()
         rest.push.internal.createActivationStateMachine(withDelegate: stateMachineDelegate!)
+        rest.internal.resetDeviceSingleton()
     }
 
     // RSH2
@@ -344,6 +347,19 @@ class PushTests: XCTestCase {
         )
         realtime.internal.rest.storage = storage
 
+        // Per RSH8a1 the load path discards everything when `id` or
+        // `deviceSecret` can't be loaded, so to exercise the identity-token
+        // path we must simulate a consistent (id, secret, token) triple. This
+        // must be seeded BEFORE the device is loaded — creating the state
+        // machine below initialises the LocalDevice (RSH3h) — and we reset the
+        // shared device singleton so it reloads from this storage rather than
+        // one cached by `setUp`.
+        storage.simulateOnNextRead(string: "testId", for: ARTDeviceIdKey)
+        storage.simulateOnNextRead(string: "testSecret", for: ARTDeviceSecretKey)
+        storage.simulateOnNextRead(string: testDeviceToken, for: ARTAPNSDeviceTokenKey)
+        storage.simulateOnNextRead(data: testDeviceIdentity.art_archive(withLogger: nil)!, for: ARTDeviceIdentityTokenKey)
+        realtime.internal.rest.resetDeviceSingleton()
+
         var stateMachine: ARTPushActivationStateMachine!
         waitUntil(timeout: testTimeout) { done in
             realtime.internal.rest.push.getActivationMachine { machine in
@@ -353,9 +369,6 @@ class PushTests: XCTestCase {
         }
         let delegate = StateMachineDelegate()
         stateMachine.delegate = delegate
-
-        storage.simulateOnNextRead(string: testDeviceToken, for: ARTAPNSDeviceTokenKey)
-        storage.simulateOnNextRead(data: testDeviceIdentity.art_archive(withLogger: nil)!, for: ARTDeviceIdentityTokenKey)
 
         XCTAssertEqual(realtime.device.clientId, testDeviceIdentity.clientId)
 

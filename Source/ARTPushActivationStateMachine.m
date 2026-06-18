@@ -16,12 +16,15 @@
 #import "ARTAuth+Private.h"
 #import "ARTGCD.h"
 
+// These keys are referenced by `ARTLocalDeviceStorage` (built on all
+// platforms) for key routing, so the symbols must be defined regardless of
+// `TARGET_OS_IOS`. The rest of the state machine is iOS-only.
+NSString *const ARTPushActivationCurrentStateKey = @"ARTPushActivationCurrentState";
+NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEvents";
+
 #if TARGET_OS_IOS
 
 #import <UIKit/UIKit.h>
-
-NSString *const ARTPushActivationCurrentStateKey = @"ARTPushActivationCurrentState";
-NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEvents";
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -39,6 +42,7 @@ NS_ASSUME_NONNULL_END
     dispatch_queue_t _queue;
     dispatch_queue_t _userQueue;
     NSMutableArray<ARTPushActivationEvent *> *_pendingEvents;
+    id<ARTDeviceStorage> _storage;
 }
 
 - (instancetype)initWithRest:(ARTRestInternal *const)rest
@@ -50,8 +54,13 @@ NS_ASSUME_NONNULL_END
         _queue = _rest.queue;
         _userQueue = _rest.userQueue;
         _logger = logger;
+
+        // RSH3h: ensure to initialise the device _before_ the state fields are initialised
+        ARTLocalDevice *localDevice = rest.device_nosync;
+        _storage = localDevice.storage;
+
         // Unarchiving
-        _current = [ARTPushActivationState art_unarchiveFromStorage:rest.storage
+        _current = [ARTPushActivationState art_unarchiveFromStorage:_storage
                                                                 key:ARTPushActivationCurrentStateKey
                                                          withLogger:logger];
         if (!_current) {
@@ -62,7 +71,7 @@ NS_ASSUME_NONNULL_END
             }
             _current.machine = self;
         }
-        _pendingEvents = [ARTPushActivationEvent art_unarchiveFromStorage:rest.storage
+        _pendingEvents = [ARTPushActivationEvent art_unarchiveFromStorage:_storage
                                                                       key:ARTPushActivationPendingEventsKey
                                                                withLogger:logger];
         if (!_pendingEvents) {
@@ -72,7 +81,7 @@ NS_ASSUME_NONNULL_END
         // Due to bug #966, old versions of the library might have led us to an illegal
         // persisted state: we have a deviceToken, but the persisted push state is WaitingForPushDeviceDetails.
         // So we need to re-emit the GotPushDeviceDetails event that led us there.
-        if ([_current isKindOfClass:[ARTPushActivationStateWaitingForPushDeviceDetails class]] && rest.device_nosync.apnsDeviceToken != nil) {
+        if ([_current isKindOfClass:[ARTPushActivationStateWaitingForPushDeviceDetails class]] && localDevice.apnsDeviceToken != nil) {
             ARTLogDebug(logger, @"ARTPush: re-emitting stored device details for stuck state machine");
             [self handleEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
         }
@@ -155,13 +164,17 @@ art_dispatch_async(_queue, ^{
 }
 
 - (void)persist {
-    // Archiving
+    NSData *stateData = nil;
     if ([_current isKindOfClass:[ARTPushActivationPersistentState class]]) {
-        [self.rest.storage setObject:[_current art_archiveWithLogger:_logger]
-                              forKey:ARTPushActivationCurrentStateKey];
+        stateData = [_current art_archiveWithLogger:_logger];
     }
-    [self.rest.storage setObject:[_pendingEvents art_archiveWithLogger:_logger]
-                          forKey:ARTPushActivationPendingEventsKey];
+    NSData *eventsData = [_pendingEvents art_archiveWithLogger:_logger];
+    [_storage performBatchUpdate:^(id<ARTDeviceStorage> writer) {
+        if (stateData != nil) {
+            [writer setObject:stateData forKey:ARTPushActivationCurrentStateKey];
+        }
+        [writer setObject:eventsData forKey:ARTPushActivationPendingEventsKey];
+    }];
 }
 
 - (void)deviceRegistration:(ARTErrorInfo *)error {
