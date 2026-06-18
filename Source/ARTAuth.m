@@ -218,7 +218,6 @@ NS_ASSUME_NONNULL_END
     self.options.authMethod = customOptions.authMethod;
     self.options.authParams = [customOptions.authParams copy];
     self.options.useTokenAuth = customOptions.useTokenAuth;
-    self.options.queryTime = NO;
 }
 
 - (ARTTokenParams *)mergeParams:(ARTTokenParams *)customParams {
@@ -703,7 +702,7 @@ art_dispatch_async(_queue, ^{
         return nil;
     }
 
-    if ([self hasTimeOffsetWithValue] && !replacedOptions.queryTime) {
+    if ([self hasTimeOffset]) {
         currentTokenParams.timestamp = [self currentDate];
         callback([currentTokenParams sign:replacedOptions.key], nil);
         return nil;
@@ -768,10 +767,6 @@ art_dispatch_sync(_queue, ^{
     return _timeOffset != nil;
 }
 
-- (BOOL)hasTimeOffsetWithValue {
-    return _timeOffset != nil && _timeOffset.doubleValue > 0;
-}
-
 - (void)discardTimeOffset {
     // This may run after dealloc has been called in _rest. I've seen this
     // happen when rest.auth is put in a variable, even if (apparently) that
@@ -806,8 +801,6 @@ art_dispatch_sync(_queue, ^{
 }
 
 - (void)fetchServerTimeWithCompletion:(void (^)(NSDate * _Nullable, ARTErrorInfo * _Nullable))completion {
-    // TODO: I don't know why elsewhere we use hasTimeOffsetWithValue; it's causing us to ignore the offset in the case where the stored time offset indicates that the local clock is ahead of the server clock. See https://github.com/ably/ably-cocoa/issues/2148
-
     if ([self hasTimeOffset]) {
         NSDate *serverTime = [self currentDate];
         ARTLogDebug(self.logger, @"Server time fetch calculated time %@ from offset", serverTime);
