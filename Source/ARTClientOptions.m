@@ -18,6 +18,8 @@ const ARTPluginName ARTPluginNameLiveObjects = @"LiveObjects";
 
 NSString *ARTDefaultEnvironment = nil;
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface ARTClientOptions ()
 
 @property (nonatomic) NSMutableDictionary<NSString *, id> *pluginData;
@@ -25,6 +27,8 @@ NSString *ARTDefaultEnvironment = nil;
 - (instancetype)initDefaults;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 @implementation ARTClientOptions
 

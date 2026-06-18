@@ -50,6 +50,8 @@
 
 @end
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface ARTRealtimeChannelsInternal ()
 
 @property (nonatomic, readonly) ARTInternalLog *logger;
@@ -59,6 +61,8 @@
 
 @interface ARTRealtimeChannelsInternal () <ARTChannelsDelegate>
 @end
+
+NS_ASSUME_NONNULL_END
 
 @implementation ARTRealtimeChannelsInternal {
     ARTChannels *_channels;

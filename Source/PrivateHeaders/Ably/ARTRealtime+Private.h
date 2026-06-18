@@ -48,7 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) ARTAuthInternal *auth;
 @property (readonly) ARTPushInternal *push;
 #if TARGET_OS_IOS
-@property (nonnull, nonatomic, readonly, getter=device) ARTLocalDevice *device;
+@property (nonatomic, readonly, getter=device) ARTLocalDevice *device;
 #endif
 @property (readonly, nullable, getter=clientId) NSString *clientId;
 
@@ -105,7 +105,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 
 @property (readwrite, nonatomic) ARTRestInternal *rest;
 @property (readonly, nullable) id<ARTRealtimeTransport> transport;
-@property (readonly, nonatomic, nonnull) id<ARTReachability> reachability;
+@property (readonly, nonatomic) id<ARTReachability> reachability;
 @property (nonatomic) NSTimeInterval connectionStateTtl;
 @property (nonatomic) NSTimeInterval maxIdleInterval;
 

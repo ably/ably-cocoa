@@ -5,6 +5,8 @@
 
 #define ART_CBC_BLOCK_LENGTH (16)
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface ARTCipherParams ()
 
 - (BOOL)ccAlgorithm:(CCAlgorithm *)algorithm error:(NSError **)error;
@@ -16,6 +18,8 @@
 @property CCAlgorithm algorithm;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 @implementation NSString (ARTCipherKeyCompatible)
 

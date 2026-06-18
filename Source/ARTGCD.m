@@ -1,11 +1,15 @@
 #import "ARTGCD.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface ARTScheduledBlockHandle ()
 
 // Mark this as `atomic` to syncronize access to it from `_scheduledBlock` and `cancel`.
 @property (atomic, copy, nullable) dispatch_block_t block;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 @implementation ARTScheduledBlockHandle {
     dispatch_block_t _scheduledBlock;

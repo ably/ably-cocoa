@@ -1,5 +1,7 @@
 #import <Ably/ARTPresenceMessage.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface ARTPresenceMessage ()
 
 /**
@@ -7,8 +9,10 @@
  */
 - (BOOL)isSynthesized;
 
-- (NSArray<NSString *> *)parseId;
+- (nullable NSArray<NSString *> *)parseId;
 - (NSInteger)msgSerialFromId;
 - (NSInteger)indexFromId;
 
 @end
+
+NS_ASSUME_NONNULL_END

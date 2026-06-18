@@ -3,8 +3,10 @@
 #import "ARTNSDictionary+ARTDictionaryUtil.h"
 #import "ARTMessageAnnotations.h"
 
+NS_ASSUME_NONNULL_BEGIN
 @interface ARTSummaryClientIdList () <ARTDictionarySerializable>
 @end
+NS_ASSUME_NONNULL_END
 
 @implementation ARTSummaryClientIdList
 
@@ -75,8 +77,10 @@
 
 @end
 
+NS_ASSUME_NONNULL_BEGIN
 @interface ARTSummaryClientIdCounts () <ARTDictionarySerializable>
 @end
+NS_ASSUME_NONNULL_END
 
 @implementation ARTSummaryClientIdCounts
 
@@ -173,8 +177,10 @@
 
 @end
 
+NS_ASSUME_NONNULL_BEGIN
 @interface ARTSummaryTotal () <ARTDictionarySerializable>
 @end
+NS_ASSUME_NONNULL_END
 
 @implementation ARTSummaryTotal
 

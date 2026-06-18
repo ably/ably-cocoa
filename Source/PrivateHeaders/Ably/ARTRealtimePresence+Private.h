@@ -96,7 +96,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic) BOOL syncInProgress;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithQueue:(_Nonnull dispatch_queue_t)queue logger:(ARTInternalLog *)logger;
+- (instancetype)initWithQueue:(dispatch_queue_t)queue logger:(ARTInternalLog *)logger;
 
 - (void)processMember:(ARTPresenceMessage *)message;
 - (void)reset;
