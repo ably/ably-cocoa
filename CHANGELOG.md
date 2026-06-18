@@ -1,5 +1,14 @@
 # Change Log
 
+## [1.2.61](https://github.com/ably/ably-cocoa/tree/1.2.61)
+
+### What's Changed
+
+* Remove `logExceptionReportingUrl` client option by @lawrence-forooghian in https://github.com/ably/ably-cocoa/pull/2215
+* Store all persisted data atomically in a single file with None protection by @maratal in https://github.com/ably/ably-cocoa/pull/2207
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.60...1.2.61
+
 ## [1.2.60](https://github.com/ably/ably-cocoa/tree/1.2.60)
 
 ### What's Changed
