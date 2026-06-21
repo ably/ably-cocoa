@@ -282,7 +282,7 @@ struct ContentView: View {
         let mainOptions = ARTClientOptions(key: Secrets.ablyAPIKey)
         mainOptions.clientId = clientId
         mainOptions.logHandler = EventLoggingLogHandler(eventsChannel: eventsChannel)
-        mainOptions.logLevel = .verbose
+        //mainOptions.logLevel = .verbose
         mainOptions.pushRegistererDelegate = pushActivationHandler
         // Include the actual persisted values in the storage-access log
         // lines (rather than the default `(retracted)` placeholder).
