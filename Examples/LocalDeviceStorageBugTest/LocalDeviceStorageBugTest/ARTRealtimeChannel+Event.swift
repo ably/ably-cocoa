@@ -5,5 +5,6 @@ extension ARTRealtimeChannel {
     /// as the Ably message name and its JSON-encoded representation as the data.
     func publish(_ event: Event) {
         publish(event.name, data: event.toAblyData())
+        ChannelEventLog.shared.append("Event published: \(event)")
     }
 }
