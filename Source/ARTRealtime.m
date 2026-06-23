@@ -259,7 +259,7 @@ typedef NS_ENUM(NSUInteger, ARTNetworkState) {
         _channels = [[ARTRealtimeChannelsInternal alloc] initWithRealtime:self logger:self.logger];
         _transport = nil;
         _networkState = ARTNetworkStateIsUnknown;
-        _reachabilityClass = [ARTOSReachability class];
+        _reachabilityClass = options.testOptions.reachabilityClass;
         _msgSerial = 0;
         _queuedMessages = [NSMutableArray array];
         _pendingMessages = [NSMutableArray array];
