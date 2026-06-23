@@ -43,7 +43,7 @@
 #import "ARTLogAdapter.h"
 #import "ARTClientOptions+TestConfiguration.h"
 #import "ARTTestClientOptions.h"
-#import "ARTContinuousClock.h"
+#import "ARTTimeProvider.h"
 #if TARGET_OS_IOS
 #import "ARTPushActivationStateMachine+Private.h"
 #import "ARTPushActivationEvent.h"
@@ -157,7 +157,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTRestInternal ()
 
 @property (nonatomic, readonly) ARTInternalLog *logger;
-@property (nonatomic, readonly) ARTContinuousClock *continuousClock;
 
 @end
 
@@ -183,7 +182,7 @@ NS_ASSUME_NONNULL_END
         _realtime = realtime;
         _options = [options copy];
         _logger = logger;
-        _continuousClock = [[ARTContinuousClock alloc] init];
+        _timeProvider = options.testOptions.timeProvider;
         _queue = options.internalDispatchQueue;
         _userQueue = options.dispatchQueue;
 #if TARGET_OS_IOS
@@ -381,7 +380,7 @@ NS_ASSUME_NONNULL_END
         // RSC15f - reset the successed fallback host on fallbackRetryTimeout expiration
         // change URLRequest host from `fallback host` to `default host`
         //
-        if (self.currentFallbackHost != nil && self.fallbackRetryExpiration != nil && [[self.continuousClock now] isAfter:self.fallbackRetryExpiration]) {
+        if (self.currentFallbackHost != nil && self.fallbackRetryExpiration != nil && [[self.timeProvider continuousClockNow] isAfter:self.fallbackRetryExpiration]) {
             ARTLogDebug(self.logger, @"RS:%p fallbackRetryExpiration ids expired, reset `prioritizedHost` and `currentFallbackHost`", self);
 
             self.currentFallbackHost = nil;
@@ -777,8 +776,8 @@ art_dispatch_async(_queue, ^{
 
     _currentFallbackHost = value;
 
-    ARTContinuousClockInstant *const now = [self.continuousClock now];
-    _fallbackRetryExpiration = [self.continuousClock addingDuration:_options.fallbackRetryTimeout toInstant:now];
+    id<ARTContinuousClockInstant> const now = [self.timeProvider continuousClockNow];
+    _fallbackRetryExpiration = [now addingDuration:_options.fallbackRetryTimeout];
 }
 
 #if TARGET_OS_IOS

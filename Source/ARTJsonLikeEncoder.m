@@ -1,6 +1,9 @@
 #import <Foundation/Foundation.h>
 
 #import "ARTJsonLikeEncoder.h"
+#import "ARTTimeProvider.h"
+#import "ARTClientOptions+TestConfiguration.h"
+#import "ARTTestClientOptions.h"
 
 #import "ARTMessage.h"
 #import "ARTMessage+Private.h"
@@ -44,26 +47,15 @@
 @implementation ARTJsonLikeEncoder {
     __weak ARTRestInternal *_rest; // weak because rest owns self
     ARTInternalLog *_logger;
+    id<ARTTimeProvider> _timeProvider;
 }
 
-- (instancetype)init {
-    return [self initWithDelegate:[[ARTJsonEncoder alloc] init]];
-}
-
-- (instancetype)initWithDelegate:(id<ARTJsonLikeEncoderDelegate>)delegate {
+- (instancetype)initWithDelegate:(id<ARTJsonLikeEncoderDelegate>)delegate timeProvider:(id<ARTTimeProvider>)timeProvider {
     if (self = [super init]) {
         _rest = nil;
         _logger = nil;
         _delegate = delegate;
-    }
-    return self;
-}
-
-- (instancetype)initWithLogger:(ARTInternalLog *)logger delegate:(id<ARTJsonLikeEncoderDelegate>)delegate {
-    if (self = [super init]) {
-        _rest = nil;
-        _logger = logger;
-        _delegate = delegate;
+        _timeProvider = timeProvider;
     }
     return self;
 }
@@ -73,6 +65,7 @@
         _rest = rest;
         _logger = logger;
         _delegate = delegate;
+        _timeProvider = rest.options.testOptions.timeProvider;
     }
     return self;
 }
@@ -871,7 +864,7 @@
     if (tokenRequest.timestamp)
         timestamp = [NSNumber numberWithUnsignedLongLong:dateToMilliseconds(tokenRequest.timestamp)];
     else
-        timestamp = [NSNumber numberWithUnsignedLongLong:dateToMilliseconds([NSDate date])];
+        timestamp = [NSNumber numberWithUnsignedLongLong:dateToMilliseconds([_timeProvider wallClockNow])];
 
     NSMutableDictionary *dictionary = [@{
              @"keyName":tokenRequest.keyName ? tokenRequest.keyName : @"",

@@ -9,7 +9,8 @@
 @class ARTInternalLog;
 @class ARTRealtimeInternal;
 @class ARTAuthInternal;
-@class ARTContinuousClockInstant;
+@protocol ARTContinuousClockInstant;
+@protocol ARTTimeProvider;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -42,10 +43,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) id<ARTHTTPExecutor> httpExecutor;
 @property (nonatomic, readonly, getter=getBaseUrl) NSURL *baseUrl;
 @property (nullable, nonatomic, copy) NSString *currentFallbackHost;
-@property (nullable, readonly, nonatomic) ARTContinuousClockInstant *fallbackRetryExpiration;
+@property (nullable, readonly, nonatomic) id<ARTContinuousClockInstant> fallbackRetryExpiration;
 
 @property (nonatomic) dispatch_queue_t queue;
 @property (nonatomic) dispatch_queue_t userQueue;
+
+@property (nonatomic, readonly) id<ARTTimeProvider> timeProvider;
 
 /**
  Provides access to the instance's logger. As the name says, this property should only be used in the following cases:

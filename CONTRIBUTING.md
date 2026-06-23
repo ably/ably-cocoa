@@ -71,6 +71,18 @@ ably-cocoa allows users to pass in Ably-authored plugins via the `ARTClientOptio
 
 - In Objective-C code, use `art_dispatch_sync` and `art_dispatch_async` instead of `dispatch_sync` and `dispatch_async`, for more debuggable handling of the case in which we accidentally submit to a `nil` queue.
 
+### Time-related operations
+
+All time-dependent code in ably-cocoa goes through the injectable `ARTTimeProvider` abstraction (declared in `Source/PrivateHeaders/Ably/ARTTimeProvider.h`). This indirection allows the Universal Test Suite to install a single fake-time implementation that controls every clock-dependent code path across both ably-cocoa and any Ably-authored plugins.
+
+New code MUST obtain time and scheduling primitives from an injected `id<ARTTimeProvider>` rather than calling system primitives directly. In particular:
+
+- Don't call `[NSDate date]` (or `Date()` from Swift) directly. Use `[timeProvider wallClockNow]`.
+- Don't call `clock_gettime_nsec_np`, `mach_continuous_time`, or similar continuous-clock primitives directly. Use `[timeProvider continuousClockNow]`, which returns an `id<ARTContinuousClockInstant>` that supports `isAfter:` and `addingDuration:`.
+- Don't call `dispatch_after`, `NSTimer`, or `dispatch_source_set_timer` directly to run something after a delay. Use `[timeProvider scheduleAfter:queue:block:]`, which returns an `id<ARTSchedulerHandle>` that supports `cancel`.
+
+Internal classes obtain their `ARTTimeProvider` by reading `options.testOptions.timeProvider` in their `-init` (the default value is an `ARTSystemTimeProvider`, backed by real system primitives) and stash it as an ivar, the same way the `logger` and the internal dispatch queue are passed in from the owning class. Downstream consumers (e.g. `ARTEventEmitter`) receive the provider as an init parameter from their owning class.
+
 ## Linting
 
 Source files must comply with the rules defined in `.editorconfig` (enforced by CI).

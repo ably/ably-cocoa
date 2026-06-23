@@ -3,7 +3,7 @@ import Foundation
 import Nimble
 import XCTest
 
-private let encoder = ARTJsonLikeEncoder()
+private let encoder = ARTJsonLikeEncoder(delegate: ARTJsonEncoder(), timeProvider: SystemTimeProvider())
 private let subject: ARTStatsConnectionTypes? = {
     let data: [[String: Any]] = [
         ["connections": ["tls": ["opened": 5], "all": ["peak": 10]]],

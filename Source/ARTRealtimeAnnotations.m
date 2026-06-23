@@ -108,7 +108,7 @@
         _userQueue = _realtime.rest.userQueue;
         _queue = _realtime.rest.queue;
         _logger = logger;
-        _eventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
+        _eventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue timeProvider:_realtime.rest.timeProvider];
         _dataEncoder = _channel.dataEncoder;
     }
     return self;

@@ -1,4 +1,5 @@
 import Ably
+import Ably.Private
 import AblyTestingObjC
 import Foundation
 import Nimble
@@ -6,7 +7,7 @@ import XCTest
 
 private var jsonEncoder: ARTJsonLikeEncoder!
 
-private var eventEmitter = ARTInternalEventEmitter<NSString, AnyObject>(queue: AblyTests.queue)
+private var eventEmitter = ARTInternalEventEmitter<NSString, AnyObject>(queue: AblyTests.queue, timeProvider: SystemTimeProvider())
 private var receivedFoo1: Int?
 private var receivedFoo2: Int?
 private var receivedBar: Int?
@@ -40,8 +41,7 @@ class UtilitiesTests: XCTestCase {
     }
 
     func beforeEach__Utilities__JSON_Encoder() {
-        jsonEncoder = ARTJsonLikeEncoder()
-        jsonEncoder.delegate = ARTJsonEncoder()
+        jsonEncoder = ARTJsonLikeEncoder(delegate: ARTJsonEncoder(), timeProvider: SystemTimeProvider())
     }
 
     func test__001__Utilities__JSON_Encoder__should_decode_a_protocol_message_that_has_an_error_without_a_message() throws {
@@ -299,7 +299,7 @@ class UtilitiesTests: XCTestCase {
     }
 
     func beforeEach__Utilities__EventEmitter() {
-        eventEmitter = ARTInternalEventEmitter(queue: AblyTests.queue)
+        eventEmitter = ARTInternalEventEmitter(queue: AblyTests.queue, timeProvider: SystemTimeProvider())
         receivedFoo1 = nil
         receivedFoo2 = nil
         receivedBar = nil

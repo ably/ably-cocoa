@@ -7,6 +7,7 @@
 
 @class ARTPublishResult;
 @class ARTPublishResultSerial;
+@protocol ARTTimeProvider;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -25,8 +26,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, nullable) id<ARTJsonLikeEncoderDelegate> delegate;
 
-- (instancetype)initWithDelegate:(id<ARTJsonLikeEncoderDelegate>)delegate;
-- (instancetype)initWithLogger:(ARTInternalLog *)logger delegate:(nullable id<ARTJsonLikeEncoderDelegate>)delegate;
+- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithDelegate:(id<ARTJsonLikeEncoderDelegate>)delegate timeProvider:(id<ARTTimeProvider>)timeProvider;
 - (instancetype)initWithRest:(ARTRestInternal *)rest delegate:(nullable id<ARTJsonLikeEncoderDelegate>)delegate logger:(ARTInternalLog *)logger;
 
 @end
