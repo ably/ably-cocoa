@@ -1,0 +1,104 @@
+internal import _AblyPluginSupportPrivate
+import Ably
+
+/// Our default implementation of ``LiveMap``.
+///
+/// This is largely a wrapper around ``InternalDefaultLiveMap``.
+@available(macOS 10.15, iOS 13, tvOS 13, *)
+internal final class PublicDefaultLiveMap: LiveMap {
+    internal let proxied: InternalDefaultLiveMap
+
+    // MARK: - Dependencies that hold a strong reference to `proxied`
+
+    private let coreSDK: CoreSDK
+    private let realtimeObjects: any InternalRealtimeObjectsProtocol
+    private let logger: Logger
+
+    internal init(proxied: InternalDefaultLiveMap, coreSDK: CoreSDK, realtimeObjects: any InternalRealtimeObjectsProtocol, logger: Logger) {
+        self.proxied = proxied
+        self.coreSDK = coreSDK
+        self.realtimeObjects = realtimeObjects
+        self.logger = logger
+    }
+
+    // MARK: - `LiveMap` protocol
+
+    internal func get(key: String) throws(ARTErrorInfo) -> LiveMapValue? {
+        try proxied.get(key: key, coreSDK: coreSDK, delegate: realtimeObjects)?.toPublic(
+            creationArgs: .init(
+                coreSDK: coreSDK,
+                realtimeObjects: realtimeObjects,
+                logger: logger,
+            ),
+        )
+    }
+
+    internal var size: Int {
+        get throws(ARTErrorInfo) {
+            try proxied.size(coreSDK: coreSDK, delegate: realtimeObjects)
+        }
+    }
+
+    internal var entries: [(key: String, value: LiveMapValue)] {
+        get throws(ARTErrorInfo) {
+            try proxied.entries(coreSDK: coreSDK, delegate: realtimeObjects).map { entry in
+                (
+                    entry.key,
+                    entry.value.toPublic(
+                        creationArgs: .init(
+                            coreSDK: coreSDK,
+                            realtimeObjects: realtimeObjects,
+                            logger: logger,
+                        ),
+                    )
+                )
+            }
+        }
+    }
+
+    internal var keys: [String] {
+        get throws(ARTErrorInfo) {
+            try proxied.keys(coreSDK: coreSDK, delegate: realtimeObjects)
+        }
+    }
+
+    internal var values: [LiveMapValue] {
+        get throws(ARTErrorInfo) {
+            try proxied.values(coreSDK: coreSDK, delegate: realtimeObjects).map { value in
+                value.toPublic(
+                    creationArgs: .init(
+                        coreSDK: coreSDK,
+                        realtimeObjects: realtimeObjects,
+                        logger: logger,
+                    ),
+                )
+            }
+        }
+    }
+
+    internal func set(key: String, value: LiveMapValue) async throws(ARTErrorInfo) {
+        let internalValue = InternalLiveMapValue(liveMapValue: value)
+
+        try await proxied.set(key: key, value: internalValue, coreSDK: coreSDK, realtimeObjects: realtimeObjects)
+    }
+
+    internal func remove(key: String) async throws(ARTErrorInfo) {
+        try await proxied.remove(key: key, coreSDK: coreSDK, realtimeObjects: realtimeObjects)
+    }
+
+    internal func subscribe(listener: @escaping LiveObjectUpdateCallback<LiveMapUpdate>) throws(ARTErrorInfo) -> any SubscribeResponse {
+        try proxied.subscribe(listener: listener, coreSDK: coreSDK)
+    }
+
+    internal func unsubscribeAll() {
+        proxied.unsubscribeAll()
+    }
+
+    internal func on(event: LiveObjectLifecycleEvent, callback: @escaping LiveObjectLifecycleEventCallback) -> any OnLiveObjectLifecycleEventResponse {
+        proxied.on(event: event, callback: callback)
+    }
+
+    internal func offAll() {
+        proxied.offAll()
+    }
+}

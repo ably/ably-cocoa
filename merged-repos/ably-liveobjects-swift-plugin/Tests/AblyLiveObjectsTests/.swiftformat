@@ -1,0 +1,2 @@
+# To avoid turning Swift Testing suites (which are usually written as structs — whether there's a compelling reason for them to be, I'm not sure, but it's what the documentation shows) into enums
+--disable enumNamespaces
