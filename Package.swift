@@ -14,6 +14,10 @@ let package = Package(
             name: "Ably",
             targets: ["Ably"]
         ),
+        .library(
+            name: "ably-liveobjects-swift",
+            targets: ["ably-liveobjects-swift"]
+        ),
     ],
     dependencies: [
         .package(name: "msgpack", url: "https://github.com/rvi/msgpack-objective-C", from: "0.4.0"),
@@ -50,6 +54,19 @@ let package = Package(
                 .headerSearchPath("SocketRocket/Internal/RunLoop"),
                 .headerSearchPath("SocketRocket/Internal/Delegate"),
                 .headerSearchPath("SocketRocket/Internal/IOConsumer"),
+            ]
+        ),
+        // Experimental Swift-native public API for LiveObjects (path objects / instances).
+        // A skeleton: every public type is defined but unimplemented (traps at runtime). Built in the
+        // Swift 6 language mode for strict concurrency checking.
+        .target(
+            name: "ably-liveobjects-swift",
+            dependencies: [
+                .byName(name: "Ably"),
+            ],
+            path: "ably-liveobjects-swift",
+            swiftSettings: [
+                .unsafeFlags(["-swift-version", "6"])
             ]
         ),
         .testTarget(
