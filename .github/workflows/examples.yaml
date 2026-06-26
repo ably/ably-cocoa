@@ -7,6 +7,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   check:
     runs-on: macos-15
@@ -18,8 +21,10 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
-        
+        uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2.7.0
+        with:
+          persist-credentials: false
+
       - name: Select Xcode (16.4)
         run: |
           sudo xcode-select -s /Applications/Xcode_16.4.app
