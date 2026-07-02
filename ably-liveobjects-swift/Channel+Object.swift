@@ -11,6 +11,6 @@ public extension ARTRealtimeChannel {
     ///
     /// Spec: `RTL27`.
     var object: any RealtimeObject {
-        DefaultRealtimeObject.shared
+        notImplemented()
     }
 }
