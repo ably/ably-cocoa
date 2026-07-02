@@ -600,6 +600,38 @@ class PushActivationStateMachineTests: XCTestCase {
         try reusableTestsWrapper__Activation_state_machine__State_WaitingForNewPushDeviceDetails__on_Event_CalledDeactivate__reusableTestsRsh3d2(testCase: .should_fire_DeregistrationFailed_event)
     }
 
+    // A push-to-start token added to an already-activated device (as done by
+    // -[ARTPush registerPushToStartToken:]) is synced to Ably via a PATCH whose
+    // recipient carries the token under the "pushToStart" apnsDeviceTokens key.
+    func test__100__Activation_state_machine__State_WaitingForNewPushDeviceDetails__on_Event_GotPushDeviceDetails__with_push_to_start_token__PATCHes_recipient() throws {
+        beforeEach__Activation_state_machine__State_WaitingForNewPushDeviceDetails()
+
+        let expectedToken = "70757368-746f-2d73-7461-7274"
+        stateMachine.rest.device.setAndPersistAPNSDeviceToken(expectedToken, tokenType: ARTAPNSDevicePushToStartTokenType)
+        defer { stateMachine.rest.device.setAndPersistAPNSDeviceToken(nil, tokenType: ARTAPNSDevicePushToStartTokenType) }
+
+        waitUntil(timeout: testTimeout) { done in
+            stateMachine.transitions = { event, _, _ in
+                if event is ARTPushActivationEventRegistrationSynced {
+                    stateMachine.transitions = nil
+                    done()
+                }
+            }
+            stateMachine.send(ARTPushActivationEventGotPushDeviceDetails())
+        }
+
+        let request = try XCTUnwrap(httpExecutor.requests.first { req in
+            req.httpMethod == "PATCH" && req.url?.path.hasPrefix("/push/deviceRegistrations/") == true
+        }, "Should have a PATCH \"/push/deviceRegistrations/{id}\" request")
+        let rawBody = try XCTUnwrap(request.httpBody, "Request should have a body")
+        let decodedBody = try XCTUnwrap(try stateMachine.rest.defaultEncoder.decode(rawBody), "Decode request body failed")
+        let body = try XCTUnwrap(decodedBody as? NSDictionary, "Request body is invalid")
+        let push = try XCTUnwrap(body.value(forKey: "push") as? [String: Any], "Body should have a push")
+        let recipient = try XCTUnwrap(push["recipient"] as? [String: Any], "push should have a recipient")
+        let apnsDeviceTokens = try XCTUnwrap(recipient["apnsDeviceTokens"] as? [String: String], "recipient should have apnsDeviceTokens")
+        XCTAssertEqual(apnsDeviceTokens["pushToStart"], expectedToken)
+    }
+
     enum TestCase_ReusableTestsTestStateWaitingForRegistrationSyncThrough {
         case on_Event_CalledActivate
         case on_Event_RegistrationSynced

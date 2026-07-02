@@ -27,6 +27,10 @@ NS_ASSUME_NONNULL_END
 
 #if TARGET_OS_IOS
 
+- (void)registerPushToStartToken:(nonnull NSData *)token {
+    [self.underlyingPush registerPushToStartToken:token];
+}
+
 - (void)activate {
     [self.underlyingPush activate];
 }

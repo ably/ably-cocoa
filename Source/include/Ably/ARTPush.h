@@ -92,6 +92,16 @@ NS_ASSUME_NONNULL_BEGIN
 /// Call this method if you got an error calling `CLLocationManager.startMonitoringLocationPushes(completion:)`.
 + (void)didFailToRegisterForLocationNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime;
 
+// Live Activity push-to-start token
+
+/**
+ * Registers a Live Activity push-to-start token (obtained from `Activity.pushToStartTokenUpdates`) with Ably, adding it to the existing device registration. Use this when the device has already been activated (i.e. `-activate` has completed). The token is stored in `ARTLocalDevice`'s push recipient and synced to Ably.
+ * You should implement `-[ARTPushRegistererDelegate didUpdateAblyPush:]` to handle success or failure of this operation.
+ *
+ * @param token The push-to-start token data, as delivered by `Activity.pushToStartTokenUpdates`.
+ */
+- (void)registerPushToStartToken:(NSData *)token NS_SWIFT_NAME(registerPushToStartToken(_:));
+
 /**
  * Activates the device for push notifications with APNS, obtaining a unique identifier from it. Subsequently registers the device with Ably and stores the `ARTLocalDevice.identityTokenDetails` in local storage.
  * You should implement `-[ARTPushRegistererDelegate didActivateAblyPush:]` to handle success or failure of this operation.
