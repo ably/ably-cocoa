@@ -6,7 +6,7 @@ Review of the proposed path-based LiveObjects Swift public API in **ably-cocoa#2
 
 | Source | Version consulted |
 |---|---|
-| ably-cocoa#2218 (the PR under review) | branch `ably-liveobjects-swift-exp`, head `992c6982`; PR is a **draft**, base `main`. Description + all comments read as of 2026-07-03 (only the CodeRabbit auto-comment was present). |
+| ably-cocoa#2218 (the PR under review) | branch `ably-liveobjects-swift-exp`, head `992c6982`; PR is a **draft**, base `main`. Description and inline review comments (Sachin, Lawrence, Marat, CodeRabbit) read as of 2026-07-03. Sachin's review comments reiterate the spec #491 / AIT-1023 points already covered below (notably that `instance()` should be a Swift enum, §2, and that `PathObject` needs a `type`/`getType`, §3). |
 | ably-liveobjects-swift-plugin (current public API) | `main` @ `a3bf63d` |
 | specification #491 — *Add typed-SDK LiveObjects API spec section (RTTS1–RTTS10)* | branch `feature/liveobjects-cross-sdk-types-spec` @ `9d4ad947` (PR last updated 2026-06-18); **treated as source of truth for the typed-SDK shape** |
 | specification #485 (main path-based changes) | `integration/liveobjects-path-based-api-ditch-merge-commits` @ `7ba0b8f8` |
@@ -67,7 +67,7 @@ Spec #491 introduces these and they are absent from the proposal:
 
 - **`ValueType` enum (RTTS2)** — `STRING / NUMBER / BOOLEAN / BINARY / JSON_OBJECT / JSON_ARRAY / LIVE_MAP / LIVE_COUNTER / UNKNOWN`.
 - **`PathObject.getType() -> ValueType?`** (RTTS4b) — `nil` when nothing resolves at the path.
-- **`PathObject.exists() -> Bool`** (RTTS4a) — added by explicit agreement per the Confluence page.
+- **`PathObject.exists() -> Bool`** (RTTS4a) — present in spec RTTS4a; ably-java implements it.
 - **`Instance.getType` (RTTS8a)** — non-optional (never `UNKNOWN` in normal operation), and per RTTS8 exposed as a **property** on `Instance`.
 
 `getType()`/`exists()` are the spec's sanctioned way to discriminate a `PathObject`'s type *before* casting (RTTS5e/RTTS9d1). ably-java implements all three. They should be added. (Note: if `instance()` becomes the enum per §2, `Instance.getType` is largely redundant on the instance side, but `PathObject.getType()`/`exists()` are still needed.)
