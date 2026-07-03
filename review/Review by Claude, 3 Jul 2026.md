@@ -13,7 +13,7 @@ Review of the proposed path-based LiveObjects Swift public API in **ably-cocoa#2
 | specification #489 (type renames) | `rename/liveobjects-map-counter-interfaces` @ `a335a3d6` |
 | ably-js (canonical dynamic implementation) | `main` @ `503a39d8` (`liveobjects.d.ts` + `src/plugins/liveobjects/`) |
 | ably-java (sibling strongly-typed implementation) | `origin/feature/path-based-liveobjects-implementation` @ `e2ad9b58` |
-| Confluence — *Final Assessment of the LiveObjects Path-Based API for Java and Swift* | page `5127372801`, **version 34** (author Sachin Shinde), fetched 2026-07-03; comment threads read up to 2026-06-25 |
+| Confluence — *Final Assessment of the LiveObjects Path-Based API for Java and Swift* | page `5127372801`, **version 34** (author Sachin Shinde), fetched 2026-07-03; inline + footer comment threads read up to 2026-06-25. The load-bearing design decisions live in **inline-comment reply threads**, not the page body — the specific comments taken into account are enumerated in **Appendix A**. |
 | ably-liveobjects-swift-plugin#128 (Lawrence's original Swift proposal) | branch `2025-12-09-path-based-api-proposal`, head `7f8cec1c` (`PATH-BASED-API.md`, `PublicTypes.swift`, `example.swift`) |
 | AIT-1023 comment on the `Instance` enum decision | provided inline in the review brief; **treated as authoritative** |
 
@@ -27,7 +27,7 @@ The proposal is a clean, readable first cut that gets the **skeleton, naming, `t
 
 1. **`instance()` does not return the decided `Instance` enum** (AIT-1023). It returns a loosely-typed `any Instance` with `as*` narrowing — the opposite of the authoritative decision. **(§2 — most important.)**
 2. **`getType()`, `exists()` and the `ValueType` enum are entirely absent** (spec RTTS2/RTTS4). **(§3)**
-3. **Typed `Instance` accessors are wrongly optional.** `compactJson`, `size`, and `value` on the typed instances must be **non-optional** per RTTS7a/RTTS10 and the explicit AIT-1023/PR#128 decision that "once you hold an `Instance`, its type is known." **(§4)**
+3. **Typed `Instance` accessors are wrongly optional.** `compactJson`, `size`, and `value` on the typed instances must be **non-optional** per RTTS7a/RTTS10 and the explicit AIT-1023/PR#128 decision that an `Instance`'s type is known once it is held. **(§4)**
 4. **The six primitive sub-types are collapsed to one `Primitive`.** Defensible and aligned with the AIT-1023 direction, but it diverges from spec RTTS6c/RTTS10c and from ably-java, so it needs explicit cross-SDK sign-off. **(§5)**
 5. **The `as*` narrowing methods are declared in protocol extensions**, so they are not customisation points and (on `Instance`) have no defined mismatch behaviour. **(§6)**
 
@@ -54,7 +54,7 @@ enum Instance {
 This is the single most significant departure. It matters because:
 
 - **It contradicts the authoritative source.** The enum was chosen specifically to give callers a compile-time-exhaustive `switch` over the three instance kinds; the `any Instance` + `as*` model gives neither exhaustiveness nor a safe mismatch path.
-- **There is a genuine source tension, and the proposal resolved it the wrong way.** Spec #491 (RTTS9), the Confluence page, ably-java and PR #128 all use base-type + `as*` casts. The AIT-1023 comment is the later, Swift-specific decision that overrides them *for Swift's `Instance`*. The proposal followed the language-agnostic sources rather than the Swift-specific decision.
+- **There is a genuine source tension, and the proposal resolved it the wrong way.** Spec #491 (RTTS9), the Confluence page, ably-java and PR #128 all use base-type + `as*` casts. The AIT-1023 comment is the later, Swift-specific decision that overrides them *for Swift's `Instance`*. The proposal followed the language-agnostic sources rather than the Swift-specific decision. (Note that a single `type()`/`InstanceType`-enum discriminator was itself floated on the Confluence page — comment `5132582914`, Appendix A — as was the open question of whether to drop the inheritance entirely — comment `5134549008`; both point in the same direction as the enum.)
 - **`PathObject` is a different case and the proposal is right there.** A `PathObject` is unresolved, so its type is unknown and an enum cannot be returned; `as*` narrowing before resolution is correct and matches spec RTTS5/RTTS3h. The mistake is applying that same `PathObject` pattern to `Instance`, whose type *is* known at construction (RTTS7e).
 
 **Recommendation:** make `instance()` return the enum from AIT-1023. `LiveMapInstance` / `LiveCounterInstance` / `PrimitiveInstance` remain as the payload types, but the `as*` helpers on `Instance` disappear (the `switch` replaces them). If the team now prefers to *revisit* the enum decision in light of spec #491's `as*` model, that should be an explicit, recorded decision rather than an unstated consequence of the sources the PR happened to consult.
@@ -85,11 +85,11 @@ The proposal makes the typed-instance accessors optional, which is incorrect:
 | `LiveCounterInstance.value()` | `throws -> Double?` | `throws -> Double` | RTTS10b (narrowed non-null) |
 | `PrimitiveInstance.value()` | `throws -> Primitive?` | `throws -> Primitive` | RTTS10c (primitive instances wrap a resolved primitive) |
 
-The root cause is applying `PathObject` nullability semantics to `Instance`. On a `PathObject`, `value()`/`size()`/`compactJson()` are correctly optional (RTPO7/RTPO12/RTPO14 return `nil` on resolution failure/type mismatch) — and the proposal gets those right. But an `Instance` is bound to an already-resolved value of known type (RTTS7e), so its accessors cannot fail to produce a value. This is exactly the point made in both PR #128 ("once you have an `Instance` you should be sure about its type … non-optional") and the Confluence comment thread, and it is what ably-java ships (`@NotNull Long size()`, `@NotNull Double value()`, `@NotNull JsonElement compactJson()`).
+The root cause is applying `PathObject` nullability semantics to `Instance`. On a `PathObject`, `value()`/`size()`/`compactJson()` are correctly optional (RTPO7/RTPO12/RTPO14 return `nil` on resolution failure/type mismatch) — and the proposal gets those right. But an `Instance` is bound to an already-resolved value of known type (RTTS7e), so its accessors cannot fail to produce a value. This is exactly the point made in both PR #128 ("once you have an `Instance` you should be sure about its type … non-optional") and the Confluence comment thread (comment `5135269889`, Appendix A), and it is what ably-java ships (`@NotNull Long size()`, `@NotNull Double value()`, `@NotNull JsonElement compactJson()`).
 
 Keep the `throws` — the `RTO25` access-precondition check (channel detached/failed, missing `OBJECT_SUBSCRIBE` mode) still applies (RTINS4a, RTINS9a, RTINS11a) — but drop the `?`.
 
-`LiveMapInstance.get(key:) -> (any Instance)?` is correctly optional (RTINS5c — key may be absent). `id` is correctly a non-optional `String` on both map and counter instances, and correctly omitted from the base and from primitives — this matches the Confluence `id` decision exactly. 
+`LiveMapInstance.get(key:) -> (any Instance)?` is correctly optional (RTINS5c — key may be absent). `id` is correctly a non-optional `String` on both map and counter instances, and correctly omitted from the base and from primitives — this matches the Confluence `id` decision exactly (comment `5135269889`, Appendix A: "remove the nullable one from `Instance` and put a non-nullable one on `LiveMapInstance` and `LiveCounter`"). 
 
 ---
 
@@ -101,7 +101,7 @@ The proposal instead has a single `PrimitivePathObject`/`PrimitiveInstance` retu
 
 This is a reasonable, Swift-idiomatic consolidation (pattern-match a `Primitive` rather than juggle six types) and it aligns with the AIT-1023 direction (a single `primitive(PrimitiveInstance)` case). But note the consequences and get them signed off:
 
-- **Cross-SDK portability.** RTTS1a states that all typed SDKs "must agree on the partition … so that user code is portable." Swift collapsing to one primitive type while Java exposes six is a real divergence in the user's mental model. This is Sachin's call as spec-owner — raise it explicitly.
+- **Cross-SDK portability.** RTTS1a states that all typed SDKs "must agree on the partition … so that user code is portable." Swift collapsing to one primitive type while Java exposes six is a real divergence in the user's mental model. That Java deliberately went granular (a base `Primitive` optional; per-primitive types required for value retrieval) is recorded on the Confluence page — footer comment `5132091394`, Appendix A. This is Sachin's call as spec-owner — raise it explicitly.
 - **Loss of type-filtered accessors.** The spec's `NumberPathObject.value()` returns `nil` unless the resolved value is specifically a number (RTTS6g). A single `Primitive`-returning `value()` instead returns *whatever* primitive resolved — effectively the dynamic RTPO7 behaviour. That's a defensible trade, but it is a semantic change from the spec, not just a renaming.
 
 If the collapse is kept, document it as a deliberate divergence from RTTS6c/RTTS10c.
@@ -125,7 +125,7 @@ If the collapse is kept, document it as a deliberate divergence from RTTS6c/RTTS
 - Async writes — `set`, `remove`, `increment`, `decrement`, and `RealtimeObject.get()` — correctly `async throws`, matching the `=> io` marker in the IDL and RTO26.
 - Non-throwing, non-async — `path()`, `get(key:)`, `at(path:)`, `on(...)`, `offAll()`, `Subscription.unsubscribe()`, `StatusSubscription.off()` — correct: these neither resolve a path nor check preconditions (RTPO4/5/6 have no `RTO25` step).
 
-This resolves the open "can reads throw?" question left hanging in PR #128 and the Confluence footer thread: the answer the proposal encodes — *reads return `nil`/empty on resolution failure but `throw` on precondition failure* — is the correct reading of the spec, and it matches plugin `main`. Worth calling this out explicitly in the PR so the decision is visible.
+This resolves the open "can reads throw?" question left hanging in PR #128 and the Confluence footer thread (comment `5132713985`, Appendix A — which asked what `LiveCounterPathObject.value()` does with no counter at the path): the answer the proposal encodes — *reads return `nil`/empty on resolution failure but `throw` on precondition failure* — is the correct reading of the spec, and it matches plugin `main`. Note that spec #491 (RTTS6b) settled that thread in favour of returning `nil` (not throwing) on a type/resolution miss, so the proposal's `Double?` on `LiveCounterPathObject` is right. Worth calling this out explicitly in the PR so the decision is visible.
 
 **`async` is correct** throughout (see above); the read/write split matches the IDL's `=> io` markers.
 
@@ -212,7 +212,7 @@ Otherwise the PAOM/PAOOP/operation-payload citations (PAOM2a–j, PAOOP2a–i, M
 | Primitive `Instance` sub-types (RTTS10c ×6) | Collapsed to `PrimitiveInstance` — divergence (§5); `value` should be non-optional |
 | `subscribe` off base `Instance` (RTTS7b) | Correct ✓ (only on map/counter instances) |
 | `compact()` omitted (RTTS3f/RTTS7d) | Correct ✓ |
-| `compactJson` narrowing on instance sub-types (RTTS7a) | Not narrowed — permitted (Confluence decision); but base return must be non-null (§4) |
+| `compactJson` narrowing on instance sub-types (RTTS7a) | Not narrowed — permitted (Confluence comment `5135269889`; RTTS7a); but base return must be non-null (§4) |
 | `RealtimeObject`: `get`, `on`, `off`/`offAll` | Present ✓ (verify `offAll` vs RTO19, §11) |
 | `ObjectMessage` / `ObjectOperation` / payloads (PAOM/PAOOP) | Present ✓, faithful |
 | `LiveMap`/`LiveCounter` value types, `LiveMapValue`, `JSONValue` | Present ✓, correct |
@@ -223,3 +223,28 @@ Otherwise the PAOM/PAOOP/operation-payload citations (PAOM2a–j, PAOOP2a–i, M
 ## 14. Suggested next step for the PR
 
 The most useful single addition to the PR description would be a short "porting decisions" section that states, for each non-obvious choice, which source it follows: the enum-vs-`as*` decision for `Instance` (§2), the primitive collapse (§5), the reads-throw-on-precondition rule (§7), the property→method switch (§8), and the dropped self-unsubscribe (§9). That would let reviewers separate the uncontroversial ports from the deliberate divergences — which is currently the hardest part of reviewing it.
+
+---
+
+## Appendix A — Confluence comments taken into account
+
+The design decisions on the "Final Assessment" page (`5127372801`, v34) live largely in **inline-comment reply threads**, not the page body, so they are easy to miss. This review took the following into account. Format: *decision/point — author, comment ID (date) — status/how it bears on the review.*
+
+**Decided (and relied on above):**
+
+- **`Instance` name retained** (not `PathInstance` / `LiveObjectInstance`) — thread opened by Sachin `5131894787`, resolved by Sachin `5135695874` (9 Jun): "keep it as `Instance` without changing the naming convention." Proposal complies.
+- **`at()` lives on `LiveMapPathObject` only**, not the base — Sachin `5131927555` / `5132156929`, agreed by Lawrence `5132386305` (8 Jun). Proposal complies (§13).
+- **`compactJson()` kept un-narrowed in Swift; `id` made non-null on `LiveMapInstance`/`LiveCounter` and removed from base `Instance`** — Lawrence `5135269889` (8 Jun), in the thread opened at `5132386312`. Rationale: Swift's JSON is an enum, so there is no covariant supertype to narrow along; `compactJson` is valued for human-readable output. Basis for §4 (un-narrowed is acceptable, but the base return must be non-optional) and for the `id` placement the proposal gets right. Generalised into RTTS7a ("implementations may choose not to narrow").
+- **`subscribe` only on `LiveMap`/`LiveCounter` instances; base `Instance` exposes only `compactJson`** — Sachin `5136908296` / `5135630355` (9 Jun); also RTTS7b. Proposal complies (§9, §13).
+- **Type renames** (`LiveMap`→`InternalLiveMap`, `LiveCounter`→`InternalLiveCounter`, `LiveMapValueType`→`LiveMap`, `LiveCounterValueType`→`LiveCounter`) — Sachin `5135794182` → spec PR #489 (9 Jun). Proposal complies (§10).
+
+**Considered but open / unresolved (they inform the recommendations):**
+
+- **A single `type()` / `InstanceType` enum to switch over** (for both `Instance` and `PathObject`), instead of repeated per-type checks — Lawrence `5132582914`; Sachin agreed it is a good alternative (`5131173926` / `5132550163` / `5131698184`) but kept the per-type naming for now. Directly related to `ValueType`/`getType` (§3) and to the Swift `Instance`-enum direction (§2).
+- **Whether to drop the inheritance entirely** (both interfaces are small; extract the shared part into a common interface) — Lawrence `5134549008` (8 Jun); never resolved. The deeper question behind §2 and §4.
+- **What `LiveCounterPathObject.value()` does when no counter resolves** (throw vs `null`) — footer, Lawrence `5132713985` / `5133402116` (8 Jun); Sachin: ably-js silently ignores, plan to keep. **Subsequently settled by spec #491 RTTS6b: return `null`, do not throw** — so the proposal's `Double?` on the *PathObject* is correct (§7); the comment's "presumably throws" assumption did not carry through.
+- **Java's primitive granularity vs a `Primitive` base type** — footer, Lawrence `5132091394`; Sachin `5132451847`: Java uses granular per-primitive types, a base `Primitive` is optional. Confirms the cross-SDK divergence flagged in §5 (Swift collapses to one `Primitive`; Java went granular).
+
+**Raised by the PR author, still unanswered:**
+
+- **"Why is `subscribe` not in base `Instance`?"** — Marat `5184815127` (25 Jun); no reply recorded. Answered in §9 and by RTTS7b: moving it off the base turns the runtime "no subscribe on primitives" error (RTINS16c) into a compile-time guarantee.
