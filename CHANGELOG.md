@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.2.62](https://github.com/ably/ably-cocoa/tree/1.2.62)
+
+### What's Changed
+
+* Add API for registering Live Activity push-to-start token by @ttypic in https://github.com/ably/ably-cocoa/pull/2219
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.61...1.2.62
+
 ## [1.2.61](https://github.com/ably/ably-cocoa/tree/1.2.61)
 
 ### What's Changed
