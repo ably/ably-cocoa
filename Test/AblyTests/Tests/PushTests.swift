@@ -23,6 +23,12 @@ class PushTests: XCTestCase {
         static let tokenString = tokenData.map { String(format: "%02x", $0) }.joined()
     }
 
+    enum TestPushToStartToken {
+        static let tokenBase64 = "cHVzaC10by1zdGFydCB0b2tlbg=="
+        static let tokenData = Data(base64Encoded: tokenBase64, options: [])!
+        static let tokenString = tokenData.map { String(format: "%02x", $0) }.joined()
+    }
+
     // XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
     override class var defaultTestSuite: XCTestSuite {
         _ = rest
@@ -221,6 +227,26 @@ class PushTests: XCTestCase {
         XCTAssertNil(tryInObjC {
             ARTPush.didRegisterForRemoteNotifications(withDeviceToken: TestDeviceToken.tokenData, rest: rest)
         })
+    }
+
+    // Live Activity push-to-start token
+
+    // registerPushToStartToken stores the token under the push-to-start token type and
+    // sends a GotPushDeviceDetails event to the state machine (which, on an already-activated
+    // device, syncs the recipient to Ably via a PATCH).
+    func test__100__push_to_start__registerPushToStartToken_stores_token_and_sends_GotPushDeviceDetails() {
+        defer { rest.push.internal.activationMachine.onEvent = nil }
+        waitUntil(timeout: testTimeout) { done in
+            rest.push.internal.activationMachine.onEvent = { event, _ in
+                if event is ARTPushActivationEventGotPushDeviceDetails {
+                    done()
+                }
+            }
+            rest.push.registerPushToStartToken(TestPushToStartToken.tokenData)
+        }
+        let expectedTokenKey = "ARTAPNSDeviceToken-pushToStart" // ARTAPNSDeviceTokenKeyOfType("pushToStart")
+        expect(storage.keysWritten.keys).to(contain([expectedTokenKey]))
+        XCTAssertEqual(storage.keysWritten.at(expectedTokenKey)?.value as? String, TestPushToStartToken.tokenString)
     }
 
     // RSH8

@@ -13,6 +13,7 @@ extern NSString *const ARTClientIdKey;
 
 extern NSString *const ARTAPNSDeviceDefaultTokenType;
 extern NSString *const ARTAPNSDeviceLocationTokenType;
+extern NSString *const ARTAPNSDevicePushToStartTokenType;
 
 NSString* ARTAPNSDeviceTokenKeyOfType(NSString * _Nullable tokenType);
 

@@ -70,6 +70,10 @@
     return [ARTPushInternal didFailToRegisterForLocationNotificationsWithError:error realtime:realtime];
 }
 
+- (void)registerPushToStartToken:(NSData *)token {
+    [_internal registerPushToStartToken:token];
+}
+
 - (void)activate {
     [_internal activate];
 }
@@ -251,6 +255,10 @@
     [rest internalAsync:^(ARTRestInternal *rest) {
         [ARTPushInternal didFailToRegisterForLocationNotificationsWithError:error restInternal:rest];
     }];
+}
+
+- (void)registerPushToStartToken:(NSData *)token {
+    [_rest setAndPersistAPNSDeviceTokenData:token tokenType:ARTAPNSDevicePushToStartTokenType];
 }
 
 - (void)activate {

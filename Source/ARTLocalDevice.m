@@ -37,6 +37,7 @@ NSString *const ARTClientIdKey = @"ARTClientId";
 
 NSString *const ARTAPNSDeviceDefaultTokenType = @"default";
 NSString *const ARTAPNSDeviceLocationTokenType = @"location";
+NSString *const ARTAPNSDevicePushToStartTokenType = @"pushToStart";
 
 NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     return [ARTAPNSDeviceTokenKey stringByAppendingFormat:@"-%@", tokenType ?: ARTAPNSDeviceDefaultTokenType];
@@ -106,7 +107,8 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
 
         NSArray *supportedTokenTypes = @[
             ARTAPNSDeviceDefaultTokenType,
-            ARTAPNSDeviceLocationTokenType
+            ARTAPNSDeviceLocationTokenType,
+            ARTAPNSDevicePushToStartTokenType
         ];
 
         for (NSString *tokenType in supportedTokenTypes) {
@@ -139,6 +141,7 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
         _identityTokenDetails = nil;
         [self setAPNSDeviceToken:nil tokenType:ARTAPNSDeviceDefaultTokenType];
         [self setAPNSDeviceToken:nil tokenType:ARTAPNSDeviceLocationTokenType];
+        [self setAPNSDeviceToken:nil tokenType:ARTAPNSDevicePushToStartTokenType];
     }];
 }
 

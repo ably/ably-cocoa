@@ -44,6 +44,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)didFailToRegisterForLocationNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime;
 
+- (void)registerPushToStartToken:(NSData *)token;
+
 - (void)activate;
 
 - (void)deactivate;
