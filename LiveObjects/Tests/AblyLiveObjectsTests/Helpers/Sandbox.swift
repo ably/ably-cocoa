@@ -15,11 +15,15 @@ enum Sandbox {
     }
 
     private static func loadAppCreationRequestBody() async throws -> Data {
-        let testAppSetupFileURL = Bundle.module.url(
-            forResource: "test-app-setup",
-            withExtension: "json",
-            subdirectory: "ably-common/test-resources",
-        )!
+        // Resolved relative to this source file, which lives at
+        // LiveObjects/Tests/AblyLiveObjectsTests/Helpers/ in the ably-cocoa repo.
+        let testAppSetupFileURL = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent() // Helpers
+            .deletingLastPathComponent() // AblyLiveObjectsTests
+            .deletingLastPathComponent() // Tests
+            .deletingLastPathComponent() // LiveObjects
+            .deletingLastPathComponent() // repo root
+            .appendingPathComponent("Test/AblyTests/ably-common/test-resources/test-app-setup.json")
 
         let (data, _) = try await URLSession.shared.data(for: .init(url: testAppSetupFileURL))
         // swiftlint:disable:next force_cast
