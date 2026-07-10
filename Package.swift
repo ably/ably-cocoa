@@ -18,16 +18,22 @@ let package = Package(
     dependencies: [
         .package(name: "msgpack", url: "https://github.com/rvi/msgpack-objective-C", from: "0.4.0"),
         .package(name: "AblyDeltaCodec", url: "https://github.com/ably/delta-codec-cocoa", from: "1.3.5"),
-        .package(name: "Nimble", url: "https://github.com/quick/nimble", from: "11.2.2"),
-        .package(name: "ably-cocoa-plugin-support", url: "https://github.com/ably/ably-cocoa-plugin-support.git", from: "2.0.0")
+        .package(name: "Nimble", url: "https://github.com/quick/nimble", from: "11.2.2")
     ],
     targets: [
+        // Private API of the core SDK, exposed to Ably-authored plugins. Formerly
+        // the separate ably-cocoa-plugin-support repository; deliberately not
+        // vended as a product.
+        .target(
+            name: "_AblyPluginSupportPrivate",
+            path: "Sources/_AblyPluginSupportPrivate"
+        ),
         .target(
             name: "Ably",
             dependencies: [
                 .byName(name: "msgpack"),
                 .byName(name: "AblyDeltaCodec"),
-                .product(name: "_AblyPluginSupportPrivate", package: "ably-cocoa-plugin-support")
+                .target(name: "_AblyPluginSupportPrivate")
             ],
             path: "Source",
             exclude: [
@@ -59,7 +65,7 @@ let package = Package(
                 .byName(name: "AblyTesting"),
                 .byName(name: "AblyTestingObjC"),
                 .byName(name: "Nimble"),
-                .product(name: "_AblyPluginSupportPrivate", package: "ably-cocoa-plugin-support")
+                .target(name: "_AblyPluginSupportPrivate")
             ],
             path: "Test/AblyTests",
             resources: [
@@ -73,7 +79,7 @@ let package = Package(
             name: "UTS",
             dependencies: [
                 .byName(name: "Ably"),
-                .product(name: "_AblyPluginSupportPrivate", package: "ably-cocoa-plugin-support")
+                .target(name: "_AblyPluginSupportPrivate")
             ],
             path: "Test/UTS",
             exclude: [
