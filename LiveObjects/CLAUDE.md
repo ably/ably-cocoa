@@ -1,9 +1,11 @@
 # CLAUDE.md
 
+This directory contains the LiveObjects plugin, which is part of the ably-cocoa package (its targets are declared in the repo-root `Package.swift`). Unless stated otherwise, run the commands below with this directory (`LiveObjects/`) as the working directory.
+
 ## Build
 
 ```sh
-swift build
+swift build --package-path .. --target AblyLiveObjects
 ```
 
 ## Test
@@ -11,7 +13,7 @@ swift build
 When verifying changes, always run the unit tests first:
 
 ```sh
-swift run BuildTool test-library --platform macOS --only-unit-tests
+swift run --package-path BuildTool BuildTool test-library --platform macOS --only-unit-tests
 ```
 
 This is fast (a few seconds) and excludes integration tests. Only run the full test suite if explicitly asked.
@@ -19,7 +21,7 @@ This is fast (a few seconds) and excludes integration tests. Only run the full t
 ## Lint
 
 ```sh
-swift run BuildTool lint
+swift run --package-path BuildTool BuildTool lint
 ```
 
 Use `--fix` to auto-fix where possible.

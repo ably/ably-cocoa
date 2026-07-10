@@ -8,7 +8,9 @@
 
 ## Setup
 
-1. `git submodule update --init`
+Run the following, with this directory (`LiveObjects/`) as the working directory (as for all commands in this document, unless stated otherwise):
+
+1. `git submodule update --init` (from the repo root)
 2. `mint bootstrap` — this will take quite a long time (~5 minutes on my machine) the first time you run it
 3. `npm install`
 
@@ -16,7 +18,7 @@
 
 Either:
 
-- `swift test`, or
+- `swift test --filter 'AblyLiveObjectsTests\.'` (from the repo root), or
 - open `AblyLiveObjects.xcworkspace` in Xcode and test the `AblyLiveObjects` scheme
 
 ### Running only the unit tests
@@ -26,7 +28,7 @@ There is a test plan called `UnitTests` which excludes tests tagged with `.integ
 From the command line:
 
 ```sh
-swift run BuildTool test-library --platform macOS --only-unit-tests
+swift run --package-path BuildTool BuildTool test-library --platform macOS --only-unit-tests
 ```
 
 Or in Xcode, set the `UnitTests` test plan as the _active test plan_ (the test plan which ⌘U will run):
@@ -35,7 +37,7 @@ Or in Xcode, set the `UnitTests` test plan as the _active test plan_ (the test p
 
 ## Linting
 
-To check formatting and code quality, run `swift run BuildTool lint`. Run with `--fix` to first automatically fix things where possible.
+To check formatting and code quality, run `swift run --package-path BuildTool BuildTool lint`. Run with `--fix` to first automatically fix things where possible.
 
 ## Development guidelines
 
@@ -145,23 +147,6 @@ Example:
 
 Some of our integration tests require access to ably-cocoa internals that are not exposed via `_AblyPluginSupportPrivate`, for example to inject protocol messages. Since, unlike the plugin implementation, the test suite does not require access to a stable private API (as it will never be compiled by end users and we're in control of which version of ably-cocoa gets used for testing the plugin), we just directly import ably-cocoa's internal APIs in the test suite using `import Ably.Private`.
 
-## Developing ably-cocoa alongside this plugin
-
-The quickest way to edit ably-cocoa is to use `swift package edit ably-cocoa --path ably-cocoa`, which will give you a Git checkout of ably-cocoa at `ably-cocoa`. To edit ably-cocoa using Xcode, you will then need to open `ably-cocoa/Package.swift` _separately_ (making sure to close any other LiveObjects Xcode windows, else Xcode will not let you edit it).
-
-If you use edit mode, Xcode will not let you edit ably-cocoa from _within_ `./Package.swift` or `AblyLiveObjects.xcworkspace` (it does not let you edit SPM dependencies even if they're in edit mode). If you wish to edit ably-cocoa in one of these environments, consider temporarily instead pulling ably-cocoa in as a submodule. See commit [`29c6aa8`](https://github.com/ably/ably-liveobjects-swift-plugin/commit/29c6aa8) as an example.
-
 ## Release process
 
-For each release, the following needs to be done:
-
-- Create a new branch `release/x.x.x` (where `x.x.x` is the new version number) from the `main` branch
-- Go to [Github releases](https://github.com/ably/ably-liveobjects-swift-plugin/releases) and press the `Draft a new release` button. Choose your new branch as a target
-- Press the `Choose a tag` dropdown and start typing a new tag, Github will suggest the `Create new tag x.x.x on publish` option. After you select it Github will unveil the `Generate release notes` button
-- From the newly generated changes remove everything that don't make much sense to the library user
-- Copy the final list of changes to the top of the `CHANGELOG.md` file. Modify as necessary to fit the existing format of this file
-- Commit these changes and push to the origin `git add CHANGELOG.md && git commit -m "Update change log." && git push -u origin release/x.x.x`
-- Make a pull request against `main` and await approval of reviewer(s)
-- Once approved and/or any additional commits have been added, merge the PR
-- After merging the PR, wait for all CI jobs for `main` to pass.
-- Publish your drafted release (refer to previous releases for release notes format)
+The plugin is released as part of ably-cocoa; see ably-cocoa's [CONTRIBUTING.md](../CONTRIBUTING.md) for the release process. (This plugin was previously released independently from the ably-liveobjects-swift-plugin repository; its historical releases remain on that repository's releases page.)

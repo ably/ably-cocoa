@@ -1,5 +1,12 @@
 # Change Log
 
+## Unreleased
+
+### What's Changed
+
+* The Ably LiveObjects plugin has moved into this repository and is now available as the `AblyLiveObjects` product of this package. Users of the standalone [ably-liveobjects-swift-plugin](https://github.com/ably/ably-liveobjects-swift-plugin) package should replace that dependency with this package's `AblyLiveObjects` product; the module name and API are unchanged. Note that LiveObjects remains experimental: breaking changes to the `AblyLiveObjects` API may be made in minor or patch releases, and ably-cocoa's semantic versioning guarantees apply only to the `Ably` product.
+* Swift Package Manager consumers of this package now require Xcode 16.3 or later (the package manifest's swift-tools-version is now 6.1). CocoaPods and Carthage consumers are unaffected.
+
 ## [1.2.62](https://github.com/ably/ably-cocoa/tree/1.2.62)
 
 ### What's Changed
