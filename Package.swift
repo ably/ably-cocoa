@@ -14,6 +14,10 @@ let package = Package(
             name: "Ably",
             targets: ["Ably"]
         ),
+        .library(
+            name: "AblyLiveObjects",
+            targets: ["AblyLiveObjects"]
+        ),
     ],
     dependencies: [
         .package(url: "https://github.com/rvi/msgpack-objective-C", from: "0.4.0"),
@@ -21,6 +25,31 @@ let package = Package(
         .package(url: "https://github.com/quick/nimble", from: "11.2.2")
     ],
     targets: [
+        // The LiveObjects plugin. Formerly the separate
+        // ably-liveobjects-swift-plugin repository. Unlike the rest of the
+        // package it requires macOS 11 / iOS 14 / tvOS 14, which it declares
+        // through @available annotations on all of its top-level declarations
+        // (see Scripts/annotate-liveobjects-availability.py).
+        .target(
+            name: "AblyLiveObjects",
+            dependencies: [
+                .target(name: "Ably"),
+                .target(name: "_AblyPluginSupportPrivate"),
+            ],
+            path: "LiveObjects/Sources/AblyLiveObjects"
+        ),
+        .testTarget(
+            name: "AblyLiveObjectsTests",
+            dependencies: [
+                .target(name: "AblyLiveObjects"),
+                .target(name: "Ably"),
+                .target(name: "_AblyPluginSupportPrivate"),
+            ],
+            path: "LiveObjects/Tests/AblyLiveObjectsTests",
+            exclude: [
+                "CLAUDE.md"
+            ]
+        ),
         // Private API of the core SDK, exposed to Ably-authored plugins. Formerly
         // the separate ably-cocoa-plugin-support repository; deliberately not
         // vended as a product.
