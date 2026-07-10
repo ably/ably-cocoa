@@ -1,4 +1,4 @@
-// swift-tools-version:5.3.0
+// swift-tools-version: 6.1
 
 import PackageDescription
 
@@ -16,9 +16,9 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(name: "msgpack", url: "https://github.com/rvi/msgpack-objective-C", from: "0.4.0"),
-        .package(name: "AblyDeltaCodec", url: "https://github.com/ably/delta-codec-cocoa", from: "1.3.5"),
-        .package(name: "Nimble", url: "https://github.com/quick/nimble", from: "11.2.2")
+        .package(url: "https://github.com/rvi/msgpack-objective-C", from: "0.4.0"),
+        .package(url: "https://github.com/ably/delta-codec-cocoa", from: "1.3.5"),
+        .package(url: "https://github.com/quick/nimble", from: "11.2.2")
     ],
     targets: [
         // Private API of the core SDK, exposed to Ably-authored plugins. Formerly
@@ -31,8 +31,8 @@ let package = Package(
         .target(
             name: "Ably",
             dependencies: [
-                .byName(name: "msgpack"),
-                .byName(name: "AblyDeltaCodec"),
+                .product(name: "msgpack", package: "msgpack-objective-C"),
+                .product(name: "AblyDeltaCodec", package: "delta-codec-cocoa"),
                 .target(name: "_AblyPluginSupportPrivate")
             ],
             path: "Source",
@@ -64,12 +64,16 @@ let package = Package(
                 .byName(name: "Ably"),
                 .byName(name: "AblyTesting"),
                 .byName(name: "AblyTestingObjC"),
-                .byName(name: "Nimble"),
+                .product(name: "Nimble", package: "nimble"),
                 .target(name: "_AblyPluginSupportPrivate")
             ],
             path: "Test/AblyTests",
             resources: [
                 .copy("ably-common")
+            ],
+            swiftSettings: [
+                // This test code predates the Swift 6 language mode.
+                .swiftLanguageMode(.v5)
             ]
         ),
         // Universal Test Suite (UTS)
@@ -88,10 +92,9 @@ let package = Package(
             ],
             swiftSettings: [
                 // Build the UTS suite in the Swift 6 language mode (strict concurrency checking) so the
-                // compiler catches data races in the harness/tests. The package manifest is still
-                // swift-tools-version 5.3, which predates `.swiftLanguageMode`, so this is applied via
-                // the compiler flag. Only affects this test target (not the shipped product).
-                .unsafeFlags(["-swift-version", "6"])
+                // compiler catches data races in the harness/tests. Only affects this test target (not
+                // the shipped product).
+                .swiftLanguageMode(.v6)
             ]
         ),
         // A handful of tests written in Objective-C (they can't be part of AblyTests because SPM doesn't allow mixed-language targets).
@@ -110,7 +113,11 @@ let package = Package(
             dependencies: [
                 .byName(name: "Ably"),
             ],
-            path: "Test/AblyTesting"
+            path: "Test/AblyTesting",
+            swiftSettings: [
+                // This test code predates the Swift 6 language mode.
+                .swiftLanguageMode(.v5)
+            ]
         ),
         // Provides test helpers written in Objective-C (they can't be part of AblyTests because SPM doesn't allow mixed-language targets).
         .target(
