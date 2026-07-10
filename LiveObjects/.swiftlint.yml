@@ -1,5 +1,6 @@
 excluded:
   - .build
+  - BuildTool/.build
   # Submodules
   - ably-cocoa
 

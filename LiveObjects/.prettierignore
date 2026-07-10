@@ -4,3 +4,4 @@
 # Submodules
 Tests/AblyLiveObjectsTests/ably-common
 ably-cocoa
+BuildTool/.build

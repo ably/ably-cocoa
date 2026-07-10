@@ -1,22 +1,22 @@
 {
-  "originHash" : "882ea3086372221060f5fc4b93d0254adddc2a879699f35a91adee80d3ba15ce",
+  "originHash" : "3fe06eedbf682bdc826aca06f1db51f421aac8857952f5aec4c2ff021c6f8c44",
   "pins" : [
     {
-      "identity" : "ably-cocoa",
+      "identity" : "cwlcatchexception",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/ably/ably-cocoa.git",
+      "location" : "https://github.com/mattgallagher/CwlCatchException.git",
       "state" : {
-        "revision" : "83bb5366b09408723446d8ba8a146938eeba829e",
-        "version" : "1.2.59"
+        "revision" : "07b2ba21d361c223e25e3c1e924288742923f08c",
+        "version" : "2.2.1"
       }
     },
     {
-      "identity" : "ably-cocoa-plugin-support",
+      "identity" : "cwlpreconditiontesting",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/ably/ably-cocoa-plugin-support",
+      "location" : "https://github.com/mattgallagher/CwlPreconditionTesting.git",
       "state" : {
-        "revision" : "a290b8942086ffb6e21e4805d9319143669d9414",
-        "version" : "2.0.0"
+        "revision" : "0139c665ebb45e6a9fbdb68aabfd7c39f3fe0071",
+        "version" : "2.2.2"
       }
     },
     {
@@ -38,57 +38,12 @@
       }
     },
     {
-      "identity" : "swift-argument-parser",
+      "identity" : "nimble",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-argument-parser",
+      "location" : "https://github.com/quick/nimble",
       "state" : {
-        "revision" : "41982a3656a71c768319979febd796c6fd111d5c",
-        "version" : "1.5.0"
-      }
-    },
-    {
-      "identity" : "swift-async-algorithms",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-async-algorithms",
-      "state" : {
-        "revision" : "6ae9a051f76b81cc668305ceed5b0e0a7fd93d20",
-        "version" : "1.0.1"
-      }
-    },
-    {
-      "identity" : "swift-collections",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-collections.git",
-      "state" : {
-        "revision" : "3d2dc41a01f9e49d84f0a3925fb858bed64f702d",
-        "version" : "1.1.2"
-      }
-    },
-    {
-      "identity" : "swift-docc-plugin",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-docc-plugin",
-      "state" : {
-        "revision" : "85e4bb4e1cd62cec64a4b8e769dcefdf0c5b9d64",
-        "version" : "1.4.3"
-      }
-    },
-    {
-      "identity" : "swift-docc-symbolkit",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/swiftlang/swift-docc-symbolkit",
-      "state" : {
-        "revision" : "b45d1f2ed151d057b54504d653e0da5552844e34",
-        "version" : "1.0.0"
-      }
-    },
-    {
-      "identity" : "table",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/JanGorman/Table.git",
-      "state" : {
-        "revision" : "7b8521c3b1078ba0b347964aec7c503cd6f1ff40",
-        "version" : "1.1.1"
+        "revision" : "eb5e3d717224fa0d1f6aff3fc2c5e8e81fa1f728",
+        "version" : "11.2.2"
       }
     }
   ],

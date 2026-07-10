@@ -119,6 +119,7 @@ struct BuildExampleApp: AsyncParsableCommand {
                 // Insert your Ably API key inside the double quotes below.
                 static let ablyAPIKey = ""
             }
+
             """
 
             let data = secretsFileContents.data(using: .utf8)!
@@ -216,8 +217,11 @@ struct Lint: AsyncParsableCommand {
 
     /// Checks that the Swift version specified by the `Package.swift`'s `"swift-tools-version"` matches that in the `.swift-version` file (which is used to tell SwiftFormat the minimum version of Swift supported by our code). Per [SwiftFormat#1496](https://github.com/nicklockwood/SwiftFormat/issues/1496) it's currently our responsibility to make sure they're kept in sync.///
     func checkSwiftVersionFile() async throws {
+        // The manifest that governs the compilation of the LiveObjects sources
+        // is the root ably-cocoa one (BuildTool is run with the LiveObjects
+        // directory as the working directory).
         async let swiftVersionFileContents = loadUTF8StringFromFile(at: ".swift-version")
-        async let packageManifestFileContents = loadUTF8StringFromFile(at: "Package.swift")
+        async let packageManifestFileContents = loadUTF8StringFromFile(at: "../Package.swift")
 
         guard let swiftVersionFileMatch = try await /^(\d+\.\d+)\n$/.firstMatch(in: swiftVersionFileContents) else {
             throw Error.malformedSwiftVersionFile
@@ -243,7 +247,9 @@ struct Lint: AsyncParsableCommand {
     ///
     /// Ignores the `originHash` property of the Package.resolved file, because this property seems to frequently be different between the SPM version and the Xcode version, and I don't know enough about SPM to know what this property means or whether there's a reproducible way to get them to match.
     func comparePackageLockfiles() async throws {
-        let lockfilePaths = ["Package.resolved", "AblyLiveObjects.xcworkspace/xcshareddata/swiftpm/Package.resolved"]
+        // The SPM-managed lockfile is the root ably-cocoa one (BuildTool is run
+        // with the LiveObjects directory as the working directory).
+        let lockfilePaths = ["../Package.resolved", "AblyLiveObjects.xcworkspace/xcshareddata/swiftpm/Package.resolved"]
         let lockfileContents = try await withThrowingTaskGroup(of: Data.self) { group in
             for lockfilePath in lockfilePaths {
                 group.addTask {
