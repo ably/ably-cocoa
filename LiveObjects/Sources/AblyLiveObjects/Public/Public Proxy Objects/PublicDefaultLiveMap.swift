@@ -4,6 +4,7 @@ import Ably
 /// Our default implementation of ``LiveMap``.
 ///
 /// This is largely a wrapper around ``InternalDefaultLiveMap``.
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal final class PublicDefaultLiveMap: LiveMap {
     internal let proxied: InternalDefaultLiveMap
 

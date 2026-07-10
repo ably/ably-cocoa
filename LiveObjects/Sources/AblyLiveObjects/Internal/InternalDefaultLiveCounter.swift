@@ -3,6 +3,7 @@ import Ably
 import Foundation
 
 /// This provides the implementation behind ``PublicDefaultLiveCounter``, via internal versions of the ``LiveCounter`` API.
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal final class InternalDefaultLiveCounter: Sendable {
     private let mutableStateMutex: DispatchQueueMutex<MutableState>
 
