@@ -89,8 +89,9 @@ Read ALL files in `Test/UTS/infra/unit/` before generating any code (you need th
 
 Integration-tier rules that differ from the unit tier:
 
-- Clients are built with a **real** transport (plain `ARTClientOptions` + `ARTRealtime`/`ARTRest`, no mocks): direct-sandbox tests point `realtimeHost`/`restHost` at `SandboxApp.sandboxHost` (TLS stays on, plain key auth works — `IntegrationSmokeTest.swift` is the shape); proxy tests call `options.connectThroughProxy(session)` and MUST authenticate via an `authCallback` that signs a `TokenRequest` locally (basic auth is TLS-only, RSA1 — `ProxyInfraSmokeTests.swift` is the shape).
-- Proxy suites call `try await ProxyManager.shared.ensureProxy()` in setup and always `await session.close()` in teardown; proxy files are wrapped in `#if os(macOS)`.
+- Suites subclass the tier's base case, which owns setup/teardown via scoped methods: direct-sandbox suites extend `IntegrationTestCase` and wrap the scenario in `withSandboxApp { app in … withRealtimeClient(options) { client in … } }`; proxy suites extend `ProxyTestCase` and use `withProxySession(rules:) { app, session in … }` — teardown (client close, session close, app delete) always runs, so never hand-roll it.
+- Clients are built with a **real** transport (plain `ARTClientOptions` + `ARTRealtime`/`ARTRest`, no mocks): direct-sandbox tests point `realtimeHost`/`restHost` at `SandboxApp.sandboxHost` (TLS stays on, plain key auth works — `IntegrationSmokeTest.swift` is the shape); proxy tests get their options from `proxyClientOptions(for:through:)`, which wires the proxy and token auth (basic auth is TLS-only, RSA1 — `ProxyInfraSmokeTests.swift` is the shape).
+- Proxy files are wrapped in `#if os(macOS)`.
 - Wait on real network/proxy state with `await awaitState(client, .connected)` / `await awaitChannelState(…)` / `await pollUntil("…") { … }` — never a fixed sleep.
 - **Protocol variants**: when a direct-sandbox spec declares the `PROTOCOL` dimension (json/msgpack), parameterise the test — `@Test(arguments: [false, true])` over a `useBinaryProtocol: Bool` parameter, applied via `options.useBinaryProtocol` (see `IntegrationSmokeTest.swift`). Proxy tests are **always JSON** (the proxy can't inspect binary frames) — `connectThroughProxy` already forces it, so no parameterisation there.
 
@@ -494,6 +495,76 @@ final class <Name>Tests: UTSTestCase {
 ```
 
 Helper methods return types should be ready for use in the test code without additional casting (if you need "value as? String" in the test, move this conversion to the helper instead). Don't return optionals from these methods - assert not `nil` within the method itself, unless test expects optional. Don't create additional helper types for parsing dictionaries - just use a dictionary with the most suited type for the test, accessing its fields by subscript. For dictionaries containing values of different types use `[String: Any]`. Don't wrap dictionary constant initialization into helper method. Put helper methods for the suite into an extension at the bottom of the file. Keep the spec's original tests order in the generated test file. Keep test segmentation by adding comments like "// Setup", "// Test Steps", "// Assertions".
+
+### File template — integration tiers
+
+Direct-sandbox spec (`integration/standard/<module>/`) — subclass `IntegrationTestCase` (setup/teardown are automatic); parameterise over the spec's `PROTOCOL` dimension when it declares one:
+
+```swift
+import Testing
+import Foundation
+import Ably
+
+/// <Feature> (<spec points>)
+/// Derived from <spec URL>
+@Suite(.serialized)
+final class <Name>Tests: IntegrationTestCase {
+
+    // UTS: <spec-id>
+    @Test(arguments: [false, true]) // useBinaryProtocol: false = JSON, true = msgpack
+    func test_<SPEC>_<description>(useBinaryProtocol: Bool) async throws {
+        try await withSandboxApp { app in
+            let options = ARTClientOptions(key: app.defaultKey)   // TLS stays on → plain key auth is fine
+            options.realtimeHost = SandboxApp.sandboxHost
+            options.restHost = SandboxApp.sandboxHost
+            options.useBinaryProtocol = useBinaryProtocol
+            options.autoConnect = false
+            try await withRealtimeClient(options) { client in
+                client.connect()
+                guard await awaitState(client, .connected) else { return }
+                // … spec steps — guard every wait; the scopes above handle all teardown …
+            }
+        }
+    }
+}
+```
+
+Proxy spec (`integration/proxy/<module>/`) — subclass `ProxyTestCase`; wrap the whole file in `#if os(macOS)`:
+
+```swift
+// Proxy tests spawn a local uts-proxy process — macOS-only.
+#if os(macOS)
+
+import Testing
+import Foundation
+import Ably
+
+/// <Feature> (<spec points>)
+/// Derived from <spec URL>
+@Suite(.serialized)
+final class <Name>Tests: ProxyTestCase {
+
+    // UTS: <spec-id>
+    @Test
+    func test_<SPEC>_<description>() async throws {
+        try await withProxySession(rules: []) { app, session in   // rule-less start = late fault injection
+            let options = proxyClientOptions(for: app, through: session)  // token auth; JSON forced
+            options.autoConnect = false
+            try await withRealtimeClient(options) { client in
+                client.connect()
+                guard await awaitState(client, .connected) else { return }
+                // Late imperative fault injection, then poll — never sleep — and verify via the log:
+                try await session.triggerAction(["type": "inject_to_client", "message": ["action": 17]])
+                await pollUntil("client reacted to the injected frame") { /* observable state */ true }
+                let log = try await session.getLog()
+                #expect(log.contains { $0.type == "ws_frame" && $0.direction == "client_to_server" })
+            }
+        }   // client closed, session closed, app deleted — even on failure
+    }
+}
+
+#endif
+```
 
 ---
 

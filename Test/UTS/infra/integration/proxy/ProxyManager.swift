@@ -12,7 +12,10 @@ import CryptoKit
 /// `~/.cache/uts-proxy/<version>/uts-proxy` (the same cache location ably-java uses, so the two
 /// SDKs share a download). The download is serialised across OS processes by an exclusive `flock`
 /// on `uts-proxy.lock`, and within this process by the actor's isolation. Note: only the *download*
-/// is cross-process locked — process startup relies on the shared health check on `controlPort`.
+/// is cross-process locked — process startup relies on the shared health check on `controlPort`,
+/// so run proxy suites from **one test process at a time** (the same advisory ably-java's
+/// ProxyManager makes for Gradle workers); concurrent runners could race to bind the control port
+/// or reap a proxy the other is still using.
 ///
 /// The spawned process does **not** die with its parent, so it is reaped by an `atexit` hook;
 /// `stopProxy()` stops it explicitly.
@@ -69,9 +72,14 @@ actor ProxyManager {
 
     private static var binaryURL: URL { cacheDir.appendingPathComponent("uts-proxy") }
 
+    /// Where `UTS_PROXY_LOCAL_PATH` installs land — deliberately a *separate* file from the
+    /// checksum-verified release at `binaryURL`, so a local build can never be mistaken for a
+    /// verified cache hit by a later run without the override.
+    private static var localBinaryURL: URL { cacheDir.appendingPathComponent("uts-proxy-local") }
+
     /// Optional path to a locally built `uts-proxy` binary or `.tar.gz` distributive, from the
     /// `UTS_PROXY_LOCAL_PATH` environment variable. When present, the release download + checksum
-    /// check are bypassed.
+    /// check are bypassed (the artifact is installed to `localBinaryURL`, re-copied on every run).
     private static var localDistributive: String? {
         ProcessInfo.processInfo.environment["UTS_PROXY_LOCAL_PATH"].flatMap { $0.isEmpty ? nil : $0 }
     }
@@ -94,10 +102,10 @@ actor ProxyManager {
     /// - Parameter timeout: Maximum wall-clock seconds to wait for the process to become healthy.
     func ensureProxy(timeout: TimeInterval = 15) async throws {
         if await Self.isHealthy() { return }
-        try await Self.ensureBinary()
+        let binary = try await Self.ensureBinary()
 
         let process = Process()
-        process.executableURL = Self.binaryURL
+        process.executableURL = binary
         process.arguments = ["--port", "\(Self.controlPort)"]
         process.standardOutput = FileHandle.nullDevice
         process.standardError = FileHandle.nullDevice
@@ -127,9 +135,16 @@ actor ProxyManager {
 
     private func waitForHealth(timeout: TimeInterval) async throws {
         let deadline = Date().addingTimeInterval(timeout)
-        while Date() < deadline {
-            if await Self.isHealthy() { return }
-            try? await Task.sleep(nanoseconds: 200_000_000)
+        do {
+            while Date() < deadline {
+                if await Self.isHealthy() { return }
+                try await Task.sleep(nanoseconds: 200_000_000)
+            }
+        } catch {
+            // Task cancelled — reap the process we just spawned and propagate.
+            proxyProcess?.terminate()
+            proxyProcess = nil
+            throw error
         }
         proxyProcess?.terminate()
         proxyProcess = nil
@@ -137,13 +152,15 @@ actor ProxyManager {
     }
 
     /// Ensures the binary is present in the cache, downloading and extracting if needed.
-    private static func ensureBinary() async throws {
+    /// Returns the binary to launch: the verified release, or the separate local install when
+    /// `UTS_PROXY_LOCAL_PATH` is set.
+    private static func ensureBinary() async throws -> URL {
         let fileManager = FileManager.default
         try fileManager.createDirectory(at: cacheDir, withIntermediateDirectories: true)
 
         if let local = localDistributive {
             try installLocalDistributive(local)
-            return
+            return localBinaryURL
         }
 
         // flock serialises the download across concurrently launched test processes.
@@ -157,12 +174,13 @@ actor ProxyManager {
         // The archive (not the extracted binary) is checksum-verified at download time, and the
         // cache dir is keyed on the version, so a present+executable binary is a hit.
         if fileManager.isExecutableFile(atPath: binaryURL.path) {
-            return
+            return binaryURL
         }
 
         let archiveBytes = try await downloadArchive()
         try verifyChecksum(archiveBytes)
-        try extractBinary(fromArchiveBytes: archiveBytes)
+        try extractBinary(fromArchiveBytes: archiveBytes, to: binaryURL)
+        return binaryURL
     }
 
     /// Installs a locally provided distributive into the cache, skipping download + checksum.
@@ -173,11 +191,11 @@ actor ProxyManager {
         }
         FileHandle.standardError.write(Data("Using local uts-proxy distributive: \(path)\n".utf8))
         if path.hasSuffix(".tar.gz") {
-            try extractBinary(fromArchiveBytes: Data(contentsOf: URL(fileURLWithPath: path)))
+            try extractBinary(fromArchiveBytes: Data(contentsOf: URL(fileURLWithPath: path)), to: localBinaryURL)
         } else {
-            try? FileManager.default.removeItem(at: binaryURL)
-            try FileManager.default.copyItem(at: URL(fileURLWithPath: path), to: binaryURL)
-            try makeExecutable(binaryURL)
+            try? FileManager.default.removeItem(at: localBinaryURL)
+            try FileManager.default.copyItem(at: URL(fileURLWithPath: path), to: localBinaryURL)
+            try makeExecutable(localBinaryURL)
         }
     }
 
@@ -202,9 +220,9 @@ actor ProxyManager {
         }
     }
 
-    /// Extracts the `uts-proxy` binary from the (already verified) `.tar.gz` bytes into the cache,
-    /// using the system `tar`.
-    private static func extractBinary(fromArchiveBytes bytes: Data) throws {
+    /// Extracts the `uts-proxy` binary from the `.tar.gz` bytes to `destination`, using the
+    /// system `tar`.
+    private static func extractBinary(fromArchiveBytes bytes: Data, to destination: URL) throws {
         let fileManager = FileManager.default
         let stagingDir = fileManager.temporaryDirectory
             .appendingPathComponent("uts-proxy-extract-\(UUID().uuidString)", isDirectory: true)
@@ -227,9 +245,9 @@ actor ProxyManager {
         guard fileManager.fileExists(atPath: extracted.path) else {
             throw HTTPError("uts-proxy binary not found in archive '\(archiveName)'")
         }
-        try? fileManager.removeItem(at: binaryURL)
-        try fileManager.moveItem(at: extracted, to: binaryURL)
-        try makeExecutable(binaryURL)
+        try? fileManager.removeItem(at: destination)
+        try fileManager.moveItem(at: extracted, to: destination)
+        try makeExecutable(destination)
     }
 
     private static func makeExecutable(_ url: URL) throws {

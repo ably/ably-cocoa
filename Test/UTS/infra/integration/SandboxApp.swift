@@ -8,10 +8,9 @@ import Foundation
 ///
 /// ```swift
 /// let app = try await SandboxApp.create()
-/// defer { /* in teardown: */ }
 /// let key = app.defaultKey   // "appId.keyId:keySecret"
 /// // … tests …
-/// await app.delete()
+/// await app.delete()   // always, in teardown — even when the scenario failed
 /// ```
 ///
 /// Mirrors ably-java's `infra/integration/SandboxApp.kt`.
@@ -64,8 +63,8 @@ final class SandboxApp: Sendable {
         return SandboxApp(appId: appId, defaultKey: defaultKey, keys: keys)
     }
 
-    /// Deletes the provisioned app. Errors are ignored so teardown never masks a test failure
-    /// (sandbox apps also auto-expire server-side).
+    /// Deletes the provisioned app. Errors are ignored — best-effort cleanup must never mask a
+    /// test failure.
     func delete() async {
         var request = URLRequest(url: Self.sandboxBaseURL.appendingPathComponent("apps/\(appId)"))
         request.httpMethod = "DELETE"
@@ -91,8 +90,11 @@ final class SandboxApp: Sendable {
                 return postApps
             } catch {
                 lastError = error
-                // Exponential backoff: 0.5s, 1s, 2s, 4s.
-                try? await Task.sleep(nanoseconds: UInt64(500_000_000 * (1 << attempt)))
+                if attempt < 4 {
+                    // Exponential backoff between attempts: 0.5s, 1s, 2s, 4s. A cancelled task
+                    // propagates out of the throwing sleep instead of burning the remaining retries.
+                    try await Task.sleep(nanoseconds: UInt64(500_000_000 * (1 << attempt)))
+                }
             }
         }
         throw lastError

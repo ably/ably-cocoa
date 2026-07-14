@@ -194,8 +194,12 @@ Test/UTS/
 │   │   └── NoOpReachability.swift       #     disables OS network monitoring in unit tests
 │   │
 │   └── integration/                     #   INTEGRATION infra (real backend) — see §11
+│       ├── IntegrationTestCase.swift    #     base case for direct-sandbox suites: withSandboxApp /
+│       │                                #     withRealtimeClient scoped setup + always-run teardown
 │       ├── SandboxApp.swift             #     provisions/deletes a sandbox app
 │       └── proxy/                       #     (macOS-only — spawns a local process)
+│           ├── ProxyTestCase.swift      #       base case for proxy suites: withProxySession +
+│           │                            #       token-auth proxyClientOptions
 │           ├── ProxyManager.swift       #       syncs (downloads/caches) + launches the uts-proxy binary
 │           └── ProxySession.swift       #       proxy session: rules, actions, log + connectThroughProxy
 │
@@ -253,13 +257,10 @@ this (§6.1).
 **Reaching further internals.** `import Ably.Private` exposes exactly the private headers listed in
 the `explicit module Private` block of `Source/include/module.modulemap` — anything declared only
 in a `.m` file (class extensions, ivars, private methods) is invisible to Swift. The SDK being
-Objective-C also means Swift access levels (`internal`/`package`) play no part. If a spec needs an
-internal symbol that isn't exposed: check `Source/PrivateHeaders/Ably/` first; if absent, declare
-it in a private header there and register the header in **both** module maps
-(`Source/include/module.modulemap` and `Source/Ably.modulemap`, per the repo's CLAUDE.md); if the
-state has no reasonable seam, record the gap in `deviations.md` under *Mock Infrastructure
-Limitations* rather than hacking around it. (The `uts-to-swift` skill's Step 4 carries the same
-decision list for test translation.)
+Objective-C also means Swift access levels (`internal`/`package`) play no part. When a new test
+needs an internal symbol that isn't exposed yet, the `uts-to-swift` skill (Step 4, "Accessing SDK
+internals") carries the decision list: check the private headers, extend them (registering in both
+module maps), or record the gap in `deviations.md`.
 
 ---
 
@@ -405,6 +406,7 @@ though some map onto a different shape:
 | `infra/Utils.kt` (`awaitState`, `awaitChannelState`, `pollUntil`) | `infra/Utils.swift` (`awaitState`, `awaitChannelState`, `pollUntil` — async, for the integration tier) + the synchronous `UTSTestCase` awaits for the unit tier |
 | `infra/Utils.kt` `withRealTimeout` | Not needed — Swift Testing has no virtual-time scheduler for `withTimeout` to be fooled by |
 | `unit/ClientFactories.kt` (seeds the dummy key) | `UTSTestCase.makeRealtime` / `makeRest` (seed the same dummy key) |
+| JUnit suite lifecycle (`@BeforeAll` / `@AfterAll` in integration suites) | Swift Testing has no setUp/tearDown and `deinit` can't `await` — integration suites subclass `IntegrationTestCase` / `ProxyTestCase`, whose scoped `with…` methods own setup + always-run teardown (§11) |
 | `unit/MockWebSocket.kt` + `MockWebSocketEngineFactory.kt` | `MockWebSocket.swift` (provider + socket + the two factories) |
 | `unit/MockHttpClient.kt` + `MockHttpEngine.kt` + `PendingConnection/Request` (+ `Default*`) | `MockHTTPClient.swift` (`MockHTTPClient`, `PendingHTTPConnection`, `PendingHTTPRequest`) — cocoa's HTTP seam is one protocol, so no engine/adapter split |
 | `unit/MockEvent.kt` (typed event timeline) | `MockWebSocket.sentMessages` (client→server frames) + `Captured` collectors in `onConnectionAttempt` — same assertions, no separate event type |
@@ -567,8 +569,20 @@ The `infra/integration/` layer mirrors ably-java's `infra/integration/` (see its
 §7 for the reference design) and is verified end-to-end by two env-gated acceptance tests (§10):
 `integration/standard/IntegrationSmokeTest.swift` (SandboxApp + a real TLS client, no proxy; run once per protocol variant — JSON + msgpack) and
 `integration/proxy/ProxyInfraSmokeTests.swift` (the full proxy chain). Three components
-(§11.1–11.3), then a walkthrough of each tier's reference test (§11.4–11.5) and the request-flow
-picture (§11.6):
+(§11.1–11.3), the base test cases that own setup/teardown (below), then a walkthrough of each
+tier's reference test (§11.4–11.5) and the request-flow picture (§11.6).
+
+**The base test cases.** Swift Testing has no `setUp()`/`tearDown()` hooks and `deinit` cannot
+`await`, so integration suites subclass a base case whose **scoped-resource methods** own the
+lifecycle — provision, run your body, and *always* tear down (rethrowing any error after cleanup,
+so failures stay attributed and nothing is orphaned):
+
+| Base class | Subclass it for | Scoped methods |
+|---|---|---|
+| `IntegrationTestCase` | direct-sandbox suites | `withSandboxApp { app in … }` (create → body → `delete()`), `withRealtimeClient(options) { client in … }` (build → body → `close()` + await CLOSED) |
+| `ProxyTestCase` (: `IntegrationTestCase`, macOS-only) | proxy suites | `withProxySession(rules:) { app, session in … }` (`ensureProxy` + app + session → body → `session.close()` + app delete), plus `proxyClientOptions(for:through:)` (token-auth options wired through the proxy) |
+
+Components:
 
 ### 11.1 `SandboxApp.swift` — a throwaway app on the real sandbox
 
@@ -577,7 +591,7 @@ of any fault rules under test): fetches the canonical `test-app-setup.json` from
 `POST`s its `post_apps` body to `https://sandbox.realtime.ably-nonprod.net/apps` (GETs are retried
 with backoff; the POST is never retried, to avoid duplicate apps), and exposes `appId`,
 `defaultKey` (full-capability `appId.keyId:keySecret`), and the full `keys` list. `delete()`
-removes the app in teardown (best-effort — sandbox apps also auto-expire). Owns the single
+removes the app in teardown (best-effort — cleanup must never mask a test failure). Owns the single
 upstream host constant `SandboxApp.sandboxHost` — the `nonprod:sandbox` endpoint used uniformly
 across the integration specs; both `ProxySession` targets and direct-sandbox clients point at it.
 
@@ -600,7 +614,9 @@ owns the *process*:
   `~/.cache/uts-proxy/<version>/` — the **same cache ably-java uses**, so the two SDKs share one
   download — and launches it with `--port 10100`.
 - The download is serialised across concurrently launched test processes by an exclusive `flock`,
-  and within the process by the actor.
+  and within the process by the actor. Process *startup* relies only on the shared health check,
+  so run proxy suites from **one test process at a time** (ably-java's single-fork advisory) —
+  concurrent runners could race to bind the control port or reap each other's proxy.
 - A spawned `Process` does **not** die with its parent, so an `atexit` reaper kills it when the
   test process exits; `stopProxy()` stops it explicitly.
 - Override knob: set `UTS_PROXY_LOCAL_PATH` to a **locally built** proxy binary or `.tar.gz` to
@@ -659,8 +675,10 @@ injection).
 This is the reference for the **middle tier** — the shape every happy-path interop spec
 (connect/publish/subscribe/presence/history) follows. Step by step:
 
-1. **Suite setup** — provision a real app: `let app = try await SandboxApp.create()`. (A
-   spec-derived suite would do this once per suite; `delete()` in teardown.)
+1. **Setup/teardown via the base class** — the suite subclasses `IntegrationTestCase` and wraps
+   the scenario in `withSandboxApp { app in … withRealtimeClient(options) { client in … } }`:
+   the app is provisioned up front, and app deletion + client close always run afterwards, even
+   when the scenario throws or a wait fails.
 2. **Protocol variants** — the test takes `useBinaryProtocol: Bool` via
    `@Test(arguments: [false, true])`, the cocoa realisation of the spec's `PROTOCOL` dimension
    (§2): each case runs the whole scenario once over JSON and once over msgpack.
@@ -677,11 +695,13 @@ This is the reference for the **middle tier** — the shape every happy-path int
    arrives on the SDK's queue, §6.6), publish, then
    `await pollUntil("published message is echoed back…") { received.count == 1 }` — the real
    backend is eventually consistent, so poll on observable state rather than assuming timing.
-7. **Teardown** — `client.close()` → `await awaitState(client, .closed)` → `await app.delete()`.
+7. **Guarded waits** — the scenario lives in a helper where every wait is `guard`-ed: a timeout
+   has already recorded its `Issue`, so the scenario stops instead of cascading into secondary
+   failures, and the base class's teardown still runs.
 
-**What this teaches about the infra:** `SandboxApp`-only provisioning, direct-sandbox client
-wiring, protocol-variant parameterisation, `Captured` for cross-queue capture, and `pollUntil`
-over real network state.
+**What this teaches about the infra:** `IntegrationTestCase`'s scoped setup/teardown,
+`SandboxApp`-only provisioning, direct-sandbox client wiring, protocol-variant parameterisation,
+`Captured` for cross-queue capture, and `pollUntil` over real network state.
 
 ### 11.5 Walkthrough: a proxy test (`ProxyInfraSmokeTests`)
 
@@ -690,25 +710,29 @@ over real network state.
 
 Step by step:
 
-1. **Suite setup** — `try await ProxyManager.shared.ensureProxy()` (syncs + launches the proxy if
-   it isn't already healthy, §11.2), then `SandboxApp.create()` — the app is provisioned
-   **directly** against the sandbox, not through the proxy, so provisioning is independent of any
-   fault rules.
-2. **A session with no rules** — `try await ProxySession.create()`. Starting rule-less is the
-   **late-fault-injection** principle (§2): the connect handshake runs against the real server
-   unmodified; a spec test injects its fault *afterwards*, as the final interaction.
-3. **Token auth, not the key** — the proxy serves plain ws (`tls = false`), and basic key auth is
-   TLS-only (RSA1), so the client authenticates via an `authCallback` that signs a `TokenRequest`
-   locally using the sandbox key (through a separate TLS `ARTRest` "token signer").
-4. **Wire the client through the proxy** — `options.connectThroughProxy(session)` (§11.3), then
+1. **Setup/teardown via the base class** — the suite subclasses `ProxyTestCase` and wraps the
+   scenario in `withProxySession(rules: []) { app, session in … }`: the proxy is ensured running
+   (§11.2), the app is provisioned **directly** against the sandbox (not through the proxy, so
+   provisioning is independent of any fault rules), and session close + app deletion always run
+   afterwards.
+2. **A session with no rules** — starting rule-less is the **late-fault-injection** principle
+   (§2): the connect handshake runs against the real server unmodified; a spec test injects its
+   fault *afterwards*, as the final interaction.
+3. **Token auth, not the key** — `proxyClientOptions(for: app, through: session)`: the proxy
+   serves plain ws (`tls = false`), and basic key auth is TLS-only (RSA1), so the client
+   authenticates via an `authCallback` that signs a `TokenRequest` locally using the sandbox key
+   (through a separate TLS `ARTRest` "token signer"). The options come back already wired through
+   the proxy (§11.3).
+4. **Run the client in a scope** — `withRealtimeClient(options) { client in … }`, then
    `client.connect()` and `await awaitState(client, .connected)` — the SDK believes it is talking
    to Ably; every byte actually flows through the proxy.
 5. **The proxy log is the primary verification** — `try await session.getLog()` and filter the
    typed events: the smoke asserts a `ws_connect` event and a server→client `ws_frame` whose
    `message?["action"] as? Int == 4` (CONNECTED). Spec tests assert on exactly this log — e.g.
    "the client sent an AUTH frame (17) carrying non-nil `auth` details".
-6. **Teardown** — close the client and await CLOSED, then **always** `await session.close()`
-   (leaked sessions hold proxy listeners), then `app.delete()`.
+6. **Teardown is automatic** — the scopes unwind in order: client closed and awaited CLOSED,
+   then `session.close()` (leaked sessions hold proxy listeners), then `app.delete()` — even when
+   the scenario failed or threw.
 
 **What a full spec-derived proxy test adds** (ably-java's `AuthReauthTest`, RTN22/RTC8a, is the
 reference): snapshot `connection.id` and a callback counter after connecting; inject the fault
@@ -775,44 +799,10 @@ counterpart.
 `import Ably.Private`): `transportFactory` (WS) · `httpExecutor` (HTTP) · `timeProvider` (time) ·
 `reachabilityClass` (network monitor) — plus `options.logHandler` (log assertions).
 
-**Build a realtime unit-test client:**
-```swift
-let wsProvider = MockWebSocketProvider(onConnectionAttempt: { connection in
-    connection.respondWithSuccess()
-    connection.sendToClient(.connected(connectionId: "connection-1", connectionKey: "key-1"))
-})
-installMock(wsProvider)
-let client = makeRealtime { options in
-    options.key = "appId.keyId:keySecret"
-    options.autoConnect = false
-}
-client.connect()
-awaitConnectionState(client, .connected)
-```
-
-**Build a REST unit-test client:**
-```swift
-let mockHTTP = MockHTTPClient(
-    onConnectionAttempt: { connection in connection.respondWithSuccess() },
-    onRequest: { request in request.respondWith(status: 200, body: [1_704_067_200_000]) }
-)
-installMock(mockHTTP)
-let rest = makeRest { options in options.key = "appId.keyId:keySecret" }
-```
-
-**Build a proxy-test client (macOS only; token auth — basic auth is TLS-only):**
-```swift
-try await ProxyManager.shared.ensureProxy()          // suite setup
-let app = try await SandboxApp.create()              // suite setup
-let session = try await ProxySession.create(rules: [])
-let options = ARTClientOptions()
-options.authCallback = { params, callback in
-    tokenSigner.auth.createTokenRequest(params, options: nil) { tokenRequest, error in callback(tokenRequest, error) }
-}
-options.connectThroughProxy(session)
-// … scenario: session.triggerAction(…), await pollUntil("…") { … }, session.getLog() …
-await session.close()                                // always, in teardown
-```
+**Writing a new test?** This guide documents the *existing* setup — the actionable authoring
+material (file templates for every tier, pseudocode→Swift translation tables, deviation patterns)
+lives in the `uts-to-swift` skill (`.claude/skills/uts-to-swift/SKILL.md`), which carries out UTS
+spec translation and evaluation. The reference tests to crib from are listed in §13.
 
 **Server→client (mock WS):** `sendToClient` (stays open — ATTACHED, channel ERROR, ACK) ·
 `sendToClientAndClose` (DISCONNECTED / fatal ERROR) · `respondWithRefused` (1003 refusal) ·
@@ -832,9 +822,6 @@ DISCONNECTED=6, ERROR=9, ATTACH=10, ATTACHED=11, DETACH=12, DETACHED=13, **AUTH=
 **Test ID format:** `<category>/<spec-point>/<descriptive-name>-<n>` →
 `// UTS: realtime/unit/RTN16g/recovery-key-structure-0` (comment immediately above each test).
 
-**The decision tree when a translated test fails:** spec wrong → fix test + record UTS spec error;
-translation wrong → fix test; SDK non-compliant → gate the spec-correct assertion behind
-`RUN_DEVIATIONS` and record in `deviations.md`.
 
 ---
 
@@ -863,6 +850,8 @@ translation wrong → fix test; SDK non-compliant → gate the spec-correct asse
 
 | File | Key public surface | Role |
 |------|--------------------|------|
+| `infra/integration/IntegrationTestCase.swift` | `withSandboxApp { }`, `withRealtimeClient(_:) { }`; `runThenCleanUp(_:body:cleanup:)` (the scoped-resource engine subclasses build new scopes on) | Base case for direct-sandbox suites: scoped setup + always-run async teardown (rethrows the body's error after cleanup). |
+| `infra/integration/proxy/ProxyTestCase.swift` | `withProxySession(rules:) { }`, `proxyClientOptions(for:through:)` | Base case for proxy suites (extends `IntegrationTestCase`): ensureProxy + app + session lifecycle; token-auth options wired through the proxy. **macOS-only**. |
 | `infra/integration/SandboxApp.swift` | `SandboxApp.create()`, `delete()`, `appId`, `defaultKey`, `keys`; `SandboxApp.sandboxHost` | Provisions/tears down a throwaway sandbox app from ably-common's `test-app-setup.json`; owns the upstream sandbox host constant. |
 | `infra/integration/proxy/ProxyManager.swift` | `ProxyManager.shared.ensureProxy(timeout:)`, `stopProxy()`, `ProxyManager.controlPort` (10100); `UTS_PROXY_LOCAL_PATH` override | Syncs (downloads, checksum-verifies, caches at `~/.cache/uts-proxy/<version>/`) and launches the pinned `uts-proxy` release; `atexit` reaper. **macOS-only** (`#if os(macOS)`). |
 | `infra/integration/proxy/ProxySession.swift` | `ProxySession.create(rules:port:timeoutMs:realtimeHost:restHost:)`, `addRules`, `triggerAction`, `getLog() -> [ProxyEvent]`, `close`, `sessionId`, `proxyPort`, `proxyHost`; `ProxyEvent`; `ProxyRule` + `wsConnectRule`/`wsFrameToClientRule`/`wsFrameToServerRule`/`httpRequestRule`; `ARTClientOptions.connectThroughProxy(_:)` | Typed client for the proxy control REST API + client wiring. **macOS-only**. |

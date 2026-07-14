@@ -9,7 +9,8 @@ import Ably.Private
 /// `poll`) — they poll synchronously, which is fine when a frozen `MockTimeProvider` settles the SDK
 /// in microseconds. The integration tier waits on *real* network and proxy state, where blocking the
 /// test thread for seconds is wasteful, so it uses the async helpers below (the UTS specs'
-/// "poll — never sleep" rule).
+/// anti-flake rule: no fixed blind waits — poll on observable state, with a short interval
+/// between checks).
 
 /// Suspends until `condition` returns `true`, polling every `interval` seconds, or records a test
 /// failure once `timeout` (wall-clock seconds) elapses. Returns whether the condition was met.
@@ -28,7 +29,13 @@ func pollUntil(_ description: String,
             Issue.record("Timed out after \(timeout)s polling for: \(description)", sourceLocation: sourceLocation)
             return false
         }
-        try? await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
+        do {
+            try await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
+        } catch {
+            // Task cancelled — bail out instead of spinning a hot loop until the deadline.
+            Issue.record("Cancelled while polling for: \(description)", sourceLocation: sourceLocation)
+            return false
+        }
     }
     return true
 }

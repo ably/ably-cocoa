@@ -139,7 +139,12 @@ struct ProxyEvent: @unchecked Sendable {
 /// let session = try await ProxySession.create(rules: [
 ///     wsConnectRule(action: ["type": "refuse_connection"], count: 2),
 /// ])
-/// let options = ARTClientOptions(key: app.defaultKey)
+/// // The proxy serves plain ws (`tls = false`) and basic (key) auth is TLS-only (RSA1),
+/// // so authenticate with a TokenRequest signed locally by a TLS "token signer" client:
+/// let options = ARTClientOptions()
+/// options.authCallback = { params, callback in
+///     tokenSigner.auth.createTokenRequest(params, options: nil) { callback($0, $1) }
+/// }
 /// options.connectThroughProxy(session)
 /// let client = ARTRealtime(options: options)
 /// // … test scenario …
@@ -264,10 +269,14 @@ final class ProxySession: Sendable {
     private static func controlDelete(_ path: String) async {
         var request = URLRequest(url: controlURL(path))
         request.httpMethod = "DELETE"
-        guard let (_, status) = try? await httpRequest(request, session: session) else { return }
-        if !(200..<300).contains(status) {
-            // Teardown should never throw, but a failed delete leaks a session — make it visible.
-            FileHandle.standardError.write(Data("Proxy control API returned \(status) for DELETE \(path)\n".utf8))
+        // Teardown should never throw, but a failed delete leaks a session — make it visible.
+        do {
+            let (_, status) = try await httpRequest(request, session: session)
+            if !(200..<300).contains(status) {
+                FileHandle.standardError.write(Data("Proxy control API returned \(status) for DELETE \(path)\n".utf8))
+            }
+        } catch {
+            FileHandle.standardError.write(Data("Proxy DELETE \(path) failed: \(error)\n".utf8))
         }
     }
 }
