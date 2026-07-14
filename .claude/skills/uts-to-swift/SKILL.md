@@ -67,12 +67,15 @@ Read the file at `$ARGUMENTS`. Identify all the test cases — each has a title,
 
 Map the spec path to a test path:
 
-Mirror the spec's `uts/` directory layout under `Test/UTS/Tests/`: keep the same `rest`/`realtime` top-level folder and the `unit`/`integration` tier below it. This stops files that share a name in different parts of the spec from colliding (e.g. `uts/realtime/integration/auth.md` and `uts/rest/integration/auth.md`).
+Tests are organised **by tier, then by module** under `Test/UTS/` (kept in sync with ably-java's `uts` module — see `Test/UTS/README.md` §4): `unit/<module>/` for mocked-transport tests, `integration/standard/<module>/` and `integration/proxy/<module>/` for real-backend tests. The per-module folder keeps same-named specs from different parts of the spec from colliding (e.g. `uts/realtime/integration/auth.md` and `uts/rest/integration/auth.md`).
 
 | Spec file | Test file |
 |---|---|
-| `.../uts/rest/unit/<name>.md` | `Test/UTS/Tests/rest/unit/<Name>Tests.swift` |
-| `.../uts/realtime/unit/<sub>/<name>.md` | `Test/UTS/Tests/realtime/unit/<sub>/<Name>Tests.swift` |
+| `.../uts/rest/unit/<name>.md` | `Test/UTS/unit/rest/<Name>Tests.swift` |
+| `.../uts/realtime/unit/<sub>/<name>.md` | `Test/UTS/unit/realtime/<Name>Tests.swift` |
+| `.../uts/rest/integration/<name>.md` | `Test/UTS/integration/standard/rest/<Name>Tests.swift` |
+| `.../uts/realtime/integration/<name>.md` | `Test/UTS/integration/standard/realtime/<Name>Tests.swift` |
+| `.../uts/realtime/integration/proxy/<name>.md` | `Test/UTS/integration/proxy/realtime/<Name>Tests.swift` |
 
 Class name: take the file name, strip a trailing `_test`, convert `snake_case` → `PascalCase`, append `Tests`. Example: `connection_recovery_test.md` → `ConnectionRecoveryTests`. Each test is a **Swift Testing** suite — `@Suite(.serialized) final class <Name>Tests: UTSTestCase`.
 
@@ -80,9 +83,16 @@ If a suitable suite already exists, add the new test methods to it rather than c
 
 ---
 
-## Step 3 — Read the harness
+## Step 3 — Read the UTS infra
 
-Read ALL files in `Test/UTS/Harness/` before generating any code (you need the exact method names/signatures).
+Read ALL files in `Test/UTS/infra/unit/` before generating any code (you need the exact method names/signatures). For an **integration** spec, additionally read `Test/UTS/infra/Utils.swift` (async `pollUntil` / `awaitState` / `awaitChannelState`) and ALL files in `Test/UTS/infra/integration/` (`SandboxApp`, and for proxy specs `ProxyManager`/`ProxySession`), plus the reference smoke tests under `Test/UTS/integration/` and the guide's §11 in `Test/UTS/README.md` — especially the per-tier walkthroughs (§11.4–11.5) and the request-flow diagram (§11.6).
+
+Integration-tier rules that differ from the unit tier:
+
+- Clients are built with a **real** transport (plain `ARTClientOptions` + `ARTRealtime`/`ARTRest`, no mocks): direct-sandbox tests point `realtimeHost`/`restHost` at `SandboxApp.sandboxHost` (TLS stays on, plain key auth works — `IntegrationSmokeTest.swift` is the shape); proxy tests call `options.connectThroughProxy(session)` and MUST authenticate via an `authCallback` that signs a `TokenRequest` locally (basic auth is TLS-only, RSA1 — `ProxyInfraSmokeTests.swift` is the shape).
+- Proxy suites call `try await ProxyManager.shared.ensureProxy()` in setup and always `await session.close()` in teardown; proxy files are wrapped in `#if os(macOS)`.
+- Wait on real network/proxy state with `await awaitState(client, .connected)` / `await awaitChannelState(…)` / `await pollUntil("…") { … }` — never a fixed sleep.
+- **Protocol variants**: when a direct-sandbox spec declares the `PROTOCOL` dimension (json/msgpack), parameterise the test — `@Test(arguments: [false, true])` over a `useBinaryProtocol: Bool` parameter, applied via `options.useBinaryProtocol` (see `IntegrationSmokeTest.swift`). Proxy tests are **always JSON** (the proxy can't inspect binary frames) — `connectThroughProxy` already forces it, so no parameterisation there.
 
 ---
 
@@ -90,9 +100,22 @@ Read ALL files in `Test/UTS/Harness/` before generating any code (you need the e
 
 Apply the translation rules below, then write the file.
 
+### Accessing SDK internals (`import Ably.Private`)
+
+The SDK is Objective-C, so Swift access levels (`internal`/`package`/`private`) don't apply to it — visibility is controlled by **headers + the module map**:
+
+- `import Ably` → the public API (headers in `Source/include/Ably/`).
+- `import Ably.Private` → the internal API: the private headers listed in the `explicit module Private` block of `Source/include/module.modulemap` (files under `Source/PrivateHeaders/Ably/`, e.g. `ARTClientOptions+TestConfiguration.h` for `testOptions`, `ART*+Private.h` for class internals). This is how the UTS infra reaches the injection seams, and how a test reaches internal fields the spec asserts on. See `Test/UTS/README.md` §4–§5.
+
+When a spec needs an internal class/method/field, work down this list:
+
+1. **Check it's already exposed**: `grep -r "<symbol>" Source/PrivateHeaders/Ably/` — if it's declared in a listed private header, just `import Ably.Private` and use it.
+2. **Declared only in a `.m` file** (class extension, ivar, private method)? It is invisible to Swift, period. To expose it, declare it in a header under `Source/PrivateHeaders/Ably/` and register that header in **both** module maps (`Source/include/module.modulemap` for SPM and `Source/Ably.modulemap` for Xcode) — the repo's CLAUDE.md convention. Only do this for small, test-motivated exposure; mirror how existing `+Private.h` headers are written.
+3. **Truly private state with no reasonable seam** (or exposing it would distort the SDK)? Don't hack around it — keep the spec's line as a comment, note why no assertion is emitted (see "Comments and assertion fidelity"), and record it in `deviations.md` under **Mock Infrastructure Limitations**.
+
 ### Client construction
 
-Set `ClientOptions` fields (`key`, `autoConnect`, `recover`, `disconnectedRetryTimeout`, etc.) in the `makeRealtime`/`makeRest` configuration block. Set `options.key` to "app.key:secret".
+Set `ClientOptions` fields (`key`, `autoConnect`, `recover`, `disconnectedRetryTimeout`, etc.) in the `makeRealtime`/`makeRest` configuration block. Both factories already seed the dummy key `appId.keyId:keySecret` (matching ably-java's `ClientOptionsBuilder`), so only set `options.key` when the spec pseudocode sets one — then use the spec's value.
 
 | Pseudocode | Swift |
 |---|---|
@@ -126,7 +149,7 @@ AWAIT_STATE client.connection.state == ConnectionState.connected
 ws_connection = mock_ws.events.find(e => e.type == CONNECTION_SUCCESS).connection
 ```
 
-Swift (the harness exposes `activeConnection` as the cocoa equivalent of the spec's `events.find(CONNECTION_SUCCESS).connection`):
+Swift (the UTS infra exposes `activeConnection` as the cocoa equivalent of the spec's `events.find(CONNECTION_SUCCESS).connection`):
 
 ```swift
 let wsProvider = MockWebSocketProvider(onConnectionAttempt: { connection in
@@ -215,11 +238,11 @@ let rest = makeRest { $0.key = "app.key:secret" }
 
 ### Variable declarations
 
-Take spec variable names (adopted to camel case), for new ones, if needed don't use "noname" names (like "fields"), make the name concrete.
+Take spec variable names (adapted to camelCase), for new ones, if needed don't use "noname" names (like "fields"), make the name concrete.
 
 ### Capturing connection attempts / requests
 
-The target is built in the Swift 6 language mode. Since mock handler closures are`@Sendable` and run on the SDK's queues, a plain `var array` captured into them is a compile error (a data race). Use the harness's thread-safe (lock-guarded) `Captured<T>` instead:
+The target is built in the Swift 6 language mode. Since mock handler closures are`@Sendable` and run on the SDK's queues, a plain `var array` captured into them is a compile error (a data race). Use the UTS infra's thread-safe (lock-guarded) `Captured<T>` instead:
 
 Spec pseudocode:
 
@@ -254,11 +277,11 @@ let wsProvider = MockWebSocketProvider(onConnectionAttempt: { connection in
 #expect(capturedConnectionAttempts[0].queryParams["recover"] == "...")
 ```
 
-`Captured<T>` exposes `append`, `all`, `count`, `first`, and `subscript(Int)`. Use `capturedConnectionAttempts.count` to change outcome for different connection attemts.
+`Captured<T>` exposes `append`, `all`, `count`, `first`, and `subscript(Int)`. Use `capturedConnectionAttempts.count` to change outcome for different connection attempts.
 
 ### Inspecting outgoing frames
 
-The spec inspects client-sent frames through the mock's event timeline (`mock_ws.events.filter(e => e.type == "ws_frame" AND e.direction == "client_to_server")`); the cocoa harness exposes the decoded equivalent as `ws.sentMessages`. Capture after the channel/connection state confirms the send happened:
+The spec inspects client-sent frames through the mock's event timeline (`mock_ws.events.filter(e => e.type == "ws_frame" AND e.direction == "client_to_server")`); the cocoa UTS infra exposes the decoded equivalent as `ws.sentMessages`. Capture after the channel/connection state confirms the send happened:
 
 Spec pseudocode:
 
@@ -292,11 +315,13 @@ let attachFrames = ws.sentMessages.filter { $0.action == .attach && $0.channel =
 | Pseudocode | Swift |
 |---|---|
 | `conn.respond_with_success()` | `connection.respondWithSuccess()` |
+| `conn.respond_with_success(message)` | `connection.respondWithSuccess(message)` — accept + deliver in one call (e.g. `.connectedMessage`) |
 | `conn.respond_with_refused()` | `connection.respondWithRefused()` |
 | `mock_ws.send_to_client(msg)` | `connection.sendToClient(msg)` |
 | `mock_ws.send_to_client_and_close(msg)` | `connection.sendToClientAndClose(msg)` |
 | `mock_ws.simulate_disconnect()` | `connection.simulateDisconnect()` |
 | `req.respond_with(200, {...})` | `request.respondWith(status: 200, body: [...])` |
+| `req.respond_with_delay(delay, status, body)` | `request.respondWithDelay(delay, status: …, body: …)` |
 | `req.respond_with_timeout()` | `request.respondWithTimeout()` |
 | `conn.respond_with_refused/timeout/dns_error()` (HTTP) | `connection.respondWithRefused()` / `respondWithTimeout()` / `respondWithDNSError()` |
 
@@ -311,6 +336,7 @@ Server-to-client messages are described with the `Sendable` `ProtocolMessage` fa
 | `ProtocolMessage(action: ERROR, error: ErrorInfo(code, statusCode, message))` | `.error(code:, statusCode:, message:)` |
 | `ProtocolMessage(action: ACK, msgSerial, count)` | `.ack(msgSerial:, count:)` |
 | `ProtocolMessage(action: CLOSED)` | `.closed()` |
+| `CONNECTED_MESSAGE` (ready-made default) | `.connectedMessage` |
 | `connectionStateTtl: 2000` (wire ms) | seconds here: `connectionStateTtl: 2` |
 | `ConnectionState.connected` / `ChannelState.attached` | `.connected` / `.attached` (`ARTRealtimeConnectionState` / `ARTRealtimeChannelState`) |
 
@@ -418,7 +444,7 @@ private func awaitTime(_ rest: ARTRest, sourceLocation: SourceLocation = #_sourc
 }
 ```
 
-Put these `async` helpers in the test class extention at the bottom of the test file. Inside the harness, report non-assertion failures (timeouts, unexpected errors) with `Issue.record("...", sourceLocation:)`.
+Put these `async` helpers in the test class extension at the bottom of the test file. Inside these helpers, report non-assertion failures (timeouts, unexpected errors) with `Issue.record("...", sourceLocation:)`.
 
 ### Test naming and annotation
 
@@ -467,7 +493,7 @@ final class <Name>Tests: UTSTestCase {
 }
 ```
 
-Helper methods return types should be ready for use in the test code without additional casting (if you need "value as? String" in the test, move this convertion to the helper instead). Don't return optionals from these methods - assert not `nil` within the method itself, unless test expects optional. Don't create additional helper types for parsing dictionaries - just use a dictionary with the most suited type for the test, accessing its fields by subscript. For dictionaries containing values of different types use `[String: Any]`. Don't wrap dictionary constant initialization into helper method. Put helper methods for the suite into an extension at the bottom of the file. Keep the spec's original tests order in the generated test file. Keep test segmentation by adding comments like "// Setup", "// Test Steps", "// Assertions".
+Helper methods return types should be ready for use in the test code without additional casting (if you need "value as? String" in the test, move this conversion to the helper instead). Don't return optionals from these methods - assert not `nil` within the method itself, unless test expects optional. Don't create additional helper types for parsing dictionaries - just use a dictionary with the most suited type for the test, accessing its fields by subscript. For dictionaries containing values of different types use `[String: Any]`. Don't wrap dictionary constant initialization into helper method. Put helper methods for the suite into an extension at the bottom of the file. Keep the spec's original tests order in the generated test file. Keep test segmentation by adding comments like "// Setup", "// Test Steps", "// Assertions".
 
 ---
 
@@ -527,7 +553,7 @@ Reproduce with `RUN_DEVIATIONS=1 swift test --filter <ClassName>/<method>`.
 
 **Never use the accommodate-both pattern** Every test must assert either spec behaviour or the SDK's actual behaviour — never both at once.
 
-Note: a *harness-driving* difference (e.g. using fake timers where the spec uses real ones, or a queue-ordering workaround) is **not** an SDK deviation — explain it in a code comment, not `deviations.md`. `deviations.md` is only for SDK non-compliance and mock-capability gaps.
+Note: an *infra-driving* difference (e.g. using fake timers where the spec uses real ones, or a queue-ordering workaround) is **not** an SDK deviation — explain it in a code comment, not `deviations.md`. `deviations.md` is only for SDK non-compliance and mock-capability gaps.
 
 ### Deviations file
 
