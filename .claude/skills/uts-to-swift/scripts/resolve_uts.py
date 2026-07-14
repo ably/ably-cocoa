@@ -86,9 +86,10 @@ def main():
     )
     args = ap.parse_args()
 
-    # Validate via Path.parts so this works regardless of separator (Windows '\' as well as
-    # POSIX '/'); a hard-coded "/uts/<module>$" regex would reject otherwise-valid Windows paths.
-    module_dir = Path(args.module_dir)
+    # Expand a leading ~ first (like any CLI tool), then validate via Path.parts so this
+    # works regardless of separator (Windows '\' as well as POSIX '/'); a hard-coded
+    # "/uts/<module>$" regex would reject otherwise-valid Windows paths.
+    module_dir = Path(args.module_dir).expanduser()
     raw = str(module_dir)
     parts = module_dir.parts
     if len(parts) < 2 or parts[-2] != "uts":

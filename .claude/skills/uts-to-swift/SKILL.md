@@ -798,8 +798,10 @@ semantic judgement — it only extracts, deterministically, what you must then r
   **grouped by section** (`Setup` / `Test Steps` / `Assertions` / …) in `sections[]` and each line tagged
   `assert` (an `ASSERT*` outcome), `await` (an `AWAIT*` / `EXPECT` wait), or `step` (setup, mock/client
   construction, an operation). `specAsserts` / `specAwaits` are flat convenience views of the first two;
-  `specCodeLineTotal` is the size of the spec test. The matching Swift method's assertion/await/poll calls
-  and their count come alongside.
+  `specCodeLineTotal` is the size of the spec test. The matching Swift method's calls come alongside,
+  counted **separately** so a surplus of waits can't hide a dropped assertion: assertions
+  (`#expect`/`#require` → `swiftAssertionCount`) and waits (`awaitConnectionState`/`awaitChannelState`/
+  `awaitState`/`pollUntil`/`poll` → `swiftAwaitCount`).
 
 The audit is a review aid, not a gate — it never crashes, it degrades. It always prints one JSON object
 (an `error` field instead of a report if a file is unreadable). If `idCoverage.specCount` is `0` for a file
@@ -833,10 +835,13 @@ This is the guarantee that no setup step, operation, or assertion was dropped �
 - [ ] A spec line with no Swift equivalent is annotated per "Comments and assertion fidelity" (spec line
       kept + `//` note), never silently dropped
 - [ ] `assertionShortfall > 0` for a test (`summary.testsWithShortfall`) is a **tripwire** — fewer Swift
-      assertions than spec `ASSERT`s strongly suggests a dropped assertion; open that test and account for
-      each one. (A negative shortfall is fine — the SDK mapping often needs *more* Swift lines per spec
-      `ASSERT`; an annotated omission — e.g. a type check satisfied by a helper's return type — is a valid
-      account.)
+      `#expect`/`#require` calls than spec `ASSERT`s strongly suggests a dropped assertion; open that test
+      and account for each one. (A negative shortfall is fine — the SDK mapping often needs *more* Swift
+      lines per spec `ASSERT`; an annotated omission — e.g. a type check satisfied by a helper's return
+      type — is a valid account.)
+- [ ] `awaitShortfall > 0` (`summary.testsWithAwaitShortfall`) is the **softer secondary signal** — fewer
+      infra wait calls than spec `AWAIT`s. A custom continuation-bridged helper (like `awaitTime`)
+      legitimately replaces a wait call, so account for those rather than treating this as a gate.
 
 ### Setup fidelity — preconditions match the spec
 

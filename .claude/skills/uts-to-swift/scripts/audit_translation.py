@@ -10,23 +10,27 @@ Usage:
 It does ZERO semantic judgement — only mechanical extraction with regex, so the same
 inputs always give the same report:
 
-  1. Test-ID coverage. Every `**Test ID**: \`<id>\`` in the spec vs every `// UTS: <id>`
-     comment in the Swift file.
+  1. Test-ID coverage. Every `**Test ID**: <id>` marker in the spec vs every
+     `// UTS: <id>` comment in the Swift file.
        - missingInSwift: a spec Test ID with no matching // UTS: tag  → a whole test
          case is absent; implement it (or consciously exclude it and explain why).
        - orphanInSwift:  a // UTS: tag with no matching spec Test ID  → a stale or
          hand-edited tag. Investigate.
 
   2. Per-test line ledger. Within each spec test block (from one Test ID to the next),
-     every non-blank, non-comment code line inside the ```pseudo fences is extracted
-     verbatim, grouped by its section (Setup / Test Steps / Assertions / …) — so setup,
+     every non-blank, non-comment code line inside the ```pseudo fences (only pseudo —
+     other fenced languages like json fixtures are ignored) is extracted verbatim,
+     grouped by its section (Setup / Test Steps / Assertions / …) — so setup,
      operations AND assertions are all enumerated, nothing escapes the ledger. Each line
      is tagged: "assert" (ASSERT*), "await" (AWAIT* / EXPECT), or "step" (everything else
      — setup, mock construction, operations). For convenience the ASSERT* and AWAIT*
      lines are also surfaced flat as specAsserts / specAwaits.
-     Alongside them, the count of assertion / await / poll calls in the matching Swift
-     method is reported as a tripwire: Swift assertions < spec ASSERTs for a test is a
-     strong signal an assertion was silently dropped.
+     Alongside them, the matching Swift method's assertion calls (#expect / #require)
+     and wait/poll calls are counted SEPARATELY — so a surplus of waits can't hide a
+     dropped assertion. Swift assertions < spec ASSERTs for a test (assertionShortfall)
+     is a strong signal an assertion was silently dropped; awaitShortfall is the softer
+     secondary signal (custom continuation-bridged helpers legitimately replace the
+     infra wait calls, so account for those rather than treating it as a gate).
 
 Robustness contract: this tool must never crash mid-run on any spec/test pair. It is a
 review aid — if it can't extract something it degrades to "couldn't verify" (fewer lines
@@ -47,18 +51,21 @@ from pathlib import Path
 # Spec markers -------------------------------------------------------------
 TEST_ID_RE = re.compile(r"\*\*Test ID\*\*:\s*`([^`]+)`")
 HEADING_RE = re.compile(r"^#{1,4}\s+(.*\S)\s*$")
-FENCE_RE = re.compile(r"^\s*```")
+# An opening fence carries its language label (```pseudo, ```json, …); the closer is a
+# bare ```. Only pseudo blocks are spec code — other languages are fixtures/examples.
+FENCE_RE = re.compile(r"^\s*```(\S*)")
 # Imperative spec keywords. Order matters: longest / most specific first so AWAIT_STATE
 # is classified before the bare AWAIT.
 DIRECTIVE_RE = re.compile(r"\b(ASSERT_[A-Z_]+|ASSERT|AWAIT_STATE|AWAIT_ERROR|AWAIT_ALL|AWAIT|EXPECT)\b")
 
 # Swift markers ------------------------------------------------------------
 UTS_TAG_RE = re.compile(r"//\s*UTS:\s*(\S+)")
-# Swift Testing macros + the UTS infra's wait/poll helpers, both tiers. Longest
-# alternatives first so `pollUntil` isn't half-matched by `poll`.
-SWIFT_ASSERT_RE = re.compile(
-    r"(#expect|#require|"
-    r"\bawaitConnectionState\b|\bawaitChannelState\b|\bawaitState\b|"
+# Assertions and waits are counted separately (mirroring the spec side's
+# specAssertCount / specAwaitCount), so a surplus of waits can't mask a dropped
+# assertion. Longest alternatives first so `pollUntil` isn't half-matched by `poll`.
+SWIFT_ASSERT_RE = re.compile(r"(#expect|#require)")
+SWIFT_AWAIT_RE = re.compile(
+    r"(\bawaitConnectionState\b|\bawaitChannelState\b|\bawaitState\b|"
     r"\bpollUntil\b|\bpoll\b)"
 )
 
@@ -118,17 +125,18 @@ def parse_spec(path):
 
         sections = []          # [{heading, lines:[{text, kind}]}]
         cur = None             # current section being filled
-        in_fence = False
+        fence = None           # None = prose; else the open fence's label ("pseudo", "json", "")
         for line in lines[start:end]:
             h = HEADING_RE.match(line)
-            if h and not in_fence:
+            if h and fence is None:
                 cur = {"heading": h.group(1), "lines": []}
                 sections.append(cur)
                 continue
-            if FENCE_RE.match(line):
-                in_fence = not in_fence
+            m = FENCE_RE.match(line)
+            if m:
+                fence = m.group(1) if fence is None else None  # open with label / close
                 continue
-            if not in_fence:
+            if fence != "pseudo":  # prose, or a non-pseudo fence (json fixtures, examples)
                 continue
             stripped = line.strip()
             if not stripped or stripped.startswith("#"):  # blank / pseudocode comment
@@ -151,25 +159,30 @@ def parse_spec(path):
 
 
 def parse_swift(path):
-    """Return dict: uts-id -> {assertionCalls[], assertionCount}. Method block for a tag
-    runs from its // UTS: line to the next // UTS: line (or EOF).
+    """Return dict: uts-id -> {assertionCalls[], assertionCount, awaitCalls[], awaitCount}.
+    Method block for a tag runs from its // UTS: line to the next // UTS: line (or EOF).
+    Assertions (#expect / #require) and waits (await*/poll* helpers) are counted
+    separately, mirroring the spec side's assert/await split.
 
-    Comment-only lines are skipped when counting assertion calls — a commented-out
-    `// #expect(...)` (or an annotated-omission comment) is NOT an assertion, and counting
-    it would silently mask a dropped one. (The spec-side parser skips `#` pseudocode
-    comments for the same reason.)"""
+    Comment-only lines are skipped when counting — a commented-out `// #expect(...)`
+    (or an annotated-omission comment) is NOT an assertion, and counting it would
+    silently mask a dropped one. (The spec-side parser skips `#` pseudocode comments
+    for the same reason.)"""
     lines = read_lines(path)
     tags = [(i, m.group(1)) for i, line in enumerate(lines) for m in [UTS_TAG_RE.search(line)] if m]
     out = {}
     for idx, (start, tag) in enumerate(tags):
         end = tags[idx + 1][0] if idx + 1 < len(tags) else len(lines)
-        calls = []
+        asserts, awaits = [], []
         for line in lines[start:end]:
             if line.strip().startswith("//"):  # comment-only line — not executable
                 continue
             for m in SWIFT_ASSERT_RE.finditer(line):
-                calls.append(m.group(1))
-        out[tag] = {"assertionCalls": calls, "assertionCount": len(calls)}
+                asserts.append(m.group(1))
+            for m in SWIFT_AWAIT_RE.finditer(line):
+                awaits.append(m.group(1))
+        out[tag] = {"assertionCalls": asserts, "assertionCount": len(asserts),
+                    "awaitCalls": awaits, "awaitCount": len(awaits)}
     return out
 
 
@@ -222,8 +235,13 @@ def build_report(spec_path, swift_path, spec_tests, swift):
             "swiftPresent": sw is not None,
             "swiftAssertionCalls": sw["assertionCalls"] if sw else [],
             "swiftAssertionCount": sw["assertionCount"] if sw else 0,
-            # tripwire: fewer Swift assertions than spec ASSERTs => likely a dropped assertion
+            "swiftAwaitCalls": sw["awaitCalls"] if sw else [],
+            "swiftAwaitCount": sw["awaitCount"] if sw else 0,
+            # primary tripwire: fewer Swift assertions than spec ASSERTs => likely a dropped assertion
             "assertionShortfall": (len(t["asserts"]) - sw["assertionCount"]) if sw else len(t["asserts"]),
+            # secondary signal: fewer Swift waits than spec AWAITs — softer, since custom
+            # continuation-bridged helpers legitimately replace the infra wait calls
+            "awaitShortfall": (len(t["awaits"]) - sw["awaitCount"]) if sw else len(t["awaits"]),
         })
 
     report = {
@@ -241,7 +259,9 @@ def build_report(spec_path, swift_path, spec_tests, swift):
             "specAssertTotal": sum(len(t["asserts"]) for t in spec_tests),
             "specAwaitTotal": sum(len(t["awaits"]) for t in spec_tests),
             "swiftAssertionTotal": sum(k["assertionCount"] for k in swift.values()),
+            "swiftAwaitTotal": sum(k["awaitCount"] for k in swift.values()),
             "testsWithShortfall": [p["testId"] for p in per_test if p["assertionShortfall"] > 0],
+            "testsWithAwaitShortfall": [p["testId"] for p in per_test if p["awaitShortfall"] > 0],
         },
     }
     return report
