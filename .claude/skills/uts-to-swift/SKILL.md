@@ -1,6 +1,6 @@
 ---
 name: uts-to-swift
-description: "Translate the UTS pseudocode test specs in a whole module directory into runnable Swift tests in the ably-cocoa UTS test target. Takes a UTS module directory (e.g. .../specification/uts/objects), validates its structure, resolves the target test directories, lets you pick a tier (unit/integration/proxy) and which specs, then derives a Swift test per spec. Usage: /uts-to-swift <path-to-uts-module-directory>"
+description: "Translate the UTS pseudocode test specs in a whole module directory into runnable Swift tests in the ably-cocoa UTS test target. Takes a UTS module directory (e.g. <cloned-ably-specification-repo-path>/uts/objects), validates its structure, resolves the target test directories, lets you pick a tier (unit/integration/proxy) and which specs, then derives a Swift test per spec. Usage: /uts-to-swift <path-to-uts-module-directory>"
 license: proprietary
 allowed-tools: Bash, Read, Edit, Write, WebFetch
 metadata:
@@ -13,8 +13,8 @@ metadata:
 Translate the UTS pseudocode test specs under the **module directory** `$ARGUMENTS` into runnable Swift
 tests in the ably-cocoa `UTS` test target (`Test/UTS`).
 
-`$ARGUMENTS` is a UTS *module* directory — a directory sitting directly under `.../specification/uts/`,
-e.g. `/Users/sachinsh/ably-specification/specification/uts/objects`. Its name (`objects`, `realtime`,
+`$ARGUMENTS` is a UTS *module* directory — a directory sitting directly under the spec repo's `uts/`,
+e.g. `<cloned-ably-specification-repo-path>/uts/objects`. Its name (`objects`, `realtime`,
 `rest`, …) is the **source module**. A module directory holds many spec files, organised into tiers
 (`unit/`, `integration/`, and `integration/proxy/`).
 
@@ -38,7 +38,9 @@ bundled script does them — that keeps selection byte-for-byte deterministic in
 to re-eyeball regexes, join paths, and hand-convert `snake_case` → `PascalCase` each run.
 
 > **If `$ARGUMENTS` is empty or blank**, stop and show: `Usage: /uts-to-swift <path-to-uts-module-directory>`
-> — with the example `/uts-to-swift /Users/sachinsh/ably-specification/specification/uts/objects`.
+> — with the example `/uts-to-swift <cloned-ably-specification-repo-path>/uts/objects`
+> (the path to a module directory inside a local clone of
+> [`ably/specification`](https://github.com/ably/specification)).
 
 ## Step A — Resolve the module
 
@@ -794,6 +796,8 @@ semantic judgement — it only extracts, deterministically, what you must then r
   - `missingInSwift` **must be empty.** Each entry is a spec test case with no `@Test` method — implement it.
   - `orphanInSwift` **must be empty** (or every entry explained) — a `// UTS:` tag that no longer matches
     any spec Test ID means a stale or hand-edited tag.
+  - `duplicateInSwift` **must be empty** — a tag carried by more than one `@Test` means the audit only
+    examined the last method with that tag; deduplicate the tags first.
 - **`perTest[]`** — for each spec test case, every non-comment code line inside the spec's `pseudo` blocks,
   **grouped by section** (`Setup` / `Test Steps` / `Assertions` / …) in `sections[]` and each line tagged
   `assert` (an `ASSERT*` outcome), `await` (an `AWAIT*` / `EXPECT` wait), or `step` (setup, mock/client
@@ -817,6 +821,7 @@ verify that file by hand.
 From the audit's `idCoverage`:
 - [ ] `missingInSwift` is empty (every spec Test ID has an `@Test` with that ID in its `// UTS:` comment)
 - [ ] `orphanInSwift` is empty, or each orphan is a deliberate, explained rename
+- [ ] `duplicateInSwift` is empty (no `// UTS:` tag is shared by two test methods)
 - [ ] Each method name contains the spec ID and a meaningful description
 
 ### Line-by-line completeness — every spec line is translated
@@ -859,8 +864,8 @@ generated test diverges from the spec pseudocode (adapted assertion, env-gated s
 - [ ] The deviation is recorded in `Test/UTS/deviations.md`
 
 If you find gaps during this review, fix them, then **re-run the audit script** until `missingInSwift` /
-`orphanInSwift` are empty and every `perTest` entry reconciles, and re-run Step 5 (compile) — and, in
-evaluate mode, Step 6 — before finishing.
+`orphanInSwift` / `duplicateInSwift` are empty and every `perTest` entry reconciles, and re-run Step 5
+(compile) — and, in evaluate mode, Step 6 — before finishing.
 
 ---
 

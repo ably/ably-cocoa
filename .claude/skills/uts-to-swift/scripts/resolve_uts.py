@@ -109,7 +109,15 @@ def main():
         fail("MAPPING_NOT_FOUND", f"mapping file not found at {MAPPING}")
     data = json.loads(MAPPING.read_text(encoding="utf-8"))
     packages = data.setdefault("packages", {})
-    test_root = data.get("testRoot", "")
+    # testRoot anchors every targetDir; a blank/missing one would silently emit
+    # absolute-looking nonsense like "/unit/realtime". Fail fast — and before --create
+    # can write the corrupted mapping back to disk.
+    test_root = data.get("testRoot") or ""
+    if not isinstance(test_root, str) or not test_root.strip():
+        fail("BAD_MAPPING",
+             f"{MAPPING} has no usable 'testRoot' (expected e.g. 'Test/UTS'); "
+             f"fix the mapping file before resolving.")
+    test_root = test_root.rstrip("/")
 
     if args.create:
         target = args.create

@@ -16,6 +16,9 @@ inputs always give the same report:
          case is absent; implement it (or consciously exclude it and explain why).
        - orphanInSwift:  a // UTS: tag with no matching spec Test ID  → a stale or
          hand-edited tag. Investigate.
+       - duplicateInSwift: a // UTS: tag carried by more than one @Test → the audit
+         only examines the last method with that tag, so deduplicate before trusting
+         the ledger.
 
   2. Per-test line ledger. Within each spec test block (from one Test ID to the next),
      every non-blank, non-comment code line inside the ```pseudo fences (only pseudo —
@@ -159,10 +162,16 @@ def parse_spec(path):
 
 
 def parse_swift(path):
-    """Return dict: uts-id -> {assertionCalls[], assertionCount, awaitCalls[], awaitCount}.
-    Method block for a tag runs from its // UTS: line to the next // UTS: line (or EOF).
-    Assertions (#expect / #require) and waits (await*/poll* helpers) are counted
-    separately, mirroring the spec side's assert/await split.
+    """Return (methods, duplicates). `methods` is a dict uts-id ->
+    {assertionCalls[], assertionCount, awaitCalls[], awaitCount}; a method block for a
+    tag runs from its // UTS: line to the next // UTS: line (or EOF). Assertions
+    (#expect / #require) and waits (await*/poll* helpers) are counted separately,
+    mirroring the spec side's assert/await split.
+
+    `duplicates` lists tags carried by more than one method — the dict keeps only the
+    LAST block for a duplicated tag, making earlier methods invisible, so duplicates are
+    reported (not merged: merging would paper over the defect) and gate the exit status
+    like missing/orphan IDs do.
 
     Comment-only lines are skipped when counting — a commented-out `// #expect(...)`
     (or an annotated-omission comment) is NOT an assertion, and counting it would
@@ -170,6 +179,10 @@ def parse_swift(path):
     for the same reason.)"""
     lines = read_lines(path)
     tags = [(i, m.group(1)) for i, line in enumerate(lines) for m in [UTS_TAG_RE.search(line)] if m]
+    tag_counts = {}
+    for _, tag in tags:
+        tag_counts[tag] = tag_counts.get(tag, 0) + 1
+    duplicates = [tag for tag, n in tag_counts.items() if n > 1]
     out = {}
     for idx, (start, tag) in enumerate(tags):
         end = tags[idx + 1][0] if idx + 1 < len(tags) else len(lines)
@@ -183,7 +196,7 @@ def parse_swift(path):
                 awaits.append(m.group(1))
         out[tag] = {"assertionCalls": asserts, "assertionCount": len(asserts),
                     "awaitCalls": awaits, "awaitCount": len(awaits)}
-    return out
+    return out, duplicates
 
 
 def main():
@@ -200,17 +213,17 @@ def main():
     # callers and the model can tell "couldn't run" apart from "ran, found gaps".
     try:
         spec_tests = parse_spec(spec_path)
-        swift = parse_swift(swift_path)
-        report = build_report(spec_path, swift_path, spec_tests, swift)
+        swift, duplicates = parse_swift(swift_path)
+        report = build_report(spec_path, swift_path, spec_tests, swift, duplicates)
     except Exception as exc:  # noqa: BLE001 — deliberate catch-all; this tool must not crash
         fail("INTERNAL_ERROR", f"{type(exc).__name__}: {exc}", spec=spec_path, swift=swift_path)
 
     print(json.dumps(report, indent=2))
     cov = report["idCoverage"]
-    sys.exit(2 if (cov["missingInSwift"] or cov["orphanInSwift"]) else 0)
+    sys.exit(2 if (cov["missingInSwift"] or cov["orphanInSwift"] or cov["duplicateInSwift"]) else 0)
 
 
-def build_report(spec_path, swift_path, spec_tests, swift):
+def build_report(spec_path, swift_path, spec_tests, swift, duplicates):
     spec_ids = [t["testId"] for t in spec_tests]
     swift_ids = list(swift.keys())
     spec_id_set, swift_id_set = set(spec_ids), set(swift_ids)
@@ -253,6 +266,7 @@ def build_report(spec_path, swift_path, spec_tests, swift):
             "swiftCount": len(swift_ids),
             "missingInSwift": missing,
             "orphanInSwift": orphan,
+            "duplicateInSwift": duplicates,
         },
         "perTest": per_test,
         "summary": {
