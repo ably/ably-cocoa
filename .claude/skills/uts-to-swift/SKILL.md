@@ -691,8 +691,9 @@ swift test --filter "UTS.<className>"
 swift test --filter "UTS.<className>/<test_method_name>"
 ```
 
-(`swift test --filter UTS` still runs the whole UTS target. The integration and proxy tiers additionally
-need network access and the suite's env gate — see `Test/UTS/README.md` §10 for the current gating.)
+(`swift test --filter UTS` still runs the whole UTS target — including the integration tiers. There is
+no env-var gating: integration and proxy suites run directly from `swift test` or the Xcode test runner;
+they just need network access, and the proxy tier needs macOS — see `Test/UTS/README.md` §10.)
 
 Handle test failures using this decision tree (the **Required reading** doc you fetched up front has the full detail):
 
@@ -830,9 +831,10 @@ Walk the audit's `perTest[].sections` and reconcile **each** extracted spec line
 This is the guarantee that no setup step, operation, or assertion was dropped — the whole point of this step:
 - [ ] Every `assert` line maps to a concrete Swift assertion (`#expect`, `try #require`, …) — not a
       comment, not a weaker check
-- [ ] Every `await` line (state waits **and** awaited operations like `AWAIT channel.attach()`) is
-      performed via `awaitConnectionState` / `awaitChannelState` / `poll` (unit tier) or `awaitState` /
-      `awaitChannelState` / `pollUntil` (integration tiers) or the corresponding SDK call
+- [ ] Every `await` line (state waits **and** awaited operations like `AWAIT channel.attach()` /
+      `setup_synced_channel(...)`) is performed via `awaitConnectionState` / `awaitChannelState` /
+      `poll` (unit tier) or `awaitState` / `awaitChannelState` / `pollUntil` (integration tiers) or
+      the corresponding SDK call
 - [ ] Every `step` line — client/mock construction, `ClientOptions`, installed mocks, channel ops — is
       reflected in the test setup or body. Multi-line spec constructs split across several `step` lines;
       reconcile them as a group.
@@ -908,10 +910,11 @@ Recognise a **proxy** spec by a reference to `create_proxy_session()`, proxy `ru
 A **direct-sandbox** spec (no `create_proxy_session`, no rules — just happy-path interop against
 `nonprod:sandbox`) uses the same `SandboxApp` provisioning as a proxy test but **drops all proxy wiring**:
 no `ProxyManager`, no `ProxySession`, no `connectThroughProxy`. The client connects straight to the
-sandbox host. `IntegrationSmokeTest.swift` (under `Test/UTS/integration/standard/`) is the reference
-example — read it before translating a direct-sandbox spec. (It's an infra acceptance test slated for
-removal once spec-derived integration suites exist — the reference then migrates to the first of those;
-see `Test/UTS/README.md` §11.7.)
+sandbox host. `Test/UTS/integration/standard/realtime/ChannelHistoryTests.swift` (RTL10d — ably-java's
+`ChannelHistoryTest` is its sibling) is the reference example — read it before translating a
+direct-sandbox spec. For the **proxy** tier the reference is
+`Test/UTS/integration/proxy/realtime/AuthReauthTests.swift` (RTN22/RTC8a). Don't add env-var gating to
+generated tests — integration suites run ungated (they just need network; see `Test/UTS/README.md` §10).
 
 Suites subclass `IntegrationTestCase` and wrap the scenario in the scoped-resource methods:
 `withSandboxApp { app in … }` provisions a throwaway sandbox app and always deletes it;
@@ -960,7 +963,7 @@ or poll:
 |---|---|
 | `AWAIT channel.attach()` | `channel.attach()` then `guard await awaitChannelState(channel, .attached, timeout: 10) else { return }` |
 | `AWAIT channel.publish(name, data)` (await the ack) | bridge the callback overload (`publish(_:data:callback:)`) with a continuation, resuming on the callback and recording an `Issue` on error — same helper pattern as Step 4's `awaitTime` |
-| `poll_until(() => AWAIT channel.history().items.length == N, …)` | `await pollUntil("history has N items") { await historyCount(channel) == N }` — with a continuation-bridged `history` helper |
+| `poll_until(() => AWAIT channel.history().items.length == N, …)` | `await pollUntil("history has N items") { await historyItems(of: channel).count == N }` — with a continuation-bridged `history` helper (see `ChannelHistoryTests` and `Test/UTS/README.md` §11.4 for the concrete helpers) |
 
 Use generous timeouts (10–30s) — real network is involved. Everything else is the shared foundation
 described at the top of this section; a direct-sandbox test just skips the proxy-only subsections
