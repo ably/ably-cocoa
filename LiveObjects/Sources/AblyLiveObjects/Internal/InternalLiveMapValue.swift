@@ -1,6 +1,6 @@
 import Foundation
 
-/// Same as the public ``LiveMapValue`` type but with associated values of internal type.
+/// The internal representation of a LiveMap value, with associated values of internal type.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal enum InternalLiveMapValue: Sendable, Equatable {
     case string(String)
@@ -11,40 +11,6 @@ internal enum InternalLiveMapValue: Sendable, Equatable {
     case jsonObject([String: JSONValue])
     case liveMap(InternalDefaultLiveMap)
     case liveCounter(InternalDefaultLiveCounter)
-
-    // MARK: - Creating from a public LiveMapValue
-
-    /// Converts a public ``LiveMapValue`` into an ``InternalLiveMapValue``.
-    ///
-    /// Needed in order to access the internals of user-provided LiveObject-valued LiveMap entries to extract their object ID.
-    internal init(liveMapValue: LiveMapValue) {
-        switch liveMapValue {
-        case let .string(value):
-            self = .string(value)
-        case let .number(value):
-            self = .number(value)
-        case let .bool(value):
-            self = .bool(value)
-        case let .data(value):
-            self = .data(value)
-        case let .jsonArray(value):
-            self = .jsonArray(value)
-        case let .jsonObject(value):
-            self = .jsonObject(value)
-        case let .liveMap(publicLiveMap):
-            guard let publicDefaultLiveMap = publicLiveMap as? PublicDefaultLiveMap else {
-                // TODO: Try and remove this runtime check and know this type statically, see https://github.com/ably/ably-liveobjects-swift-plugin/issues/37
-                preconditionFailure("Expected PublicDefaultLiveMap, got \(publicLiveMap)")
-            }
-            self = .liveMap(publicDefaultLiveMap.proxied)
-        case let .liveCounter(publicLiveCounter):
-            guard let publicDefaultLiveCounter = publicLiveCounter as? PublicDefaultLiveCounter else {
-                // TODO: Try and remove this runtime check and know this type statically, see https://github.com/ably/ably-liveobjects-swift-plugin/issues/37
-                preconditionFailure("Expected PublicDefaultLiveCounter, got \(publicLiveCounter)")
-            }
-            self = .liveCounter(publicDefaultLiveCounter.proxied)
-        }
-    }
 
     // MARK: - Representation in the Realtime protocol
 

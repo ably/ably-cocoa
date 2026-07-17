@@ -3,12 +3,20 @@ import Ably
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 public extension ARTRealtimeChannel {
-    /// A ``RealtimeObjects`` object.
-    var objects: RealtimeObjects {
-        nonTypeErasedObjects
+    /// The ``RealtimeObject`` for this channel — the entry point into the LiveObjects API.
+    ///
+    /// From here, ``RealtimeObject/get()`` returns a ``LiveMapPathObject`` rooted at the channel's
+    /// root map, from which the rest of the object graph is navigated.
+    ///
+    /// > Note: It is a programmer error to access this property without first providing the
+    /// > `LiveObjects` plugin in the client options.
+    ///
+    /// Spec: `RTL27`.
+    var object: any RealtimeObject {
+        nonTypeErasedObject
     }
 
-    private var nonTypeErasedObjects: PublicDefaultRealtimeObjects {
+    private var nonTypeErasedObject: PublicDefaultRealtimeObject {
         let pluginAPI = Plugin.defaultPluginAPI
         let underlyingObjects = pluginAPI.underlyingObjects(for: asPluginPublicRealtimeChannel)
         let internalQueue = pluginAPI.internalQueue(for: underlyingObjects.client)
@@ -26,7 +34,7 @@ public extension ARTRealtimeChannel {
             logger: logger,
         )
 
-        return PublicObjectsStore.shared.getOrCreateRealtimeObjects(
+        return PublicObjectsStore.shared.getOrCreateRealtimeObject(
             proxying: internalObjects,
             creationArgs: .init(
                 coreSDK: coreSDK,
@@ -35,8 +43,8 @@ public extension ARTRealtimeChannel {
         )
     }
 
-    /// For tests to access the non-public API of `PublicDefaultRealtimeObjects`.
-    internal var testsOnly_nonTypeErasedObjects: PublicDefaultRealtimeObjects {
-        nonTypeErasedObjects
+    /// For tests to access the non-public API of `PublicDefaultRealtimeObject`.
+    internal var testsOnly_nonTypeErasedObject: PublicDefaultRealtimeObject {
+        nonTypeErasedObject
     }
 }
