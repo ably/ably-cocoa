@@ -23,6 +23,9 @@ enum VoteColor: String, CaseIterable {
     }
 }
 
+// NOTE: This view model uses the path-based LiveObjects API, whose implementation is currently a
+// skeleton: every operation traps via `notImplemented()` at runtime. The example compiles against
+// the final API shape but is not runnable end-to-end until the path-based API is implemented.
 @MainActor
 final class LiveCounterViewModel: ObservableObject {
     @Published var redCount: Double = 0
@@ -33,14 +36,10 @@ final class LiveCounterViewModel: ObservableObject {
 
     private var realtime: ARTRealtime
     private var channel: ARTRealtimeChannel
-    private var objects: any RealtimeObjects
-    private var root: (any LiveMap)?
+    private var object: any RealtimeObject
+    private var root: (any LiveMapPathObject)?
 
-    private var redCounter: (any LiveCounter)?
-    private var greenCounter: (any LiveCounter)?
-    private var blueCounter: (any LiveCounter)?
-
-    private var subscribeResponses: [String: any SubscribeResponse] = [:]
+    private var subscriptions: [String: any Subscription] = [:]
 
     init(realtime: ARTRealtime) {
         self.realtime = realtime
@@ -50,7 +49,7 @@ final class LiveCounterViewModel: ObservableObject {
         let channelOptions = ARTRealtimeChannelOptions()
         channelOptions.modes = [.objectPublish, .objectSubscribe]
         channel = realtime.channels.get(channelName, options: channelOptions)
-        objects = channel.objects
+        object = channel.object
 
         Task {
             await initializeCounters()
@@ -59,8 +58,15 @@ final class LiveCounterViewModel: ObservableObject {
 
     deinit {
         // Clean up subscriptions
-        subscribeResponses.values.forEach { $0.unsubscribe() }
-        subscribeResponses.removeAll()
+        subscriptions.values.forEach { $0.unsubscribe() }
+        subscriptions.removeAll()
+    }
+
+    /// A path object for the counter of a given color. Purely navigational (does not resolve the
+    /// path), and it survives the counter being replaced by `resetCounter` — unlike the previous
+    /// proxy-object API, there is no need to re-fetch anything when the object at the path changes.
+    private func counterPath(for color: VoteColor) -> (any LiveCounterPathObject)? {
+        root?.get(key: color.rawValue).asLiveCounter()
     }
 
     private func initializeCounters() async {
@@ -71,22 +77,9 @@ final class LiveCounterViewModel: ObservableObject {
             // Attach channel first
             try await channel.attachAsync()
 
-            // Get root object
-            let root = try await objects.getRoot()
+            // Get the root map path object, once objects are synchronized
+            let root = try await object.get()
             self.root = root
-
-            // Subscribe to root changes
-            let rootSubscription = try root.subscribe { [weak self] update, _ in
-                MainActor.assumeIsolated {
-                    // Handle root updates - this will fire when counters are reset
-                    for (keyName, change) in update.update {
-                        if change == .updated, let color = VoteColor(rawValue: keyName) {
-                            self?.subscribeToCounter(color: color)
-                        }
-                    }
-                }
-            }
-            subscribeResponses["root"] = rootSubscription
 
             // Initialize all color counters
             for color in VoteColor.allCases {
@@ -102,71 +95,51 @@ final class LiveCounterViewModel: ObservableObject {
 
     private func initializeCounter(for color: VoteColor) async {
         do {
-            guard let root else {
+            guard let counterPath = counterPath(for: color) else {
                 return
             }
 
-            // Check if counter already exists
-            if let existingValue = try root.get(key: color.rawValue), let existingCounter = existingValue.liveCounterValue {
-                // Counter exists, store it
-                setCounter(existingCounter, for: color)
-            } else {
-                // Counter doesn't exist, create it
-                let newCounter = try await objects.createCounter(count: 0)
-                try await root.set(key: color.rawValue, value: .liveCounter(newCounter))
-                setCounter(newCounter, for: color)
+            // Create the counter if nothing exists at its path yet. (Creation is declarative in the
+            // path-based API: setting a `LiveCounter` value type creates the counter.)
+            if try !counterPath.exists() {
+                try await root?.set(key: color.rawValue, value: .liveCounter(.create()))
             }
-            // Subscribe to it
+
+            // Read its current value and subscribe to updates
+            updateCounterValue(for: color)
             subscribeToCounter(color: color)
         } catch {
             errorMessage = "Failed to initialize \(color.rawValue) counter: \(error.localizedDescription)"
         }
     }
 
-    private func setCounter(_ counter: any LiveCounter, for color: VoteColor) {
-        do {
-            let value = try counter.value
-            switch color {
-            case .red:
-                redCounter = counter
-                redCount = value
-            case .green:
-                greenCounter = counter
-                greenCount = value
-            case .blue:
-                blueCounter = counter
-                blueCount = value
-            }
-        } catch {
-            errorMessage = "Error getting \(color.rawValue) counter value: \(error)"
-        }
-    }
-
     private func subscribeToCounter(color: VoteColor) {
         do {
-            guard let root,
-                  let value = try root.get(key: color.rawValue),
-                  let counter = value.liveCounterValue else { return }
+            guard let counterPath = counterPath(for: color) else {
+                return
+            }
 
-            subscribeResponses[color.rawValue]?.unsubscribe()
+            subscriptions[color.rawValue]?.unsubscribe()
 
-            subscribeResponses[color.rawValue] = try counter.subscribe { [weak self] _, _ in
+            // Because the subscription is path-based, it also survives the counter being replaced
+            // by `resetCounter`; there is no need to re-subscribe.
+            subscriptions[color.rawValue] = try counterPath.subscribe { [weak self] _ in
                 MainActor.assumeIsolated {
-                    // Update current value
-                    self?.updateCounterValue(for: color, counter: counter)
+                    self?.updateCounterValue(for: color)
                 }
             }
 
-            // Set counter with value
-            setCounter(counter, for: color)
+            updateCounterValue(for: color)
         } catch {
             errorMessage = "Failed to subscribe to \(color.rawValue) counter: \(error)"
         }
     }
 
-    private func updateCounterValue(for color: VoteColor, counter: any LiveCounter) {
+    private func updateCounterValue(for color: VoteColor) {
         do {
-            let value = try counter.value
+            guard let value = try counterPath(for: color)?.value() else {
+                return
+            }
             switch color {
             case .red:
                 redCount = value
@@ -183,16 +156,7 @@ final class LiveCounterViewModel: ObservableObject {
     func vote(for color: VoteColor) {
         Task {
             do {
-                let counter: (any LiveCounter)? = switch color {
-                case .red:
-                    redCounter
-                case .green:
-                    greenCounter
-                case .blue:
-                    blueCounter
-                }
-
-                try await counter?.increment(amount: 1)
+                try await counterPath(for: color)?.increment()
             } catch {
                 errorMessage = "Failed to vote for \(color.rawValue): \(error.localizedDescription)"
             }
@@ -202,8 +166,9 @@ final class LiveCounterViewModel: ObservableObject {
     func resetCounter(color: VoteColor) {
         Task {
             do {
-                let newCounter = try await objects.createCounter(count: 0)
-                try await self.root?.set(key: color.rawValue, value: .liveCounter(newCounter))
+                // Replace the counter with a fresh zero-count one. The stored path objects and the
+                // path-based subscription automatically refer to the new counter.
+                try await root?.set(key: color.rawValue, value: .liveCounter(.create()))
             } catch {
                 errorMessage = "Failed to reset counters: \(error.localizedDescription)"
             }
