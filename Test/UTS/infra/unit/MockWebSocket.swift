@@ -63,14 +63,7 @@ final class MockWebSocket: NSObject, ARTWebSocket, @unchecked Sendable {
     var url: URL { request.url ?? URL(string: "wss://invalid")! }
     /// Query parameters parsed from the connection URL (UTS `url.query_params`).
     var queryParams: [String: String] {
-        guard let url = request.url,
-              let components = URLComponents(url: url, resolvingAgainstBaseURL: true),
-              let items = components.queryItems else { return [:] }
-        var result: [String: String] = [:]
-        for item in items where item.value != nil {
-            result[item.name] = item.value
-        }
-        return result
+        parseQueryParams(of: request.url)
     }
 
     /// Protocol messages the SDK has sent towards the server, decoded, in order
@@ -122,6 +115,13 @@ final class MockWebSocket: NSObject, ARTWebSocket, @unchecked Sendable {
             guard let self else { return }
             self.delegate?.webSocketDidOpen?(self)
         }
+    }
+
+    /// Accepts the connection and immediately delivers `message` — usually `.connectedMessage`
+    /// (UTS `respond_with_success(message)`, the convenience ably-java also offers).
+    func respondWithSuccess(_ message: ProtocolMessage) {
+        respondWithSuccess()
+        sendToClient(message)
     }
 
     /// Delivers a protocol message to the client, leaving the connection open

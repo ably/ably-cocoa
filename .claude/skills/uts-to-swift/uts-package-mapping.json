@@ -1,0 +1,22 @@
+{
+  "_comment": "Maps each UTS spec module (a dir under specification/uts/) to its target test directories. Output dir = testRoot + '/' + tier entry. Swift has no package concept, so the directory is the full story. An optional 'notes' field points (relative to this skill dir) to a per-module ably-js -> ably-cocoa translation reference, read before translating that module. Used by the uts-to-swift skill.",
+  "testRoot": "Test/UTS",
+  "packages": {
+    "realtime": {
+      "unit": "unit/realtime",
+      "integration": "integration/standard/realtime",
+      "proxy": "integration/proxy/realtime"
+    },
+    "objects": {
+      "unit": "unit/objects",
+      "integration": "integration/standard/objects",
+      "proxy": "integration/proxy/objects",
+      "notes": "references/objects-mapping.md"
+    },
+    "rest": {
+      "unit": "unit/rest",
+      "integration": "integration/standard/rest",
+      "proxy": "integration/proxy/rest"
+    }
+  }
+}
