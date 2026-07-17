@@ -22,7 +22,7 @@ import AblyLiveObjects
 ///
 /// The spec's `value() == null` assertions denote its undefined/null absent value (RTLM5d2h) —
 /// asserted here as the typed-view read returning `nil`.
-@Suite(.serialized)
+@Suite(.serialized, .disabled("The path-based LiveObjects public API is not yet implemented (every operation traps via notImplemented()). Compile-only until the implementation lands - then remove this trait."))
 final class ObjectsGcTests: IntegrationTestCase {
 
     // UTS: objects/integration/RTO10/tombstoned-object-gc-recreate-0

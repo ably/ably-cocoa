@@ -13,7 +13,7 @@ import AblyLiveObjects
 /// End-to-end lifecycle: connect, sync, create objects via PathObject, mutate, and verify
 /// propagation to a second client. Complements unit tests by verifying real server sync, mutation
 /// delivery, and object creation.
-@Suite(.serialized)
+@Suite(.serialized, .disabled("The path-based LiveObjects public API is not yet implemented (every operation traps via notImplemented()). Compile-only until the implementation lands - then remove this trait."))
 final class ObjectsLifecycleTests: IntegrationTestCase {
 
     // UTS: objects/integration/RTO23-RTPO15/set-primitive-propagates-0

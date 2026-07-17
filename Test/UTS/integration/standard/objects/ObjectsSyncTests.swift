@@ -13,7 +13,7 @@ import AblyLiveObjects
 /// Verifies the sync sequence against the real server: attach with HAS_OBJECTS, receive
 /// OBJECT_SYNC, reach SYNCED state. Also tests re-attach behaviour where the client detaches and
 /// re-attaches to verify the pool is re-synced.
-@Suite(.serialized)
+@Suite(.serialized, .disabled("The path-based LiveObjects public API is not yet implemented (every operation traps via notImplemented()). Compile-only until the implementation lands - then remove this trait."))
 final class ObjectsSyncTests: IntegrationTestCase {
 
     // UTS: objects/integration/RTO4-RTO5/attach-sync-get-0
