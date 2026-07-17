@@ -97,7 +97,7 @@ struct AblyLiveObjectsTests {
         )
 
         try await channel.testsOnly_nonTypeErasedObjects.testsOnly_publish(objectMessages: [
-            OutboundObjectMessage(
+            ProtocolTypes.OutboundObjectMessage(
                 operation: .init(
                     action: .known(.mapCreate),
                     objectId: realtimeCreatedMapObjectID,

@@ -98,7 +98,7 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
                 wireObject: wireObject,
                 decodingContext: context,
             )
-            let objectMessage = try InboundObjectMessage(
+            let objectMessage = try ProtocolTypes.InboundObjectMessage(
                 wireObjectMessage: wireObjectMessage,
                 format: format,
             )
@@ -113,7 +113,7 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
         _ publicObjectMessage: any _AblyPluginSupportPrivate.ObjectMessageProtocol,
         format: EncodingFormat,
     ) -> [String: Any] {
-        guard let outboundObjectMessageBox = publicObjectMessage as? ObjectMessageBox<OutboundObjectMessage> else {
+        guard let outboundObjectMessageBox = publicObjectMessage as? ObjectMessageBox<ProtocolTypes.OutboundObjectMessage> else {
             preconditionFailure("Expected to receive the same OutboundObjectMessage type as we emit")
         }
 
@@ -126,7 +126,7 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
     }
 
     internal func nosync_handleObjectProtocolMessage(withObjectMessages publicObjectMessages: [any _AblyPluginSupportPrivate.ObjectMessageProtocol], channel: _AblyPluginSupportPrivate.RealtimeChannel) {
-        guard let inboundObjectMessageBoxes = publicObjectMessages as? [ObjectMessageBox<InboundObjectMessage>] else {
+        guard let inboundObjectMessageBoxes = publicObjectMessages as? [ObjectMessageBox<ProtocolTypes.InboundObjectMessage>] else {
             preconditionFailure("Expected to receive the same InboundObjectMessage type as we emit")
         }
 
@@ -138,7 +138,7 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
     }
 
     internal func nosync_handleObjectSyncProtocolMessage(withObjectMessages publicObjectMessages: [any _AblyPluginSupportPrivate.ObjectMessageProtocol], protocolMessageChannelSerial: String?, channel: _AblyPluginSupportPrivate.RealtimeChannel) {
-        guard let inboundObjectMessageBoxes = publicObjectMessages as? [ObjectMessageBox<InboundObjectMessage>] else {
+        guard let inboundObjectMessageBoxes = publicObjectMessages as? [ObjectMessageBox<ProtocolTypes.InboundObjectMessage>] else {
             preconditionFailure("Expected to receive the same InboundObjectMessage type as we emit")
         }
 
@@ -168,13 +168,13 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
     // MARK: - Sending `OBJECT` ProtocolMessage
 
     internal static func nosync_sendObject(
-        objectMessages: [OutboundObjectMessage],
+        objectMessages: [ProtocolTypes.OutboundObjectMessage],
         channel: _AblyPluginSupportPrivate.RealtimeChannel,
         client: _AblyPluginSupportPrivate.RealtimeClient,
         pluginAPI: PluginAPIProtocol,
         callback: @escaping @Sendable (Result<PublishResult, ARTErrorInfo>) -> Void,
     ) {
-        let objectMessageBoxes: [ObjectMessageBox<OutboundObjectMessage>] = objectMessages.map { .init(objectMessage: $0) }
+        let objectMessageBoxes: [ObjectMessageBox<ProtocolTypes.OutboundObjectMessage>] = objectMessages.map { .init(objectMessage: $0) }
         let internalQueue = pluginAPI.internalQueue(for: client)
 
         pluginAPI.nosync_sendObject(

@@ -1409,7 +1409,7 @@ struct InternalDefaultRealtimeObjectsTests {
             }
 
             // Track published messages
-            var publishedMessages: [OutboundObjectMessage] = []
+            var publishedMessages: [ProtocolTypes.OutboundObjectMessage] = []
             coreSDK.setPublishHandler { messages in
                 publishedMessages.append(contentsOf: messages)
                 return PublishResult(serials: messages.map { _ in "serial_\(UUID().uuidString)" })
@@ -1438,7 +1438,7 @@ struct InternalDefaultRealtimeObjectsTests {
             #expect(mapInitialValue["entries"] == .object(["stringKey": .object(["data": .object(["string": "stringValue"])])]))
 
             // Sense check that create op was applied locally by publishAndApply (
-            #expect(returnedMap.testsOnly_data == ["stringKey": InternalObjectsMapEntry(data: ObjectData(string: "stringValue"))])
+            #expect(returnedMap.testsOnly_data == ["stringKey": InternalObjectsMapEntry(data: ProtocolTypes.ObjectData(string: "stringValue"))])
             #expect(realtimeObjects.testsOnly_objectsPool.entries[objectID]?.mapValue === returnedMap)
         }
 
@@ -1458,7 +1458,7 @@ struct InternalDefaultRealtimeObjectsTests {
             }
 
             // Track published messages
-            var publishedMessages: [OutboundObjectMessage] = []
+            var publishedMessages: [ProtocolTypes.OutboundObjectMessage] = []
             coreSDK.setPublishHandler { messages in
                 publishedMessages.append(contentsOf: messages)
                 return PublishResult(serials: messages.map { _ in "serial_\(UUID().uuidString)" })
@@ -1494,7 +1494,7 @@ struct InternalDefaultRealtimeObjectsTests {
             }
 
             // Track published messages and the generated objectId
-            var publishedMessages: [OutboundObjectMessage] = []
+            var publishedMessages: [ProtocolTypes.OutboundObjectMessage] = []
             var maybeGeneratedObjectID: String?
             var maybeExistingObject: AnyObject?
 
@@ -1564,7 +1564,7 @@ struct InternalDefaultRealtimeObjectsTests {
             }
 
             // Track published messages
-            var publishedMessages: [OutboundObjectMessage] = []
+            var publishedMessages: [ProtocolTypes.OutboundObjectMessage] = []
             coreSDK.setPublishHandler { messages in
                 publishedMessages.append(contentsOf: messages)
                 return PublishResult(serials: messages.map { _ in "serial_\(UUID().uuidString)" })
@@ -1608,7 +1608,7 @@ struct InternalDefaultRealtimeObjectsTests {
             }
 
             // Track published messages
-            var publishedMessages: [OutboundObjectMessage] = []
+            var publishedMessages: [ProtocolTypes.OutboundObjectMessage] = []
             coreSDK.setPublishHandler { messages in
                 publishedMessages.append(contentsOf: messages)
                 return PublishResult(serials: messages.map { _ in "serial_\(UUID().uuidString)" })
@@ -1644,7 +1644,7 @@ struct InternalDefaultRealtimeObjectsTests {
             }
 
             // Track published messages and the generated objectId
-            var publishedMessages: [OutboundObjectMessage] = []
+            var publishedMessages: [ProtocolTypes.OutboundObjectMessage] = []
             var maybeGeneratedObjectID: String?
             var maybeExistingObject: AnyObject?
 
@@ -1985,7 +1985,7 @@ struct InternalDefaultRealtimeObjectsTests {
             }
 
             // RTO20b: Capture the outbound message published via the core SDK, and return a real serial
-            var capturedOutboundMessages: [OutboundObjectMessage] = []
+            var capturedOutboundMessages: [ProtocolTypes.OutboundObjectMessage] = []
             coreSDK.setPublishHandler { messages in
                 capturedOutboundMessages = messages
                 return PublishResult(serials: messages.map { _ in serial })
@@ -2002,7 +2002,7 @@ struct InternalDefaultRealtimeObjectsTests {
             #expect(outboundMessage.siteCode == nil)
 
             // RTO20f: The synthetic message was applied (data is present)
-            #expect(returnedMap.testsOnly_data == ["key": InternalObjectsMapEntry(data: ObjectData(string: "value"))])
+            #expect(returnedMap.testsOnly_data == ["key": InternalObjectsMapEntry(data: ProtocolTypes.ObjectData(string: "value"))])
 
             // RTO20f: The synthetic message was applied with source LOCAL
             // (confirmed because siteTimeserials were not updated, per RTLM15c / RTLC7c)

@@ -111,7 +111,7 @@ struct SyncObjectsPoolTests {
         var pool = SyncObjectsPool()
         let logger = TestLogger()
 
-        var expectedEntries: [String: ObjectsMapEntry] = [:]
+        var expectedEntries: [String: ProtocolTypes.ObjectsMapEntry] = [:]
         for i in 1 ... 3 {
             let (key, entry) = TestFactories.stringMapEntry(key: "key\(i)", value: "value\(i)")
             expectedEntries[key] = entry

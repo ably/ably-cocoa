@@ -110,7 +110,7 @@ func waitForMapClear(_ updates: AsyncStream<LiveMapUpdate>, expectedRemovedKeys:
 }
 
 // Note that Cursor decided to implement this in a different way to the waitForObjectSync that I'd already implemented; TODO pick one of the two approaches (this one might be cleaner).
-func waitForObjectOperation(_ objects: any RealtimeObjects, _ action: ObjectOperationAction) async throws {
+func waitForObjectOperation(_ objects: any RealtimeObjects, _ action: ProtocolTypes.ObjectOperationAction) async throws {
     // Cast to access internal API for testing
     let internallyTypedObjects = try #require(objects as? PublicDefaultRealtimeObjects)
     let objectMessages = internallyTypedObjects.testsOnly_receivedObjectProtocolMessages
@@ -142,7 +142,7 @@ func waitForObjectSync(_ realtime: ARTRealtime) async throws {
 
 extension ARTProtocolMessage {
     /// Extract `InboundObjectMessage`s from the protocol message's state array.
-    var testsOnly_inboundObjectMessages: [InboundObjectMessage] {
+    var testsOnly_inboundObjectMessages: [ProtocolTypes.InboundObjectMessage] {
         // Claude's explanation, which I don't really have the time to verify or try and do better than — it's only test code so good enough:
         //
         // > The `state` property on `ARTProtocolMessage` is behind `#ifdef ABLY_SUPPORTS_PLUGINS`,
@@ -152,8 +152,8 @@ extension ARTProtocolMessage {
         guard let stateArray = value(forKey: "state") as? [AnyObject] else {
             return []
         }
-        return stateArray.compactMap { item -> InboundObjectMessage? in
-            guard let box = item as? DefaultInternalPlugin.ObjectMessageBox<InboundObjectMessage>
+        return stateArray.compactMap { item -> ProtocolTypes.InboundObjectMessage? in
+            guard let box = item as? DefaultInternalPlugin.ObjectMessageBox<ProtocolTypes.InboundObjectMessage>
             else { return nil }
             return box.objectMessage
         }

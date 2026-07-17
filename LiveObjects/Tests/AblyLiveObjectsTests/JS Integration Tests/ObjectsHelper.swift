@@ -231,8 +231,8 @@ final class ObjectsHelper: Sendable {
             preconditionFailure("Expected PublicDefaultRealtimeObjects")
         }
         try await internallyTypedObjects.testsOnly_publish(objectMessages: [
-            OutboundObjectMessage(
-                operation: ObjectOperation(
+            ProtocolTypes.OutboundObjectMessage(
+                operation: ProtocolTypes.ObjectOperation(
                     action: .known(.mapClear),
                     objectId: objectId,
                     mapClear: WireMapClear(),

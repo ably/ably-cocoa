@@ -10,12 +10,12 @@ internal struct InternalObjectsMapEntry: Equatable {
     }
 
     internal var timeserial: String? // OME2b
-    internal var data: ObjectData? // OME2c
+    internal var data: ProtocolTypes.ObjectData? // OME2c
 }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal extension InternalObjectsMapEntry {
-    init(objectsMapEntry: ObjectsMapEntry, tombstonedAt: Date?) {
+    init(objectsMapEntry: ProtocolTypes.ObjectsMapEntry, tombstonedAt: Date?) {
         self.tombstonedAt = tombstonedAt
         timeserial = objectsMapEntry.timeserial
         data = objectsMapEntry.data

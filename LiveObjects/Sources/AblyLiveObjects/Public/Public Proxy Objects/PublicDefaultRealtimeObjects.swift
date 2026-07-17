@@ -105,15 +105,15 @@ internal final class PublicDefaultRealtimeObjects: RealtimeObjects {
         proxied.testsOnly_onChannelAttachedHasObjects
     }
 
-    internal var testsOnly_receivedObjectProtocolMessages: AsyncStream<[InboundObjectMessage]> {
+    internal var testsOnly_receivedObjectProtocolMessages: AsyncStream<[ProtocolTypes.InboundObjectMessage]> {
         proxied.testsOnly_receivedObjectProtocolMessages
     }
 
-    internal func testsOnly_publish(objectMessages: [OutboundObjectMessage]) async throws(ARTErrorInfo) {
+    internal func testsOnly_publish(objectMessages: [ProtocolTypes.OutboundObjectMessage]) async throws(ARTErrorInfo) {
         try await proxied.testsOnly_publish(objectMessages: objectMessages, coreSDK: coreSDK)
     }
 
-    internal var testsOnly_receivedObjectSyncProtocolMessages: AsyncStream<[InboundObjectMessage]> {
+    internal var testsOnly_receivedObjectSyncProtocolMessages: AsyncStream<[ProtocolTypes.InboundObjectMessage]> {
         proxied.testsOnly_receivedObjectSyncProtocolMessages
     }
 
@@ -122,7 +122,7 @@ internal final class PublicDefaultRealtimeObjects: RealtimeObjects {
     /// Replaces the method that this `RealtimeObjects` uses to send any outbound `ObjectMessage`s.
     ///
     /// Used by integration tests, for example to disable `ObjectMessage` publishing so that a test can verify that a behaviour is not a side effect of an `ObjectMessage` sent by the SDK.
-    internal func testsOnly_overridePublish(with newImplementation: @escaping ([OutboundObjectMessage]) async throws(ARTErrorInfo) -> PublishResult) {
+    internal func testsOnly_overridePublish(with newImplementation: @escaping ([ProtocolTypes.OutboundObjectMessage]) async throws(ARTErrorInfo) -> PublishResult) {
         coreSDK.testsOnly_overridePublish(with: newImplementation)
     }
 

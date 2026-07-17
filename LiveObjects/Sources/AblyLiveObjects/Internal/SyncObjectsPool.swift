@@ -7,7 +7,7 @@ import Foundation
 internal struct SyncObjectsPool: Collection {
     /// Keyed by `objectId`. Every value has a non-nil `.object` with either `.map` or `.counter` populated; the
     /// `accumulate` method enforces this invariant.
-    private var objectMessages: [String: InboundObjectMessage]
+    private var objectMessages: [String: ProtocolTypes.InboundObjectMessage]
 
     /// Creates an empty pool.
     internal init() {
@@ -16,7 +16,7 @@ internal struct SyncObjectsPool: Collection {
 
     /// Accumulates object messages into the pool per RTO5f.
     internal mutating func accumulate(
-        _ objectMessages: [InboundObjectMessage],
+        _ objectMessages: [ProtocolTypes.InboundObjectMessage],
         logger: Logger,
     ) {
         for objectMessage in objectMessages {
@@ -26,7 +26,7 @@ internal struct SyncObjectsPool: Collection {
 
     /// Accumulates a single `ObjectMessage` into the pool per RTO5f.
     private mutating func accumulate(
-        _ objectMessage: InboundObjectMessage,
+        _ objectMessage: ProtocolTypes.InboundObjectMessage,
         logger: Logger,
     ) {
         // RTO5f3: Reject unsupported object types before pool lookup. Only messages whose `.object` has `.map` or `.counter`
@@ -77,8 +77,8 @@ internal struct SyncObjectsPool: Collection {
 
     // MARK: - Collection conformance
 
-    internal typealias Index = Dictionary<String, InboundObjectMessage>.Values.Index
-    internal typealias Element = InboundObjectMessage
+    internal typealias Index = Dictionary<String, ProtocolTypes.InboundObjectMessage>.Values.Index
+    internal typealias Element = ProtocolTypes.InboundObjectMessage
 
     internal var startIndex: Index { objectMessages.values.startIndex }
     internal var endIndex: Index { objectMessages.values.endIndex }
