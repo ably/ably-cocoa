@@ -81,11 +81,11 @@ test method, linking it back to its spec (e.g. `// UTS: realtime/unit/RTN16g/rec
 
 UTS divides tests into three tiers by *what infrastructure they need* and *what confidence they give*:
 
-| Tier | Transport | Backend | Purpose | Status in ably-cocoa |
+| Tier | Transport | Backend | Purpose | Example in this repo |
 |------|-----------|---------|---------|----------------------|
-| **Unit** | **Mocked** (`MockWebSocket`, `MockHTTPClient`) | none | Client-side logic: state machines, request formation, response parsing, timer behaviour. Fast & deterministic. | ✅ Implemented — `unit/realtime/`, `unit/rest/` |
-| **Direct sandbox integration** | Real network | Real Ably sandbox | Happy-path interop: connect, publish, subscribe. No fault injection. | 🚧 Infra ready + smoke-tested (§11) — spec-derived tests TODO |
-| **Proxy integration** | Real network **through a programmable proxy** | Real Ably sandbox | Fault behaviour: dropped connections, injected errors, timeouts, re-auth. | 🚧 Infra ready + smoke-tested (§11) — spec-derived tests TODO |
+| **Unit** | **Mocked** (`MockWebSocket`, `MockHTTPClient`) | none | Client-side logic: state machines, request formation, response parsing, timer behaviour. Fast & deterministic. | `unit/realtime/ConnectionRecoveryTests.swift` |
+| **Direct sandbox integration** | Real network | Real Ably sandbox | Happy-path interop: connect, publish, subscribe. No fault injection. | `integration/standard/realtime/ChannelHistoryTests.swift` (§11.4) |
+| **Proxy integration** | Real network **through a programmable proxy** | Real Ably sandbox | Fault behaviour: dropped connections, injected errors, timeouts, re-auth. | `integration/proxy/realtime/AuthReauthTests.swift` (§11.5) |
 
 Each tier folder is organised **by module** (`realtime`, `rest`, …), so a feature's tests sit
 together by SDK area — e.g. `unit/realtime/ConnectionRecoveryTests.swift`.
@@ -121,9 +121,9 @@ describe:
   `AWAIT_STATE`, polling, and fake timers).
 - [`writing-derived-tests.md`](https://github.com/ably/specification/blob/main/uts/docs/writing-derived-tests.md)
   — how to translate a spec into a real SDK test, and the **decision tree** when a translated test
-  fails: spec wrong → fix test + record a UTS spec error; translation wrong → fix test;
-  SDK non-compliant → gate the spec-correct assertion behind `RUN_DEVIATIONS` and record a
-  **deviation** (§9).
+  fails: spec wrong → fix the spec at source + a fail-fast test + record a UTS spec error;
+  translation wrong → fix the test; SDK non-compliant → gate the spec-correct assertion behind
+  `RUN_DEVIATIONS` and record a **deviation** (§9).
 - [`integration-testing.md`](https://github.com/ably/specification/blob/main/uts/docs/integration-testing.md)
   — the policy for the two integration tiers (directory layout, sandbox provisioning, proxy session
   lifecycle, late fault injection). Implemented by the §11 infrastructure.
@@ -145,6 +145,15 @@ The specs currently derived here:
 - `RSC16` (server time) → unit spec
   [`time.md`](https://github.com/ably/specification/blob/main/uts/rest/unit/time.md)
   → **`unit/rest/TimeTests.swift`**.
+- `RTL10d` (channel history) → integration spec
+  [`channel_history_test.md`](https://github.com/ably/specification/blob/main/uts/realtime/integration/channel_history_test.md)
+  → **`integration/standard/realtime/ChannelHistoryTests.swift`**.
+- `RSA9`/`RSA9a`/`RSA9g` (token request) → integration spec
+  [`token_request_test.md`](https://github.com/ably/specification/blob/main/uts/realtime/integration/auth/token_request_test.md)
+  → **`integration/standard/realtime/TokenRequestTests.swift`**.
+- `RTN22`/`RTC8a` (server-initiated re-auth) → proxy spec
+  [`auth_reauth.md`](https://github.com/ably/specification/blob/main/uts/realtime/integration/proxy/auth_reauth.md)
+  → **`integration/proxy/realtime/AuthReauthTests.swift`**.
 
 ---
 
@@ -211,9 +220,12 @@ Test/UTS/
 │
 └── integration/                         # ── INTEGRATION TESTS (real backend) ── · per module
     ├── standard/                        #   direct sandbox: happy-path, no fault injection
-    │   └── IntegrationSmokeTest.swift   #   env-gated acceptance test: SandboxApp + real TLS client (JSON + msgpack)
+    │   └── realtime/
+    │       ├── ChannelHistoryTests.swift#   RTL10d (cross-client history, JSON + msgpack) — §11.4
+    │       └── TokenRequestTests.swift  #   RSA9/RSA9a/RSA9g (server-accepted TokenRequest)
     └── proxy/                           #   sandbox through the fault-injecting uts-proxy
-        └── ProxyInfraSmokeTests.swift   #   env-gated acceptance test: ProxyManager + ProxySession
+        └── realtime/
+            └── AuthReauthTests.swift    #   RTN22/RTC8a (injected AUTH → re-auth) — §11.5
 ```
 
 The mental model (same as ably-java): **`infra/unit/` powers the unit tests, `infra/integration/`
@@ -464,28 +476,39 @@ The integration-tier counterpart of this picture — real network through the pr
 
 Six tests, each carrying a `// UTS: realtime/unit/RTN16…/…` tag:
 
-- **`RTN16g` (+`RTN16g1`) — recovery-key structure (incl. Unicode).** Connects (the
-  `onConnectionAttempt` handler responds with success + CONNECTED carrying a known key), attaches
-  two channels — one ASCII, one Unicode (`channel-éàü-世界`) — feeding each an ATTACHED with a
-  `channelSerial` via `sendToClient`. Asserts `createRecoveryKey()` contains the connection key,
-  `msgSerial == 0`, and both channel serials — including an encode→decode round-trip proving the
-  Unicode name survives.
-- **`RTN16g2` — `createRecoveryKey()` returns nil in inactive states.** Walks the connection
-  through INITIALIZED → CONNECTED → CLOSING/CLOSED → FAILED → SUSPENDED asserting nil in every
-  inactive state. The SUSPENDED leg uses `enableFakeTimers()` + `advanceTime` to expire the
-  connection-state TTL deterministically — no real sleeping.
-- **`RTN16k` — `recover` adds the `recover` query param.** Builds the client with
-  `options.recover = <key>` and asserts via `MockWebSocket.queryParams` (real production URL
-  building) that the first attempt carries `recover=` and a post-disconnect reconnect switches to
-  `resume=` — recover is a one-shot bootstrap.
-- **`RTN16f` — `recover` initialises `msgSerial` from the recovery key**, verified through an ACK
-  round-trip (`.ack(msgSerial:count:)`).
-- **`RTN16f1` — malformed `recover` key degrades gracefully.** A garbage key must be logged
-  (asserted via `CapturingLog`) and ignored: the client connects normally, with no
-  `recover`/`resume` params.
-- **`RTN16j` (+`RTN16i`) — `recover` instantiates channels with their serials**, not auto-attached;
-  a manual `attach()` sends an ATTACH frame carrying the recovered serial (verified via
-  `sentMessages`).
+### 7.1 `RTN16g, RTN16g1` — recovery-key structure (incl. Unicode)
+
+Connects (the `onConnectionAttempt` handler responds with success + CONNECTED carrying a known
+key), attaches two channels — one ASCII, one Unicode (`channel-éàü-世界`) — feeding each an
+ATTACHED with a `channelSerial` via `sendToClient`. Asserts `createRecoveryKey()` contains the
+connection key, `msgSerial == 0`, and both channel serials — including an encode→decode
+round-trip proving the Unicode name survives.
+
+### 7.2 `RTN16g2` — `createRecoveryKey()` returns nil in inactive states
+
+Walks the connection through INITIALIZED → CONNECTED → CLOSING/CLOSED → FAILED → SUSPENDED
+asserting nil in every inactive state. The SUSPENDED leg uses `enableFakeTimers()` +
+`advanceTime` to expire the connection-state TTL deterministically — no real sleeping.
+
+### 7.3 `RTN16k` — `recover` adds the `recover` query param
+
+Builds the client with `options.recover = <key>` and asserts via `MockWebSocket.queryParams`
+(real production URL building) that the first attempt carries `recover=` and a post-disconnect
+reconnect switches to `resume=` — recover is a one-shot bootstrap.
+
+### 7.4 `RTN16f` — `recover` initialises `msgSerial` from the recovery key
+
+Verified through an ACK round-trip (`.ack(msgSerial:count:)`).
+
+### 7.5 `RTN16f1` — malformed `recover` key degrades gracefully
+
+A garbage key must be logged (asserted via `CapturingLog`) and ignored: the client connects
+normally, with no `recover`/`resume` params.
+
+### 7.6 `RTN16j` — `recover` instantiates channels with their serials (RTN16i too)
+
+Not auto-attached; a manual `attach()` sends an ATTACH frame carrying the recovered serial
+(verified via `sentMessages`).
 
 **What this file teaches about the infra:** the handler-style mock, `sendToClient` vs a real close,
 fake-timer-driven SUSPENDED, `queryParams`/`sentMessages` as the two inspection surfaces, and
@@ -533,9 +556,18 @@ and the gated test becomes the acceptance test for the fix.
 
 ## 10. How to Run the Tests
 
+There is **no env-var gating** — every suite (unit, integration, proxy) runs directly from
+`swift test` or the Xcode test runner UI, just like ably-java's Gradle tasks. Pick the tier by
+**which suites you run**: unit suites are sub-second and fully mocked; integration/proxy suites
+hit the real Ably sandbox (and the proxy suites additionally sync + spawn the local `uts-proxy`,
+macOS-only — on iOS/tvOS destinations they compile to nothing, §11.2).
+
 ```bash
-# The whole UTS target (fast — fully mocked, no network):
+# The whole UTS target — unit AND integration tiers (integration needs network; proxy needs macOS):
 swift test --filter UTS
+
+# Unit suites only (fast, fully mocked, no network):
+swift test --filter "UTS.ConnectionRecoveryTests|UTS.TimeTests"
 
 # One suite / one test:
 swift test --filter UTS.ConnectionRecoveryTests
@@ -544,33 +576,42 @@ swift test --filter UTS.ConnectionRecoveryTests/test_RTN16k_recover_option_adds_
 # Turn on the spec-correct (currently failing) deviation assertions:
 RUN_DEVIATIONS=1 swift test --filter UTS.<TestClass>/<testMethod>
 
-# The integration-infra acceptance tests (need network; skipped without the env var).
-# IntegrationSmokeTest hits the Ably sandbox directly (once per protocol variant: JSON + msgpack);
-# ProxyInfraSmokeTests (JSON-only, as the proxy requires) additionally syncs
-# the uts-proxy binary from GitHub releases on first run and is macOS-only:
-UTS_INTEGRATION_SMOKE=1 swift test --filter "UTS.IntegrationSmokeTest|UTS.ProxyInfraSmokeTests"
+# Spec-derived integration & proxy suites (real sandbox; AuthReauthTests is macOS-only):
+swift test --filter UTS.ChannelHistoryTests
+swift test --filter UTS.AuthReauthTests
 
-# Run the proxy infra against a locally built uts-proxy instead of a GitHub release:
-UTS_PROXY_LOCAL_PATH=/path/to/uts-proxy UTS_INTEGRATION_SMOKE=1 swift test --filter UTS.ProxyInfraSmokeTests
+# Run the proxy tier against a locally built uts-proxy instead of a GitHub release
+# (a config override, not a gate):
+UTS_PROXY_LOCAL_PATH=/path/to/uts-proxy swift test --filter UTS.AuthReauthTests
 ```
 
 **Where CI runs them:** there is currently **no UTS-specific CI job** — the UTS target runs as part
 of the full test suite (the `ably-cocoa` scheme driven by the fastlane lanes in
-`.github/workflows/integration-test.yaml`). Since `swift test --filter UTS` is sub-second and
-network-free, a dedicated fast PR-gate step (e.g. in `check-spm.yaml`, mirroring ably-java's
-`runUtsUnitTests` gate in its `check.yml`) is a cheap improvement worth making — especially once
-the integration tier exists and the unit/integration split needs separate CI cadences.
+`.github/workflows/integration-test.yaml`, which already has sandbox network access). A dedicated
+fast PR-gate step running just the unit suites (e.g. in `check-spm.yaml`, mirroring ably-java's
+`runUtsUnitTests` gate in its `check.yml`) is a cheap improvement worth making — the
+unit/integration split now runs on suite selection rather than env vars, so the lanes only need
+different `--filter` lists (ably-java splits the same way with `runUtsUnitTests` /
+`runUtsIntegrationTests`).
+
+Notes:
+- `ProxyManager` **advises** running proxy suites from one test process at a time — they share the
+  control port (10100), see §11.2.
+- Proxy/sandbox tests need outbound network (sandbox + GitHub releases on first run; the binary is
+  then cached under `~/.cache/uts-proxy/`).
 
 ---
 
 ## 11. Integration & Proxy Infrastructure
 
 The `infra/integration/` layer mirrors ably-java's `infra/integration/` (see its `uts/README.md`
-§7 for the reference design) and is verified end-to-end by two env-gated acceptance tests (§10):
-`integration/standard/IntegrationSmokeTest.swift` (SandboxApp + a real TLS client, no proxy; run once per protocol variant — JSON + msgpack) and
-`integration/proxy/ProxyInfraSmokeTests.swift` (the full proxy chain). Three components
-(§11.1–11.3), the base test cases that own setup/teardown (below), then a walkthrough of each
-tier's reference test (§11.4–11.5) and the request-flow picture (§11.6).
+§7 for the reference design) and is exercised end-to-end by the spec-derived tests (§10):
+`integration/standard/realtime/ChannelHistoryTests.swift` (SandboxApp + real TLS clients, no
+proxy; run once per protocol variant — JSON + msgpack) and
+`integration/proxy/realtime/AuthReauthTests.swift` (the full proxy chain, fault injection
+included). Three components (§11.1–11.3), the base test cases that own setup/teardown (below),
+then a walkthrough of each tier's reference test (§11.4–11.5) and the request-flow picture
+(§11.6).
 
 **The base test cases.** Swift Testing has no `setUp()`/`tearDown()` hooks and `deinit` cannot
 `await`, so integration suites subclass a base case whose **scoped-resource methods** own the
@@ -598,7 +639,7 @@ across the integration specs; both `ProxySession` targets and direct-sandbox cli
 `SandboxApp` is the shared backbone of *both* integration kinds: **proxy** tests pair it with a
 `ProxySession`, while **direct sandbox** tests use it alone — connecting straight to
 `SandboxApp.sandboxHost` over TLS, where plain key (basic) auth works;
-`IntegrationSmokeTest.swift` is the reference shape.
+`integration/standard/realtime/ChannelHistoryTests.swift` is the reference shape.
 
 ### 11.2 `proxy/ProxyManager.swift` — syncs and launches the proxy binary
 
@@ -608,8 +649,9 @@ owns the *process*:
 
 - `try await ProxyManager.shared.ensureProxy()` (call in suite setup) is **idempotent**: if a proxy
   is already healthy on the control port (**10100**), it's a no-op. Otherwise it **downloads** the
-  pinned release (`v0.3.0`) archive for the current arch from GitHub releases, **verifies its
-  SHA-256 checksum**, extracts the binary (via the system `tar` — one deliberate simplification
+  pinned release (`v0.3.0`) archive (`uts-proxy_<ver>_<os>_<arch>.tar.gz`) for the current arch
+  from GitHub releases, **verifies its SHA-256 checksum**, extracts the binary (via the system
+  `tar` — one deliberate simplification
   over ably-java's hand-rolled JDK-only tar reader), caches it under
   `~/.cache/uts-proxy/<version>/` — the **same cache ably-java uses**, so the two SDKs share one
   download — and launches it with `--port 10100`.
@@ -636,24 +678,28 @@ One session per test:
 
 - `ProxySession.create(rules:)` → `POST /sessions` with a `target` (the sandbox hosts) and an
   initial **rule list**; the proxy assigns a `sessionId` and a fresh **listening port**.
-- `addRules(_:position:)` → add rules mid-test; `triggerAction(_:)` → fire an **imperative** action
-  right now (late fault injection, e.g. `["type": "inject_to_client", "message": ["action": 17]]`).
-- `getLog()` → the session's ordered, typed `[ProxyEvent]` — each carries `type` (`ws_connect`,
-  `ws_frame`, `http_request`, …), `direction`, `queryParams`, and the parsed protocol `message`
-  (introspect via `message?["action"] as? Int`). Proxy-log assertions are a proxy test's primary
-  verification.
+- `addRules(_:position:)` → add rules mid-test (`POST /sessions/{id}/rules`).
+- `triggerAction(_:)` → fire an **imperative** action right now (`POST /sessions/{id}/actions`) —
+  late fault injection, e.g. `["type": "inject_to_client", "message": ["action": 17]]`.
+- `getLog()` → `GET /sessions/{id}/log`, returning the session's ordered, typed `[ProxyEvent]` —
+  each carries `type` (`ws_connect`, `ws_frame`, `http_request`, …), `direction`, `queryParams`,
+  and the parsed protocol `message` (introspect via `message?["action"] as? Int`). Proxy-log
+  assertions are a proxy test's primary verification.
 - `close()` → `DELETE /sessions/{id}` — always call it in teardown.
 
 **Rules** = `match` + `action` (+ optional `times`), built with `wsConnectRule` /
 `wsFrameToClientRule` / `wsFrameToServerRule` / `httpRequestRule`. Rules evaluate in order, first
-match wins, unmatched traffic passes through, `times: N` auto-removes after N firings.
+match wins, unmatched traffic passes through, `times: N` auto-removes after N firings. Common
+actions: `refuse_connection`, `suppress`, `replace`, `inject_to_client[_and_close]`, `disconnect`,
+`http_respond`.
 
 **Wiring a client through the proxy** — `options.connectThroughProxy(session)` sets
 `realtimeHost`/`restHost` = localhost, `port` = the session's port, `tls = false`, and
 `useBinaryProtocol = false` (the proxy only understands text frames). ⚠️ Because the proxy serves
 plain ws, **basic (key) auth is rejected** (RSA1: basic auth is TLS-only) — authenticate through
-the proxy with an `authCallback` that signs a `TokenRequest` locally using the sandbox key (see
-`ProxyInfraSmokeTests` for the shape; ably-java's `AuthReauthTest` does the same).
+the proxy with an `authCallback` that signs a `TokenRequest` locally using the sandbox key
+(`ProxyTestCase.proxyClientOptions` packages this; `AuthReauthTests` inlines it to count the
+callbacks — ably-java's `AuthReauthTest` does the same).
 
 **The shared async helpers** both integration walkthroughs below lean on (from
 `infra/Utils.swift` — java's `infra/Utils.kt`, see §6.9). All are wall-clock and poll-based
@@ -666,81 +712,183 @@ rather than throwing:
 | `awaitChannelState` | `await awaitChannelState(channel, .attached, timeout: 15)` | same, for a channel's state |
 | `pollUntil` | `await pollUntil("what you wait for", timeout: 15, interval: 0.1) { condition }` | suspend until an arbitrary predicate holds — e.g. `pollUntil("re-auth") { count.count > original }` |
 
-### 11.4 Walkthrough: a direct-sandbox test (`IntegrationSmokeTest`)
+### 11.4 Walkthrough: the direct-sandbox test (`ChannelHistoryTests`)
 
-**File:** `integration/standard/IntegrationSmokeTest.swift`
+**File:** `integration/standard/realtime/ChannelHistoryTests.swift` (ably-java's
+`ChannelHistoryTest.kt` is its sibling)
 **Tier:** Direct-sandbox integration (real network, real Ably sandbox, **no** proxy, **no** fault
 injection).
+**Spec point:** RTL10d — messages published by one realtime client are retrievable from a
+*separate* client's `history()`.
+**Spec:** [`channel_history_test.md`](https://github.com/ably/specification/blob/main/uts/realtime/integration/channel_history_test.md)
 
-This is the reference for the **middle tier** — the shape every happy-path interop spec
-(connect/publish/subscribe/presence/history) follows. Step by step:
+This is the reference for the **middle tier**. Like a proxy test it talks to the real backend, but
+it connects *straight* to `SandboxApp.sandboxHost` — there is no `ProxyManager`, no `ProxySession`,
+and no `connectThroughProxy` wiring. It's the shape every happy-path interop spec
+(connect/publish/subscribe/presence) follows.
 
-1. **Setup/teardown via the base class** — the suite subclasses `IntegrationTestCase` and wraps
-   the scenario in `withSandboxApp { app in … withRealtimeClient(options) { client in … } }`:
-   the app is provisioned up front, and app deletion + client close always run afterwards, even
-   when the scenario throws or a wait fails.
-2. **Protocol variants** — the test takes `useBinaryProtocol: Bool` via
-   `@Test(arguments: [false, true])`, the cocoa realisation of the spec's `PROTOCOL` dimension
-   (§2): each case runs the whole scenario once over JSON and once over msgpack.
-3. **A real client, wired straight to the sandbox** — plain `ARTClientOptions(key: app.defaultKey)`
-   with `realtimeHost`/`restHost` = `SandboxApp.sandboxHost`. TLS stays on, so basic key auth is
-   fine here (unlike through the proxy), and explicit hosts auto-disable fallback hosts (REC2c2).
-   No mocks anywhere — this drives the SDK's real `ARTWebSocketTransport`.
-4. **Connect and wait, never sleep** — `client.connect()` then
-   `await awaitState(client, .connected)`: real network, so the async wall-clock waits from
-   `infra/Utils.swift` (§6.9), not the unit tier's fake timers.
-5. **A fresh channel per run** — `"smoke-\(UUID().uuidString)"`, so variants and retries never
-   collide on server-side channel state.
-6. **The round-trip** — subscribe first (capturing into a `Captured<ARTMessage>` — the callback
-   arrives on the SDK's queue, §6.6), publish, then
-   `await pollUntil("published message is echoed back…") { received.count == 1 }` — the real
-   backend is eventually consistent, so poll on observable state rather than assuming timing.
-7. **Guarded waits** — the scenario lives in a helper where every wait is `guard`-ed: a timeout
-   has already recorded its `Issue`, so the scenario stops instead of cascading into secondary
-   failures, and the base class's teardown still runs.
+#### 11.4.1 Suite setup/teardown
 
-**What this teaches about the infra:** `IntegrationTestCase`'s scoped setup/teardown,
-`SandboxApp`-only provisioning, direct-sandbox client wiring, protocol-variant parameterisation,
-`Captured` for cross-queue capture, and `pollUntil` over real network state.
+Swift Testing has no `@BeforeAll`/`@AfterAll` (§6.9), so the suite subclasses
+`IntegrationTestCase` and the **scoped-resource methods** own the lifecycle — provisioning
+**`SandboxApp` only**, no `ProxyManager.ensureProxy()`:
 
-### 11.5 Walkthrough: a proxy test (`ProxyInfraSmokeTests`)
+```swift
+try await withSandboxApp { app in                             // SandboxApp.create() → body → app.delete()
+    try await withRealtimeClient(publisherOptions) { publisher in
+        try await withRealtimeClient(subscriberOptions) { subscriber in
+            // … scenario …
+        }                                                     // close() + await CLOSED — always
+    }
+}
+```
 
-**File:** `integration/proxy/ProxyInfraSmokeTests.swift` (macOS-only, §11.2)
+#### 11.4.2 The client — wired straight to the sandbox
+
+The options point the **real** transport at the sandbox host (no proxy in between). Setting
+explicit hosts auto-disables fallback hosts (REC2c2), so there's nothing else to configure:
+
+```swift
+let publisherOptions = ARTClientOptions(key: app.defaultKey)
+publisherOptions.realtimeHost = SandboxApp.sandboxHost   // sandbox.realtime.ably-nonprod.net
+publisherOptions.restHost = SandboxApp.sandboxHost
+publisherOptions.useBinaryProtocol = useBinaryProtocol
+publisherOptions.autoConnect = false
+```
+
+(Plain `ARTClientOptions` with no `installMock` — TLS stays on, so basic key auth works here,
+and the SDK drives its real `ARTWebSocketTransport` instead of a `MockWebSocket`.)
+
+#### 11.4.3 Protocol variants — the parameterised-test pattern
+
+The spec declares a `PROTOCOL` dimension (`json` / `msgpack`) and says *each test runs once per
+variant*. Cocoa realises that with a Swift Testing **parameterised test** over
+`useBinaryProtocol` (built in — no extra dependency, unlike ably-java's `junit-jupiter-params`):
+
+```swift
+// UTS: realtime/integration/RTL10d/history-cross-client-0
+@Test(arguments: [false, true]) // useBinaryProtocol: false = JSON, true = msgpack
+func test_RTL10d_history_contains_messages_published_by_another_client(useBinaryProtocol: Bool) async throws {
+    …
+}
+```
+
+A plain `@Test` test (no protocol dimension) stays a `@Test` — reach for `arguments:` only when
+the spec actually declares variants.
+
+#### 11.4.4 The scenario — real publish, real history
+
+Two independent clients on the same app: the publisher's *confirmed* messages must appear in the
+subscriber's history. The integration-specific techniques on show:
+
+- **Awaiting a publish ack.** Realtime publish is fire-and-forget, so to honour the spec's
+  `AWAIT publish` the test wraps the callback overload `publish(_:data:callback:)` in a
+  `withCheckedContinuation` (`awaitPublish`, in the suite's extension), resuming on the callback
+  and recording an `Issue` on error. This is the integration analogue of the unit test's
+  `sentMessages` inspection.
+- **`AWAIT attach()`** → `attach()` then `await awaitChannelState(channel, .attached, timeout: 10)`.
+- **Polling real REST state.** `history()` is a callback-based REST call against the sandbox and
+  the message store is eventually-consistent, so the test bridges it with a continuation
+  (`historyItems`) and `await pollUntil("subscriber history contains all 3 messages", timeout: 10,
+  interval: 0.5) { … == 3 }` — never a fixed sleep (the same anti-flake rule as the other tiers).
+- **Order assertion.** History defaults to newest-first, so `items[0]` is `event3` … `items[2]`
+  is `event1`.
+
+**What this test teaches about the infra:** `SandboxApp`-only provisioning, the direct-sandbox
+client wiring (`realtimeHost`/`restHost` from `SandboxApp.sandboxHost`, no proxy), the
+protocol-variant parameterised test, awaiting a publish ack via the callback overload, and
+`pollUntil` over a real `history()` call.
+
+### 11.5 Walkthrough: the proxy test (`AuthReauthTests`)
+
+**File:** `integration/proxy/realtime/AuthReauthTests.swift` (ably-java's `AuthReauthTest.kt` is
+its sibling; macOS-only, §11.2)
 **Tier:** Proxy integration (real sandbox, traffic routed through the local `uts-proxy`).
+**Spec points:** RTN22 (server-initiated re-authentication) and RTC8a (the client sends an AUTH
+frame with renewed auth details). Unit-tier spec counterparts:
+`server_initiated_reauth_test.md`, `realtime_authorize.md`.
+**Spec:** [`auth_reauth.md`](https://github.com/ably/specification/blob/main/uts/realtime/integration/proxy/auth_reauth.md)
 
-Step by step:
+#### 11.5.1 Suite setup/teardown
 
-1. **Setup/teardown via the base class** — the suite subclasses `ProxyTestCase` and wraps the
-   scenario in `withProxySession(rules: []) { app, session in … }`: the proxy is ensured running
-   (§11.2), the app is provisioned **directly** against the sandbox (not through the proxy, so
-   provisioning is independent of any fault rules), and session close + app deletion always run
-   afterwards.
-2. **A session with no rules** — starting rule-less is the **late-fault-injection** principle
-   (§2): the connect handshake runs against the real server unmodified; a spec test injects its
-   fault *afterwards*, as the final interaction.
-3. **Token auth, not the key** — `proxyClientOptions(for: app, through: session)`: the proxy
-   serves plain ws (`tls = false`), and basic key auth is TLS-only (RSA1), so the client
-   authenticates via an `authCallback` that signs a `TokenRequest` locally using the sandbox key
-   (through a separate TLS `ARTRest` "token signer"). The options come back already wired through
-   the proxy (§11.3).
-4. **Run the client in a scope** — `withRealtimeClient(options) { client in … }`, then
-   `client.connect()` and `await awaitState(client, .connected)` — the SDK believes it is talking
-   to Ably; every byte actually flows through the proxy.
-5. **The proxy log is the primary verification** — `try await session.getLog()` and filter the
-   typed events: the smoke asserts a `ws_connect` event and a server→client `ws_frame` whose
-   `message?["action"] as? Int == 4` (CONNECTED). Spec tests assert on exactly this log — e.g.
-   "the client sent an AUTH frame (17) carrying non-nil `auth` details".
-6. **Teardown is automatic** — the scopes unwind in order: client closed and awaited CLOSED,
+Swift Testing has no `@BeforeAll`/`@AfterAll` (§6.9), so the suite subclasses `ProxyTestCase` and
+one scope owns everything the java `@BeforeAll`/`@AfterAll` pair does — ensure the proxy is
+running (§11.2), provision the app **directly** against the sandbox (not through the proxy, so
+provisioning is independent of any fault rules), and always close the session + delete the app:
+
+```swift
+try await withProxySession(rules: []) { app, session in
+    // ensureProxy() ran, app provisioned, session created against the sandbox target
+    // … scenario …
+}   // session.close() + app.delete() — always, even on failure
+```
+
+#### 11.5.2 The test, step by step
+
+1. **A session with no rules** (the `rules: []` above) — the fault will be injected
+   *imperatively* later (late injection, §2 — the connect handshake runs against the real server
+   unmodified). Declarative faults would use `addRules` / the rule builders instead (§11.3).
+2. **Auth via `authCallback`** — the spec generates a JWT from the sandbox key; the idiomatic
+   cocoa equivalent is a locally-signed `TokenRequest` from the same key (no external JWT
+   library). A `Captured` counter records how many times the callback is invoked
+   (`proxyClientOptions(for:through:)` packages this wiring; the test inlines it to count):
+
+   ```swift
+   let authCallbackInvocations = Captured<ARTTokenParams>()
+   let signerOptions = ARTClientOptions(key: app.defaultKey)
+   signerOptions.restHost = SandboxApp.sandboxHost
+   let tokenSigner = ARTRest(options: signerOptions)
+
+   let options = ARTClientOptions()
+   options.authCallback = { params, callback in
+       authCallbackInvocations.append(params)
+       tokenSigner.auth.createTokenRequest(params, options: nil) { tokenRequest, error in
+           callback(tokenRequest, error)
+       }
+   }
+   ```
+3. **Build the client through the proxy** and connect (JSON stays on so the proxy can inspect
+   frames):
+
+   ```swift
+   options.connectThroughProxy(session)   // localhost + session port, tls = false, JSON
+   options.autoConnect = false
+   try await withRealtimeClient(options) { client in
+       client.connect()
+       guard await awaitState(client, .connected, timeout: 15) else { return }
+       // …
+   }
+   ```
+4. **Snapshot identity** — `connection.id` (`try #require` — later lines depend on it) and the
+   callback count, and assert the callback already ran ≥ 1 (initial auth).
+5. **Start recording state changes** (a `Captured` fed by `connection.on`), then **inject a
+   server-initiated AUTH** (protocol action 17) imperatively — simulating Ably asking the client
+   to re-authenticate:
+
+   ```swift
+   try await session.triggerAction(["type": "inject_to_client", "message": ["action": 17]])
+   ```
+6. **Wait for the re-auth round-trip** with `pollUntil` (real network, so poll — don't sleep):
+   first on the callback count, then until the client→server AUTH frame appears in the proxy log
+   (the cocoa callback returns a `TokenRequest` the SDK still exchanges for a token — a REST
+   round-trip through the proxy — before it sends AUTH, a timing adaptation the test documents
+   inline).
+7. **Assertions** prove RTN22 + RTC8a:
+   - `authCallback` was invoked **again** (count incremented) → re-auth was triggered.
+   - Connection is still **CONNECTED** and `connection.id` is **unchanged** → re-auth does not
+     reconnect.
+   - **No** transitions away from CONNECTED were recorded.
+   - The **proxy event log** contains a client→server **AUTH frame (action 17) carrying non-nil
+     `auth` details** (RTC8a) — verified by filtering `session.getLog()`.
+8. **Teardown is automatic** — the scopes unwind in order: client closed and awaited CLOSED,
    then `session.close()` (leaked sessions hold proxy listeners), then `app.delete()` — even when
    the scenario failed or threw.
 
-**What a full spec-derived proxy test adds** (ably-java's `AuthReauthTest`, RTN22/RTC8a, is the
-reference): snapshot `connection.id` and a callback counter after connecting; inject the fault
-imperatively — `try await session.triggerAction(["type": "inject_to_client", "message":
-["action": 17]])` (a server-initiated AUTH); `await pollUntil("re-auth round-trip") { … }` on the
-counter; then assert the callback re-fired, the connection stayed CONNECTED with an **unchanged**
-`connection.id`, and the log contains the client→server AUTH frame. Declarative faults use
-`addRules` / the rule builders instead (§11.3).
+**What this test teaches about the infra:** `ProxyTestCase`'s scoped setup/teardown
+(`ensureProxy` + `SandboxApp` + session), `connectThroughProxy` with token auth, **late
+imperative fault injection** via `triggerAction`, real-network waiting with `pollUntil`, and
+**proxy-log assertions** as the primary verification (`getLog()` → filter by
+`type`/`direction`/`message?["action"]`).
 
 ### 11.6 How the pieces connect (request flow)
 
@@ -778,14 +926,15 @@ and the test's only side channel is `SandboxApp` provisioning.
 
 ### 11.7 What remains TODO
 
-- **`integration/standard/<module>/`** — spec-derived direct-sandbox happy-path tests (SandboxApp
-  only, real transport, protocol-variant parameterisation via Swift Testing
-  `@Test(arguments: [false, true])` over `useBinaryProtocol` — `IntegrationSmokeTest` demonstrates
-  the shape).
-- **`integration/proxy/<module>/`** — spec-derived fault-injection tests (SandboxApp +
-  ProxySession).
+The first spec-derived tests for both tiers now exist (`ChannelHistoryTests`,
+`TokenRequestTests`, `AuthReauthTests`). What's left:
+
+- **More spec coverage** — translate the remaining `uts/<module>/integration/` and
+  `…/integration/proxy/` specs into `integration/standard/<module>/` and
+  `integration/proxy/<module>/` (via the `uts-to-swift` skill; §11.4–11.5 are the reference
+  shapes).
 - **CI wiring** — a dedicated job/lane for the integration tier (macOS, network access), separate
-  from the fast unit gate.
+  from the fast unit gate (§10).
 
 Design constraints to carry over: late fault injection, JSON-only through the proxy, poll — never
 sleep — on real-network state (`pollUntil`), and every proxy test also keeping a unit-tier
@@ -799,6 +948,24 @@ counterpart.
 `import Ably.Private`): `transportFactory` (WS) · `httpExecutor` (HTTP) · `timeProvider` (time) ·
 `reachabilityClass` (network monitor) — plus `options.logHandler` (log assertions).
 
+**Build a unit-test client:**
+```swift
+let wsProvider = MockWebSocketProvider(onConnectionAttempt: { $0.respondWithSuccess(.connectedMessage) })
+installMock(wsProvider)
+let client = makeRealtime { $0.autoConnect = false }
+client.connect()
+awaitConnectionState(client, .connected)
+```
+
+**Build a proxy-test client:**
+```swift
+try await withProxySession(rules: []) { app, session in       // ensureProxy + SandboxApp + session
+    let options = proxyClientOptions(for: app, through: session)  // token auth + proxy wiring
+    options.autoConnect = false
+    try await withRealtimeClient(options) { client in /* … */ }
+}
+```
+
 **Writing a new test?** This guide documents the *existing* setup — the actionable authoring
 material (file templates for every tier, pseudocode→Swift translation tables, deviation patterns)
 lives in the `uts-to-swift` skill (`.claude/skills/uts-to-swift/SKILL.md`), which carries out UTS
@@ -809,7 +976,8 @@ spec translation and evaluation. The reference tests to crib from are listed in 
 `simulateDisconnect` (1001 drop).
 
 **Inspect what the SDK did:** `mockWebSocket.queryParams` / `.sentMessages` (WS) ·
-`PendingHTTPRequest.url/method/headers/body/queryParams` (HTTP) · `CapturingLog.contains(…)` (logs).
+`PendingHTTPRequest.url/method/headers/body/queryParams` (HTTP) · `CapturingLog.contains(…)` (logs) ·
+`session.getLog()` (proxy).
 
 **Wait (never sleep):** unit tier — `awaitConnectionState` · `awaitChannelState` ·
 `poll("…") { … }` · `enableFakeTimers()` + `advanceTime(byMilliseconds:)`; integration tier
@@ -818,6 +986,14 @@ spec translation and evaluation. The reference tests to crib from are listed in 
 
 **Protocol action numbers** (used in proxy rules & log assertions): CONNECTED=4,
 DISCONNECTED=6, ERROR=9, ATTACH=10, ATTACHED=11, DETACH=12, DETACHED=13, **AUTH=17**.
+
+**Test ID format:** `<category>/<spec-point>/<descriptive-name>-<n>` →
+`// UTS: realtime/proxy/RTN22/server-initiated-reauth-0`.
+
+**The decision tree when a translated test fails:** spec wrong → fix the spec at source + a
+fail-fast test + record under *UTS Spec Errors*; translation wrong → fix the test; SDK
+non-compliant → gate the spec-correct assertion behind `RUN_DEVIATIONS` and record in
+`deviations.md`.
 
 **Test ID format:** `<category>/<spec-point>/<descriptive-name>-<n>` →
 `// UTS: realtime/unit/RTN16g/recovery-key-structure-0` (comment immediately above each test).
@@ -862,8 +1038,9 @@ DISCONNECTED=6, ERROR=9, ATTACH=10, ATTACHED=11, DETACH=12, DETACHED=13, **AUTH=
 |------|----------|-------|
 | `unit/realtime/ConnectionRecoveryTests.swift` | 6 `@Test`s: RTN16g/g1, RTN16g2, RTN16k, RTN16f, RTN16f1, RTN16j/i | Mocked WS + fake timers; see §7. |
 | `unit/rest/TimeTests.swift` | 5 `@Test`s: RSC16 ×5 | Mocked HTTP; see §8. |
-| `integration/standard/IntegrationSmokeTest.swift` | 1 `@Test` × {JSON, msgpack} (`arguments: [false, true]`), gated behind `UTS_INTEGRATION_SMOKE` | Acceptance test for the direct-sandbox tier (not spec-derived): sandbox app → real TLS client → publish/subscribe round-trip, once per protocol variant. |
-| `integration/proxy/ProxyInfraSmokeTests.swift` | 1 `@Test`, gated behind `UTS_INTEGRATION_SMOKE` | End-to-end acceptance test for the proxy infra (not spec-derived): binary sync → proxy launch → sandbox app → real client through the proxy → log assertions. macOS-only. |
+| `integration/proxy/realtime/AuthReauthTests.swift` | 1 `@Test`: RTN22/RTC8a (needs network; macOS-only) | Spec-derived proxy test (`uts/realtime/integration/proxy/auth_reauth.md`): injects a server-initiated AUTH (17), asserts re-auth via authCallback + client→server AUTH frame, connection undisturbed. Walkthrough: §11.5. |
+| `integration/standard/realtime/TokenRequestTests.swift` | 2 `@Test`s: RSA9a/RSA9g, RSA9 (needs network) | Spec-derived direct-sandbox tests (`uts/realtime/integration/auth/token_request_test.md`): a locally signed TokenRequest is accepted by the server via another client's authCallback, with and without clientId. |
+| `integration/standard/realtime/ChannelHistoryTests.swift` | 1 `@Test` × {JSON, msgpack}: RTL10d (needs network) | Spec-derived direct-sandbox test (`uts/realtime/integration/channel_history_test.md`): messages published by one client appear (newest-first) in another client's channel history. Walkthrough: §11.4. |
 | `deviations.md` | none recorded yet | Catalogue of SDK-vs-spec divergences + the `RUN_DEVIATIONS` pattern. |
 
 > **Coverage note:** the infrastructure is built out beyond what the current suites exercise
@@ -888,6 +1065,6 @@ DISCONNECTED=6, ERROR=9, ATTACH=10, ATTACHED=11, DETACH=12, DETACHED=13, **AUTH=
 | Unit mocks | `Test/UTS/infra/unit/*` |
 | Shared helpers | `Test/UTS/infra/Utils.swift` |
 | Integration helpers | `Test/UTS/infra/integration/*` (+ `proxy/*`) |
-| The reference tests | `unit/realtime/ConnectionRecoveryTests.swift`, `unit/rest/TimeTests.swift`, `integration/standard/IntegrationSmokeTest.swift`, `integration/proxy/ProxyInfraSmokeTests.swift` |
+| The reference tests | `unit/realtime/ConnectionRecoveryTests.swift`, `unit/rest/TimeTests.swift`, `integration/standard/realtime/ChannelHistoryTests.swift`, `integration/proxy/realtime/AuthReauthTests.swift` |
 | Deviations | `Test/UTS/deviations.md` |
 | The ably-java counterpart this guide mirrors | `uts/README.md` in the `ably-java` repository |
