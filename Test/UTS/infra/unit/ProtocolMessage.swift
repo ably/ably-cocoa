@@ -16,6 +16,13 @@ struct ProtocolMessage: Sendable {
 
     private let kind: Kind
 
+    /// A ready-to-use default `CONNECTED` message (ably-java's `CONNECTED_MESSAGE`) so most tests
+    /// don't hand-build one: connectionId `test-connection-id`, key `test-connection-key`,
+    /// TTL 120 s, max-idle 15 s. A value type, so it is always a fresh instance.
+    static var connectedMessage: ProtocolMessage {
+        .connected(connectionId: "test-connection-id", connectionKey: "test-connection-key")
+    }
+
     /// A `CONNECTED` message carrying connection details (UTS `ProtocolMessage(action: CONNECTED, ...)`).
     static func connected(connectionId: String,
                           connectionKey: String,

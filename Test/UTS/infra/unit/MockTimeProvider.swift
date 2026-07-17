@@ -18,8 +18,14 @@ final class MockTimeProvider: NSObject, TimeProvider, @unchecked Sendable {
 
     private let lock = NSLock()
 
-    /// Wall-clock origin: a fixed, arbitrary point in time (ms since the Unix epoch).
-    private var wallClockMilliseconds: Double = 1_600_000_000_000
+    /// Wall-clock origin (ms since the Unix epoch): a fixed, arbitrary point by default,
+    /// overridable per test for wall-clock-sensitive specs (java's `FakeClock(initialTimeMs)`).
+    private var wallClockMilliseconds: Double
+
+    init(initialWallClockMilliseconds: Double = 1_600_000_000_000) {
+        wallClockMilliseconds = initialWallClockMilliseconds
+        super.init()
+    }
 
     /// Continuous-clock origin.
     private var continuousNanoseconds: Nanoseconds = 1_000_000_000
@@ -175,6 +181,13 @@ final class MockTimeProvider: NSObject, TimeProvider, @unchecked Sendable {
                 queue.sync {}
             }
         }
+    }
+
+    /// Number of blocks currently scheduled (not yet fired, not cancelled) — useful for asserting
+    /// retry state (the counterpart of ably-java's `FakeClock.pendingTaskCount`; cocoa timers have
+    /// no names, so this is a single overall count).
+    var pendingScheduledCount: Int {
+        withLock { pendingCount }
     }
 
     /// Cancels every scheduled block. Used in teardown as the timer-leak safety net.
