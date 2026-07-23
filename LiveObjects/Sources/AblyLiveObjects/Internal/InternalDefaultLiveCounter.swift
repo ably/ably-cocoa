@@ -119,7 +119,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
                         operationDescription: "LiveCounter.increment",
                     )
 
-                    let objectMessage = OutboundObjectMessage(
+                    let objectMessage = ProtocolTypes.OutboundObjectMessage(
                         operation: .init(
                             // RTLC12e2
                             action: .known(.counterInc),
@@ -210,7 +210,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
     /// - Parameters:
     ///   - objectMessageSerialTimestamp: The `serialTimestamp` of the containing `ObjectMessage`. Used if we need to tombstone this counter.
     internal func nosync_replaceData(
-        using state: ObjectState,
+        using state: ProtocolTypes.ObjectState,
         objectMessageSerialTimestamp: Date?,
     ) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
         mutableStateMutex.withoutSync { mutableState in
@@ -225,14 +225,14 @@ internal final class InternalDefaultLiveCounter: Sendable {
     }
 
     /// Merges the initial value from an ObjectOperation into this LiveCounter, per RTLC16.
-    internal func nosync_mergeInitialValue(from operation: ObjectOperation) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
+    internal func nosync_mergeInitialValue(from operation: ProtocolTypes.ObjectOperation) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
         mutableStateMutex.withoutSync { mutableState in
             mutableState.mergeInitialValue(from: operation)
         }
     }
 
     /// Test-only method to apply a COUNTER_CREATE operation, per RTLC8.
-    internal func testsOnly_applyCounterCreateOperation(_ operation: ObjectOperation) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
+    internal func testsOnly_applyCounterCreateOperation(_ operation: ProtocolTypes.ObjectOperation) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
         mutableStateMutex.withSync { mutableState in
             mutableState.applyCounterCreateOperation(operation, logger: logger)
         }
@@ -249,7 +249,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
     ///
     /// - Returns: `true` if the operation was applied, `false` if it was skipped (RTLC7g).
     internal func nosync_apply(
-        _ operation: ObjectOperation,
+        _ operation: ProtocolTypes.ObjectOperation,
         source: ObjectsOperationSource,
         objectMessageSerial: String?,
         objectMessageSiteCode: String?,
@@ -315,7 +315,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
         /// - Parameters:
         ///   - objectMessageSerialTimestamp: The `serialTimestamp` of the containing `ObjectMessage`. Used if we need to tombstone this counter.
         internal mutating func replaceData(
-            using state: ObjectState,
+            using state: ProtocolTypes.ObjectState,
             objectMessageSerialTimestamp: Date?,
             logger: Logger,
             clock: SimpleClock,
@@ -364,7 +364,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
         }
 
         /// Merges the initial value from an ObjectOperation into this LiveCounter, per RTLC16.
-        internal mutating func mergeInitialValue(from operation: ObjectOperation) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
+        internal mutating func mergeInitialValue(from operation: ProtocolTypes.ObjectOperation) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
             let update: LiveObjectUpdate<DefaultLiveCounterUpdate>
 
             // RTLC16: Resolve counterCreate from either the direct property or the one
@@ -391,7 +391,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
         ///
         /// - Returns: `true` if the operation was applied, `false` if skipped (RTLC7g).
         internal mutating func apply(
-            _ operation: ObjectOperation,
+            _ operation: ProtocolTypes.ObjectOperation,
             source: ObjectsOperationSource,
             objectMessageSerial: String?,
             objectMessageSiteCode: String?,
@@ -460,7 +460,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
 
         /// Applies a `COUNTER_CREATE` operation, per RTLC8.
         internal mutating func applyCounterCreateOperation(
-            _ operation: ObjectOperation,
+            _ operation: ProtocolTypes.ObjectOperation,
             logger: Logger,
         ) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
             if liveObjectMutableState.createOperationIsMerged {

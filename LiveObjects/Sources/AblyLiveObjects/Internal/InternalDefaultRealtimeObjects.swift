@@ -10,7 +10,7 @@ internal protocol InternalRealtimeObjectsProtocol: LiveMapObjectsPoolDelegate {
     /// call other methods on this object that read or mutate its state.
     /// https://github.com/ably/ably-liveobjects-swift-plugin/issues/120 tracks removing this restriction.
     func nosync_publishAndApply(
-        objectMessages: [OutboundObjectMessage],
+        objectMessages: [ProtocolTypes.OutboundObjectMessage],
         coreSDK: CoreSDK,
         callback: @escaping @Sendable (Result<Void, ARTErrorInfo>) -> Void,
     )
@@ -26,10 +26,10 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
     private let clock: SimpleClock
 
     // These drive the testsOnly_* properties that expose the received ProtocolMessages to the test suite.
-    private let receivedObjectProtocolMessages: AsyncStream<[InboundObjectMessage]>
-    private let receivedObjectProtocolMessagesContinuation: AsyncStream<[InboundObjectMessage]>.Continuation
-    private let receivedObjectSyncProtocolMessages: AsyncStream<[InboundObjectMessage]>
-    private let receivedObjectSyncProtocolMessagesContinuation: AsyncStream<[InboundObjectMessage]>.Continuation
+    private let receivedObjectProtocolMessages: AsyncStream<[ProtocolTypes.InboundObjectMessage]>
+    private let receivedObjectProtocolMessagesContinuation: AsyncStream<[ProtocolTypes.InboundObjectMessage]>.Continuation
+    private let receivedObjectSyncProtocolMessages: AsyncStream<[ProtocolTypes.InboundObjectMessage]>
+    private let receivedObjectSyncProtocolMessagesContinuation: AsyncStream<[ProtocolTypes.InboundObjectMessage]>.Continuation
 
     /// The RTO10a interval at which we will perform garbage collection.
     private let garbageCollectionInterval: TimeInterval
@@ -389,12 +389,12 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
         }
     }
 
-    internal var testsOnly_receivedObjectProtocolMessages: AsyncStream<[InboundObjectMessage]> {
+    internal var testsOnly_receivedObjectProtocolMessages: AsyncStream<[ProtocolTypes.InboundObjectMessage]> {
         receivedObjectProtocolMessages
     }
 
     /// Implements the `OBJECT` handling of RTO8.
-    internal func nosync_handleObjectProtocolMessage(objectMessages: [InboundObjectMessage]) {
+    internal func nosync_handleObjectProtocolMessage(objectMessages: [ProtocolTypes.InboundObjectMessage]) {
         mutableStateMutex.withoutSync { mutableState in
             mutableState.nosync_handleObjectProtocolMessage(
                 objectMessages: objectMessages,
@@ -407,12 +407,12 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
         }
     }
 
-    internal var testsOnly_receivedObjectSyncProtocolMessages: AsyncStream<[InboundObjectMessage]> {
+    internal var testsOnly_receivedObjectSyncProtocolMessages: AsyncStream<[ProtocolTypes.InboundObjectMessage]> {
         receivedObjectSyncProtocolMessages
     }
 
     /// Implements the `OBJECT_SYNC` handling of RTO5.
-    internal func nosync_handleObjectSyncProtocolMessage(objectMessages: [InboundObjectMessage], protocolMessageChannelSerial: String?) {
+    internal func nosync_handleObjectSyncProtocolMessage(objectMessages: [ProtocolTypes.InboundObjectMessage], protocolMessageChannelSerial: String?) {
         mutableStateMutex.withoutSync { mutableState in
             mutableState.nosync_handleObjectSyncProtocolMessage(
                 objectMessages: objectMessages,
@@ -444,7 +444,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
     // MARK: - Sending `OBJECT` ProtocolMessage
 
     // This is currently exposed so that we can try calling it from the tests in the early days of the SDK to check that we can send an OBJECT ProtocolMessage. We'll probably make it private later on.
-    internal func testsOnly_publish(objectMessages: [OutboundObjectMessage], coreSDK: CoreSDK) async throws(ARTErrorInfo) {
+    internal func testsOnly_publish(objectMessages: [ProtocolTypes.OutboundObjectMessage], coreSDK: CoreSDK) async throws(ARTErrorInfo) {
         try await withCheckedContinuation { (continuation: CheckedContinuation<Result<Void, ARTErrorInfo>, _>) in
             mutableStateMutex.withSync { _ in
                 coreSDK.nosync_publish(objectMessages: objectMessages) { result in
@@ -458,7 +458,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
     ///
     /// Must be called from within `mutableStateMutex.withSync` (i.e. on the internal queue).
     internal func nosync_publishAndApply(
-        objectMessages: [OutboundObjectMessage],
+        objectMessages: [ProtocolTypes.OutboundObjectMessage],
         coreSDK: CoreSDK,
         callback: @escaping @Sendable (Result<Void, ARTErrorInfo>) -> Void,
     ) {
@@ -477,7 +477,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
     ///
     /// Must be called from within `mutableStateMutex.withSync` (i.e. on the internal queue).
     private func nosync_publishAndApply(
-        objectMessages: [OutboundObjectMessage],
+        objectMessages: [ProtocolTypes.OutboundObjectMessage],
         coreSDK: CoreSDK,
         mutableStateCallback: @escaping @Sendable (inout MutableState, Result<Void, ARTErrorInfo>) -> Void,
     ) {
@@ -512,7 +512,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
                 }
 
                 // RTO20d: Create synthetic inbound ObjectMessages
-                let syntheticMessages = objectMessages.enumerated().compactMap { index, outboundMessage -> InboundObjectMessage? in
+                let syntheticMessages = objectMessages.enumerated().compactMap { index, outboundMessage -> ProtocolTypes.InboundObjectMessage? in
                     // RTO20d1: Skip null serials (conflated)
                     guard let serial = publishResult.serials[index] else {
                         logger.log("nosync_publishAndApply: operation at index \(index) will not be applied locally: serial is null in PublishResult", level: .debug)
@@ -690,14 +690,14 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
             enum AssociatedData {
                 class Syncing {
                     /// `OBJECT` ProtocolMessages that were received whilst SYNCING, to be applied once the sync sequence is complete, per RTO7a.
-                    var bufferedObjectOperations: [InboundObjectMessage]
+                    var bufferedObjectOperations: [ProtocolTypes.InboundObjectMessage]
 
                     /// Note that we only ever populate this during a multi-`ProtocolMessage` sync sequence. It is not used in the RTO4b or RTO5a5 cases where the sync data is entirely contained within a single ProtocolMessage, because an individual ProtocolMessage is processed atomically and so no other operations that might wish to query this property can occur concurrently with the handling of these cases.
                     ///
                     /// It is optional because there are times that we transition to SYNCING even when the sync data is contained in a single ProtocolMessage.
                     var syncSequence: SyncSequence?
 
-                    init(bufferedObjectOperations: [InboundObjectMessage], syncSequence: SyncSequence?) {
+                    init(bufferedObjectOperations: [ProtocolTypes.InboundObjectMessage], syncSequence: SyncSequence?) {
                         self.bufferedObjectOperations = bufferedObjectOperations
                         self.syncSequence = syncSequence
                     }
@@ -772,13 +772,13 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
 
         /// Implements the `OBJECT_SYNC` handling of RTO5.
         internal mutating func nosync_handleObjectSyncProtocolMessage(
-            objectMessages: [InboundObjectMessage],
+            objectMessages: [ProtocolTypes.InboundObjectMessage],
             protocolMessageChannelSerial: String?,
             logger: Logger,
             internalQueue: DispatchQueue,
             userCallbackQueue: DispatchQueue,
             clock: SimpleClock,
-            receivedObjectSyncProtocolMessagesContinuation: AsyncStream<[InboundObjectMessage]>.Continuation,
+            receivedObjectSyncProtocolMessagesContinuation: AsyncStream<[ProtocolTypes.InboundObjectMessage]>.Continuation,
         ) {
             logger.log("handleObjectSyncProtocolMessage(objectMessages: \(LoggingUtilities.formatObjectMessagesForLogging(objectMessages)), protocolMessageChannelSerial: \(String(describing: protocolMessageChannelSerial)))", level: .debug)
 
@@ -884,12 +884,12 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
 
         /// Implements the `OBJECT` handling of RTO8.
         internal mutating func nosync_handleObjectProtocolMessage(
-            objectMessages: [InboundObjectMessage],
+            objectMessages: [ProtocolTypes.InboundObjectMessage],
             logger: Logger,
             internalQueue: DispatchQueue,
             userCallbackQueue: DispatchQueue,
             clock: SimpleClock,
-            receivedObjectProtocolMessagesContinuation: AsyncStream<[InboundObjectMessage]>.Continuation,
+            receivedObjectProtocolMessagesContinuation: AsyncStream<[ProtocolTypes.InboundObjectMessage]>.Continuation,
         ) {
             receivedObjectProtocolMessagesContinuation.yield(objectMessages)
 
@@ -917,7 +917,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
 
         /// Implements the `OBJECT` application of RTO9.
         internal mutating func nosync_applyObjectProtocolMessageObjectMessage(
-            _ objectMessage: InboundObjectMessage,
+            _ objectMessage: ProtocolTypes.InboundObjectMessage,
             source: ObjectsOperationSource,
             logger: Logger,
             internalQueue: DispatchQueue,

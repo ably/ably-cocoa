@@ -190,11 +190,11 @@ struct TestFactories {
         objectId: String = "test:object@123",
         siteTimeserials: [String: String] = ["site1": "ts1"],
         tombstone: Bool = false,
-        createOp: ObjectOperation? = nil,
-        map: ObjectsMap? = nil,
+        createOp: ProtocolTypes.ObjectOperation? = nil,
+        map: ProtocolTypes.ObjectsMap? = nil,
         counter: WireObjectsCounter? = nil,
-    ) -> ObjectState {
-        ObjectState(
+    ) -> ProtocolTypes.ObjectState {
+        ProtocolTypes.ObjectState(
             objectId: objectId,
             siteTimeserials: siteTimeserials,
             tombstone: tombstone,
@@ -209,15 +209,15 @@ struct TestFactories {
         objectId: String = "map:test@123",
         siteTimeserials: [String: String] = ["site1": "ts1"],
         tombstone: Bool = false,
-        createOp: ObjectOperation? = nil,
-        entries: [String: ObjectsMapEntry]? = nil,
-    ) -> ObjectState {
+        createOp: ProtocolTypes.ObjectOperation? = nil,
+        entries: [String: ProtocolTypes.ObjectsMapEntry]? = nil,
+    ) -> ProtocolTypes.ObjectState {
         objectState(
             objectId: objectId,
             siteTimeserials: siteTimeserials,
             tombstone: tombstone,
             createOp: createOp,
-            map: ObjectsMap(
+            map: ProtocolTypes.ObjectsMap(
                 semantics: .known(.lww),
                 entries: entries,
             ),
@@ -230,9 +230,9 @@ struct TestFactories {
         objectId: String = "counter:test@123",
         siteTimeserials: [String: String] = ["site1": "ts1"],
         tombstone: Bool = false,
-        createOp: ObjectOperation? = nil,
+        createOp: ProtocolTypes.ObjectOperation? = nil,
         count: Int? = 42,
-    ) -> ObjectState {
+    ) -> ProtocolTypes.ObjectState {
         objectState(
             objectId: objectId,
             siteTimeserials: siteTimeserials,
@@ -246,8 +246,8 @@ struct TestFactories {
     /// Creates an ObjectState for the root object
     static func rootObjectState(
         siteTimeserials: [String: String] = ["site1": "ts1"],
-        entries: [String: ObjectsMapEntry]? = nil,
-    ) -> ObjectState {
+        entries: [String: ProtocolTypes.ObjectsMapEntry]? = nil,
+    ) -> ProtocolTypes.ObjectState {
         mapObjectState(
             objectId: "root",
             siteTimeserials: siteTimeserials,
@@ -264,13 +264,13 @@ struct TestFactories {
         connectionId: String? = nil,
         extras: [String: JSONValue]? = nil,
         timestamp: Date? = nil,
-        operation: ObjectOperation? = nil,
-        object: ObjectState? = nil,
+        operation: ProtocolTypes.ObjectOperation? = nil,
+        object: ProtocolTypes.ObjectState? = nil,
         serial: String? = nil,
         siteCode: String? = nil,
         serialTimestamp: Date? = nil,
-    ) -> InboundObjectMessage {
-        InboundObjectMessage(
+    ) -> ProtocolTypes.InboundObjectMessage {
+        ProtocolTypes.InboundObjectMessage(
             id: id,
             clientId: clientId,
             connectionId: connectionId,
@@ -288,8 +288,8 @@ struct TestFactories {
     static func mapObjectMessage(
         objectId: String = "map:test@123",
         siteTimeserials: [String: String] = ["site1": "ts1"],
-        entries: [String: ObjectsMapEntry]? = nil,
-    ) -> InboundObjectMessage {
+        entries: [String: ProtocolTypes.ObjectsMapEntry]? = nil,
+    ) -> ProtocolTypes.InboundObjectMessage {
         inboundObjectMessage(
             object: mapObjectState(
                 objectId: objectId,
@@ -304,7 +304,7 @@ struct TestFactories {
         objectId: String = "counter:test@123",
         siteTimeserials: [String: String] = ["site1": "ts1"],
         count: Int? = 42,
-    ) -> InboundObjectMessage {
+    ) -> ProtocolTypes.InboundObjectMessage {
         inboundObjectMessage(
             object: counterObjectState(
                 objectId: objectId,
@@ -317,8 +317,8 @@ struct TestFactories {
     /// Creates an InboundObjectMessage with a root ObjectState
     static func rootObjectMessage(
         siteTimeserials: [String: String] = ["site1": "ts1"],
-        entries: [String: ObjectsMapEntry]? = nil,
-    ) -> InboundObjectMessage {
+        entries: [String: ProtocolTypes.ObjectsMapEntry]? = nil,
+    ) -> ProtocolTypes.InboundObjectMessage {
         inboundObjectMessage(
             object: rootObjectState(
                 siteTimeserials: siteTimeserials,
@@ -328,7 +328,7 @@ struct TestFactories {
     }
 
     /// Creates an InboundObjectMessage without an ObjectState
-    static func objectMessageWithoutState() -> InboundObjectMessage {
+    static func objectMessageWithoutState() -> ProtocolTypes.InboundObjectMessage {
         inboundObjectMessage(object: nil)
     }
 
@@ -336,19 +336,19 @@ struct TestFactories {
 
     /// Creates an ObjectOperation with sensible defaults
     static func objectOperation(
-        action: WireEnum<ObjectOperationAction> = .known(.mapCreate),
+        action: WireEnum<ProtocolTypes.ObjectOperationAction> = .known(.mapCreate),
         objectId: String = "test:object@123",
-        mapCreate: MapCreate? = nil,
-        mapSet: MapSet? = nil,
+        mapCreate: ProtocolTypes.MapCreate? = nil,
+        mapSet: ProtocolTypes.MapSet? = nil,
         mapRemove: WireMapRemove? = nil,
         counterCreate: WireCounterCreate? = nil,
         counterInc: WireCounterInc? = nil,
         objectDelete: WireObjectDelete? = nil,
-        mapCreateWithObjectId: MapCreateWithObjectId? = nil,
-        counterCreateWithObjectId: CounterCreateWithObjectId? = nil,
+        mapCreateWithObjectId: ProtocolTypes.MapCreateWithObjectId? = nil,
+        counterCreateWithObjectId: ProtocolTypes.CounterCreateWithObjectId? = nil,
         mapClear: WireMapClear? = nil,
-    ) -> ObjectOperation {
-        ObjectOperation(
+    ) -> ProtocolTypes.ObjectOperation {
+        ProtocolTypes.ObjectOperation(
             action: action,
             objectId: objectId,
             mapCreate: mapCreate,
@@ -366,12 +366,12 @@ struct TestFactories {
     /// Creates a map create operation
     static func mapCreateOperation(
         objectId: String = "map:test@123",
-        entries: [String: ObjectsMapEntry]? = nil,
-    ) -> ObjectOperation {
+        entries: [String: ProtocolTypes.ObjectsMapEntry]? = nil,
+    ) -> ProtocolTypes.ObjectOperation {
         objectOperation(
             action: .known(.mapCreate),
             objectId: objectId,
-            mapCreate: MapCreate(
+            mapCreate: ProtocolTypes.MapCreate(
                 semantics: .known(.lww),
                 entries: entries,
             ),
@@ -382,7 +382,7 @@ struct TestFactories {
     static func counterCreateOperation(
         objectId: String = "counter:test@123",
         count: Int? = 42,
-    ) -> ObjectOperation {
+    ) -> ProtocolTypes.ObjectOperation {
         objectOperation(
             action: .known(.counterCreate),
             objectId: objectId,
@@ -401,9 +401,9 @@ struct TestFactories {
     static func mapEntry(
         tombstone: Bool? = false,
         timeserial: String? = "ts1",
-        data: ObjectData?,
-    ) -> ObjectsMapEntry {
-        ObjectsMapEntry(
+        data: ProtocolTypes.ObjectData?,
+    ) -> ProtocolTypes.ObjectsMapEntry {
+        ProtocolTypes.ObjectsMapEntry(
             tombstone: tombstone,
             timeserial: timeserial,
             data: data,
@@ -416,7 +416,7 @@ struct TestFactories {
     static func internalMapEntry(
         tombstonedAt: Date? = nil,
         timeserial: String? = "ts1",
-        data: ObjectData,
+        data: ProtocolTypes.ObjectData,
     ) -> InternalObjectsMapEntry {
         InternalObjectsMapEntry(
             tombstonedAt: tombstonedAt,
@@ -431,13 +431,13 @@ struct TestFactories {
         value: String = "testValue",
         tombstone: Bool? = false,
         timeserial: String? = "ts1",
-    ) -> (key: String, entry: ObjectsMapEntry) {
+    ) -> (key: String, entry: ProtocolTypes.ObjectsMapEntry) {
         (
             key: key,
             entry: mapEntry(
                 tombstone: tombstone,
                 timeserial: timeserial,
-                data: ObjectData(string: value),
+                data: ProtocolTypes.ObjectData(string: value),
             ),
         )
     }
@@ -456,7 +456,7 @@ struct TestFactories {
             entry: internalMapEntry(
                 tombstonedAt: tombstonedAt,
                 timeserial: timeserial,
-                data: ObjectData(string: value),
+                data: ProtocolTypes.ObjectData(string: value),
             ),
         )
     }
@@ -467,13 +467,13 @@ struct TestFactories {
         value: NSNumber = NSNumber(value: 42),
         tombstone: Bool? = false,
         timeserial: String? = "ts1",
-    ) -> (key: String, entry: ObjectsMapEntry) {
+    ) -> (key: String, entry: ProtocolTypes.ObjectsMapEntry) {
         (
             key: key,
             entry: mapEntry(
                 tombstone: tombstone,
                 timeserial: timeserial,
-                data: ObjectData(number: value),
+                data: ProtocolTypes.ObjectData(number: value),
             ),
         )
     }
@@ -484,13 +484,13 @@ struct TestFactories {
         value: Bool = true,
         tombstone: Bool? = false,
         timeserial: String? = "ts1",
-    ) -> (key: String, entry: ObjectsMapEntry) {
+    ) -> (key: String, entry: ProtocolTypes.ObjectsMapEntry) {
         (
             key: key,
             entry: mapEntry(
                 tombstone: tombstone,
                 timeserial: timeserial,
-                data: ObjectData(boolean: value),
+                data: ProtocolTypes.ObjectData(boolean: value),
             ),
         )
     }
@@ -501,13 +501,13 @@ struct TestFactories {
         value: Data = Data([0x01, 0x02, 0x03]),
         tombstone: Bool? = false,
         timeserial: String? = "ts1",
-    ) -> (key: String, entry: ObjectsMapEntry) {
+    ) -> (key: String, entry: ProtocolTypes.ObjectsMapEntry) {
         (
             key: key,
             entry: mapEntry(
                 tombstone: tombstone,
                 timeserial: timeserial,
-                data: ObjectData(bytes: value),
+                data: ProtocolTypes.ObjectData(bytes: value),
             ),
         )
     }
@@ -518,13 +518,13 @@ struct TestFactories {
         objectId: String = "map:referenced@123",
         tombstone: Bool? = false,
         timeserial: String? = "ts1",
-    ) -> (key: String, entry: ObjectsMapEntry) {
+    ) -> (key: String, entry: ProtocolTypes.ObjectsMapEntry) {
         (
             key: key,
             entry: mapEntry(
                 tombstone: tombstone,
                 timeserial: timeserial,
-                data: ObjectData(objectId: objectId),
+                data: ProtocolTypes.ObjectData(objectId: objectId),
             ),
         )
     }
@@ -533,11 +533,11 @@ struct TestFactories {
 
     /// Creates an ObjectsMap with sensible defaults
     static func objectsMap(
-        semantics: WireEnum<ObjectsMapSemantics> = .known(.lww),
-        entries: [String: ObjectsMapEntry]? = nil,
+        semantics: WireEnum<ProtocolTypes.ObjectsMapSemantics> = .known(.lww),
+        entries: [String: ProtocolTypes.ObjectsMapEntry]? = nil,
         clearTimeserial: String? = nil,
-    ) -> ObjectsMap {
-        ObjectsMap(
+    ) -> ProtocolTypes.ObjectsMap {
+        ProtocolTypes.ObjectsMap(
             semantics: semantics,
             entries: entries,
             clearTimeserial: clearTimeserial,
@@ -547,9 +547,9 @@ struct TestFactories {
     /// Creates an ObjectsMap with string entries
     static func objectsMapWithStringEntries(
         entries: [String: String] = ["key1": "value1", "key2": "value2"],
-    ) -> ObjectsMap {
+    ) -> ProtocolTypes.ObjectsMap {
         let mapEntries = entries.mapValues { value in
-            mapEntry(data: ObjectData(string: value))
+            mapEntry(data: ProtocolTypes.ObjectData(string: value))
         }
         return objectsMap(entries: mapEntries)
     }
@@ -570,14 +570,14 @@ struct TestFactories {
         value: String = "testValue",
         serial: String = "ts1",
         siteCode: String = "site1",
-    ) -> InboundObjectMessage {
+    ) -> ProtocolTypes.InboundObjectMessage {
         inboundObjectMessage(
             operation: objectOperation(
                 action: .known(.mapSet),
                 objectId: objectId,
-                mapSet: MapSet(
+                mapSet: ProtocolTypes.MapSet(
                     key: key,
-                    value: ObjectData(string: value),
+                    value: ProtocolTypes.ObjectData(string: value),
                 ),
             ),
             serial: serial,
@@ -591,7 +591,7 @@ struct TestFactories {
         key: String = "testKey",
         serial: String = "ts1",
         siteCode: String = "site1",
-    ) -> InboundObjectMessage {
+    ) -> ProtocolTypes.InboundObjectMessage {
         inboundObjectMessage(
             operation: objectOperation(
                 action: .known(.mapRemove),
@@ -608,7 +608,7 @@ struct TestFactories {
         objectId: String = "map:test@123",
         serial: String = "ts1",
         siteCode: String = "site1",
-    ) -> InboundObjectMessage {
+    ) -> ProtocolTypes.InboundObjectMessage {
         inboundObjectMessage(
             operation: objectOperation(
                 action: .known(.mapClear),
@@ -623,10 +623,10 @@ struct TestFactories {
     /// Creates an InboundObjectMessage with a MAP_CREATE operation
     static func mapCreateOperationMessage(
         objectId: String = "map:test@123",
-        entries: [String: ObjectsMapEntry]? = nil,
+        entries: [String: ProtocolTypes.ObjectsMapEntry]? = nil,
         serial: String = "ts1",
         siteCode: String = "site1",
-    ) -> InboundObjectMessage {
+    ) -> ProtocolTypes.InboundObjectMessage {
         inboundObjectMessage(
             operation: mapCreateOperation(
                 objectId: objectId,
@@ -643,7 +643,7 @@ struct TestFactories {
         count: Int? = 42,
         serial: String = "ts1",
         siteCode: String = "site1",
-    ) -> InboundObjectMessage {
+    ) -> ProtocolTypes.InboundObjectMessage {
         inboundObjectMessage(
             operation: counterCreateOperation(
                 objectId: objectId,
@@ -660,7 +660,7 @@ struct TestFactories {
         number: Int = 10,
         serial: String = "ts1",
         siteCode: String = "site1",
-    ) -> InboundObjectMessage {
+    ) -> ProtocolTypes.InboundObjectMessage {
         inboundObjectMessage(
             operation: objectOperation(
                 action: .known(.counterInc),
@@ -679,7 +679,7 @@ struct TestFactories {
         objectId: String = "map:simple@123",
         key: String = "testKey",
         value: String = "testValue",
-    ) -> InboundObjectMessage {
+    ) -> ProtocolTypes.InboundObjectMessage {
         let (entryKey, entry) = stringMapEntry(key: key, value: value)
         return mapObjectMessage(
             objectId: objectId,
@@ -691,7 +691,7 @@ struct TestFactories {
     static func simpleCounterMessage(
         objectId: String = "counter:simple@123",
         count: Int = 42,
-    ) -> InboundObjectMessage {
+    ) -> ProtocolTypes.InboundObjectMessage {
         counterObjectMessage(
             objectId: objectId,
             count: count,
@@ -701,9 +701,9 @@ struct TestFactories {
     /// Creates a root object message with multiple entries
     static func rootMessageWithEntries(
         entries: [String: String] = ["key1": "value1", "key2": "value2"],
-    ) -> InboundObjectMessage {
+    ) -> ProtocolTypes.InboundObjectMessage {
         let mapEntries = entries.mapValues { value in
-            mapEntry(data: ObjectData(string: value))
+            mapEntry(data: ProtocolTypes.ObjectData(string: value))
         }
         return rootObjectMessage(entries: mapEntries)
     }

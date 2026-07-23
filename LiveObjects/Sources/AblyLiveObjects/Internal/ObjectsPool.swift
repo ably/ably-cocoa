@@ -34,7 +34,7 @@ internal struct ObjectsPool {
         ///
         /// - Returns: `true` if the operation was applied, `false` if it was skipped.
         internal func nosync_apply(
-            _ operation: ObjectOperation,
+            _ operation: ProtocolTypes.ObjectOperation,
             source: ObjectsOperationSource,
             objectMessageSerial: String?,
             objectMessageSiteCode: String?,
@@ -86,7 +86,7 @@ internal struct ObjectsPool {
         /// - Parameters:
         ///   - objectMessageSerialTimestamp: The `serialTimestamp` of the containing `ObjectMessage`. Used if we need to tombstone the object.
         fileprivate func nosync_replaceData(
-            using state: ObjectState,
+            using state: ProtocolTypes.ObjectState,
             objectMessageSerialTimestamp: Date?,
             objectsPool: inout ObjectsPool,
             userCallbackQueue: DispatchQueue,
@@ -351,8 +351,8 @@ internal struct ObjectsPool {
     /// - Precondition: `state.objectId` must not be the root object ID, in order to preserve the RTO3b invariant that the root is always a map.
     /// - Precondition: `state` must have either `.counter` or `.map` populated.
     private mutating func nosync_createObjectFromSync(
-        state: ObjectState,
-        objectMessage: InboundObjectMessage,
+        state: ProtocolTypes.ObjectState,
+        objectMessage: ProtocolTypes.InboundObjectMessage,
         logger: Logger,
         internalQueue: DispatchQueue,
         userCallbackQueue: DispatchQueue,

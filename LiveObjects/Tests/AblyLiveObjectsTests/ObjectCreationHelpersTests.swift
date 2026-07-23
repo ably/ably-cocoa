@@ -62,7 +62,7 @@ struct ObjectCreationHelpersTests {
             let deserializedInitialValue = try #require(try JSONObjectOrArray(jsonString: initialValueString).objectValue)
             #expect(deserializedInitialValue == [
                 // RTO11f14a
-                "semantics": .number(Double(ObjectsMapSemantics.lww.rawValue)),
+                "semantics": .number(Double(ProtocolTypes.ObjectsMapSemantics.lww.rawValue)),
                 "entries": [
                     // RTO11f14c1a
                     "mapRef": [
@@ -118,7 +118,7 @@ struct ObjectCreationHelpersTests {
 
             #expect(derivedMapCreate.semantics == .known(.lww))
 
-            let expectedEntries: [String: ObjectsMapEntry] = [
+            let expectedEntries: [String: ProtocolTypes.ObjectsMapEntry] = [
                 "mapRef": .init(data: .init(objectId: "referencedMapID")),
                 "counterRef": .init(data: .init(objectId: "referencedCounterID")),
                 "jsonArrayKey": .init(data: .init(json: .array(["arrayItem1", "arrayItem2"]))),
