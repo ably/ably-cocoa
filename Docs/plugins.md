@@ -2,7 +2,7 @@
 
 ably-cocoa allows users to pass in Ably-authored plugins via the `ARTClientOptions.plugins` property. These plugins extend the functionality of the SDK.
 
-ably-cocoa and its plugins depend on a library called `_AblyPluginSupportPrivate`, which is a target of this package (found in `Sources/_AblyPluginSupportPrivate`; it was previously in the separate [ably-cocoa-plugin-support repository](https://github.com/ably/ably-cocoa-plugin-support)). This provides an API that plugins can use to access ably-cocoa's internals, and which ably-cocoa can use to communicate with its plugins.
+ably-cocoa and its plugins depend on a library called `_AblyPluginSupportPrivate`, which is a target of this package (found in `_AblyPluginSupportPrivate`; it was previously in the separate [ably-cocoa-plugin-support repository](https://github.com/ably/ably-cocoa-plugin-support)). This provides an API that plugins can use to access ably-cocoa's internals, and which ably-cocoa can use to communicate with its plugins.
 
 I will expand on this documentation once this mechanism is more mature. [ADR-128: Plugins for ably-cocoa SDK](https://ably.atlassian.net/wiki/spaces/ENG/pages/3838574593/ADR-128+Plugins+for+ably-cocoa+SDK) describes the original design, but is now outdated in some important ways: it is centred on the plugin living in a separate repository so as not to be bound by ably-cocoa's OS version requirements, a constraint that turned out not to exist (per-declaration `@available` annotations let a single package host components with different OS requirements, and the plugin now lives in this repository), and `_AblyPluginSupportPrivate` (called `AblyPlugin` in the ADR) is a standalone library rather than part of the Ably product.
 
