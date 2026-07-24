@@ -55,7 +55,7 @@ let package = Package(
         // vended as a product.
         .target(
             name: "_AblyPluginSupportPrivate",
-            path: "Sources/_AblyPluginSupportPrivate"
+            path: "_AblyPluginSupportPrivate"
         ),
         .target(
             name: "Ably",
