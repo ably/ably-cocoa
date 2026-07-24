@@ -183,6 +183,13 @@ realtime.connection.on { stateChange in
 
 ---
 
+## LiveObjects
+
+This repository also contains the Ably LiveObjects plugin, which enables real-time, collaborative data synchronisation on top of the core SDK. It is available via Swift Package Manager only: add this package as above and additionally select the `AblyLiveObjects` product for your target. See the [LiveObjects README](LiveObjects/README.md) and the [LiveObjects documentation](https://ably.com/docs/liveobjects) to get started.
+
+> [!WARNING]
+> LiveObjects is currently experimental. Breaking changes to the `AblyLiveObjects` API may be made in minor or patch releases of ably-cocoa, without a major version bump; ably-cocoa's semantic versioning guarantees apply only to the `Ably` product.
+
 ## Contribute
 
 Read the [CONTRIBUTING.md](./CONTRIBUTING.md) guidelines to contribute to Ably.

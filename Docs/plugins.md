@@ -2,18 +2,18 @@
 
 ably-cocoa allows users to pass in Ably-authored plugins via the `ARTClientOptions.plugins` property. These plugins extend the functionality of the SDK.
 
-ably-cocoa and its plugins depend on a separate library called `_AblyPluginSupportPrivate`, which can be found in the [ably-cocoa-plugin-support repository](https://github.com/ably/ably-cocoa-plugin-support). This provides an API that plugins can use to access ably-cocoa's internals, and which ably-cocoa can use to communicate with its plugins.
+ably-cocoa and its plugins depend on a library called `_AblyPluginSupportPrivate`, which is a target of this package (found in `Sources/_AblyPluginSupportPrivate`; it was previously in the separate [ably-cocoa-plugin-support repository](https://github.com/ably/ably-cocoa-plugin-support)). This provides an API that plugins can use to access ably-cocoa's internals, and which ably-cocoa can use to communicate with its plugins.
 
-I will expand on this documentation once this mechanism is more mature; currently [ADR-128: Plugins for ably-cocoa SDK](https://ably.atlassian.net/wiki/spaces/ENG/pages/3838574593/ADR-128+Plugins+for+ably-cocoa+SDK) provides a decent description of our approach. The key divergence between ADR-128 and our current approach is that `_AblyPluginSupportPrivate` (called `AblyPlugin` in the ADR) is no longer part of ably-cocoa and instead lives in a separate repository. I will update that ADR or create a new one later on as part of clearing technical debt caused by this last-minute change of approach.
+I will expand on this documentation once this mechanism is more mature. [ADR-128: Plugins for ably-cocoa SDK](https://ably.atlassian.net/wiki/spaces/ENG/pages/3838574593/ADR-128+Plugins+for+ably-cocoa+SDK) describes the original design, but is now outdated in some important ways: it is centred on the plugin living in a separate repository so as not to be bound by ably-cocoa's OS version requirements, a constraint that turned out not to exist (per-declaration `@available` annotations let a single package host components with different OS requirements, and the plugin now lives in this repository), and `_AblyPluginSupportPrivate` (called `AblyPlugin` in the ADR) is a standalone library rather than part of the Ably product.
 
-Currently, our only plugin is for adding LiveObjects functionality. This plugin can be found at https://github.com/ably/ably-liveobjects-swift-plugin.
+Currently, our only plugin is for adding LiveObjects functionality. This plugin can be found in this repository's `LiveObjects/` directory, and is vended as this package's `AblyLiveObjects` product.
 
 ## Notes on `_AblyPluginSupportPrivate`
 
 - Everything in ably-cocoa that depends on `_AblyPluginSupportPrivate` is gated behind `#ifdef ABLY_SUPPORTS_PLUGINS`, which is only defined in SPM builds. This is so as not to affect the non-SPM builds (i.e. Xcode, CocoaPods), which do not have access to `_AblyPluginSupportPrivate`.
 - ably-cocoa provides an implementation of `_AblyPluginSupportPrivate`'s `APPluginAPI` protocol, which is the interface that plugins use to access ably-cocoa's internals. On library initialization, it registers this implementation with `APDependencyStore`, from where plugins can subsequetly fetch it.
 - There are some tests for the `APPluginAPI` implementation in `PluginAPITests.swift` (with only partial coverage at the moment).
-- Currently, the plan is to test all the LiveObjects functionality within the LiveObjects plugin repository, so the ably-cocoa tests do not import the LiveObjects plugin.
+- Currently, the plan is to test all the LiveObjects functionality within the plugin's own test suite (`LiveObjects/Tests`), so the ably-cocoa tests do not import the LiveObjects plugin.
 - The underscore and `Private` are to reduce the chances of the user accidentally importing it into their project.
 - `_AblyPluginSupportPrivate` can not refer to any of ably-cocoa's types (since SPM forbids circular dependencies) and so it contains various types that duplicate ably-cocoa's public types. These fall into two categories:
   - enums e.g. `APRealtimeChannelState`, which are an exact copy of the corresponding ably-cocoa enum (in this example, `ARTRealtimeChannelState`)

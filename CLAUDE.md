@@ -58,6 +58,10 @@ Key classes follow the `ART` prefix convention: `ARTRealtime`, `ARTRest`, `ARTAu
 
 Plugins are passed via `ARTClientOptions.plugins`. Plugin support is gated behind `#ifdef ABLY_SUPPORTS_PLUGINS` (enabled only in SPM builds). See `Docs/plugins.md`.
 
+## LiveObjects
+
+The LiveObjects plugin (the `AblyLiveObjects` product, in Swift) lives in `LiveObjects/`, which has its own CLAUDE.md with build/test/lint instructions; consult it when working on LiveObjects code. Its targets are declared in this repo's root `Package.swift`, and every top-level declaration in its sources must carry an `@available` annotation (enforced by `Scripts/annotate-liveobjects-availability.py`; see that script for details).
+
 ## Test Structure
 
 - `Test/AblyTests/Tests/` — Swift test files.
