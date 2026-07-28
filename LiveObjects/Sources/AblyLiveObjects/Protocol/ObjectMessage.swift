@@ -4,124 +4,127 @@ import Foundation
 
 // This file contains the ObjectMessage types that we use within the codebase. We convert them to and from the corresponding wire types (e.g. `InboundWireObjectMessage`) for sending and receiving over the wire.
 
-/// An `ObjectMessage` received in the `state` property of an `OBJECT` or `OBJECT_SYNC` `ProtocolMessage`.
-@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal struct InboundObjectMessage: Equatable {
-    internal var id: String? // OM2a
-    internal var clientId: String? // OM2b
-    internal var connectionId: String? // OM2c
-    internal var extras: [String: JSONValue]? // OM2d
-    internal var timestamp: Date? // OM2e
-    internal var operation: ObjectOperation? // OM2f
-    internal var object: ObjectState? // OM2g
-    internal var serial: String? // OM2h
-    internal var siteCode: String? // OM2i
-    internal var serialTimestamp: Date? // OM2j
-}
-
-/// An `ObjectMessage` to be sent in the `state` property of an `OBJECT` `ProtocolMessage`.
+/// Namespace for the internal "protocol" representations of an object message and its constituent
+/// operations, states and data.
 ///
-/// - Important: When adding new fields, also update ``InboundObjectMessage/createSynthetic(from:serial:siteCode:)``.
+/// These types are scoped under `ProtocolTypes` to disambiguate them from the identically-named
+/// public value types (e.g. `ObjectOperation` / `ObjectData`) that the SDK exposes to users; see the
+/// `Path Based API` directory. They mirror the wire types (e.g. ``InboundWireObjectMessage``) but
+/// with decoded, strongly-typed payloads.
+///
+/// > Note: The spec-suggested name for this namespace was `Protocol`, but that clashes with the
+/// > Objective-C `Protocol` type imported via Foundation (ambiguous for importers such as the test
+/// > target), so `ProtocolTypes` is used instead.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal struct OutboundObjectMessage: Equatable {
-    internal var id: String? // OM2a
-    internal var clientId: String? // OM2b
-    internal var connectionId: String?
-    internal var extras: [String: JSONValue]? // OM2d
-    internal var timestamp: Date? // OM2e
-    internal var operation: ObjectOperation? // OM2f
-    internal var object: ObjectState? // OM2g
-    internal var serial: String? // OM2h
-    internal var siteCode: String? // OM2i
-    internal var serialTimestamp: Date? // OM2j
+internal enum ProtocolTypes {
+    /// An `ObjectMessage` received in the `state` property of an `OBJECT` or `OBJECT_SYNC` `ProtocolMessage`.
+    internal struct InboundObjectMessage: Equatable {
+        internal var id: String? // OM2a
+        internal var clientId: String? // OM2b
+        internal var connectionId: String? // OM2c
+        internal var extras: [String: JSONValue]? // OM2d
+        internal var timestamp: Date? // OM2e
+        internal var operation: ObjectOperation? // OM2f
+        internal var object: ObjectState? // OM2g
+        internal var serial: String? // OM2h
+        internal var siteCode: String? // OM2i
+        internal var serialTimestamp: Date? // OM2j
+    }
+
+    /// An `ObjectMessage` to be sent in the `state` property of an `OBJECT` `ProtocolMessage`.
+    ///
+    /// - Important: When adding new fields, also update ``InboundObjectMessage/createSynthetic(from:serial:siteCode:)``.
+    internal struct OutboundObjectMessage: Equatable {
+        internal var id: String? // OM2a
+        internal var clientId: String? // OM2b
+        internal var connectionId: String?
+        internal var extras: [String: JSONValue]? // OM2d
+        internal var timestamp: Date? // OM2e
+        internal var operation: ObjectOperation? // OM2f
+        internal var object: ObjectState? // OM2g
+        internal var serial: String? // OM2h
+        internal var siteCode: String? // OM2i
+        internal var serialTimestamp: Date? // OM2j
+    }
+
+    internal struct ObjectOperation: Equatable {
+        internal var action: WireEnum<ObjectOperationAction> // OOP3a
+        internal var objectId: String // OOP3b
+        internal var mapCreate: MapCreate? // OOP3j
+        internal var mapSet: MapSet? // OOP3k
+        internal var mapRemove: WireMapRemove? // OOP3l
+        internal var counterCreate: WireCounterCreate? // OOP3m
+        internal var counterInc: WireCounterInc? // OOP3n
+        internal var objectDelete: WireObjectDelete? // OOP3o
+        internal var mapCreateWithObjectId: MapCreateWithObjectId? // OOP3p
+        internal var counterCreateWithObjectId: CounterCreateWithObjectId? // OOP3q
+        internal var mapClear: WireMapClear? // OOP3r
+    }
+
+    internal struct ObjectData: Equatable {
+        internal var objectId: String? // OD2a
+        internal var boolean: Bool? // OD2c
+        internal var bytes: Data? // OD2d
+        internal var number: NSNumber? // OD2e
+        internal var string: String? // OD2f
+        internal var json: JSONObjectOrArray? // TODO: Needs specification (see https://github.com/ably/ably-liveobjects-swift-plugin/issues/46)
+    }
+
+    internal struct MapSet: Equatable {
+        internal var key: String // MST2a
+        internal var value: ObjectData? // MST2b
+    }
+
+    internal struct MapCreate: Equatable {
+        internal var semantics: WireEnum<ObjectsMapSemantics> // MCR2a
+        internal var entries: [String: ObjectsMapEntry]? // MCR2b
+    }
+
+    internal struct MapCreateWithObjectId: Equatable {
+        internal var initialValue: String // MCRO2a
+        internal var nonce: String // MCRO2b
+
+        /// The source `MapCreate` from which this `MapCreateWithObjectId` was derived.
+        /// For local use only (apply-on-ACK per RTLM23); must not be sent over the wire.
+        /// - SeeAlso: RTO11f18
+        internal var derivedFrom: MapCreate?
+    }
+
+    internal struct CounterCreateWithObjectId: Equatable {
+        internal var initialValue: String // CCRO2a
+        internal var nonce: String // CCRO2b
+
+        /// The source `WireCounterCreate` from which this `CounterCreateWithObjectId` was derived.
+        /// For local use only (apply-on-ACK per RTLC16); must not be sent over the wire.
+        /// - SeeAlso: RTO12f16
+        internal var derivedFrom: WireCounterCreate?
+    }
+
+    internal struct ObjectsMapEntry: Equatable {
+        internal var tombstone: Bool? // OME2a
+        internal var timeserial: String? // OME2b
+        internal var data: ObjectData? // OME2c
+        internal var serialTimestamp: Date? // OME2d
+    }
+
+    internal struct ObjectsMap: Equatable {
+        internal var semantics: WireEnum<ObjectsMapSemantics> // OMP3a
+        internal var entries: [String: ObjectsMapEntry]? // OMP3b
+        internal var clearTimeserial: String? // OMP3c
+    }
+
+    internal struct ObjectState: Equatable {
+        internal var objectId: String // OST2a
+        internal var siteTimeserials: [String: String] // OST2b
+        internal var tombstone: Bool // OST2c
+        internal var createOp: ObjectOperation? // OST2d
+        internal var map: ObjectsMap? // OST2e
+        internal var counter: WireObjectsCounter? // OST2f
+    }
 }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal struct ObjectOperation: Equatable {
-    internal var action: WireEnum<ObjectOperationAction> // OOP3a
-    internal var objectId: String // OOP3b
-    internal var mapCreate: MapCreate? // OOP3j
-    internal var mapSet: MapSet? // OOP3k
-    internal var mapRemove: WireMapRemove? // OOP3l
-    internal var counterCreate: WireCounterCreate? // OOP3m
-    internal var counterInc: WireCounterInc? // OOP3n
-    internal var objectDelete: WireObjectDelete? // OOP3o
-    internal var mapCreateWithObjectId: MapCreateWithObjectId? // OOP3p
-    internal var counterCreateWithObjectId: CounterCreateWithObjectId? // OOP3q
-    internal var mapClear: WireMapClear? // OOP3r
-}
-
-@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal struct ObjectData: Equatable {
-    internal var objectId: String? // OD2a
-    internal var boolean: Bool? // OD2c
-    internal var bytes: Data? // OD2d
-    internal var number: NSNumber? // OD2e
-    internal var string: String? // OD2f
-    internal var json: JSONObjectOrArray? // TODO: Needs specification (see https://github.com/ably/ably-liveobjects-swift-plugin/issues/46)
-}
-
-@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal struct MapSet: Equatable {
-    internal var key: String // MST2a
-    internal var value: ObjectData? // MST2b
-}
-
-@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal struct MapCreate: Equatable {
-    internal var semantics: WireEnum<ObjectsMapSemantics> // MCR2a
-    internal var entries: [String: ObjectsMapEntry]? // MCR2b
-}
-
-@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal struct MapCreateWithObjectId: Equatable {
-    internal var initialValue: String // MCRO2a
-    internal var nonce: String // MCRO2b
-
-    /// The source `MapCreate` from which this `MapCreateWithObjectId` was derived.
-    /// For local use only (apply-on-ACK per RTLM23); must not be sent over the wire.
-    /// - SeeAlso: RTO11f18
-    internal var derivedFrom: MapCreate?
-}
-
-@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal struct CounterCreateWithObjectId: Equatable {
-    internal var initialValue: String // CCRO2a
-    internal var nonce: String // CCRO2b
-
-    /// The source `WireCounterCreate` from which this `CounterCreateWithObjectId` was derived.
-    /// For local use only (apply-on-ACK per RTLC16); must not be sent over the wire.
-    /// - SeeAlso: RTO12f16
-    internal var derivedFrom: WireCounterCreate?
-}
-
-@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal struct ObjectsMapEntry: Equatable {
-    internal var tombstone: Bool? // OME2a
-    internal var timeserial: String? // OME2b
-    internal var data: ObjectData? // OME2c
-    internal var serialTimestamp: Date? // OME2d
-}
-
-@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal struct ObjectsMap: Equatable {
-    internal var semantics: WireEnum<ObjectsMapSemantics> // OMP3a
-    internal var entries: [String: ObjectsMapEntry]? // OMP3b
-    internal var clearTimeserial: String? // OMP3c
-}
-
-@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal struct ObjectState: Equatable {
-    internal var objectId: String // OST2a
-    internal var siteTimeserials: [String: String] // OST2b
-    internal var tombstone: Bool // OST2c
-    internal var createOp: ObjectOperation? // OST2d
-    internal var map: ObjectsMap? // OST2e
-    internal var counter: WireObjectsCounter? // OST2f
-}
-
-@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal extension InboundObjectMessage {
+internal extension ProtocolTypes.InboundObjectMessage {
     /// Initializes an `InboundObjectMessage` from an `InboundWireObjectMessage`, applying the data decoding rules of OD5.
     ///
     /// - Parameters:
@@ -149,7 +152,7 @@ internal extension InboundObjectMessage {
 }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal extension OutboundObjectMessage {
+internal extension ProtocolTypes.OutboundObjectMessage {
     /// Converts this `OutboundObjectMessage` to an `OutboundWireObjectMessage`, applying the data encoding rules of OD4.
     ///
     /// - Parameters:
@@ -171,7 +174,7 @@ internal extension OutboundObjectMessage {
 }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal extension ObjectOperation {
+internal extension ProtocolTypes.ObjectOperation {
     /// Initializes an `ObjectOperation` from a `WireObjectOperation`, applying the data decoding rules of OD5.
     ///
     /// - Parameters:
@@ -222,7 +225,7 @@ internal extension ObjectOperation {
 }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal extension ObjectData {
+internal extension ProtocolTypes.ObjectData {
     /// Initializes an `ObjectData` from a `WireObjectData`, applying the data decoding rules of OD5.
     ///
     /// - Parameters:
@@ -327,7 +330,7 @@ internal extension ObjectData {
 }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal extension MapSet {
+internal extension ProtocolTypes.MapSet {
     init(
         wireMapSet: WireMapSet,
         format: _AblyPluginSupportPrivate.EncodingFormat
@@ -347,7 +350,7 @@ internal extension MapSet {
 }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal extension MapCreate {
+internal extension ProtocolTypes.MapCreate {
     init(
         wireMapCreate: WireMapCreate,
         format: _AblyPluginSupportPrivate.EncodingFormat
@@ -367,7 +370,7 @@ internal extension MapCreate {
 }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal extension MapCreateWithObjectId {
+internal extension ProtocolTypes.MapCreateWithObjectId {
     init(wireMapCreateWithObjectId: WireMapCreateWithObjectId) {
         nonce = wireMapCreateWithObjectId.nonce
         initialValue = wireMapCreateWithObjectId.initialValue
@@ -379,7 +382,7 @@ internal extension MapCreateWithObjectId {
 }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal extension CounterCreateWithObjectId {
+internal extension ProtocolTypes.CounterCreateWithObjectId {
     init(wireCounterCreateWithObjectId: WireCounterCreateWithObjectId) {
         nonce = wireCounterCreateWithObjectId.nonce
         initialValue = wireCounterCreateWithObjectId.initialValue
@@ -391,7 +394,7 @@ internal extension CounterCreateWithObjectId {
 }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal extension ObjectsMapEntry {
+internal extension ProtocolTypes.ObjectsMapEntry {
     /// Initializes an `ObjectsMapEntry` from a `WireObjectsMapEntry`, applying the data decoding rules of OD5.
     ///
     /// - Parameters:
@@ -425,7 +428,7 @@ internal extension ObjectsMapEntry {
 }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal extension ObjectsMap {
+internal extension ProtocolTypes.ObjectsMap {
     /// Initializes an `ObjectsMap` from a `WireObjectsMap`, applying the data decoding rules of OD5.
     ///
     /// - Parameters:
@@ -456,7 +459,7 @@ internal extension ObjectsMap {
 }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal extension ObjectState {
+internal extension ProtocolTypes.ObjectState {
     /// Initializes an `ObjectState` from a `WireObjectState`, applying the data decoding rules of OD5.
     ///
     /// - Parameters:
@@ -497,7 +500,7 @@ internal extension ObjectState {
 // MARK: - CustomDebugStringConvertible
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-extension InboundObjectMessage: CustomDebugStringConvertible {
+extension ProtocolTypes.InboundObjectMessage: CustomDebugStringConvertible {
     internal var debugDescription: String {
         var parts: [String] = []
 
@@ -517,7 +520,7 @@ extension InboundObjectMessage: CustomDebugStringConvertible {
 }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-extension OutboundObjectMessage: CustomDebugStringConvertible {
+extension ProtocolTypes.OutboundObjectMessage: CustomDebugStringConvertible {
     internal var debugDescription: String {
         var parts: [String] = []
 
@@ -537,7 +540,7 @@ extension OutboundObjectMessage: CustomDebugStringConvertible {
 }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-extension ObjectOperation: CustomDebugStringConvertible {
+extension ProtocolTypes.ObjectOperation: CustomDebugStringConvertible {
     internal var debugDescription: String {
         var parts: [String] = []
 
@@ -558,7 +561,7 @@ extension ObjectOperation: CustomDebugStringConvertible {
 }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-extension ObjectState: CustomDebugStringConvertible {
+extension ProtocolTypes.ObjectState: CustomDebugStringConvertible {
     internal var debugDescription: String {
         var parts: [String] = []
 
@@ -574,7 +577,7 @@ extension ObjectState: CustomDebugStringConvertible {
 }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-extension ObjectsMap: CustomDebugStringConvertible {
+extension ProtocolTypes.ObjectsMap: CustomDebugStringConvertible {
     internal var debugDescription: String {
         var parts: [String] = []
 
@@ -594,7 +597,7 @@ extension ObjectsMap: CustomDebugStringConvertible {
 }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-extension ObjectsMapEntry: CustomDebugStringConvertible {
+extension ProtocolTypes.ObjectsMapEntry: CustomDebugStringConvertible {
     internal var debugDescription: String {
         var parts: [String] = []
 
@@ -608,7 +611,7 @@ extension ObjectsMapEntry: CustomDebugStringConvertible {
 }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-extension ObjectData: CustomDebugStringConvertible {
+extension ProtocolTypes.ObjectData: CustomDebugStringConvertible {
     internal var debugDescription: String {
         var parts: [String] = []
 
@@ -624,7 +627,7 @@ extension ObjectData: CustomDebugStringConvertible {
 }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-extension MapSet: CustomDebugStringConvertible {
+extension ProtocolTypes.MapSet: CustomDebugStringConvertible {
     internal var debugDescription: String {
         var parts: [String] = []
 
@@ -636,7 +639,7 @@ extension MapSet: CustomDebugStringConvertible {
 }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-extension MapCreate: CustomDebugStringConvertible {
+extension ProtocolTypes.MapCreate: CustomDebugStringConvertible {
     internal var debugDescription: String {
         var parts: [String] = []
 
@@ -655,7 +658,7 @@ extension MapCreate: CustomDebugStringConvertible {
 }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-extension MapCreateWithObjectId: CustomDebugStringConvertible {
+extension ProtocolTypes.MapCreateWithObjectId: CustomDebugStringConvertible {
     internal var debugDescription: String {
         var parts: [String] = []
 
@@ -668,7 +671,7 @@ extension MapCreateWithObjectId: CustomDebugStringConvertible {
 }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-extension CounterCreateWithObjectId: CustomDebugStringConvertible {
+extension ProtocolTypes.CounterCreateWithObjectId: CustomDebugStringConvertible {
     internal var debugDescription: String {
         var parts: [String] = []
 

@@ -7,7 +7,7 @@ final class MockRealtimeObjects: InternalRealtimeObjectsProtocol {
 
     /// Synchronizes access to `_publishAndApplyHandler`.
     private let mutex = NSLock()
-    private nonisolated(unsafe) var _publishAndApplyHandler: (([OutboundObjectMessage]) -> Result<Void, ARTErrorInfo>)?
+    private nonisolated(unsafe) var _publishAndApplyHandler: (([ProtocolTypes.OutboundObjectMessage]) -> Result<Void, ARTErrorInfo>)?
 
     init(objectsPoolDelegate: MockLiveMapObjectsPoolDelegate? = nil) {
         self.objectsPoolDelegate = objectsPoolDelegate
@@ -20,18 +20,18 @@ final class MockRealtimeObjects: InternalRealtimeObjectsProtocol {
         return objectsPoolDelegate.nosync_objectsPool
     }
 
-    func setPublishAndApplyHandler(_ handler: @escaping ([OutboundObjectMessage]) -> Result<Void, ARTErrorInfo>) {
+    func setPublishAndApplyHandler(_ handler: @escaping ([ProtocolTypes.OutboundObjectMessage]) -> Result<Void, ARTErrorInfo>) {
         mutex.withLock {
             _publishAndApplyHandler = handler
         }
     }
 
     func nosync_publishAndApply(
-        objectMessages: [OutboundObjectMessage],
+        objectMessages: [ProtocolTypes.OutboundObjectMessage],
         coreSDK: CoreSDK,
         callback: @escaping @Sendable (Result<Void, ARTErrorInfo>) -> Void,
     ) {
-        var handler: (([OutboundObjectMessage]) -> Result<Void, ARTErrorInfo>)?
+        var handler: (([ProtocolTypes.OutboundObjectMessage]) -> Result<Void, ARTErrorInfo>)?
         mutex.withLock {
             handler = _publishAndApplyHandler
         }

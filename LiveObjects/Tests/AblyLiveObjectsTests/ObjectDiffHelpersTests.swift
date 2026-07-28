@@ -22,11 +22,11 @@ struct ObjectDiffHelpersTests {
         @Test
         func detectsRemovedKeys() {
             let previousData: [String: InternalObjectsMapEntry] = [
-                "key1": TestFactories.internalMapEntry(data: ObjectData(string: "value1")),
-                "key2": TestFactories.internalMapEntry(data: ObjectData(string: "value2")),
+                "key1": TestFactories.internalMapEntry(data: ProtocolTypes.ObjectData(string: "value1")),
+                "key2": TestFactories.internalMapEntry(data: ProtocolTypes.ObjectData(string: "value2")),
             ]
             let newData: [String: InternalObjectsMapEntry] = [
-                "key1": TestFactories.internalMapEntry(data: ObjectData(string: "value1")),
+                "key1": TestFactories.internalMapEntry(data: ProtocolTypes.ObjectData(string: "value1")),
             ]
 
             let update = ObjectDiffHelpers.calculateMapDiff(
@@ -42,11 +42,11 @@ struct ObjectDiffHelpersTests {
         @Test
         func detectsAddedKeys() {
             let previousData: [String: InternalObjectsMapEntry] = [
-                "key1": TestFactories.internalMapEntry(data: ObjectData(string: "value1")),
+                "key1": TestFactories.internalMapEntry(data: ProtocolTypes.ObjectData(string: "value1")),
             ]
             let newData: [String: InternalObjectsMapEntry] = [
-                "key1": TestFactories.internalMapEntry(data: ObjectData(string: "value1")),
-                "key2": TestFactories.internalMapEntry(data: ObjectData(string: "value2")),
+                "key1": TestFactories.internalMapEntry(data: ProtocolTypes.ObjectData(string: "value1")),
+                "key2": TestFactories.internalMapEntry(data: ProtocolTypes.ObjectData(string: "value2")),
             ]
 
             let update = ObjectDiffHelpers.calculateMapDiff(
@@ -62,10 +62,10 @@ struct ObjectDiffHelpersTests {
         @Test
         func detectsUpdatedKeys() {
             let previousData: [String: InternalObjectsMapEntry] = [
-                "key1": TestFactories.internalMapEntry(data: ObjectData(string: "oldValue")),
+                "key1": TestFactories.internalMapEntry(data: ProtocolTypes.ObjectData(string: "oldValue")),
             ]
             let newData: [String: InternalObjectsMapEntry] = [
-                "key1": TestFactories.internalMapEntry(data: ObjectData(string: "newValue")),
+                "key1": TestFactories.internalMapEntry(data: ProtocolTypes.ObjectData(string: "newValue")),
             ]
 
             let update = ObjectDiffHelpers.calculateMapDiff(
@@ -80,10 +80,10 @@ struct ObjectDiffHelpersTests {
         @Test
         func ignoresUnchangedKeys() {
             let previousData: [String: InternalObjectsMapEntry] = [
-                "key1": TestFactories.internalMapEntry(data: ObjectData(string: "value1")),
+                "key1": TestFactories.internalMapEntry(data: ProtocolTypes.ObjectData(string: "value1")),
             ]
             let newData: [String: InternalObjectsMapEntry] = [
-                "key1": TestFactories.internalMapEntry(data: ObjectData(string: "value1")),
+                "key1": TestFactories.internalMapEntry(data: ProtocolTypes.ObjectData(string: "value1")),
             ]
 
             let update = ObjectDiffHelpers.calculateMapDiff(
@@ -98,11 +98,11 @@ struct ObjectDiffHelpersTests {
         @Test
         func ignoresTombstonedEntriesInPreviousData() {
             let previousData: [String: InternalObjectsMapEntry] = [
-                "key1": TestFactories.internalMapEntry(tombstonedAt: Date(), data: ObjectData(string: "value1")),
-                "key2": TestFactories.internalMapEntry(data: ObjectData(string: "value2")),
+                "key1": TestFactories.internalMapEntry(tombstonedAt: Date(), data: ProtocolTypes.ObjectData(string: "value1")),
+                "key2": TestFactories.internalMapEntry(data: ProtocolTypes.ObjectData(string: "value2")),
             ]
             let newData: [String: InternalObjectsMapEntry] = [
-                "key2": TestFactories.internalMapEntry(data: ObjectData(string: "value2")),
+                "key2": TestFactories.internalMapEntry(data: ProtocolTypes.ObjectData(string: "value2")),
             ]
 
             let update = ObjectDiffHelpers.calculateMapDiff(
@@ -119,10 +119,10 @@ struct ObjectDiffHelpersTests {
         @Test
         func ignoresTombstonedEntriesInNewData() {
             let previousData: [String: InternalObjectsMapEntry] = [
-                "key1": TestFactories.internalMapEntry(data: ObjectData(string: "value1")),
+                "key1": TestFactories.internalMapEntry(data: ProtocolTypes.ObjectData(string: "value1")),
             ]
             let newData: [String: InternalObjectsMapEntry] = [
-                "key1": TestFactories.internalMapEntry(tombstonedAt: Date(), data: ObjectData(string: "value1")),
+                "key1": TestFactories.internalMapEntry(tombstonedAt: Date(), data: ProtocolTypes.ObjectData(string: "value1")),
             ]
 
             let update = ObjectDiffHelpers.calculateMapDiff(
@@ -138,10 +138,10 @@ struct ObjectDiffHelpersTests {
         @Test
         func ignoresTombstonedToTombstonedTransition() {
             let previousData: [String: InternalObjectsMapEntry] = [
-                "key1": TestFactories.internalMapEntry(tombstonedAt: Date(), data: ObjectData(string: "value1")),
+                "key1": TestFactories.internalMapEntry(tombstonedAt: Date(), data: ProtocolTypes.ObjectData(string: "value1")),
             ]
             let newData: [String: InternalObjectsMapEntry] = [
-                "key1": TestFactories.internalMapEntry(tombstonedAt: Date(), data: ObjectData(string: "value2")),
+                "key1": TestFactories.internalMapEntry(tombstonedAt: Date(), data: ProtocolTypes.ObjectData(string: "value2")),
             ]
 
             let update = ObjectDiffHelpers.calculateMapDiff(
@@ -157,14 +157,14 @@ struct ObjectDiffHelpersTests {
         @Test
         func detectsMultipleChanges() {
             let previousData: [String: InternalObjectsMapEntry] = [
-                "removed": TestFactories.internalMapEntry(data: ObjectData(string: "value1")),
-                "updated": TestFactories.internalMapEntry(data: ObjectData(string: "oldValue")),
-                "unchanged": TestFactories.internalMapEntry(data: ObjectData(string: "sameValue")),
+                "removed": TestFactories.internalMapEntry(data: ProtocolTypes.ObjectData(string: "value1")),
+                "updated": TestFactories.internalMapEntry(data: ProtocolTypes.ObjectData(string: "oldValue")),
+                "unchanged": TestFactories.internalMapEntry(data: ProtocolTypes.ObjectData(string: "sameValue")),
             ]
             let newData: [String: InternalObjectsMapEntry] = [
-                "added": TestFactories.internalMapEntry(data: ObjectData(string: "value2")),
-                "updated": TestFactories.internalMapEntry(data: ObjectData(string: "newValue")),
-                "unchanged": TestFactories.internalMapEntry(data: ObjectData(string: "sameValue")),
+                "added": TestFactories.internalMapEntry(data: ProtocolTypes.ObjectData(string: "value2")),
+                "updated": TestFactories.internalMapEntry(data: ProtocolTypes.ObjectData(string: "newValue")),
+                "unchanged": TestFactories.internalMapEntry(data: ProtocolTypes.ObjectData(string: "sameValue")),
             ]
 
             let update = ObjectDiffHelpers.calculateMapDiff(

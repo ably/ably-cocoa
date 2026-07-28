@@ -2,6 +2,9 @@ import Ably
 import AblyLiveObjects
 import SwiftUI
 
+// NOTE: This view model uses the path-based LiveObjects API, whose implementation is currently a
+// skeleton: every operation traps via `notImplemented()` at runtime. The example compiles against
+// the final API shape but is not runnable end-to-end until the path-based API is implemented.
 @MainActor
 final class TaskBoardViewModel: ObservableObject {
     @Published var tasks: [String: String] = [:]
@@ -10,11 +13,10 @@ final class TaskBoardViewModel: ObservableObject {
 
     private var realtime: ARTRealtime
     private var channel: ARTRealtimeChannel
-    private var objects: any RealtimeObjects
-    private var root: (any LiveMap)?
-    private var tasksMap: (any LiveMap)?
+    private var object: any RealtimeObject
+    private var root: (any LiveMapPathObject)?
 
-    private var subscribeResponses: [String: any SubscribeResponse] = [:]
+    private var subscriptions: [String: any Subscription] = [:]
 
     init(realtime: ARTRealtime, channelName: String = "objects-live-map") {
         self.realtime = realtime
@@ -22,7 +24,7 @@ final class TaskBoardViewModel: ObservableObject {
         let channelOptions = ARTRealtimeChannelOptions()
         channelOptions.modes = [.objectPublish, .objectSubscribe]
         channel = realtime.channels.get(channelName, options: channelOptions)
-        objects = channel.objects
+        object = channel.object
 
         Task {
             await initializeTasks()
@@ -31,8 +33,15 @@ final class TaskBoardViewModel: ObservableObject {
 
     deinit {
         // Clean up subscriptions
-        subscribeResponses.values.forEach { $0.unsubscribe() }
-        subscribeResponses.removeAll()
+        subscriptions.values.forEach { $0.unsubscribe() }
+        subscriptions.removeAll()
+    }
+
+    /// A path object for the tasks map. Purely navigational (does not resolve the path), and it
+    /// survives the map being replaced by `removeAllTasks` — unlike the previous proxy-object API,
+    /// there is no need to re-fetch anything when the object at the path changes.
+    private var tasksMapPath: (any LiveMapPathObject)? {
+        root?.get(key: "tasks").asLiveMap()
     }
 
     private func initializeTasks() async {
@@ -43,34 +52,18 @@ final class TaskBoardViewModel: ObservableObject {
             // Attach channel first
             try await channel.attachAsync()
 
-            // Get root object
-            let root = try await objects.getRoot()
+            // Get the root map path object, once objects are synchronized
+            let root = try await object.get()
             self.root = root
 
-            // Subscribe to root changes
-            let rootSubscription = try root.subscribe { [weak self] update, _ in
-                MainActor.assumeIsolated {
-                    // Handle root updates - this will fire when tasks map is reset
-                    if update.update["tasks"] == .updated {
-                        if let newTasksMap = try? root.get(key: "tasks")?.liveMapValue {
-                            self?.tasksMap = newTasksMap
-                            self?.subscribeToTasksUpdates(tasksMap: newTasksMap)
-                        }
-                    }
-                }
+            // Create the tasks map if nothing exists at its path yet. (Creation is declarative in
+            // the path-based API: setting a `LiveMap` value type creates the map.)
+            if let tasksMapPath, try !tasksMapPath.exists() {
+                try await root.set(key: "tasks", value: .liveMap(.create()))
             }
-            subscribeResponses["root"] = rootSubscription
 
-            // Initialize or get existing tasks map
-            if let existingTasksMap = try root.get(key: "tasks")?.liveMapValue {
-                tasksMap = existingTasksMap
-                subscribeToTasksUpdates(tasksMap: existingTasksMap)
-            } else {
-                let newTasksMap = try await objects.createMap()
-                try await root.set(key: "tasks", value: .liveMap(newTasksMap))
-                tasksMap = newTasksMap
-                subscribeToTasksUpdates(tasksMap: newTasksMap)
-            }
+            loadTasks()
+            subscribeToTasksUpdates()
 
             isLoading = false
         } catch {
@@ -79,36 +72,39 @@ final class TaskBoardViewModel: ObservableObject {
         }
     }
 
-    private func subscribeToTasksUpdates(tasksMap: any LiveMap) {
+    private func loadTasks() {
         do {
-            // Load existing tasks
-            let entries = try tasksMap.entries
-            var currentTasks: [String: String] = [:]
+            guard let tasksMapPath else {
+                return
+            }
 
-            for (key, value) in entries {
-                if let stringValue = value.stringValue {
+            var currentTasks: [String: String] = [:]
+            for (key, value) in try tasksMapPath.entries() {
+                if let primitive = try value.asPrimitive().value(), let stringValue = primitive.stringValue {
                     currentTasks[key] = stringValue
                 }
             }
-
             tasks = currentTasks
+        } catch {
+            errorMessage = "Failed to load tasks: \(error.localizedDescription)"
+        }
+    }
+
+    private func subscribeToTasksUpdates() {
+        do {
+            guard let tasksMapPath else {
+                return
+            }
 
             // Clean up existing subscription
-            subscribeResponses["tasks"]?.unsubscribe()
+            subscriptions["tasks"]?.unsubscribe()
 
-            // Subscribe to updates
-            subscribeResponses["tasks"] = try tasksMap.subscribe { [weak self] update, _ in
+            // Subscribe to updates. Because the subscription is path-based, it also survives the
+            // tasks map being replaced by `removeAllTasks`; there is no need to re-subscribe. The
+            // event does not carry a per-key change set, so reload the tasks on each update.
+            subscriptions["tasks"] = try tasksMapPath.subscribe { [weak self] _ in
                 MainActor.assumeIsolated {
-                    for (taskId, action) in update.update {
-                        switch action {
-                        case .updated:
-                            if let updatedValue = try? tasksMap.get(key: taskId)?.stringValue {
-                                self?.tasks[taskId] = updatedValue
-                            }
-                        case .removed:
-                            self?.tasks.removeValue(forKey: taskId)
-                        }
-                    }
+                    self?.loadTasks()
                 }
             }
         } catch {
@@ -124,10 +120,8 @@ final class TaskBoardViewModel: ObservableObject {
 
         Task {
             do {
-                if let tasksMap {
-                    let taskId = UUID().uuidString
-                    try await tasksMap.set(key: taskId, value: .string(taskTitle))
-                }
+                let taskId = UUID().uuidString
+                try await tasksMapPath?.set(key: taskId, value: .primitive(.string(taskTitle)))
             } catch {
                 errorMessage = "Failed to add task: \(error.localizedDescription)"
             }
@@ -142,9 +136,7 @@ final class TaskBoardViewModel: ObservableObject {
 
         Task {
             do {
-                if let tasksMap {
-                    try await tasksMap.set(key: id, value: .string(taskTitle))
-                }
+                try await tasksMapPath?.set(key: id, value: .primitive(.string(taskTitle)))
             } catch {
                 errorMessage = "Failed to edit task: \(error.localizedDescription)"
             }
@@ -154,9 +146,7 @@ final class TaskBoardViewModel: ObservableObject {
     func removeTask(id: String) {
         Task {
             do {
-                if let tasksMap {
-                    try await tasksMap.remove(key: id)
-                }
+                try await tasksMapPath?.remove(key: id)
             } catch {
                 errorMessage = "Failed to remove task: \(error.localizedDescription)"
             }
@@ -166,12 +156,9 @@ final class TaskBoardViewModel: ObservableObject {
     func removeAllTasks() {
         Task {
             do {
-                guard let root = self.root else {
-                    return
-                }
-
-                let newTasksMap = try await objects.createMap()
-                try await root.set(key: "tasks", value: .liveMap(newTasksMap))
+                // Replace the tasks map with a fresh empty one. The stored path objects and the
+                // path-based subscription automatically refer to the new map.
+                try await root?.set(key: "tasks", value: .liveMap(.create()))
             } catch {
                 errorMessage = "Failed to remove all tasks: \(error.localizedDescription)"
             }

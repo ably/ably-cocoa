@@ -6,7 +6,7 @@ private extension SyncObjectsPool {
     /// Test-only convenience to create a `SyncObjectsPool` from an array of `(state, serialTimestamp)` pairs,
     /// wrapping each in an `InboundObjectMessage` and calling `accumulate`.
     static func testsOnly_fromStates(
-        _ states: [(state: ObjectState, serialTimestamp: Date?)],
+        _ states: [(state: ProtocolTypes.ObjectState, serialTimestamp: Date?)],
         logger: AblyLiveObjects.Logger = TestLogger(),
     ) -> SyncObjectsPool {
         var pool = SyncObjectsPool()
@@ -327,7 +327,7 @@ struct ObjectsPoolTests {
                     createOp: TestFactories.mapCreateOperation(objectId: "map:existing@1", entries: [
                         "createOpKey": TestFactories.stringMapEntry(value: "bar").entry,
                     ]),
-                    entries: ["updated": TestFactories.mapEntry(data: ObjectData(string: "updated"))],
+                    entries: ["updated": TestFactories.mapEntry(data: ProtocolTypes.ObjectData(string: "updated"))],
                 ),
                 // Update existing counter
                 TestFactories.counterObjectState(
@@ -340,7 +340,7 @@ struct ObjectsPoolTests {
                 TestFactories.mapObjectState(
                     objectId: "map:new@1",
                     siteTimeserials: ["site3": "ts3"],
-                    entries: ["new": TestFactories.mapEntry(data: ObjectData(string: "new"))],
+                    entries: ["new": TestFactories.mapEntry(data: ProtocolTypes.ObjectData(string: "new"))],
                 ),
                 // Create new counter
                 TestFactories.counterObjectState(

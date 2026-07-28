@@ -677,7 +677,7 @@ struct InternalDefaultLiveCounterTests {
             let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
             let realtimeObjects = MockRealtimeObjects()
 
-            var publishedMessages: [OutboundObjectMessage] = []
+            var publishedMessages: [ProtocolTypes.OutboundObjectMessage] = []
             realtimeObjects.setPublishAndApplyHandler { messages in
                 publishedMessages.append(contentsOf: messages)
                 return .success(())
@@ -685,8 +685,8 @@ struct InternalDefaultLiveCounterTests {
 
             try await counter.increment(amount: 10.5, coreSDK: coreSDK, realtimeObjects: realtimeObjects)
 
-            let expectedMessage = OutboundObjectMessage(
-                operation: ObjectOperation(
+            let expectedMessage = ProtocolTypes.OutboundObjectMessage(
+                operation: ProtocolTypes.ObjectOperation(
                     // RTLC12e2
                     action: .known(.counterInc),
                     // RTLC12e3
@@ -734,7 +734,7 @@ struct InternalDefaultLiveCounterTests {
             let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
             let realtimeObjects = MockRealtimeObjects()
 
-            var publishedMessages: [OutboundObjectMessage] = []
+            var publishedMessages: [ProtocolTypes.OutboundObjectMessage] = []
             realtimeObjects.setPublishAndApplyHandler { messages in
                 publishedMessages.append(contentsOf: messages)
                 return .success(())

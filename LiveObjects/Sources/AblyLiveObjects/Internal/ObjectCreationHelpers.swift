@@ -15,7 +15,7 @@ internal enum ObjectCreationHelpers {
         internal var objectID: String
 
         /// The ObjectMessage that must be sent in order for Realtime to create the object.
-        internal var objectMessage: OutboundObjectMessage
+        internal var objectMessage: ProtocolTypes.OutboundObjectMessage
     }
 
     /// The metadata that `createMap` needs in order to request that Realtime create a LiveMap and to populate the local objects pool.
@@ -26,12 +26,12 @@ internal enum ObjectCreationHelpers {
         internal var objectID: String
 
         /// The ObjectMessage that must be sent in order for Realtime to create the object.
-        internal var objectMessage: OutboundObjectMessage
+        internal var objectMessage: ProtocolTypes.OutboundObjectMessage
 
         /// The semantics that should be used for the created LiveMap.
         ///
         /// We include this property separately as a non-nil value, instead of expecting the caller to fish the nullable value out of ``objectMessage``.
-        internal var semantics: ObjectsMapSemantics
+        internal var semantics: ProtocolTypes.ObjectsMapSemantics
     }
 
     /// Creates a `COUNTER_CREATE` `ObjectMessage` for the `RealtimeObjects.createCounter` method per RTO12f.
@@ -64,7 +64,7 @@ internal enum ObjectCreationHelpers {
         )
 
         // RTO12f7-12: Set ObjectMessage.operation fields
-        let operation = ObjectOperation(
+        let operation = ProtocolTypes.ObjectOperation(
             action: .known(.counterCreate),
             objectId: objectId,
             counterCreateWithObjectId: .init(
@@ -75,7 +75,7 @@ internal enum ObjectCreationHelpers {
         )
 
         // Create the OutboundObjectMessage
-        let objectMessage = OutboundObjectMessage(
+        let objectMessage = ProtocolTypes.OutboundObjectMessage(
             operation: operation,
         )
 
@@ -95,12 +95,12 @@ internal enum ObjectCreationHelpers {
         timestamp: Date,
     ) -> MapCreationOperation {
         // RTO11f14: Create initial value for the new LiveMap
-        let mapEntries = entries.mapValues { liveMapValue -> ObjectsMapEntry in
-            ObjectsMapEntry(data: liveMapValue.nosync_toObjectData)
+        let mapEntries = entries.mapValues { liveMapValue -> ProtocolTypes.ObjectsMapEntry in
+            ProtocolTypes.ObjectsMapEntry(data: liveMapValue.nosync_toObjectData)
         }
 
-        let semantics = ObjectsMapSemantics.lww
-        let mapCreate = MapCreate(
+        let semantics = ProtocolTypes.ObjectsMapSemantics.lww
+        let mapCreate = ProtocolTypes.MapCreate(
             semantics: .known(semantics),
             entries: mapEntries,
         )
@@ -123,7 +123,7 @@ internal enum ObjectCreationHelpers {
         )
 
         // RTO11f9-13: Set ObjectMessage.operation fields
-        let operation = ObjectOperation(
+        let operation = ProtocolTypes.ObjectOperation(
             action: .known(.mapCreate),
             objectId: objectId,
             mapCreateWithObjectId: .init(
@@ -134,7 +134,7 @@ internal enum ObjectCreationHelpers {
         )
 
         // Create the OutboundObjectMessage
-        let objectMessage = OutboundObjectMessage(
+        let objectMessage = ProtocolTypes.OutboundObjectMessage(
             operation: operation,
         )
 
