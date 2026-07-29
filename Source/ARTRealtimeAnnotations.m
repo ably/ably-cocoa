@@ -98,7 +98,6 @@
     __weak ARTRealtimeInternal *_realtime;
     dispatch_queue_t _userQueue;
     ARTEventEmitter<ARTEvent *, ARTAnnotation *> *_eventEmitter;
-    ARTDataEncoder *_dataEncoder;
 }
 
 - (instancetype)initWithChannel:(ARTRealtimeChannelInternal *)channel logger:(ARTInternalLog *)logger {
@@ -109,7 +108,6 @@
         _queue = _realtime.rest.queue;
         _logger = logger;
         _eventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue timeProvider:_realtime.rest.timeProvider];
-        _dataEncoder = _channel.dataEncoder;
     }
     return self;
 }
@@ -150,7 +148,8 @@
                                                            extras:outboundAnnotation.extras];
 art_dispatch_sync(_queue, ^{
     NSError *error = nil;
-    ARTAnnotation *annotationToPublish = _dataEncoder ? [annotation encodeDataWithEncoder:_dataEncoder error:&error] : annotation; // RSAN1c3
+    ARTDataEncoder *dataEncoder = self->_channel.dataEncoder;
+    ARTAnnotation *annotationToPublish = dataEncoder ? [annotation encodeDataWithEncoder:dataEncoder error:&error] : annotation; // RSAN1c3
     if (error) {
         if (callback) {
             callback([ARTErrorInfo createFromNSError:error]);
@@ -301,11 +300,12 @@ art_dispatch_sync(_queue, ^{
 }
 
 - (void)onMessage:(ARTProtocolMessage *)message {
+    ARTDataEncoder *dataEncoder = _channel.dataEncoder;
     for (ARTAnnotation *a in message.annotations) {
         ARTAnnotation *annotation = a;
-        if (annotation.data && _dataEncoder) {
+        if (annotation.data && dataEncoder) {
             NSError *decodeError = nil;
-            annotation = [a decodeDataWithEncoder:_dataEncoder error:&decodeError];
+            annotation = [a decodeDataWithEncoder:dataEncoder error:&decodeError];
             if (decodeError != nil) {
                 ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:decodeError.localizedFailureReason] prepend:@"Failed to decode data: "];
                 ARTLogError(self.logger, @"RT:%p C:%p (%@) %@", _realtime, _channel, _channel.name, errorInfo.message);
