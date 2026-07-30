@@ -112,7 +112,10 @@ let package = Package(
             name: "UTS",
             dependencies: [
                 .byName(name: "Ably"),
-                .target(name: "_AblyPluginSupportPrivate")
+                .target(name: "_AblyPluginSupportPrivate"),
+                // The `objects` UTS module exercises the LiveObjects plugin, so the harness
+                // references its types (e.g. ProtocolTypes, DefaultInternalPlugin.ObjectMessageBox).
+                .target(name: "AblyLiveObjects")
             ],
             path: "Test/UTS",
             exclude: [
