@@ -16,8 +16,13 @@ import Ably.Private
 /// (`respondWithSuccess()` + `sendToClient(...)`).
 final class MockWebSocketProvider: @unchecked Sendable {
     typealias ConnectionAttemptHandler = @Sendable (MockWebSocket) -> Void
+    /// Handler invoked with each `ARTProtocolMessage` the SDK sends towards the server (UTS
+    /// `onMessageFromClient`). Used by the LiveObjects `setup_synced_channel` pattern to respond to
+    /// `ATTACH` with `ATTACHED`+`OBJECT_SYNC` and to auto-`ACK` `OBJECT` publishes.
+    typealias MessageFromClientHandler = @Sendable (ARTProtocolMessage) -> Void
 
     private let onConnectionAttempt: ConnectionAttemptHandler?
+    private let onMessageFromClient: MessageFromClientHandler?
     private let lock = NSLock()
     private var latestConnection: MockWebSocket?
 
@@ -29,8 +34,10 @@ final class MockWebSocketProvider: @unchecked Sendable {
         return latestConnection
     }
 
-    init(onConnectionAttempt: ConnectionAttemptHandler? = nil) {
+    init(onConnectionAttempt: ConnectionAttemptHandler? = nil,
+         onMessageFromClient: MessageFromClientHandler? = nil) {
         self.onConnectionAttempt = onConnectionAttempt
+        self.onMessageFromClient = onMessageFromClient
     }
 
     fileprivate func register(_ socket: MockWebSocket) {
@@ -41,6 +48,10 @@ final class MockWebSocketProvider: @unchecked Sendable {
 
     fileprivate func fireConnectionAttempt(_ socket: MockWebSocket) {
         onConnectionAttempt?(socket)
+    }
+
+    fileprivate func fireMessageFromClient(_ message: ARTProtocolMessage) {
+        onMessageFromClient?(message)
     }
 }
 
@@ -74,9 +85,22 @@ final class MockWebSocket: NSObject, ARTWebSocket, @unchecked Sendable {
         return sent
     }
     private var sent: [ARTProtocolMessage] = []
+
+    /// The raw frames the SDK has sent towards the server, in order. Object-message tests inspect the
+    /// generated wire form here (the decoded `ARTProtocolMessage.state` drops the outbound-only
+    /// `*WithObjectId` fields), mirroring ably-js's `captured.state` wire inspection.
+    var sentFrames: [Data] {
+        lock.lock(); defer { lock.unlock() }
+        return frames
+    }
+    private var frames: [Data] = []
     private let lock = NSLock()
 
     private let decoder: ARTEncoder
+
+    /// The provider that created this socket, notified of each client-sent message (UTS
+    /// `onMessageFromClient`). Weak to avoid a retain cycle; the provider outlives the socket.
+    fileprivate weak var provider: MockWebSocketProvider?
 
     init(request: URLRequest, decoder: ARTEncoder) {
         self.request = request
@@ -103,7 +127,10 @@ final class MockWebSocket: NSObject, ARTWebSocket, @unchecked Sendable {
         guard let decoded = try? decoder.decodeProtocolMessage(data) else { return }
         lock.lock()
         sent.append(decoded)
+        frames.append(data)
         lock.unlock()
+        // UTS `onMessageFromClient`: let the test's simulated server react to what the client sent.
+        provider?.fireMessageFromClient(decoded)
     }
 
     // MARK: UTS server-side API
@@ -202,6 +229,7 @@ final class MockWebSocketFactory: NSObject, WebSocketFactory {
 
     func createWebSocket(with request: URLRequest, logger: InternalLog?) -> ARTWebSocket {
         let webSocket = MockWebSocket(request: request, decoder: decoder)
+        webSocket.provider = wsProvider
         wsProvider.register(webSocket)
         // Fire `onConnectionAttempt` on the work queue. This block is enqueued during the transport's
         // `setupWebSocket` turn, so it runs *after* the transport has wired up `delegate` and
