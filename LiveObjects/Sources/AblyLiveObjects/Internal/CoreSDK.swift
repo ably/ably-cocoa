@@ -19,6 +19,38 @@ internal protocol CoreSDK: AnyObject, Sendable {
 
     /// Returns the current state of the Realtime channel that this wraps.
     var nosync_channelState: _AblyPluginSupportPrivate.RealtimeChannelState { get }
+
+    /// The name of the Realtime channel that this wraps (PAOM2e/PAOM3b, DEV-20). Used to populate the
+    /// `channel` field of a public `ObjectMessage`. The channel name is immutable, so this may be read
+    /// on any queue. ably-java: `DefaultRealtimeObject.channelName` (DefaultRealtimeObject.kt:35).
+    var channelName: String { get }
+
+    /// The channel's effective object-related channel modes (RTO2a/RTO2b), used by the RTO2a2/RTO2b2
+    /// mode guards. Resolved by the core SDK as the attached modes if present, else the channel-options
+    /// modes. Must be called on the internal queue. ably-java: `Helpers.kt:76` `getChannelModes`.
+    var nosync_objectChannelModes: _AblyPluginSupportPrivate.ChannelMode { get }
+
+    /// Whether the client has the `echoMessages` option enabled (RTO26). ably-java:
+    /// `clientOptions.echoMessages` (Helpers.kt:102).
+    var echoMessages: Bool { get }
+
+    /// The error that makes the client's connection unpublishable (RTO26), or `nil` if the connection
+    /// is in a publishable (active) state. Must be called on the internal queue. ably-java:
+    /// `connectionManager.isActive` / `stateErrorInfo` (Helpers.kt:110-114).
+    var nosync_connectionStateError: ARTErrorInfo? { get }
+
+    /// RTO15d / DEV-23: The connection's negotiated `maxMessageSize`, read from the latest `CONNECTED`
+    /// `ProtocolMessage`'s `connectionDetails` (ably-java `Helpers.kt:168`,
+    /// `connectionManager.maxMessageSize`). `nil` when the core SDK has no connection details yet or the
+    /// server did not send a limit; callers fall back to the Ably default of 65536 bytes. Must be
+    /// called on the internal queue.
+    var nosync_maxMessageSize: Int? { get }
+
+    /// Initiates an implicit attach (RTL33b) on the wrapped Realtime channel, used by the
+    /// *ensure-active-channel* procedure of `RealtimeObject.get()` (RTO23e / RTL33). The callback
+    /// receives `nil` on success, or the `ARTErrorInfo` that caused the attach to fail (RTL33b1).
+    /// Must be called on the internal queue; the callback fires on the internal queue.
+    func nosync_attach(callback: @escaping @Sendable (ARTErrorInfo?) -> Void)
 }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
@@ -110,6 +142,42 @@ internal final class DefaultCoreSDK: CoreSDK {
 
     internal var nosync_channelState: _AblyPluginSupportPrivate.RealtimeChannelState {
         pluginAPI.nosync_state(for: channel)
+    }
+
+    internal var channelName: String {
+        pluginAPI.name(for: channel)
+    }
+
+    internal var nosync_objectChannelModes: _AblyPluginSupportPrivate.ChannelMode {
+        pluginAPI.nosync_objectChannelModes(for: channel)
+    }
+
+    internal var echoMessages: Bool {
+        // ably-java `Helpers.kt:102`. The plugin API exposes client options as an opaque marker
+        // protocol; cast to the concrete `ARTClientOptions` (the only conformer) to read `echoMessages`.
+        ARTClientOptions.castPluginPublicClientOptions(pluginAPI.options(for: client)).echoMessages
+    }
+
+    internal var nosync_connectionStateError: ARTErrorInfo? {
+        pluginAPI.nosync_connectionStateError(for: client).map { ARTErrorInfo.castPluginPublicErrorInfo($0) }
+    }
+
+    internal var nosync_maxMessageSize: Int? {
+        // ably-java Helpers.kt:168 (`connectionManager.maxMessageSize`). The core SDK surfaces the
+        // limit via the latest CONNECTED ProtocolMessage's connectionDetails; a `0`/absent value means
+        // the server sent no limit, so we return nil to let the caller fall back to the Ably default.
+        guard let connectionDetails = pluginAPI.nosync_latestConnectionDetails(for: client) else {
+            return nil
+        }
+        let maxMessageSize = connectionDetails.maxMessageSize
+        return maxMessageSize > 0 ? maxMessageSize : nil
+    }
+
+    internal func nosync_attach(callback: @escaping @Sendable (ARTErrorInfo?) -> Void) {
+        logger.log("nosync_attach()", level: .debug)
+        pluginAPI.nosync_attach(channel) { error in
+            callback(error.map { ARTErrorInfo.castPluginPublicErrorInfo($0) })
+        }
     }
 }
 

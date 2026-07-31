@@ -2279,4 +2279,44 @@ struct InternalDefaultRealtimeObjectsTests {
             #expect(try #require(poolAfter.entries["counter:child@2"]?.counterValue).testsOnly_data == 99)
         }
     }
+
+    /// Teardown from `deinit` (matrix #18).
+    ///
+    /// Regression test for the deinit-on-internal-queue crash found by the objects UTS integration
+    /// suites (ably/ably-cocoa#2226): ARC can run the engine's `deinit` *on* the internal queue —
+    /// e.g. when the owning `ARTRealtimeChannel` is deallocated during client/channel teardown,
+    /// which happens on that queue. The previous blocking `deinit { dispose() }` then tripped
+    /// `ably_syncNoDeadlock`'s `.notOnQueue` precondition and crashed (SIGTRAP / EXC_BREAKPOINT).
+    /// `deinit` now hops the queue-confined cleanup asynchronously (never sync-blocking its own
+    /// queue), mirroring ably-java's non-blocking `DefaultRealtimeObject.dispose`. Extends DEV-47
+    /// (the deinit-on-queue hazard is cocoa-specific; absent in GC'd Kotlin).
+    struct DisposeTests {
+        @Test
+        func deallocatingOnInternalQueueDoesNotCrash() async throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            var objects: InternalDefaultRealtimeObjects? = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(
+                internalQueue: internalQueue,
+            )
+            // Sanity: it exists before we drop it (also keeps `objects` a genuine last strong ref).
+            #expect(objects != nil)
+
+            // Release the last strong reference from *within* the internal queue, reproducing exactly
+            // what ARC does when the owning channel is torn down on that queue. Before the fix, the
+            // resulting `deinit` → `dispose()` → `withSync` trapped here.
+            internalQueue.sync {
+                objects = nil
+            }
+
+            // Flush the queue so `deinit`'s asynchronous teardown hop has run, then confirm we reached
+            // here without crashing. (Waiter-draining semantics are unchanged — `deinit` runs the same
+            // `nosync_dispose` as the explicit `dispose()` path, covered by the dispose tests — so this
+            // test targets only the reproduction of the crash.)
+            await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+                internalQueue.async {
+                    continuation.resume()
+                }
+            }
+            #expect(objects == nil)
+        }
+    }
 }

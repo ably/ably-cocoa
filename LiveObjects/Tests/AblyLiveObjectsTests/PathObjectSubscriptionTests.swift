@@ -134,6 +134,27 @@ struct PathObjectSubscriptionTests {
         #expect(event.message == message.toPublicObjectMessage(channelName: Self.channelName))
     }
 
+    // DEV-20 / PAOM3b: the public `ObjectMessage.channel` reflects the real channel name that the
+    // engine was constructed with (in production, bound from the `nameForChannel:` plugin bridge in
+    // `DefaultInternalPlugin.nosync_prepare`) — no longer the former `""` placeholder.
+    // @spec PAOM3b
+    @Test
+    func deliveredMessageChannelReflectsRealChannelName() throws {
+        let fixture = Self.makeFixture()
+        let collector = EventCollector()
+
+        let subscription = try Self.rootPath(fixture).get(key: "k").subscribe { collector.record($0) }
+        defer { subscription.unsubscribe() }
+
+        let message = TestFactories.mapSetOperationMessage(objectId: ObjectsPool.rootKey, key: "k", value: "v", serial: "ts1", siteCode: "site1")
+        Self.applyAndDrain([message], fixture)
+
+        let event = try #require(collector.events.first)
+        #expect(event.message?.channel == Self.channelName)
+        // Guards against a regression to the empty-string placeholder.
+        #expect(event.message?.channel.isEmpty == false)
+    }
+
     // @spec RTO24b2a1 - a subscription at the updated object's own path is the most-preferred candidate
     @Test
     func subscribeOnRootReceivesObjectOwnPath() throws {

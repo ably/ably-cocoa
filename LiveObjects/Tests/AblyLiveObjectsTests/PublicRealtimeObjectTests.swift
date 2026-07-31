@@ -133,6 +133,68 @@ struct PublicRealtimeObjectTests {
         }
     }
 
+    // @spec RTL33b - get() on a not-yet-attached channel implicitly attaches (RTL33b), then resolves
+    // after sync. Mirrors ably-java Helpers.kt `ensureAttached`/`attachAsync`.
+    @Test
+    func getImplicitlyAttachesNonAttachedChannelThenResolves() async throws {
+        let (publicObject, proxied, coreSDK, internalQueue) = Self.makePublicObject(channelState: .initialized)
+
+        // Record that the RTL33b implicit attach is initiated (and resolve it successfully).
+        let attachCalled = CallCounter()
+        coreSDK.setAttachHandler { callback in
+            attachCalled.increment()
+            callback(nil)
+        }
+
+        // get() should implicitly attach, then wait for sync.
+        async let getTask = publicObject.get()
+        _ = try #require(await proxied.testsOnly_waitingForSyncEvents.first { _ in true })
+
+        // The implicit attach was initiated (RTL33b) before the sync wait.
+        #expect(!attachCalled.isEmpty)
+
+        // Completing the sync resolves the waiting get().
+        Self.driveToSynced(proxied, on: internalQueue)
+        let root = try await getTask
+        #expect(root.path.isEmpty)
+    }
+
+    // @spec RTL33a - get() on an already-ATTACHED channel performs no implicit attach.
+    @Test
+    func getOnAttachedChannelDoesNotImplicitlyAttach() async throws {
+        let (publicObject, proxied, coreSDK, internalQueue) = Self.makePublicObject(channelState: .attached)
+
+        let attachCalled = CallCounter()
+        coreSDK.setAttachHandler { callback in
+            attachCalled.increment()
+            callback(nil)
+        }
+
+        Self.driveToSynced(proxied, on: internalQueue)
+        _ = try await publicObject.get()
+
+        // RTL33a: an ATTACHED channel is already usable, so no attach is performed.
+        #expect(attachCalled.isEmpty)
+    }
+
+    // @spec RTL33b1 - a failed implicit attach propagates the attach error out of get().
+    @Test
+    func getPropagatesImplicitAttachFailure() async throws {
+        let (publicObject, _, coreSDK, _) = Self.makePublicObject(channelState: .detached)
+
+        let attachError = ARTErrorInfo.create(withCode: 90000, message: "attach failed")
+        coreSDK.setAttachHandler { callback in
+            callback(attachError)
+        }
+
+        do {
+            _ = try await publicObject.get()
+            Issue.record("Expected get() to rethrow the implicit-attach failure (RTL33b1)")
+        } catch {
+            #expect((error as? ARTErrorInfo)?.code == 90000)
+        }
+    }
+
     // MARK: - on(event:callback:) / StatusSubscription (RTO18)
 
     // @spec RTO18 - on(.synced) fires when the sync completes
@@ -198,6 +260,41 @@ struct PublicRealtimeObjectTests {
             Issue.record("Expected the in-flight get() to be cancelled by dispose()")
         } catch {
             #expect((error as? ARTErrorInfo)?.code == 92008)
+        }
+
+        // The instance stays usable: complete a sync and a fresh get() resolves.
+        Self.driveToSynced(proxied, on: internalQueue)
+        let root = try await publicObject.get()
+        #expect(root.path.isEmpty)
+    }
+
+    // DEV-47: a channel release (`channels.release()`, routed through the plugin's
+    // `nosync_releaseChannel:` hook → `nosync_disposeForChannelRelease`) fails a get() waiting for sync
+    // with 92008 whose *cause* is the release-specific 40000 error — distinct from `deinit`/`dispose()`,
+    // which fail waiters with no cause. The instance stays usable for a later get() (scope-survives).
+    @Test
+    func channelReleaseFailsWaitingGetWithReleaseCause() async throws {
+        let (publicObject, proxied, _, internalQueue) = Self.makePublicObject()
+
+        // Start get() - it waits (not yet synced).
+        async let getTask = publicObject.get()
+        _ = try #require(await proxied.testsOnly_waitingForSyncEvents.first { _ in true })
+
+        // Simulate the core SDK's channel-release notification (on the internal queue, as the core does).
+        internalQueue.ably_syncNoDeadlock {
+            proxied.nosync_disposeForChannelRelease()
+        }
+
+        do {
+            _ = try await getTask
+            Issue.record("Expected the in-flight get() to be failed by the channel release")
+        } catch {
+            let artError = try #require(error as? ARTErrorInfo)
+            #expect(artError.code == 92008)
+            // The release-specific cause distinguishes this from a plain dispose()/deinit teardown.
+            let cause = try #require(artError.cause)
+            #expect(cause.code == 40000)
+            #expect(cause.message == "Channel has been released using channels.release()")
         }
 
         // The instance stays usable: complete a sync and a fresh get() resolves.

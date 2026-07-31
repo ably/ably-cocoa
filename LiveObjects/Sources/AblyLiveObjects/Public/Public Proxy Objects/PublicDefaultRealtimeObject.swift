@@ -36,9 +36,10 @@ internal final class PublicDefaultRealtimeObject: RealtimeObject {
         // RTO23a — object_subscribe mode guard (currently a stub; see ChannelConfigGuards for the
         // plugin-API limitation).
         try ChannelConfigGuards.throwIfMissingObjectSubscribeMode(coreSDK: coreSDK, internalQueue: proxied.internalQueue)
-        // RTO23e / RTL33 — ensure the channel is usable (reject FAILED; implicit attach is not
-        // available through the plugin API — see ChannelConfigGuards.ensureActiveChannel).
-        try ChannelConfigGuards.ensureActiveChannel(coreSDK: coreSDK, internalQueue: proxied.internalQueue)
+        // RTO23e / RTL33 — ensure the channel is usable: RTL33a (already ATTACHED/SUSPENDED),
+        // RTL33b (implicit attach for INITIALIZED/DETACHED/DETACHING/ATTACHING, awaiting ATTACHED),
+        // RTL33c (reject FAILED). See ChannelConfigGuards.ensureActiveChannel.
+        try await ChannelConfigGuards.ensureActiveChannel(coreSDK: coreSDK, internalQueue: proxied.internalQueue)
         // RTO23c — wait for the initial sync to complete (atomic state-check + waiter registration,
         // 92008 if the channel leaves a usable state while waiting).
         try await proxied.ensureSynced()

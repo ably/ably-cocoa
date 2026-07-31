@@ -3,6 +3,7 @@
 #import "ARTChannels+Private.h"
 #import "ARTRealtimeChannel+Private.h"
 #import "ARTRealtime+Private.h"
+#import "ARTClientOptions+Private.h"
 #import "ARTRealtimePresence+Private.h"
 #import "ARTClientOptions+TestConfiguration.h"
 #import "ARTTestClientOptions.h"
@@ -126,6 +127,15 @@ art_dispatch_sync(_queue, ^{
         // one and the second call's detach callback is called, can be
         // released unwillingly.
         if ([self->_channels _exists:name] && [self->_channels _get:name] == channel) {
+#ifdef ABLY_SUPPORTS_PLUGINS
+            // Notify the LiveObjects plugin (if any) that this channel is being released, so it can
+            // dispose of its per-channel resources and fail any in-flight operations with a
+            // release-specific cause rather than waiting for the channel's eventual deallocation. This
+            // callback runs on the internal queue (the `_detach:` callback queue). Mirrors ably-java's
+            // `DefaultLiveObjectsPlugin.dispose(channelName)` (DefaultLiveObjectsPlugin.kt:26).
+            [self.realtime.options.liveObjectsPlugin nosync_releaseChannel:channel];
+#endif
+
             [self->_channels _release:name];
         }
 

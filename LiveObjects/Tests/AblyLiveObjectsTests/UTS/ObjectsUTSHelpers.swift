@@ -49,6 +49,37 @@ final class ObjectsUTSCoreSDK: CoreSDK {
     var nosync_channelState: _AblyPluginSupportPrivate.RealtimeChannelState {
         channelState
     }
+
+    var channelName: String {
+        // The unit ports do not assert the public ObjectMessage channel name through this CoreSDK.
+        ""
+    }
+
+    // The unit ports run against a fully-configured channel (the RTO2a2/RTO2b2/RTO26 guards must pass),
+    // matching the previously-stubbed always-pass behaviour.
+    var nosync_objectChannelModes: _AblyPluginSupportPrivate.ChannelMode {
+        [.objectSubscribe, .objectPublish]
+    }
+
+    var echoMessages: Bool {
+        true
+    }
+
+    var nosync_connectionStateError: ARTErrorInfo? {
+        nil
+    }
+
+    var nosync_maxMessageSize: Int? {
+        // The unit ports do not publish through this CoreSDK, so the RTO15d gate is never consulted;
+        // nil falls back to the Ably default if it ever were.
+        nil
+    }
+
+    func nosync_attach(callback: @escaping @Sendable (ARTErrorInfo?) -> Void) {
+        // The unit ports drive get() on an ATTACHED channel (RTL33a), so the RTL33b implicit attach
+        // is never reached; succeed for completeness.
+        callback(nil)
+    }
 }
 
 // MARK: - RealtimeObjects

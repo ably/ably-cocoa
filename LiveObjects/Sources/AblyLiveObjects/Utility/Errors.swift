@@ -25,6 +25,13 @@ internal enum LiveObjectsError {
     /// RTO2a2/RTO2b2: The channel is missing a required channel mode (`object_subscribe` for reads,
     /// `object_publish` for writes). Code 40024.
     case channelModeRequired(mode: String)
+    /// RTO26: A write (mutation) operation was attempted while the client's `echoMessages` option is
+    /// disabled. Code 40000 (ably-java `ObjectErrorCode.BadRequest`).
+    case echoMessagesDisabled
+    /// DEV-47: The channel was released via `channels.release()`, so any in-flight objects operation is
+    /// failed with this as the cause. Code 40000 (ably-java `clientError`,
+    /// `DefaultLiveObjectsPlugin.dispose(channelName)`).
+    case channelReleased
     /// RTO/DEV-7: The LiveObjects plugin is not configured on the client. Code 40019. (Reserved for
     /// P5's plugin-missing decision; the code is landed here with the rest of the path-API error model.)
     case pluginUnavailable
@@ -51,6 +58,8 @@ internal enum LiveObjectsError {
         case .pathNotResolved,
              .pathTypeMismatch,
              .channelModeRequired,
+             .echoMessagesDisabled,
+             .channelReleased,
              .pluginUnavailable,
              .invalidInput,
              .other:
@@ -72,6 +81,10 @@ internal enum LiveObjectsError {
             92007 // RTTS5d2/RTTS9d
         case .channelModeRequired:
             40024 // RTO2a2/RTO2b2
+        case .echoMessagesDisabled:
+            40000 // RTO26 (ably-java ObjectErrorCode.BadRequest)
+        case .channelReleased:
+            40000 // DEV-47 (ably-java clientError / ObjectErrorCode.BadRequest)
         case .pluginUnavailable:
             40019 // DEV-7
         case .invalidInput:
@@ -98,6 +111,8 @@ internal enum LiveObjectsError {
              .pathNotResolved,
              .pathTypeMismatch,
              .channelModeRequired,
+             .echoMessagesDisabled,
+             .channelReleased,
              .pluginUnavailable,
              .invalidInput,
              .other:
@@ -133,6 +148,12 @@ internal enum LiveObjectsError {
         case let .channelModeRequired(mode: mode):
             // RTO2a2/RTO2b2
             "\"\(mode)\" channel mode must be set for this operation"
+        case .echoMessagesDisabled:
+            // RTO26 - matches ably-java's message verbatim (Helpers.kt:104)
+            "\"echoMessages\" client option must be enabled for this operation"
+        case .channelReleased:
+            // DEV-47 - matches ably-java's message verbatim (DefaultLiveObjectsPlugin.kt:27)
+            "Channel has been released using channels.release()"
         case .pluginUnavailable:
             // DEV-7
             "The LiveObjects plugin is not configured on this client"
@@ -157,6 +178,8 @@ internal enum LiveObjectsError {
              .pathNotResolved,
              .pathTypeMismatch,
              .channelModeRequired,
+             .echoMessagesDisabled,
+             .channelReleased,
              .pluginUnavailable,
              .invalidInput,
              .other:

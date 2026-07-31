@@ -13,73 +13,132 @@ import Ably
 /// | Check | Spec | Implemented? |
 /// |---|---|---|
 /// | Channel state (DETACHED/FAILED, +SUSPENDED for writes) | RTO25/RTO26 | ✅ via `CoreSDK.nosync_channelState` |
-/// | `object_subscribe` / `object_publish` channel mode | RTO2a2/RTO2b2 (40024) | ❌ no plugin accessor — stubbed |
-/// | `echoMessages` client option | RTO26 | ❌ no plugin accessor — stubbed |
-/// | Connection `isActive` (publishable state) | RTO26 | ❌ no plugin accessor — stubbed |
+/// | `object_subscribe` / `object_publish` channel mode | RTO2a2/RTO2b2 (40024) | ✅ via `CoreSDK.nosync_objectChannelModes` |
+/// | `echoMessages` client option | RTO26 | ✅ via `CoreSDK.echoMessages` |
+/// | Connection `isActive` (publishable state) | RTO26 | ✅ via `CoreSDK.nosync_connectionStateError` |
 ///
-/// The unimplementable checks carry a `// TODO(core accessor):` marker; landing them needs a
-/// `PluginAPI`/core-SDK accessor (a user-gated core change, out of scope per plan §6.6 — the DEV-23
-/// precedent). The channel-state check reuses the exact `CoreSDK.nosync_validateChannelState` the
-/// internal engine's node accessors already run (same 90001 code), so no new state check is invented.
+/// The channel-state check produces the same 90001 error the internal engine's node accessors run
+/// (`CoreSDK.nosync_validateChannelState`), so no new state check is invented. The mode /
+/// echo-messages / connection-active checks were formerly stubbed (DEV-38); the `nosync_objectChannelModes`,
+/// `echoMessages` and `nosync_connectionStateError` bridge accessors now make them real.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal enum ChannelConfigGuards {
     /// Validates the access (read/subscribe) API preconditions: the channel must be attachable (not
     /// DETACHED/FAILED) and configured with the `object_subscribe` mode. Spec: RTO25.
     internal static func throwIfInvalidAccessApiConfiguration(coreSDK: CoreSDK, internalQueue: DispatchQueue) throws(ARTErrorInfo) {
-        // RTO25b — channel-state check (implementable). Reuses the engine's node-accessor check.
-        try validateChannelState(coreSDK: coreSDK, internalQueue: internalQueue, notIn: [.detached, .failed], operationDescription: "access API")
-        // TODO(core accessor): RTO25a / RTO2a2 — throw `channelModeRequired("object_subscribe")` (40024)
-        // when the channel is not configured with the `object_subscribe` mode. The plugin API exposes
-        // no channel modes; see the guard-implementability table in this file's doc comment.
+        // ably-java `Helpers.kt:40` — order: channel state, then `object_subscribe` mode.
+        let error = internalQueue.ably_syncNoDeadlock { () -> ARTErrorInfo? in
+            // RTO25b — channel state (reuses the engine's node-accessor check).
+            nosync_channelStateError(coreSDK: coreSDK, notIn: [.detached, .failed], operationDescription: "access API")
+                // RTO25a / RTO2a2 — `object_subscribe` mode.
+                ?? nosync_missingChannelModeError(coreSDK: coreSDK, requiredMode: .objectSubscribe, modeName: "object_subscribe")
+        }
+        if let error {
+            throw error
+        }
     }
 
     /// Validates only the `object_subscribe` channel mode (no channel-state check), for
     /// `RealtimeObject.get()` (RTO23a). Unlike the access methods, `get()` delegates channel-state
     /// handling to the ensure-attached procedure (RTL33), so it must not pre-empt that with a state
     /// gate. Spec: RTO23a. (Wired in P5's `get()`.)
-    internal static func throwIfMissingObjectSubscribeMode(coreSDK _: CoreSDK, internalQueue _: DispatchQueue) throws(ARTErrorInfo) {
-        // TODO(core accessor): RTO2a2 — throw `channelModeRequired("object_subscribe")` (40024) when the
-        // channel is not configured with the `object_subscribe` mode. No plugin channel-modes accessor.
+    internal static func throwIfMissingObjectSubscribeMode(coreSDK: CoreSDK, internalQueue: DispatchQueue) throws(ARTErrorInfo) {
+        // ably-java `Helpers.kt:53` — the `object_subscribe` mode only (no channel-state check).
+        let error = internalQueue.ably_syncNoDeadlock { () -> ARTErrorInfo? in
+            nosync_missingChannelModeError(coreSDK: coreSDK, requiredMode: .objectSubscribe, modeName: "object_subscribe")
+        }
+        if let error {
+            throw error
+        }
     }
 
     /// Validates the write (mutation) API preconditions: message echo must be enabled, the channel
     /// must be usable (not DETACHED/FAILED/SUSPENDED) and configured with the `object_publish` mode.
     /// Spec: RTO26.
     internal static func throwIfInvalidWriteApiConfiguration(coreSDK: CoreSDK, internalQueue: DispatchQueue) throws(ARTErrorInfo) {
-        // TODO(core accessor): RTO26 — throw a bad-request error when `echoMessages` is disabled. The
-        // plugin API exposes client options only as an opaque marker protocol (no `echoMessages`).
-        // RTO26b — channel-state check (implementable). Reuses the engine's node-accessor check.
-        try validateChannelState(coreSDK: coreSDK, internalQueue: internalQueue, notIn: [.detached, .failed, .suspended], operationDescription: "write API")
-        // TODO(core accessor): RTO2b2 — throw `channelModeRequired("object_publish")` (40024) when the
-        // channel is not configured with the `object_publish` mode. No plugin channel-modes accessor.
+        // ably-java `Helpers.kt:64` — order: echoMessages, then channel state, then `object_publish` mode.
+        let error = internalQueue.ably_syncNoDeadlock { () -> ARTErrorInfo? in
+            // RTO26 — `echoMessages` must be enabled.
+            nosync_echoMessagesDisabledError(coreSDK: coreSDK)
+                // RTO26b — channel state (reuses the engine's node-accessor check).
+                ?? nosync_channelStateError(coreSDK: coreSDK, notIn: [.detached, .failed, .suspended], operationDescription: "write API")
+                // RTO2b2 — `object_publish` mode.
+                ?? nosync_missingChannelModeError(coreSDK: coreSDK, requiredMode: .objectPublish, modeName: "object_publish")
+        }
+        if let error {
+            throw error
+        }
     }
 
     /// RTO23e / RTL33 — the *ensure-active-channel* procedure that `RealtimeObject.get()` runs before
-    /// waiting for sync. ably-java implicitly attaches a DETACHED/INITIALIZED channel (RTL33b) and
-    /// rejects only FAILED (RTL33c, code 90001).
+    /// waiting for sync. Mirrors ably-java's `Helpers.kt` `ensureAttached` / `attachAsync`:
     ///
-    /// The plugin API (`PluginAPIProtocol` / `_AblyPluginSupportPrivate`) exposes **no way to
-    /// initiate a channel attach** — only `nosync_stateForChannel` (state read) and the inbound
-    /// `nosync_onChannelAttached` callback. So the implicit-attach half of RTL33 is not implementable
-    /// here; we implement the implementable half — reject a FAILED channel (RTL33c) — and leave the
-    /// attach to the application. When the channel is not yet attached, `get()`'s subsequent
-    /// `ensureSynced` simply waits until it becomes synced.
+    /// - **RTL33a** — ATTACHED or SUSPENDED: already usable, no attach performed.
+    /// - **RTL33b** — INITIALIZED / DETACHED / DETACHING / ATTACHING: implicitly attach (per RTL4, via
+    ///   the `CoreSDK.nosync_attach` plugin bridge) and await completion. A single attach resolves the
+    ///   in-flight ATTACHING/DETACHING cases per RTL4h, so one call covers all four states. The
+    ///   `ARTErrorInfo` that caused an attach failure is propagated (RTL33b1).
+    /// - **RTL33c** — FAILED (and any unknown state): reject with code 90001, statusCode 400.
+    ///
+    /// The state read and the attach initiation happen in a **single** internal-queue block, so no
+    /// channel-state change can be lost between the read and the attach's callback registration
+    /// (lost-wakeup discipline). Formerly DEV-46 (implicit attach was not implementable through the
+    /// plugin API); the `nosync_attach` bridge accessor now makes it real.
     ///
     /// Spec: RTO23e, RTL33.
-    internal static func ensureActiveChannel(coreSDK: CoreSDK, internalQueue: DispatchQueue) throws(ARTErrorInfo) {
-        // TODO(core accessor): RTL33b — implicitly attach a DETACHED/INITIALIZED channel. The plugin
-        // API can only read channel state, not initiate an attach; landing this needs a
-        // PluginAPI/core-SDK accessor (user-gated core change, plan §6.6; DEV-38 precedent).
-        // RTL33c — reject a FAILED channel (implementable; code 90001).
-        try validateChannelState(coreSDK: coreSDK, internalQueue: internalQueue, notIn: [.failed], operationDescription: "get")
+    internal static func ensureActiveChannel(coreSDK: CoreSDK, internalQueue: DispatchQueue) async throws(ARTErrorInfo) {
+        let result: Result<Void, ARTErrorInfo> = await withCheckedContinuation { continuation in
+            internalQueue.async {
+                let state = coreSDK.nosync_channelState
+
+                // The RTL33c rejection, reused for FAILED and any unknown state.
+                let invalidStateError = LiveObjectsError.objectsOperationFailedInvalidChannelState(
+                    operationDescription: "get",
+                    channelState: state,
+                )
+                let invalidStateFailure: Result<Void, ARTErrorInfo> = .failure(invalidStateError.toARTErrorInfo())
+
+                switch state {
+                case .attached, .suspended:
+                    // RTL33a
+                    continuation.resume(returning: .success(()))
+                case .initialized, .detached, .detaching, .attaching:
+                    // RTL33b — implicit attach; the callback fires on the internal queue (RTL33b1
+                    // propagates the attach-failure error).
+                    coreSDK.nosync_attach { error in
+                        continuation.resume(returning: error.map { .failure($0) } ?? .success(()))
+                    }
+                case .failed:
+                    // RTL33c
+                    continuation.resume(returning: invalidStateFailure)
+                @unknown default:
+                    continuation.resume(returning: invalidStateFailure)
+                }
+            }
+        }
+
+        switch result {
+        case .success:
+            return
+        case let .failure(error):
+            throw error
+        }
     }
 
     /// Validates that the channel is in a publishable state (connection active, channel not
     /// FAILED/SUSPENDED). Spec: RTO26 (publishable-state variant). (Reserved for P5.)
     internal static func throwIfUnpublishableState(coreSDK: CoreSDK, internalQueue: DispatchQueue) throws(ARTErrorInfo) {
-        // TODO(core accessor): the connection `isActive` check — the plugin API exposes no connection
-        // state / manager. Only the channel-state portion below is implementable.
-        try validateChannelState(coreSDK: coreSDK, internalQueue: internalQueue, notIn: [.failed, .suspended], operationDescription: "publish")
+        // ably-java `Helpers.kt:110` — order: connection active, then channel state (FAILED/SUSPENDED).
+        let error = internalQueue.ably_syncNoDeadlock { () -> ARTErrorInfo? in
+            // The connection must be in a publishable (active) state; if not, surface the connection's
+            // own state error (DEV-38 note: cocoa returns the connection's `errorReason`, or a synthetic
+            // 80002 error when it has none, in place of ably-java's `connectionManager.stateErrorInfo`).
+            coreSDK.nosync_connectionStateError
+                ?? nosync_channelStateError(coreSDK: coreSDK, notIn: [.failed, .suspended], operationDescription: "publish")
+        }
+        if let error {
+            throw error
+        }
     }
 
     /// RTPO19c1a / DEV-9 — validates a subscription `depth`. ably-java throws 40003 from the
@@ -92,26 +151,51 @@ internal enum ChannelConfigGuards {
         }
     }
 
-    // MARK: - Private helpers
+    // MARK: - Private on-queue checks
 
-    /// Runs `CoreSDK.nosync_validateChannelState` on the internal queue (the `nosync_` accessor must be
-    /// invoked there), re-throwing its typed `ARTErrorInfo` to the caller.
-    private static func validateChannelState(
+    // The following helpers read `nosync_` core-SDK accessors and so must be called on the internal
+    // queue (each guard wraps its checks in a single `ably_syncNoDeadlock` hop). Each returns the
+    // relevant `ARTErrorInfo` if the check fails, or `nil` if it passes — so a guard can chain them
+    // with `??` to mirror ably-java's short-circuiting check order.
+
+    /// RTO25b/RTO26b — the channel-state check (reuses the engine's node-accessor precondition).
+    /// ably-java `Helpers.kt:94` `throwIfInChannelState`.
+    private static func nosync_channelStateError(
         coreSDK: CoreSDK,
-        internalQueue: DispatchQueue,
         notIn invalidStates: [_AblyPluginSupportPrivate.RealtimeChannelState],
         operationDescription: String,
-    ) throws(ARTErrorInfo) {
-        let failure: ARTErrorInfo? = internalQueue.ably_syncNoDeadlock {
-            do throws(ARTErrorInfo) {
-                try coreSDK.nosync_validateChannelState(notIn: invalidStates, operationDescription: operationDescription)
-                return nil
-            } catch {
-                return error
-            }
+    ) -> ARTErrorInfo? {
+        let currentState = coreSDK.nosync_channelState
+        if invalidStates.contains(currentState) {
+            let error = LiveObjectsError.objectsOperationFailedInvalidChannelState(
+                operationDescription: operationDescription,
+                channelState: currentState,
+            )
+            return error.toARTErrorInfo()
         }
-        if let failure {
-            throw failure
+        return nil
+    }
+
+    /// RTO2a2/RTO2b2 — the required-channel-mode check (40024). ably-java `Helpers.kt:84`
+    /// `throwIfMissingChannelMode`: throws when the effective modes are absent or do not contain the
+    /// required mode.
+    private static func nosync_missingChannelModeError(
+        coreSDK: CoreSDK,
+        requiredMode: _AblyPluginSupportPrivate.ChannelMode,
+        modeName: String,
+    ) -> ARTErrorInfo? {
+        if !coreSDK.nosync_objectChannelModes.contains(requiredMode) {
+            return LiveObjectsError.channelModeRequired(mode: modeName).toARTErrorInfo()
         }
+        return nil
+    }
+
+    /// RTO26 — the `echoMessages` client-option check. ably-java `Helpers.kt:101`
+    /// `throwIfEchoMessagesDisabled`.
+    private static func nosync_echoMessagesDisabledError(coreSDK: CoreSDK) -> ARTErrorInfo? {
+        if !coreSDK.echoMessages {
+            return LiveObjectsError.echoMessagesDisabled.toARTErrorInfo()
+        }
+        return nil
     }
 }

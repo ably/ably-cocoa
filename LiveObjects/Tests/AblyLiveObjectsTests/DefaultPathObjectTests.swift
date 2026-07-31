@@ -323,6 +323,133 @@ struct DefaultPathObjectTests {
         }
     }
 
+    // MARK: - Channel-mode guards (RTO2a2 / RTO2b2, DEV-38)
+
+    // @spec RTO2a2 - a read on a channel without the `object_subscribe` mode throws 40024
+    @Test
+    func readWithoutObjectSubscribeModeThrows() throws {
+        let fixture = Self.makeFixture()
+        // Channel configured only with object_publish — missing object_subscribe.
+        fixture.coreSDK.setObjectChannelModes([.objectPublish])
+        let root = Self.rootPathObject(fixture)
+
+        let error = try #require(throws: ARTErrorInfo.self) {
+            _ = try root.exists()
+        }
+        #expect(error.code == 40024)
+        #expect(error.statusCode == 400)
+        #expect(error.message == "\"object_subscribe\" channel mode must be set for this operation")
+    }
+
+    // @spec RTO2b2 - a write on a channel without the `object_publish` mode throws 40024
+    @Test
+    func writeWithoutObjectPublishModeThrows() async throws {
+        let fixture = Self.makeFixture()
+        // Channel configured only with object_subscribe — missing object_publish.
+        fixture.coreSDK.setObjectChannelModes([.objectSubscribe])
+        let root = Self.rootPathObject(fixture)
+
+        let error = try await #require(throws: ARTErrorInfo.self) {
+            try await root.set(key: "k", value: .primitive(.string("v")))
+        }
+        #expect(error.code == 40024)
+        #expect(error.message == "\"object_publish\" channel mode must be set for this operation")
+    }
+
+    // @spec RTO2a2 - when no modes are configured at all, the access guard also throws 40024
+    @Test
+    func readWithNoModesThrows() throws {
+        let fixture = Self.makeFixture()
+        fixture.coreSDK.setObjectChannelModes([])
+        let root = Self.rootPathObject(fixture)
+
+        let error = try #require(throws: ARTErrorInfo.self) {
+            _ = try root.get(key: "s").type()
+        }
+        #expect(error.code == 40024)
+    }
+
+    // @spec RTO2a2 - the get() mode guard (throwIfMissingObjectSubscribeMode) throws 40024 when the
+    // `object_subscribe` mode is absent, and passes when present (no channel-state check).
+    @Test
+    func objectSubscribeModeGuardForGet() throws {
+        let internalQueue = TestFactories.createInternalQueue()
+
+        // Present (even on a DETACHED channel — get() delegates state handling to ensure-active).
+        let withMode = MockCoreSDK(channelState: .detached, objectChannelModes: [.objectSubscribe], internalQueue: internalQueue)
+        #expect(throws: Never.self) {
+            try ChannelConfigGuards.throwIfMissingObjectSubscribeMode(coreSDK: withMode, internalQueue: internalQueue)
+        }
+
+        // Absent: throws 40024.
+        let withoutMode = MockCoreSDK(channelState: .attached, objectChannelModes: [.objectPublish], internalQueue: internalQueue)
+        let error = try #require(throws: ARTErrorInfo.self) {
+            try ChannelConfigGuards.throwIfMissingObjectSubscribeMode(coreSDK: withoutMode, internalQueue: internalQueue)
+        }
+        #expect(error.code == 40024)
+    }
+
+    // MARK: - echoMessages write guard (RTO26, DEV-38)
+
+    // @spec RTO26 - a write with the `echoMessages` option disabled throws 40000
+    @Test
+    func writeWithEchoMessagesDisabledThrows() async throws {
+        let fixture = Self.makeFixture()
+        fixture.coreSDK.setEchoMessages(false)
+        let root = Self.rootPathObject(fixture)
+
+        let error = try await #require(throws: ARTErrorInfo.self) {
+            try await root.set(key: "k", value: .primitive(.string("v")))
+        }
+        #expect(error.code == 40000)
+        #expect(error.statusCode == 400)
+        #expect(error.message == "\"echoMessages\" client option must be enabled for this operation")
+    }
+
+    // The write guard checks echoMessages before channel state (ably-java Helpers.kt:64 order): with
+    // echo disabled AND the channel SUSPENDED, the echoMessages error (40000) is the one surfaced.
+    // @spec RTO26
+    @Test
+    func writeGuardChecksEchoMessagesBeforeChannelState() async throws {
+        let fixture = Self.makeFixture(channelState: .suspended)
+        fixture.coreSDK.setEchoMessages(false)
+        let root = Self.rootPathObject(fixture)
+
+        let error = try await #require(throws: ARTErrorInfo.self) {
+            try await root.set(key: "k", value: .primitive(.string("v")))
+        }
+        #expect(error.code == 40000)
+    }
+
+    // MARK: - throwIfUnpublishableState connection guard (RTO26, DEV-38)
+
+    // @spec RTO26 - an inactive connection surfaces the connection's state error; the channel-state
+    // portion is checked only when the connection is active.
+    @Test
+    func unpublishableStateGuardSurfacesConnectionError() throws {
+        let internalQueue = TestFactories.createInternalQueue()
+
+        // Active connection, usable channel: passes.
+        let active = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+        #expect(throws: Never.self) {
+            try ChannelConfigGuards.throwIfUnpublishableState(coreSDK: active, internalQueue: internalQueue)
+        }
+
+        // Inactive connection: the connection's own error is surfaced (before the channel-state check).
+        let connectionError = ARTErrorInfo.create(withCode: 80002, status: 400, message: "Connection is suspended")
+        let inactive = MockCoreSDK(channelState: .attached, connectionStateError: connectionError, internalQueue: internalQueue)
+        let error = try #require(throws: ARTErrorInfo.self) {
+            try ChannelConfigGuards.throwIfUnpublishableState(coreSDK: inactive, internalQueue: internalQueue)
+        }
+        #expect(error.code == 80002)
+
+        // Active connection but FAILED channel: the channel-state check fires.
+        let failedChannel = MockCoreSDK(channelState: .failed, internalQueue: internalQueue)
+        #expect(throws: ARTErrorInfo.self) {
+            try ChannelConfigGuards.throwIfUnpublishableState(coreSDK: failedChannel, internalQueue: internalQueue)
+        }
+    }
+
     // MARK: - Depth validation helper (DEV-9 / RTPO19c1a)
 
     // @spec RTPO19c1a - depth <= 0 is rejected with 40003; the check lives in ChannelConfigGuards for part 2

@@ -48,6 +48,13 @@ NS_SWIFT_SENDABLE
 /// The plugin can use this as an opportunity to perform any initial setup of LiveObjects functionality for this channel.
 - (void)nosync_prepareChannel:(id<APRealtimeChannel>)channel client:(id<APRealtimeClient>)client;
 
+/// ably-cocoa will call this method when a channel is released via `-[ARTRealtimeChannels release:]`.
+///
+/// The plugin can use this as an opportunity to dispose of any LiveObjects resources it set up for the
+/// channel in `-nosync_prepareChannel:client:`, and to fail any in-flight operations with a
+/// release-specific cause (rather than relying on the channel's eventual deallocation).
+- (void)nosync_releaseChannel:(id<APRealtimeChannel>)channel;
+
 /// Decodes an `ObjectMessage` received over the wire.
 ///
 /// Parameters:

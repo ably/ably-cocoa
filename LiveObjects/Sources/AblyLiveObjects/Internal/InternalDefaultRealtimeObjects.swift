@@ -209,9 +209,27 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
 
     deinit {
         // The full teardown (matrix #18): cancel the GC task, fail any in-flight sync waiters and
-        // drop all subscriptions. `dispose()` is idempotent, so an earlier explicit `dispose()` call
-        // makes this a no-op beyond the (already-idempotent) GC cancellation.
-        dispose()
+        // drop all subscriptions. `nosync_dispose` is idempotent, so an earlier explicit `dispose()`
+        // call makes this a no-op beyond the (already-idempotent) GC cancellation.
+        //
+        // deinit must NOT reuse the blocking `dispose()`: ARC may run this deinit *on* the internal
+        // queue (e.g. when the owning `ARTRealtimeChannel` is deallocated during client/channel
+        // teardown, which happens on that queue), and `dispose()`'s `withSync` asserts
+        // `.notOnQueue` (`ably_syncNoDeadlock`) — so a blocking teardown from deinit traps (SIGTRAP).
+        // Mirror ably-java's non-blocking `DefaultRealtimeObject.dispose` (which cancels via
+        // `sequentialScope.cancelChildren`, never sync-hopping its own queue): cancel the GC task
+        // (thread-safe from any thread), then hop the queue-confined cleanup onto the internal queue
+        // with `async`, capturing ONLY the mutex — never `self`, which is being deallocated. The
+        // async hop fails any detached-continuation waiters slightly later than an explicit
+        // `dispose()` would, but still fails (never drops) them. Extends DEV-47 (deinit-on-queue
+        // hazard is cocoa-specific; absent in GC'd Kotlin). Spec: matrix #18.
+        garbageCollectionTask.cancel()
+        let mutex = mutableStateMutex
+        mutex.dispatchQueue.async {
+            mutex.withoutSync { mutableState in
+                Self.nosync_dispose(&mutableState)
+            }
+        }
     }
 
     /// The channel objects engine's internal serial queue (Kotlin's `sequentialScope`). Shared out
@@ -242,16 +260,51 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
     /// whose only long-lived resource — the GC `Task` — is owned here and cancelled above.
     internal func dispose() {
         garbageCollectionTask.cancel()
+        // Off-queue callers (the explicit teardown, e.g. `PublicRealtimeObjectTests`) block on the
+        // internal queue via `withSync`; `deinit` uses a non-blocking `async` hop instead (see the
+        // `deinit` note above). Both run the same queue-confined `nosync_dispose`.
         mutableStateMutex.withSync { mutableState in
-            // Fail any pending publishAndApply / get() sync waiters (RTO20e1 path).
-            mutableState.nosync_drainPublishAndApplySyncWaiters(
-                outcome: .channelStateFailed(state: .failed, reason: nil),
-            )
-            // Drop all path subscriptions.
-            mutableState.pathObjectSubscriptionRegister.nosync_dispose()
-            // Drop all status-event subscriptions.
-            mutableState.offAll()
+            Self.nosync_dispose(&mutableState)
         }
+    }
+
+    /// DEV-47: Disposes the engine in response to a channel release (`channels.release()`), failing any
+    /// in-flight sync waiters with a **release-specific** cause (a 40000 "Channel has been released"
+    /// error) rather than the generic `.channelStateFailed` reason used by `deinit`/`dispose()`. Called
+    /// on the internal queue by the core SDK's channel-release path (via the plugin's
+    /// `nosync_releaseChannel:` hook → `DefaultInternalPlugin`). Mirrors ably-java
+    /// `DefaultLiveObjectsPlugin.dispose(channelName)` → `DefaultRealtimeObject.dispose(cause)`
+    /// (DefaultLiveObjectsPlugin.kt:26, DefaultRealtimeObject.kt:319). Idempotent.
+    ///
+    /// Like `dispose()`, this keeps the instance usable (the sync state and pool are untouched), so a
+    /// later `get()` after a re-attach still works, matching Kotlin's scope-survives-dispose behaviour.
+    internal func nosync_disposeForChannelRelease() {
+        garbageCollectionTask.cancel()
+        let releaseCause = LiveObjectsError.channelReleased.toARTErrorInfo()
+        mutableStateMutex.withoutSync { mutableState in
+            Self.nosync_dispose(&mutableState, reason: releaseCause)
+        }
+    }
+
+    /// The queue-confined teardown shared by the blocking `dispose()` (off-queue caller, via
+    /// `withSync`), `deinit` (which hops onto the internal queue via `async` + `withoutSync`) and the
+    /// DEV-47 channel-release path (`nosync_disposeForChannelRelease`). Operates only on the passed-in
+    /// `mutableState`, so it never touches — or resurrects — `self`, which is essential when it runs
+    /// from `deinit`. Idempotent (a prior dispose leaves the waiter set, subscription register and
+    /// status emitter already drained). Spec: matrix #18.
+    ///
+    /// - Parameter reason: the cause attached to the RTO20e1 failure delivered to in-flight sync
+    ///   waiters. `nil` (the default, used by `deinit`/`dispose()`) fails them with no specific cause;
+    ///   the channel-release path passes a release-specific error (DEV-47).
+    private static func nosync_dispose(_ mutableState: inout MutableState, reason: ARTErrorInfo? = nil) {
+        // Fail any pending publishAndApply / get() sync waiters (RTO20e1 path).
+        mutableState.nosync_drainPublishAndApplySyncWaiters(
+            outcome: .channelStateFailed(state: .failed, reason: reason),
+        )
+        // Drop all path subscriptions.
+        mutableState.pathObjectSubscriptionRegister.nosync_dispose()
+        // Drop all status-event subscriptions.
+        mutableState.offAll()
     }
 
     // MARK: - LiveMapObjectsPoolDelegate
@@ -582,22 +635,23 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
 
     // MARK: - Sending `OBJECT` ProtocolMessage
 
-    /// The maximum allowed total size, in bytes, for a set of `ObjectMessage`s published in one go.
-    ///
-    /// TODO: This should be the connection's negotiated `maxMessageSize` (TO3l8 /
-    /// `ConnectionDetails.maxMessageSize`), but the core SDK does not currently expose that value to
-    /// plugins via `_AblyPluginSupportPrivate` (`ConnectionDetailsProtocol` only surfaces
-    /// `objectsGCGracePeriod` and `siteCode`). We therefore fall back to the Ably default of 65536
-    /// bytes (`ARTDefault.maxMessageSize`), matching `Defaults.maxMessageSize` in ably-java. When the
-    /// plugin API exposes the connection's limit, source it from there instead.
-    /// See https://github.com/ably/ably-liveobjects-swift-plugin/issues/13.
+    /// The Ably default maximum message size, in bytes, used as a fallback when the connection has not
+    /// negotiated one. Mirrors `Defaults.maxMessageSize` in ably-java (and `ARTDefault.maxMessageSize`).
     private static let defaultMaxMessageSize = 65536
 
     /// RTO15d: Validates that the total size of `objectMessages` (each calculated per OM3) does not
     /// exceed the connection's `maxMessageSize`. If it does, the publish is rejected with an
     /// `ErrorInfo` of `statusCode` 400 and `code` 40009.
-    private static func ensureMessageSizeWithinLimit(_ objectMessages: [ProtocolTypes.OutboundObjectMessage]) throws(ARTErrorInfo) {
-        let maximumAllowedSize = defaultMaxMessageSize
+    ///
+    /// The effective limit is the connection's negotiated `maxMessageSize` (DEV-23), read from the
+    /// latest `CONNECTED` `ProtocolMessage`'s `connectionDetails` via `CoreSDK.nosync_maxMessageSize`;
+    /// we fall back to ``defaultMaxMessageSize`` when the core SDK has no connection details yet or the
+    /// server did not send a limit. Mirrors ably-java `Helpers.kt:167` `ensureMessageSizeWithinLimit`
+    /// (`connectionManager.maxMessageSize`).
+    ///
+    /// Must be called on the internal queue (it reads the `nosync_` connection-details accessor).
+    private static func ensureMessageSizeWithinLimit(_ objectMessages: [ProtocolTypes.OutboundObjectMessage], coreSDK: CoreSDK) throws(ARTErrorInfo) {
+        let maximumAllowedSize = coreSDK.nosync_maxMessageSize ?? defaultMaxMessageSize
         let totalSize = objectMessages.reduce(0) { $0 + $1.size }
         if totalSize > maximumAllowedSize {
             throw LiveObjectsError.maxMessageSizeExceeded(size: totalSize, maxSize: maximumAllowedSize).toARTErrorInfo()
@@ -606,10 +660,17 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
 
     // This is currently exposed so that we can try calling it from the tests in the early days of the SDK to check that we can send an OBJECT ProtocolMessage. We'll probably make it private later on.
     internal func testsOnly_publish(objectMessages: [ProtocolTypes.OutboundObjectMessage], coreSDK: CoreSDK) async throws(ARTErrorInfo) {
-        // RTO15d: reject the publish if the total ObjectMessage size exceeds maxMessageSize.
-        try Self.ensureMessageSizeWithinLimit(objectMessages)
         try await withCheckedContinuation { (continuation: CheckedContinuation<Result<Void, ARTErrorInfo>, _>) in
             mutableStateMutex.withSync { _ in
+                // RTO15d: reject the publish if the total ObjectMessage size exceeds maxMessageSize.
+                // The check reads the connection's negotiated limit (a `nosync_` accessor), so it must
+                // run on the internal queue.
+                do throws(ARTErrorInfo) {
+                    try Self.ensureMessageSizeWithinLimit(objectMessages, coreSDK: coreSDK)
+                } catch {
+                    continuation.resume(returning: .failure(error))
+                    return
+                }
                 coreSDK.nosync_publish(objectMessages: objectMessages) { result in
                     continuation.resume(returning: result.map { _ in })
                 }
@@ -647,7 +708,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
         // RTO15d: Reject the publish before contacting the core SDK if the total ObjectMessage size
         // exceeds maxMessageSize.
         do throws(ARTErrorInfo) {
-            try Self.ensureMessageSizeWithinLimit(objectMessages)
+            try Self.ensureMessageSizeWithinLimit(objectMessages, coreSDK: coreSDK)
         } catch {
             mutableStateMutex.withoutSync { mutableState in
                 mutableStateCallback(&mutableState, .failure(error))
@@ -780,6 +841,12 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
         }
     }
 
+    internal var testsOnly_siteCode: String? {
+        mutableStateMutex.withSync { mutableState in
+            mutableState.siteCode
+        }
+    }
+
     /// Sets the garbage collection grace period.
     ///
     /// Call this upon receiving a `CONNECTED` `ProtocolMessage`, per RTO10b2.
@@ -835,9 +902,10 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
         /// The name of the channel these objects belong to. Used to populate the `channel` field of
         /// the public ``ObjectMessage`` produced at emission (PAOM2e/PAOM3b).
         ///
-        /// - Note: `_AblyPluginSupportPrivate` currently exposes no channel-name accessor, so in
-        ///   production this is presently `""` (see the `channelName` init parameter). The message is
-        ///   not consumed by any public API until P3/P4; tests supply a real name directly.
+        /// In production this is bound to the real channel name at construction (DEV-20): the
+        /// `channelName` init parameter is supplied by `DefaultInternalPlugin.nosync_prepare` via the
+        /// `nameForChannel:` plugin bridge (ably-java `DefaultRealtimeObject.channelName`,
+        /// DefaultRealtimeObject.kt:35).
         internal var channelName: String = ""
 
         internal var onChannelAttachedHasObjects: Bool?
