@@ -61,15 +61,14 @@ this output — treat it as the single source of truth and don't recompute paths
 `translationNotes` is the path to a per-module ably-js → ably-cocoa type/interface map when the module
 declares one (its `notes` field in `uts-package-mapping.json`, e.g. `objects` →
 `references/objects-mapping.md`), else `null`. When it's non-null, it is **required reading before
-Phase 2** — see Step 1. (The `objects` notes file is currently a **placeholder** — if it still only
-carries the "intentionally empty" stub, tell the user the module's mapping hasn't been authored yet and
-treat the module as not-yet-translatable rather than guessing a mapping.)
+Phase 2** — see Step 1. (If a module's notes file only carries an "intentionally empty" placeholder
+stub, tell the user the module's mapping hasn't been authored yet and treat the module as
+not-yet-translatable rather than guessing a mapping.)
 
 ## Step B — Confirm or create the target mapping
 
-The target dirs come from `uts-package-mapping.json` (alongside this skill); spec and ably-cocoa module
-names don't always match (ably-java, for example, maps `objects` → `liveobjects`), which is why it's
-explicit.
+The target dirs come from `uts-package-mapping.json` (alongside this skill); a spec module's name and
+the SDK's internal naming for that area don't necessarily match, which is why the mapping is explicit.
 
 - **If `mapped` is `true`**: show the resolved `targetDir` for each present tier and ask the user to confirm.
   If they say the mapping is wrong, ask for the correct ably-cocoa module base name and re-run with `--create`
@@ -848,7 +847,11 @@ This is the guarantee that no setup step, operation, or assertion was dropped �
       type — is a valid account.)
 - [ ] `awaitShortfall > 0` (`summary.testsWithAwaitShortfall`) is the **softer secondary signal** — fewer
       infra wait calls than spec `AWAIT`s. A custom continuation-bridged helper (like `awaitTime`)
-      legitimately replaces a wait call, so account for those rather than treating this as a gate.
+      legitimately replaces a wait call, and on a **natively-async SDK API** (a module whose SDK
+      surface is `async` methods — its translation notes will say) a
+      spec `AWAIT op` correctly becomes a plain `try await` expression the counter doesn't see —
+      expect a benign shortfall on nearly every such test. Account for those rather than treating
+      this as a gate.
 
 ### Setup fidelity — preconditions match the spec
 
@@ -932,6 +935,11 @@ options.useBinaryProtocol = useBinaryProtocol
 options.autoConnect = false
 ```
 
+For a **plugin-backed module**, the client options must also install the module's plugin — the
+module's entry-point property traps without it. The module's translation notes name the exact
+wiring, and the module packages it as a client-options builder in its module `helpers/` directory
+(see **Module helpers** below) — use that builder; don't hand-wire the plugin per test.
+
 **Class docstring** — use a direct-sandbox variant (no proxy/fault-injection wording):
 
 ```swift
@@ -968,6 +976,32 @@ or poll:
 Use generous timeouts (10–30s) — real network is involved. Everything else is the shared foundation
 described at the top of this section; a direct-sandbox test just skips the proxy-only subsections
 (`ProxySession`, rule factories, the event log).
+
+**Natively-async SDK APIs** (modules whose SDK surface is typed-throws `async` methods — their
+translation notes will say): a spec `AWAIT op`
+translates to a plain `try await op` — no continuation bridging, no infra wait call. Only core-SDK
+callback APIs (attach/detach/publish/history) still need the continuation helpers above. Two
+consequences:
+
+- `AWAIT x WITH timeout: N seconds` on such an op has **no per-call Swift equivalent** (`await`
+  takes no timeout). Keep the plain `try await` and note the spec's timeout in a comment — a hang
+  surfaces as the test-runner timeout. (Only `AWAIT_STATE` timeouts map to a parameter:
+  `awaitState(..., timeout: N)`.)
+- The Step 7 audit counts only infra wait calls, so these tests report a benign `awaitShortfall` —
+  see the Step 7 checklist for the valid account.
+
+**`try?` in `pollUntil` conditions — SE-0230 trap.** Poll closures are non-throwing, so typed
+throwing reads get wrapped in `try?` — and Swift **flattens** the nested optional:
+`try? node.asPrimitive().value()` (a `throws → Primitive?` call) yields `Primitive?`, not
+`Primitive??`, making both "threw" and "resolved to nil" read as `nil` (and making a further `?.`
+chain on the unwrapped value a compile error). Package such reads as small non-throwing helpers
+(`guard let value = try? … else { return nil }`) rather than inlining the `try?`.
+
+**Module helpers** — wiring/read helpers shared by *several* of a module's suites (client-options
+builders, channel builders, typed `value()` readers) go in a `helpers/` directory **next to the
+suites**: `integration/standard/<module>/helpers/`. Do not put module-specific helpers under
+`infra/` — that stays module-agnostic. Suite-specific helpers (a continuation bridge used by one
+file) stay in the per-file extension as usual.
 
 **File template — direct sandbox** (`integration/standard/<module>/`):
 

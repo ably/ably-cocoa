@@ -115,6 +115,8 @@ let package = Package(
             dependencies: [
                 .byName(name: "Ably"),
                 .target(name: "_AblyPluginSupportPrivate"),
+                // The `objects` UTS module tests the LiveObjects plugin's public API.
+                .target(name: "AblyLiveObjects"),
             ],
             path: "Test/UTS",
             exclude: [
