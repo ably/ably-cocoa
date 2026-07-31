@@ -9,7 +9,7 @@ import Ably.Private
 /// Swift Testing creates a fresh instance per `@Test`, so each test gets its own clients/mocks and
 /// `deinit` tears them down.
 ///
-/// Provides the cocoa mappings of the UTS harness primitives:
+/// Provides the cocoa mappings of the UTS infra primitives:
 /// - `installMock(_:)` — the spec's `install_mock`: registers the `MockWebSocketProvider` / `MockHTTPClient`
 ///   so the next client built by `makeRealtime()` / `makeRest()` picks it up. The mock is never
 ///   passed to the client constructor (a mistake per `uts/docs/writing-test-specs.md`).
@@ -64,7 +64,9 @@ class UTSTestCase {
             fatalError("No MockWebSocketProvider installed")
         }
 
-        let options = ARTClientOptions()
+        // Seed a dummy key (ably-java's ClientOptionsBuilder does the same) so specs that don't
+        // exercise auth need no explicit key; the configure block can override it.
+        let options = ARTClientOptions(key: "appId.keyId:keySecret")
         options.useBinaryProtocol = false
 
         let suffix = UUID().uuidString
@@ -97,7 +99,9 @@ class UTSTestCase {
             fatalError("No MockHTTPClient installed")
         }
 
-        let options = ARTClientOptions()
+        // Seed a dummy key (ably-java's ClientOptionsBuilder does the same) so specs that don't
+        // exercise auth need no explicit key; the configure block can override it.
+        let options = ARTClientOptions(key: "appId.keyId:keySecret")
         options.useBinaryProtocol = false
 
         let suffix = UUID().uuidString

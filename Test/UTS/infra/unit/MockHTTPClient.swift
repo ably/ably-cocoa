@@ -50,6 +50,8 @@ struct PendingHTTPConnection {
     let host: String
     let port: Int
     let tls: Bool
+    /// Query parameters parsed from the request URL (UTS `url.query_params`).
+    let queryParams: [String: String]
 
     init(request: URLRequest) {
         guard let url = request.url, let host = url.host else {
@@ -60,6 +62,7 @@ struct PendingHTTPConnection {
         self.tls = (url.scheme?.lowercased() == "https")
         self.host = host
         self.port = url.port ?? (tls ? 443 : 80)
+        self.queryParams = parseQueryParams(of: url)
     }
 
     /// Connection succeeds; requests proceed (UTS `respond_with_success`).
@@ -99,11 +102,7 @@ struct PendingHTTPRequest {
 
     /// Query parameters parsed from the request URL (UTS `url.query_params`).
     var queryParams: [String: String] {
-        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: true),
-              let items = components.queryItems else { return [:] }
-        var result: [String: String] = [:]
-        for item in items where item.value != nil { result[item.name] = item.value }
-        return result
+        parseQueryParams(of: request.url)
     }
 
     /// Sends an HTTP response (UTS `respond_with`). `body` may be `Data`, `String`, or a
@@ -115,6 +114,18 @@ struct PendingHTTPRequest {
         }
         let response = HTTPURLResponse(url: url, statusCode: status, httpVersion: "HTTP/1.1", headerFields: headerFields)
         completion?(response, Self.data(from: body), nil)
+    }
+
+    /// Sends an HTTP response after `delay` seconds (UTS `respond_with_delay` — for slow-server
+    /// specs). The response is built up front; only the delivery is deferred.
+    func respondWithDelay(_ delay: TimeInterval, status: Int, body: Any) {
+        let response = HTTPURLResponse(url: url, statusCode: status, httpVersion: "HTTP/1.1",
+                                       headerFields: ["Content-Type": "application/json"])
+        let data = Self.data(from: body)
+        let completion = DelayedCompletionBox(completion: self.completion)
+        DispatchQueue.global().asyncAfter(deadline: .now() + delay) {
+            completion.completion?(response, data, nil)
+        }
     }
 
     /// Simulates a request timeout after the connection was established (UTS `respond_with_timeout`).
@@ -129,6 +140,13 @@ struct PendingHTTPRequest {
         default: return (try? JSONSerialization.data(withJSONObject: body)) ?? Data()
         }
     }
+}
+
+/// Carries a completion handler across the `asyncAfter` hop for `respondWithDelay`. The handler is
+/// only ever invoked once, from that single deferred block, so the unchecked-Sendable wrapper is safe.
+private final class DelayedCompletionBox: @unchecked Sendable {
+    let completion: ((HTTPURLResponse?, Data?, Error?) -> Void)?
+    init(completion: ((HTTPURLResponse?, Data?, Error?) -> Void)?) { self.completion = completion }
 }
 
 /// No-op cancellable returned by `MockHTTPClient.execute` (the response is delivered synchronously, so

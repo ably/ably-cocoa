@@ -118,7 +118,7 @@ final class ConnectionRecoveryTests: UTSTestCase {
         #expect(client.connection.createRecoveryKey() == nil)
 
         // The mock server doesn't auto-respond to the client's CLOSE frame, so deliver the server's
-        // CLOSED to drive the connection from CLOSING to CLOSED (harness-driving detail:
+        // CLOSED to drive the connection from CLOSING to CLOSED (infra-driving detail:
         wsConnection.sendToClient(.closed())
 
         awaitConnectionState(client, .closed)
