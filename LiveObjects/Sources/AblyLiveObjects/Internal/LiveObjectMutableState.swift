@@ -21,6 +21,12 @@ internal struct LiveObjectMutableState<Update: Sendable> {
     // RTLO3e
     internal var tombstonedAt: Date?
 
+    /// Reverse references: parent map `objectID` -> the set of keys at which that map references
+    /// this object. Keyed by `objectID` per RTLO3f (ids avoid map-to-map reference cycles and
+    /// survive pool replacement). Only mutated and traversed on the internal queue.
+    /// Spec: RTLO3f, RTLO3f2 (initialised to an empty map).
+    internal var parentReferences: [String: Set<String>] = [:]
+
     private enum EventName {
         case update
     }

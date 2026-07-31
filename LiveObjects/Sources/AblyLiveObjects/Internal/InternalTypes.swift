@@ -46,16 +46,30 @@ internal enum LiveMapUpdateAction: Sendable {
     case removed
 }
 
+/// The message/tombstone enrichment carried by every non-noop update, per RTLO4b4d/RTLO4b4e (P2).
+///
+/// - `objectMessage` is the PAOM3-converted public ``ObjectMessage`` from the source operation
+///   message, or `nil` for sync-originated updates (RTO4b2a).
+/// - `tombstone` is `true` when the update results from this object being tombstoned; the emitter
+///   deregisters the object's subscriptions afterwards (RTLO4b4c3c).
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+internal protocol LiveObjectUpdatePayload: Sendable {
+    /// The source public object message (op-bearing only), or `nil` for sync-originated updates.
+    var objectMessage: ObjectMessage? { get set }
+    /// Whether this update tombstones the object.
+    var tombstone: Bool { get set }
+}
+
 /// Represents an update to an internal live map (``InternalDefaultLiveMap``).
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal protocol LiveMapUpdate: Sendable {
+internal protocol LiveMapUpdate: LiveObjectUpdatePayload {
     /// The keys that have changed, along with their change status.
     var update: [String: LiveMapUpdateAction] { get }
 }
 
 /// Represents an update to an internal live counter (``InternalDefaultLiveCounter``).
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal protocol LiveCounterUpdate: Sendable {
+internal protocol LiveCounterUpdate: LiveObjectUpdatePayload {
     /// Holds the numerical change to the counter value.
     var amount: Double { get }
 }

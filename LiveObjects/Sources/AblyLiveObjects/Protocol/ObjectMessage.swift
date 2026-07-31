@@ -497,6 +497,291 @@ internal extension ProtocolTypes.ObjectState {
     }
 }
 
+// MARK: - PAOM3: wire (protocol) -> public conversion
+
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+internal extension ProtocolTypes.InboundObjectMessage {
+    /// Builds the user-facing ``ObjectMessage`` (PAOM) from this inbound message, per PAOM3.
+    ///
+    /// Returns `nil` unless the message carries an operation with a *known* action (PAOM3a1): a
+    /// message with no operation is not surfaced, and an unknown wire action must never surface
+    /// publicly (there is no `UNKNOWN` case in the public ``ObjectOperationAction``; DEV-5). Callers
+    /// only pass op-bearing, non-sync messages (sync-originated updates carry `nil`, RTO4b2a).
+    ///
+    /// - Parameter channelName: the name of the channel the message was received on (PAOM2e/PAOM3b).
+    func toPublicObjectMessage(channelName: String) -> ObjectMessage? {
+        // PAOM3a1: precondition — the source message must carry an operation with a known action.
+        guard let operation, let publicOperation = operation.toPublicObjectOperation() else {
+            return nil
+        }
+
+        return .init(
+            id: id, // PAOM2a
+            clientId: clientId, // PAOM2b
+            connectionId: connectionId, // PAOM2c
+            timestamp: timestamp, // PAOM2d
+            channel: channelName, // PAOM2e, PAOM3b
+            operation: publicOperation, // PAOM2f
+            serial: serial, // PAOM2g
+            serialTimestamp: serialTimestamp, // PAOM2h
+            siteCode: siteCode, // PAOM2i
+            extras: extras, // PAOM2j
+        )
+    }
+}
+
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+internal extension ProtocolTypes.ObjectOperation {
+    /// Converts this operation to the public ``ObjectOperation`` (PAOOP), resolving the outbound-only
+    /// `*CreateWithObjectId` variants back to their derived create payloads (PAOOP3b/PAOOP3c).
+    ///
+    /// Returns `nil` for an unknown wire action, which must never surface publicly (DEV-5).
+    func toPublicObjectOperation() -> ObjectOperation? {
+        // PAOOP2a: an unknown action has no public representation.
+        guard case let .known(action) = action else {
+            return nil
+        }
+
+        let publicAction: ObjectOperationAction = switch action {
+        case .mapCreate:
+            .mapCreate
+        case .mapSet:
+            .mapSet
+        case .mapRemove:
+            .mapRemove
+        case .counterCreate:
+            .counterCreate
+        case .counterInc:
+            .counterInc
+        case .objectDelete:
+            .objectDelete
+        case .mapClear:
+            .mapClear
+        }
+
+        // PAOOP3b: prefer mapCreate, else the MapCreate the WithObjectId variant was derived from.
+        let resolvedMapCreate = mapCreate ?? mapCreateWithObjectId?.derivedFrom
+        // PAOOP3c: prefer counterCreate, else the derived CounterCreate.
+        let resolvedCounterCreate = counterCreate ?? counterCreateWithObjectId?.derivedFrom
+
+        return .init(
+            action: publicAction, // PAOOP2a
+            objectId: objectId, // PAOOP2b
+            mapCreate: resolvedMapCreate?.toPublicMapCreate(), // PAOOP2c/PAOOP3b
+            mapSet: mapSet.map { .init(key: $0.key, value: $0.value?.toPublicObjectData() ?? .init()) }, // PAOOP2d
+            mapRemove: mapRemove.map { .init(key: $0.key) }, // PAOOP2e
+            counterCreate: resolvedCounterCreate.map { .init(count: $0.count?.doubleValue ?? 0) }, // PAOOP2f/PAOOP3c
+            counterInc: counterInc.map { .init(number: $0.number.doubleValue) }, // PAOOP2g
+            objectDelete: objectDelete.map { _ in .init() }, // PAOOP2h
+            mapClear: mapClear.map { _ in .init() }, // PAOOP2i
+        )
+    }
+}
+
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+internal extension ProtocolTypes.MapCreate {
+    func toPublicMapCreate() -> MapCreate {
+        // The public `ObjectsMapSemantics` has only `.lww` (unknown semantics are dropped, a recorded
+        // deviation), so every map surfaces as `.lww`.
+        .init(
+            semantics: .lww, // MCR2a
+            entries: entries?.mapValues { $0.toPublicObjectsMapEntry() } ?? [:], // MCR2b
+        )
+    }
+}
+
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+internal extension ProtocolTypes.ObjectsMapEntry {
+    func toPublicObjectsMapEntry() -> ObjectsMapEntry {
+        .init(
+            tombstone: tombstone, // OME2a
+            timeserial: timeserial, // OME2b
+            serialTimestamp: serialTimestamp, // OME2d
+            data: data?.toPublicObjectData(), // OME2c
+        )
+    }
+}
+
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+internal extension ProtocolTypes.ObjectData {
+    /// Converts internal (decoded) object data to the public ``ObjectData`` (OD2). The public shape
+    /// exposes decoded binary directly and has no `encoding`; `number` is a `Double` and `json` is a
+    /// raw JSON string.
+    func toPublicObjectData() -> ObjectData {
+        .init(
+            objectId: objectId, // OD2a
+            encoding: nil, // OD2b — internal data is already decoded
+            boolean: boolean, // OD2c
+            bytes: bytes, // OD2d
+            number: number?.doubleValue, // OD2e
+            string: string, // OD2f
+            json: json?.toJSONString, // OD2g
+        )
+    }
+}
+
+// MARK: - Message size calculation (OM3, OOP4, OST3, OD3)
+
+// The size algorithm below is a direct port of ably-java's `WireObjectMessage.size()`
+// (io.ably.lib.liveobjects.message). It is implemented on the `ProtocolTypes` (non-wire) types
+// rather than on `OutboundWireObjectMessage` because ably-java's algorithm depends on the
+// `MapCreate`/`CounterCreate` retained in `mapCreateWithObjectId`/`counterCreateWithObjectId`
+// (RTLMV4j5 / RTLCV4g5), which ably-java keeps as `@Transient` fields on its wire type but which
+// our `toWire(...)` conversion deliberately drops. Those payloads survive only on the
+// `ProtocolTypes` types, which is also exactly what `nosync_publish` carries.
+//
+// Note on string measurement, mirrored byte-for-byte from ably-java (which is not internally
+// consistent, and in places diverges from the spec's "length" wording):
+//   - `clientId`, `MapCreate`/`MapSet`/`MapRemove` keys and `ObjectData.string`/`json` are
+//     measured as their UTF-8 byte length (`String.byteSize` in ably-java).
+//   - `extras` (OM3d) and `ObjectsMap` entry keys (OMP4a1) are measured as their UTF-16 length
+//     (`String.length` in ably-java).
+// For ASCII these coincide; they differ only for non-ASCII text.
+
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+internal extension ProtocolTypes.OutboundObjectMessage {
+    /// The size of this `ObjectMessage` in bytes, calculated per OM3. Used by RTO15d to enforce `maxMessageSize`.
+    var size: Int {
+        // OM3a: sum of the sizes of the clientId, operation, object and extras properties.
+        let clientIdSize = clientId?.utf8.count ?? 0 // OM3f (ably-java: UTF-8 byte length)
+        let operationSize = operation?.size ?? 0 // OM3b, OOP4
+        let objectSize = object?.size ?? 0 // OM3c, OST3
+        // OM3d: the string length of the JSON representation of `extras` (ably-java: UTF-16 length).
+        let extrasSize = extras.map { JSONObjectOrArray.object($0).toJSONString.utf16.count } ?? 0
+        // OM3e: a null or omitted property contributes zero.
+        return clientIdSize + operationSize + objectSize + extrasSize
+    }
+}
+
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+internal extension ProtocolTypes.ObjectOperation {
+    /// The size of this `ObjectOperation` in bytes, calculated per OOP4.
+    var size: Int {
+        // OOP4h: map create component — `mapCreate`, else the `MapCreate` retained in `mapCreateWithObjectId`, else zero.
+        let mapCreateSize = mapCreate?.size ?? mapCreateWithObjectId?.derivedFrom?.size ?? 0 // OOP4h1, OOP4h2, OOP4h3
+        let mapSetSize = mapSet?.size ?? 0 // OOP4i, MST3
+        let mapRemoveSize = mapRemove?.size ?? 0 // OOP4j, MRM3
+        // OOP4k: counter create component — `counterCreate`, else the `CounterCreate` retained in `counterCreateWithObjectId`, else zero.
+        let counterCreateSize = counterCreate?.size ?? counterCreateWithObjectId?.derivedFrom?.size ?? 0 // OOP4k1, OOP4k2, OOP4k3
+        let counterIncSize = counterInc?.size ?? 0 // OOP4l, CIN3
+        // OOP4g / OOP4f: sum of the components; a null or omitted property contributes zero.
+        return mapCreateSize + mapSetSize + mapRemoveSize + counterCreateSize + counterIncSize
+    }
+}
+
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+internal extension ProtocolTypes.ObjectState {
+    /// The size of this `ObjectState` in bytes, calculated per OST3.
+    var size: Int {
+        let mapSize = map?.size ?? 0 // OST3b, OMP4
+        let counterSize = counter?.size ?? 0 // OST3c, OCN3
+        let createOpSize = createOp?.size ?? 0 // OST3d, OOP4
+        // OST3a / OST3e: sum of the properties; a null or omitted property contributes zero.
+        return mapSize + counterSize + createOpSize
+    }
+}
+
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+internal extension ProtocolTypes.MapCreate {
+    /// The size of this `MapCreate` in bytes, calculated per MCR3.
+    var size: Int {
+        // MCR3a: sum over entries of the key size plus the entry size. ably-java measures the key
+        // as its UTF-8 byte length here (diverging from MCR3a1's "length" wording); mirrored as-is.
+        entries?.reduce(0) { $0 + $1.key.utf8.count + $1.value.size } ?? 0 // MCR3a1, MCR3a2, MCR3b
+    }
+}
+
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+internal extension ProtocolTypes.MapSet {
+    /// The size of this `MapSet` in bytes, calculated per MST3.
+    var size: Int {
+        // MST3a: sum of the key and value sizes. ably-java measures the key as its UTF-8 byte length.
+        key.utf8.count + (value?.size ?? 0) // MST3b (OD3), MST3c, MST3d
+    }
+}
+
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+internal extension ProtocolTypes.ObjectsMap {
+    /// The size of this `ObjectsMap` in bytes, calculated per OMP4.
+    var size: Int {
+        // OMP4a: sum over entries of the key size plus the entry size. Per OMP4a1 (and ably-java) the
+        // key is measured as its length; ably-java uses `String.length`, i.e. the UTF-16 length.
+        entries?.reduce(0) { $0 + $1.key.utf16.count + $1.value.size } ?? 0 // OMP4a1, OMP4a2, OMP4b
+    }
+}
+
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+internal extension ProtocolTypes.ObjectsMapEntry {
+    /// The size of this `ObjectsMapEntry` in bytes, calculated per OME3.
+    var size: Int {
+        // OME3a, OME3b: equal to the size of the `data` property (OD3). OME3c: null/omitted is zero.
+        data?.size ?? 0
+    }
+}
+
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+internal extension ProtocolTypes.ObjectData {
+    /// The size of this `ObjectData` in bytes, calculated per OD3.
+    var size: Int {
+        // OD3: ably-java returns the size of the first present leaf, checked in this order.
+        if let string {
+            return string.utf8.count // OD3e (ably-java: UTF-8 byte length)
+        }
+        if number != nil {
+            return 8 // OD3d
+        }
+        if boolean != nil {
+            return 1 // OD3b
+        }
+        if let bytes {
+            return bytes.count // OD3c (actual binary length, not the base64 representation)
+        }
+        if let json {
+            return json.toJSONString.utf8.count // OD3g (byte length of the JSON-encoded string)
+        }
+        return 0 // OD3f
+    }
+}
+
+// The following four types are shared between the wire and non-wire models, so their size
+// calculations live here alongside the rest of the OM3 algorithm.
+
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+internal extension WireMapRemove {
+    /// The size of this `MapRemove` in bytes, calculated per MRM3.
+    var size: Int {
+        // MRM3a: the string length of the `key` property. ably-java measures it as its UTF-8 byte length.
+        key.utf8.count
+    }
+}
+
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+internal extension WireCounterCreate {
+    /// The size of this `CounterCreate` in bytes, calculated per CCR3.
+    var size: Int {
+        // ably-java returns 8 unconditionally here (a `Double` is 8 bytes), i.e. it does not apply
+        // CCR3b's "0 if count is null" — mirrored as-is for byte-for-byte parity with ably-java.
+        8 // CCR3a
+    }
+}
+
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+internal extension WireCounterInc {
+    /// The size of this `CounterInc` in bytes, calculated per CIN3.
+    var size: Int {
+        8 // CIN3a (`number` is always present on our type; a number is 8 bytes)
+    }
+}
+
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+internal extension WireObjectsCounter {
+    /// The size of this `ObjectsCounter` in bytes, calculated per OCN3.
+    var size: Int {
+        // OCN3a: 8 if `count` is a number. OCN3b: 0 if `count` is null or omitted.
+        count != nil ? 8 : 0
+    }
+}
+
 // MARK: - CustomDebugStringConvertible
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)

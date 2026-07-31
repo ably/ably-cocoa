@@ -43,6 +43,58 @@ internal final class InternalDefaultLiveMap: Sendable {
         }
     }
 
+    // MARK: - Test-only setters
+
+    /// Test-only setter for `siteTimeserials`, executing on the internal queue.
+    internal func testsOnly_setSiteTimeserials(_ siteTimeserials: [String: String]) {
+        mutableStateMutex.withSync { mutableState in
+            mutableState.liveObjectMutableState.siteTimeserials = siteTimeserials
+        }
+    }
+
+    /// Test-only setter for `tombstonedAt`, executing on the internal queue.
+    internal func testsOnly_setTombstonedAt(_ tombstonedAt: Date?) {
+        mutableStateMutex.withSync { mutableState in
+            mutableState.liveObjectMutableState.tombstonedAt = tombstonedAt
+        }
+    }
+
+    /// Test-only setter for `createOperationIsMerged`, executing on the internal queue.
+    internal func testsOnly_setCreateOperationIsMerged(_ createOperationIsMerged: Bool) {
+        mutableStateMutex.withSync { mutableState in
+            mutableState.liveObjectMutableState.createOperationIsMerged = createOperationIsMerged
+        }
+    }
+
+    /// Test-only setter for `clearTimeserial`, executing on the internal queue.
+    internal func testsOnly_setClearTimeserial(_ clearTimeserial: String?) {
+        mutableStateMutex.withSync { mutableState in
+            mutableState.clearTimeserial = clearTimeserial
+        }
+    }
+
+    internal var testsOnly_parentReferences: [String: Set<String>] {
+        mutableStateMutex.withSync { mutableState in
+            mutableState.liveObjectMutableState.parentReferences
+        }
+    }
+
+    /// Test-only setter for `parentReferences`, executing on the internal queue.
+    internal func testsOnly_setParentReferences(_ parentReferences: [String: Set<String>]) {
+        mutableStateMutex.withSync { mutableState in
+            mutableState.liveObjectMutableState.parentReferences = parentReferences
+        }
+    }
+
+    /// Test-only accessor for `getFullPaths` that hops onto the internal queue. It dispatches to the
+    /// queue (rather than holding this object's mutex) so the pool DFS can read every object's
+    /// `parentReferences` independently.
+    internal func testsOnly_getFullPaths(objectsPool: ObjectsPool) -> [[String]] {
+        mutableStateMutex.dispatchQueue.ably_syncNoDeadlock {
+            objectsPool.nosync_getFullPaths(forObjectID: nosync_objectID)
+        }
+    }
+
     private let logger: Logger
     private let userCallbackQueue: DispatchQueue
     private let clock: SimpleClock
@@ -341,15 +393,17 @@ internal final class InternalDefaultLiveMap: Sendable {
 
     /// Attempts to apply an operation from an inbound `ObjectMessage`, per RTLM15.
     ///
-    /// - Returns: `true` if the operation was applied, `false` if it was skipped (RTLM15g).
+    /// - Returns: The update that was emitted if the operation was applied (which may be `.noop`), or `nil` if the operation was skipped (RTLM15g).
+    @discardableResult
     internal func nosync_apply(
         _ operation: ProtocolTypes.ObjectOperation,
         source: ObjectsOperationSource,
         objectMessageSerial: String?,
         objectMessageSiteCode: String?,
         objectMessageSerialTimestamp: Date?,
+        sourceObjectMessage: ObjectMessage? = nil,
         objectsPool: inout ObjectsPool,
-    ) -> Bool {
+    ) -> LiveObjectUpdate<DefaultLiveMapUpdate>? {
         mutableStateMutex.withoutSync { mutableState in
             mutableState.apply(
                 operation,
@@ -357,12 +411,21 @@ internal final class InternalDefaultLiveMap: Sendable {
                 objectMessageSerial: objectMessageSerial,
                 objectMessageSiteCode: objectMessageSiteCode,
                 objectMessageSerialTimestamp: objectMessageSerialTimestamp,
+                sourceObjectMessage: sourceObjectMessage,
                 objectsPool: &objectsPool,
                 logger: logger,
                 internalQueue: mutableStateMutex.dispatchQueue,
                 userCallbackQueue: userCallbackQueue,
                 clock: clock,
             )
+        }
+    }
+
+    /// Deregisters all of this map's subscriptions, per the RTLO4b4c3c tombstone teardown.
+    /// Used by the deferred (sync) emission path after emitting a tombstone update.
+    internal func nosync_deregisterSubscriptionsForTombstone() {
+        mutableStateMutex.withoutSync { mutableState in
+            mutableState.liveObjectMutableState.unsubscribeAll()
         }
     }
 
@@ -392,12 +455,13 @@ internal final class InternalDefaultLiveMap: Sendable {
     /// Applies a `MAP_REMOVE` operation to a key, per RTLM8.
     ///
     /// This is currently exposed just so that the tests can test RTLM8 without having to go through a convoluted replaceData(…) call, but I _think_ that it's going to be used in further contexts when we introduce the handling of incoming object operations in a future spec PR.
-    internal func testsOnly_applyMapRemoveOperation(key: String, operationTimeserial: String?, operationSerialTimestamp: Date?) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
+    internal func testsOnly_applyMapRemoveOperation(key: String, operationTimeserial: String?, operationSerialTimestamp: Date?, objectsPool: ObjectsPool) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
         mutableStateMutex.withSync { mutableState in
             mutableState.applyMapRemoveOperation(
                 key: key,
                 operationTimeserial: operationTimeserial,
                 operationSerialTimestamp: operationSerialTimestamp,
+                objectsPool: objectsPool,
                 logger: logger,
                 clock: clock,
             )
@@ -405,18 +469,45 @@ internal final class InternalDefaultLiveMap: Sendable {
     }
 
     /// Test-only method to apply a MAP_CLEAR operation, per RTLM24.
-    internal func testsOnly_applyMapClearOperation(serial: String?) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
+    internal func testsOnly_applyMapClearOperation(serial: String?, objectsPool: ObjectsPool) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
         mutableStateMutex.withSync { mutableState in
             mutableState.applyMapClearOperation(
                 serial: serial,
+                objectsPool: objectsPool,
             )
         }
     }
 
+    /// Test-only wrapper over the RTLM14 `nosync_isEntryTombstoned` helper.
+    ///
+    /// This is a pure function of its arguments, so it does not need to execute on the internal queue.
+    internal func testsOnly_isEntryTombstoned(_ entry: InternalObjectsMapEntry, objectsPool: ObjectsPool) -> Bool {
+        MutableState.nosync_isEntryTombstoned(entry, objectsPool: objectsPool)
+    }
+
     /// Resets the map's data, per RTO4b2. This is to be used when an `ATTACHED` ProtocolMessage indicates that the only object in a channel is an empty root map.
-    internal func nosync_resetData() {
+    /// - Returns: The keys reported as `removed` by the emitted update (see
+    ///   `MutableState.resetData`); used by the RTO4b reset path to fan out to path subscriptions.
+    @discardableResult
+    internal func nosync_resetData() -> [String] {
         mutableStateMutex.withoutSync { mutableState in
             mutableState.resetData(userCallbackQueue: userCallbackQueue)
+        }
+    }
+
+    /// RTO27a1: Clears this map's data to its zero value (an empty map) **without emitting any
+    /// update event**, and drops the parent references it holds on its referenced children
+    /// (RTLO4e9) so the parent-reference graph stays consistent once the data is gone.
+    ///
+    /// Used by the RTO27a DETACHED/FAILED channel-state clear. Unlike ``nosync_resetData`` (the
+    /// RTO4b reset) it emits no event, and the object itself remains in the pool.
+    internal func nosync_clearDataToZeroValue(objectsPool: ObjectsPool) {
+        mutableStateMutex.withoutSync { mutableState in
+            // RTLO4e9: drop the parent references this map holds on its referenced children, so
+            // those children no longer record this map as a parent once its data is cleared.
+            mutableState.nosync_dropHeldParentReferences(objectsPool: objectsPool)
+            // RTLM4: reset the map's data to the zero value (empty map, nil clearTimeserial).
+            mutableState.resetDataToZeroValued()
         }
     }
 
@@ -455,6 +546,55 @@ internal final class InternalDefaultLiveMap: Sendable {
         mutableStateMutex.withSync { mutableState in
             mutableState.liveObjectMutableState.tombstonedAt
         }
+    }
+
+    // MARK: - Parent-reference graph (RTLO3f)
+
+    /// The object's RTLO3f `parentReferences`, accessed on the internal queue.
+    internal var nosync_parentReferences: [String: Set<String>] {
+        mutableStateMutex.withoutSync { mutableState in
+            mutableState.liveObjectMutableState.parentReferences
+        }
+    }
+
+    /// Records that the map identified by `parentObjectID` references this object at `key`, per RTLO4g.
+    internal func nosync_addParentReference(parentObjectID: String, key: String) {
+        mutableStateMutex.withoutSync { mutableState in
+            mutableState.nosync_addParentReference(parentObjectID: parentObjectID, key: key)
+        }
+    }
+
+    /// Removes the recorded reference from the map identified by `parentObjectID` at `key`, per RTLO4h.
+    internal func nosync_removeParentReference(parentObjectID: String, key: String) {
+        mutableStateMutex.withoutSync { mutableState in
+            mutableState.nosync_removeParentReference(parentObjectID: parentObjectID, key: key)
+        }
+    }
+
+    /// Resets `parentReferences` to an empty map, per RTO5c10a.
+    internal func nosync_clearParentReferences() {
+        mutableStateMutex.withoutSync { mutableState in
+            mutableState.nosync_clearParentReferences()
+        }
+    }
+
+    /// Computes all key-paths from root to this object, per RTLO4f. Delegates to the pool DFS,
+    /// reading only this object's `objectID` up front so no mutex is held across the traversal.
+    internal func nosync_getFullPaths(objectsPool: ObjectsPool) -> [[String]] {
+        objectsPool.nosync_getFullPaths(forObjectID: nosync_objectID)
+    }
+
+    /// The raw internal data map, accessed on the internal queue. Used by the RTO5c10 rebuild.
+    internal var nosync_rawData: [String: InternalObjectsMapEntry] {
+        mutableStateMutex.withoutSync { mutableState in
+            mutableState.data
+        }
+    }
+
+    /// Returns whether a map entry should be considered tombstoned, per RTLM14. Used by the
+    /// RTO5c10 rebuild; a pure function of its arguments, so it does not need the internal queue.
+    internal static func nosync_isEntryTombstoned(_ entry: InternalObjectsMapEntry, objectsPool: ObjectsPool) -> Bool {
+        MutableState.nosync_isEntryTombstoned(entry, objectsPool: objectsPool)
     }
 
     // MARK: - Mutable state and the operations that affect it
@@ -496,7 +636,18 @@ internal final class InternalDefaultLiveMap: Sendable {
 
             // RTLM6f: Tombstone if state indicates tombstoned
             if state.tombstone {
+                // RTLO4e10: the root object must never be tombstoned — an ObjectState with
+                // tombstone set for `root` is a faulty message. Log and return a noop update
+                // without performing any of the subsequent RTLO4e steps.
+                if liveObjectMutableState.objectID == ObjectsPool.rootKey {
+                    logger.log("Ignoring ObjectState tombstone targeting the root object (RTLO4e10)", level: .warn)
+                    return .noop
+                }
+
                 let dataBeforeTombstoning = data
+
+                // RTLO4e9: drop the parent references this map holds on its referenced children
+                nosync_dropHeldParentReferences(objectsPool: objectsPool)
 
                 tombstone(
                     objectMessageSerialTimestamp: objectMessageSerialTimestamp,
@@ -505,8 +656,13 @@ internal final class InternalDefaultLiveMap: Sendable {
                     userCallbackQueue: userCallbackQueue,
                 )
 
-                // RTLM6f1
-                return .update(.init(update: dataBeforeTombstoning.mapValues { _ in .removed }))
+                // RTLM6f1. Sync-originated (RTO4b2a) so objectMessage stays nil; tombstone drives
+                // the RTLO4b4c3c teardown when the deferred update is emitted.
+                // RTLO4e5/RTLM22b: the update is the diff between the pre-tombstone data and the
+                // now-cleared data, which considers only NON-tombstoned entries. Entries that were
+                // already tombstoned were not visible to subscribers, so they must not be reported
+                // as newly `removed`.
+                return .update(.init(update: dataBeforeTombstoning.filter { !$0.value.tombstone }.mapValues { _ in .removed }, tombstone: true))
             }
 
             // RTLM6g: Store the current data value as previousData for use in RTLM6h
@@ -579,6 +735,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                             key: key,
                             operationTimeserial: entry.timeserial,
                             operationSerialTimestamp: entry.serialTimestamp,
+                            objectsPool: objectsPool,
                             logger: logger,
                             clock: clock,
                         )
@@ -630,16 +787,17 @@ internal final class InternalDefaultLiveMap: Sendable {
             objectMessageSerial: String?,
             objectMessageSiteCode: String?,
             objectMessageSerialTimestamp: Date?,
+            sourceObjectMessage: ObjectMessage?,
             objectsPool: inout ObjectsPool,
             logger: Logger,
             internalQueue: DispatchQueue,
             userCallbackQueue: DispatchQueue,
             clock: SimpleClock,
-        ) -> Bool {
+        ) -> LiveObjectUpdate<DefaultLiveMapUpdate>? {
             guard let applicableOperation = liveObjectMutableState.canApplyOperation(objectMessageSerial: objectMessageSerial, objectMessageSiteCode: objectMessageSiteCode, logger: logger) else {
                 // RTLM15b
                 logger.log("Operation \(operation) (serial: \(String(describing: objectMessageSerial)), siteCode: \(String(describing: objectMessageSiteCode))) should not be applied; discarding", level: .debug)
-                return false
+                return nil
             }
 
             // RTLM15c
@@ -650,7 +808,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             // RTLM15e
             // TODO: are we still meant to update siteTimeserials? https://github.com/ably/specification/pull/350/files#r2218718854
             if liveObjectMutableState.isTombstone {
-                return false
+                return nil
             }
 
             switch operation.action {
@@ -664,18 +822,16 @@ internal final class InternalDefaultLiveMap: Sendable {
                     userCallbackQueue: userCallbackQueue,
                     clock: clock,
                 )
-                // RTLM15d1a
-                liveObjectMutableState.emit(update, on: userCallbackQueue)
-                // RTLM15d1b
-                return true
+                // RTLM15d1a, RTLM15d1b: emit the enriched update (carrying the source message)
+                return nosync_emitAndTearDown(update, sourceObjectMessage: sourceObjectMessage, userCallbackQueue: userCallbackQueue)
             case .known(.mapSet):
                 guard let mapSet = operation.mapSet else {
                     logger.log("Could not apply MAP_SET since operation.mapSet is missing", level: .warn)
-                    return false
+                    return nil
                 }
                 guard let value = mapSet.value else {
                     logger.log("Could not apply MAP_SET since operation.mapSet.value is missing", level: .warn)
-                    return false
+                    return nil
                 }
 
                 // RTLM15d6
@@ -689,13 +845,11 @@ internal final class InternalDefaultLiveMap: Sendable {
                     userCallbackQueue: userCallbackQueue,
                     clock: clock,
                 )
-                // RTLM15d6a
-                liveObjectMutableState.emit(update, on: userCallbackQueue)
-                // RTLM15d6b
-                return true
+                // RTLM15d6a, RTLM15d6b
+                return nosync_emitAndTearDown(update, sourceObjectMessage: sourceObjectMessage, userCallbackQueue: userCallbackQueue)
             case .known(.mapRemove):
                 guard let mapRemove = operation.mapRemove else {
-                    return false
+                    return nil
                 }
 
                 // RTLM15d7
@@ -703,15 +857,25 @@ internal final class InternalDefaultLiveMap: Sendable {
                     key: mapRemove.key,
                     operationTimeserial: applicableOperation.objectMessageSerial,
                     operationSerialTimestamp: objectMessageSerialTimestamp,
+                    objectsPool: objectsPool,
                     logger: logger,
                     clock: clock,
                 )
-                // RTLM15d7a
-                liveObjectMutableState.emit(update, on: userCallbackQueue)
-                // RTLM15d7b
-                return true
+                // RTLM15d7a, RTLM15d7b
+                return nosync_emitAndTearDown(update, sourceObjectMessage: sourceObjectMessage, userCallbackQueue: userCallbackQueue)
             case .known(.objectDelete):
+                // RTLO4e10: the root object must never be tombstoned — an OBJECT_DELETE targeting
+                // `root` is a faulty message. Log and return a noop update without performing any
+                // of the subsequent RTLO4e steps.
+                if liveObjectMutableState.objectID == ObjectsPool.rootKey {
+                    logger.log("Ignoring OBJECT_DELETE targeting the root object (RTLO4e10)", level: .warn)
+                    return .noop
+                }
+
                 let dataBeforeApplyingOperation = data
+
+                // RTLO4e9: drop the parent references this map holds on its referenced children
+                nosync_dropHeldParentReferences(objectsPool: objectsPool)
 
                 // RTLM15d5
                 applyObjectDeleteOperation(
@@ -721,23 +885,24 @@ internal final class InternalDefaultLiveMap: Sendable {
                     userCallbackQueue: userCallbackQueue,
                 )
 
-                // RTLM15d5a
-                liveObjectMutableState.emit(.update(.init(update: dataBeforeApplyingOperation.mapValues { _ in .removed })), on: userCallbackQueue)
-                // RTLM15d5b
-                return true
+                // RTLM15d5a, RTLM15d5b: tombstone update drives the RTLO4b4c3c teardown.
+                // RTLO4e5/RTLM22b: diff considers only NON-tombstoned entries, so already-tombstoned
+                // entries (not visible to subscribers) must not be reported as newly `removed`.
+                let update: LiveObjectUpdate<DefaultLiveMapUpdate> = .update(.init(update: dataBeforeApplyingOperation.filter { !$0.value.tombstone }.mapValues { _ in .removed }, tombstone: true))
+                return nosync_emitAndTearDown(update, sourceObjectMessage: sourceObjectMessage, userCallbackQueue: userCallbackQueue)
             case .known(.mapClear):
                 // RTLM15d8
                 let update = applyMapClearOperation(
                     serial: applicableOperation.objectMessageSerial,
+                    objectsPool: objectsPool,
                 )
-                // RTLM15d8a
-                liveObjectMutableState.emit(update, on: userCallbackQueue)
-                // RTLM15d8b
-                return true
+                // RTLM15d8a, RTLM15d8b. MAP_CLEAR clears the map's data but does not tombstone the
+                // object (tombstone stays false), so no teardown.
+                return nosync_emitAndTearDown(update, sourceObjectMessage: sourceObjectMessage, userCallbackQueue: userCallbackQueue)
             default:
                 // RTLM15d4
                 logger.log("Operation \(operation) has unsupported action for LiveMap; discarding", level: .warn)
-                return false
+                return nil
             }
         }
 
@@ -762,6 +927,11 @@ internal final class InternalDefaultLiveMap: Sendable {
                 // RTLM7a1: If the operation cannot be applied as per RTLM9, discard the operation
                 if !Self.canApplyMapOperation(entryTimeserial: existingEntry.timeserial, operationTimeserial: operationTimeserial) {
                     return .noop
+                }
+                // RTLM7a3: drop the parent reference held via the entry being overwritten
+                if let oldRefId = existingEntry.data?.objectId {
+                    // RTLM7a3a, RTLM7a3b (with the DEV-15-class self-reference guard)
+                    nosync_removeParentReferenceGuardingSelfReference(onObjectWithID: oldRefId, key: key, objectsPool: objectsPool)
                 }
                 // RTLM7a2: Otherwise, apply the operation
                 // RTLM7a2e: Set ObjectsMapEntry.data to the MapSet.value
@@ -789,6 +959,9 @@ internal final class InternalDefaultLiveMap: Sendable {
                     userCallbackQueue: userCallbackQueue,
                     clock: clock,
                 )
+                // RTLM7g2: record the reverse reference for the newly referenced object
+                // (with the DEV-15-class self-reference guard)
+                nosync_addParentReferenceGuardingSelfReference(onObjectWithID: objectId, key: key, objectsPool: objectsPool)
             }
 
             // RTLM7f
@@ -796,7 +969,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         }
 
         /// Applies a `MAP_REMOVE` operation to a key, per RTLM8.
-        internal mutating func applyMapRemoveOperation(key: String, operationTimeserial: String?, operationSerialTimestamp: Date?, logger: Logger, clock: SimpleClock) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
+        internal mutating func applyMapRemoveOperation(key: String, operationTimeserial: String?, operationSerialTimestamp: Date?, objectsPool: ObjectsPool, logger: Logger, clock: SimpleClock) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
             // (Note that, where the spec tells us to set ObjectsMapEntry.data to nil, we actually set it to an empty ObjectData, which is equivalent, since it contains no data)
 
             // RTLM8g
@@ -821,6 +994,11 @@ internal final class InternalDefaultLiveMap: Sendable {
                 // RTLM8a1: If the operation cannot be applied as per RTLM9, discard the operation
                 if !Self.canApplyMapOperation(entryTimeserial: existingEntry.timeserial, operationTimeserial: operationTimeserial) {
                     return .noop
+                }
+                // RTLM8a3: drop the parent reference held via the entry being removed
+                if let oldRefId = existingEntry.data?.objectId {
+                    // RTLM8a3a, RTLM8a3b (with the DEV-15-class self-reference guard)
+                    nosync_removeParentReferenceGuardingSelfReference(onObjectWithID: oldRefId, key: key, objectsPool: objectsPool)
                 }
                 // RTLM8a2: Otherwise, apply the operation
                 // RTLM8a2a: Set ObjectsMapEntry.data to undefined/null
@@ -914,13 +1092,17 @@ internal final class InternalDefaultLiveMap: Sendable {
         /// Applies a `MAP_CLEAR` operation, per RTLM24.
         internal mutating func applyMapClearOperation(
             serial: String?,
+            objectsPool: ObjectsPool,
         ) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
             guard let serial else {
                 return .noop
             }
 
-            // RTLM24c
-            if let clearTimeserial, serial <= clearTimeserial {
+            // RTLM24c: discard only if the existing clearTimeserial is *strictly* (lexicographically)
+            // greater than the provided serial. On equality the operation is re-applied — note this
+            // differs from RTLM7h/RTLM8g (MAP_SET/MAP_REMOVE), which discard on `>=`. Using `<=` here
+            // would wrongly no-op a MAP_CLEAR whose serial equals clearTimeserial.
+            if let clearTimeserial, serial < clearTimeserial {
                 return .noop
             }
 
@@ -936,6 +1118,11 @@ internal final class InternalDefaultLiveMap: Sendable {
             }.keys
 
             for key in keysToRemove {
+                // RTLM24e1c: drop the parent reference held via the cleared entry
+                if let refId = data[key]?.data?.objectId {
+                    // RTLM24e1c1, RTLM24e1c2 (with the DEV-15-class self-reference guard)
+                    nosync_removeParentReferenceGuardingSelfReference(onObjectWithID: refId, key: key, objectsPool: objectsPool)
+                }
                 data.removeValue(forKey: key)
             }
 
@@ -944,15 +1131,44 @@ internal final class InternalDefaultLiveMap: Sendable {
             return .update(DefaultLiveMapUpdate(update: removedKeys))
         }
 
+        /// Drops the parent references this map holds on the objects referenced by its entries, per RTLO4e9.
+        /// Called before the map's data is cleared during tombstoning (RTLO4e4), so that the referenced
+        /// children no longer record this (now-tombstoned) map as a parent.
+        ///
+        /// `mutating` because a self-referencing entry mutates this map's own `parentReferences`
+        /// (via the DEV-15-class self-reference guard) rather than re-entering via the pool entry.
+        internal mutating func nosync_dropHeldParentReferences(objectsPool: ObjectsPool) {
+            for (key, entry) in data {
+                guard let refId = entry.data?.objectId else {
+                    continue
+                }
+                // RTLO4e9a, RTLO4e9b (with the DEV-15-class self-reference guard)
+                nosync_removeParentReferenceGuardingSelfReference(onObjectWithID: refId, key: key, objectsPool: objectsPool)
+            }
+        }
+
         /// Resets the map's data and emits a `removed` event for the existing keys, per RTO4b2 and RTO4b2a. This is to be used when an `ATTACHED` ProtocolMessage indicates that the only object in a channel is an empty root map.
-        internal mutating func resetData(userCallbackQueue: DispatchQueue) {
+        ///
+        /// - Returns: The keys reported as `removed` by the emitted update, so the caller can fan the
+        ///   reset out to path subscriptions (RTLO4b4c3b) after this map's mutex is released.
+        internal mutating func resetData(userCallbackQueue: DispatchQueue) -> [String] {
             // RTO4b2
             let previousData = data
             resetDataToZeroValued()
 
-            // RTO4b2a
-            let mapUpdate = DefaultLiveMapUpdate(update: previousData.mapValues { _ in .removed })
-            liveObjectMutableState.emit(.update(mapUpdate), on: userCallbackQueue)
+            // RTO4b2a: the update consists of entries for the keys that were removed. Per RTLM22b,
+            // only NON-tombstoned entries are user-visible, so already-tombstoned entries must not
+            // be reported as newly `removed`.
+            let mapUpdate = DefaultLiveMapUpdate(update: previousData.filter { !$0.value.tombstone }.mapValues { _ in .removed })
+            // DEV-44: skip the instance-subscription emit when nothing was removed. This mirrors
+            // Kotlin's single `notifyUpdated` noop gate (RTLO4b4c1), which collapses both instance
+            // and path dispatch together on an empty update, and matches the path-dispatch branch in
+            // `nosync_onChannelAttached` that already skips on an empty diff. Without this guard an
+            // already-empty root reset would fire a spurious instance event.
+            if !mapUpdate.update.isEmpty {
+                liveObjectMutableState.emit(.update(mapUpdate), on: userCallbackQueue)
+            }
+            return Array(mapUpdate.update.keys)
         }
 
         /// Needed for ``InternalLiveObject`` conformance.
@@ -1012,7 +1228,7 @@ internal final class InternalDefaultLiveMap: Sendable {
 
             // RTLM10d: Returns the number of non-tombstoned entries (per RTLM14) in the internal data map
             return data.values.count { entry in
-                !Self.nosync_isEntryTombstoned(entry, objectsPool: objectsPool)
+                !nosync_isEntryTombstonedGuardingSelfReference(entry, objectsPool: objectsPool)
             }
         }
 
@@ -1024,7 +1240,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             // RTLM11d1: Pairs with tombstoned entries (per RTLM14) are not returned
             var result: [(key: String, value: InternalLiveMapValue)] = []
 
-            for (key, entry) in data where !Self.nosync_isEntryTombstoned(entry, objectsPool: objectsPool) {
+            for (key, entry) in data where !nosync_isEntryTombstonedGuardingSelfReference(entry, objectsPool: objectsPool) {
                 // Convert entry to LiveMapValue using the same logic as get(key:)
                 if let value = nosync_convertEntryToLiveMapValue(entry, objectsPool: objectsPool) {
                     result.append((key: key, value: value))
@@ -1036,8 +1252,10 @@ internal final class InternalDefaultLiveMap: Sendable {
 
         // MARK: - Helper Methods
 
+        // Note: `fileprivate` (rather than `private`) so that the enclosing type's
+        // `testsOnly_isEntryTombstoned` wrapper can reach it; still not exposed outside this file.
         /// Returns whether a map entry should be considered tombstoned, per the check described in RTLM14.
-        private static func nosync_isEntryTombstoned(_ entry: InternalObjectsMapEntry, objectsPool: ObjectsPool) -> Bool {
+        fileprivate static func nosync_isEntryTombstoned(_ entry: InternalObjectsMapEntry, objectsPool: ObjectsPool) -> Bool {
             // RTLM14a
             if entry.tombstone {
                 return true
@@ -1052,6 +1270,58 @@ internal final class InternalDefaultLiveMap: Sendable {
 
             // RTLM14b
             return false
+        }
+
+        /// Instance-level RTLM14 tombstone check used by the read accessors (`get`/`size`/`entries`),
+        /// which run while this map's `mutableStateMutex` is exclusively held.
+        ///
+        /// It guards the RTLM14c *self-reference* case: if the entry references this very map,
+        /// delegating to the static helper would read the pool entry's `nosync_isTombstone`,
+        /// re-entering this map's already-held mutex — a Swift exclusive-access **crash** (the same
+        /// exclusivity class as DEV-15, the `getFullPaths` finding). In that case we answer the
+        /// tombstone question from the state already in hand. Kotlin has no exclusivity checker and
+        /// so needs no such guard; the observable behaviour is identical.
+        internal func nosync_isEntryTombstonedGuardingSelfReference(_ entry: InternalObjectsMapEntry, objectsPool: ObjectsPool) -> Bool {
+            // RTLM14a
+            if entry.tombstone {
+                return true
+            }
+            // RTLM14c self-reference guard (see doc comment).
+            if let objectId = entry.data?.objectId, objectId == liveObjectMutableState.objectID {
+                return liveObjectMutableState.isTombstone
+            }
+            // RTLM14b/RTLM14c for every other reference — safe to consult the pool.
+            return Self.nosync_isEntryTombstoned(entry, objectsPool: objectsPool)
+        }
+
+        /// Records a parent reference from this map on the object with ID `objectID` (RTLO4g),
+        /// guarding the *self-reference* case.
+        ///
+        /// If `objectID` is this map's own objectID, going through the pool entry
+        /// (`objectsPool.entries[objectID]?.nosync_addParentReference`) would re-enter this map's
+        /// already-held `mutableStateMutex` — a Swift exclusive-access **crash** (the same
+        /// exclusivity class as DEV-15, the `getFullPaths` finding). A self-parent is a legitimate
+        /// graph edge (the map referencing itself under a key), so we record it directly on the
+        /// state already in hand; `ObjectsPool.nosync_getFullPaths`'s per-branch visited set
+        /// (RTLO4f2) suppresses the resulting self-loop. Kotlin has no exclusivity checker and so
+        /// needs no such guard; the observable behaviour is identical.
+        private mutating func nosync_addParentReferenceGuardingSelfReference(onObjectWithID objectID: String, key: String, objectsPool: ObjectsPool) {
+            if objectID == liveObjectMutableState.objectID {
+                nosync_addParentReference(parentObjectID: objectID, key: key)
+            } else {
+                objectsPool.entries[objectID]?.nosync_addParentReference(parentObjectID: liveObjectMutableState.objectID, key: key)
+            }
+        }
+
+        /// Removes the parent reference this map holds on the object with ID `objectID` (RTLO4h),
+        /// guarding the *self-reference* case for the same reason as
+        /// ``nosync_addParentReferenceGuardingSelfReference(onObjectWithID:key:objectsPool:)``.
+        private mutating func nosync_removeParentReferenceGuardingSelfReference(onObjectWithID objectID: String, key: String, objectsPool: ObjectsPool) {
+            if objectID == liveObjectMutableState.objectID {
+                nosync_removeParentReference(parentObjectID: objectID, key: key)
+            } else {
+                objectsPool.entries[objectID]?.nosync_removeParentReference(parentObjectID: liveObjectMutableState.objectID, key: key)
+            }
         }
 
         /// Converts an InternalObjectsMapEntry to LiveMapValue using the same logic as get(key:)
@@ -1101,8 +1371,16 @@ internal final class InternalDefaultLiveMap: Sendable {
                     return nil
                 }
 
-                // RTLM5d2f3: If referenced object is tombstoned, return nil
-                if poolEntry.nosync_isTombstone {
+                // RTLM5d2f3: If referenced object is tombstoned, return nil.
+                // Self-reference guard: if the referenced object is this map itself, reading
+                // `poolEntry.nosync_isTombstone` would re-enter our already-held mutex — a Swift
+                // exclusive-access crash (same exclusivity class as DEV-15, the `getFullPaths`
+                // finding). Answer from the tombstone state already in hand. (Merely *reading* the
+                // `objectsPool.entries[objectId]` reference above does not enter the mutex.)
+                let referencedIsTombstoned = objectId == liveObjectMutableState.objectID
+                    ? liveObjectMutableState.isTombstone
+                    : poolEntry.nosync_isTombstone
+                if referencedIsTombstoned {
                     return nil
                 }
 

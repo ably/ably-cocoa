@@ -453,7 +453,7 @@ struct InternalDefaultLiveCounterTests {
                     objectsPool: &pool,
                 )
             }
-            #expect(!applied)
+            #expect(applied == nil)
 
             // Check that the COUNTER_INC side-effects didn't happen:
             // Verify the operation was discarded - data unchanged (should still be 5 from creation)
@@ -491,7 +491,7 @@ struct InternalDefaultLiveCounterTests {
                     objectsPool: &pool,
                 )
             }
-            #expect(applied)
+            #expect(applied != nil)
 
             // Verify the operation was applied - initial value merged (the full logic of RTLC8 is tested elsewhere; we just check for some of its side effects here)
             #expect(try counter.value(coreSDK: coreSDK) == 15)
@@ -542,7 +542,7 @@ struct InternalDefaultLiveCounterTests {
                     objectsPool: &pool,
                 )
             }
-            #expect(applied)
+            #expect(applied != nil)
 
             // Verify the operation was applied - amount added to data (the full logic of RTLC9 is tested elsewhere; we just check for some of its side effects here)
             #expect(try counter.value(coreSDK: coreSDK) == 15) // 5 + 10
@@ -579,7 +579,7 @@ struct InternalDefaultLiveCounterTests {
                     objectsPool: &pool,
                 )
             }
-            #expect(applied)
+            #expect(applied != nil)
 
             // Verify the operation was applied
             #expect(try counter.value(coreSDK: coreSDK) == 10)
@@ -611,7 +611,7 @@ struct InternalDefaultLiveCounterTests {
                     objectsPool: &pool,
                 )
             }
-            #expect(!applied)
+            #expect(applied == nil)
 
             // Check no update was emitted
             let subscriberInvocations = await subscriber.getInvocations()

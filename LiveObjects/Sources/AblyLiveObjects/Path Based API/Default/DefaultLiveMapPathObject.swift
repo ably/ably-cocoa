@@ -1,81 +1,107 @@
 import Ably
 
-/// Skeleton implementation of ``LiveMapPathObject``. Every member currently traps via
-/// `notImplemented()`; this is a standalone `final class` (no shared base) so that we don't commit to
-/// a particular implementation shape before the path-based API is actually built. `Sendable` is a
-/// checked conformance: the class holds no state.
+/// Default implementation of ``LiveMapPathObject`` (Kotlin `DefaultLiveMapPathObject`), adding map
+/// navigation and read/write operations on top of ``DefaultPathObject``.
+///
+/// Spec: `RTTS6a`.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal final class DefaultLiveMapPathObject: LiveMapPathObject, Sendable {
-    // MARK: - PathObject
+internal final class DefaultLiveMapPathObject: DefaultPathObject, LiveMapPathObject, @unchecked Sendable {
+    // MARK: - Navigation (RTPO5, RTPO6)
 
-    internal var path: String {
-        notImplemented()
+    internal func get(key: String) -> any PathObject {
+        // RTPO5c/RTPO5d — purely navigational, no resolution; returns the untyped base node (RTTS3h).
+        DefaultPathObject(channelObject: channelObject, coreSDK: coreSDK, internalQueue: internalQueue, path: PathSegments.appendKey(path, key: key))
     }
 
-    internal func instance() throws(ARTErrorInfo) -> Instance? {
-        notImplemented()
+    internal func at(path: String) -> any PathObject {
+        // RTPO6b/RTPO6c/RTPO6d — purely navigational, dot-delimited with backslash-escaped dots.
+        DefaultPathObject(channelObject: channelObject, coreSDK: coreSDK, internalQueue: internalQueue, path: PathSegments.appendPath(self.path, subPath: path))
     }
 
-    internal func compactJson() throws(ARTErrorInfo) -> JSONValue? {
-        notImplemented()
-    }
-
-    @discardableResult
-    internal func subscribe(options _: PathObjectSubscriptionOptions?, listener _: @escaping PathObjectSubscriptionCallback) throws(ARTErrorInfo) -> any Subscription {
-        notImplemented()
-    }
-
-    internal func exists() throws(ARTErrorInfo) -> Bool {
-        notImplemented()
-    }
-
-    internal func type() throws(ARTErrorInfo) -> ValueType? {
-        notImplemented()
-    }
-
-    internal func asLiveMap() -> any LiveMapPathObject {
-        notImplemented()
-    }
-
-    internal func asLiveCounter() -> any LiveCounterPathObject {
-        notImplemented()
-    }
-
-    internal func asPrimitive() -> any PrimitivePathObject {
-        notImplemented()
-    }
-
-    // MARK: - LiveMapPathObject
-
-    internal func get(key _: String) -> any PathObject {
-        notImplemented()
-    }
-
-    internal func at(path _: String) -> any PathObject {
-        notImplemented()
-    }
+    // MARK: - Reads (RTPO9, RTPO10, RTPO11, RTPO12)
 
     internal func entries() throws(ARTErrorInfo) -> [(key: String, value: any PathObject)] {
-        notImplemented()
+        try ChannelConfigGuards.throwIfInvalidAccessApiConfiguration(coreSDK: coreSDK, internalQueue: internalQueue) // RTPO9a
+        // RTPO9d — not a LiveMap (or unresolved) -> empty.
+        guard let mapNode = try resolvedMapNode() else {
+            return []
+        }
+        // RTPO9c — derive from the map's keys at call time; child paths as if by get().
+        return try mapNode.keys(coreSDK: coreSDK, delegate: channelObject).map { key in
+            (key: key, value: get(key: key))
+        }
     }
 
     internal func keys() throws(ARTErrorInfo) -> [String] {
-        notImplemented()
+        try ChannelConfigGuards.throwIfInvalidAccessApiConfiguration(coreSDK: coreSDK, internalQueue: internalQueue) // RTPO10a
+        // RTPO10d — not a LiveMap (or unresolved) -> empty.
+        guard let mapNode = try resolvedMapNode() else {
+            return []
+        }
+        // RTPO10c — via RTLM12.
+        return try mapNode.keys(coreSDK: coreSDK, delegate: channelObject)
     }
 
     internal func values() throws(ARTErrorInfo) -> [any PathObject] {
-        notImplemented()
+        try ChannelConfigGuards.throwIfInvalidAccessApiConfiguration(coreSDK: coreSDK, internalQueue: internalQueue) // RTPO11a
+        // RTPO11d — not a LiveMap (or unresolved) -> empty.
+        guard let mapNode = try resolvedMapNode() else {
+            return []
+        }
+        // RTPO11c — child paths as if by get().
+        return try mapNode.keys(coreSDK: coreSDK, delegate: channelObject).map { key in
+            get(key: key)
+        }
     }
 
     internal func size() throws(ARTErrorInfo) -> Int? {
-        notImplemented()
+        try ChannelConfigGuards.throwIfInvalidAccessApiConfiguration(coreSDK: coreSDK, internalQueue: internalQueue) // RTPO12a
+        // RTPO12d — not a LiveMap (or unresolved) -> nil.
+        guard let mapNode = try resolvedMapNode() else {
+            return nil
+        }
+        // RTPO12c — via RTLM10d.
+        return try mapNode.size(coreSDK: coreSDK, delegate: channelObject)
     }
 
-    internal func set(key _: String, value _: LiveMapValue) async throws(ARTErrorInfo) {
-        notImplemented()
+    // MARK: - Writes (RTPO15, RTPO16)
+
+    internal func set(key: String, value: LiveMapValue) async throws(ARTErrorInfo) {
+        try ChannelConfigGuards.throwIfInvalidWriteApiConfiguration(coreSDK: coreSDK, internalQueue: internalQueue) // RTPO15b / RTO26
+        // RTPO15c / RTPO3c2 — unresolved write path throws 92005.
+        guard let resolved = try resolveValueAtCurrentPath() else {
+            throw LiveObjectsError.pathNotResolved(path: path).toARTErrorInfo()
+        }
+        // RTPO15e — wrong-type write wrapper throws 92007.
+        guard case let .liveMap(mapInstance) = Instance.from(internalValue: resolved, coreSDK: coreSDK, realtimeObjects: channelObject, internalQueue: internalQueue) else {
+            throw LiveObjectsError.pathTypeMismatch(operationDescription: "Cannot set a key on a non-LiveMap object at path: \"\(path)\"").toARTErrorInfo()
+        }
+        // RTPO15d -> RTLM20 (via the instance layer, which materialises blueprint values).
+        try await mapInstance.set(key: key, value: value)
     }
 
-    internal func remove(key _: String) async throws(ARTErrorInfo) {
-        notImplemented()
+    internal func remove(key: String) async throws(ARTErrorInfo) {
+        try ChannelConfigGuards.throwIfInvalidWriteApiConfiguration(coreSDK: coreSDK, internalQueue: internalQueue) // RTPO16b / RTO26
+        // RTPO16c / RTPO3c2 — unresolved write path throws 92005.
+        guard let resolved = try resolveValueAtCurrentPath() else {
+            throw LiveObjectsError.pathNotResolved(path: path).toARTErrorInfo()
+        }
+        // RTPO16e — wrong-type write wrapper throws 92007.
+        guard case let .liveMap(mapInstance) = Instance.from(internalValue: resolved, coreSDK: coreSDK, realtimeObjects: channelObject, internalQueue: internalQueue) else {
+            throw LiveObjectsError.pathTypeMismatch(operationDescription: "Cannot remove a key from a non-LiveMap object at path: \"\(path)\"").toARTErrorInfo()
+        }
+        // RTPO16d -> RTLM21.
+        try await mapInstance.remove(key: key)
+    }
+
+    // MARK: - Helpers
+
+    /// Resolves the current path and narrows to the backing map node, or `nil` if the path is
+    /// unresolved or does not resolve to a map (RTPO9d/RTPO10d/RTPO11d/RTPO12d).
+    private func resolvedMapNode() throws(ARTErrorInfo) -> InternalDefaultLiveMap? {
+        guard let resolved = try resolveValueAtCurrentPath(), case let .liveMap(mapNode) = resolved else {
+            return nil
+        }
+        return mapNode
     }
 }

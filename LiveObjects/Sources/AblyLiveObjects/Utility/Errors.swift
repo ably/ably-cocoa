@@ -14,6 +14,22 @@ internal enum LiveObjectsError {
     case publishAndApplyFailedChannelStateChanged(channelState: _AblyPluginSupportPrivate.RealtimeChannelState, reason: ARTErrorInfo?)
     /// RTO11h3d, RTO12h3d: A newly created object was not found in the pool after `publishAndApply`.
     case newlyCreatedObjectNotInPool(objectID: String)
+    /// RTO15d: The total size of the `ObjectMessage`s to be published (calculated per OM3) exceeds the connection's `maxMessageSize`.
+    case maxMessageSizeExceeded(size: Int, maxSize: Int)
+    /// RTPO3c2: A write operation (`set`/`remove`/`increment`/`decrement`) was attempted on a path
+    /// that does not resolve to a value. Code 92005.
+    case pathNotResolved(path: String)
+    /// RTTS5d2/RTTS9d, RTPO15e/RTPO16e/RTPO17e/RTPO18e: A typed write wrapper (`asLiveMap`/
+    /// `asLiveCounter`) resolved to a value whose type does not match the wrapper. Code 92007.
+    case pathTypeMismatch(operationDescription: String)
+    /// RTO2a2/RTO2b2: The channel is missing a required channel mode (`object_subscribe` for reads,
+    /// `object_publish` for writes). Code 40024.
+    case channelModeRequired(mode: String)
+    /// RTO/DEV-7: The LiveObjects plugin is not configured on the client. Code 40019. (Reserved for
+    /// P5's plugin-missing decision; the code is landed here with the rest of the path-API error model.)
+    case pluginUnavailable
+    /// RTLMV4a/b, RTLCV4a, RTPO19c1a (depth validation): invalid input parameter. Code 40003.
+    case invalidInput(message: String)
     case other(Error)
 
     /// The ``ARTErrorInfo/code`` that should be returned for this error.
@@ -29,8 +45,45 @@ internal enum LiveObjectsError {
             .unableToApplyObjectsOperationSyncDidNotComplete
         case .newlyCreatedObjectNotInPool:
             .internalError
-        case .other:
+        case .maxMessageSizeExceeded:
+            // RTO15d
+            .maxMessageLengthExceeded
+        case .pathNotResolved,
+             .pathTypeMismatch,
+             .channelModeRequired,
+             .pluginUnavailable,
+             .invalidInput,
+             .other:
+            // These path-API codes are not part of core `ARTErrorCode`; the real numeric code is
+            // supplied by `numericCode` (plan matrix #19: raw-int `ARTErrorInfo` from the plugin, no
+            // core `ARTStatus.h` change). `.badRequest` is only a placeholder for the `code` switch.
             .badRequest
+        }
+    }
+
+    /// The numeric error code returned to callers. Most cases derive from ``code``; the path-based
+    /// public-API codes (92005/92007/40024/40019/40003) are absent from core `ARTErrorCode` and are
+    /// returned as raw integers per plan matrix #19.
+    internal var numericCode: Int {
+        switch self {
+        case .pathNotResolved:
+            92005 // RTPO3c2
+        case .pathTypeMismatch:
+            92007 // RTTS5d2/RTTS9d
+        case .channelModeRequired:
+            40024 // RTO2a2/RTO2b2
+        case .pluginUnavailable:
+            40019 // DEV-7
+        case .invalidInput:
+            40003 // RTLMV4a/RTPO19c1a
+        case .objectsOperationFailedInvalidChannelState,
+             .counterInitialValueInvalid,
+             .counterIncrementAmountInvalid,
+             .publishAndApplyFailedChannelStateChanged,
+             .newlyCreatedObjectNotInPool,
+             .maxMessageSizeExceeded,
+             .other:
+            Int(code.rawValue)
         }
     }
 
@@ -41,6 +94,12 @@ internal enum LiveObjectsError {
              .counterInitialValueInvalid,
              .counterIncrementAmountInvalid,
              .publishAndApplyFailedChannelStateChanged,
+             .maxMessageSizeExceeded,
+             .pathNotResolved,
+             .pathTypeMismatch,
+             .channelModeRequired,
+             .pluginUnavailable,
+             .invalidInput,
              .other:
             400
         case .newlyCreatedObjectNotInPool:
@@ -62,6 +121,23 @@ internal enum LiveObjectsError {
             "operation could not be applied locally: channel entered \(channelState) state whilst waiting for objects sync to complete"
         case let .newlyCreatedObjectNotInPool(objectID: objectID):
             "Newly created object \(objectID) not found in pool after publishAndApply"
+        case let .maxMessageSizeExceeded(size: size, maxSize: maxSize):
+            // RTO15d - matches the message format used by ably-java
+            "ObjectMessages size \(size) exceeds maximum allowed size of \(maxSize) bytes"
+        case let .pathNotResolved(path: path):
+            // RTPO3c2
+            "Path could not be resolved: \"\(path)\""
+        case let .pathTypeMismatch(operationDescription: operationDescription):
+            // RTTS5d2/RTTS9d
+            operationDescription
+        case let .channelModeRequired(mode: mode):
+            // RTO2a2/RTO2b2
+            "\"\(mode)\" channel mode must be set for this operation"
+        case .pluginUnavailable:
+            // DEV-7
+            "The LiveObjects plugin is not configured on this client"
+        case let .invalidInput(message: message):
+            message
         case let .other(error):
             "\(error)"
         }
@@ -77,6 +153,12 @@ internal enum LiveObjectsError {
              .counterInitialValueInvalid,
              .counterIncrementAmountInvalid,
              .newlyCreatedObjectNotInPool,
+             .maxMessageSizeExceeded,
+             .pathNotResolved,
+             .pathTypeMismatch,
+             .channelModeRequired,
+             .pluginUnavailable,
+             .invalidInput,
              .other:
             nil
         }
@@ -90,7 +172,7 @@ internal enum LiveObjectsError {
         }
 
         return ARTErrorInfo.create(
-            withCode: Int(code.rawValue),
+            withCode: numericCode,
             status: statusCode,
             message: localizedDescription,
             additionalUserInfo: userInfo,
@@ -136,13 +218,6 @@ extension WireValueDecodingError: ConvertibleToLiveObjectsError {
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 extension WireValue.ConversionError: ConvertibleToLiveObjectsError {
-    internal func toLiveObjectsError() -> LiveObjectsError {
-        .other(self)
-    }
-}
-
-@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-extension SyncCursor.Error: ConvertibleToLiveObjectsError {
     internal func toLiveObjectsError() -> LiveObjectsError {
         .other(self)
     }

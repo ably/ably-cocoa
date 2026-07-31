@@ -20,6 +20,17 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
         self.pluginAPI = pluginAPI
     }
 
+    // Dispose lifecycle (matrix #18): Kotlin's `DefaultLiveObjectsPlugin` exposes
+    // `dispose(channelName)` / `dispose()`, which ably-java calls from its channel/client teardown to
+    // dispose the per-channel `DefaultRealtimeObject`. ably-cocoa's plugin SPI
+    // (`LiveObjectsInternalPluginProtocol`) has **no dispose / channel-release callback** — the core
+    // SDK never notifies the plugin that a channel or client is being released. So there is no
+    // analogue to wire here: the per-channel `InternalDefaultRealtimeObjects` is stored as the
+    // channel's plugin-data value, and its teardown (`InternalDefaultRealtimeObjects.dispose()`) runs
+    // from its `deinit` when the channel releases that value (ARC). Landing an explicit,
+    // deterministic plugin-level dispose would need a new plugin-protocol method (a user-gated core
+    // change; DEV-38 precedent).
+
     // MARK: - Channel `objects` property
 
     /// The `pluginDataValue(forKey:channel:)` key that we use to store the value of the `ARTRealtimeChannel.objects` property.

@@ -55,6 +55,69 @@ struct InternalDefaultRealtimeObjectsTests {
             #expect(pool.entries["map:2@456"] != nil)
         }
 
+        // MARK: - Non-conforming channelSerial (treated as self-contained per RTO5a5)
+
+        // A channelSerial that does not conform to the RTO5a1 `<sequence id>:<cursor value>` shape
+        // (here, no colon separator) is treated the same as an absent channelSerial (RTO5a5): the
+        // sync data is taken to be entirely contained within this single OBJECT_SYNC, so the sync
+        // completes immediately rather than the whole OBJECT_SYNC being dropped.
+        //
+        // The specification does not define behaviour for a non-conforming channelSerial; this
+        // matches ably-java, whose `^([\w-]+):(.*)$` regex fails to match and falls back to the
+        // "sync data contained in this message" path.
+        @Test
+        func treatsChannelSerialWithoutColonAsSelfContainedSync() async throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let objectMessages = [
+                TestFactories.simpleMapMessage(objectId: "map:1@123"),
+                TestFactories.simpleMapMessage(objectId: "map:2@456"),
+            ]
+
+            #expect(!realtimeObjects.testsOnly_hasSyncSequence)
+
+            // A channelSerial with no colon separator does not conform to RTO5a1.
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: objectMessages,
+                    protocolMessageChannelSerial: "sequence123",
+                )
+            }
+
+            // The sync completed in one shot (no sync sequence remains) rather than being dropped.
+            #expect(!realtimeObjects.testsOnly_hasSyncSequence)
+
+            // The objects were applied to the pool, proving the OBJECT_SYNC was not aborted.
+            let pool = realtimeObjects.testsOnly_objectsPool
+            #expect(pool.entries["map:1@123"] != nil)
+            #expect(pool.entries["map:2@456"] != nil)
+        }
+
+        // As above, an empty sequence id (":cursor") does not conform to RTO5a1 and is treated as a
+        // self-contained OBJECT_SYNC (RTO5a5). This is a change from the previous cocoa behaviour,
+        // which accepted an empty sequence id and would have kept an in-flight sync sequence open.
+        @Test
+        func treatsChannelSerialWithEmptySequenceIDAsSelfContainedSync() async throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let objectMessages = [
+                TestFactories.simpleMapMessage(objectId: "map:1@123"),
+            ]
+
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: objectMessages,
+                    protocolMessageChannelSerial: ":cursor456",
+                )
+            }
+
+            // The sync completed immediately (self-contained), leaving no in-flight sync sequence.
+            #expect(!realtimeObjects.testsOnly_hasSyncSequence)
+
+            let pool = realtimeObjects.testsOnly_objectsPool
+            #expect(pool.entries["map:1@123"] != nil)
+        }
+
         // MARK: - RTO5a1, RTO5a3, RTO5a4: Multi-ProtocolMessage Sync Tests
 
         // @spec RTO5a1
@@ -213,63 +276,15 @@ struct InternalDefaultRealtimeObjectsTests {
             #expect(realtimeObjects.testsOnly_appliedOnAckSerials.isEmpty)
         }
 
-        // MARK: - Error Handling Tests
-
-        /// Test handling of invalid channelSerial format
-        @Test
-        func handlesInvalidChannelSerialFormat() async throws {
-            let internalQueue = TestFactories.createInternalQueue()
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
-            let objectMessages = [TestFactories.mapObjectMessage(objectId: "map:1@123")]
-
-            // Call with invalid channelSerial (missing colon)
-            internalQueue.ably_syncNoDeadlock {
-                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
-                    objectMessages: objectMessages,
-                    protocolMessageChannelSerial: "invalid_format_no_colon",
-                )
-            }
-
-            // Verify no sync sequence was created due to parsing error
-            #expect(!realtimeObjects.testsOnly_hasSyncSequence)
-
-            // Verify objects were not applied to pool
-            let pool = realtimeObjects.testsOnly_objectsPool
-            #expect(pool.entries["map:1@123"] == nil)
-        }
+        // Note: the previous `handlesInvalidChannelSerialFormat` (missing colon) and
+        // `handlesEmptySequenceId` (":cursor1" then ":") tests asserted the old behaviour, in which a
+        // non-conforming channelSerial aborted the OBJECT_SYNC or opened an empty-id sync sequence.
+        // That behaviour has changed — a non-conforming channelSerial is now treated as a
+        // self-contained OBJECT_SYNC per RTO5a5 — so those scenarios are now covered by
+        // `treatsChannelSerialWithoutColonAsSelfContainedSync` and
+        // `treatsChannelSerialWithEmptySequenceIDAsSelfContainedSync` above, and by `SyncCursorTests`.
 
         // MARK: - Edge Cases
-
-        /// Test with empty sequence ID
-        @Test
-        func handlesEmptySequenceId() async throws {
-            let internalQueue = TestFactories.createInternalQueue()
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
-            let objectMessages = [TestFactories.mapObjectMessage(objectId: "map:1@123")]
-
-            // Start sequence with empty sequence ID
-            internalQueue.ably_syncNoDeadlock {
-                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
-                    objectMessages: objectMessages,
-                    protocolMessageChannelSerial: ":cursor1",
-                )
-            }
-
-            #expect(realtimeObjects.testsOnly_hasSyncSequence)
-
-            // End sequence with empty sequence ID
-            internalQueue.ably_syncNoDeadlock {
-                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
-                    objectMessages: [],
-                    protocolMessageChannelSerial: ":",
-                )
-            }
-
-            // Verify sequence completed successfully
-            #expect(!realtimeObjects.testsOnly_hasSyncSequence)
-            let pool = realtimeObjects.testsOnly_objectsPool
-            #expect(pool.entries["map:1@123"] != nil)
-        }
 
         /// Test mixed object types in single sync
         @Test
@@ -445,7 +460,8 @@ struct InternalDefaultRealtimeObjectsTests {
 
             // Give root a non-nil clearTimeserial so we can verify it gets nilled out per RTLM4
             // (using a serial before the entry timeserials so entries survive)
-            _ = originalPool.root.testsOnly_applyMapClearOperation(serial: "aaa")
+            let originalRoot = originalPool.root
+            _ = originalRoot.testsOnly_applyMapClearOperation(serial: "aaa", objectsPool: originalPool)
             #expect(originalPool.root.testsOnly_clearTimeserial == "aaa")
 
             let rootSubscriber = Subscriber<DefaultLiveMapUpdate, SubscribeResponse>(callbackQueue: .main)
@@ -2086,6 +2102,181 @@ struct InternalDefaultRealtimeObjectsTests {
             }
             #expect(error.code == 92008)
             #expect(error.statusCode == 400)
+        }
+    }
+
+    /// Tests for `InternalDefaultRealtimeObjects.nosync_onChannelStateChanged`, covering the RTO27
+    /// channel-state data lifecycle.
+    struct ChannelStateChangeTests {
+        /// Seeds `realtimeObjects` with a populated pool: `root` referencing a non-empty nested map
+        /// (`map:child@1` with key `k` → `"v"`) and a counter (`counter:child@2` == 42). Uses a
+        /// self-contained OBJECT_SYNC so the sync completes immediately (state becomes SYNCED).
+        private static func seedPopulatedPool(
+            _ realtimeObjects: InternalDefaultRealtimeObjects,
+            internalQueue: DispatchQueue,
+        ) {
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: [
+                        TestFactories.mapObjectMessage(objectId: "root", entries: [
+                            "childMap": TestFactories.objectReferenceMapEntry(key: "childMap", objectId: "map:child@1").entry,
+                            "childCounter": TestFactories.objectReferenceMapEntry(key: "childCounter", objectId: "counter:child@2").entry,
+                        ]),
+                        TestFactories.mapObjectMessage(objectId: "map:child@1", entries: [
+                            "k": TestFactories.stringMapEntry(key: "k", value: "v").entry,
+                        ]),
+                        TestFactories.counterObjectMessage(objectId: "counter:child@2", count: 42),
+                    ],
+                    protocolMessageChannelSerial: nil, // self-contained sync (RTO5a5) — completes immediately
+                )
+            }
+        }
+
+        // @spec RTO27a1
+        // @spec RTO27a2
+        @Test(arguments: [
+            _AblyPluginSupportPrivate.RealtimeChannelState.detached,
+            _AblyPluginSupportPrivate.RealtimeChannelState.failed,
+        ])
+        func detachedOrFailedClearsObjectsData(channelState: _AblyPluginSupportPrivate.RealtimeChannelState) throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            Self.seedPopulatedPool(realtimeObjects, internalQueue: internalQueue)
+
+            // Precondition: pool is populated.
+            let pool = realtimeObjects.testsOnly_objectsPool
+            #expect(Set(pool.root.testsOnly_data.keys) == ["childMap", "childCounter"])
+            let childMap = try #require(pool.entries["map:child@1"]?.mapValue)
+            let childCounter = try #require(pool.entries["counter:child@2"]?.counterValue)
+            #expect(!childMap.testsOnly_data.isEmpty)
+            #expect(childCounter.testsOnly_data == 42)
+
+            // When the channel enters DETACHED / FAILED.
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelStateChanged(toState: channelState, reason: nil)
+            }
+
+            // RTO27a1: every object's data is cleared to its zero value, but the objects remain in
+            // the pool (only their data is cleared).
+            let poolAfter = realtimeObjects.testsOnly_objectsPool
+            #expect(poolAfter.entries.count == 3) // root + 2 children still present
+            #expect(poolAfter.root.testsOnly_data.isEmpty)
+            #expect(try #require(poolAfter.entries["map:child@1"]?.mapValue).testsOnly_data.isEmpty)
+            #expect(try #require(poolAfter.entries["counter:child@2"]?.counterValue).testsOnly_data == 0)
+            // Root remains the same instance (data cleared in place).
+            #expect(poolAfter.root as AnyObject === pool.root as AnyObject)
+        }
+
+        // @spec RTO27b
+        @Test
+        func suspendedRetainsObjectsData() throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            Self.seedPopulatedPool(realtimeObjects, internalQueue: internalQueue)
+
+            // When the channel enters SUSPENDED.
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelStateChanged(toState: .suspended, reason: nil)
+            }
+
+            // RTO27b: the stored objects data is retained unchanged.
+            let poolAfter = realtimeObjects.testsOnly_objectsPool
+            #expect(Set(poolAfter.root.testsOnly_data.keys) == ["childMap", "childCounter"])
+            #expect(try !(#require(poolAfter.entries["map:child@1"]?.mapValue).testsOnly_data.isEmpty))
+            #expect(try #require(poolAfter.entries["counter:child@2"]?.counterValue).testsOnly_data == 42)
+        }
+
+        // RTO27a1 requires the clear to emit no LiveObjectUpdate events.
+        // @specPartial RTO27a1 - asserts the "without emitting any LiveObjectUpdate events" clause
+        @Test
+        func clearOnDetachedEmitsNoUpdateEvents() async throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            Self.seedPopulatedPool(realtimeObjects, internalQueue: internalQueue)
+
+            let pool = realtimeObjects.testsOnly_objectsPool
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+
+            // Subscribe to root, the nested map and the counter.
+            let rootSubscriber = Subscriber<DefaultLiveMapUpdate, SubscribeResponse>(callbackQueue: .main)
+            let mapSubscriber = Subscriber<DefaultLiveMapUpdate, SubscribeResponse>(callbackQueue: .main)
+            let counterSubscriber = Subscriber<DefaultLiveCounterUpdate, SubscribeResponse>(callbackQueue: .main)
+            let childMap = try #require(pool.entries["map:child@1"]?.mapValue)
+            let childCounter = try #require(pool.entries["counter:child@2"]?.counterValue)
+            try pool.root.subscribe(listener: rootSubscriber.createListener(), coreSDK: coreSDK)
+            try childMap.subscribe(listener: mapSubscriber.createListener(), coreSDK: coreSDK)
+            try childCounter.subscribe(listener: counterSubscriber.createListener(), coreSDK: coreSDK)
+
+            // When the channel enters DETACHED.
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelStateChanged(toState: .detached, reason: nil)
+            }
+
+            // RTO27a1: no update events are emitted by the clear.
+            #expect(await rootSubscriber.getInvocations().isEmpty)
+            #expect(await mapSubscriber.getInvocations().isEmpty)
+            #expect(await counterSubscriber.getInvocations().isEmpty)
+        }
+
+        // RTO27a2: a partial multi-ProtocolMessage sync sequence's SyncObjectsPool is discarded.
+        // @specPartial RTO27a2 - asserts the in-progress SyncObjectsPool is cleared
+        @Test
+        func detachedClearsInProgressSyncObjectsPool() {
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+
+            // Start (but do not finish) a multi-ProtocolMessage sync sequence, so a SyncObjectsPool
+            // is accumulating.
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: [
+                        TestFactories.mapObjectMessage(objectId: "map:sync@1"),
+                    ],
+                    protocolMessageChannelSerial: "seq1:cursor1", // non-terminal cursor — sync stays in progress
+                )
+            }
+            #expect(realtimeObjects.testsOnly_hasSyncSequence)
+
+            // When the channel enters DETACHED.
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelStateChanged(toState: .detached, reason: nil)
+            }
+
+            // RTO27a2: the accumulated SyncObjectsPool (the stored sync sequence) is cleared.
+            #expect(!realtimeObjects.testsOnly_hasSyncSequence)
+        }
+
+        // Post-clear, a re-attach + OBJECT_SYNC repopulates the pool (RTO27a data loss is recoverable).
+        @Test
+        func reattachAndSyncRepopulatesAfterClear() throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            Self.seedPopulatedPool(realtimeObjects, internalQueue: internalQueue)
+
+            // Clear via DETACHED.
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelStateChanged(toState: .detached, reason: nil)
+            }
+            #expect(realtimeObjects.testsOnly_objectsPool.root.testsOnly_data.isEmpty)
+
+            // Re-attach with objects, then complete a fresh OBJECT_SYNC.
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelAttached(hasObjects: true)
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: [
+                        TestFactories.mapObjectMessage(objectId: "root", entries: [
+                            "childCounter": TestFactories.objectReferenceMapEntry(key: "childCounter", objectId: "counter:child@2").entry,
+                        ]),
+                        TestFactories.counterObjectMessage(objectId: "counter:child@2", count: 99),
+                    ],
+                    protocolMessageChannelSerial: nil,
+                )
+            }
+
+            // The pool is repopulated from the fresh sync.
+            let poolAfter = realtimeObjects.testsOnly_objectsPool
+            #expect(Set(poolAfter.root.testsOnly_data.keys) == ["childCounter"])
+            #expect(try #require(poolAfter.entries["counter:child@2"]?.counterValue).testsOnly_data == 99)
         }
     }
 }

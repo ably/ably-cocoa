@@ -1,47 +1,293 @@
 import Ably
+import Foundation
 
+/// Default implementation of ``LiveMapInstance`` (Kotlin `DefaultLiveMapInstance`), bound to a
+/// specific ``InternalDefaultLiveMap`` (RTINS2a). Operations dereference the wrapped map in O(1) — no
+/// path resolution. Spec: `RTINS1`, `RTTS10a`.
+///
+/// The RTO25b access-precondition checks are performed by the underlying node accessors
+/// (`get(...)`, `entries(...)`, `size(...)`, `set(...)`, `remove(...)`, `subscribe(...)`) — the same
+/// checks the internal engine already enforces; no new checks are invented here.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal final class DefaultLiveMapInstance: LiveMapInstance {
-    internal var id: String {
-        notImplemented()
+    private let node: InternalDefaultLiveMap
+    private let coreSDK: CoreSDK
+    private let realtimeObjects: any InternalRealtimeObjectsProtocol
+    private let internalQueue: DispatchQueue
+
+    /// The wrapped map's `objectId`, captured once at construction (RTINS3a). It is immutable, so the
+    /// frozen non-throwing `id` property is a plain stored read (O(1)).
+    internal let id: String
+
+    internal init(
+        node: InternalDefaultLiveMap,
+        coreSDK: CoreSDK,
+        realtimeObjects: any InternalRealtimeObjectsProtocol,
+        internalQueue: DispatchQueue,
+    ) {
+        self.node = node
+        self.coreSDK = coreSDK
+        self.realtimeObjects = realtimeObjects
+        self.internalQueue = internalQueue
+        // RTINS3a: read the immutable objectId on the shared internal queue.
+        id = internalQueue.ably_syncNoDeadlock { node.nosync_objectID }
     }
 
-    internal func get(key _: String) throws(ARTErrorInfo) -> Instance? {
-        notImplemented()
+    // MARK: - LiveMapInstance
+
+    internal func get(key: String) throws(ARTErrorInfo) -> Instance? {
+        // RTINS5b (the node accessor runs the RTO25b check), RTINS5c
+        guard let value = try node.get(key: key, coreSDK: coreSDK, delegate: realtimeObjects) else {
+            // RTINS5c: an absent/dangling result stays nil
+            return nil
+        }
+        return Instance.from(internalValue: value, coreSDK: coreSDK, realtimeObjects: realtimeObjects, internalQueue: internalQueue)
     }
 
     internal func entries() throws(ARTErrorInfo) -> [(key: String, value: Instance)] {
-        notImplemented()
+        // RTINS6b: delegate to the node's entries (tombstoned/dangling entries already excluded) and
+        // wrap each value in an Instance.
+        try node.entries(coreSDK: coreSDK, delegate: realtimeObjects).map { key, value in
+            (key: key, value: Instance.from(internalValue: value, coreSDK: coreSDK, realtimeObjects: realtimeObjects, internalQueue: internalQueue))
+        }
     }
 
     internal func keys() throws(ARTErrorInfo) -> [String] {
-        notImplemented()
+        // RTINS7b -> RTLM12
+        try node.keys(coreSDK: coreSDK, delegate: realtimeObjects)
     }
 
     internal func values() throws(ARTErrorInfo) -> [Instance] {
-        notImplemented()
+        // RTINS8b: the values of the entries
+        try entries().map(\.value)
     }
 
     internal var size: Int {
         get throws(ARTErrorInfo) {
-            notImplemented()
+            // RTINS9b -> RTLM10d
+            try node.size(coreSDK: coreSDK, delegate: realtimeObjects)
         }
     }
 
-    internal func set(key _: String, value _: LiveMapValue) async throws(ARTErrorInfo) {
-        notImplemented()
+    internal func set(key: String, value: LiveMapValue) async throws(ARTErrorInfo) {
+        // RTINS12c -> RTLM20: convert the public value into the internal representation (materialising
+        // any LiveMap/LiveCounter blueprint into a real object) and delegate to the node's set.
+        let internalValue = try await Self.internalValue(from: value, coreSDK: coreSDK, realtimeObjects: realtimeObjects)
+        try await node.set(key: key, value: internalValue, coreSDK: coreSDK, realtimeObjects: realtimeObjects)
     }
 
-    internal func remove(key _: String) async throws(ARTErrorInfo) {
-        notImplemented()
+    internal func remove(key: String) async throws(ARTErrorInfo) {
+        // RTINS13c -> RTLM21
+        try await node.remove(key: key, coreSDK: coreSDK, realtimeObjects: realtimeObjects)
     }
 
     @discardableResult
-    internal func subscribe(listener _: @escaping InstanceSubscriptionCallback) throws(ARTErrorInfo) -> any Subscription {
-        notImplemented()
+    internal func subscribe(listener: @escaping InstanceSubscriptionCallback) throws(ARTErrorInfo) -> any Subscription {
+        // RTINS16b (the node's subscribe runs the RTO25b check), RTINS16d -> RTLO4b
+        let response = try node.subscribe(
+            listener: { [weak self] update, _ in
+                guard let self else {
+                    return
+                }
+                // RTINS16e1: an Instance wrapping this map (identity-based, RTINS16g).
+                // RTINS16e2: the PAOM3-converted public message stamped onto the update in P2 (nil for
+                // sync-originated updates).
+                listener(.init(object: .liveMap(self), message: update.objectMessage))
+            },
+            coreSDK: coreSDK,
+        )
+        // RTINS16f
+        return DefaultSubscription(response: response)
     }
 
     internal func compactJson() throws(ARTErrorInfo) -> JSONValue {
-        notImplemented()
+        // RTINS11a/RTINS11b -> RTPO14: recursive compaction with cycle markers (see the helper).
+        var visited: Set<String> = []
+        return try Self.compactJson(
+            mapNode: node,
+            objectID: id,
+            coreSDK: coreSDK,
+            delegate: realtimeObjects,
+            internalQueue: internalQueue,
+            visited: &visited,
+        )
+    }
+
+    // MARK: - compactJson (RTPO13c / RTPO14b)
+
+    /// Recursively compacts a map node to a JSON-serializable ``JSONValue`` object.
+    ///
+    /// Cycle handling mirrors ably-java (`InternalLiveMap.compactJson`): a visited object id is added
+    /// **before** iterating and never removed, so a map referenced twice on sibling branches yields the
+    /// marker on the second sibling too. A cycle is emitted as a single-property object
+    /// `{"objectId": <id>}` — the **RTPO14b2** marker format (distinct from RTPO13c5's in-memory-reference
+    /// form, which is not JSON-serializable). Spec: `RTPO13c`, `RTPO14b`, `RTPO14b1`, `RTPO14b2`.
+    private static func compactJson(
+        mapNode: InternalDefaultLiveMap,
+        objectID: String,
+        coreSDK: CoreSDK,
+        delegate: any InternalRealtimeObjectsProtocol,
+        internalQueue: DispatchQueue,
+        visited: inout Set<String>,
+    ) throws(ARTErrorInfo) -> JSONValue {
+        // RTPO14b2 parity: mark this map visited before descending.
+        visited.insert(objectID)
+        var result: [String: JSONValue] = [:]
+        // RTPO13c1: tombstoned (and dangling) entries are already excluded by `entries`.
+        for (key, value) in try mapNode.entries(coreSDK: coreSDK, delegate: delegate) {
+            switch value {
+            case let .liveMap(childNode):
+                // Read the child's immutable objectId via an independent queue access (never holding a
+                // node mutex across the recursion).
+                let childID = internalQueue.ably_syncNoDeadlock { childNode.nosync_objectID }
+                if visited.contains(childID) {
+                    // RTPO14b2: cyclic reference -> {"objectId": <id>}
+                    result[key] = .object(["objectId": .string(childID)])
+                } else {
+                    // RTPO13c2: recurse into nested maps
+                    result[key] = try compactJson(
+                        mapNode: childNode,
+                        objectID: childID,
+                        coreSDK: coreSDK,
+                        delegate: delegate,
+                        internalQueue: internalQueue,
+                        visited: &visited,
+                    )
+                }
+            case let .liveCounter(childNode):
+                // RTPO13c3: nested counters resolve to their numeric value
+                result[key] = try .number(childNode.value(coreSDK: coreSDK))
+            case let .string(primitiveValue):
+                // RTPO13c4 (and RTPO14b1 for binary): primitives included as-is
+                result[key] = .string(primitiveValue)
+            case let .number(primitiveValue):
+                result[key] = .number(primitiveValue)
+            case let .bool(primitiveValue):
+                result[key] = .bool(primitiveValue)
+            case let .data(primitiveValue):
+                // RTPO14b1: binary encoded as base64 string
+                result[key] = .string(primitiveValue.base64EncodedString())
+            case let .jsonArray(primitiveValue):
+                result[key] = .array(primitiveValue)
+            case let .jsonObject(primitiveValue):
+                result[key] = .object(primitiveValue)
+            }
+        }
+        return .object(result)
+    }
+
+    // MARK: - Public -> internal value conversion (RTLM20e7)
+
+    /// Converts a public ``LiveMapValue`` into the internal ``InternalLiveMapValue`` accepted by
+    /// `InternalDefaultLiveMap.set`. Primitives map 1:1; a ``LiveMap``/``LiveCounter`` blueprint is
+    /// materialised into a real pooled object first (RTLM20e7g), referenced thereafter by `objectId`.
+    ///
+    /// - Note (DEV): unlike ably-java, which batches every `*_CREATE` message with the `MAP_SET` into a
+    ///   single publish (RTLM20e7g1/g2), this creates each blueprint object via its own
+    ///   `createMap`/`createCounter` publish and then sets by reference. Behaviour is equivalent; the
+    ///   wire traffic is not batched. Blueprint materialisation requires the concrete
+    ///   ``InternalDefaultRealtimeObjects`` (the sole production conformer of
+    ///   ``InternalRealtimeObjectsProtocol`` that can create objects).
+    private static func internalValue(
+        from value: LiveMapValue,
+        coreSDK: CoreSDK,
+        realtimeObjects: any InternalRealtimeObjectsProtocol,
+    ) async throws(ARTErrorInfo) -> InternalLiveMapValue {
+        switch value {
+        case let .primitive(primitive):
+            return internalValue(from: primitive)
+        case let .liveMap(blueprint):
+            // Recursively materialise the blueprint's entries, then create the map object.
+            var entries: [String: InternalLiveMapValue] = [:]
+            for (entryKey, entryValue) in blueprint.entries ?? [:] {
+                entries[entryKey] = try await internalValue(from: entryValue, coreSDK: coreSDK, realtimeObjects: realtimeObjects)
+            }
+            let node = try await Self.objectCreator(realtimeObjects).createMap(entries: entries, coreSDK: coreSDK)
+            return .liveMap(node)
+        case let .liveCounter(blueprint):
+            let node = try await Self.objectCreator(realtimeObjects).createCounter(count: blueprint.count, coreSDK: coreSDK)
+            return .liveCounter(node)
+        }
+    }
+
+    /// 1:1 mapping of a public ``Primitive`` onto the internal ``InternalLiveMapValue`` representation.
+    private static func internalValue(from primitive: Primitive) -> InternalLiveMapValue {
+        switch primitive {
+        case let .string(value):
+            .string(value)
+        case let .number(value):
+            .number(value)
+        case let .bool(value):
+            .bool(value)
+        case let .data(value):
+            .data(value)
+        case let .jsonArray(value):
+            .jsonArray(value)
+        case let .jsonObject(value):
+            .jsonObject(value)
+        }
+    }
+
+    /// Narrows to the concrete realtime-objects type that can create pooled objects for blueprint
+    /// materialisation. In production the delegate is always ``InternalDefaultRealtimeObjects``.
+    private static func objectCreator(_ realtimeObjects: any InternalRealtimeObjectsProtocol) -> InternalDefaultRealtimeObjects {
+        guard let creator = realtimeObjects as? InternalDefaultRealtimeObjects else {
+            preconditionFailure("Setting a LiveMap/LiveCounter blueprint value requires the concrete InternalDefaultRealtimeObjects")
+        }
+        return creator
+    }
+}
+
+// MARK: - Instance construction seam (P4 `PathObject.instance()`)
+
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+internal extension Instance {
+    /// Builds the identity-addressed ``Instance`` wrapping a resolved map-entry value (RTINS2a,
+    /// RTTS7e). This is the seam the path layer's `PathObject.instance()` (P4) calls once it has
+    /// resolved a value. Because `InternalLiveMapValue` cannot be an unknown/unrepresentable type, this
+    /// is non-optional — a `nil` at an unresolved path is represented by the caller returning `nil`.
+    ///
+    /// Safe to call from any thread: it briefly hops onto `internalQueue` to read immutable object ids.
+    static func from(
+        internalValue: InternalLiveMapValue,
+        coreSDK: CoreSDK,
+        realtimeObjects: any InternalRealtimeObjectsProtocol,
+        internalQueue: DispatchQueue,
+    ) -> Instance {
+        switch internalValue {
+        case let .liveMap(node):
+            .liveMap(DefaultLiveMapInstance(node: node, coreSDK: coreSDK, realtimeObjects: realtimeObjects, internalQueue: internalQueue))
+        case let .liveCounter(node):
+            .liveCounter(DefaultLiveCounterInstance(node: node, coreSDK: coreSDK, realtimeObjects: realtimeObjects, internalQueue: internalQueue))
+        case let .string(value):
+            .primitive(DefaultPrimitiveInstance(value: .string(value), type: .string, coreSDK: coreSDK, internalQueue: internalQueue))
+        case let .number(value):
+            .primitive(DefaultPrimitiveInstance(value: .number(value), type: .number, coreSDK: coreSDK, internalQueue: internalQueue))
+        case let .bool(value):
+            .primitive(DefaultPrimitiveInstance(value: .bool(value), type: .boolean, coreSDK: coreSDK, internalQueue: internalQueue))
+        case let .data(value):
+            .primitive(DefaultPrimitiveInstance(value: .data(value), type: .binary, coreSDK: coreSDK, internalQueue: internalQueue))
+        case let .jsonArray(value):
+            .primitive(DefaultPrimitiveInstance(value: .jsonArray(value), type: .jsonArray, coreSDK: coreSDK, internalQueue: internalQueue))
+        case let .jsonObject(value):
+            .primitive(DefaultPrimitiveInstance(value: .jsonObject(value), type: .jsonObject, coreSDK: coreSDK, internalQueue: internalQueue))
+        }
+    }
+
+    /// Builds the identity-addressed ``Instance`` wrapping an ``ObjectsPool`` entry — a directly
+    /// referenced `LiveObject` (e.g. the root map, or an `objectId`-resolved object). This is the P4
+    /// seam for resolving a path to a concrete object rather than a map-entry value.
+    static func from(
+        poolEntry: ObjectsPool.Entry,
+        coreSDK: CoreSDK,
+        realtimeObjects: any InternalRealtimeObjectsProtocol,
+        internalQueue: DispatchQueue,
+    ) -> Instance {
+        switch poolEntry {
+        case let .map(node):
+            .liveMap(DefaultLiveMapInstance(node: node, coreSDK: coreSDK, realtimeObjects: realtimeObjects, internalQueue: internalQueue))
+        case let .counter(node):
+            .liveCounter(DefaultLiveCounterInstance(node: node, coreSDK: coreSDK, realtimeObjects: realtimeObjects, internalQueue: internalQueue))
+        }
     }
 }

@@ -34,8 +34,9 @@ public protocol PathObject: Sendable {
     /// is the empty string. Spec: `RTPO4`.
     var path: String { get }
 
-    /// Resolves the path and, if it resolves to a `LiveObject`, returns an ``Instance`` wrapping it.
-    /// Returns `nil` if the resolved value is a primitive or if resolution fails. Spec: `RTPO8`.
+    /// Resolves the path and returns an ``Instance`` wrapping the resolved value — whether that value
+    /// is a `LiveObject` (RTPO8c) or a primitive (RTPO8f). Returns `nil` only if resolution fails
+    /// (RTPO8e). Spec: `RTPO8`.
     func instance() throws(ARTErrorInfo) -> Instance?
 
     /// Resolves the path and returns a JSON-serializable, recursively-compacted representation of the

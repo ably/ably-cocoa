@@ -30,36 +30,56 @@ internal struct ObjectsPool {
             }
         }
 
+        /// The outcome of applying an operation to a LiveObject, carrying both the RTO9a2a4 dedup
+        /// signal and what the RTO24 path-subscription dispatch needs.
+        internal struct ApplyResult {
+            /// `true` if an operation was applied (a non-nil update, including a `.noop`), `false` if
+            /// it was skipped (RTLM15g/RTLC10g). Drives the RTO9a2a4 applied-on-ACK dedup.
+            internal let applied: Bool
+            /// The changed map keys of the emitted update, used to build the RTO24b2a2 deeper path
+            /// candidates (empty for a counter update). `nil` when nothing should be dispatched to
+            /// path subscriptions — i.e. the operation was skipped or produced a `.noop` update
+            /// (RTLO4b4c1). A non-`nil` (possibly empty) value means "dispatch a path event".
+            internal let changedMapKeysForPathEvent: [String]?
+        }
+
         /// Applies an operation to a LiveObject, per RTO9a2a3.
-        ///
-        /// - Returns: `true` if the operation was applied, `false` if it was skipped.
         internal func nosync_apply(
             _ operation: ProtocolTypes.ObjectOperation,
             source: ObjectsOperationSource,
             objectMessageSerial: String?,
             objectMessageSiteCode: String?,
             objectMessageSerialTimestamp: Date?,
+            sourceObjectMessage: ObjectMessage? = nil,
             objectsPool: inout ObjectsPool,
-        ) -> Bool {
+        ) -> ApplyResult {
             switch self {
             case let .map(map):
-                map.nosync_apply(
+                // A non-`.noop` map update carries the set of keys it changed; those drive the
+                // RTO24b2a2 deeper path candidates. A `nil`/`.noop` update dispatches nothing.
+                let update = map.nosync_apply(
                     operation,
                     source: source,
                     objectMessageSerial: objectMessageSerial,
                     objectMessageSiteCode: objectMessageSiteCode,
                     objectMessageSerialTimestamp: objectMessageSerialTimestamp,
+                    sourceObjectMessage: sourceObjectMessage,
                     objectsPool: &objectsPool,
                 )
+                return .init(applied: update != nil, changedMapKeysForPathEvent: update?.update.map { Array($0.update.keys) })
             case let .counter(counter):
-                counter.nosync_apply(
+                // A counter update contributes no deeper candidates; a non-`.noop` update still
+                // dispatches a path event at the object's own path (empty key list).
+                let update = counter.nosync_apply(
                     operation,
                     source: source,
                     objectMessageSerial: objectMessageSerial,
                     objectMessageSiteCode: objectMessageSiteCode,
                     objectMessageSerialTimestamp: objectMessageSerialTimestamp,
+                    sourceObjectMessage: sourceObjectMessage,
                     objectsPool: &objectsPool,
                 )
+                return .init(applied: update != nil, changedMapKeysForPathEvent: update?.update.map { _ in [String]() })
             }
         }
 
@@ -69,12 +89,40 @@ internal struct ObjectsPool {
             case counter(InternalDefaultLiveCounter, LiveObjectUpdate<DefaultLiveCounterUpdate>)
 
             /// Causes the referenced `LiveObject` to emit the stored event to its subscribers.
+            ///
+            /// If the update tombstones the object (a sync-originated tombstone, RTLM6f/RTLC6f), the
+            /// object's subscriptions are deregistered after emitting, per the RTLO4b4c3c teardown.
             internal func nosync_emit() {
                 switch self {
                 case let .map(map, update):
                     map.nosync_emit(update)
+                    if update.tombstone {
+                        map.nosync_deregisterSubscriptionsForTombstone()
+                    }
                 case let .counter(counter, update):
                     counter.nosync_emit(update)
+                    if update.tombstone {
+                        counter.nosync_deregisterSubscriptionsForTombstone()
+                    }
+                }
+            }
+
+            /// What the RTO24 path-subscription dispatch needs for this deferred (sync-originated)
+            /// update: the updated object's ID and the changed map keys (the RTO24b2a2 deeper
+            /// candidates; empty for a counter). `nil` for a `.noop` update — noops dispatch nothing
+            /// (RTLO4b4c1).
+            internal var nosync_pathDispatchInfo: (objectID: String, changedMapKeys: [String])? {
+                switch self {
+                case let .map(map, update):
+                    guard let payload = update.update else {
+                        return nil // .noop
+                    }
+                    return (objectID: map.nosync_objectID, changedMapKeys: Array(payload.update.keys))
+                case let .counter(counter, update):
+                    guard update.update != nil else {
+                        return nil // .noop
+                    }
+                    return (objectID: counter.nosync_objectID, changedMapKeys: [])
                 }
             }
         }
@@ -150,6 +198,48 @@ internal struct ObjectsPool {
                 map.testsOnly_tombstonedAt
             }
         }
+
+        // MARK: - Parent-reference graph (RTLO3f)
+
+        /// The object's RTLO3f `parentReferences`, accessed on the internal queue.
+        internal var nosync_parentReferences: [String: Set<String>] {
+            switch self {
+            case let .counter(counter):
+                counter.nosync_parentReferences
+            case let .map(map):
+                map.nosync_parentReferences
+            }
+        }
+
+        /// Records that the map identified by `parentObjectID` references this object at `key`, per RTLO4g.
+        internal func nosync_addParentReference(parentObjectID: String, key: String) {
+            switch self {
+            case let .counter(counter):
+                counter.nosync_addParentReference(parentObjectID: parentObjectID, key: key)
+            case let .map(map):
+                map.nosync_addParentReference(parentObjectID: parentObjectID, key: key)
+            }
+        }
+
+        /// Removes the recorded reference from the map identified by `parentObjectID` at `key`, per RTLO4h.
+        internal func nosync_removeParentReference(parentObjectID: String, key: String) {
+            switch self {
+            case let .counter(counter):
+                counter.nosync_removeParentReference(parentObjectID: parentObjectID, key: key)
+            case let .map(map):
+                map.nosync_removeParentReference(parentObjectID: parentObjectID, key: key)
+            }
+        }
+
+        /// Resets `parentReferences` to an empty map, per RTO5c10a.
+        internal func nosync_clearParentReferences() {
+            switch self {
+            case let .counter(counter):
+                counter.nosync_clearParentReferences()
+            case let .map(map):
+                map.nosync_clearParentReferences()
+            }
+        }
     }
 
     /// Keyed by `objectId`.
@@ -215,6 +305,13 @@ internal struct ObjectsPool {
         }
     }
 
+    // MARK: - Test-only setters
+
+    /// Test-only setter that inserts or replaces an entry for the given object ID.
+    internal mutating func testsOnly_setEntry(_ entry: Entry, forObjectID objectID: String) {
+        entries[objectID] = entry
+    }
+
     // MARK: - Data manipulation
 
     /// Creates a zero-value object if it does not exist in the pool, per RTO6. This is used when applying a `MAP_SET` operation that contains a reference to another object.
@@ -278,12 +375,19 @@ internal struct ObjectsPool {
     }
 
     /// Applies the objects gathered during an `OBJECT_SYNC` to this `ObjectsPool`, per RTO5c1 and RTO5c2.
+    ///
+    /// - Parameter pathObjectSubscriptionRegister: When non-nil, each non-noop RTO5c7 deferred update
+    ///   also fans out to path subscriptions with a `nil` message (RTO4b2a — sync-originated updates
+    ///   never surface a public message), after the RTO5c10 parent-reference rebuild so paths reflect
+    ///   the post-sync graph. `nil` (the default, used by tests driving the pool directly) skips path
+    ///   dispatch.
     internal mutating func nosync_applySyncObjectsPool(
         _ syncObjectsPool: SyncObjectsPool,
         logger: Logger,
         internalQueue: DispatchQueue,
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock,
+        pathObjectSubscriptionRegister: PathObjectSubscriptionRegister? = nil,
     ) {
         logger.log("applySyncObjectsPool called with \(syncObjectsPool.count) objects", level: .debug)
 
@@ -338,12 +442,136 @@ internal struct ObjectsPool {
             }
         }
 
+        // RTO5c10: rebuild every parentReferences map after the pool has settled, so that
+        // getFullPaths is correct by the time the RTO5c7 notifications below are dispatched
+        nosync_rebuildParentReferences()
+
         // RTO5c7: Emit the updates to existing objects
         for deferredUpdate in updatesToExistingObjects {
             deferredUpdate.nosync_emit()
+
+            // RTLO4b4c3b -> RTO24b: fan the sync-originated update out to path subscriptions too,
+            // with a nil message (RTO4b2a). This runs after the RTO5c10 rebuild above, so the
+            // getFullPaths DFS sees the post-sync graph (Kotlin: rebuild-before-notify,
+            // `ObjectsManager.kt:174–175`). Noop updates dispatch nothing (RTLO4b4c1).
+            if let register = pathObjectSubscriptionRegister, let info = deferredUpdate.nosync_pathDispatchInfo {
+                nosync_notifyPathSubscriptions(
+                    objectID: info.objectID,
+                    changedMapKeys: info.changedMapKeys,
+                    message: nil,
+                    register: register,
+                )
+            }
         }
 
         logger.log("applySyncObjectsPool completed. Pool now contains \(entries.count) objects", level: .debug)
+    }
+
+    /// Rebuilds all parent references from the settled pool state, per RTO5c10. Necessary after a
+    /// sync because objects may reference other objects that were not yet in the pool when their
+    /// references were first applied.
+    internal mutating func nosync_rebuildParentReferences() {
+        // RTO5c10a: reset every object's parentReferences to the initial (empty) value
+        for entry in entries.values {
+            entry.nosync_clearParentReferences()
+        }
+
+        // RTO5c10b: for each map, re-add a reference on every non-tombstoned object-valued entry.
+        // We iterate the raw entries (rather than the resolved value() surface) since only
+        // entry.data.objectId is needed here; tombstoned entries (RTLM14) are skipped.
+        for (parentObjectID, entry) in entries {
+            guard case let .map(map) = entry else {
+                continue
+            }
+            for (key, mapEntry) in map.nosync_rawData {
+                guard let refId = mapEntry.data?.objectId else {
+                    continue
+                }
+                if InternalDefaultLiveMap.nosync_isEntryTombstoned(mapEntry, objectsPool: self) {
+                    continue
+                }
+                entries[refId]?.nosync_addParentReference(parentObjectID: parentObjectID, key: key)
+            }
+        }
+    }
+
+    /// All key-paths from the root object to the object identified by `objectID`, per RTLO4f: one
+    /// per simple path in the parent-reference graph, cycle-safe, order unspecified. Returns `[[]]`
+    /// when `objectID` is root itself, and `[]` for an orphan (or an object absent from the pool).
+    ///
+    /// The DFS resolves each node's `parentReferences` through a brief, independent read
+    /// (`Entry.nosync_parentReferences`); it deliberately never keeps a single object's queue-mutex
+    /// open across the walk, so revisiting a node cannot cause an exclusive-access conflict.
+    internal func nosync_getFullPaths(forObjectID objectID: String) -> [[String]] {
+        var paths: [[String]] = []
+
+        // Each stack element pairs the object being visited with the path built so far and the set
+        // of objectIDs already visited on this branch.
+        var stack: [(objectID: String, path: [String], visited: Set<String>)] = [
+            (objectID: objectID, path: [], visited: []),
+        ]
+
+        while let (currentID, currentPath, visited) = stack.popLast() {
+            // RTLO4f2: simple paths only — skip a node already visited on this branch (cycles)
+            if visited.contains(currentID) {
+                continue
+            }
+            let newVisited = visited.union([currentID])
+
+            // RTLO4f2: the empty path is contributed only when the walk reaches root
+            if currentID == Self.rootKey {
+                paths.append(currentPath)
+                continue
+            }
+
+            // A stale/absent object (left the pool) contributes no further path
+            guard let parentReferences = entries[currentID]?.nosync_parentReferences else {
+                continue
+            }
+
+            for (parentID, keys) in parentReferences {
+                for key in keys {
+                    stack.append((objectID: parentID, path: [key] + currentPath, visited: newVisited))
+                }
+            }
+        }
+
+        // RTLO4f3: each simple path appears exactly once; order is unspecified
+        return paths
+    }
+
+    /// Fans one object update out to path subscriptions (Kotlin's `notifyPathSubscriptions`,
+    /// `BaseRealtimeLiveObject.kt:318`). For every full path to the updated object (RTO24b1),
+    /// dispatches one path event whose candidates are the object's own path (most-preferred,
+    /// RTO24b2a1) followed by one deeper candidate per changed map key (RTO24b2a2). An orphaned
+    /// object (unreachable from root) produces no events (RTO24b1a).
+    ///
+    /// Hosted on the pool (like the `getFullPaths` DFS it drives — DEV-15) so both the operation
+    /// apply path and the sync deferred-update path can share it.
+    ///
+    /// - Important: Must be called with **no live object's queue-mutex held** (the `getFullPaths`
+    ///   DFS re-reads each node's `parentReferences`; holding the starting object's mutex would
+    ///   trip Swift's exclusive-access checker — see DEV-15). Callers invoke it after the
+    ///   object-level apply/emit has returned.
+    ///
+    /// Spec: RTO24b (RTO24b1, RTO24b2, RTO24b2a1, RTO24b2a2).
+    internal func nosync_notifyPathSubscriptions(
+        objectID: String,
+        changedMapKeys: [String],
+        message: ObjectMessage?,
+        register: PathObjectSubscriptionRegister,
+    ) {
+        let pathsToThis = nosync_getFullPaths(forObjectID: objectID) // RTO24b1
+        if pathsToThis.isEmpty {
+            return // orphaned object (not reachable from root) — no path events (RTO24b1a)
+        }
+        for pathToThis in pathsToThis { // RTO24b2
+            var candidates = [pathToThis] // RTO24b2a1 — most preferred first
+            for key in changedMapKeys {
+                candidates.append(pathToThis + [key]) // RTO24b2a2
+            }
+            register.nosync_notifyPathEvent(candidatePaths: candidates, message: message)
+        }
     }
 
     /// Creates a new object from a sync entry and adds it to the pool, per RTO5c1b.
@@ -406,7 +634,11 @@ internal struct ObjectsPool {
     }
 
     /// Removes all entries except the root, and clears the root's data. This is to be used when an `ATTACHED` ProtocolMessage indicates that the only object in a channel is an empty root map, per RTO4b.
-    internal mutating func nosync_reset() {
+    ///
+    /// - Returns: The root keys reported as `removed` by the emitted RTO4b2a update, so the caller
+    ///   can fan the reset out to path subscriptions (RTLO4b4c3b) after the root's mutex is released.
+    @discardableResult
+    internal mutating func nosync_reset() -> [String] {
         let root = root
 
         // RTO4b1
@@ -414,7 +646,29 @@ internal struct ObjectsPool {
 
         // RTO4b2
         // TODO: this one is unclear (are we meant to replace the root or just clear its data?) https://github.com/ably/specification/pull/333/files#r2183493458. I believe that the answer is that we should just clear its data but the spec point needs to be clearer, see https://github.com/ably/specification/pull/346/files#r2201434895.
-        root.nosync_resetData()
+        return root.nosync_resetData()
+    }
+
+    /// RTO27a1: Clears the internal data of every object in the pool, resetting each to its zero
+    /// value (an empty map, or a counter of `0`) **without emitting any `LiveObjectUpdate`
+    /// events**. The objects themselves remain in the pool; only their data is cleared. Mirrors
+    /// Kotlin's `ObjectsPool.clearObjectsData(emitUpdateEvents = false)`.
+    ///
+    /// Each map additionally drops the parent references it holds on its referenced children
+    /// (RTLO4e9), so that once every object's data has been cleared the parent-reference graph is
+    /// left empty and consistent. Used by the RTO27a DETACHED/FAILED channel-state clear.
+    ///
+    /// Non-`mutating`: this reassigns no pool entry, only mutating the (reference-type) objects the
+    /// entries hold, so it can pass `self` down to each map's clear without an exclusivity conflict.
+    internal func nosync_clearObjectsData() {
+        for entry in entries.values {
+            switch entry {
+            case let .map(map):
+                map.nosync_clearDataToZeroValue(objectsPool: self)
+            case let .counter(counter):
+                counter.nosync_clearDataToZeroValue()
+            }
+        }
     }
 
     /// Performs garbage collection of tombstoned objects and map entries, per RTO10c.
@@ -436,6 +690,13 @@ internal struct ObjectsPool {
 
             // RTO10c1b
             let shouldRelease = {
+                // RTO10c1b1: the object with ID `root` must never be removed from the ObjectsPool
+                // (RTO3b). It can never become tombstoned per RTLO4e10, so this exclusion is an
+                // additional safeguard for the RTO3b invariant.
+                guard key != Self.rootKey else {
+                    return false
+                }
+
                 guard let tombstonedAt = entry.nosync_tombstonedAt else {
                     return false
                 }

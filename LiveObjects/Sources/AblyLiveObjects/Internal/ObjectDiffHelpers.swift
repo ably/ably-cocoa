@@ -13,8 +13,15 @@ internal enum ObjectDiffHelpers {
         previousData: Double,
         newData: Double,
     ) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
-        // RTLC14b
-        .update(DefaultLiveCounterUpdate(amount: newData - previousData))
+        // RTLC14b. A zero delta means the value did not actually change (e.g. re-applying an
+        // ObjectState whose count equals the current data). An update communicates a change
+        // (RTLO4b4a), so return the no-op update (permitted by RTLO4b4b) rather than a spurious
+        // zero-amount update that would fire subscriber callbacks for no change. Matches ably-java
+        // (LiveCounterManager.calculateUpdateFromDataDiff) and ably-js.
+        if newData == previousData {
+            return .noop
+        }
+        return .update(DefaultLiveCounterUpdate(amount: newData - previousData))
     }
 
     /// Calculates the diff between two LiveMap data values, per RTLM22.
@@ -51,6 +58,15 @@ internal enum ObjectDiffHelpers {
             if previousEntry.data != newEntry.data {
                 update[key] = .updated
             }
+        }
+
+        // An empty diff means nothing actually changed (e.g. re-applying an ObjectState that
+        // matches the current data, or clearing an already-empty map). An update communicates a
+        // change (RTLO4b4a), so return the no-op update (permitted by RTLO4b4b) rather than a
+        // spurious empty update that would fire subscriber callbacks for no change. Matches
+        // ably-java (LiveMapManager.calculateUpdateFromDataDiff) and ably-js.
+        if update.isEmpty {
+            return .noop
         }
 
         return .update(DefaultLiveMapUpdate(update: update))

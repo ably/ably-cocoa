@@ -47,7 +47,9 @@ let package = Package(
             ],
             path: "LiveObjects/Tests/AblyLiveObjectsTests",
             exclude: [
-                "CLAUDE.md"
+                "CLAUDE.md",
+                "UTS/README.md",
+                "UTS/deviations.md"
             ]
         ),
         // Private API of the core SDK, exposed to Ably-authored plugins. Formerly
@@ -112,7 +114,7 @@ let package = Package(
             name: "UTS",
             dependencies: [
                 .byName(name: "Ably"),
-                .target(name: "_AblyPluginSupportPrivate")
+                .target(name: "_AblyPluginSupportPrivate"),
             ],
             path: "Test/UTS",
             exclude: [

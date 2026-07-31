@@ -9,8 +9,19 @@ final class MockRealtimeObjects: InternalRealtimeObjectsProtocol {
     private let mutex = NSLock()
     private nonisolated(unsafe) var _publishAndApplyHandler: (([ProtocolTypes.OutboundObjectMessage]) -> Result<Void, ARTErrorInfo>)?
 
+    /// A real (unused-in-dispatch) register so the type conforms to `InternalRealtimeObjectsProtocol`.
+    /// Tests that exercise path-subscription dispatch use the real `InternalDefaultRealtimeObjects`.
+    private let _pathObjectSubscriptionRegister = PathObjectSubscriptionRegister(
+        internalQueue: DispatchQueue(label: "MockRealtimeObjects.internal"),
+        userCallbackQueue: DispatchQueue(label: "MockRealtimeObjects.userCallback"),
+    )
+
     init(objectsPoolDelegate: MockLiveMapObjectsPoolDelegate? = nil) {
         self.objectsPoolDelegate = objectsPoolDelegate
+    }
+
+    var nosync_pathObjectSubscriptionRegister: PathObjectSubscriptionRegister {
+        _pathObjectSubscriptionRegister
     }
 
     var nosync_objectsPool: ObjectsPool {

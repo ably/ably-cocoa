@@ -1,61 +1,51 @@
 import Ably
 
-/// Skeleton implementation of ``LiveCounterPathObject``. Every member currently traps via
-/// `notImplemented()`; this is a standalone `final class` (no shared base) so that we don't commit to
-/// a particular implementation shape before the path-based API is actually built. `Sendable` is a
-/// checked conformance: the class holds no state.
+/// Default implementation of ``LiveCounterPathObject`` (Kotlin `DefaultLiveCounterPathObject`).
+///
+/// Counters are terminal nodes (no navigation), so this only adds the counter read/write operations
+/// on top of ``DefaultPathObject``.
+///
+/// Spec: `RTTS6b`.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal final class DefaultLiveCounterPathObject: LiveCounterPathObject, Sendable {
-    // MARK: - PathObject
-
-    internal var path: String {
-        notImplemented()
-    }
-
-    internal func instance() throws(ARTErrorInfo) -> Instance? {
-        notImplemented()
-    }
-
-    internal func compactJson() throws(ARTErrorInfo) -> JSONValue? {
-        notImplemented()
-    }
-
-    @discardableResult
-    internal func subscribe(options _: PathObjectSubscriptionOptions?, listener _: @escaping PathObjectSubscriptionCallback) throws(ARTErrorInfo) -> any Subscription {
-        notImplemented()
-    }
-
-    internal func exists() throws(ARTErrorInfo) -> Bool {
-        notImplemented()
-    }
-
-    internal func type() throws(ARTErrorInfo) -> ValueType? {
-        notImplemented()
-    }
-
-    internal func asLiveMap() -> any LiveMapPathObject {
-        notImplemented()
-    }
-
-    internal func asLiveCounter() -> any LiveCounterPathObject {
-        notImplemented()
-    }
-
-    internal func asPrimitive() -> any PrimitivePathObject {
-        notImplemented()
-    }
-
-    // MARK: - LiveCounterPathObject
+internal final class DefaultLiveCounterPathObject: DefaultPathObject, LiveCounterPathObject, @unchecked Sendable {
+    // MARK: - Read (RTTS6b)
 
     internal func value() throws(ARTErrorInfo) -> Double? {
-        notImplemented()
+        try ChannelConfigGuards.throwIfInvalidAccessApiConfiguration(coreSDK: coreSDK, internalQueue: internalQueue)
+        // Not a LiveCounter (or unresolved) -> nil.
+        guard let resolved = try resolveValueAtCurrentPath(), case let .liveCounter(counterNode) = resolved else {
+            return nil
+        }
+        // RTPO7c via RTLC5c (the node accessor runs the RTO25b check).
+        return try counterNode.value(coreSDK: coreSDK)
     }
 
-    internal func increment(amount _: Double) async throws(ARTErrorInfo) {
-        notImplemented()
+    // MARK: - Writes (RTPO17, RTPO18)
+
+    internal func increment(amount: Double) async throws(ARTErrorInfo) {
+        let counterNode = try resolvedCounterNodeForWrite(operation: "increment") // RTPO17b/c/e
+        // RTPO17d -> RTLC12.
+        try await counterNode.increment(amount: amount, coreSDK: coreSDK, realtimeObjects: channelObject)
     }
 
-    internal func decrement(amount _: Double) async throws(ARTErrorInfo) {
-        notImplemented()
+    internal func decrement(amount: Double) async throws(ARTErrorInfo) {
+        let counterNode = try resolvedCounterNodeForWrite(operation: "decrement") // RTPO18b/c/e
+        // RTPO18d -> RTLC13.
+        try await counterNode.decrement(amount: amount, coreSDK: coreSDK, realtimeObjects: channelObject)
+    }
+
+    // MARK: - Helpers
+
+    /// Runs the write-API guard, resolves the path (throwing 92005 when unresolved, RTPO3c2) and
+    /// narrows to the backing counter node (throwing 92007 on a type mismatch, RTPO17e/RTPO18e).
+    private func resolvedCounterNodeForWrite(operation: String) throws(ARTErrorInfo) -> InternalDefaultLiveCounter {
+        try ChannelConfigGuards.throwIfInvalidWriteApiConfiguration(coreSDK: coreSDK, internalQueue: internalQueue) // RTO26
+        guard let resolved = try resolveValueAtCurrentPath() else {
+            throw LiveObjectsError.pathNotResolved(path: path).toARTErrorInfo() // RTPO3c2
+        }
+        guard case let .liveCounter(counterNode) = resolved else {
+            throw LiveObjectsError.pathTypeMismatch(operationDescription: "Cannot \(operation) a non-LiveCounter object at path: \"\(path)\"").toARTErrorInfo()
+        }
+        return counterNode
     }
 }
