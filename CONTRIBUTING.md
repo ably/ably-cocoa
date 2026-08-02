@@ -71,7 +71,7 @@ The `make test_*` commands are used by CI and expect you to have a simulator dev
 | --- | --- | --- |
 | `AblyTests` | `Test/AblyTests` | Swift tests for the core SDK |
 | `AblyTestsObjC` | `Test/AblyTestsObjC` | Objective-C tests for the core SDK |
-| `UTS` | `Test/UTS` | Universal Test Suite, derived from the language-neutral specs in the [`specification`](https://github.com/ably/specification) repository |
+| `UTS` | `Test/UTS` | Universal Test Suite, derived from the language-neutral specs in the [`specification`](https://github.com/ably/specification) repository. Its `objects` module links `AblyLiveObjects`, which is why the Fastlane lanes raise their deployment target — see [Supported OS versions](#supported-os-versions) |
 | `AblyLiveObjectsTests` | `LiveObjects/Tests/AblyLiveObjectsTests` | LiveObjects tests, including the ported UTS `objects` unit specs under `UTS/` |
 
 To run just one of them, filter by module name — for example `swift test --filter 'AblyLiveObjectsTests\.'`.
@@ -106,7 +106,14 @@ SwiftPM platform requirements are package-wide, so a single package hosts both f
 
 Don't write these annotations by hand. They are applied by [`Scripts/annotate-liveobjects-availability.py`](Scripts/annotate-liveobjects-availability.py), which is idempotent; CI runs it and fails on a non-empty diff, so a new declaration cannot be added without one.
 
-Test code cannot use the same mechanism, because swift-testing's `@Suite` macro rejects types marked `@available`. Instead `LiveObjects/BuildTool` passes `IPHONEOS_DEPLOYMENT_TARGET=14.0` and `TVOS_DEPLOYMENT_TARGET=14.0` to the `xcodebuild` invocations that compile the tests; there is deliberately no macOS override, since xcodebuild raises the macOS test bundle's floor of its own accord. Test code that needs a newer OS than this must carry its own `@available` — for example `Subscriber.swift`, whose parameter packs require iOS/tvOS 17, along with every test that uses it.
+Test code cannot use the same mechanism, because swift-testing's `@Suite` macro rejects types marked `@available`. Instead, any test build that links `AblyLiveObjects` raises its own deployment target to the plugin's floor. Two places do this today, both by passing `IPHONEOS_DEPLOYMENT_TARGET=14.0` and `TVOS_DEPLOYMENT_TARGET=14.0` to `xcodebuild`:
+
+- `LiveObjects/BuildTool` (`testDeploymentTargetOverrides`), for the invocations that build and run `AblyLiveObjectsTests`.
+- [`fastlane/Fastfile`](fastlane/Fastfile), in the `xcargs` shared by the integration-test lanes, because the `UTS` target links `AblyLiveObjects` too. Without it the harness fails on the iOS and tvOS simulators with errors of the form `'…' is only available in iOS 14.0 or newer`.
+
+Neither overrides macOS: xcodebuild raises the macOS test bundle's floor well above the package's of its own accord, and the test code relies on that. Both affect the test build only — the package's declared platform floor and the shipped artifacts are unchanged.
+
+If you add another `xcodebuild`-based path that compiles a test target linking `AblyLiveObjects`, it will need the same override. Test code that needs a newer OS than the plugin's floor must still carry its own `@available` — for example `Subscriber.swift`, whose parameter packs require iOS/tvOS 17, along with every test that uses it.
 
 ### Distribution
 
