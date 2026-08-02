@@ -104,7 +104,15 @@ SwiftPM platform requirements are package-wide, so a single package hosts both f
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 ```
 
-Don't write these annotations by hand. They are applied by [`Scripts/annotate-liveobjects-availability.py`](Scripts/annotate-liveobjects-availability.py), which is idempotent; CI runs it and fails on a non-empty diff, so a new declaration cannot be added without one.
+Don't write these annotations by hand. After adding a declaration, run [`Scripts/annotate-liveobjects-availability.py`](Scripts/annotate-liveobjects-availability.py) from the repo root:
+
+```sh
+python3 Scripts/annotate-liveobjects-availability.py
+```
+
+It annotates every unannotated top-level declaration under `LiveObjects/Sources/AblyLiveObjects` (pass another directory as its sole argument to override that), and is idempotent — running it on an already-annotated tree changes nothing.
+
+CI enforces this two ways: it runs the script and fails on a non-empty diff, which covers all top-level declarations; and it separately builds the target with `-require-explicit-availability=error`, which covers the public ones.
 
 Test code cannot use the same mechanism, because swift-testing's `@Suite` macro rejects types marked `@available`. Instead, any test build that links `AblyLiveObjects` raises its own deployment target to the plugin's floor. Two places do this today, both by passing `IPHONEOS_DEPLOYMENT_TARGET=14.0` and `TVOS_DEPLOYMENT_TARGET=14.0` to `xcodebuild`:
 
