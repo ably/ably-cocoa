@@ -92,7 +92,7 @@ ably-cocoa allows users to pass in Ably-authored plugins via the `ARTClientOptio
 
 The LiveObjects plugin lives in [`LiveObjects/`](LiveObjects) and is vended as this package's `AblyLiveObjects` product. It has its own [`CONTRIBUTING.md`](LiveObjects/CONTRIBUTING.md) covering setup, tests, linting and coding guidelines; read that before working on plugin code.
 
-Two properties of the plugin affect the repository as a whole, and so are documented here rather than there.
+Two things about the plugin affect the repository as a whole, and so are documented here rather than there.
 
 ### Supported OS versions
 
