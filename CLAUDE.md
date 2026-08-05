@@ -68,6 +68,8 @@ The LiveObjects plugin (the `AblyLiveObjects` product, in Swift) lives in `LiveO
 - `Test/AblyTestsObjC/` — Objective-C tests (separate target because SPM doesn't allow mixed-language targets).
 - `Test/AblyTesting/` — Shared Swift test helpers.
 - `Test/AblyTestingObjC/` — Shared Objective-C test helpers.
+- `Test/UTS/` — the Universal Test Suite target (tests derived from the cross-SDK UTS specs; the LiveObjects objects unit tier lives at `Test/UTS/unit/objects/`).
+- `Test/AblyLiveObjectsTesting/` — LiveObjects test-support target (`testsOnly_` internal-access extensions plus shared test helpers/mocks; consumed via `@testable import` by both `AblyLiveObjectsTests` and `UTS`, never shipped).
 
 ## Adding New Files
 

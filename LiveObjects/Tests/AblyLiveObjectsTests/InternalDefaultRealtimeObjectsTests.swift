@@ -2151,6 +2151,7 @@ struct InternalDefaultRealtimeObjectsTests {
 
         // RTO27a1 requires the clear to emit no LiveObjectUpdate events.
         // @specPartial RTO27a1 - asserts the "without emitting any LiveObjectUpdate events" clause
+        @available(iOS 17.0.0, tvOS 17.0.0, *)
         @Test
         func clearOnDetachedEmitsNoUpdateEvents() async throws {
             let internalQueue = TestFactories.createInternalQueue()
