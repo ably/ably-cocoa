@@ -102,6 +102,8 @@ jobs:
           python3 Scripts/annotate-liveobjects-availability.py
           git diff --exit-code LiveObjects/Sources
 
+  # Emits the platform × Xcode-version matrices (via BuildTool generate-matrices)
+  # consumed by the BuildTool-driven jobs below.
   generate-matrices:
     runs-on: macos-15
 
@@ -162,35 +164,26 @@ jobs:
         working-directory: .
         run: swift test -Xswiftc -warnings-as-errors --filter 'AblyLiveObjectsTests\.'
 
-  # Runs the shared standalone `UTS` Swift Testing target (Test/UTS), which builds in the
-  # Swift 6 language mode. It covers the rest/realtime/objects unit tiers plus the
-  # integration/proxy tiers, all derived from the ably/specification `uts/` specs. The
-  # LiveObjects `objects/unit` UTS ports live at Test/UTS/unit/objects — the standard UTS
-  # layout, alongside the rest/realtime unit suites — and run in this job (they used to
-  # sit in the AblyLiveObjects plugin's own test target). One macOS run suffices (no
-  # platform matrix needed). `-Xswiftc -warnings-as-errors` mirrors the test-library job
-  # above and keeps the moved objects suites under that enforcement; because `swift test`
-  # compiles every test target, the whole package is built warnings-clean here too.
-  build-and-test-uts:
-    runs-on: macos-15
-
-    permissions:
-      contents: read
-
-    steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-        with:
-          persist-credentials: false
-          submodules: true
-
-      # This step can be removed once the runners' default version of Xcode is 16.4 or above
-      - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
-        with:
-          xcode-version: 16.4
-
-      - name: Run UTS tests
-        working-directory: .
-        run: swift test -Xswiftc -warnings-as-errors --filter UTS
+  # NOTE: there is deliberately NO job here that RUNS the `UTS` target's tests
+  # (Test/UTS — the Universal Test Suite derived from the ably/specification
+  # `uts/` specs, including the LiveObjects `objects` unit tier at
+  # Test/UTS/unit/objects). Running them here would duplicate CI that already
+  # exists:
+  #
+  # - EXECUTION: integration-test.yaml's Fastlane lanes run the whole `UTS`
+  #   target on iOS, tvOS AND macOS via Test/Ably.xctestplan (which lists the
+  #   UTS target un-skipped) — including the sandbox-network integration tier
+  #   and, on macOS, the proxy tier.
+  # - COMPILATION under -warnings-as-errors: the build-and-test-spm job above
+  #   already provides it — `swift test` compiles every test target in the
+  #   package (UTS and Test/AblyLiveObjectsTesting included) even though its
+  #   --filter only EXECUTES the AblyLiveObjectsTests suite.
+  #
+  # A `build-and-test-uts` job used to live here; it was removed as redundant
+  # (and flaky — `--filter UTS` ran the network-bound sandbox/proxy suites on
+  # every PR). To run the UTS tests locally: `swift test --filter UTS`, or a
+  # single suite with the target-qualified form
+  # `swift test --filter "UTS.<SuiteName>"`.
 
   build-release-configuration-spm:
     name: SPM, `release` configuration (Xcode ${{ matrix.tooling.xcodeVersion }})
@@ -231,6 +224,11 @@ jobs:
         working-directory: .
         run: swift build -Xswiftc -warnings-as-errors --configuration release --target AblyLiveObjects
 
+  # Builds and runs AblyLiveObjectsTests through the AblyLiveObjects Xcode
+  # scheme via BuildTool, once per platform. BuildTool raises the iOS/tvOS test
+  # bundles' deployment target to the plugin floor (14.0) so the test code that
+  # uses plugin types compiles — the same problem fastlane/Fastfile solves for
+  # the UTS target in integration-test.yaml.
   build-and-test-xcode:
     name: Xcode, ${{matrix.platform}} (Xcode ${{ matrix.tooling.xcodeVersion }})
     runs-on: macos-15
@@ -264,6 +262,9 @@ jobs:
           PLATFORM: ${{ matrix.platform }}
         run: swift run --package-path BuildTool BuildTool test-library --platform "$PLATFORM" --without-building
 
+  # Runs AblyLiveObjectsTests with coverage and publishes the numbers. Note it
+  # passes the UnitTests test plan (skips anything tagged .integration), unlike
+  # build-and-test-xcode above which uses the scheme's default AllTests plan.
   code-coverage:
     name: Generate code coverage
     runs-on: macos-15
@@ -302,6 +303,9 @@ jobs:
           show-passed-tests: false
         if: success() || failure()
 
+  # Release-configuration build of the AblyLiveObjects scheme per platform
+  # (build only — no tests). Complements build-release-configuration-spm above,
+  # which does the SPM-side release check.
   build-release-configuration-xcode:
     name: Xcode, `release` configuration, ${{matrix.platform}} (Xcode ${{ matrix.tooling.xcodeVersion }})
     runs-on: macos-15
@@ -328,6 +332,8 @@ jobs:
           PLATFORM: ${{ matrix.platform }}
         run: swift run --package-path BuildTool BuildTool build-library --platform "$PLATFORM" --configuration release
 
+  # Builds the LiveObjects example app (LiveObjects/Example) per platform.
+  # The core SDK's example apps are covered separately by examples.yaml.
   check-example-app:
     name: Example app, ${{matrix.platform}} (Xcode ${{ matrix.tooling.xcodeVersion }})
     runs-on: macos-15
@@ -354,6 +360,8 @@ jobs:
           PLATFORM: ${{ matrix.platform }}
         run: swift run --package-path BuildTool BuildTool build-example-app --platform "$PLATFORM"
 
+  # Builds the AblyLiveObjects DocC documentation and uploads a preview
+  # deployment. The core SDK's (Jazzy) docs are built by docs.yml instead.
   check-documentation:
     runs-on: macos-15
 
@@ -429,7 +437,6 @@ jobs:
       - lint
       - check-availability-annotations
       - build-and-test-spm
-      - build-and-test-uts
       - build-release-configuration-spm
       - build-and-test-xcode
       - build-release-configuration-xcode

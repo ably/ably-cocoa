@@ -1,5 +1,9 @@
 name: Docs Generation
 
+# Builds Jazzy + Markdown API docs for the core SDK only. AblyLiveObjects
+# documentation (DocC) is built and uploaded by the check-documentation job
+# in liveobjects.yaml.
+
 on:
   pull_request:
   push:

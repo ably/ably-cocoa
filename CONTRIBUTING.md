@@ -82,8 +82,8 @@ Both `AblyLiveObjectsTests` and the `objects` UTS suites also depend on a shared
 
 In CI:
 
-- [`integration-test.yaml`](.github/workflows/integration-test.yaml) runs the Fastlane lanes, which build the `ably-cocoa` scheme against [`Test/Ably.xctestplan`](Test/Ably.xctestplan) — `AblyTests`, `AblyTestsObjC` and `UTS`.
-- [`liveobjects.yaml`](.github/workflows/liveobjects.yaml) runs `AblyLiveObjectsTests` three ways: `swift test --filter 'AblyLiveObjectsTests\.'`, the `AblyLiveObjects` scheme via `LiveObjects/BuildTool`, and the code-coverage job. These are not equivalent — `BuildTool test-library` uses the scheme's default `AllTests` plan, whereas the coverage job passes `-testPlan UnitTests`, which skips anything tagged `.integration`. It also runs the `UTS` target on macOS (`swift test --filter UTS`), which is where the ported LiveObjects `objects` unit specs now live.
+- [`integration-test.yaml`](.github/workflows/integration-test.yaml) runs the Fastlane lanes, which build the `ably-cocoa` scheme against [`Test/Ably.xctestplan`](Test/Ably.xctestplan) — `AblyTests`, `AblyTestsObjC` and `UTS`. This is the **only** place CI executes the `UTS` target's tests (on all three platforms), and therefore where the ported LiveObjects `objects` unit specs run.
+- [`liveobjects.yaml`](.github/workflows/liveobjects.yaml) runs `AblyLiveObjectsTests` three ways: `swift test --filter 'AblyLiveObjectsTests\.'`, the `AblyLiveObjects` scheme via `LiveObjects/BuildTool`, and the code-coverage job. These are not equivalent — `BuildTool test-library` uses the scheme's default `AllTests` plan, whereas the coverage job passes `-testPlan UnitTests`, which skips anything tagged `.integration`. It does **not** execute the `UTS` target's tests (that's `integration-test.yaml`'s job, above), though its SPM job still compiles the whole package — `UTS` included — under `-warnings-as-errors`.
 - [`check-spm.yaml`](.github/workflows/check-spm.yaml) only builds; it runs no tests.
 
 ## Plugins
