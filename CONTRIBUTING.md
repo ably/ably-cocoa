@@ -71,17 +71,19 @@ The `make test_*` commands are used by CI and expect you to have a simulator dev
 | --- | --- | --- |
 | `AblyTests` | `Test/AblyTests` | Swift tests for the core SDK |
 | `AblyTestsObjC` | `Test/AblyTestsObjC` | Objective-C tests for the core SDK |
-| `UTS` | `Test/UTS` | Universal Test Suite, derived from the language-neutral specs in the [`specification`](https://github.com/ably/specification) repository. Its `objects` module links `AblyLiveObjects`, which is why the Fastlane lanes raise their deployment target — see [Supported OS versions](#supported-os-versions) |
-| `AblyLiveObjectsTests` | `LiveObjects/Tests/AblyLiveObjectsTests` | LiveObjects tests, including the ported UTS `objects` unit specs under `UTS/` |
+| `UTS` | `Test/UTS` | Universal Test Suite, derived from the language-neutral specs in the [`specification`](https://github.com/ably/specification) repository — including the ported LiveObjects `objects` unit specs under `unit/objects/`. Its `objects` suites link `AblyLiveObjects`, which is why the Fastlane lanes raise their deployment target — see [Supported OS versions](#supported-os-versions) |
+| `AblyLiveObjectsTests` | `LiveObjects/Tests/AblyLiveObjectsTests` | LiveObjects native unit and integration tests |
 
 To run just one of them, filter by module name — for example `swift test --filter 'AblyLiveObjectsTests\.'`.
 
-Every one of these targets selects its files by directory: SwiftPM globs the target's `path`, and the test plans name whole targets rather than individual tests. A new test file is therefore picked up automatically, with no change to `Package.swift`, to any test plan, or to any CI workflow. Note in particular that the LiveObjects UTS ports live inside `AblyLiveObjectsTests`, so they are run by that target's CI jobs and not by the `UTS` target's.
+Every one of these targets selects its files by directory: SwiftPM globs the target's `path`, and the test plans name whole targets rather than individual tests. A new test file is therefore picked up automatically, with no change to `Package.swift`, to any test plan, or to any CI workflow. Note in particular that the ported LiveObjects `objects` UTS unit specs live inside the `UTS` target (under `Test/UTS/unit/objects/`), alongside the rest of the Universal Test Suite, so they run as part of that target rather than `AblyLiveObjectsTests`.
+
+Both `AblyLiveObjectsTests` and the `objects` UTS suites also depend on a shared test-support target, `AblyLiveObjectsTesting` (`Test/AblyLiveObjectsTesting`), imported with `@testable` for internal-access test helpers and mocks. It is a regular (non-test) target, so it is compiled but never run on its own — which is why it is not listed above.
 
 In CI:
 
 - [`integration-test.yaml`](.github/workflows/integration-test.yaml) runs the Fastlane lanes, which build the `ably-cocoa` scheme against [`Test/Ably.xctestplan`](Test/Ably.xctestplan) — `AblyTests`, `AblyTestsObjC` and `UTS`.
-- [`liveobjects.yaml`](.github/workflows/liveobjects.yaml) runs `AblyLiveObjectsTests` three ways: `swift test --filter 'AblyLiveObjectsTests\.'`, the `AblyLiveObjects` scheme via `LiveObjects/BuildTool`, and the code-coverage job. These are not equivalent — `BuildTool test-library` uses the scheme's default `AllTests` plan, whereas the coverage job passes `-testPlan UnitTests`, which skips anything tagged `.integration`.
+- [`liveobjects.yaml`](.github/workflows/liveobjects.yaml) runs `AblyLiveObjectsTests` three ways: `swift test --filter 'AblyLiveObjectsTests\.'`, the `AblyLiveObjects` scheme via `LiveObjects/BuildTool`, and the code-coverage job. These are not equivalent — `BuildTool test-library` uses the scheme's default `AllTests` plan, whereas the coverage job passes `-testPlan UnitTests`, which skips anything tagged `.integration`. It also runs the `UTS` target on macOS (`swift test --filter UTS`), which is where the ported LiveObjects `objects` unit specs now live.
 - [`check-spm.yaml`](.github/workflows/check-spm.yaml) only builds; it runs no tests.
 
 ## Plugins
