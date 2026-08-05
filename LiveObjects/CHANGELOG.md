@@ -1,5 +1,23 @@
 # Change Log
 
+## Unreleased
+
+### Path-based public API
+
+The path-based public API is now implemented end-to-end: path objects, live instances, subscriptions, `get()`, status events, and disposal all work against the CRDT engine (previously these were skeletons).
+
+### CRDT engine hardening
+
+These changes do not affect the plugin's public API but bring the internal engine into line with the specification:
+
+- Add the parent-reference graph (per-object reverse child→parent references, cycle-safe full-path resolution, and the post-sync rebuild).
+- Implement RTO27 channel-state data lifecycle (clear object data to zero value on `DETACHED`/`FAILED`, retain on `SUSPENDED`).
+- Add exclusivity guards and a range of spec-compliance fixes across the map, counter, pool, and sync paths.
+
+### Testing
+
+- Ported all 15 UTS (Universal Test Suite) unit specs.
+
 ## [0.4.0](https://github.com/ably/ably-liveobjects-swift-plugin/tree/0.4.0)
 
 ### Operations are now applied on acknowledgement

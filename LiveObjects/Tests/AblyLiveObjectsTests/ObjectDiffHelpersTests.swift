@@ -1,4 +1,5 @@
 @testable import AblyLiveObjects
+@testable import AblyLiveObjectsTesting
 import Foundation
 import Testing
 

@@ -18,6 +18,8 @@ swift run --package-path BuildTool BuildTool test-library --platform macOS --onl
 
 This is fast (a few seconds) and excludes integration tests. Only run the full test suite if explicitly asked.
 
+Note that this BuildTool loop covers only the native `AblyLiveObjectsTests` suite. The objects UTS spec-port suites now live in the shared `UTS` test target at `Test/UTS/unit/objects/`, so they are not run by the command above; run them from the repo root with `swift test --filter UTS` (the whole UTS tier) or the target-qualified `swift test --filter "UTS.<SuiteName>"` (a single ported suite, e.g. `swift test --filter "UTS.InternalLiveMapTests"`).
+
 ## Lint
 
 ```sh

@@ -1,5 +1,6 @@
 import Ably.Private
 @testable import AblyLiveObjects
+@testable import AblyLiveObjectsTesting
 import Testing
 
 @Suite(.tags(.integration))

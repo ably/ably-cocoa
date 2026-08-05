@@ -1,6 +1,7 @@
 import _AblyPluginSupportPrivate
 import Ably
 @testable import AblyLiveObjects
+@testable import AblyLiveObjectsTesting
 import Foundation
 import Testing
 
@@ -174,40 +175,6 @@ struct PathObjectSubscriptionTests {
 
     // MARK: - Depth-window coverage (RTO24c1)
 
-    // @spec RTO24c1 - a subscription covers an event path iff its path is a prefix within the depth window
-    @Test
-    func depthWindowCoverageAndSiblingExclusion() throws {
-        let fixture = Self.makeFixture()
-
-        // Graph: root -"p"-> map:p -"c"-> counter:c. counter:c's only full path is ["p", "c"].
-        let parentMap = Self.makeMap(objectID: "map:p@1", fixture)
-        let counter = Self.makeCounter(objectID: "counter:c@1", fixture)
-        fixture.engine.testsOnly_setPoolEntry(.map(parentMap), forObjectID: "map:p@1")
-        fixture.engine.testsOnly_setPoolEntry(.counter(counter), forObjectID: "counter:c@1")
-        parentMap.testsOnly_setParentReferences([ObjectsPool.rootKey: ["p"]])
-        counter.testsOnly_setParentReferences(["map:p@1": ["c"]])
-
-        let root = Self.rootPath(fixture)
-        let covered = EventCollector() // subscription at "p", depth 2 — covers ["p","c"] (relative depth 2)
-        let tooShallow = EventCollector() // subscription at "p", depth 1 — relative depth 2 > 1, excluded
-        let sibling = EventCollector() // subscription at "q" — not a prefix of ["p","c"], excluded
-
-        let subCovered = try root.at(path: "p").subscribe(options: .init(depth: 2)) { covered.record($0) }
-        let subShallow = try root.at(path: "p").subscribe(options: .init(depth: 1)) { tooShallow.record($0) }
-        let subSibling = try root.at(path: "q").subscribe(options: .init(depth: 2)) { sibling.record($0) }
-        defer {
-            subCovered.unsubscribe()
-            subShallow.unsubscribe()
-            subSibling.unsubscribe()
-        }
-
-        Self.applyAndDrain([TestFactories.counterIncOperationMessage(objectId: "counter:c@1", number: 5, serial: "ts1", siteCode: "site1")], fixture)
-
-        #expect(covered.sortedPaths == ["p.c"]) // notified once, at the counter's full path
-        #expect(tooShallow.events.isEmpty) // depth window too small
-        #expect(sibling.events.isEmpty) // not on the path
-    }
-
     // MARK: - Unsubscribe (SUB2)
 
     // @spec SUB2a - unsubscribe stops further delivery
@@ -227,19 +194,6 @@ struct PathObjectSubscriptionTests {
     }
 
     // MARK: - Depth validation (RTPO19c1a / DEV-9)
-
-    // @spec RTPO19c1a - a non-positive subscription depth throws 40003
-    @Test(arguments: [0, -1])
-    func nonPositiveDepthThrows40003(depth: Int) throws {
-        let fixture = Self.makeFixture()
-
-        do {
-            _ = try Self.rootPath(fixture).subscribe(options: .init(depth: depth)) { _ in }
-            Issue.record("Expected subscribe to throw for depth \(depth)")
-        } catch {
-            #expect(error.code == 40003)
-        }
-    }
 
     // A positive depth (and no options) is accepted.
     @Test

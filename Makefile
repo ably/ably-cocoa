@@ -57,9 +57,10 @@ update: \
 
 ## -- Linting --
 
-## [Lint] Check EditorConfig compliance
+## [Lint] Check EditorConfig compliance and LiveObjects test seams
 lint:
 	editorconfig-checker
+	bash Scripts/check-liveobjects-test-seams.sh
 
 ## -- Source Code Tasks --
 

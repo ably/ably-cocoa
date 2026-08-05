@@ -1,5 +1,6 @@
 import _AblyPluginSupportPrivate
 @testable import AblyLiveObjects
+@testable import AblyLiveObjectsTesting
 import Foundation
 import Testing
 
@@ -227,36 +228,6 @@ struct ObjectsPoolTests {
         }
 
         // MARK: - RTO5c2 Tests
-
-        // @spec RTO5c2
-        @Test
-        func removesObjectsNotInSync() throws {
-            let logger = TestLogger()
-            let internalQueue = TestFactories.createInternalQueue()
-            let existingMap1 = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-            let existingMap2 = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-            let existingCounter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-
-            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock(), testsOnly_otherEntries: [
-                "map:hash@1": .map(existingMap1),
-                "map:hash@2": .map(existingMap2),
-                "counter:hash@1": .counter(existingCounter),
-            ])
-
-            // Only sync one of the existing objects
-            let objectState = TestFactories.mapObjectState(objectId: "map:hash@1")
-
-            internalQueue.ably_syncNoDeadlock {
-                pool.nosync_applySyncObjectsPool(.testsOnly_fromStates([(state: objectState, serialTimestamp: nil)]), logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-            }
-
-            // Verify only synced object and root remain
-            #expect(pool.entries.count == 2) // root + map:hash@1
-            #expect(pool.entries["root"] != nil)
-            #expect(pool.entries["map:hash@1"] != nil)
-            #expect(pool.entries["map:hash@2"] == nil) // Should be removed
-            #expect(pool.entries["counter:hash@1"] == nil) // Should be removed
-        }
 
         // @spec RTO5c2a
         @Test

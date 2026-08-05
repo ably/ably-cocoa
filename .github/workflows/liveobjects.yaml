@@ -56,6 +56,13 @@ jobs:
 
       - run: swift run --package-path BuildTool BuildTool lint
 
+      # Fails if LiveObjects/Sources grows a `testsOnly_` declaration outside the
+      # sanctioned residual allowlist (or if a listed residual disappears). See
+      # Test/AblyLiveObjectsTesting/README.md.
+      - name: Check LiveObjects test seams
+        working-directory: .
+        run: bash Scripts/check-liveobjects-test-seams.sh
+
   # Checks that every top-level declaration in the LiveObjects sources
   # carries an @available annotation. The LiveObjects code requires newer OS
   # versions than the rest of this package declares in its platforms, and
@@ -155,6 +162,36 @@ jobs:
         working-directory: .
         run: swift test -Xswiftc -warnings-as-errors --filter 'AblyLiveObjectsTests\.'
 
+  # Runs the shared standalone `UTS` Swift Testing target (Test/UTS), which builds in the
+  # Swift 6 language mode. It covers the rest/realtime/objects unit tiers plus the
+  # integration/proxy tiers, all derived from the ably/specification `uts/` specs. The
+  # LiveObjects `objects/unit` UTS ports live at Test/UTS/unit/objects — the standard UTS
+  # layout, alongside the rest/realtime unit suites — and run in this job (they used to
+  # sit in the AblyLiveObjects plugin's own test target). One macOS run suffices (no
+  # platform matrix needed). `-Xswiftc -warnings-as-errors` mirrors the test-library job
+  # above and keeps the moved objects suites under that enforcement; because `swift test`
+  # compiles every test target, the whole package is built warnings-clean here too.
+  build-and-test-uts:
+    runs-on: macos-15
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+          submodules: true
+
+      # This step can be removed once the runners' default version of Xcode is 16.4 or above
+      - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
+        with:
+          xcode-version: 16.4
+
+      - name: Run UTS tests
+        working-directory: .
+        run: swift test -Xswiftc -warnings-as-errors --filter UTS
+
   build-release-configuration-spm:
     name: SPM, `release` configuration (Xcode ${{ matrix.tooling.xcodeVersion }})
     runs-on: macos-15
@@ -177,9 +214,22 @@ jobs:
           xcode-version: ${{ matrix.tooling.xcodeVersion }}
 
       # https://forums.swift.org/t/warnings-as-errors-for-libraries-frameworks/58393/2
+      #
+      # Scoped to --target AblyLiveObjects: a whole-package release build also
+      # compiles the AblyLiveObjectsTesting helper target, which uses
+      # `@testable import AblyLiveObjects` and so only builds when testability is
+      # enabled (a debug-only affordance). That helper is debug-only test tooling,
+      # never shipped, and unreachable from any product, so consumers never build
+      # it. Scoping the release check to the AblyLiveObjects target reproduces
+      # exactly what a consumer compiles — a genuine, no-testability release check
+      # of the shipped library that excludes the helper target. (Note: --product
+      # does NOT scope this out for an in-package build — SwiftPM still compiles
+      # every regular target of the root package; --target does. This matches the
+      # availability job above, which also uses --target AblyLiveObjects.) The
+      # -Xswiftc -warnings-as-errors flag is preserved.
       - name: Build (release, warnings as errors)
         working-directory: .
-        run: swift build -Xswiftc -warnings-as-errors --configuration release
+        run: swift build -Xswiftc -warnings-as-errors --configuration release --target AblyLiveObjects
 
   build-and-test-xcode:
     name: Xcode, ${{matrix.platform}} (Xcode ${{ matrix.tooling.xcodeVersion }})
@@ -379,6 +429,7 @@ jobs:
       - lint
       - check-availability-annotations
       - build-and-test-spm
+      - build-and-test-uts
       - build-release-configuration-spm
       - build-and-test-xcode
       - build-release-configuration-xcode

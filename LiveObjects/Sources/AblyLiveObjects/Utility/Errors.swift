@@ -269,24 +269,6 @@ extension JSONObjectOrArray.ConversionError: ConvertibleToLiveObjectsError {
 
 // MARK: - ARTErrorInfo Extension
 
-/// The `ARTErrorInfo.userInfo` key under which we store the underlying `LiveObjectsError`. Used by `testsOnly_underlyingLiveObjectsError`.
+/// The `ARTErrorInfo.userInfo` key under which we store the underlying `LiveObjectsError` (see `toARTErrorInfo()`), preserving it for diagnostics.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 private let liveObjectsErrorUserInfoKey = "LiveObjectsError"
-
-@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal extension ARTErrorInfo {
-    /// Retrieves the underlying `LiveObjectsError` from this `ARTErrorInfo` if it was generated from a `LiveObjectsError`.
-    ///
-    /// - Returns: The underlying `LiveObjectsError` if this error was generated from one, `nil` otherwise.
-    var testsOnly_underlyingLiveObjectsError: LiveObjectsError? {
-        guard let userInfoEntry = userInfo[liveObjectsErrorUserInfoKey] else {
-            return nil
-        }
-
-        guard let liveObjectsError = userInfoEntry as? LiveObjectsError else {
-            preconditionFailure("Expected a LiveObjectsError, got \(userInfoEntry)")
-        }
-
-        return liveObjectsError
-    }
-}

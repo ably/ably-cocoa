@@ -1,6 +1,7 @@
 import _AblyPluginSupportPrivate
 import Ably
 @testable import AblyLiveObjects
+@testable import AblyLiveObjectsTesting
 import Foundation
 import Testing
 
@@ -267,19 +268,6 @@ struct DefaultPathObjectTests {
     }
 
     // MARK: - Write error model (92005, 92007)
-
-    // @spec RTPO3c2 - a write on an unresolvable path throws 92005
-    @Test
-    func writeOnUnresolvedPathThrows92005() async throws {
-        let fixture = Self.makeFixture()
-        let root = Self.rootPathObject(fixture)
-
-        await #expect { () async throws in
-            try await root.get(key: "does-not-exist").asLiveMap().set(key: "k", value: .primitive(.string("v")))
-        } throws: { error in
-            (error as? ARTErrorInfo)?.code == 92005
-        }
-    }
 
     // @spec RTPO17e - a write through a mismatched-type cast throws 92007
     @Test
