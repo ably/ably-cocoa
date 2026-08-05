@@ -151,4 +151,4 @@ Some of our integration tests require access to ably-cocoa internals that are no
 
 The plugin is released as part of ably-cocoa; see ably-cocoa's [CONTRIBUTING.md](../CONTRIBUTING.md) for the release process, and its [Versioning](../CONTRIBUTING.md#versioning) and [Distribution](../CONTRIBUTING.md#distribution) sections for what a release tag means for this plugin in particular. In short: the plugin shares ably-cocoa's version number, is published via Swift Package Manager only, and is exempt from the repository's semantic versioning guarantees while it remains experimental.
 
-(This plugin previously had its own, independent releases in the [ably-liveobjects-swift-plugin](https://github.com/ably/ably-liveobjects-swift-plugin) repository; those releases remain on that repository's releases page.)
+(This plugin previously had its own, independent releases in the [ably-liveobjects-swift-plugin](https://github.com/ably/ably-liveobjects-swift-plugin/releases) repository; those releases remain on that repository's releases page.)
