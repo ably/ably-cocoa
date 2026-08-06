@@ -2158,7 +2158,7 @@ struct InternalDefaultLiveMapTests {
             try map.subscribe(listener: subscriber.createListener(), coreSDK: coreSDK)
 
             internalQueue.ably_syncNoDeadlock {
-                map.nosync_resetData()
+                _ = map.nosync_resetData()
             }
 
             let subscriberInvocations = await subscriber.getInvocations()

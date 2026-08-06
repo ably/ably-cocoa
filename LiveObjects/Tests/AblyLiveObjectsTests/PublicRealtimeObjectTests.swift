@@ -191,7 +191,7 @@ struct PublicRealtimeObjectTests {
             _ = try await publicObject.get()
             Issue.record("Expected get() to rethrow the implicit-attach failure (RTL33b1)")
         } catch {
-            #expect((error as? ARTErrorInfo)?.code == 90000)
+            #expect(error.code == 90000)
         }
     }
 
@@ -315,7 +315,7 @@ struct PublicRealtimeObjectTests {
         proxied.dispose()
 
         // A subscription registered after dispose still receives events.
-        try await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
             publicObject.on(event: .synced) {
                 continuation.resume()
             }
