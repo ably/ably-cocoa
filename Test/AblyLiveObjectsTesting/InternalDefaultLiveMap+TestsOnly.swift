@@ -80,9 +80,8 @@ extension InternalDefaultLiveMap {
         }
     }
 
-    /// Test-only accessor for `getFullPaths` that hops onto the internal queue. It dispatches to the
-    /// queue (rather than holding this object's mutex) so the pool DFS can read every object's
-    /// `parentReferences` independently.
+    /// Test-only accessor: hops onto the internal queue and delegates to
+    /// `ObjectsPool.nosync_getFullPaths(forObjectID:)`.
     func testsOnly_getFullPaths(objectsPool: ObjectsPool) -> [[String]] {
         mutableStateMutex.dispatchQueue.ably_syncNoDeadlock {
             objectsPool.nosync_getFullPaths(forObjectID: nosync_objectID)

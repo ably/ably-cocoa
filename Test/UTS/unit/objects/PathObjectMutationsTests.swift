@@ -17,10 +17,10 @@ import Testing
 /// `DefaultPathObjectTests` write cases.
 ///
 /// ## Mock-realtime adaptation (recorded in deviations.md)
-/// The seeded double captures `publishAndApply` messages but does **not** apply them back onto the
-/// graph. So the spec's post-apply value reads (`root.get("name").value() == "Bob"`,
-/// `root.get("score").value() == 125`) need the full `InternalDefaultRealtimeObjects` pipeline and are
-/// out of unit scope: these ports assert the **published** operation instead.
+/// The seeded double echoes each captured `publishAndApply` operation back onto its existing pool
+/// entry (the RTO20 ACK echo), so the spec's post-apply value reads are asserted directly for
+/// primitive writes. Only operations that must *create* objects (`*_CREATE` blueprints) still need
+/// the full `InternalDefaultRealtimeObjects` pipeline and remain out of unit scope.
 ///
 /// ## Deviations
 /// - **DEV-2 (typed casts):** cocoa splits the spec's polymorphic `PathObject.set/remove/increment/
@@ -45,8 +45,7 @@ final class PathObjectMutationsTests {
 
     // MARK: - RTPO15: set() delegates to InternalLiveMap#set
 
-    // UTS: objects/unit/RTPO15/set-delegates-to-map-0 — RTPO15d (delegates to InternalLiveMap#set). Asserts
-    // the published MAP_SET (the mock does not apply, so the spec's post-apply value read is out of scope).
+    // UTS: objects/unit/RTPO15/set-delegates-to-map-0 — RTPO15d (delegates to InternalLiveMap#set).
     @Test
     func RTPO15_set_delegates_to_map() async throws {
         let fixture = Self.makeFixture()
@@ -58,6 +57,8 @@ final class PathObjectMutationsTests {
         #expect(messages[0].operation?.objectId == ObjectsPool.rootKey)
         #expect(messages[0].operation?.mapSet?.key == "name")
         #expect(messages[0].operation?.mapSet?.value?.string == "Bob")
+        // The spec's post-apply read (via the double's ACK echo).
+        #expect(try fixture.root.get(key: "name").asPrimitive().value() == .string("Bob"))
     }
 
     // UTS: objects/unit/RTPO15/set-nested-path-0 — RTPO15a2/RTPO15b (nested path resolves to the child map).
@@ -71,6 +72,8 @@ final class PathObjectMutationsTests {
         #expect(messages[0].operation?.action == .known(.mapSet))
         #expect(messages[0].operation?.objectId == "map:profile@1000")
         #expect(messages[0].operation?.mapSet?.key == "email")
+        // The spec's post-apply read (via the double's ACK echo).
+        #expect(try fixture.root.get(key: "profile").asLiveMap().get(key: "email").asPrimitive().value() == .string("bob@example.com"))
     }
 
     // UTS: objects/unit/RTPO15d/set-non-map-throws-0 — RTPO15e (set on a non-map -> 92007).
@@ -96,6 +99,8 @@ final class PathObjectMutationsTests {
         #expect(messages[0].operation?.action == .known(.mapRemove))
         #expect(messages[0].operation?.objectId == ObjectsPool.rootKey)
         #expect(messages[0].operation?.mapRemove?.key == "name")
+        // The spec's post-apply read: the removed key resolves to no value (via the double's ACK echo).
+        #expect(try fixture.root.get(key: "name").asPrimitive().value() == nil)
     }
 
     // UTS: objects/unit/RTPO16d/remove-non-map-throws-0 — RTPO16e (remove on a non-map -> 92007).
@@ -111,7 +116,7 @@ final class PathObjectMutationsTests {
     // MARK: - RTPO17: increment() delegates to InternalLiveCounter#increment
 
     // UTS: objects/unit/RTPO17/increment-delegates-to-counter-0 — RTPO17d (delegates to InternalLiveCounter#
-    // increment). Asserts the published COUNTER_INC (post-apply `value() == 125` is out of unit scope).
+    // increment).
     @Test
     func RTPO17_increment_delegates_to_counter() async throws {
         let fixture = Self.makeFixture()
@@ -122,6 +127,8 @@ final class PathObjectMutationsTests {
         #expect(messages[0].operation?.action == .known(.counterInc))
         #expect(messages[0].operation?.objectId == "counter:score@1000")
         #expect(messages[0].operation?.counterInc?.number == NSNumber(value: 25))
+        // The spec's post-apply read: 100 (seeded) + 25 (via the double's ACK echo).
+        #expect(try fixture.root.get(key: "score").asLiveCounter().value() == 125)
     }
 
     // UTS: objects/unit/RTPO17/increment-default-amount-0 — RTPO17a1 (amount defaults to 1).
@@ -132,6 +139,8 @@ final class PathObjectMutationsTests {
 
         let messages = try #require(fixture.realtimeObjects.capturedMessages)
         #expect(messages[0].operation?.counterInc?.number == NSNumber(value: 1))
+        // The spec's post-apply read: 100 (seeded) + 1 (via the double's ACK echo).
+        #expect(try fixture.root.get(key: "score").asLiveCounter().value() == 101)
     }
 
     // UTS: objects/unit/RTPO17d/increment-non-counter-throws-0 — RTPO17e (increment on a non-counter -> 92007).
@@ -157,6 +166,8 @@ final class PathObjectMutationsTests {
         #expect(messages.count == 1)
         #expect(messages[0].operation?.action == .known(.counterInc))
         #expect(messages[0].operation?.counterInc?.number == NSNumber(value: -10))
+        // The spec's post-apply read: 100 (seeded) - 10 (via the double's ACK echo).
+        #expect(try fixture.root.get(key: "score").asLiveCounter().value() == 90)
     }
 
     // UTS: objects/unit/RTPO18/decrement-default-amount-0 — RTPO18a1 (amount defaults to 1 => published -1).
@@ -167,6 +178,8 @@ final class PathObjectMutationsTests {
 
         let messages = try #require(fixture.realtimeObjects.capturedMessages)
         #expect(messages[0].operation?.counterInc?.number == NSNumber(value: -1))
+        // The spec's post-apply read: 100 (seeded) - 1 (via the double's ACK echo).
+        #expect(try fixture.root.get(key: "score").asLiveCounter().value() == 99)
     }
 
     // UTS: objects/unit/RTPO18d/decrement-non-counter-throws-0 — RTPO18e (decrement on a non-counter -> 92007).

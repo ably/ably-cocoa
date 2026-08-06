@@ -102,7 +102,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
         internalQueue: DispatchQueue,
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock,
-        channelName: String = "",
+        channelName: String,
         garbageCollectionOptions: GarbageCollectionOptions = .init()
     ) {
         self.logger = logger
@@ -787,7 +787,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
         /// In production this is bound to the real channel name at construction: the `channelName`
         /// init parameter is supplied by `DefaultInternalPlugin.nosync_prepare` via the
         /// `nameForChannel:` plugin bridge (ably-java `DefaultRealtimeObject.channelName`).
-        internal var channelName: String = ""
+        internal var channelName: String
 
         internal var onChannelAttachedHasObjects: Bool?
         internal var objectsEventSubscriptionStorage = SubscriptionStorage<ObjectsEvent, Void>()

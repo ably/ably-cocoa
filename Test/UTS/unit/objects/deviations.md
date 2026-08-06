@@ -57,12 +57,12 @@ assert the cocoa shape. Deviations (defined in `PORT_KOTLIN_TO_SWIFT/05_DEVIATIO
   `.mapSet`, `.mapRemove`, `.counterCreate`, `.counterInc`, `.objectDelete`, `.mapClear`) and
   `ObjectsMapSemantics` has only `.lww`. The spec's `action == "MAP_SET"` maps to `.mapSet`, etc.
   Unknown wire codes are held internally by `WireEnum.unknown` and never surface publicly. Asserted by
-  `test_DEV5_object_operation_action_seven_distinct_cases`.
+  `DEV5_object_operation_action_seven_distinct_cases`.
 - **DEV-6** — `ObjectData` shape. The public `ObjectData` adds a Swift-only `encoding: String?` (no
   wire/Java counterpart), exposes `json` as a raw `String?` (vs Java's parsed `JsonElement`), and uses
   non-optional `Double` for `CounterCreate.count` / `CounterInc.number` (`number` on `ObjectData` is
-  `Double?`). Asserted by `test_ObjectData_holds_typed_values`, `test_PAOOP2_counter_inc_only_relevant_field`
-  and `test_PAOOP2_counter_create_with_count`.
+  `Double?`). Asserted by `objectData_holds_typed_values`, `PAOOP2_counter_inc_only_relevant_field`
+  and `PAOOP2_counter_create_with_count`.
 
 **Scope note:** the source spec's cases all drive the wire→public conversion
 (`PublicObjectMessage.fromObjectMessage` / `PublicObjectOperation.fromObjectOperation`, i.e. cocoa's
@@ -123,7 +123,7 @@ by applying an operation to the node directly, the unit stand-in for `mock_ws.se
   `object`/`null` rows are compile-time-unrepresentable. Only the representable non-finite doubles
   (`NaN`/`Infinity`/`-Infinity`) reach the RTLC12e1 finiteness check (`InternalDefaultLiveCounter.increment`,
   code 40003); those are ported. `null`-means-omitted maps to the no-argument `increment()` default of 1,
-  pinned by `InstanceTests.test_RTINS14a...`.
+  pinned by `InstanceTests.RTINS14a_increment_default`.
 - **Mock-realtime adaptation.** As for InstanceTests: the published COUNTER_INC is asserted; the spec's
   post-apply value reads (RTLC12 `value() == 150`, RTLC13 `value() == 85`) need the full pipeline and are
   out of unit scope. Remote updates (RTLC11) are simulated by applying an operation to the node.
@@ -153,10 +153,12 @@ same tree via OBJECT_SYNC. Mirrors the native `DefaultPathObjectTests`.
 
 - **DEV-2 (typed casts):** cocoa splits the spec's polymorphic `set/remove/increment/decrement` across
   the typed casts (`asLiveMap()`/`asLiveCounter()`). The RTPO15e/16e/17e/18e "wrong type" branch (→ 92007) is exercised by writing through the _mismatched_ cast (e.g. `asLiveMap()` on a counter).
-- **Mock-realtime adaptation.** `ObjectsUTSSeededRealtimeObjects` captures `publishAndApply` but does
-  not apply the op back onto the graph, so the spec's post-apply value reads
-  (`root.get("name").value() == "Bob"`, `root.get("score").value() == 125`) need the full pipeline and
-  are out of unit scope — the ports assert the published operation instead.
+- **Mock-realtime adaptation.** `ObjectsUTSSeededRealtimeObjects` echoes each captured
+  `publishAndApply` operation back onto its existing pool entry (the RTO20 ACK echo), so the spec's
+  post-apply value reads (`root.get("name").value() == "Bob"`, `root.get("score").value() == 125`) are
+  asserted directly for primitive writes. Only operations that must *create* objects (`*_CREATE`
+  blueprints) still need the full `InternalDefaultRealtimeObjects` pipeline and remain out of unit
+  scope.
 
 ### `objects/unit/internal_live_map_api.md` → `InternalLiveMapApiTests.swift`
 

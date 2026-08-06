@@ -536,8 +536,7 @@ final class ObjectsUTSSeededRealtimeObjects: InternalRealtimeObjectsProtocol {
         _pathObjectSubscriptionRegister
     }
 
-    /// The messages captured by the most recent `publishAndApply` (write ports assert against this;
-    /// the mock does not apply them back onto the graph, so post-apply value reads are out of scope).
+    /// The messages captured by the most recent `publishAndApply` (write ports assert against this).
     var capturedMessages: [ProtocolTypes.OutboundObjectMessage]? {
         mutex.withLock { _captured }
     }
@@ -548,6 +547,48 @@ final class ObjectsUTSSeededRealtimeObjects: InternalRealtimeObjectsProtocol {
         callback: @escaping @Sendable (Result<Void, ARTErrorInfo>) -> Void,
     ) {
         mutex.withLock { _captured = objectMessages }
-        callback(.success(()))
+        // The RTO20 ACK echo, reduced to what the seeded pool can express: apply each captured
+        // operation to its existing pool entry, so the spec's post-apply value reads work. A fresh
+        // siteCode guarantees RTLO4a applicability against the seeded siteTimeserials. Operations
+        // targeting objects outside the pool (e.g. `*_CREATE` blueprints) are not echoed — those
+        // need the full `InternalDefaultRealtimeObjects` pipeline.
+        //
+        // The echo is asynchronous, like the real ACK: the write APIs call `publishAndApply` while
+        // holding the written object's own state mutex, so applying synchronously here would be an
+        // exclusivity violation. Hopping the (serial) internal queue runs the apply after the write's
+        // locked region exits, and the callback fires after the apply, so an awaited write
+        // happens-after its echo.
+        let poolMutex = poolMutex
+        poolMutex.dispatchQueue.async {
+            var pool = poolMutex.withoutSync { $0 }
+            for message in objectMessages {
+                guard let operation = message.operation,
+                      let entry = pool.entries[operation.objectId]
+                else {
+                    continue
+                }
+                switch entry {
+                case let .map(map):
+                    _ = map.nosync_apply(
+                        operation,
+                        source: .channel,
+                        objectMessageSerial: "uts-apply-serial",
+                        objectMessageSiteCode: "uts-apply",
+                        objectMessageSerialTimestamp: nil,
+                        objectsPool: &pool,
+                    )
+                case let .counter(counter):
+                    _ = counter.nosync_apply(
+                        operation,
+                        source: .channel,
+                        objectMessageSerial: "uts-apply-serial",
+                        objectMessageSiteCode: "uts-apply",
+                        objectMessageSerialTimestamp: nil,
+                        objectsPool: &pool,
+                    )
+                }
+            }
+            callback(.success(()))
+        }
     }
 }

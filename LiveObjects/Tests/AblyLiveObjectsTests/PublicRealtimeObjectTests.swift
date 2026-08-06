@@ -28,6 +28,7 @@ struct PublicRealtimeObjectTests {
             internalQueue: internalQueue,
             userCallbackQueue: .main,
             clock: MockSimpleClock(),
+            channelName: "test-channel",
         )
     }
 

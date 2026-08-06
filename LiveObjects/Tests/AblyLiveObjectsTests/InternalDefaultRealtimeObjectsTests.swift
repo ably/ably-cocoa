@@ -19,6 +19,7 @@ struct InternalDefaultRealtimeObjectsTests {
             internalQueue: internalQueue,
             userCallbackQueue: .main,
             clock: clock,
+            channelName: "test-channel",
         )
     }
 

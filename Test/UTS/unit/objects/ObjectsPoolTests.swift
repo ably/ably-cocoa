@@ -86,6 +86,7 @@ struct ObjectsPoolTests {
             internalQueue: internalQueue,
             userCallbackQueue: .main,
             clock: MockSimpleClock(),
+            channelName: "test-channel",
         )
     }
 
