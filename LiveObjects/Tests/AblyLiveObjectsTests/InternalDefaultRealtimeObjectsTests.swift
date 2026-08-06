@@ -55,18 +55,14 @@ struct InternalDefaultRealtimeObjectsTests {
             #expect(pool.entries["map:2@456"] != nil)
         }
 
-        // MARK: - Non-conforming channelSerial (treated as self-contained per RTO5a5)
+        // MARK: - Malformed channelSerial (unspecified by RTO5a)
 
-        // A channelSerial that does not conform to the RTO5a1 `<sequence id>:<cursor value>` shape
-        // (here, no colon separator) is treated the same as an absent channelSerial (RTO5a5): the
-        // sync data is taken to be entirely contained within this single OBJECT_SYNC, so the sync
-        // completes immediately rather than the whole OBJECT_SYNC being dropped.
-        //
-        // The specification does not define behaviour for a non-conforming channelSerial; this
-        // matches ably-java, whose `^([\w-]+):(.*)$` regex fails to match and falls back to the
-        // "sync data contained in this message" path.
+        // A channelSerial with no colon separator does not conform to the RTO5a1
+        // `<sequence id>:<cursor value>` shape. Parsing it throws (see `SyncCursor`), and the
+        // OBJECT_SYNC handler logs and aborts rather than guessing — the specification does not define
+        // behaviour for a malformed channelSerial. Nothing is applied to the pool.
         @Test
-        func treatsChannelSerialWithoutColonAsSelfContainedSync() async throws {
+        func dropsObjectSyncWhenChannelSerialHasNoColon() async throws {
             let internalQueue = TestFactories.createInternalQueue()
             let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
             let objectMessages = [
@@ -76,7 +72,7 @@ struct InternalDefaultRealtimeObjectsTests {
 
             #expect(!realtimeObjects.testsOnly_hasSyncSequence)
 
-            // A channelSerial with no colon separator does not conform to RTO5a1.
+            // A channelSerial with no colon separator is malformed.
             internalQueue.ably_syncNoDeadlock {
                 realtimeObjects.nosync_handleObjectSyncProtocolMessage(
                     objectMessages: objectMessages,
@@ -84,26 +80,26 @@ struct InternalDefaultRealtimeObjectsTests {
                 )
             }
 
-            // The sync completed in one shot (no sync sequence remains) rather than being dropped.
+            // The OBJECT_SYNC was aborted: no sync sequence was opened and nothing was applied.
             #expect(!realtimeObjects.testsOnly_hasSyncSequence)
-
-            // The objects were applied to the pool, proving the OBJECT_SYNC was not aborted.
             let pool = realtimeObjects.testsOnly_objectsPool
-            #expect(pool.entries["map:1@123"] != nil)
-            #expect(pool.entries["map:2@456"] != nil)
+            #expect(pool.entries["map:1@123"] == nil)
+            #expect(pool.entries["map:2@456"] == nil)
         }
 
-        // As above, an empty sequence id (":cursor") does not conform to RTO5a1 and is treated as a
-        // self-contained OBJECT_SYNC (RTO5a5). This is a change from the previous cocoa behaviour,
-        // which accepted an empty sequence id and would have kept an in-flight sync sequence open.
+        // An empty sequence id (":cursor") is accepted — everything before the first colon is the
+        // sequence id (RTO5a1), and the spec does not rule out an empty one — so it opens an in-flight
+        // sync sequence rather than completing immediately. A subsequent ":" ends the sequence
+        // (RTO5a4), completing the sync and applying its objects.
         @Test
-        func treatsChannelSerialWithEmptySequenceIDAsSelfContainedSync() async throws {
+        func handlesEmptySequenceId() async throws {
             let internalQueue = TestFactories.createInternalQueue()
             let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
             let objectMessages = [
                 TestFactories.simpleMapMessage(objectId: "map:1@123"),
             ]
 
+            // Start a sequence with an empty sequence id.
             internalQueue.ably_syncNoDeadlock {
                 realtimeObjects.nosync_handleObjectSyncProtocolMessage(
                     objectMessages: objectMessages,
@@ -111,9 +107,19 @@ struct InternalDefaultRealtimeObjectsTests {
                 )
             }
 
-            // The sync completed immediately (self-contained), leaving no in-flight sync sequence.
-            #expect(!realtimeObjects.testsOnly_hasSyncSequence)
+            // The sync sequence is in flight (not self-contained), so nothing is applied yet.
+            #expect(realtimeObjects.testsOnly_hasSyncSequence)
 
+            // End the sequence with an empty sequence id and empty cursor.
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
+                    objectMessages: [],
+                    protocolMessageChannelSerial: ":",
+                )
+            }
+
+            // The sequence completed and its objects were applied.
+            #expect(!realtimeObjects.testsOnly_hasSyncSequence)
             let pool = realtimeObjects.testsOnly_objectsPool
             #expect(pool.entries["map:1@123"] != nil)
         }
@@ -275,14 +281,6 @@ struct InternalDefaultRealtimeObjectsTests {
             // Verify appliedOnAckSerials is cleared (RTO5c9)
             #expect(realtimeObjects.testsOnly_appliedOnAckSerials.isEmpty)
         }
-
-        // Note: the previous `handlesInvalidChannelSerialFormat` (missing colon) and
-        // `handlesEmptySequenceId` (":cursor1" then ":") tests asserted the old behaviour, in which a
-        // non-conforming channelSerial aborted the OBJECT_SYNC or opened an empty-id sync sequence.
-        // That behaviour has changed — a non-conforming channelSerial is now treated as a
-        // self-contained OBJECT_SYNC per RTO5a5 — so those scenarios are now covered by
-        // `treatsChannelSerialWithoutColonAsSelfContainedSync` and
-        // `treatsChannelSerialWithEmptySequenceIDAsSelfContainedSync` above, and by `SyncCursorTests`.
 
         // MARK: - Edge Cases
 
@@ -2212,6 +2210,9 @@ struct InternalDefaultRealtimeObjectsTests {
                 realtimeObjects.nosync_onChannelStateChanged(toState: .detached, reason: nil)
             }
 
+            // Drain the user callback queue so any (unwanted) callbacks have run.
+            await Task { @MainActor in }.value
+
             // RTO27a1: no update events are emitted by the clear.
             #expect(await rootSubscriber.getInvocations().isEmpty)
             #expect(await mapSubscriber.getInvocations().isEmpty)
@@ -2280,7 +2281,7 @@ struct InternalDefaultRealtimeObjectsTests {
         }
     }
 
-    /// Teardown from `deinit` (matrix #18).
+    /// Teardown from `deinit`.
     ///
     /// Regression test for the deinit-on-internal-queue crash found by the objects UTS integration
     /// suites (ably/ably-cocoa#2226): ARC can run the engine's `deinit` *on* the internal queue —
@@ -2288,8 +2289,8 @@ struct InternalDefaultRealtimeObjectsTests {
     /// which happens on that queue. The previous blocking `deinit { dispose() }` then tripped
     /// `ably_syncNoDeadlock`'s `.notOnQueue` precondition and crashed (SIGTRAP / EXC_BREAKPOINT).
     /// `deinit` now hops the queue-confined cleanup asynchronously (never sync-blocking its own
-    /// queue), mirroring ably-java's non-blocking `DefaultRealtimeObject.dispose`. Extends DEV-47
-    /// (the deinit-on-queue hazard is cocoa-specific; absent in GC'd Kotlin).
+    /// queue), mirroring ably-java's non-blocking `DefaultRealtimeObject.dispose`. This
+    /// deinit-on-queue hazard is cocoa-specific (absent in a GC'd runtime).
     struct DisposeTests {
         @Test
         func deallocatingOnInternalQueueDoesNotCrash() async throws {

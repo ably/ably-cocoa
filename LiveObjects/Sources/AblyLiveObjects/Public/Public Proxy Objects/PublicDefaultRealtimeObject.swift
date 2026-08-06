@@ -33,19 +33,17 @@ internal final class PublicDefaultRealtimeObject: RealtimeObject {
     // MARK: - `RealtimeObject` protocol
 
     internal func get() async throws(ARTErrorInfo) -> any LiveMapPathObject {
-        // RTO23a — object_subscribe mode guard (currently a stub; see ChannelConfigGuards for the
-        // plugin-API limitation).
+        // RTO23a — object_subscribe mode guard.
         try ChannelConfigGuards.throwIfMissingObjectSubscribeMode(coreSDK: coreSDK, internalQueue: proxied.internalQueue)
         // RTO23e / RTL33 — ensure the channel is usable: RTL33a (already ATTACHED/SUSPENDED),
         // RTL33b (implicit attach for INITIALIZED/DETACHED/DETACHING/ATTACHING, awaiting ATTACHED),
         // RTL33c (reject FAILED). See ChannelConfigGuards.ensureActiveChannel.
         try await ChannelConfigGuards.ensureActiveChannel(coreSDK: coreSDK, internalQueue: proxied.internalQueue)
-        // RTO23c — wait for the initial sync to complete (atomic state-check + waiter registration,
-        // 92008 if the channel leaves a usable state while waiting).
+        // RTO23c — wait for the initial sync to complete. RTO23c specifies only the wait; the failure
+        // with 92008 if the channel leaves a usable state while waiting mirrors RTO20e1 (spec issue
+        // pending to specify it under RTO23c).
         try await proxied.ensureSynced()
-        // RTO23d / RTTS6d — a LiveMapPathObject with an empty path, rooted at the channel's root map.
-        // The root reference is realised as a pool lookup at resolution time (the pool never replaces
-        // the root instance, RTO4b2/RTO5c2a), equivalent to holding the RTPO2b root reference.
+        // RTO23d / RTTS6d — return a LiveMapPathObject with an empty path (the channel root).
         return DefaultLiveMapPathObject(
             channelObject: proxied,
             coreSDK: coreSDK,

@@ -259,5 +259,3 @@ built for them:
   `InternalDefaultRealtimeObjects` (a `preconditionFailure` otherwise); those publish through the
   mock-WS OBJECT capture path. The seeded double cannot drive them. Primitive value types
   (number/boolean/json/bytes) do not need the pipeline and are ported.
-  </content>
-  </invoke>

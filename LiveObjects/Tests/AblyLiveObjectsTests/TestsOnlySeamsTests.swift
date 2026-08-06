@@ -4,12 +4,13 @@ import Ably
 import Foundation
 import Testing
 
-/// Smoke tests for the test-access seams R-3, R-4, R-5 and R-6.
+/// Smoke tests for the test-access seams: gated-apply return values, the `testsOnly_` setters, the
+/// sync-state read seam, and the apply-object-messages / `isEntryTombstoned` wrappers.
 ///
 /// Each test proves the seam compiles and round-trips (set → get); the seams' production
 /// behaviour is exercised in depth by the neighbouring test suites.
 struct TestsOnlySeamsTests {
-    // MARK: - R-3: gated apply returns the emitted update
+    // MARK: - Gated apply returns the emitted update
 
     struct GatedApplyReturnsUpdateTests {
         // Counter: rejected apply returns nil, accepted apply returns non-nil.
@@ -97,7 +98,7 @@ struct TestsOnlySeamsTests {
         }
     }
 
-    // MARK: - R-4: testsOnly_ setters
+    // MARK: - testsOnly_ pool-entry and state setters
 
     struct SetterTests {
         @Test
@@ -167,7 +168,7 @@ struct TestsOnlySeamsTests {
         }
     }
 
-    // MARK: - R-5: sync state read seam
+    // MARK: - Sync-state read seam
 
     struct SyncStateTests {
         @Test
@@ -177,7 +178,7 @@ struct TestsOnlySeamsTests {
         }
     }
 
-    // MARK: - R-6: apply object messages and isEntryTombstoned wrapper
+    // MARK: - Apply object messages and isEntryTombstoned wrapper
 
     struct ApplyObjectMessagesTests {
         @Test
@@ -215,7 +216,7 @@ struct TestsOnlySeamsTests {
         }
     }
 
-    // MARK: - P2: update-model enrichment (objectMessage + tombstone) and PAOM3
+    // MARK: - Update-model enrichment (objectMessage + tombstone, RTLO4b4d/RTLO4b4e) and PAOM3
 
     /// Smoke tests for the update-model enrichment: op-path updates carry the source public
     /// ``ObjectMessage`` (RTLO4b4d), sync-path updates carry `nil` (RTO4b2a), tombstoning sets the

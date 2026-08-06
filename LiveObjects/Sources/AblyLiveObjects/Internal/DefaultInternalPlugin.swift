@@ -20,14 +20,12 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
         self.pluginAPI = pluginAPI
     }
 
-    // Dispose lifecycle (matrix #18, DEV-47): Kotlin's `DefaultLiveObjectsPlugin` exposes
-    // `dispose(channelName)` / `dispose()`, which ably-java calls from its channel/client teardown to
-    // dispose the per-channel `DefaultRealtimeObject`. ably-cocoa's plugin SPI now has a
-    // channel-release callback — `nosync_releaseChannel(_:)` (see below) — that the core SDK invokes
-    // from `-[ARTRealtimeChannels release:]`, mirroring `DefaultLiveObjectsPlugin.dispose(channelName)`.
-    // It disposes the channel's `InternalDefaultRealtimeObjects` with a release-specific cause,
-    // proactively failing any in-flight operation rather than waiting for the channel's eventual
-    // deallocation (which would fail waiters with a generic cause via `deinit`).
+    // Channel-release disposal: the channel-release callback `nosync_onChannelRelease(_:)` (see below),
+    // which the core SDK invokes from `-[ARTRealtimeChannels release:]`, disposes the channel's
+    // `InternalDefaultRealtimeObjects` with a release-specific cause, proactively failing any in-flight
+    // operation rather than waiting for the channel's eventual deallocation (which would fail waiters
+    // with a generic cause via `deinit`). This release-time disposal is not specified; it mirrors
+    // ably-java's `DefaultLiveObjectsPlugin` channel-release disposal.
 
     // MARK: - Channel `objects` property
 
@@ -73,9 +71,6 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
             internalQueue: internalQueue,
             userCallbackQueue: callbackQueue,
             clock: DefaultSimpleClock(),
-            // DEV-20 / PAOM3b: bind the real channel name so public `ObjectMessage.channel` is populated
-            // (ably-java `DefaultRealtimeObject.channelName`, DefaultRealtimeObject.kt:35). The name is
-            // immutable, so reading it here (not on the internal queue) is safe.
             channelName: pluginAPI.name(for: channel),
             garbageCollectionOptions: garbageCollectionOptions,
         )
@@ -87,19 +82,19 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
         // channels that already exist at CONNECTED time; a channel created *after* connect (the normal
         // `connect → channels.get(name)` flow) would otherwise never receive a siteCode, leaving
         // `publishAndApply` unable to apply local echo (RTO20c1) until the next reconnect. ably-java has
-        // no such hole because it reads `connectionManager.siteCode` at publish time
-        // (DefaultRealtimeObject.kt:180); cocoa is push-based, so we seed here and let the CONNECTED push
-        // keep it fresh. A channel created before connect seeds nil and is covered by the later push.
+        // no such hole because it reads `connectionManager.siteCode` at publish time; cocoa is
+        // push-based, so we seed here and let the CONNECTED push keep it fresh. A channel created before
+        // connect seeds nil and is covered by the later push.
         liveObjects.nosync_setSiteCode(pluginAPI.nosync_latestConnectionDetails(for: client)?.siteCode)
     }
 
-    // DEV-47: the core SDK calls this from `-[ARTRealtimeChannels release:]` when a channel is
-    // released. Disposes the channel's objects engine with a release-specific cause, failing any
-    // in-flight operation proactively. Mirrors ably-java `DefaultLiveObjectsPlugin.dispose(channelName)`
-    // (DefaultLiveObjectsPlugin.kt:26). A channel may be released without ever having had its objects
-    // engine accessed, but `nosync_prepare` runs for every channel at creation, so the plugin data is
-    // present; we still guard defensively so a teardown race cannot trap.
-    internal func nosync_release(_ channel: _AblyPluginSupportPrivate.RealtimeChannel) {
+    // The core SDK calls this from `-[ARTRealtimeChannels release:]` when a channel is released.
+    // Disposes the channel's objects engine with a release-specific cause, failing any in-flight
+    // operation proactively. This release-time disposal is not specified; it mirrors ably-java's
+    // `DefaultLiveObjectsPlugin` channel-release disposal. A channel may be released without ever having
+    // had its objects engine accessed, but `nosync_prepare` runs for every channel at creation, so the
+    // plugin data is present; we still guard defensively so a teardown race cannot trap.
+    internal func nosync_onChannelRelease(_ channel: _AblyPluginSupportPrivate.RealtimeChannel) {
         guard pluginAPI.nosync_pluginDataValue(forKey: Self.pluginDataKey, channel: channel) != nil else {
             return
         }

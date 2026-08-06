@@ -27,7 +27,7 @@ internal enum LiveObjectUpdate<Update: Sendable>: Sendable {
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 extension LiveObjectUpdate: Equatable where Update: Equatable {}
 
-// MARK: - Message/tombstone enrichment (P2)
+// MARK: - Message/tombstone enrichment
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal extension LiveObjectUpdate where Update: LiveObjectUpdatePayload {

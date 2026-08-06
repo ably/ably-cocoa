@@ -100,7 +100,7 @@ internal class DefaultPathObject: PathObject, @unchecked Sendable {
     @discardableResult
     internal func subscribe(options: PathObjectSubscriptionOptions?, listener: @escaping PathObjectSubscriptionCallback) throws(ARTErrorInfo) -> any Subscription {
         try ChannelConfigGuards.throwIfInvalidAccessApiConfiguration(coreSDK: coreSDK, internalQueue: internalQueue) // RTPO19b
-        // RTPO19c1a / DEV-9 — the shipped `PathObjectSubscriptionOptions.init(depth:)` is non-throwing
+        // RTPO19c1a — the shipped `PathObjectSubscriptionOptions.init(depth:)` is non-throwing
         // and frozen, so `depth <= 0` (40003) is validated here rather than in the initializer.
         try ChannelConfigGuards.validateSubscriptionDepth(options?.depth)
 
@@ -123,7 +123,7 @@ internal class DefaultPathObject: PathObject, @unchecked Sendable {
         // Hop onto the internal queue to register (the register is queue-confined). The returned
         // Subscription's `unsubscribe()` deregisters (SUB2a/SUB2b).
         return internalQueue.ably_syncNoDeadlock {
-            channelObject.nosync_pathObjectSubscriptionRegister.nosync_subscribe(
+            channelObject.pathObjectSubscriptionRegister.nosync_subscribe(
                 segments: segments,
                 depth: options?.depth,
                 listener: listener,

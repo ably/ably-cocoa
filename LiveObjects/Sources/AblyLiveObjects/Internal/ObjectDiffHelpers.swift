@@ -13,11 +13,12 @@ internal enum ObjectDiffHelpers {
         previousData: Double,
         newData: Double,
     ) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
-        // RTLC14b. A zero delta means the value did not actually change (e.g. re-applying an
-        // ObjectState whose count equals the current data). An update communicates a change
-        // (RTLO4b4a), so return the no-op update (permitted by RTLO4b4b) rather than a spurious
-        // zero-amount update that would fire subscriber callbacks for no change. Matches ably-java
-        // (LiveCounterManager.calculateUpdateFromDataDiff) and ably-js.
+        // RTLC14b specifies only the amount (newData - previousData) and does not cover the
+        // zero-delta case. A zero delta means the value did not actually change (e.g. re-applying an
+        // ObjectState whose count equals the current data); since an update communicates a change
+        // (RTLO4b4a) we return the no-op update permitted by RTLO4b4b rather than a spurious
+        // zero-amount update that would fire subscriber callbacks for no change. ably-java
+        // (LiveCounterManager.calculateUpdateFromDataDiff) and ably-js do the same.
         if newData == previousData {
             return .noop
         }
@@ -60,11 +61,12 @@ internal enum ObjectDiffHelpers {
             }
         }
 
-        // An empty diff means nothing actually changed (e.g. re-applying an ObjectState that
-        // matches the current data, or clearing an already-empty map). An update communicates a
-        // change (RTLO4b4a), so return the no-op update (permitted by RTLO4b4b) rather than a
-        // spurious empty update that would fire subscriber callbacks for no change. Matches
-        // ably-java (LiveMapManager.calculateUpdateFromDataDiff) and ably-js.
+        // RTLM22b specifies only the key diff and does not cover the empty-diff case. An empty diff
+        // means nothing actually changed (e.g. re-applying an ObjectState that matches the current
+        // data, or clearing an already-empty map); since an update communicates a change (RTLO4b4a)
+        // we return the no-op update permitted by RTLO4b4b rather than a spurious empty update that
+        // would fire subscriber callbacks for no change. ably-java
+        // (LiveMapManager.calculateUpdateFromDataDiff) and ably-js do the same.
         if update.isEmpty {
             return .noop
         }

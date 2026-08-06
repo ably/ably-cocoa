@@ -78,8 +78,7 @@ NS_SWIFT_SENDABLE
 /// The name of a realtime channel.
 ///
 /// Used by the LiveObjects plugin to populate the `channel` field of a public `ObjectMessage`
-/// (PAOM2e/PAOM3b). The channel name is immutable (set at channel creation), so this may be read on
-/// any queue.
+/// (PAOM2e/PAOM3b).
 - (NSString *)nameForChannel:(id<APRealtimeChannel>)channel;
 
 /// Provides plugins with the queue on which all user callbacks for a given client should be called.
@@ -114,14 +113,13 @@ NS_SWIFT_SENDABLE
 /// The channel's effective object-related channel modes, resolved per RTO2a/RTO2b: the attached modes
 /// if present (RTO2a), otherwise the user-provided channel-options modes (RTO2b). Only the
 /// `ObjectSubscribe`/`ObjectPublish` bits are reported. Used by the RTO2a2/RTO2b2 channel-mode guards.
-///
-/// Mirrors ably-java's `Helpers.kt` `getChannelModes` (Helpers.kt:76).
 - (APChannelMode)nosync_objectChannelModesForChannel:(id<APRealtimeChannel>)channel;
 
-/// The error that makes the client's connection unpublishable (RTO26; ably-java
-/// `connectionManager.isActive` / `stateErrorInfo`, Helpers.kt:110-114), or `nil` if the connection is
-/// in a state from which messages can be published. When not active, returns the connection's current
-/// error reason if it has one.
+/// The error that makes the client's connection unpublishable, or `nil` if the connection is in a
+/// state from which messages can be published. When not active, returns the connection's current error
+/// reason if it has one. This publishable-connection check is unspecified (RTO26 has no
+/// connection-state clause); it mirrors ably-java's publishable-connection guard
+/// (`connectionManager.isActive` / `stateErrorInfo`), and a spec issue is to be raised.
 - (nullable id<APPublicErrorInfo>)nosync_connectionStateErrorForClient:(id<APRealtimeClient>)client;
 
 /// Initiates an attach on a realtime channel, per the RTL33b implicit-attach used by a plugin's

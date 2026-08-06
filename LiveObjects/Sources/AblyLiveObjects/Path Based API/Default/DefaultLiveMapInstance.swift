@@ -242,12 +242,10 @@ internal final class DefaultLiveMapInstance: LiveMapInstance {
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal extension Instance {
-    /// Builds the identity-addressed ``Instance`` wrapping a resolved map-entry value (RTINS2a,
-    /// RTTS7e). This is the seam the path layer's `PathObject.instance()` (P4) calls once it has
+    /// Builds the identity-addressed ``Instance`` wrapping a resolved map-entry value (RTINS2a).
+    /// This is the seam the path layer's `PathObject.instance()` calls once it has
     /// resolved a value. Because `InternalLiveMapValue` cannot be an unknown/unrepresentable type, this
     /// is non-optional — a `nil` at an unresolved path is represented by the caller returning `nil`.
-    ///
-    /// Safe to call from any thread: it briefly hops onto `internalQueue` to read immutable object ids.
     static func from(
         internalValue: InternalLiveMapValue,
         coreSDK: CoreSDK,

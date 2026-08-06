@@ -323,7 +323,7 @@ struct DefaultPathObjectTests {
         }
     }
 
-    // MARK: - Channel-mode guards (RTO2a2 / RTO2b2, DEV-38)
+    // MARK: - Channel-mode guards (RTO2a2 / RTO2b2)
 
     // @spec RTO2a2 - a read on a channel without the `object_subscribe` mode throws 40024
     @Test
@@ -389,7 +389,7 @@ struct DefaultPathObjectTests {
         #expect(error.code == 40024)
     }
 
-    // MARK: - echoMessages write guard (RTO26, DEV-38)
+    // MARK: - echoMessages write guard (RTO26c)
 
     // @spec RTO26 - a write with the `echoMessages` option disabled throws 40000
     @Test
@@ -406,7 +406,7 @@ struct DefaultPathObjectTests {
         #expect(error.message == "\"echoMessages\" client option must be enabled for this operation")
     }
 
-    // The write guard checks echoMessages before channel state (ably-java Helpers.kt:64 order): with
+    // The write guard checks echoMessages before channel state (matching ably-java's guard order): with
     // echo disabled AND the channel SUSPENDED, the echoMessages error (40000) is the one surfaced.
     // @spec RTO26
     @Test
@@ -421,7 +421,7 @@ struct DefaultPathObjectTests {
         #expect(error.code == 40000)
     }
 
-    // MARK: - throwIfUnpublishableState connection guard (RTO26, DEV-38)
+    // MARK: - throwIfUnpublishableState connection guard (unspecified; mirrors ably-java)
 
     // @spec RTO26 - an inactive connection surfaces the connection's state error; the channel-state
     // portion is checked only when the connection is active.
@@ -450,7 +450,7 @@ struct DefaultPathObjectTests {
         }
     }
 
-    // MARK: - Depth validation helper (DEV-9 / RTPO19c1a)
+    // MARK: - Depth validation helper (RTPO19c1a)
 
     // @spec RTPO19c1a - depth <= 0 is rejected with 40003; the check lives in ChannelConfigGuards for part 2
     @Test
@@ -469,7 +469,7 @@ struct DefaultPathObjectTests {
         }
     }
 
-    // MARK: - Error model numeric codes (matrix #19)
+    // MARK: - Error model numeric codes
 
     // @spec RTPO3c2 - the path-API error codes are surfaced as their raw integers
     @Test
@@ -504,7 +504,7 @@ private final class SeededRealtimeObjects: InternalRealtimeObjectsProtocol {
         poolMutex.withoutSync { $0 }
     }
 
-    var nosync_pathObjectSubscriptionRegister: PathObjectSubscriptionRegister {
+    var pathObjectSubscriptionRegister: PathObjectSubscriptionRegister {
         _pathObjectSubscriptionRegister
     }
 

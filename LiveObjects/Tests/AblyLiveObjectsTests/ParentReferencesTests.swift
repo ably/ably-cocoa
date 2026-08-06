@@ -144,15 +144,15 @@ struct ParentReferencesTests {
         #expect(paths.contains(["left", "mid", "target"]))
         #expect(paths.contains(["right", "target"]))
 
-        // Cycle suppression: add map:l as a parent of map:m via map:m, then create a back-edge
-        // map:l -> map:m so that the graph contains a cycle; getFullPaths must still terminate.
+        // Give map:l a back-edge parent map:m, so the graph map:l → map:m → map:l contains a cycle;
+        // getFullPaths must terminate and emit each path once.
         internalQueue.ably_syncNoDeadlock {
             mapL.nosync_addParentReference(parentObjectID: "map:m@1000", key: "loop")
         }
         // map:l is reachable from root at ["left"]; the cycle back through map:m is suppressed.
         let mapLPaths = mapL.testsOnly_getFullPaths(objectsPool: pool)
+        #expect(mapLPaths.count == 1)
         #expect(mapLPaths.contains(["left"]))
-        #expect(!mapLPaths.isEmpty)
     }
 
     // RTO5c10, RTO5c10a, RTO5c10b: the rebuild resets every object's parentReferences and re-adds

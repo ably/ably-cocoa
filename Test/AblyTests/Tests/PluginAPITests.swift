@@ -38,7 +38,7 @@ class PluginAPITests: XCTestCase {
             // no-op
         }
 
-        func nosync_release(_ channel: any RealtimeChannel) {
+        func nosync_onChannelRelease(_ channel: any RealtimeChannel) {
             receivedChannelReleased.append(channel)
         }
 

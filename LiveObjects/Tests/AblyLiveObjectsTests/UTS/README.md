@@ -29,4 +29,3 @@ The plugin's own hand-written unit tests stay in the parent directory
 `InternalDefaultRealtimeObjectsTests`, etc. These are the analogue of ably-java's non-UTS unit tests,
 which it likewise keeps outside `uts/` (in `.../liveobjects/unit/`). Only skill-generated UTS spec ports
 belong under `UTS/`.
-</content>
