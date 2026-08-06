@@ -162,22 +162,7 @@ internal enum ObjectCreationHelpers {
     }
 
     /// Creates an Object ID for a new LiveObject instance, per RTO14.
-    internal static func testsOnly_createObjectID(
-        type: String,
-        initialValue: String,
-        nonce: String,
-        timestamp: Date,
-    ) -> String {
-        createObjectID(
-            type: type,
-            initialValue: initialValue,
-            nonce: nonce,
-            timestamp: timestamp,
-        )
-    }
-
-    /// Creates an Object ID for a new LiveObject instance, per RTO14.
-    private static func createObjectID(
+    internal static func createObjectID( // internal (not private) for AblyLiveObjectsTesting
         type: String,
         initialValue: String,
         nonce: String,

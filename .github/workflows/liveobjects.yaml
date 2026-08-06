@@ -56,6 +56,13 @@ jobs:
 
       - run: swift run --package-path BuildTool BuildTool lint
 
+      # Fails if LiveObjects/Sources grows a `testsOnly_` declaration outside the
+      # sanctioned residual allowlist (or if a listed residual disappears). See
+      # Test/AblyLiveObjectsTesting/README.md.
+      - name: Check LiveObjects test seams
+        working-directory: .
+        run: bash Scripts/check-liveobjects-test-seams.sh
+
   # Checks that every top-level declaration in the LiveObjects sources
   # carries an @available annotation. The LiveObjects code requires newer OS
   # versions than the rest of this package declares in its platforms, and
@@ -95,6 +102,8 @@ jobs:
           python3 Scripts/annotate-liveobjects-availability.py
           git diff --exit-code LiveObjects/Sources
 
+  # Emits the platform × Xcode-version matrices (via BuildTool generate-matrices)
+  # consumed by the BuildTool-driven jobs below.
   generate-matrices:
     runs-on: macos-15
 
@@ -155,6 +164,27 @@ jobs:
         working-directory: .
         run: swift test -Xswiftc -warnings-as-errors --filter 'AblyLiveObjectsTests\.'
 
+  # NOTE: there is deliberately NO job here that RUNS the `UTS` target's tests
+  # (Test/UTS — the Universal Test Suite derived from the ably/specification
+  # `uts/` specs, including the LiveObjects `objects` unit tier at
+  # Test/UTS/unit/objects). Running them here would duplicate CI that already
+  # exists:
+  #
+  # - EXECUTION: integration-test.yaml's Fastlane lanes run the whole `UTS`
+  #   target on iOS, tvOS AND macOS via Test/Ably.xctestplan (which lists the
+  #   UTS target un-skipped) — including the sandbox-network integration tier
+  #   and, on macOS, the proxy tier.
+  # - COMPILATION under -warnings-as-errors: the build-and-test-spm job above
+  #   already provides it — `swift test` compiles every test target in the
+  #   package (UTS and Test/AblyLiveObjectsTesting included) even though its
+  #   --filter only EXECUTES the AblyLiveObjectsTests suite.
+  #
+  # A `build-and-test-uts` job used to live here; it was removed as redundant
+  # (and flaky — `--filter UTS` ran the network-bound sandbox/proxy suites on
+  # every PR). To run the UTS tests locally: `swift test --filter UTS`, or a
+  # single suite with the target-qualified form
+  # `swift test --filter "UTS.<SuiteName>"`.
+
   build-release-configuration-spm:
     name: SPM, `release` configuration (Xcode ${{ matrix.tooling.xcodeVersion }})
     runs-on: macos-15
@@ -177,10 +207,28 @@ jobs:
           xcode-version: ${{ matrix.tooling.xcodeVersion }}
 
       # https://forums.swift.org/t/warnings-as-errors-for-libraries-frameworks/58393/2
+      #
+      # Scoped to --target AblyLiveObjects: a whole-package release build also
+      # compiles the AblyLiveObjectsTesting helper target, which uses
+      # `@testable import AblyLiveObjects` and so only builds when testability is
+      # enabled (a debug-only affordance). That helper is debug-only test tooling,
+      # never shipped, and unreachable from any product, so consumers never build
+      # it. Scoping the release check to the AblyLiveObjects target reproduces
+      # exactly what a consumer compiles — a genuine, no-testability release check
+      # of the shipped library that excludes the helper target. (Note: --product
+      # does NOT scope this out for an in-package build — SwiftPM still compiles
+      # every regular target of the root package; --target does. This matches the
+      # availability job above, which also uses --target AblyLiveObjects.) The
+      # -Xswiftc -warnings-as-errors flag is preserved.
       - name: Build (release, warnings as errors)
         working-directory: .
-        run: swift build -Xswiftc -warnings-as-errors --configuration release
+        run: swift build -Xswiftc -warnings-as-errors --configuration release --target AblyLiveObjects
 
+  # Builds and runs AblyLiveObjectsTests through the AblyLiveObjects Xcode
+  # scheme via BuildTool, once per platform. BuildTool raises the iOS/tvOS test
+  # bundles' deployment target to the plugin floor (14.0) so the test code that
+  # uses plugin types compiles — the same problem fastlane/Fastfile solves for
+  # the UTS target in integration-test.yaml.
   build-and-test-xcode:
     name: Xcode, ${{matrix.platform}} (Xcode ${{ matrix.tooling.xcodeVersion }})
     runs-on: macos-15
@@ -214,6 +262,9 @@ jobs:
           PLATFORM: ${{ matrix.platform }}
         run: swift run --package-path BuildTool BuildTool test-library --platform "$PLATFORM" --without-building
 
+  # Runs AblyLiveObjectsTests with coverage and publishes the numbers. Note it
+  # passes the UnitTests test plan (skips anything tagged .integration), unlike
+  # build-and-test-xcode above which uses the scheme's default AllTests plan.
   code-coverage:
     name: Generate code coverage
     runs-on: macos-15
@@ -252,6 +303,9 @@ jobs:
           show-passed-tests: false
         if: success() || failure()
 
+  # Release-configuration build of the AblyLiveObjects scheme per platform
+  # (build only — no tests). Complements build-release-configuration-spm above,
+  # which does the SPM-side release check.
   build-release-configuration-xcode:
     name: Xcode, `release` configuration, ${{matrix.platform}} (Xcode ${{ matrix.tooling.xcodeVersion }})
     runs-on: macos-15
@@ -278,6 +332,8 @@ jobs:
           PLATFORM: ${{ matrix.platform }}
         run: swift run --package-path BuildTool BuildTool build-library --platform "$PLATFORM" --configuration release
 
+  # Builds the LiveObjects example app (LiveObjects/Example) per platform.
+  # The core SDK's example apps are covered separately by examples.yaml.
   check-example-app:
     name: Example app, ${{matrix.platform}} (Xcode ${{ matrix.tooling.xcodeVersion }})
     runs-on: macos-15
@@ -304,6 +360,8 @@ jobs:
           PLATFORM: ${{ matrix.platform }}
         run: swift run --package-path BuildTool BuildTool build-example-app --platform "$PLATFORM"
 
+  # Builds the AblyLiveObjects DocC documentation and uploads a preview
+  # deployment. The core SDK's (Jazzy) docs are built by docs.yml instead.
   check-documentation:
     runs-on: macos-15
 

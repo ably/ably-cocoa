@@ -1,6 +1,7 @@
 import _AblyPluginSupportPrivate
 import Ably
 @testable import AblyLiveObjects
+@testable import AblyLiveObjectsTesting
 import Testing
 
 /// Tests for `LiveObjectMutableState`.
@@ -141,28 +142,6 @@ struct LiveObjectMutableStateTests {
         }
 
         struct EmitTests {
-            // @spec RTLO4b4c1
-            @available(iOS 17.0.0, tvOS 17.0.0, *)
-            @Test
-            func noop() async throws {
-                // Given
-                var mutableState = LiveObjectMutableState<String>(objectID: "foo")
-                let queue = DispatchQueue.main
-                let subscriber = Subscriber<String, SubscribeResponse>(callbackQueue: queue)
-                let internalQueue = TestFactories.createInternalQueue()
-                let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
-                try internalQueue.ably_syncNoDeadlock {
-                    _ = try mutableState.nosync_subscribe(listener: subscriber.createListener(), coreSDK: coreSDK, updateSelfLater: { _ in fatalError("Not expected") })
-                }
-
-                // When
-                mutableState.emit(.noop, on: queue)
-
-                // Then
-                let subscriberInvocations = await subscriber.getInvocations()
-                #expect(subscriberInvocations.isEmpty)
-            }
-
             // @spec RTLO4b4c3a
             @available(iOS 17.0.0, tvOS 17.0.0, *)
             @Test

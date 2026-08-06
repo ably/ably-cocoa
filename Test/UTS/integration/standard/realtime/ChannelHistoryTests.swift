@@ -60,7 +60,7 @@ final class ChannelHistoryTests: IntegrationTestCase {
                     // Retrieve history from subscriber client
                     // Poll until all messages appear
                     guard await pollUntil("subscriber history contains all 3 messages", timeout: 10, interval: 0.5, {
-                        await self.historyItems(of: subChannel).count == 3
+                        await self.historyItemsQuietly(of: subChannel).count == 3
                     }) else { return }
                     let historyItems = await historyItems(of: subChannel)
 
@@ -111,6 +111,17 @@ extension ChannelHistoryTests {
                 if let error {
                     Issue.record("history() failed: \(error)", sourceLocation: sourceLocation)
                 }
+                continuation.resume(returning: result?.items ?? [])
+            }
+        }
+    }
+
+    /// Non-reporting variant of `historyItems` for use inside `pollUntil` predicates: a transient
+    /// `history()` error must surface as a retry — and, at worst, as the poll's own timeout issue —
+    /// not fail the test. Returns an empty list on error.
+    private func historyItemsQuietly(of channel: ARTRealtimeChannel) async -> [ARTMessage] {
+        await withCheckedContinuation { (continuation: CheckedContinuation<[ARTMessage], Never>) in
+            channel.history { result, _ in
                 continuation.resume(returning: result?.items ?? [])
             }
         }

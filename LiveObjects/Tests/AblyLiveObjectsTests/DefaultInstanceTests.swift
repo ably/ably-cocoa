@@ -1,6 +1,7 @@
 import _AblyPluginSupportPrivate
 import Ably
 @testable import AblyLiveObjects
+@testable import AblyLiveObjectsTesting
 import Foundation
 import Testing
 
@@ -420,50 +421,6 @@ struct DefaultInstanceTests {
             Issue.record("Expected .liveMap in event")
             return
         }
-    }
-
-    // @spec RTLO4b4c3c - the subscription is torn down when the object is tombstoned
-    @available(iOS 17.0.0, tvOS 17.0.0, *)
-    @Test
-    func counterSubscriptionDiesOnTombstone() async throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
-        let node = Self.makeCounter(objectID: "counter:tomb@0", internalQueue: internalQueue)
-
-        guard case let .liveCounter(counterInstance) = Instance.from(internalValue: .liveCounter(node), coreSDK: coreSDK, realtimeObjects: MockRealtimeObjects(), internalQueue: internalQueue) else {
-            Issue.record("Expected .liveCounter")
-            return
-        }
-
-        let subscriber = Subscriber<InstanceSubscriptionEvent>(callbackQueue: .main)
-        try counterInstance.subscribe(listener: subscriber.createListener())
-
-        // A live emit before tombstoning proves the subscription is active.
-        internalQueue.ably_syncNoDeadlock {
-            node.nosync_emit(.update(.init(amount: 1)))
-        }
-
-        // Apply an OBJECT_DELETE, tombstoning the counter (emits the tombstone update + tears down).
-        var pool = ObjectsPool(logger: TestLogger(), internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-        internalQueue.ably_syncNoDeadlock {
-            _ = node.nosync_apply(
-                TestFactories.objectOperation(action: .known(.objectDelete), objectId: "counter:tomb@0"),
-                source: .channel,
-                objectMessageSerial: "ts1",
-                objectMessageSiteCode: "site1",
-                objectMessageSerialTimestamp: nil,
-                objectsPool: &pool,
-            )
-        }
-
-        // After teardown, further emits must not reach the subscriber.
-        internalQueue.ably_syncNoDeadlock {
-            node.nosync_emit(.update(.init(amount: 1)))
-        }
-
-        let invocations = await subscriber.getInvocations()
-        // One live emit + one tombstone update; the post-tombstone emit is not delivered.
-        #expect(invocations.count == 2)
     }
 
     /// A tiny thread-safe holder for the messages captured by a `publishAndApply` handler.

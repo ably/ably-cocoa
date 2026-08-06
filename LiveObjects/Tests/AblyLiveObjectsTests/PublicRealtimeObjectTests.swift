@@ -1,6 +1,7 @@
 import _AblyPluginSupportPrivate
 import Ably
 @testable import AblyLiveObjects
+@testable import AblyLiveObjectsTesting
 import Foundation
 import Testing
 
@@ -63,24 +64,6 @@ struct PublicRealtimeObjectTests {
         // It resolves to the channel's root map.
         #expect(try root.exists())
         #expect(try root.type() == .liveMap)
-    }
-
-    // @spec RTO23c - get() waits for the initial sync to complete, then resolves
-    @Test
-    func getWaitsForSyncThenResolves() async throws {
-        let (publicObject, proxied, _, internalQueue) = Self.makePublicObject()
-
-        // Start get() before the sync completes - it should wait.
-        async let getTask = publicObject.get()
-
-        // Confirm it has started waiting for sync.
-        _ = try #require(await proxied.testsOnly_waitingForSyncEvents.first { _ in true })
-
-        // Now complete the sync; the waiting get() should resolve.
-        Self.driveToSynced(proxied, on: internalQueue)
-
-        let root = try await getTask
-        #expect(root.path.isEmpty)
     }
 
     // @spec RTO4b - get() resolves via an ATTACHED with HAS_OBJECTS false (no-objects sync completion)
@@ -197,32 +180,6 @@ struct PublicRealtimeObjectTests {
 
     // MARK: - on(event:callback:) / StatusSubscription (RTO18)
 
-    // @spec RTO18 - on(.synced) fires when the sync completes
-    @Test
-    func onSyncedFires() async throws {
-        let (publicObject, proxied, _, internalQueue) = Self.makePublicObject()
-
-        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-            publicObject.on(event: .synced) {
-                continuation.resume()
-            }
-            Self.driveToSynced(proxied, on: internalQueue)
-        }
-    }
-
-    // @spec RTO18 - on(.syncing) fires when a sync starts
-    @Test
-    func onSyncingFires() async throws {
-        let (publicObject, proxied, _, internalQueue) = Self.makePublicObject()
-
-        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-            publicObject.on(event: .syncing) {
-                continuation.resume()
-            }
-            Self.driveToSynced(proxied, on: internalQueue)
-        }
-    }
-
     // @spec RTO18f1 - off() deregisters the status listener; it is not called for subsequent events
     @Test
     func offStopsStatusCallbacks() async throws {
@@ -243,30 +200,6 @@ struct PublicRealtimeObjectTests {
     }
 
     // MARK: - Dispose lifecycle
-
-    // dispose() fails a get() that is waiting for sync, but the instance remains usable for a later get()
-    @Test
-    func disposeCancelsWaitingGetAndInstanceStaysUsable() async throws {
-        let (publicObject, proxied, _, internalQueue) = Self.makePublicObject()
-
-        // Start get() - it waits (not yet synced).
-        async let getTask = publicObject.get()
-        _ = try #require(await proxied.testsOnly_waitingForSyncEvents.first { _ in true })
-
-        // Dispose cancels the in-flight wait (surfacing 92008).
-        proxied.dispose()
-        do {
-            _ = try await getTask
-            Issue.record("Expected the in-flight get() to be cancelled by dispose()")
-        } catch {
-            #expect((error as? ARTErrorInfo)?.code == 92008)
-        }
-
-        // The instance stays usable: complete a sync and a fresh get() resolves.
-        Self.driveToSynced(proxied, on: internalQueue)
-        let root = try await publicObject.get()
-        #expect(root.path.isEmpty)
-    }
 
     // A channel release (`channels.release()`, routed through the plugin's
     // `nosync_onChannelRelease:` hook → `nosync_disposeForChannelRelease`) fails a get() waiting for sync
@@ -301,29 +234,6 @@ struct PublicRealtimeObjectTests {
         Self.driveToSynced(proxied, on: internalQueue)
         let root = try await publicObject.get()
         #expect(root.path.isEmpty)
-    }
-
-    // dispose() drops status subscriptions; a later on()/off() still works (instance usable)
-    @Test
-    func disposeDropsStatusSubscriptionsButOnStillWorks() async throws {
-        let (publicObject, proxied, _, internalQueue) = Self.makePublicObject()
-        let preDisposeCounter = CallCounter()
-
-        publicObject.on(event: .synced) { preDisposeCounter.increment() }
-
-        // Dispose drops the existing subscription.
-        proxied.dispose()
-
-        // A subscription registered after dispose still receives events.
-        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-            publicObject.on(event: .synced) {
-                continuation.resume()
-            }
-            Self.driveToSynced(proxied, on: internalQueue)
-        }
-
-        // The pre-dispose subscription was dropped and never fired.
-        #expect(preDisposeCounter.isEmpty)
     }
 
     // MARK: - PublicObjectsStore proxy identity

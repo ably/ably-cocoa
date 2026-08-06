@@ -42,14 +42,33 @@ let package = Package(
             name: "AblyLiveObjectsTests",
             dependencies: [
                 .target(name: "AblyLiveObjects"),
+                .target(name: "AblyLiveObjectsTesting"),
                 .target(name: "Ably"),
                 .target(name: "_AblyPluginSupportPrivate"),
             ],
             path: "LiveObjects/Tests/AblyLiveObjectsTests",
             exclude: [
-                "CLAUDE.md",
-                "UTS/README.md",
-                "UTS/deviations.md"
+                "CLAUDE.md"
+            ]
+        ),
+        // Test-support module hosting internal-access extensions of
+        // AblyLiveObjects types (via @testable import), plus shared test
+        // helpers/mocks, so production sources stay free of test plumbing.
+        // Consumed by the LiveObjects test targets via
+        // @testable import AblyLiveObjectsTesting; deliberately not a
+        // product member, so it is unreachable from — and never built by —
+        // consumers of the shipped AblyLiveObjects library. See
+        // Test/AblyLiveObjectsTesting/README.md.
+        .target(
+            name: "AblyLiveObjectsTesting",
+            dependencies: [
+                .target(name: "AblyLiveObjects"),
+                .target(name: "Ably"),
+                .target(name: "_AblyPluginSupportPrivate"),
+            ],
+            path: "Test/AblyLiveObjectsTesting",
+            exclude: [
+                "README.md"
             ]
         ),
         // Private API of the core SDK, exposed to Ably-authored plugins. Formerly
@@ -115,11 +134,18 @@ let package = Package(
             dependencies: [
                 .byName(name: "Ably"),
                 .target(name: "_AblyPluginSupportPrivate"),
+                // The `objects` UTS module tests the LiveObjects plugin's public API.
+                .target(name: "AblyLiveObjects"),
+                // Shared LiveObjects test helpers/mocks + internal-access seams,
+                // used by the objects UTS ports.
+                .target(name: "AblyLiveObjectsTesting"),
             ],
             path: "Test/UTS",
             exclude: [
                 "README.md",
-                "deviations.md"
+                "deviations.md",
+                "unit/objects/README.md",
+                "unit/objects/deviations.md"
             ],
             swiftSettings: [
                 // Build the UTS suite in the Swift 6 language mode (strict concurrency checking) so the

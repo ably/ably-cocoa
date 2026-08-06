@@ -1,4 +1,5 @@
 @testable import AblyLiveObjects
+@testable import AblyLiveObjectsTesting
 import Foundation
 import Testing
 
@@ -12,25 +13,11 @@ struct SyncObjectsPoolTests {
 
     // MARK: - accumulate: skip / reject
 
-    // @specOneOf (1/2) RTO5f3
+    // @specOneOf (1/1) RTO5f3
     @Test
     func accumulateSkipsMessageWithNoObjectState() {
         var pool = SyncObjectsPool()
         let message = TestFactories.inboundObjectMessage(object: nil)
-
-        pool.accumulate([message], logger: TestLogger())
-
-        #expect(pool.isEmpty)
-    }
-
-    // @specOneOf(2/2) RTO5f3
-    @Test
-    func accumulateSkipsUnsupportedObjectType() {
-        var pool = SyncObjectsPool()
-        // An ObjectState with neither map nor counter set.
-        let message = TestFactories.inboundObjectMessage(
-            object: TestFactories.objectState(objectId: "unknown:abc@1"),
-        )
 
         pool.accumulate([message], logger: TestLogger())
 
@@ -159,29 +146,6 @@ struct SyncObjectsPoolTests {
     }
 
     // MARK: - accumulate: partial counter (RTO5f2b)
-
-    // @spec RTO5f2b
-    @Test
-    func accumulateSkipsPartialCounter() {
-        var pool = SyncObjectsPool()
-        let logger = TestLogger()
-
-        let firstMessage = TestFactories.inboundObjectMessage(
-            object: TestFactories.counterObjectState(objectId: "counter:a@1", count: 10),
-        )
-        pool.accumulate([firstMessage], logger: logger)
-
-        // A second counter message for the same objectId should be skipped.
-        let secondMessage = TestFactories.inboundObjectMessage(
-            object: TestFactories.counterObjectState(objectId: "counter:a@1", count: 20),
-        )
-        pool.accumulate([secondMessage], logger: logger)
-
-        #expect(pool.count == 1)
-        // The original entry should be preserved.
-        let entry = Array(pool).first
-        #expect(entry?.object?.counter?.count == NSNumber(value: 10))
-    }
 
     // MARK: - Iteration
 

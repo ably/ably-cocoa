@@ -37,14 +37,8 @@ internal struct LiveObjectMutableState<Update: Sendable> {
     /// Internal lifecycle event subscription storage.
     private var lifecycleEventSubscriptionStorage = SubscriptionStorage<LiveObjectLifecycleEvent, Void>()
 
-    internal init(
-        objectID: String,
-        testsOnly_siteTimeserials siteTimeserials: [String: String]? = nil,
-        testsOnly_tombstonedAt tombstonedAt: Date? = nil,
-    ) {
+    internal init(objectID: String) {
         self.objectID = objectID
-        self.siteTimeserials = siteTimeserials ?? [:]
-        self.tombstonedAt = tombstonedAt
     }
 
     /// Represents parameters of an operation that `canApplyOperation` has decided can be applied to a `LiveObject`.

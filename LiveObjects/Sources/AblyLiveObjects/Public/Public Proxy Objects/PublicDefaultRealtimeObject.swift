@@ -9,25 +9,17 @@ import Ably
 /// alongside the other proxy objects in `Public/Public Proxy Objects`.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal final class PublicDefaultRealtimeObject: RealtimeObject {
-    private let proxied: InternalDefaultRealtimeObjects
+    internal let proxied: InternalDefaultRealtimeObjects // internal (not private) for AblyLiveObjectsTesting
 
     // MARK: - Dependencies that hold a strong reference to `proxied`
 
-    private let coreSDK: CoreSDK
+    internal let coreSDK: CoreSDK // internal (not private) for AblyLiveObjectsTesting
     private let logger: Logger
 
     internal init(proxied: InternalDefaultRealtimeObjects, coreSDK: CoreSDK, logger: Logger) {
         self.proxied = proxied
         self.coreSDK = coreSDK
         self.logger = logger
-    }
-
-    internal var testsOnly_proxied: InternalDefaultRealtimeObjects {
-        proxied
-    }
-
-    internal var testsOnly_coreSDK: CoreSDK {
-        coreSDK
     }
 
     // MARK: - `RealtimeObject` protocol

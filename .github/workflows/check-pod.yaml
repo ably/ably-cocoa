@@ -1,5 +1,9 @@
 name: Check Pod
 
+# Packages the core Obj-C SDK for CocoaPods + Carthage. The AblyLiveObjects
+# plugin is SPM-only (not in Ably.podspec / Cartfile), so it is intentionally
+# absent here; its CI lives in liveobjects.yaml.
+
 on:
   pull_request:
   push:

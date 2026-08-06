@@ -1,4 +1,10 @@
 # This workflow checks that the SPM version of the library (which includes additional code for plugin support compared to the Xcode version) compiles and does not have any warnings.
+#
+# It only COMPILES the root package (warnings-as-errors); it runs NO tests.
+# The same build also happens in liveobjects.yaml's build-and-test-spm job —
+# kept here as the core SDK's own required gate, independent of plugin CI.
+# UTS/AblyTests execute in integration-test.yaml; AblyLiveObjectsTests in
+# liveobjects.yaml.
 
 name: "Check SPM build"
 

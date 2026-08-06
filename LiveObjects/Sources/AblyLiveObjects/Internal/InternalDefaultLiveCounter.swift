@@ -5,103 +5,15 @@ import Foundation
 /// This provides the implementation behind ``PublicDefaultLiveCounter``, via internal versions of the ``LiveCounter`` API.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal final class InternalDefaultLiveCounter: Sendable {
-    private let mutableStateMutex: DispatchQueueMutex<MutableState>
+    internal let mutableStateMutex: DispatchQueueMutex<MutableState> // internal (not private) for AblyLiveObjectsTesting
 
-    internal var testsOnly_siteTimeserials: [String: String] {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.liveObjectMutableState.siteTimeserials
-        }
-    }
-
-    internal var testsOnly_createOperationIsMerged: Bool {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.liveObjectMutableState.createOperationIsMerged
-        }
-    }
-
-    // MARK: - Test-only setters
-
-    /// Test-only setter for `siteTimeserials`, executing on the internal queue.
-    internal func testsOnly_setSiteTimeserials(_ siteTimeserials: [String: String]) {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.liveObjectMutableState.siteTimeserials = siteTimeserials
-        }
-    }
-
-    /// Test-only setter for `tombstonedAt`, executing on the internal queue.
-    internal func testsOnly_setTombstonedAt(_ tombstonedAt: Date?) {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.liveObjectMutableState.tombstonedAt = tombstonedAt
-        }
-    }
-
-    /// Test-only setter for `createOperationIsMerged`, executing on the internal queue.
-    internal func testsOnly_setCreateOperationIsMerged(_ createOperationIsMerged: Bool) {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.liveObjectMutableState.createOperationIsMerged = createOperationIsMerged
-        }
-    }
-
-    /// Test-only setter for the counter's `data` (the count), executing on the internal queue.
-    internal func testsOnly_setData(_ data: Double) {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.data = data
-        }
-    }
-
-    internal var testsOnly_data: Double {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.data
-        }
-    }
-
-    internal var testsOnly_parentReferences: [String: Set<String>] {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.liveObjectMutableState.parentReferences
-        }
-    }
-
-    /// Test-only setter for `parentReferences`, executing on the internal queue.
-    internal func testsOnly_setParentReferences(_ parentReferences: [String: Set<String>]) {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.liveObjectMutableState.parentReferences = parentReferences
-        }
-    }
-
-    /// Test-only accessor for `getFullPaths` that hops onto the internal queue. It dispatches to the
-    /// queue (rather than holding this object's mutex) so the pool DFS can read every object's
-    /// `parentReferences` independently.
-    internal func testsOnly_getFullPaths(objectsPool: ObjectsPool) -> [[String]] {
-        mutableStateMutex.dispatchQueue.ably_syncNoDeadlock {
-            objectsPool.nosync_getFullPaths(forObjectID: nosync_objectID)
-        }
-    }
-
-    private let logger: Logger
+    internal let logger: Logger // internal (not private) for AblyLiveObjectsTesting
     private let userCallbackQueue: DispatchQueue
     private let clock: SimpleClock
 
     // MARK: - Initialization
 
-    internal convenience init(
-        testsOnly_data data: Double,
-        objectID: String,
-        logger: Logger,
-        internalQueue: DispatchQueue,
-        userCallbackQueue: DispatchQueue,
-        clock: SimpleClock
-    ) {
-        self.init(
-            data: data,
-            objectID: objectID,
-            logger: logger,
-            internalQueue: internalQueue,
-            userCallbackQueue: userCallbackQueue,
-            clock: clock,
-        )
-    }
-
-    private init(
+    internal init( // internal (not private) for AblyLiveObjectsTesting
         data: Double,
         objectID: String,
         logger: Logger,
@@ -143,13 +55,6 @@ internal final class InternalDefaultLiveCounter: Sendable {
 
     internal var nosync_objectID: String {
         mutableStateMutex.withoutSync { mutableState in
-            mutableState.liveObjectMutableState.objectID
-        }
-    }
-
-    /// Test-only accessor for objectID that handles locking internally.
-    internal var testsOnly_objectID: String {
-        mutableStateMutex.withSync { mutableState in
             mutableState.liveObjectMutableState.objectID
         }
     }
@@ -299,20 +204,6 @@ internal final class InternalDefaultLiveCounter: Sendable {
         }
     }
 
-    /// Test-only method to apply a COUNTER_CREATE operation, per RTLC8.
-    internal func testsOnly_applyCounterCreateOperation(_ operation: ProtocolTypes.ObjectOperation) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.applyCounterCreateOperation(operation, logger: logger)
-        }
-    }
-
-    /// Test-only method to apply a COUNTER_INC operation, per RTLC9.
-    internal func testsOnly_applyCounterIncOperation(_ operation: WireCounterInc?) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.applyCounterIncOperation(operation)
-        }
-    }
-
     /// Attempts to apply an operation from an inbound `ObjectMessage`, per RTLC7.
     ///
     /// - Returns: The update that was emitted if the operation was applied (which may be `.noop`), or `nil` if the operation was skipped (RTLC7g).
@@ -360,23 +251,9 @@ internal final class InternalDefaultLiveCounter: Sendable {
         }
     }
 
-    /// Test-only accessor for isTombstone that handles locking internally.
-    internal var testsOnly_isTombstone: Bool {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.liveObjectMutableState.isTombstone
-        }
-    }
-
     /// Returns the object's RTLO3e `tombstonedAt` property.
     internal var nosync_tombstonedAt: Date? {
         mutableStateMutex.withoutSync { mutableState in
-            mutableState.liveObjectMutableState.tombstonedAt
-        }
-    }
-
-    /// Test-only accessor for tombstonedAt that handles locking internally.
-    internal var testsOnly_tombstonedAt: Date? {
-        mutableStateMutex.withSync { mutableState in
             mutableState.liveObjectMutableState.tombstonedAt
         }
     }
@@ -418,7 +295,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
 
     // MARK: - Mutable state and the operations that affect it
 
-    private struct MutableState: InternalLiveObject {
+    internal struct MutableState: InternalLiveObject { // internal (not private) for AblyLiveObjectsTesting
         /// The mutable state common to all LiveObjects.
         internal var liveObjectMutableState: LiveObjectMutableState<DefaultLiveCounterUpdate>
 
@@ -598,7 +475,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
         }
 
         /// Needed for ``InternalLiveObject`` conformance.
-        mutating func resetDataToZeroValued() {
+        internal mutating func resetDataToZeroValued() {
             // RTLC4
             data = 0
         }

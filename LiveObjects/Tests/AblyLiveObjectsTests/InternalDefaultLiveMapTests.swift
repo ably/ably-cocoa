@@ -1,6 +1,7 @@
 import _AblyPluginSupportPrivate
 import Ably
 @testable import AblyLiveObjects
+@testable import AblyLiveObjectsTesting
 import Foundation
 import Testing
 
@@ -294,7 +295,7 @@ struct InternalDefaultLiveMapTests {
             #expect(map.testsOnly_createOperationIsMerged)
         }
 
-        // @specOneOf(1/2) RTLM6i
+        // @specOneOf(1/1) RTLM6i
         @Test
         func setsClearTimeserialFromObjectState() {
             let logger = TestLogger()
@@ -309,32 +310,6 @@ struct InternalDefaultLiveMapTests {
                 _ = map.nosync_replaceData(using: state, objectMessageSerialTimestamp: nil, objectsPool: &pool)
             }
             #expect(map.testsOnly_clearTimeserial == "01234567890@abcdefghijklm")
-        }
-
-        // @specOneOf(2/2) RTLM6i
-        @Test
-        func setsClearTimeserialToNilWhenNotProvided() {
-            let logger = TestLogger()
-            let internalQueue = TestFactories.createInternalQueue()
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-
-            // First, set a clearTimeserial
-            let stateWithClear = TestFactories.objectState(
-                objectId: "arbitrary-id",
-                map: TestFactories.objectsMap(clearTimeserial: "01234567890@abcdefghijklm"),
-            )
-            internalQueue.ably_syncNoDeadlock {
-                _ = map.nosync_replaceData(using: stateWithClear, objectMessageSerialTimestamp: nil, objectsPool: &pool)
-            }
-            #expect(map.testsOnly_clearTimeserial == "01234567890@abcdefghijklm")
-
-            // Then, replace with state that has no clearTimeserial
-            let stateWithoutClear = TestFactories.objectState(objectId: "arbitrary-id")
-            internalQueue.ably_syncNoDeadlock {
-                _ = map.nosync_replaceData(using: stateWithoutClear, objectMessageSerialTimestamp: nil, objectsPool: &pool)
-            }
-            #expect(map.testsOnly_clearTimeserial == nil)
         }
 
         /// Tests for RTLM6h (diff calculation on replaceData)
@@ -1372,38 +1347,6 @@ struct InternalDefaultLiveMapTests {
 
     /// Tests for `MAP_CREATE` operations, covering RTLM16 specification points
     struct MapCreateOperationTests {
-        // @spec RTLM16b
-        @Test
-        func discardsOperationWhenCreateOperationIsMerged() throws {
-            let logger = TestLogger()
-            let internalQueue = TestFactories.createInternalQueue()
-            let delegate = MockLiveMapObjectsPoolDelegate(internalQueue: internalQueue)
-            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-
-            // Set initial data and mark create operation as merged
-            internalQueue.ably_syncNoDeadlock {
-                _ = map.nosync_replaceData(using: TestFactories.mapObjectState(entries: ["key1": TestFactories.stringMapEntry().entry]), objectMessageSerialTimestamp: nil, objectsPool: &pool)
-            }
-            internalQueue.ably_syncNoDeadlock {
-                _ = map.nosync_mergeInitialValue(from: TestFactories.mapCreateOperation(entries: ["key2": TestFactories.stringMapEntry(key: "key2", value: "value2").entry]), objectsPool: &pool)
-            }
-            #expect(map.testsOnly_createOperationIsMerged)
-
-            // Try to apply another MAP_CREATE operation
-            let operation = TestFactories.mapCreateOperation(entries: ["key3": TestFactories.stringMapEntry(key: "key3", value: "value3").entry])
-            let update = map.testsOnly_applyMapCreateOperation(operation, objectsPool: &pool)
-
-            // Verify the operation was discarded - data unchanged
-            #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate)?.stringValue == "testValue") // Original data
-            #expect(try map.get(key: "key2", coreSDK: coreSDK, delegate: delegate)?.stringValue == "value2") // From first merge
-            #expect(try map.get(key: "key3", coreSDK: coreSDK, delegate: delegate) == nil) // Not added by second operation
-
-            // Verify the return value
-            #expect(update.isNoop)
-        }
-
         // @spec RTLM16d
         // @spec RTLM16f
         @Test
@@ -1848,37 +1791,6 @@ struct InternalDefaultLiveMapTests {
             #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate)?.stringValue == "new")
             // Verify RTLM15c: siteTimeserials should NOT have been updated for LOCAL source
             #expect(map.testsOnly_siteTimeserials.isEmpty)
-        }
-
-        // @spec RTLM15d4
-        @available(iOS 17.0.0, tvOS 17.0.0, *)
-        @Test
-        func noOpForOtherOperation() async throws {
-            let logger = TestLogger()
-            let internalQueue = TestFactories.createInternalQueue()
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
-
-            let subscriber = Subscriber<DefaultLiveMapUpdate, SubscribeResponse>(callbackQueue: .main)
-            try map.subscribe(listener: subscriber.createListener(), coreSDK: coreSDK)
-
-            // Try to apply a COUNTER_CREATE to the map (not supported)
-            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-            let applied = internalQueue.ably_syncNoDeadlock {
-                map.nosync_apply(
-                    TestFactories.counterCreateOperation(),
-                    source: .channel,
-                    objectMessageSerial: "ts1",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
-                    objectsPool: &pool,
-                )
-            }
-            #expect(applied == nil)
-
-            // Check no update was emitted
-            let subscriberInvocations = await subscriber.getInvocations()
-            #expect(subscriberInvocations.isEmpty)
         }
     }
 

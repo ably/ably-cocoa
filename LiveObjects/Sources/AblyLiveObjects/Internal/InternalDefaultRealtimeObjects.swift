@@ -24,11 +24,11 @@ internal protocol InternalRealtimeObjectsProtocol: LiveMapObjectsPoolDelegate {
 /// This provides the implementation behind ``PublicDefaultRealtimeObjects``, via internal versions of the ``RealtimeObjects`` API.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeObjectsProtocol {
-    private let mutableStateMutex: DispatchQueueMutex<MutableState>
+    internal let mutableStateMutex: DispatchQueueMutex<MutableState> // internal (not private) for AblyLiveObjectsTesting
 
-    private let logger: Logger
-    private let userCallbackQueue: DispatchQueue
-    private let clock: SimpleClock
+    internal let logger: Logger // internal (not private) for AblyLiveObjectsTesting
+    internal let userCallbackQueue: DispatchQueue // internal (not private) for AblyLiveObjectsTesting
+    internal let clock: SimpleClock // internal (not private) for AblyLiveObjectsTesting
 
     /// The channel's path-subscription registry (RTO24a). A `Sendable` reference type with its own
     /// internal synchronisation, so it lives here as an immutable class-level property rather than
@@ -79,80 +79,17 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
         }
     }
 
-    internal var testsOnly_objectsPool: ObjectsPool {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.objectsPool
-        }
-    }
-
-    /// Test-only setter that inserts or replaces an entry in the *owned* `ObjectsPool` held
-    /// inside `MutableState`, executing on the internal queue.
-    ///
-    /// Note that `testsOnly_objectsPool` returns a struct *copy*, so mutating that copy would not
-    /// affect this object's state; this seam goes through the mutex to the owned instance.
-    internal func testsOnly_setPoolEntry(_ entry: ObjectsPool.Entry, forObjectID objectID: String) {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.objectsPool.testsOnly_setEntry(entry, forObjectID: objectID)
-        }
-    }
-
-    /// Test-only read seam over the RTO17 sync state, executing on the internal queue.
-    internal var testsOnly_syncState: ObjectsSyncState {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.state.toObjectsSyncState
-        }
-    }
-
-    /// Test-only seam that applies the given inbound `OBJECT` object messages, executing on the
-    /// internal queue by forwarding to `MutableState.nosync_applyObjectProtocolMessageObjectMessage`.
-    internal func testsOnly_applyObjectMessages(_ objectMessages: [ProtocolTypes.InboundObjectMessage], source: ObjectsOperationSource) {
-        mutableStateMutex.withSync { mutableState in
-            for objectMessage in objectMessages {
-                mutableState.nosync_applyObjectProtocolMessageObjectMessage(
-                    objectMessage,
-                    source: source,
-                    logger: logger,
-                    internalQueue: mutableStateMutex.dispatchQueue,
-                    userCallbackQueue: userCallbackQueue,
-                    clock: clock,
-                    pathObjectSubscriptionRegister: pathObjectSubscriptionRegister,
-                )
-            }
-        }
-    }
-
-    /// If this returns false, it means that there is currently no stored sync sequence ID, SyncObjectsPool, or BufferedObjectOperations.
-    internal var testsOnly_hasSyncSequence: Bool {
-        mutableStateMutex.withSync { mutableState in
-            if case let .syncing(syncingData) = mutableState.state, syncingData.syncSequence != nil {
-                true
-            } else {
-                false
-            }
-        }
-    }
-
-    /// Returns the number of buffered object operations if in the SYNCING state, or nil otherwise.
-    internal var testsOnly_bufferedObjectOperationsCount: Int? {
-        mutableStateMutex.withSync { mutableState in
-            if case let .syncing(syncingData) = mutableState.state {
-                syncingData.bufferedObjectOperations.count
-            } else {
-                nil
-            }
-        }
-    }
-
     // These drive the testsOnly_waitingForSyncEvents property that informs the test suite when `getRoot()` is waiting for the object sync sequence to complete per RTO1c.
     private let waitingForSyncEvents: AsyncStream<Void>
     private let waitingForSyncEventsContinuation: AsyncStream<Void>.Continuation
+    // testsOnly_ residual: production-embedded instrumentation — cannot move to AblyLiveObjectsTesting; see Test/AblyLiveObjectsTesting/README.md
     /// Emits an element whenever `getRoot()` starts waiting for the object sync sequence to complete per RTO1c.
     internal var testsOnly_waitingForSyncEvents: AsyncStream<Void> {
         waitingForSyncEvents
     }
 
     /// Contains the data gathered during an `OBJECT_SYNC` sequence.
-    private struct SyncSequence {
+    internal struct SyncSequence { // internal (not private) for AblyLiveObjectsTesting (cascade: reachable from the raised MutableState)
         /// The sync sequence ID, per RTO5a1.
         internal var id: String
 
@@ -557,12 +494,6 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
 
     // MARK: Handling channel events
 
-    internal var testsOnly_onChannelAttachedHasObjects: Bool? {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.onChannelAttachedHasObjects
-        }
-    }
-
     internal func nosync_onChannelAttached(hasObjects: Bool) {
         mutableStateMutex.withoutSync { mutableState in
             mutableState.nosync_onChannelAttached(
@@ -584,6 +515,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
         }
     }
 
+    // testsOnly_ residual: production-embedded instrumentation — cannot move to AblyLiveObjectsTesting; see Test/AblyLiveObjectsTesting/README.md
     internal var testsOnly_receivedObjectProtocolMessages: AsyncStream<[ProtocolTypes.InboundObjectMessage]> {
         receivedObjectProtocolMessages
     }
@@ -603,6 +535,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
         }
     }
 
+    // testsOnly_ residual: production-embedded instrumentation — cannot move to AblyLiveObjectsTesting; see Test/AblyLiveObjectsTesting/README.md
     internal var testsOnly_receivedObjectSyncProtocolMessages: AsyncStream<[ProtocolTypes.InboundObjectMessage]> {
         receivedObjectSyncProtocolMessages
     }
@@ -619,21 +552,6 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
                 clock: clock,
                 pathObjectSubscriptionRegister: pathObjectSubscriptionRegister,
                 receivedObjectSyncProtocolMessagesContinuation: receivedObjectSyncProtocolMessagesContinuation,
-            )
-        }
-    }
-
-    /// Creates a zero-value LiveObject in the object pool for this object ID.
-    ///
-    /// Intended as a way for tests to populate the object pool.
-    internal func testsOnly_createZeroValueLiveObject(forObjectID objectID: String) -> ObjectsPool.Entry? {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.objectsPool.createZeroValueObject(
-                forObjectID: objectID,
-                logger: logger,
-                internalQueue: mutableStateMutex.dispatchQueue,
-                userCallbackQueue: userCallbackQueue,
-                clock: clock,
             )
         }
     }
@@ -655,32 +573,12 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
     /// (`connectionManager.maxMessageSize`).
     ///
     /// Must be called on the internal queue (it reads the `nosync_` connection-details accessor).
-    private static func ensureMessageSizeWithinLimit(_ objectMessages: [ProtocolTypes.OutboundObjectMessage], coreSDK: CoreSDK) throws(ARTErrorInfo) {
+    internal static func ensureMessageSizeWithinLimit(_ objectMessages: [ProtocolTypes.OutboundObjectMessage], coreSDK: CoreSDK) throws(ARTErrorInfo) { // internal (not private) for AblyLiveObjectsTesting
         let maximumAllowedSize = coreSDK.nosync_maxMessageSize ?? defaultMaxMessageSize
         let totalSize = objectMessages.reduce(0) { $0 + $1.size }
         if totalSize > maximumAllowedSize {
             throw LiveObjectsError.maxMessageSizeExceeded(size: totalSize, maxSize: maximumAllowedSize).toARTErrorInfo()
         }
-    }
-
-    // This is currently exposed so that we can try calling it from the tests in the early days of the SDK to check that we can send an OBJECT ProtocolMessage. We'll probably make it private later on.
-    internal func testsOnly_publish(objectMessages: [ProtocolTypes.OutboundObjectMessage], coreSDK: CoreSDK) async throws(ARTErrorInfo) {
-        try await withCheckedContinuation { (continuation: CheckedContinuation<Result<Void, ARTErrorInfo>, _>) in
-            mutableStateMutex.withSync { _ in
-                // RTO15d: reject the publish if the total ObjectMessage size exceeds maxMessageSize.
-                // The check reads the connection's negotiated limit (a `nosync_` accessor), so it must
-                // run on the internal queue.
-                do throws(ARTErrorInfo) {
-                    try Self.ensureMessageSizeWithinLimit(objectMessages, coreSDK: coreSDK)
-                } catch {
-                    continuation.resume(returning: .failure(error))
-                    return
-                }
-                coreSDK.nosync_publish(objectMessages: objectMessages) { result in
-                    continuation.resume(returning: result.map { _ in })
-                }
-            }
-        }.get()
     }
 
     /// RTO20: Publishes ObjectMessages and applies them locally upon receiving the ACK from the server.
@@ -830,13 +728,11 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
         }
     }
 
-    // These drive the testsOnly_completedGarbageCollectionEventsWithoutBuffering property that informs the test suite when a garbage collection cycle has completed.
+    // The completed-garbage-collection event stream. Production writes its continuation from
+    // `performGarbageCollection` and `testsOnly_finishAllTestHelperStreams` finishes it; the stream
+    // value is retained alongside its continuation (the two are produced together by `makeStream`).
     private let completedGarbageCollectionEventsWithoutBuffering: AsyncStream<Void>
     private let completedGarbageCollectionEventsWithoutBufferingContinuation: AsyncStream<Void>.Continuation
-    /// Emits an element whenever a garbage collection cycle has completed.
-    internal var testsOnly_completedGarbageCollectionEventsWithoutBuffering: AsyncStream<Void> {
-        completedGarbageCollectionEventsWithoutBuffering
-    }
 
     /// Sets the `siteCode` from the latest `connectionDetails`.
     ///
@@ -844,12 +740,6 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
     internal func nosync_setSiteCode(_ siteCode: String?) {
         mutableStateMutex.withoutSync { mutableState in
             mutableState.siteCode = siteCode
-        }
-    }
-
-    internal var testsOnly_siteCode: String? {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.siteCode
         }
     }
 
@@ -870,26 +760,15 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
         }
     }
 
-    internal var testsOnly_gcGracePeriod: TimeInterval {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.garbageCollectionGracePeriod.toTimeInterval
-        }
-    }
-
-    internal var testsOnly_appliedOnAckSerials: Set<String> {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.appliedOnAckSerials
-        }
-    }
-
     // MARK: - Testing
 
+    // testsOnly_ residual: production-embedded instrumentation — cannot move to AblyLiveObjectsTesting; see Test/AblyLiveObjectsTesting/README.md
     /// Finishes the following streams, to allow a test to perform assertions about which elements the streams have emitted to this moment:
     ///
     /// - testsOnly_receivedObjectProtocolMessages
-    /// - testsOnly_receivedObjectStateProtocolMessages
+    /// - testsOnly_receivedObjectSyncProtocolMessages
     /// - testsOnly_waitingForSyncEvents
-    /// - testsOnly_completedGarbageCollectionEventsWithoutBuffering
+    /// - the completed-garbage-collection event stream (`completedGarbageCollectionEventsWithoutBuffering`; no public accessor)
     internal func testsOnly_finishAllTestHelperStreams() {
         receivedObjectProtocolMessagesContinuation.finish()
         receivedObjectSyncProtocolMessagesContinuation.finish()
@@ -899,7 +778,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
 
     // MARK: - Mutable state and the operations that affect it
 
-    private struct MutableState {
+    internal struct MutableState { // internal (not private) for AblyLiveObjectsTesting
         internal var objectsPool: ObjectsPool
 
         /// The name of the channel these objects belong to. Used to populate the `channel` field of
@@ -926,7 +805,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
         internal var siteCode: String?
 
         /// The outcome passed to a `nosync_publishAndApply` sync waiter closure.
-        enum PublishAndApplySyncWaiterOutcome: Sendable {
+        internal enum PublishAndApplySyncWaiterOutcome: Sendable {
             case synced
             case channelStateFailed(
                 state: _AblyPluginSupportPrivate.RealtimeChannelState,
@@ -953,24 +832,24 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
             case synced
 
             /// Note: We follow the same pattern as used in the WIP ably-swift: a state's associated data is a class instance and the convention is that to update the associated data for the current state you mutate the existing instance instead of creating a new one.
-            enum AssociatedData {
-                class Syncing {
+            internal enum AssociatedData {
+                internal class Syncing {
                     /// `OBJECT` ProtocolMessages that were received whilst SYNCING, to be applied once the sync sequence is complete, per RTO7a.
-                    var bufferedObjectOperations: [ProtocolTypes.InboundObjectMessage]
+                    internal var bufferedObjectOperations: [ProtocolTypes.InboundObjectMessage]
 
                     /// Note that we only ever populate this during a multi-`ProtocolMessage` sync sequence. It is not used in the RTO4b or RTO5a5 cases where the sync data is entirely contained within a single ProtocolMessage, because an individual ProtocolMessage is processed atomically and so no other operations that might wish to query this property can occur concurrently with the handling of these cases.
                     ///
                     /// It is optional because there are times that we transition to SYNCING even when the sync data is contained in a single ProtocolMessage.
-                    var syncSequence: SyncSequence?
+                    internal var syncSequence: SyncSequence?
 
-                    init(bufferedObjectOperations: [ProtocolTypes.InboundObjectMessage], syncSequence: SyncSequence?) {
+                    internal init(bufferedObjectOperations: [ProtocolTypes.InboundObjectMessage], syncSequence: SyncSequence?) {
                         self.bufferedObjectOperations = bufferedObjectOperations
                         self.syncSequence = syncSequence
                     }
                 }
             }
 
-            var toObjectsSyncState: ObjectsSyncState {
+            internal var toObjectsSyncState: ObjectsSyncState {
                 switch self {
                 case .initialized:
                     .initialized
@@ -982,7 +861,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
             }
         }
 
-        mutating func transition(
+        internal mutating func transition(
             to newState: State,
             userCallbackQueue: DispatchQueue,
         ) {

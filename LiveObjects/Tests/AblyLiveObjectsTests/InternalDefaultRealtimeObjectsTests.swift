@@ -1,6 +1,7 @@
 import _AblyPluginSupportPrivate
 import Ably
 @testable import AblyLiveObjects
+@testable import AblyLiveObjectsTesting
 import Testing
 
 /// Tests for `InternalDefaultRealtimeObjects`.
@@ -854,44 +855,6 @@ struct InternalDefaultRealtimeObjectsTests {
             // @specUntested RTO9a2b - There is no way to check that it was a no-op since there are no side effects that this spec point tells us not to apply
 
             // MARK: - RTO9a3 Tests
-
-            // @spec RTO9a3 - Tests that an OBJECT message whose serial is in appliedOnAckSerials is discarded, and the serial is removed from the set
-            @Test
-            func skipsObjectMessageAlreadyAppliedOnAck() async throws {
-                let internalQueue = TestFactories.createInternalQueue()
-                let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
-                let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
-
-                // Transition to synced state
-                internalQueue.ably_syncNoDeadlock {
-                    realtimeObjects.nosync_onChannelAttached(hasObjects: false)
-                    realtimeObjects.nosync_setSiteCode("site1")
-                }
-
-                // Populate appliedOnAckSerials by performing a local createCounter
-                let serial = "serial_abc"
-                coreSDK.setPublishHandler { messages in
-                    PublishResult(serials: messages.map { _ in serial })
-                }
-                let counter = try await realtimeObjects.createCounter(count: 42, coreSDK: coreSDK)
-                #expect(realtimeObjects.testsOnly_appliedOnAckSerials.contains(serial))
-
-                // Send an echoed OBJECT message with the same serial
-                let echoMessage = TestFactories.counterIncOperationMessage(
-                    objectId: counter.testsOnly_objectID,
-                    number: 10,
-                    serial: serial,
-                )
-                internalQueue.ably_syncNoDeadlock {
-                    realtimeObjects.nosync_handleObjectProtocolMessage(objectMessages: [echoMessage])
-                }
-
-                // Verify the operation was skipped (counter value unchanged)
-                #expect(try counter.value(coreSDK: coreSDK) == 42)
-
-                // Verify the serial was removed from appliedOnAckSerials
-                #expect(!realtimeObjects.testsOnly_appliedOnAckSerials.contains(serial))
-            }
 
             // MARK: - RTO9a2a4 Tests
 

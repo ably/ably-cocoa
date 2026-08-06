@@ -12,6 +12,7 @@ internal protocol CoreSDK: AnyObject, Sendable {
     /// Implements the server time fetch of RTO16, including the storing and usage of the local clock offset.
     func nosync_fetchServerTime(callback: @escaping @Sendable (Result<Date, ARTErrorInfo>) -> Void)
 
+    // testsOnly_ residual: protocol requirement — a foreign module cannot add requirements; see Test/AblyLiveObjectsTesting/README.md
     /// Replaces the implementation of ``nosync_publish(objectMessages:callback:)``.
     ///
     /// Used by integration tests, for example to disable `ObjectMessage` publishing so that a test can verify that a behaviour is not a side effect of an `ObjectMessage` sent by the SDK.
@@ -114,6 +115,7 @@ internal final class DefaultCoreSDK: CoreSDK {
         )
     }
 
+    // testsOnly_ residual: production-embedded instrumentation — cannot move to AblyLiveObjectsTesting; see Test/AblyLiveObjectsTesting/README.md
     internal func testsOnly_overridePublish(with newImplementation: @escaping ([ProtocolTypes.OutboundObjectMessage]) async throws(ARTErrorInfo) -> PublishResult) {
         mutex.withLock {
             overriddenPublishImplementation = newImplementation

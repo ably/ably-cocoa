@@ -11,117 +11,15 @@ internal protocol LiveMapObjectsPoolDelegate: AnyObject, Sendable {
 /// This provides the implementation behind ``PublicDefaultLiveMap``, via internal versions of the ``LiveMap`` API.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal final class InternalDefaultLiveMap: Sendable {
-    private let mutableStateMutex: DispatchQueueMutex<MutableState>
+    internal let mutableStateMutex: DispatchQueueMutex<MutableState> // internal (not private) for AblyLiveObjectsTesting
 
-    internal var testsOnly_data: [String: InternalObjectsMapEntry] {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.data
-        }
-    }
-
-    internal var testsOnly_semantics: WireEnum<ProtocolTypes.ObjectsMapSemantics>? {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.semantics
-        }
-    }
-
-    internal var testsOnly_siteTimeserials: [String: String] {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.liveObjectMutableState.siteTimeserials
-        }
-    }
-
-    internal var testsOnly_createOperationIsMerged: Bool {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.liveObjectMutableState.createOperationIsMerged
-        }
-    }
-
-    internal var testsOnly_clearTimeserial: String? {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.clearTimeserial
-        }
-    }
-
-    // MARK: - Test-only setters
-
-    /// Test-only setter for `siteTimeserials`, executing on the internal queue.
-    internal func testsOnly_setSiteTimeserials(_ siteTimeserials: [String: String]) {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.liveObjectMutableState.siteTimeserials = siteTimeserials
-        }
-    }
-
-    /// Test-only setter for `tombstonedAt`, executing on the internal queue.
-    internal func testsOnly_setTombstonedAt(_ tombstonedAt: Date?) {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.liveObjectMutableState.tombstonedAt = tombstonedAt
-        }
-    }
-
-    /// Test-only setter for `createOperationIsMerged`, executing on the internal queue.
-    internal func testsOnly_setCreateOperationIsMerged(_ createOperationIsMerged: Bool) {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.liveObjectMutableState.createOperationIsMerged = createOperationIsMerged
-        }
-    }
-
-    /// Test-only setter for `clearTimeserial`, executing on the internal queue.
-    internal func testsOnly_setClearTimeserial(_ clearTimeserial: String?) {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.clearTimeserial = clearTimeserial
-        }
-    }
-
-    internal var testsOnly_parentReferences: [String: Set<String>] {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.liveObjectMutableState.parentReferences
-        }
-    }
-
-    /// Test-only setter for `parentReferences`, executing on the internal queue.
-    internal func testsOnly_setParentReferences(_ parentReferences: [String: Set<String>]) {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.liveObjectMutableState.parentReferences = parentReferences
-        }
-    }
-
-    /// Test-only accessor for `getFullPaths` that hops onto the internal queue. It dispatches to the
-    /// queue (rather than holding this object's mutex) so the pool DFS can read every object's
-    /// `parentReferences` independently.
-    internal func testsOnly_getFullPaths(objectsPool: ObjectsPool) -> [[String]] {
-        mutableStateMutex.dispatchQueue.ably_syncNoDeadlock {
-            objectsPool.nosync_getFullPaths(forObjectID: nosync_objectID)
-        }
-    }
-
-    private let logger: Logger
-    private let userCallbackQueue: DispatchQueue
-    private let clock: SimpleClock
+    internal let logger: Logger // internal (not private) for AblyLiveObjectsTesting
+    internal let userCallbackQueue: DispatchQueue // internal (not private) for AblyLiveObjectsTesting
+    internal let clock: SimpleClock // internal (not private) for AblyLiveObjectsTesting
 
     // MARK: - Initialization
 
-    internal convenience init(
-        testsOnly_data data: [String: InternalObjectsMapEntry],
-        objectID: String,
-        testsOnly_semantics semantics: WireEnum<ProtocolTypes.ObjectsMapSemantics>? = nil,
-        logger: Logger,
-        internalQueue: DispatchQueue,
-        userCallbackQueue: DispatchQueue,
-        clock: SimpleClock,
-    ) {
-        self.init(
-            data: data,
-            objectID: objectID,
-            semantics: semantics,
-            logger: logger,
-            internalQueue: internalQueue,
-            userCallbackQueue: userCallbackQueue,
-            clock: clock,
-        )
-    }
-
-    private init(
+    internal init( // internal (not private) for AblyLiveObjectsTesting
         data: [String: InternalObjectsMapEntry],
         objectID: String,
         semantics: WireEnum<ProtocolTypes.ObjectsMapSemantics>?,
@@ -167,13 +65,6 @@ internal final class InternalDefaultLiveMap: Sendable {
 
     internal var nosync_objectID: String {
         mutableStateMutex.withoutSync { mutableState in
-            mutableState.liveObjectMutableState.objectID
-        }
-    }
-
-    /// Test-only accessor for objectID that handles locking internally.
-    internal var testsOnly_objectID: String {
-        mutableStateMutex.withSync { mutableState in
             mutableState.liveObjectMutableState.objectID
         }
     }
@@ -377,20 +268,6 @@ internal final class InternalDefaultLiveMap: Sendable {
         }
     }
 
-    /// Test-only method to apply a MAP_CREATE operation, per RTLM16.
-    internal func testsOnly_applyMapCreateOperation(_ operation: ProtocolTypes.ObjectOperation, objectsPool: inout ObjectsPool) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.applyMapCreateOperation(
-                operation,
-                objectsPool: &objectsPool,
-                logger: logger,
-                internalQueue: mutableStateMutex.dispatchQueue,
-                userCallbackQueue: userCallbackQueue,
-                clock: clock,
-            )
-        }
-    }
-
     /// Attempts to apply an operation from an inbound `ObjectMessage`, per RTLM15.
     ///
     /// - Returns: The update that was emitted if the operation was applied (which may be `.noop`), or `nil` if the operation was skipped (RTLM15g).
@@ -428,62 +305,6 @@ internal final class InternalDefaultLiveMap: Sendable {
         mutableStateMutex.withoutSync { mutableState in
             mutableState.liveObjectMutableState.unsubscribeAll()
         }
-    }
-
-    /// Applies a `MAP_SET` operation to a key, per RTLM7.
-    ///
-    /// This is currently exposed just so that the tests can test RTLM7 without having to go through a convoluted replaceData(…) call, but I _think_ that it's going to be used in further contexts when we introduce the handling of incoming object operations in a future spec PR.
-    internal func testsOnly_applyMapSetOperation(
-        key: String,
-        operationTimeserial: String?,
-        operationData: ProtocolTypes.ObjectData,
-        objectsPool: inout ObjectsPool,
-    ) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.applyMapSetOperation(
-                key: key,
-                operationTimeserial: operationTimeserial,
-                operationData: operationData,
-                objectsPool: &objectsPool,
-                logger: logger,
-                internalQueue: mutableStateMutex.dispatchQueue,
-                userCallbackQueue: userCallbackQueue,
-                clock: clock,
-            )
-        }
-    }
-
-    /// Applies a `MAP_REMOVE` operation to a key, per RTLM8.
-    ///
-    /// This is currently exposed just so that the tests can test RTLM8 without having to go through a convoluted replaceData(…) call, but I _think_ that it's going to be used in further contexts when we introduce the handling of incoming object operations in a future spec PR.
-    internal func testsOnly_applyMapRemoveOperation(key: String, operationTimeserial: String?, operationSerialTimestamp: Date?, objectsPool: ObjectsPool) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.applyMapRemoveOperation(
-                key: key,
-                operationTimeserial: operationTimeserial,
-                operationSerialTimestamp: operationSerialTimestamp,
-                objectsPool: objectsPool,
-                logger: logger,
-                clock: clock,
-            )
-        }
-    }
-
-    /// Test-only method to apply a MAP_CLEAR operation, per RTLM24.
-    internal func testsOnly_applyMapClearOperation(serial: String?, objectsPool: ObjectsPool) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.applyMapClearOperation(
-                serial: serial,
-                objectsPool: objectsPool,
-            )
-        }
-    }
-
-    /// Test-only wrapper over the RTLM14 `nosync_isEntryTombstoned` helper.
-    ///
-    /// This is a pure function of its arguments, so it does not need to execute on the internal queue.
-    internal func testsOnly_isEntryTombstoned(_ entry: InternalObjectsMapEntry, objectsPool: ObjectsPool) -> Bool {
-        MutableState.nosync_isEntryTombstoned(entry, objectsPool: objectsPool)
     }
 
     /// Resets the map's data, per RTO4b2. This is to be used when an `ATTACHED` ProtocolMessage indicates that the only object in a channel is an empty root map.
@@ -528,23 +349,9 @@ internal final class InternalDefaultLiveMap: Sendable {
         }
     }
 
-    /// Test-only accessor for isTombstone that handles locking internally.
-    internal var testsOnly_isTombstone: Bool {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.liveObjectMutableState.isTombstone
-        }
-    }
-
     /// Returns the object's RTLO3e `tombstonedAt` property.
     internal var nosync_tombstonedAt: Date? {
         mutableStateMutex.withoutSync { mutableState in
-            mutableState.liveObjectMutableState.tombstonedAt
-        }
-    }
-
-    /// Test-only accessor for tombstonedAt that handles locking internally.
-    internal var testsOnly_tombstonedAt: Date? {
-        mutableStateMutex.withSync { mutableState in
             mutableState.liveObjectMutableState.tombstonedAt
         }
     }
@@ -599,7 +406,7 @@ internal final class InternalDefaultLiveMap: Sendable {
 
     // MARK: - Mutable state and the operations that affect it
 
-    private struct MutableState: InternalLiveObject {
+    internal struct MutableState: InternalLiveObject { // internal (not private) for AblyLiveObjectsTesting
         /// The mutable state common to all LiveObjects.
         internal var liveObjectMutableState: LiveObjectMutableState<DefaultLiveMapUpdate>
 
@@ -1169,7 +976,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         }
 
         /// Needed for ``InternalLiveObject`` conformance.
-        mutating func resetDataToZeroValued() {
+        internal mutating func resetDataToZeroValued() {
             // RTLM4
             data = [:]
             clearTimeserial = nil
@@ -1249,10 +1056,11 @@ internal final class InternalDefaultLiveMap: Sendable {
 
         // MARK: - Helper Methods
 
-        // Note: `fileprivate` (rather than `private`) so that the enclosing type's
-        // `testsOnly_isEntryTombstoned` wrapper can reach it; still not exposed outside this file.
+        // Note: `internal` (rather than `private`/`fileprivate`) so that the
+        // `testsOnly_isEntryTombstoned` wrapper in AblyLiveObjectsTesting can reach it; it is
+        // still not part of any public surface.
         /// Returns whether a map entry should be considered tombstoned, per the check described in RTLM14.
-        fileprivate static func nosync_isEntryTombstoned(_ entry: InternalObjectsMapEntry, objectsPool: ObjectsPool) -> Bool {
+        internal static func nosync_isEntryTombstoned(_ entry: InternalObjectsMapEntry, objectsPool: ObjectsPool) -> Bool { // internal (not fileprivate) for AblyLiveObjectsTesting
             // RTLM14a
             if entry.tombstone {
                 return true

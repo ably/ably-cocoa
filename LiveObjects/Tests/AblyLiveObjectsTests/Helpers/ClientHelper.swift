@@ -1,5 +1,6 @@
 import Ably
 @testable import AblyLiveObjects
+@testable import AblyLiveObjectsTesting
 
 /// Helper for creating ably-cocoa objects, for use in integration tests.
 enum ClientHelper {
