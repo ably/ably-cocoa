@@ -181,7 +181,7 @@ internal struct ObjectsPool {
 
         // MARK: - Parent-reference graph (RTLO3f)
 
-        /// The object's RTLO3f `parentReferences`, accessed on the internal queue.
+        /// The object's RTLO3f `parentReferences`.
         internal var nosync_parentReferences: [String: Set<String>] {
             switch self {
             case let .counter(counter):
@@ -424,8 +424,7 @@ internal struct ObjectsPool {
 
             // RTLO4b4c3b -> RTO24b: fan the sync-originated update out to path subscriptions too,
             // with a nil message (RTO4b2a). This runs after the RTO5c10 rebuild above, so the
-            // getFullPaths DFS sees the post-sync graph (Kotlin: rebuild-before-notify,
-            // `ObjectsManager.kt:174–175`). Noop updates dispatch nothing (RTLO4b4c1).
+            // getFullPaths DFS sees the post-sync graph. Noop updates dispatch nothing (RTLO4b4c1).
             if let register = pathObjectSubscriptionRegister, let info = deferredUpdate.nosync_pathDispatchInfo {
                 nosync_notifyPathSubscriptions(
                     objectID: info.objectID,
@@ -512,18 +511,17 @@ internal struct ObjectsPool {
         return paths
     }
 
-    /// Fans one object update out to path subscriptions (Kotlin's `notifyPathSubscriptions`,
-    /// `BaseRealtimeLiveObject.kt:318`). For every full path to the updated object (RTO24b1),
+    /// Fans one object update out to path subscriptions. For every full path to the updated object (RTO24b1),
     /// dispatches one path event whose candidates are the object's own path (most-preferred,
     /// RTO24b2a1) followed by one deeper candidate per changed map key (RTO24b2a2). An orphaned
     /// object (unreachable from root) produces no events (RTO24b1a).
     ///
-    /// Hosted on the pool (like the `getFullPaths` DFS it drives — DEV-15) so both the operation
+    /// Hosted on the pool (like the `getFullPaths` DFS it drives) so both the operation
     /// apply path and the sync deferred-update path can share it.
     ///
     /// - Important: Must be called with **no live object's queue-mutex held** (the `getFullPaths`
     ///   DFS re-reads each node's `parentReferences`; holding the starting object's mutex would
-    ///   trip Swift's exclusive-access checker — see DEV-15). Callers invoke it after the
+    ///   trip Swift's exclusive-access checker). Callers invoke it after the
     ///   object-level apply/emit has returned.
     ///
     /// Spec: RTO24b (RTO24b1, RTO24b2, RTO24b2a1, RTO24b2a2).
@@ -623,8 +621,7 @@ internal struct ObjectsPool {
 
     /// RTO27a1: Clears the internal data of every object in the pool, resetting each to its zero
     /// value (an empty map, or a counter of `0`) **without emitting any `LiveObjectUpdate`
-    /// events**. The objects themselves remain in the pool; only their data is cleared. Mirrors
-    /// Kotlin's `ObjectsPool.clearObjectsData(emitUpdateEvents = false)`.
+    /// events**. The objects themselves remain in the pool; only their data is cleared.
     ///
     /// Each map additionally drops the parent references it holds on its referenced children
     /// (RTLO4e9), so that once every object's data has been cleared the parent-reference graph is
@@ -636,9 +633,9 @@ internal struct ObjectsPool {
         for entry in entries.values {
             switch entry {
             case let .map(map):
-                map.nosync_clearDataToZeroValue(objectsPool: self)
+                map.nosync_resetDataToZeroValued(objectsPool: self)
             case let .counter(counter):
-                counter.nosync_clearDataToZeroValue()
+                counter.nosync_resetDataToZeroValued()
             }
         }
     }

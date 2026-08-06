@@ -93,4 +93,3 @@ implementation (the PR was originally authored when the public API was a trappin
 - **Results at time of application** (macOS, nonprod sandbox): standard objects suites 12/12 passed;
   proxy `ObjectsFaultsTests` 5/5 passed; rest-tier History/Presence/Publish 27/27 passed with
   `test_RSL1l1_publish_params_with_forceNack` skipped per the RSL1l1 deviation entry above.
-</content>

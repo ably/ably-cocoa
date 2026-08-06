@@ -5,7 +5,7 @@ import Foundation
 /// (owned by ``InternalDefaultRealtimeObjects``), mirroring Kotlin's
 /// `DefaultRealtimeObject.pathObjectSubscriptionRegister` and its `PathObjectSubscriptionRegister`.
 ///
-/// ## Concurrency (plan §1.1)
+/// ## Concurrency
 ///
 /// The register is **queue-confined**: every entry point (`nosync_subscribe`, `nosync_unsubscribe`,
 /// `nosync_notifyPathEvent`, `nosync_dispose`) runs on the objects engine's internal serial queue,
@@ -14,8 +14,10 @@ import Foundation
 /// it (path notification happens inside the inbound-message apply path). There is **no lock**: the
 /// mutable `subscriptions` map is plain queue-confined state.
 ///
-/// Listener callbacks are emitted on `userCallbackQueue` (never under any mutex — the issue #120
-/// convention), matching ``SubscriptionStorage``'s off-lock `async` dispatch.
+/// Listener callbacks are emitted on `userCallbackQueue`, never while holding any mutex — the
+/// off-lock dispatch convention that avoids re-entrancy when a callback calls back into the SDK
+/// (https://github.com/ably/ably-liveobjects-swift-plugin/issues/120), matching
+/// ``SubscriptionStorage``'s off-lock `async` dispatch.
 ///
 /// ## Why not ``SubscriptionStorage``
 ///

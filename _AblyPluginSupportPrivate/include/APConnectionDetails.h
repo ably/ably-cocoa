@@ -12,8 +12,7 @@ NS_SWIFT_SENDABLE
 
 /// The maximum message size allowed by the Ably account this connection is using (CD2c). A value of
 /// `0` indicates that the server did not send a limit, in which case the plugin should fall back to
-/// the Ably default. Used by the RTO15d publish-size gate (see ably-java `Helpers.kt:168`,
-/// `connectionManager.maxMessageSize`).
+/// the Ably default. Used by the RTO15d publish-size gate.
 @property (nonatomic, readonly) NSInteger maxMessageSize;
 
 /// The site code of the server that the client is connected to (CD2j).

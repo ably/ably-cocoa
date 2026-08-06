@@ -1,11 +1,12 @@
 import Ably
 @testable import AblyLiveObjects
+@testable import AblyLiveObjectsTesting
 import Testing
 
 /// Tests for `SyncCursor`'s parsing of an `OBJECT_SYNC` `channelSerial` (RTO5a1, RTO5a4).
 ///
-/// A non-conforming `channelSerial` parses to `nil`; the resulting behaviour (treated as an absent
-/// `channelSerial` per RTO5a5) is exercised end-to-end in
+/// A `channelSerial` with no colon separator is malformed (handling unspecified by RTO5a); parsing it
+/// throws. The resulting behaviour is exercised end-to-end in
 /// `InternalDefaultRealtimeObjectsTests.HandleObjectSyncProtocolMessageTests`.
 struct SyncCursorTests {
     // The parsing described in RTO5a1: `<sequence id>:<cursor value>`.
@@ -15,7 +16,7 @@ struct SyncCursorTests {
         let channelSerial = "sequence123:cursor456"
 
         // When
-        let cursor = try #require(SyncCursor(channelSerial: channelSerial))
+        let cursor = try SyncCursor(channelSerial: channelSerial)
 
         // Then
         #expect(cursor.sequenceID == "sequence123")
@@ -30,7 +31,7 @@ struct SyncCursorTests {
         let channelSerial = "sequence123:"
 
         // When
-        let cursor = try #require(SyncCursor(channelSerial: channelSerial))
+        let cursor = try SyncCursor(channelSerial: channelSerial)
 
         // Then
         #expect(cursor.sequenceID == "sequence123")
@@ -38,66 +39,76 @@ struct SyncCursorTests {
         #expect(cursor.isEndOfSequence)
     }
 
-    // We deliberately do not restrict the sequence-id character set (unlike ably-java's `[\w-]+`
-    // regex). The specification places no such restriction, so any characters up to the first colon
-    // form the sequence id. This includes hyphens and underscores...
+    // A channelSerial with no colon separator does not conform to RTO5a1, so parsing throws.
     @Test
-    func validChannelSerialWithHyphenAndUnderscoreSequenceID() throws {
+    func invalidChannelSerialWithoutColon() {
         // Given
-        let channelSerial = "seq-1_2:cursor456"
+        let channelSerial = "sequence123"
+
+        // When/Then
+        do {
+            _ = try SyncCursor(channelSerial: channelSerial)
+            Issue.record("Expected error was not thrown")
+        } catch {
+            guard let liveObjectsError = error.testsOnly_underlyingLiveObjectsError,
+                  case .other(SyncCursor.Error.channelSerialDoesNotMatchExpectedFormat) = liveObjectsError
+            else {
+                Issue.record("Expected channelSerialDoesNotMatchExpectedFormat error")
+                return
+            }
+        }
+    }
+
+    // An empty channelSerial has no colon separator either, so parsing throws.
+    @Test
+    func invalidEmptyChannelSerial() {
+        // Given
+        let channelSerial = ""
+
+        // When/Then
+        do {
+            _ = try SyncCursor(channelSerial: channelSerial)
+            Issue.record("Expected error was not thrown")
+        } catch {
+            guard let liveObjectsError = error.testsOnly_underlyingLiveObjectsError,
+                  case .other(SyncCursor.Error.channelSerialDoesNotMatchExpectedFormat) = liveObjectsError
+            else {
+                Issue.record("Expected channelSerialDoesNotMatchExpectedFormat error")
+                return
+            }
+        }
+    }
+
+    // The spec does not rule out an empty sequence id, so we accept it (everything before the first
+    // colon is the sequence id, RTO5a1).
+    @Test
+    func validChannelSerialWithEmptySequenceID() throws {
+        // Given
+        let channelSerial = ":cursor456"
 
         // When
-        let cursor = try #require(SyncCursor(channelSerial: channelSerial))
+        let cursor = try SyncCursor(channelSerial: channelSerial)
 
         // Then
-        #expect(cursor.sequenceID == "seq-1_2")
+        // swiftlint:disable:next empty_string
+        #expect(cursor.sequenceID == "")
         #expect(cursor.cursorValue == "cursor456")
+        #expect(!cursor.isEndOfSequence)
     }
 
-    // ...and also characters that ably-java's `[\w-]+` regex would reject (here, a dot). We accept
-    // them because rejecting an otherwise-valid serial would risk silently dropping a real sync. The
-    // colon is the first one, so the dot forms part of the sequence id, not the cursor value.
+    // As above, an empty sequence id is accepted even when the cursor is also empty.
     @Test
-    func validChannelSerialWithNonWordCharactersInSequenceID() throws {
+    func validChannelSerialWithEmptySequenceIDAtEndOfSequence() throws {
         // Given
-        let channelSerial = "seq.a:cursor456"
+        let channelSerial = ":"
 
         // When
-        let cursor = try #require(SyncCursor(channelSerial: channelSerial))
+        let cursor = try SyncCursor(channelSerial: channelSerial)
 
         // Then
-        #expect(cursor.sequenceID == "seq.a")
-        #expect(cursor.cursorValue == "cursor456")
-    }
-
-    // A channelSerial with no colon separator does not conform to RTO5a1, so it parses to `nil`. The
-    // caller then treats the OBJECT_SYNC as self-contained (RTO5a5); see
-    // `HandleObjectSyncProtocolMessageTests.treatsChannelSerialWithoutColonAsSelfContainedSync`.
-    @Test
-    func channelSerialWithoutColonReturnsNil() {
-        #expect(SyncCursor(channelSerial: "sequence123") == nil)
-    }
-
-    // An empty channelSerial does not conform to RTO5a1, so it parses to `nil`.
-    @Test
-    func emptyChannelSerialReturnsNil() {
-        #expect(SyncCursor(channelSerial: "") == nil)
-    }
-
-    // The specification is not explicit about an empty sequence id, but a sync sequence cannot be
-    // meaningfully identified (RTO5a2/RTO5a3 compare sequence ids) without one. For cross-SDK
-    // consistency with ably-java (whose `[\w-]+` regex requires a non-empty sequence id) we reject
-    // it; it parses to `nil` and is treated as a self-contained OBJECT_SYNC (RTO5a5).
-    //
-    // This reverses the previous cocoa behaviour, which accepted an empty sequence id.
-    @Test
-    func channelSerialWithEmptySequenceIDReturnsNil() {
-        #expect(SyncCursor(channelSerial: ":cursor456") == nil)
-    }
-
-    // As above, an empty sequence id is rejected even when the cursor is also empty.
-    @Test
-    func channelSerialWithEmptySequenceIDAtEndOfSequenceReturnsNil() {
-        #expect(SyncCursor(channelSerial: ":") == nil)
+        // swiftlint:disable:next empty_string
+        #expect(cursor.sequenceID == "")
+        #expect(cursor.cursorValue == nil)
+        #expect(cursor.isEndOfSequence)
     }
 }

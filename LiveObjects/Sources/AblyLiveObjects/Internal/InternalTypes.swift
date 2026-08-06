@@ -46,7 +46,7 @@ internal enum LiveMapUpdateAction: Sendable {
     case removed
 }
 
-/// The message/tombstone enrichment carried by every non-noop update, per RTLO4b4d/RTLO4b4e (P2).
+/// The message/tombstone enrichment carried by every non-noop update, per RTLO4b4d/RTLO4b4e.
 ///
 /// - `objectMessage` is the PAOM3-converted public ``ObjectMessage`` from the source operation
 ///   message, or `nil` for sync-originated updates (RTO4b2a).

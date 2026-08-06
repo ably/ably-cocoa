@@ -53,7 +53,8 @@ NS_SWIFT_SENDABLE
 /// The plugin can use this as an opportunity to dispose of any LiveObjects resources it set up for the
 /// channel in `-nosync_prepareChannel:client:`, and to fail any in-flight operations with a
 /// release-specific cause (rather than relying on the channel's eventual deallocation).
-- (void)nosync_releaseChannel:(id<APRealtimeChannel>)channel;
+- (void)nosync_onChannelRelease:(id<APRealtimeChannel>)channel
+  NS_SWIFT_NAME(nosync_onChannelRelease(_:));
 
 /// Decodes an `ObjectMessage` received over the wire.
 ///

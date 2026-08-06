@@ -190,7 +190,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
     /// RTO27a1: Clears this counter's data to its zero value (`0`) **without emitting any update
     /// event**. Used by the RTO27a DETACHED/FAILED channel-state clear; the object itself remains
     /// in the pool.
-    internal func nosync_clearDataToZeroValue() {
+    internal func nosync_resetDataToZeroValued() {
         mutableStateMutex.withoutSync { mutableState in
             // RTLC4: reset the counter's data to zero.
             mutableState.resetDataToZeroValued()
@@ -233,8 +233,9 @@ internal final class InternalDefaultLiveCounter: Sendable {
         }
     }
 
-    /// Deregisters all of this counter's subscriptions, per the RTLO4b4c3c tombstone teardown.
-    /// Used by the deferred (sync) emission path after emitting a tombstone update.
+    /// Performs the RTLO4b4c3c tombstone teardown (deregistering this counter's subscriptions) for
+    /// the deferred OBJECT_SYNC path (RTO5c), which computes updates during the sync and emits them
+    /// once it finishes; the inline apply path instead tears down within `nosync_emitAndTearDown`.
     internal func nosync_deregisterSubscriptionsForTombstone() {
         mutableStateMutex.withoutSync { mutableState in
             mutableState.liveObjectMutableState.unsubscribeAll()
@@ -259,7 +260,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
 
     // MARK: - Parent-reference graph (RTLO3f)
 
-    /// The object's RTLO3f `parentReferences`, accessed on the internal queue.
+    /// The object's RTLO3f `parentReferences`.
     internal var nosync_parentReferences: [String: Set<String>] {
         mutableStateMutex.withoutSync { mutableState in
             mutableState.liveObjectMutableState.parentReferences
@@ -287,8 +288,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
         }
     }
 
-    /// Computes all key-paths from root to this object, per RTLO4f. Delegates to the pool DFS,
-    /// reading only this object's `objectID` up front so no mutex is held across the traversal.
+    /// Computes all key-paths from root to this object, per RTLO4f.
     internal func nosync_getFullPaths(objectsPool: ObjectsPool) -> [[String]] {
         objectsPool.nosync_getFullPaths(forObjectID: nosync_objectID)
     }
@@ -332,8 +332,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
                     userCallbackQueue: userCallbackQueue,
                 )
 
-                // RTLC6f1. Sync-originated (RTO4b2a) so objectMessage stays nil; tombstone drives
-                // the RTLO4b4c3c teardown when the deferred update is emitted.
+                // RTLC6f/RTLC6f2: tombstone via LiveObject.tombstone and return its update.
                 return .update(.init(amount: -dataBeforeTombstoning, tombstone: true))
             }
 

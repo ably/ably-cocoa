@@ -28,51 +28,20 @@ internal enum LiveObjectsError {
     /// RTO26: A write (mutation) operation was attempted while the client's `echoMessages` option is
     /// disabled. Code 40000 (ably-java `ObjectErrorCode.BadRequest`).
     case echoMessagesDisabled
-    /// DEV-47: The channel was released via `channels.release()`, so any in-flight objects operation is
-    /// failed with this as the cause. Code 40000 (ably-java `clientError`,
-    /// `DefaultLiveObjectsPlugin.dispose(channelName)`).
+    /// The channel was released via `channels.release()`, so any in-flight objects operation is failed
+    /// with this as the cause. Code 40000. Unspecified; mirrors ably-java, which fails
+    /// released-channel operations with a client error.
     case channelReleased
-    /// RTO/DEV-7: The LiveObjects plugin is not configured on the client. Code 40019. (Reserved for
-    /// P5's plugin-missing decision; the code is landed here with the rest of the path-API error model.)
+    /// The LiveObjects plugin is not configured on the client. Code 40019. The code is defined here;
+    /// plugin-missing detection is not yet wired up.
     case pluginUnavailable
     /// RTLMV4a/b, RTLCV4a, RTPO19c1a (depth validation): invalid input parameter. Code 40003.
     case invalidInput(message: String)
     case other(Error)
 
-    /// The ``ARTErrorInfo/code`` that should be returned for this error.
-    internal var code: ARTErrorCode {
-        switch self {
-        case .objectsOperationFailedInvalidChannelState:
-            .channelOperationFailedInvalidState
-        case .counterInitialValueInvalid, .counterIncrementAmountInvalid:
-            // RTO12f1, RTLC12e1
-            .invalidParameterValue
-        case .publishAndApplyFailedChannelStateChanged:
-            // RTO20e1
-            .unableToApplyObjectsOperationSyncDidNotComplete
-        case .newlyCreatedObjectNotInPool:
-            .internalError
-        case .maxMessageSizeExceeded:
-            // RTO15d
-            .maxMessageLengthExceeded
-        case .pathNotResolved,
-             .pathTypeMismatch,
-             .channelModeRequired,
-             .echoMessagesDisabled,
-             .channelReleased,
-             .pluginUnavailable,
-             .invalidInput,
-             .other:
-            // These path-API codes are not part of core `ARTErrorCode`; the real numeric code is
-            // supplied by `numericCode` (plan matrix #19: raw-int `ARTErrorInfo` from the plugin, no
-            // core `ARTStatus.h` change). `.badRequest` is only a placeholder for the `code` switch.
-            .badRequest
-        }
-    }
-
-    /// The numeric error code returned to callers. Most cases derive from ``code``; the path-based
-    /// public-API codes (92005/92007/40024/40019/40003) are absent from core `ARTErrorCode` and are
-    /// returned as raw integers per plan matrix #19.
+    /// The numeric error code returned to callers. The path-based public-API codes
+    /// (92005/92007/40024/40019/40003) are absent from core `ARTErrorCode` and are returned as raw
+    /// integers; the remaining cases map to their `ARTErrorCode`.
     internal var numericCode: Int {
         switch self {
         case .pathNotResolved:
@@ -84,19 +53,26 @@ internal enum LiveObjectsError {
         case .echoMessagesDisabled:
             40000 // RTO26 (ably-java ObjectErrorCode.BadRequest)
         case .channelReleased:
-            40000 // DEV-47 (ably-java clientError / ObjectErrorCode.BadRequest)
+            40000 // ably-java clientError / ObjectErrorCode.BadRequest
         case .pluginUnavailable:
-            40019 // DEV-7
+            40019
         case .invalidInput:
             40003 // RTLMV4a/RTPO19c1a
-        case .objectsOperationFailedInvalidChannelState,
-             .counterInitialValueInvalid,
-             .counterIncrementAmountInvalid,
-             .publishAndApplyFailedChannelStateChanged,
-             .newlyCreatedObjectNotInPool,
-             .maxMessageSizeExceeded,
-             .other:
-            Int(code.rawValue)
+        case .objectsOperationFailedInvalidChannelState:
+            Int(ARTErrorCode.channelOperationFailedInvalidState.rawValue)
+        case .counterInitialValueInvalid, .counterIncrementAmountInvalid:
+            // RTO12f1, RTLC12e1
+            Int(ARTErrorCode.invalidParameterValue.rawValue)
+        case .publishAndApplyFailedChannelStateChanged:
+            // RTO20e1
+            Int(ARTErrorCode.unableToApplyObjectsOperationSyncDidNotComplete.rawValue)
+        case .newlyCreatedObjectNotInPool:
+            Int(ARTErrorCode.internalError.rawValue)
+        case .maxMessageSizeExceeded:
+            // RTO15d
+            Int(ARTErrorCode.maxMessageLengthExceeded.rawValue)
+        case .other:
+            Int(ARTErrorCode.badRequest.rawValue)
         }
     }
 
@@ -149,13 +125,12 @@ internal enum LiveObjectsError {
             // RTO2a2/RTO2b2
             "\"\(mode)\" channel mode must be set for this operation"
         case .echoMessagesDisabled:
-            // RTO26 - matches ably-java's message verbatim (Helpers.kt:104)
+            // RTO26 - matches ably-java's message verbatim
             "\"echoMessages\" client option must be enabled for this operation"
         case .channelReleased:
-            // DEV-47 - matches ably-java's message verbatim (DefaultLiveObjectsPlugin.kt:27)
+            // matches ably-java's message verbatim
             "Channel has been released using channels.release()"
         case .pluginUnavailable:
-            // DEV-7
             "The LiveObjects plugin is not configured on this client"
         case let .invalidInput(message: message):
             message
@@ -271,4 +246,4 @@ extension JSONObjectOrArray.ConversionError: ConvertibleToLiveObjectsError {
 
 /// The `ARTErrorInfo.userInfo` key under which we store the underlying `LiveObjectsError` (see `toARTErrorInfo()`), preserving it for diagnostics.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-private let liveObjectsErrorUserInfoKey = "LiveObjectsError"
+internal let liveObjectsErrorUserInfoKey = "LiveObjectsError" // internal (not private) for AblyLiveObjectsTesting

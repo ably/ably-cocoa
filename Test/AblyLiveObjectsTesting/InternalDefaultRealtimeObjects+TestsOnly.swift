@@ -43,6 +43,7 @@ extension InternalDefaultRealtimeObjects {
                     internalQueue: mutableStateMutex.dispatchQueue,
                     userCallbackQueue: userCallbackQueue,
                     clock: clock,
+                    pathObjectSubscriptionRegister: pathObjectSubscriptionRegister,
                 )
             }
         }

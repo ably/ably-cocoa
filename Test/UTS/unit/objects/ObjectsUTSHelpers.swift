@@ -109,7 +109,7 @@ final class ObjectsUTSRealtimeObjects: InternalRealtimeObjectsProtocol {
         self.poolDelegate = poolDelegate
     }
 
-    var nosync_pathObjectSubscriptionRegister: PathObjectSubscriptionRegister {
+    var pathObjectSubscriptionRegister: PathObjectSubscriptionRegister {
         _pathObjectSubscriptionRegister
     }
 
@@ -532,7 +532,7 @@ final class ObjectsUTSSeededRealtimeObjects: InternalRealtimeObjectsProtocol {
         poolMutex.withoutSync { $0 }
     }
 
-    var nosync_pathObjectSubscriptionRegister: PathObjectSubscriptionRegister {
+    var pathObjectSubscriptionRegister: PathObjectSubscriptionRegister {
         _pathObjectSubscriptionRegister
     }
 

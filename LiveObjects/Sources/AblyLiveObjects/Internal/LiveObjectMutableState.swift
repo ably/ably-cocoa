@@ -22,8 +22,8 @@ internal struct LiveObjectMutableState<Update: Sendable> {
     internal var tombstonedAt: Date?
 
     /// Reverse references: parent map `objectID` -> the set of keys at which that map references
-    /// this object. Keyed by `objectID` per RTLO3f (ids avoid map-to-map reference cycles and
-    /// survive pool replacement). Only mutated and traversed on the internal queue.
+    /// this object. Keyed by objectID per RTLO3f/RTLO3f1 (references between objects are stored as
+    /// objectIds and resolved via the pool).
     /// Spec: RTLO3f, RTLO3f2 (initialised to an empty map).
     internal var parentReferences: [String: Set<String>] = [:]
 
@@ -142,7 +142,7 @@ internal struct LiveObjectMutableState<Update: Sendable> {
             // RTLO4b4c1
             return
         case let .update(update):
-            // RTLO4b4c2
+            // RTLO4b4c3a
             subscriptionStorage.emit(update, eventName: .update, on: queue)
         }
     }

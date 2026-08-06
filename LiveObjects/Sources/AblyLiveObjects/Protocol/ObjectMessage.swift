@@ -630,12 +630,15 @@ internal extension ProtocolTypes.ObjectData {
 // our `toWire(...)` conversion deliberately drops. Those payloads survive only on the
 // `ProtocolTypes` types, which is also exactly what `nosync_publish` carries.
 //
-// Note on string measurement, mirrored byte-for-byte from ably-java (which is not internally
-// consistent, and in places diverges from the spec's "length" wording):
-//   - `clientId`, `MapCreate`/`MapSet`/`MapRemove` keys and `ObjectData.string`/`json` are
-//     measured as their UTF-8 byte length (`String.byteSize` in ably-java).
-//   - `extras` (OM3d) and `ObjectsMap` entry keys (OMP4a1) are measured as their UTF-16 length
-//     (`String.length` in ably-java).
+// Note on string measurement: the spec's "length" (OM3d, OMP4a1, MCR3a1, OD3e) is ambiguous for
+// non-ASCII text — it does not say whether "length" means UTF-8 bytes or UTF-16 code units — and the
+// spec is itself inconsistent, since OD3g instead says "byte length". The per-field choices below
+// deliberately mirror ably-java so that the RTO15d client-side size gate accepts or rejects a given
+// message identically across SDKs; a spec issue will nail down the definition, after which all SDKs
+// can align:
+//   - `clientId`, `MapCreate`/`MapSet`/`MapRemove` keys and `ObjectData.string`/`json` are measured
+//     as their UTF-8 byte length.
+//   - `extras` (OM3d) and `ObjectsMap` entry keys (OMP4a1) are measured as their UTF-16 `.length`.
 // For ASCII these coincide; they differ only for non-ASCII text.
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
@@ -759,9 +762,8 @@ internal extension WireMapRemove {
 internal extension WireCounterCreate {
     /// The size of this `CounterCreate` in bytes, calculated per CCR3.
     var size: Int {
-        // ably-java returns 8 unconditionally here (a `Double` is 8 bytes), i.e. it does not apply
-        // CCR3b's "0 if count is null" — mirrored as-is for byte-for-byte parity with ably-java.
-        8 // CCR3a
+        // CCR3a: 8 if `count` is a number. CCR3b: 0 if `count` is null or omitted.
+        count != nil ? 8 : 0
     }
 }
 

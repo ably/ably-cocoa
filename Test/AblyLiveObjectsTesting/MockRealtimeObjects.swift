@@ -21,7 +21,7 @@ final class MockRealtimeObjects: InternalRealtimeObjectsProtocol {
         self.objectsPoolDelegate = objectsPoolDelegate
     }
 
-    var nosync_pathObjectSubscriptionRegister: PathObjectSubscriptionRegister {
+    var pathObjectSubscriptionRegister: PathObjectSubscriptionRegister {
         _pathObjectSubscriptionRegister
     }
 

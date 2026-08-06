@@ -142,7 +142,7 @@ struct LiveObjectMutableStateTests {
         }
 
         struct EmitTests {
-            // @spec RTLO4b4c2
+            // @spec RTLO4b4c3a
             @available(iOS 17.0.0, tvOS 17.0.0, *)
             @Test
             func update() async throws {

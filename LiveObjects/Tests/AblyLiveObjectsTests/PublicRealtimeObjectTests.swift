@@ -7,7 +7,7 @@ import Testing
 
 /// Tests for the Phase 5 public `RealtimeObject` surface (`PublicDefaultRealtimeObject`): `get()`
 /// (RTO23), `on(event:callback:)` / `StatusSubscription.off()` (RTO18), the dispose lifecycle
-/// (matrix #18) and `PublicObjectsStore` proxy identity.
+/// and `PublicObjectsStore` proxy identity.
 ///
 /// Everything is driven through a real `InternalDefaultRealtimeObjects` (the proxied engine) plus a
 /// `MockCoreSDK`; sync is completed by feeding the engine an OBJECT_SYNC / ATTACHED directly.
@@ -199,10 +199,10 @@ struct PublicRealtimeObjectTests {
         #expect(counter.isEmpty)
     }
 
-    // MARK: - Dispose lifecycle (matrix #18)
+    // MARK: - Dispose lifecycle
 
-    // DEV-47: a channel release (`channels.release()`, routed through the plugin's
-    // `nosync_releaseChannel:` hook → `nosync_disposeForChannelRelease`) fails a get() waiting for sync
+    // A channel release (`channels.release()`, routed through the plugin's
+    // `nosync_onChannelRelease:` hook → `nosync_disposeForChannelRelease`) fails a get() waiting for sync
     // with 92008 whose *cause* is the release-specific 40000 error — distinct from `deinit`/`dispose()`,
     // which fail waiters with no cause. The instance stays usable for a later get() (scope-survives).
     @Test
