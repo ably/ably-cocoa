@@ -109,7 +109,7 @@ final class PublishTests: IntegrationTestCase {
 
             // Poll history until message appears (avoid fixed wait)
             guard await pollUntil("channel history has at least one message", timeout: 10, interval: 0.5, {
-                await self.historyItems(of: channel).count > 0
+                await self.historyItemsQuietly(of: channel).count > 0
             }) else { return }
             let history = await historyItems(of: channel)
 
@@ -268,6 +268,17 @@ extension PublishTests {
                 if let error {
                     Issue.record("history() failed: \(error)", sourceLocation: sourceLocation)
                 }
+                continuation.resume(returning: result?.items ?? [])
+            }
+        }
+    }
+
+    /// Non-reporting variant of `historyItems` for use inside `pollUntil` predicates: a transient
+    /// `history()` error must surface as a retry — and, at worst, as the poll's own timeout issue —
+    /// not fail the test. Returns an empty list on error.
+    private func historyItemsQuietly(of channel: ARTRestChannel) async -> [ARTMessage] {
+        await withCheckedContinuation { (continuation: CheckedContinuation<[ARTMessage], Never>) in
+            channel.history { result, _ in
                 continuation.resume(returning: result?.items ?? [])
             }
         }

@@ -11,11 +11,11 @@ extension LiveObjectMutableState {
 
     init(
         objectID: String,
-        testsOnly_siteTimeserials siteTimeserials: [String: String]? = nil,
+        testsOnly_siteTimeserials siteTimeserials: [String: String] = [:],
         testsOnly_tombstonedAt tombstonedAt: Date? = nil,
     ) {
         self.init(objectID: objectID)
-        self.siteTimeserials = siteTimeserials ?? [:]
+        self.siteTimeserials = siteTimeserials
         self.tombstonedAt = tombstonedAt
     }
 }

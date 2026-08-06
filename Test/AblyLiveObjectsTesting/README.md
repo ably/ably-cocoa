@@ -46,13 +46,31 @@ A helper in this module may **only**:
 A helper may **not** contain:
 
 - new computation,
-- branching, or
+- decision logic, or
 - state of its own.
+
+Mechanical, shape-preserving constructs do **not** count as logic and are fine:
+
+- enum-case `switch` / `if case` pattern matches that read existing state or
+  delegate per-case 1:1 (e.g. projecting a sync-state enum to a Bool, or
+  dispatching an `ObjectsPool.Entry` to its per-case accessor),
+- element-wise `for` forwarding of a collection to an existing internal method,
+- `withCheckedContinuation` bridging of an existing callback API.
 
 Logic in a test helper is itself untested code. This rule is enforced in review:
 if a helper needs to do anything more than a pass-through, the logic belongs in
 `Sources/` (properly tested) or the requirement needs a lead-dev decision — do
 not smuggle it into this module.
+
+### Lead-approved D3 exceptions
+
+Helpers in this module that exceed the dumb-accessor rule, each individually
+approved with the reason recorded here. Do not add to this list without a
+lead-dev decision.
+
+| Helper | What exceeds the rule | Why it is accepted |
+| ------ | --------------------- | ------------------ |
+| `InternalDefaultRealtimeObjects.testsOnly_publish` | Sequences validation and publish with its own error propagation (`do`/`catch` + early return inside a continuation). | It composes two production pieces unchanged — the RTO15d validator (`ensureMessageSizeWithinLimit`, made `internal` for this seam) and `CoreSDK.nosync_publish` — and exists so tests can send an OBJECT ProtocolMessage *without* the RTO20 apply-on-ACK stage of `nosync_publishAndApply`. Its callers (the wire-size RTO15d tests and the plugin round-trip test) must not trigger local apply; routing through the production publish path would change their semantics, and extracting a shared validate-then-publish production method is library surface growth deferred to a dedicated change. |
 
 ## Residual allowlist
 

@@ -91,7 +91,11 @@ extension InternalDefaultRealtimeObjects {
         }
     }
 
-    // This is currently exposed so that we can try calling it from the tests in the early days of the SDK to check that we can send an OBJECT ProtocolMessage. We'll probably make it private later on.
+    /// Test-only seam for sending an OBJECT ProtocolMessage: validates the messages with the
+    /// production RTO15d size check (`ensureMessageSizeWithinLimit`) and publishes them via the
+    /// production `CoreSDK.nosync_publish` — deliberately *without* the RTO20 apply-on-ACK stage
+    /// of `nosync_publishAndApply`, which its callers (the wire-size RTO15d tests and the plugin
+    /// round-trip test) must not trigger. A lead-approved D3 exception; see README.md.
     func testsOnly_publish(objectMessages: [ProtocolTypes.OutboundObjectMessage], coreSDK: CoreSDK) async throws(ARTErrorInfo) {
         try await withCheckedContinuation { (continuation: CheckedContinuation<Result<Void, ARTErrorInfo>, _>) in
             mutableStateMutex.withSync { _ in

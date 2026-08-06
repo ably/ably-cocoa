@@ -36,7 +36,7 @@ final class HistoryTests: IntegrationTestCase {
 
             // Poll until messages appear in history
             guard await pollUntil("channel history contains all 3 messages", timeout: 10, interval: 0.5, {
-                await self.historyItems(of: channel).count == 3
+                await self.historyItemsQuietly(of: channel).count == 3
             }) else { return }
             let history = await historyItems(of: channel)
 
@@ -78,7 +78,7 @@ final class HistoryTests: IntegrationTestCase {
 
             // Poll until all messages appear
             guard await pollUntil("channel history contains all 3 messages", timeout: 10, interval: 0.5, {
-                await self.historyItems(of: channel).count == 3
+                await self.historyItemsQuietly(of: channel).count == 3
             }) else { return }
 
             let forwardsQuery = ARTDataQuery()
@@ -113,7 +113,7 @@ final class HistoryTests: IntegrationTestCase {
 
             // Poll until all messages are persisted
             guard await pollUntil("channel history contains all 10 messages", timeout: 10, interval: 0.5, {
-                await self.historyItems(of: channel).count == 10
+                await self.historyItemsQuietly(of: channel).count == 10
             }) else { return }
 
             let limitQuery = ARTDataQuery()
@@ -156,7 +156,7 @@ final class HistoryTests: IntegrationTestCase {
 
             // Poll until all messages appear and retrieve with server timestamps
             guard await pollUntil("channel history contains all 4 messages", timeout: 10, interval: 0.5, {
-                await self.historyItems(of: channel).count == 4
+                await self.historyItemsQuietly(of: channel).count == 4
             }) else { return }
             let allMessages = await historyItems(of: channel)
 
@@ -261,6 +261,17 @@ extension HistoryTests {
             } catch {
                 Issue.record("history(query) rejected the query: \(error)", sourceLocation: sourceLocation)
                 continuation.resume(returning: [])
+            }
+        }
+    }
+
+    /// Non-reporting variant of `historyItems` (default query) for use inside `pollUntil`
+    /// predicates: a transient `history()` error must surface as a retry — and, at worst, as the
+    /// poll's own timeout issue — not fail the test. Returns an empty list on error.
+    private func historyItemsQuietly(of channel: ARTRestChannel) async -> [ARTMessage] {
+        await withCheckedContinuation { (continuation: CheckedContinuation<[ARTMessage], Never>) in
+            channel.history { result, _ in
+                continuation.resume(returning: result?.items ?? [])
             }
         }
     }

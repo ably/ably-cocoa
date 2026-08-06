@@ -55,6 +55,12 @@ func numberValue(at node: any PathObject) -> Double? {
     return primitive.numberValue
 }
 
+/// Signals that a UTS objects helper could not satisfy its expected-type contract. The paired
+/// `Issue.record` call carries the diagnostic; this type only unwinds the test.
+struct ObjectsHelperError: Error, CustomStringConvertible {
+    let description: String
+}
+
 /// The spec's `pathObj.instance().id` against an expected **counter** — unwraps the `Instance` enum
 /// (`objects-mapping.md` §5), stopping the test if nothing resolves or the instance isn't a counter.
 func counterInstanceId(at node: any PathObject,
@@ -65,7 +71,7 @@ func counterInstanceId(at node: any PathObject,
     guard case let .liveCounter(counter) = instance else {
         Issue.record("expected a liveCounter instance at path '\(node.path)', got \(instance.type)",
                      sourceLocation: sourceLocation)
-        throw HTTPError("expected a liveCounter instance at path '\(node.path)'")
+        throw ObjectsHelperError(description: "expected a liveCounter instance at path '\(node.path)'")
     }
     return counter.id
 }
