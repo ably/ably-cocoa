@@ -127,7 +127,7 @@ extension TestFactories {
 
     /// Creates an InboundObjectMessage with a MAP_REMOVE operation that also carries a
     /// `serialTimestamp` (the base `TestFactories.mapRemoveOperationMessage` does not), needed to
-    /// exercise the RTLM8f `tombstonedAt` derivation.
+    /// exercise the RTLO6 `tombstonedAt` derivation.
     static func mapRemoveOperationMessage(
         objectId: String,
         key: String,

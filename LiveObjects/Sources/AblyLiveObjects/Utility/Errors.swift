@@ -61,7 +61,7 @@ internal enum LiveObjectsError {
         case .objectsOperationFailedInvalidChannelState:
             Int(ARTErrorCode.channelOperationFailedInvalidState.rawValue)
         case .counterInitialValueInvalid, .counterIncrementAmountInvalid:
-            // RTO12f1, RTLC12e1
+            // RTLCV4a, RTLC12e1
             Int(ARTErrorCode.invalidParameterValue.rawValue)
         case .publishAndApplyFailedChannelStateChanged:
             // RTO20e1

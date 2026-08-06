@@ -114,7 +114,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         try await withCheckedContinuation { (continuation: CheckedContinuation<Result<Void, ARTErrorInfo>, _>) in
             do throws(ARTErrorInfo) {
                 try mutableStateMutex.withSync { mutableState throws(ARTErrorInfo) in
-                    // RTLM20c
+                    // RTO26
                     try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: "LiveMap.set")
 
                     let objectMessage = ProtocolTypes.OutboundObjectMessage(
@@ -132,7 +132,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                         ),
                     )
 
-                    // RTLM20g
+                    // RTLM20h
                     realtimeObjects.nosync_publishAndApply(objectMessages: [objectMessage], coreSDK: coreSDK) { result in
                         continuation.resume(returning: result)
                     }
@@ -147,7 +147,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         try await withCheckedContinuation { (continuation: CheckedContinuation<Result<Void, ARTErrorInfo>, _>) in
             do throws(ARTErrorInfo) {
                 try mutableStateMutex.withSync { mutableState throws(ARTErrorInfo) in
-                    // RTLM21c
+                    // RTO26
                     try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: "LiveMap.remove")
 
                     let objectMessage = ProtocolTypes.OutboundObjectMessage(
@@ -485,13 +485,13 @@ internal final class InternalDefaultLiveMap: Sendable {
                 // Set tombstonedAt for tombstoned entries
                 let tombstonedAt: Date?
                 if entry.tombstone == true {
-                    // RTLM6c1a
+                    // RTLO6a
                     if let serialTimestamp = entry.serialTimestamp {
                         tombstonedAt = serialTimestamp
                     } else {
-                        // RTLM6c1b
+                        // RTLO6b
                         logger.log("serialTimestamp not found in ObjectsMapEntry, using local clock for tombstone timestamp", level: .debug)
-                        // RTLM6cb1
+                        // RTLO6b1
                         tombstonedAt = clock.now
                     }
                 } else {
@@ -528,7 +528,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             clock: SimpleClock,
         ) -> LiveObjectUpdate<DefaultLiveMapUpdate> {
             // RTLM23: Resolve mapCreate from either the direct property or the one
-            // from which mapCreateWithObjectId was derived (RTO11f18)
+            // from which mapCreateWithObjectId was derived (RTLMV4j5)
             let mapCreate = operation.mapCreate ?? operation.mapCreateWithObjectId?.derivedFrom
 
             // RTLM23a: For each key–ObjectsMapEntry pair in mapCreate.entries
@@ -691,7 +691,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                     userCallbackQueue: userCallbackQueue,
                 )
 
-                // RTLM15d5a, RTLM15d5b: tombstone update drives the RTLO4b4c3c teardown.
+                // RTLM15d5c, RTLM15d5b: tombstone update drives the RTLO4b4c3c teardown.
                 // RTLO4e5/RTLM22b: diff considers only NON-tombstoned entries, so already-tombstoned
                 // entries (not visible to subscribers) must not be reported as newly `removed`.
                 let update: LiveObjectUpdate<DefaultLiveMapUpdate> = .update(.init(update: dataBeforeApplyingOperation.filter { !$0.value.tombstone }.mapValues { _ in .removed }, tombstone: true))
@@ -783,15 +783,15 @@ internal final class InternalDefaultLiveMap: Sendable {
                 return .noop
             }
 
-            // Calculate the tombstonedAt for the new or updated entry per RTLM8f
+            // Calculate the tombstonedAt for the new or updated entry per RTLO6
             let tombstonedAt: Date?
             if let operationSerialTimestamp {
-                // RTLM8f1
+                // RTLO6a
                 tombstonedAt = operationSerialTimestamp
             } else {
-                // RTLM8f2
+                // RTLO6b
                 logger.log("serialTimestamp not provided for MAP_REMOVE, using local clock for tombstone timestamp", level: .debug)
-                // RTLM8f2a
+                // RTLO6b1
                 tombstonedAt = clock.now
             }
 
@@ -820,7 +820,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                 // RTLM8b: If an entry does not exist in the private data for the specified key
                 // RTLM8b1: Create a new entry in data for the specified key, with ObjectsMapEntry.data set to undefined/null and the operation's serial
                 // RTLM8b2: Set ObjectsMapEntry.tombstone for the new entry to true
-                // RTLM8b3: Set ObjectsMapEntry.tombstonedAt per RTLM8f
+                // RTLM8b3: Set ObjectsMapEntry.tombstonedAt per RTLO6
                 data[key] = InternalObjectsMapEntry(tombstonedAt: tombstonedAt, timeserial: operationTimeserial, data: nil)
             }
 
@@ -1009,7 +1009,7 @@ internal final class InternalDefaultLiveMap: Sendable {
 
         /// Returns the value associated with a given key, following RTLM5d specification.
         internal func nosync_get(key: String, coreSDK: CoreSDK, objectsPool: ObjectsPool) throws(ARTErrorInfo) -> InternalLiveMapValue? {
-            // RTLM5c: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
+            // RTO25: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
             try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveMap.get")
 
             // RTLM5e - Return nil if self is tombstone
@@ -1027,7 +1027,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         }
 
         internal func nosync_size(coreSDK: CoreSDK, objectsPool: ObjectsPool) throws(ARTErrorInfo) -> Int {
-            // RTLM10c: If the channel is in the DETACHED or FAILED state, the library should throw an ErrorInfo error with statusCode 400 and code 90001
+            // RTO25: If the channel is in the DETACHED or FAILED state, the library should throw an ErrorInfo error with statusCode 400 and code 90001
             try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveMap.size")
 
             // RTLM10d: Returns the number of non-tombstoned entries (per RTLM14) in the internal data map
@@ -1037,7 +1037,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         }
 
         internal func nosync_entries(coreSDK: CoreSDK, objectsPool: ObjectsPool) throws(ARTErrorInfo) -> [(key: String, value: InternalLiveMapValue)] {
-            // RTLM11c: If the channel is in the DETACHED or FAILED state, the library should throw an ErrorInfo error with statusCode 400 and code 90001
+            // RTO25: If the channel is in the DETACHED or FAILED state, the library should throw an ErrorInfo error with statusCode 400 and code 90001
             try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveMap.entries")
 
             // RTLM11d: Returns key-value pairs from the internal data map
@@ -1132,7 +1132,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         /// Converts an InternalObjectsMapEntry to LiveMapValue using the same logic as get(key:)
         /// This is used by entries to ensure consistent value conversion
         private func nosync_convertEntryToLiveMapValue(_ entry: InternalObjectsMapEntry, objectsPool: ObjectsPool) -> InternalLiveMapValue? {
-            // RTLM5d2a: If ObjectsMapEntry.tombstone is true, return undefined/null
+            // RTLM5d2h: If ObjectsMapEntry.tombstone is true, return undefined/null
             if entry.tombstone == true {
                 return nil
             }
@@ -1176,7 +1176,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                     return nil
                 }
 
-                // RTLM5d2f3: If referenced object is tombstoned, return nil.
+                // RTLM5d2h: If referenced object is tombstoned, return nil.
                 // Self-reference guard: if the referenced object is this map itself, reading
                 // `poolEntry.nosync_isTombstone` would re-enter our already-held mutex — a Swift
                 // exclusive-access crash (same exclusivity class as the `getFullPaths`

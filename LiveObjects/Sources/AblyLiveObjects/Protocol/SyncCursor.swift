@@ -18,8 +18,9 @@ internal struct SyncCursor {
     /// everything up to the first colon is the sequence id (RTO5a1) and an empty cursor value marks the
     /// end of the sync sequence (RTO5a4).
     ///
-    /// The specification does not define how to handle a `channelSerial` that lacks a colon separator
-    /// (a spec clarification is to be raised). We surface that as a thrown ``Error`` so the caller decides what to do with it.
+    /// A `channelSerial` that lacks a colon separator is malformed. Per RTO5a6 such a `channelSerial`
+    /// must be treated as if it were absent (RTO5a5); we surface the malformed case as a thrown ``Error``
+    /// so the caller can apply that handling.
     internal init(channelSerial: String) throws(ARTErrorInfo) {
         let scanner = Scanner(string: channelSerial)
         scanner.charactersToBeSkipped = nil

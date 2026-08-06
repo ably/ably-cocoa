@@ -34,9 +34,8 @@ internal protocol CoreSDK: AnyObject, Sendable {
     var echoMessages: Bool { get }
 
     /// The error that makes the client's connection unpublishable, or `nil` if the connection is in a
-    /// publishable (active) state. This publishable-connection check is unspecified (RTO26 has no
-    /// connection-state clause); it mirrors ably-java's publishable-connection guard
-    /// (`connectionManager.isActive` / `stateErrorInfo`), and a spec issue is to be raised.
+    /// publishable (active) state. Spec: RTO15b (the publish adheres to the RTL6c connection-state
+    /// conditions).
     var nosync_connectionStateError: ARTErrorInfo? { get }
 
     /// RTO15d: The connection's negotiated `maxMessageSize`, read from the latest `CONNECTED`
@@ -105,7 +104,7 @@ internal final class DefaultCoreSDK: CoreSDK {
             return
         }
 
-        // TODO: Implement message size checking (https://github.com/ably/ably-liveobjects-swift-plugin/issues/13)
+        // The RTO15d message-size gate lives in `InternalDefaultRealtimeObjects` and guards `publishAndApply` only; this lower-level publish path is not size-checked here.
         DefaultInternalPlugin.nosync_sendObject(
             objectMessages: objectMessages,
             channel: channel,

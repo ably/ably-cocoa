@@ -54,7 +54,7 @@ struct ObjectCreationHelpersTests {
 
             // Then
 
-            // Check that objectMessage has mapCreateWithObjectId with derivedFrom (RTO11f18)
+            // Check that objectMessage has mapCreateWithObjectId with derivedFrom (RTLMV4j5)
             let mapCreateWithObjectId = try #require(creationOperation.objectMessage.operation?.mapCreateWithObjectId)
             #expect(mapCreateWithObjectId.derivedFrom?.semantics == .known(creationOperation.semantics))
 
@@ -164,7 +164,7 @@ struct ObjectCreationHelpersTests {
 
             // Then
 
-            // Check that objectMessage has counterCreateWithObjectId with derivedFrom (RTO12f16)
+            // Check that objectMessage has counterCreateWithObjectId with derivedFrom (RTLCV4g5)
             let counterCreateWithObjectId = try #require(creationOperation.objectMessage.operation?.counterCreateWithObjectId)
 
             // Check that the initial value JSON is correctly populated on the counterCreateWithObjectId.initialValue property per RTO12f13, using the RTO12f12 partial ObjectOperation and correctly encoded per RTO12f13. Per RTO12f13, the initialValue is a JSON string of the CounterCreate object itself (not wrapped in a type key).

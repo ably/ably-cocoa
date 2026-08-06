@@ -241,7 +241,7 @@ struct InternalDefaultLiveCounterTests {
 
         // @specOneOf(2/3) RTLC16a - with count via counterCreateWithObjectId.derivedFrom
         // @specOneOf(2/2) RTLC16c
-        // @spec RTO12f16
+        // @spec RTLCV4g5
         @Test
         func addsCounterCountToDataFromDerivedFrom() throws {
             let logger = TestLogger()

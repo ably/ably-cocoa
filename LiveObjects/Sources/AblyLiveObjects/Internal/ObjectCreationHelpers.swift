@@ -34,7 +34,7 @@ internal enum ObjectCreationHelpers {
         internal var semantics: ProtocolTypes.ObjectsMapSemantics
     }
 
-    /// Creates a `COUNTER_CREATE` `ObjectMessage` for the `RealtimeObjects.createCounter` method per RTO12f.
+    /// Creates a `COUNTER_CREATE` `ObjectMessage` for the `RealtimeObjects.createCounter` method per RTLCV4.
     ///
     /// - Parameters:
     ///   - count: The initial count for the new LiveCounter object
@@ -43,19 +43,19 @@ internal enum ObjectCreationHelpers {
         count: Double,
         timestamp: Date,
     ) -> CounterCreationOperation {
-        // RTO12f12: Create initial value for the new LiveCounter
+        // RTLCV4b: Create initial value for the new LiveCounter
         let counterCreate = WireCounterCreate(count: NSNumber(value: count))
 
-        // RTO12f13: Create an initial value JSON string as described in RTO12f13
+        // RTLCV4c: Create an initial value JSON string as described in RTLCV4c
         let initialValueJSONString = createInitialValueJSONString(from: counterCreate)
 
-        // RTO12f4: Create a unique nonce as a random string
+        // RTLCV4d: Create a unique nonce as a random string
         let nonce = generateNonce()
 
-        // RTO12f5: Get the current server time (using the provided timestamp)
+        // RTLCV4e: Get the current server time (using the provided timestamp)
         let serverTime = timestamp
 
-        // RTO12f6: Create an objectId for the new LiveCounter object as described in RTO14
+        // RTLCV4f: Create an objectId for the new LiveCounter object as described in RTO14
         let objectId = createObjectID(
             type: "counter",
             initialValue: initialValueJSONString,
@@ -63,14 +63,14 @@ internal enum ObjectCreationHelpers {
             timestamp: serverTime,
         )
 
-        // RTO12f7-12: Set ObjectMessage.operation fields
+        // RTLCV4g: Set ObjectMessage.operation fields
         let operation = ProtocolTypes.ObjectOperation(
             action: .known(.counterCreate),
             objectId: objectId,
             counterCreateWithObjectId: .init(
                 initialValue: initialValueJSONString,
                 nonce: nonce,
-                derivedFrom: counterCreate, // RTO12f16
+                derivedFrom: counterCreate, // RTLCV4g5
             ),
         )
 
@@ -85,7 +85,7 @@ internal enum ObjectCreationHelpers {
         )
     }
 
-    /// Creates a `MAP_CREATE` `ObjectMessage` for the `RealtimeObjects.createMap` method per RTO11f.
+    /// Creates a `MAP_CREATE` `ObjectMessage` for the `RealtimeObjects.createMap` method per RTLMV4.
     ///
     /// - Parameters:
     ///   - entries: The initial entries for the new LiveMap object
@@ -94,7 +94,7 @@ internal enum ObjectCreationHelpers {
         entries: [String: InternalLiveMapValue],
         timestamp: Date,
     ) -> MapCreationOperation {
-        // RTO11f14: Create initial value for the new LiveMap
+        // RTLMV4d: Create initial value for the new LiveMap
         let mapEntries = entries.mapValues { liveMapValue -> ProtocolTypes.ObjectsMapEntry in
             ProtocolTypes.ObjectsMapEntry(data: liveMapValue.nosync_toObjectData)
         }
@@ -105,16 +105,16 @@ internal enum ObjectCreationHelpers {
             entries: mapEntries,
         )
 
-        // RTO11f15: Create an initial value JSON string as described in RTO11f15
+        // RTLMV4f: Create an initial value JSON string as described in RTLMV4f
         let initialValueJSONString = createInitialValueJSONString(from: mapCreate.toWire(format: .json))
 
-        // RTO11f6: Create a unique nonce as a random string
+        // RTLMV4g: Create a unique nonce as a random string
         let nonce = generateNonce()
 
-        // RTO11f7: Get the current server time (using the provided timestamp)
+        // RTLMV4h: Get the current server time (using the provided timestamp)
         let serverTime = timestamp
 
-        // RTO11f8: Create an objectId for the new LiveMap object as described in RTO14
+        // RTLMV4i: Create an objectId for the new LiveMap object as described in RTO14
         let objectId = createObjectID(
             type: "map",
             initialValue: initialValueJSONString,
@@ -122,14 +122,14 @@ internal enum ObjectCreationHelpers {
             timestamp: serverTime,
         )
 
-        // RTO11f9-13: Set ObjectMessage.operation fields
+        // RTLMV4j: Set ObjectMessage.operation fields
         let operation = ProtocolTypes.ObjectOperation(
             action: .known(.mapCreate),
             objectId: objectId,
             mapCreateWithObjectId: .init(
                 initialValue: initialValueJSONString,
                 nonce: nonce,
-                derivedFrom: mapCreate, // RTO11f18
+                derivedFrom: mapCreate, // RTLMV4j5
             ),
         )
 
@@ -147,7 +147,7 @@ internal enum ObjectCreationHelpers {
 
     // MARK: - Private Helper Methods
 
-    /// Encodes a wire-encodable object to a JSON string for use as an initial value, per RTO11f15 and RTO12f13.
+    /// Encodes a wire-encodable object to a JSON string for use as an initial value, per RTLMV4f and RTLCV4c.
     private static func createInitialValueJSONString(from encodable: some WireObjectEncodable) -> String {
         let jsonObject: [String: JSONValue] = encodable.toWireObject.mapValues { wireValue in
             do {
@@ -182,7 +182,7 @@ internal enum ObjectCreationHelpers {
         return "\(type):\(base64URLHash)@\(timestampMillis)"
     }
 
-    /// Generates a unique nonce as a random string, per RTO11f6 and RTO12f4.
+    /// Generates a unique nonce as a random string, per RTLMV4g and RTLCV4d.
     private static func generateNonce() -> String {
         // TODO: confirm if there's any specific rules here: https://github.com/ably/specification/pull/353/files#r2228252389
         let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"

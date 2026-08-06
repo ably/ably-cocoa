@@ -15,12 +15,12 @@ import Ably
 /// | Channel state (DETACHED/FAILED, +SUSPENDED for writes) | RTO25/RTO26 | ✅ via `CoreSDK.nosync_channelState` |
 /// | `object_subscribe` / `object_publish` channel mode | RTO2a2/RTO2b2 (40024) | ✅ via `CoreSDK.nosync_objectChannelModes` |
 /// | `echoMessages` client option | RTO26c | ✅ via `CoreSDK.echoMessages` |
-/// | Connection `isActive` (publishable state) | unspecified (mirrors ably-java) | ✅ via `CoreSDK.nosync_connectionStateError` |
+/// | Connection `isActive` (publishable state) | RTO15b (RTL6c publish conditions) | ✅ via `CoreSDK.nosync_connectionStateError` |
 ///
 /// The channel-state check produces the same 90001 error the internal engine's node accessors run
 /// (`CoreSDK.nosync_validateChannelState`), so no new state check is invented. The connection-active
-/// check has no spec point: it mirrors ably-java's publishable-connection guard (see
-/// `throwIfUnpublishableState`), and a spec issue is to be raised.
+/// check is RTO15b: the publish must adhere to the same connection-state conditions as message
+/// publishing (RTL6c), which ably-java enforces via its publishable-connection guard.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal enum ChannelConfigGuards {
     /// Validates the access (read/subscribe) API preconditions: the channel must be attachable (not
@@ -62,7 +62,7 @@ internal enum ChannelConfigGuards {
             nosync_echoMessagesDisabledError(coreSDK: coreSDK)
                 // RTO26b — channel state (reuses the engine's node-accessor check).
                 ?? nosync_channelStateError(coreSDK: coreSDK, notIn: [.detached, .failed, .suspended], operationDescription: "write API")
-                // RTO2b2 — `object_publish` mode.
+                // RTO26a — `object_publish` mode.
                 ?? nosync_missingChannelModeError(coreSDK: coreSDK, requiredMode: .objectPublish, modeName: "object_publish")
         }
         if let error {
@@ -125,9 +125,10 @@ internal enum ChannelConfigGuards {
     }
 
     /// Validates that the channel is in a publishable state (connection active, channel not
-    /// FAILED/SUSPENDED). The connection-active portion is unspecified behaviour that mirrors ably-java's
-    /// publishable-connection guard (`connectionManager.isActive`): RTO26 has no connection-state clause,
-    /// so there is no spec point (a spec issue is to be raised). The channel-state portion is RTO26b.
+    /// FAILED/SUSPENDED). The connection-active portion is RTO15b (the RTL6c publish conditions, which
+    /// ably-java enforces via its publishable-connection guard); the channel-state portion is RTO26b.
+    /// Note: currently unused in the write path — the core SDK's publish enforces RTL6c itself — and
+    /// retained (with tests) for parity should a pre-publish gate be wanted.
     internal static func throwIfUnpublishableState(coreSDK: CoreSDK, internalQueue: DispatchQueue) throws(ARTErrorInfo) {
         // Check order (mirrors ably-java): connection active, then channel state (FAILED/SUSPENDED).
         let error = internalQueue.ably_syncNoDeadlock { () -> ARTErrorInfo? in

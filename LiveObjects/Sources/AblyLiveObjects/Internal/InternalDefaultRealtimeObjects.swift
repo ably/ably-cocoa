@@ -79,11 +79,11 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
         }
     }
 
-    // These drive the testsOnly_waitingForSyncEvents property that informs the test suite when `getRoot()` is waiting for the object sync sequence to complete per RTO1c.
+    // These drive the testsOnly_waitingForSyncEvents property that informs the test suite when `getRoot()` is waiting for the object sync sequence to complete per RTO23c.
     private let waitingForSyncEvents: AsyncStream<Void>
     private let waitingForSyncEventsContinuation: AsyncStream<Void>.Continuation
     // testsOnly_ residual: production-embedded instrumentation — cannot move to AblyLiveObjectsTesting; see Test/AblyLiveObjectsTesting/README.md
-    /// Emits an element whenever `getRoot()` starts waiting for the object sync sequence to complete per RTO1c.
+    /// Emits an element whenever `getRoot()` starts waiting for the object sync sequence to complete per RTO23c.
     internal var testsOnly_waitingForSyncEvents: AsyncStream<Void> {
         waitingForSyncEvents
     }
@@ -275,7 +275,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
         }
 
         if state.toObjectsSyncState != .synced {
-            // RTO1c
+            // RTO23c
             waitingForSyncEventsContinuation.yield()
             logger.log("getRoot started waiting for sync sequence to complete", level: .debug)
             await withCheckedContinuation { continuation in
@@ -288,7 +288,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
         }
 
         return mutableStateMutex.withSync { mutableState in
-            // RTO1d
+            // RTO23d
             mutableState.objectsPool.root
         }
     }
@@ -313,7 +313,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
                     continuation.resume(returning: .success(()))
                     return
                 }
-                // RTO1c-style signal that a get() has started waiting (used by the test suite).
+                // RTO23c-style signal that a get() has started waiting (used by the test suite).
                 waitingForSyncEventsContinuation.yield()
                 logger.log("get() started waiting for sync sequence to complete", level: .debug)
                 mutableState.publishAndApplySyncWaiters.append { _, outcome in
@@ -337,10 +337,10 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
         try await withCheckedContinuation { (continuation: CheckedContinuation<Result<InternalDefaultLiveMap, ARTErrorInfo>, _>) in
             do throws(ARTErrorInfo) {
                 try mutableStateMutex.withSync { _ throws(ARTErrorInfo) in
-                    // RTO11d
+                    // RTO26
                     try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: "RealtimeObjects.createMap")
 
-                    // RTO11f7
+                    // RTLMV4h
                     coreSDK.nosync_fetchServerTime { [self] result in
                         let timestamp: Date
                         switch result {
@@ -351,7 +351,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
                             timestamp = t
                         }
 
-                        // RTO11f
+                        // RTLMV4
                         let creationOperation = ObjectCreationHelpers.nosync_creationOperationForLiveMap(
                             entries: entries,
                             timestamp: timestamp,
@@ -385,7 +385,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
     }
 
     internal func createMap(coreSDK: CoreSDK) async throws(ARTErrorInfo) -> InternalDefaultLiveMap {
-        // RTO11f14b
+        // RTLMV4e2
         try await createMap(entries: [:], coreSDK: coreSDK)
     }
 
@@ -393,17 +393,17 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
         try await withCheckedContinuation { (continuation: CheckedContinuation<Result<InternalDefaultLiveCounter, ARTErrorInfo>, _>) in
             do throws(ARTErrorInfo) {
                 try mutableStateMutex.withSync { _ throws(ARTErrorInfo) in
-                    // RTO12d
+                    // RTO26
                     try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: "RealtimeObjects.createCounter")
 
-                    // RTO12f1
+                    // RTLCV4a
                     if !count.isFinite {
                         throw LiveObjectsError.counterInitialValueInvalid(value: count).toARTErrorInfo()
                     }
 
-                    // RTO12f
+                    // RTLCV4
 
-                    // RTO12f5
+                    // RTLCV4e
                     coreSDK.nosync_fetchServerTime { [self] result in
                         let timestamp: Date
                         switch result {
@@ -447,7 +447,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
     }
 
     internal func createCounter(coreSDK: CoreSDK) async throws(ARTErrorInfo) -> InternalDefaultLiveCounter {
-        // RTO12f12a
+        // RTLCV4b1
         try await createCounter(count: 0, coreSDK: coreSDK)
     }
 
@@ -792,7 +792,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
         internal var onChannelAttachedHasObjects: Bool?
         internal var objectsEventSubscriptionStorage = SubscriptionStorage<ObjectsEvent, Void>()
 
-        /// Used when the object wishes to subscribe to its own events (i.e. unaffected by `offAll()`); used e.g. to wait for a sync before returning from `getRoot()`, per RTO1c.
+        /// Used when the object wishes to subscribe to its own events (i.e. unaffected by `offAll()`); used e.g. to wait for a sync before returning from `getRoot()`, per RTO23c.
         internal var internalObjectsEventSubscriptionStorage = SubscriptionStorage<ObjectsEvent, Void>()
 
         /// The RTO10b grace period for which we will retain tombstoned objects and map entries.
@@ -950,12 +950,12 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
                     // RTO5a: parse the channelSerial into a sync cursor.
                     syncCursor = try SyncCursor(channelSerial: protocolMessageChannelSerial)
                 } catch {
-                    // The channelSerial has no colon separator, so it does not conform to the RTO5a1
-                    // `<sequence id>:<cursor value>` shape. The specification does not define behaviour
-                    // for a malformed channelSerial (a spec clarification is to be raised); we log and abort handling of this
-                    // OBJECT_SYNC rather than guess.
-                    logger.log("Failed to parse sync cursor: \(error)", level: .error)
-                    return
+                    // RTO5a6: the channelSerial has no colon separator, so it does not conform to the
+                    // RTO5a1 `<sequence id>:<cursor value>` shape. We treat a malformed channelSerial as
+                    // if it were absent (per RTO5a5): the contained messages are applied and, since there
+                    // is no cursor, the sync sequence ends. We log a warning rather than silently proceed.
+                    logger.log("OBJECT_SYNC channelSerial is malformed (\(error)); treating as absent per RTO5a6", level: .warn)
+                    syncCursor = nil
                 }
             } else {
                 // RTO5a5: no channelSerial; the sync data is entirely contained within this OBJECT_SYNC.

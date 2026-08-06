@@ -80,7 +80,8 @@ internal final class PathObjectSubscriptionRegister: @unchecked Sendable {
         }
     }
 
-    /// Deregisters the subscription with the given identity token. Idempotent. Spec: RTPO19f1.
+    /// Deregisters the subscription with the given identity token. Idempotent. Spec: SUB2a/SUB2b (the
+    /// returned `Subscription`'s unsubscribe contract); reverses the RTPO19f registration.
     internal func nosync_unsubscribe(id: UUID) {
         dispatchPrecondition(condition: .onQueue(internalQueue))
         subscriptions.removeValue(forKey: id)

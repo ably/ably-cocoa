@@ -76,7 +76,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
                         throw LiveObjectsError.counterIncrementAmountInvalid(amount: amount).toARTErrorInfo()
                     }
 
-                    // RTLC12c
+                    // RTO26
                     try coreSDK.nosync_validateChannelState(
                         notIn: [.detached, .failed, .suspended],
                         operationDescription: "LiveCounter.increment",
@@ -333,6 +333,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
                 )
 
                 // RTLC6f/RTLC6f2: tombstone via LiveObject.tombstone and return its update.
+                // The diff helper is deliberately bypassed here: a zero-valued counter's tombstone must still emit an update (RTLO4b4c3c teardown), whereas calculateCounterDiff would return a noop for the zero delta.
                 return .update(.init(amount: -dataBeforeTombstoning, tombstone: true))
             }
 
@@ -360,7 +361,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
             let update: LiveObjectUpdate<DefaultLiveCounterUpdate>
 
             // RTLC16: Resolve counterCreate from either the direct property or the one
-            // from which counterCreateWithObjectId was derived (RTO12f16)
+            // from which counterCreateWithObjectId was derived (RTLCV4g5)
             let counterCreate = operation.counterCreate ?? operation.counterCreateWithObjectId?.derivedFrom
 
             // RTLC16a: Add counterCreate.count to data, if it exists
@@ -436,7 +437,8 @@ internal final class InternalDefaultLiveCounter: Sendable {
                     userCallbackQueue: userCallbackQueue,
                 )
 
-                // RTLC7d4a, RTLC7d4b: tombstone update drives the RTLO4b4c3c teardown
+                // RTLC7d4c, RTLC7d4b: tombstone update drives the RTLO4b4c3c teardown
+                // The diff helper is deliberately bypassed here: a zero-valued counter's tombstone must still emit an update (RTLO4b4c3c teardown), whereas calculateCounterDiff would return a noop for the zero delta.
                 let update: LiveObjectUpdate<DefaultLiveCounterUpdate> = .update(.init(amount: -dataBeforeApplyingOperation, tombstone: true))
                 return nosync_emitAndTearDown(update, sourceObjectMessage: sourceObjectMessage, userCallbackQueue: userCallbackQueue)
             default:
@@ -481,7 +483,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
         }
 
         internal func nosync_value(coreSDK: CoreSDK) throws(ARTErrorInfo) -> Double {
-            // RTLC5b: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
+            // RTO25: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
             try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveCounter.value")
 
             // RTLC5c

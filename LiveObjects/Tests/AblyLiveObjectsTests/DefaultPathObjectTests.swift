@@ -409,7 +409,7 @@ struct DefaultPathObjectTests {
         #expect(error.code == 40000)
     }
 
-    // MARK: - throwIfUnpublishableState connection guard (unspecified; mirrors ably-java)
+    // MARK: - throwIfUnpublishableState connection guard (RTO15b / RTL6c)
 
     // @spec RTO26 - an inactive connection surfaces the connection's state error; the channel-state
     // portion is checked only when the connection is active.

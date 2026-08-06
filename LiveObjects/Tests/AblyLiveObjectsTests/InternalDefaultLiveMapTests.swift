@@ -38,7 +38,7 @@ struct InternalDefaultLiveMapTests {
             #expect(try map.get(key: "nonexistent", coreSDK: coreSDK, delegate: MockLiveMapObjectsPoolDelegate(internalQueue: internalQueue)) == nil)
         }
 
-        // @spec RTLM5d2a
+        // @spec RTLM5d2h
         @Test
         func returnsNilWhenEntryIsTombstoned() throws {
             let logger = TestLogger()
@@ -505,7 +505,7 @@ struct InternalDefaultLiveMapTests {
         // Regression test: a DIRECT self-referencing entry (`data.objectId` == the map's own
         // objectID) previously crashed the read accessors with a Swift exclusive-access conflict.
         // The accessor holds the map's `mutableStateMutex` (via `withSync`) while the RTLM14c
-        // tombstone check / RTLM5d2f3 conversion re-enters the SAME mutex via
+        // tombstone check / RTLM5d2h conversion re-enters the SAME mutex via
         // `objectsPool.entries[objectId].nosync_isTombstone`. Indirect cycles (A→B→A) are fine;
         // only self-reference crashed. See DEV-15 (`getFullPaths`) for the analogous exclusivity
         // finding. Observable behaviour must match the Kotlin reference (which has no exclusivity
@@ -1214,7 +1214,7 @@ struct InternalDefaultLiveMapTests {
         }
 
         // @specOneOf(2/2) RTLM23a1 - via mapCreateWithObjectId.derivedFrom
-        // @spec RTO11f18
+        // @spec RTLMV4j5
         @Test
         func appliesMapSetOperationsFromDerivedFrom() throws {
             let logger = TestLogger()
@@ -1821,15 +1821,15 @@ struct InternalDefaultLiveMapTests {
         // @spec RTLM20e2
         // @spec RTLM20e3
         // @spec RTLM20e6
-        // @spec RTLM20e7a
+        // @spec RTLM20e7g
         // @spec RTLM20e7b
         // @spec RTLM20e7c
         // @spec RTLM20e7d
         // @spec RTLM20e7e
         // @spec RTLM20e7f
-        // @spec RTLM20g
+        // @spec RTLM20h
         @Test(arguments: [
-            // RTLM20e7a
+            // RTLM20e7g
             (value: { @Sendable internalQueue in .liveMap(.createZeroValued(objectID: "map:test@123", logger: TestLogger(), internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())) }, expectedData: .init(objectId: "map:test@123")),
             (value: { @Sendable internalQueue in .liveCounter(.createZeroValued(objectID: "counter:test@123", logger: TestLogger(), internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())) }, expectedData: .init(objectId: "counter:test@123")),
             // RTLM20e7b
@@ -1873,7 +1873,7 @@ struct InternalDefaultLiveMapTests {
                     ),
                 ),
             )
-            // RTLM20g
+            // RTLM20h
             let message = try #require(publishedMessage)
             #expect(message == expectedMessage)
         }

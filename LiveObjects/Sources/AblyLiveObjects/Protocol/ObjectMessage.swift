@@ -86,7 +86,7 @@ internal enum ProtocolTypes {
 
         /// The source `MapCreate` from which this `MapCreateWithObjectId` was derived.
         /// For local use only (apply-on-ACK per RTLM23); must not be sent over the wire.
-        /// - SeeAlso: RTO11f18
+        /// - SeeAlso: RTLMV4j5
         internal var derivedFrom: MapCreate?
     }
 
@@ -96,7 +96,7 @@ internal enum ProtocolTypes {
 
         /// The source `WireCounterCreate` from which this `CounterCreateWithObjectId` was derived.
         /// For local use only (apply-on-ACK per RTLC16); must not be sent over the wire.
-        /// - SeeAlso: RTO12f16
+        /// - SeeAlso: RTLCV4g5
         internal var derivedFrom: WireCounterCreate?
     }
 

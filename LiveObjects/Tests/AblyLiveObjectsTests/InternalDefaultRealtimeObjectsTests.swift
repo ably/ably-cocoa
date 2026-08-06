@@ -57,14 +57,15 @@ struct InternalDefaultRealtimeObjectsTests {
             #expect(pool.entries["map:2@456"] != nil)
         }
 
-        // MARK: - Malformed channelSerial (unspecified by RTO5a)
+        // MARK: - Malformed channelSerial (RTO5a6)
 
         // A channelSerial with no colon separator does not conform to the RTO5a1
-        // `<sequence id>:<cursor value>` shape. Parsing it throws (see `SyncCursor`), and the
-        // OBJECT_SYNC handler logs and aborts rather than guessing — the specification does not define
-        // behaviour for a malformed channelSerial. Nothing is applied to the pool.
+        // `<sequence id>:<cursor value>` shape. Per RTO5a6 such a malformed channelSerial is handled as
+        // if it were absent (RTO5a5): since there is no cursor, the sync data is treated as entirely
+        // contained within this single OBJECT_SYNC — the messages are applied and the sync completes.
+        // @spec RTO5a6
         @Test
-        func dropsObjectSyncWhenChannelSerialHasNoColon() async throws {
+        func malformedChannelSerialTreatedAsAbsent() async throws {
             let internalQueue = TestFactories.createInternalQueue()
             let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
             let objectMessages = [
@@ -74,7 +75,7 @@ struct InternalDefaultRealtimeObjectsTests {
 
             #expect(!realtimeObjects.testsOnly_hasSyncSequence)
 
-            // A channelSerial with no colon separator is malformed.
+            // A channelSerial with no colon separator is malformed; RTO5a6 treats it as absent.
             internalQueue.ably_syncNoDeadlock {
                 realtimeObjects.nosync_handleObjectSyncProtocolMessage(
                     objectMessages: objectMessages,
@@ -82,11 +83,12 @@ struct InternalDefaultRealtimeObjectsTests {
                 )
             }
 
-            // The OBJECT_SYNC was aborted: no sync sequence was opened and nothing was applied.
+            // The sync was treated as self-contained (RTO5a5): no in-flight sequence remains and the
+            // objects were applied to the pool.
             #expect(!realtimeObjects.testsOnly_hasSyncSequence)
             let pool = realtimeObjects.testsOnly_objectsPool
-            #expect(pool.entries["map:1@123"] == nil)
-            #expect(pool.entries["map:2@456"] == nil)
+            #expect(pool.entries["map:1@123"] != nil)
+            #expect(pool.entries["map:2@456"] != nil)
         }
 
         // An empty sequence id (":cursor") is accepted — everything before the first colon is the

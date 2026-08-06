@@ -117,9 +117,7 @@ NS_SWIFT_SENDABLE
 
 /// The error that makes the client's connection unpublishable, or `nil` if the connection is in a
 /// state from which messages can be published. When not active, returns the connection's current error
-/// reason if it has one. This publishable-connection check is unspecified (RTO26 has no
-/// connection-state clause); it mirrors ably-java's publishable-connection guard
-/// (`connectionManager.isActive` / `stateErrorInfo`), and a spec issue is to be raised.
+/// reason if it has one. Spec: RTO15b (the publish adheres to the RTL6c connection-state conditions).
 - (nullable id<APPublicErrorInfo>)nosync_connectionStateErrorForClient:(id<APRealtimeClient>)client;
 
 /// Initiates an attach on a realtime channel, per the RTL33b implicit-attach used by a plugin's

@@ -24,12 +24,12 @@ internal extension InternalLiveObject {
     ) {
         // RTLO4e2, RTLO4e3
         if let objectMessageSerialTimestamp {
-            // RTLO4e3a
+            // RTLO6a
             liveObjectMutableState.tombstonedAt = objectMessageSerialTimestamp
         } else {
-            // RTLO4e3b1
+            // RTLO6b1
             logger.log("serialTimestamp not found in ObjectMessage, using local clock for tombstone timestamp", level: .debug)
-            // RTLO4e3b
+            // RTLO6b
             liveObjectMutableState.tombstonedAt = clock.now
         }
 
