@@ -86,26 +86,10 @@ struct PublicRealtimeObjectTests {
         #expect(try root.size() == 0)
     }
 
-    // @spec RTO23c - get() waiting for sync fails with 92008 if the channel leaves a usable state (RTO20e1)
-    @Test
-    func getThrows92008WhenChannelFailsDuringWait() async throws {
-        let (publicObject, proxied, _, internalQueue) = Self.makePublicObject()
-
-        async let getTask = publicObject.get()
-        _ = try #require(await proxied.testsOnly_waitingForSyncEvents.first { _ in true })
-
-        // The channel enters FAILED while get() is waiting for sync.
-        internalQueue.ably_syncNoDeadlock {
-            proxied.nosync_onChannelStateChanged(toState: .failed, reason: nil)
-        }
-
-        do {
-            _ = try await getTask
-            Issue.record("Expected get() to throw when the channel fails during the sync wait")
-        } catch {
-            #expect((error as? ARTErrorInfo)?.code == 92008)
-        }
-    }
+    // Note: the RTO23c1 get() sync-wait failures (channel entering DETACHED/SUSPENDED/FAILED, code
+    // 92008/400, cause on FAILED) are covered by the UTS ports in
+    // `Test/UTS/unit/objects/RealtimeObjectTests.swift` (`RTO23c1_get_fails_on_channel_*`), which
+    // assert strictly more than the retired native twin did.
 
     // @spec RTL33c - get() on a FAILED channel is rejected before waiting for sync
     @Test

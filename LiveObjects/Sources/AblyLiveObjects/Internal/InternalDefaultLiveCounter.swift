@@ -187,9 +187,9 @@ internal final class InternalDefaultLiveCounter: Sendable {
         }
     }
 
-    /// RTO27a1: Clears this counter's data to its zero value (`0`) **without emitting any update
-    /// event**. Used by the RTO27a DETACHED/FAILED channel-state clear; the object itself remains
-    /// in the pool.
+    /// RTO27a1: Clears this counter's data to that of a new empty object of its type (a counter with
+    /// `data` `0` per RTLC4b) **without emitting any update event**. Used by the RTO27a
+    /// DETACHED/FAILED channel-state clear; the object itself remains in the pool.
     internal func nosync_resetDataToZeroValued() {
         mutableStateMutex.withoutSync { mutableState in
             // RTLC4: reset the counter's data to zero.

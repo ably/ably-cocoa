@@ -178,6 +178,113 @@ final class RealtimeObjectTests {
         #expect(try root.size() == 0)
     }
 
+    // MARK: - get() sync-wait failures (RTO23c1)
+
+    // The spec's three RTO23c1 cases each drive the channel into a bad state *while* get() is parked in
+    // the RTO23c sync wait. The UNIT harness has no real channel / mock_ws, so all three drive the
+    // RealtimeObject's channel-state handler directly (`nosync_onChannelStateChanged`) — the same seam
+    // the spec's SUSPENDED case names via `channel.object.processChannelState(SUSPENDED)`. This is an
+    // infra-driving stand-in for the spec's `channel.detach()` (DETACHED) and mock_ws ERROR (FAILED);
+    // the observable outcome (get() fails 92008/400, with cause on FAILED) is identical.
+
+    // UTS: objects/unit/RTO23c1/fails-on-channel-detached-0 — get() waiting for sync fails with
+    // 92008/400 when the channel enters DETACHED during the wait.
+    @Test
+    func RTO23c1_get_fails_on_channel_detached() async throws {
+        let (publicObject, proxied, _, internalQueue) = Self.makePublicObject()
+        // setup_synced_channel: reach SYNCED first.
+        Self.driveToSynced(proxied, on: internalQueue)
+
+        // Move the objects sync state back to SYNCING so a fresh get() must wait (RTO23c).
+        internalQueue.ably_syncNoDeadlock {
+            proxied.nosync_onChannelAttached(hasObjects: true)
+        }
+
+        async let getTask = publicObject.get()
+        // While still SYNCING the get() cannot complete — it parks in the RTO23c wait for SYNCED.
+        _ = try #require(await proxied.testsOnly_waitingForSyncEvents.first { _ in true })
+
+        // A client-side detach then moves the channel to DETACHED.
+        internalQueue.ably_syncNoDeadlock {
+            proxied.nosync_onChannelStateChanged(toState: .detached, reason: nil)
+        }
+
+        do {
+            _ = try await getTask
+            Issue.record("Expected get() to fail when the channel enters DETACHED during the sync wait")
+        } catch {
+            let error = try #require(error as? ARTErrorInfo)
+            #expect(error.code == 92008)
+            #expect(error.statusCode == 400)
+        }
+    }
+
+    // UTS: objects/unit/RTO23c1/fails-on-channel-suspended-0 — get() waiting for sync fails with
+    // 92008/400 when the channel enters SUSPENDED during the wait (RTO27b retains data, but the
+    // in-flight get() must still fail).
+    @Test
+    func RTO23c1_get_fails_on_channel_suspended() async throws {
+        let (publicObject, proxied, _, internalQueue) = Self.makePublicObject()
+        // setup_synced_channel: reach SYNCED first.
+        Self.driveToSynced(proxied, on: internalQueue)
+
+        // Move the objects sync state back to SYNCING so a fresh get() must wait (RTO23c).
+        internalQueue.ably_syncNoDeadlock {
+            proxied.nosync_onChannelAttached(hasObjects: true)
+        }
+
+        async let getTask = publicObject.get()
+        _ = try #require(await proxied.testsOnly_waitingForSyncEvents.first { _ in true })
+
+        // The mock cannot drive SUSPENDED; drive the channel-state handler directly (as RTO27 does).
+        internalQueue.ably_syncNoDeadlock {
+            proxied.nosync_onChannelStateChanged(toState: .suspended, reason: nil)
+        }
+
+        do {
+            _ = try await getTask
+            Issue.record("Expected get() to fail when the channel enters SUSPENDED during the sync wait")
+        } catch {
+            let error = try #require(error as? ARTErrorInfo)
+            #expect(error.code == 92008)
+            #expect(error.statusCode == 400)
+        }
+    }
+
+    // UTS: objects/unit/RTO23c1/fails-on-channel-failed-0 — get() waiting for sync fails with 92008/400
+    // when the channel enters FAILED during the wait, with `cause` set to the channel's errorReason.
+    @Test
+    func RTO23c1_get_fails_on_channel_failed_with_cause() async throws {
+        let (publicObject, proxied, _, internalQueue) = Self.makePublicObject()
+        // setup_synced_channel: reach SYNCED first.
+        Self.driveToSynced(proxied, on: internalQueue)
+
+        // Move the objects sync state back to SYNCING so a fresh get() must wait (RTO23c).
+        internalQueue.ably_syncNoDeadlock {
+            proxied.nosync_onChannelAttached(hasObjects: true)
+        }
+
+        async let getTask = publicObject.get()
+        _ = try #require(await proxied.testsOnly_waitingForSyncEvents.first { _ in true })
+
+        // A channel ERROR moves the channel to FAILED and sets its errorReason.
+        let failedReason = ARTErrorInfo.create(withCode: 90000, status: 400, message: "Channel failed")
+        internalQueue.ably_syncNoDeadlock {
+            proxied.nosync_onChannelStateChanged(toState: .failed, reason: failedReason)
+        }
+
+        do {
+            _ = try await getTask
+            Issue.record("Expected get() to fail when the channel enters FAILED during the sync wait")
+        } catch {
+            let error = try #require(error as? ARTErrorInfo)
+            #expect(error.code == 92008)
+            #expect(error.statusCode == 400)
+            // RTO23c1 - cause is set to the channel's errorReason (the injected FAILED error).
+            #expect(error.cause?.code == 90000)
+        }
+    }
+
     // MARK: - Status events (RTO17 / RTO18 / RTO19)
 
     // UTS: objects/unit/RTO17/sync-state-events-0 — RTO17b/RTO18b1/RTO18b2/RTO18e: on(.syncing) and

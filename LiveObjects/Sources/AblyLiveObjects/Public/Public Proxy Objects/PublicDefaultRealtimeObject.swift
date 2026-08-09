@@ -31,9 +31,7 @@ internal final class PublicDefaultRealtimeObject: RealtimeObject {
         // RTL33b (implicit attach for INITIALIZED/DETACHED/DETACHING/ATTACHING, awaiting ATTACHED),
         // RTL33c (reject FAILED). See ChannelConfigGuards.ensureActiveChannel.
         try await ChannelConfigGuards.ensureActiveChannel(coreSDK: coreSDK, internalQueue: proxied.internalQueue)
-        // RTO23c — wait for the initial sync to complete. RTO23c specifies only the wait; the failure
-        // with 92008 if the channel leaves a usable state while waiting mirrors RTO20e1 (spec issue
-        // pending to specify it under RTO23c).
+        // RTO23c — wait for the initial sync; RTO23c1: if the channel enters DETACHED/SUSPENDED/FAILED while waiting, get() fails with code 92008 (built in InternalDefaultRealtimeObjects.ensureSynced).
         try await proxied.ensureSynced()
         // RTO23d / RTTS6d — return a LiveMapPathObject with an empty path (the channel root).
         return DefaultLiveMapPathObject(

@@ -300,6 +300,47 @@ struct ObjectsPoolTests {
         #expect(pool.entries["counter:new@1000"] != nil)
     }
 
+    // MARK: - RTO5a5
+
+    // UTS: objects/unit/RTO5a5/absent-channel-serial-0
+    @Test
+    func objectSyncWithNoChannelSerialIsSingleMessageSync() {
+        let internalQueue = TestFactories.createInternalQueue()
+        let ro = Self.makeRealtimeObjects(internalQueue: internalQueue)
+
+        Self.attach(ro, hasObjects: true, internalQueue: internalQueue)
+        // No channelSerial: the whole sync is contained in this one message (RTO5a5).
+        Self.processSync(ro, channelSerial: nil, internalQueue: internalQueue, [
+            Self.syncMsg(Self.counterState(objectId: "counter:new@1000", count: 99, createCount: nil)),
+        ])
+
+        let pool = ro.testsOnly_objectsPool
+        // RTO5a5: objects applied and the sync sequence completes (SYNCED) without a cursor-empty serial.
+        #expect(ro.testsOnly_syncState == .synced)
+        #expect(pool.entries["counter:new@1000"] != nil)
+    }
+
+    // MARK: - RTO5a6
+
+    // UTS: objects/unit/RTO5a6/malformed-channel-serial-treated-as-absent-0
+    @Test
+    func malformedChannelSerialTreatedAsAbsent() {
+        let internalQueue = TestFactories.createInternalQueue()
+        let ro = Self.makeRealtimeObjects(internalQueue: internalQueue)
+
+        Self.attach(ro, hasObjects: true, internalQueue: internalQueue)
+        // "malformedserialnocolon" has no ':' separator, so it cannot be parsed per RTO5a1; RTO5a6
+        // requires handling it as if the channelSerial were absent (RTO5a5).
+        Self.processSync(ro, channelSerial: "malformedserialnocolon", internalQueue: internalQueue, [
+            Self.syncMsg(Self.counterState(objectId: "counter:new@1000", count: 99, createCount: nil)),
+        ])
+
+        let pool = ro.testsOnly_objectsPool
+        // Treated as absent (RTO5a5): the message was applied and the sync ended.
+        #expect(ro.testsOnly_syncState == .synced)
+        #expect(pool.entries["counter:new@1000"] != nil)
+    }
+
     // MARK: - RTO5f2a
 
     // UTS: objects/unit/RTO5f2a/partial-map-merge-0

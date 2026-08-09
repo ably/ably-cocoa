@@ -317,8 +317,8 @@ internal final class InternalDefaultLiveMap: Sendable {
         }
     }
 
-    /// RTO27a1: Clears this map's data to its zero value (an empty map) **without emitting any
-    /// update event**, and drops the parent references it holds on its referenced children
+    /// RTO27a1: Clears this map's data to that of a new empty object of its type (an empty map per
+    /// RTLM4c) **without emitting any update event**, and drops the parent references it holds on its referenced children
     /// (RTLO4e9) so the parent-reference graph stays consistent once the data is gone.
     ///
     /// Used by the RTO27a DETACHED/FAILED channel-state clear. Unlike ``nosync_resetData`` (the

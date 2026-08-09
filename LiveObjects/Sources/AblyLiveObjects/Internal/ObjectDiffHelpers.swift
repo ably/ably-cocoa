@@ -13,12 +13,7 @@ internal enum ObjectDiffHelpers {
         previousData: Double,
         newData: Double,
     ) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
-        // RTLC14b specifies only the amount (newData - previousData) and does not cover the
-        // zero-delta case. A zero delta means the value did not actually change (e.g. re-applying an
-        // ObjectState whose count equals the current data); since an update communicates a change
-        // (RTLO4b4a) we return the no-op update permitted by RTLO4b4b rather than a spurious
-        // zero-amount update that would fire subscriber callbacks for no change. ably-java
-        // (LiveCounterManager.calculateUpdateFromDataDiff) and ably-js do the same.
+        // RTLC14c: a zero delta (newData == previousData) is a no-op update per RTLO4b4b, not a spurious zero-amount update.
         if newData == previousData {
             return .noop
         }
@@ -61,12 +56,7 @@ internal enum ObjectDiffHelpers {
             }
         }
 
-        // RTLM22b specifies only the key diff and does not cover the empty-diff case. An empty diff
-        // means nothing actually changed (e.g. re-applying an ObjectState that matches the current
-        // data, or clearing an already-empty map); since an update communicates a change (RTLO4b4a)
-        // we return the no-op update permitted by RTLO4b4b rather than a spurious empty update that
-        // would fire subscriber callbacks for no change. ably-java
-        // (LiveMapManager.calculateUpdateFromDataDiff) and ably-js do the same.
+        // RTLM22c: an empty key diff (no changed keys) is a no-op update per RTLO4b4b, not a spurious empty update.
         if update.isEmpty {
             return .noop
         }

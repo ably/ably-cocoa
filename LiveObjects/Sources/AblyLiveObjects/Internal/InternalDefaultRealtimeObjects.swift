@@ -300,7 +300,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
     /// block, so a `.synced` transition can never slip between them and be lost (the lost-wakeup
     /// invariant). This reuses the existing `publishAndApplySyncWaiters` machinery
     /// (RTO20e/RTO20e1): the waiter is resumed with success when sync completes, and failed with the
-    /// RTO20e1 error (code 92008) if the channel enters DETACHED/SUSPENDED/FAILED — or if the engine
+    /// RTO23c1 error (code 92008) if the channel enters DETACHED/SUSPENDED/FAILED — or if the engine
     /// is disposed — while waiting.
     ///
     /// Unlike the internal `getRoot()` (the old RTO1 API, which registers its `.synced` listener in a
@@ -321,8 +321,8 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
                     case .synced:
                         continuation.resume(returning: .success(()))
                     case let .channelStateFailed(state, reason):
-                        // RTO20e1 -> code 92008 (sync did not complete).
-                        let error = LiveObjectsError.publishAndApplyFailedChannelStateChanged(
+                        // RTO23c1 -> code 92008 (sync did not complete): the get()-side counterpart of the publishAndApply RTO20e1 failure below.
+                        let error = LiveObjectsError.getFailedChannelStateChanged(
                             channelState: state,
                             reason: reason,
                         )
@@ -661,11 +661,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
                     return .createSynthetic(from: outboundMessage, serial: serial, siteCode: siteCode)
                 }
 
-                // If every serial was null (all operations conflated by the server, RTO20d1),
-                // there is nothing to apply. Complete immediately rather than falling through to the
-                // RTO20e sync-wait — waiting to apply zero messages serves no purpose and would
-                // otherwise risk a spurious RTO20e1 (92008) failure if the channel dropped while
-                // waiting. Mirrors ably-java (`if (syntheticMessages.isEmpty()) return`).
+                // RTO20d4: empty synthetic list — complete successfully without the RTO20e wait (avoids a spurious RTO20e1/92008 failure if the channel drops meanwhile).
                 guard !syntheticMessages.isEmpty else {
                     mutableStateCallback(&mutableState, .success(()))
                     return
@@ -1207,13 +1203,15 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
             }
         }
 
-        /// RTO27 / RTO20e1: Called when the channel transitions to a state other than `ATTACHED`.
+        /// RTO27: Called when the channel transitions to a state other than `ATTACHED`. For the
+        /// effect on in-progress operations see RTO20e1 (`publishAndApply`) and RTO23c1 (`get()`).
         ///
-        /// - RTO20e1: on `DETACHED`/`SUSPENDED`/`FAILED`, fails any in-flight `publishAndApply` /
-        ///   `get()` sync waiter with the code-92008 error.
+        /// - RTO20e1 / RTO23c1: on `DETACHED`/`SUSPENDED`/`FAILED`, fails any in-flight
+        ///   `publishAndApply` (RTO20e1) / `get()` (RTO23c1) sync waiter with the code-92008 error.
         /// - RTO27a: on `DETACHED`/`FAILED` the current objects data can no longer be known, so
-        ///   every object's data is cleared to its zero value **without emitting events** (RTO27a1)
-        ///   and the `SyncObjectsPool` is cleared (RTO27a2).
+        ///   every object's data is cleared to that of a new empty object of its type (an empty map
+        ///   per RTLM4c, or a counter with `data` `0` per RTLC4b) **without emitting events**
+        ///   (RTO27a1) and the `SyncObjectsPool` is cleared (RTO27a2).
         /// - RTO27b: on `SUSPENDED` the stored objects data is retained unchanged (the connection
         ///   may still recover and the retained data remains a valid best-effort local copy), so no
         ///   clear is performed.
@@ -1239,7 +1237,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
                 case .detached, .failed:
                     // RTO27a: the current state of the objects data can no longer be known.
                     logger.log("Channel entered \(state) state; clearing objects data per RTO27a", level: .debug)
-                    // RTO27a1: clear every object's data to its zero value, emitting no events.
+                    // RTO27a1: clear every object's data to that of a new empty object of its type, emitting no events.
                     objectsPool.nosync_clearObjectsData()
                     // RTO27a2: clear the SyncObjectsPool.
                     nosync_clearSyncObjectsPool()

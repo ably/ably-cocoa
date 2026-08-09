@@ -12,6 +12,8 @@ internal enum LiveObjectsError {
     case counterIncrementAmountInvalid(amount: Double)
     /// RTO20e1: The channel entered a non-`ATTACHED` state whilst a `publishAndApply` call was waiting for objects sync to complete.
     case publishAndApplyFailedChannelStateChanged(channelState: _AblyPluginSupportPrivate.RealtimeChannelState, reason: ARTErrorInfo?)
+    /// RTO23c1: The channel entered a non-`ATTACHED` state whilst a `get()` call was waiting for objects sync to complete.
+    case getFailedChannelStateChanged(channelState: _AblyPluginSupportPrivate.RealtimeChannelState, reason: ARTErrorInfo?)
     /// RTO11h3d, RTO12h3d: A newly created object was not found in the pool after `publishAndApply`.
     case newlyCreatedObjectNotInPool(objectID: String)
     /// RTO15d: The total size of the `ObjectMessage`s to be published (calculated per OM3) exceeds the connection's `maxMessageSize`.
@@ -63,8 +65,8 @@ internal enum LiveObjectsError {
         case .counterInitialValueInvalid, .counterIncrementAmountInvalid:
             // RTLCV4a, RTLC12e1
             Int(ARTErrorCode.invalidParameterValue.rawValue)
-        case .publishAndApplyFailedChannelStateChanged:
-            // RTO20e1
+        case .publishAndApplyFailedChannelStateChanged, .getFailedChannelStateChanged:
+            // RTO20e1, RTO23c1
             Int(ARTErrorCode.unableToApplyObjectsOperationSyncDidNotComplete.rawValue)
         case .newlyCreatedObjectNotInPool:
             Int(ARTErrorCode.internalError.rawValue)
@@ -83,6 +85,7 @@ internal enum LiveObjectsError {
              .counterInitialValueInvalid,
              .counterIncrementAmountInvalid,
              .publishAndApplyFailedChannelStateChanged,
+             .getFailedChannelStateChanged,
              .maxMessageSizeExceeded,
              .pathNotResolved,
              .pathTypeMismatch,
@@ -110,6 +113,9 @@ internal enum LiveObjectsError {
         case let .publishAndApplyFailedChannelStateChanged(channelState: channelState, reason: _):
             // RTO20e1
             "operation could not be applied locally: channel entered \(channelState) state whilst waiting for objects sync to complete"
+        case let .getFailedChannelStateChanged(channelState: channelState, reason: _):
+            // RTO23c1
+            "the object could not be retrieved due to the channel entering the \(channelState) state whilst waiting for objects sync to complete"
         case let .newlyCreatedObjectNotInPool(objectID: objectID):
             "Newly created object \(objectID) not found in pool after publishAndApply"
         case let .maxMessageSizeExceeded(size: size, maxSize: maxSize):
@@ -142,8 +148,9 @@ internal enum LiveObjectsError {
     /// The ``ARTErrorInfo/cause`` that should be returned for this error.
     internal var cause: ARTErrorInfo? {
         switch self {
-        case let .publishAndApplyFailedChannelStateChanged(channelState: _, reason: reason):
-            // RTO20e1
+        case let .publishAndApplyFailedChannelStateChanged(channelState: _, reason: reason),
+             let .getFailedChannelStateChanged(channelState: _, reason: reason):
+            // RTO20e1, RTO23c1
             reason
         case .objectsOperationFailedInvalidChannelState,
              .counterInitialValueInvalid,

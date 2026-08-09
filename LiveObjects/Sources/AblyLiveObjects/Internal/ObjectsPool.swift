@@ -619,9 +619,10 @@ internal struct ObjectsPool {
         return root.nosync_resetData()
     }
 
-    /// RTO27a1: Clears the internal data of every object in the pool, resetting each to its zero
-    /// value (an empty map, or a counter of `0`) **without emitting any `LiveObjectUpdate`
-    /// events**. The objects themselves remain in the pool; only their data is cleared.
+    /// RTO27a1: Clears the internal data of every object in the pool, resetting each to that of a
+    /// new empty object of its type (an empty map per RTLM4c, or a counter with `data` `0` per
+    /// RTLC4b) **without emitting any `LiveObjectUpdate` events**. The objects themselves remain in
+    /// the pool; only their data is cleared.
     ///
     /// Each map additionally drops the parent references it holds on its referenced children
     /// (RTLO4e9), so that once every object's data has been cleared the parent-reference graph is

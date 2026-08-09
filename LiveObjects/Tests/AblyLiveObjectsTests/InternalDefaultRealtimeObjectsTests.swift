@@ -59,37 +59,11 @@ struct InternalDefaultRealtimeObjectsTests {
 
         // MARK: - Malformed channelSerial (RTO5a6)
 
-        // A channelSerial with no colon separator does not conform to the RTO5a1
-        // `<sequence id>:<cursor value>` shape. Per RTO5a6 such a malformed channelSerial is handled as
-        // if it were absent (RTO5a5): since there is no cursor, the sync data is treated as entirely
-        // contained within this single OBJECT_SYNC — the messages are applied and the sync completes.
-        // @spec RTO5a6
-        @Test
-        func malformedChannelSerialTreatedAsAbsent() async throws {
-            let internalQueue = TestFactories.createInternalQueue()
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
-            let objectMessages = [
-                TestFactories.simpleMapMessage(objectId: "map:1@123"),
-                TestFactories.simpleMapMessage(objectId: "map:2@456"),
-            ]
-
-            #expect(!realtimeObjects.testsOnly_hasSyncSequence)
-
-            // A channelSerial with no colon separator is malformed; RTO5a6 treats it as absent.
-            internalQueue.ably_syncNoDeadlock {
-                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
-                    objectMessages: objectMessages,
-                    protocolMessageChannelSerial: "sequence123",
-                )
-            }
-
-            // The sync was treated as self-contained (RTO5a5): no in-flight sequence remains and the
-            // objects were applied to the pool.
-            #expect(!realtimeObjects.testsOnly_hasSyncSequence)
-            let pool = realtimeObjects.testsOnly_objectsPool
-            #expect(pool.entries["map:1@123"] != nil)
-            #expect(pool.entries["map:2@456"] != nil)
-        }
+        // Note: RTO5a6 (a malformed, colon-less channelSerial treated as absent per RTO5a5 — data
+        // applied, sync completes) is covered by the UTS port in
+        // `Test/UTS/unit/objects/ObjectsPoolTests.swift` (`malformedChannelSerialTreatedAsAbsent`),
+        // which asserts the spec-mandated `syncState == SYNCED` (which implies the no-in-flight-sequence
+        // invariant this native twin checked) plus the object landing in the pool.
 
         // An empty sequence id (":cursor") is accepted — everything before the first colon is the
         // sequence id (RTO5a1), and the spec does not rule out an empty one — so it opens an in-flight
