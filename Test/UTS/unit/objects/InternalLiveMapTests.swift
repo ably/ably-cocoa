@@ -516,6 +516,37 @@ struct InternalLiveMapTests {
         #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
     }
 
+    // UTS: objects/unit/RTLO5/tombstone-empty-map-emits-update-0 — RTLM22c: when every entry is already
+    // tombstoned the tombstone diff (RTLM22b considers only non-tombstoned entries) has no changed keys, but
+    // the RTLM22c tombstone carve-out means this empty diff must NOT be marked a noop; it is still delivered
+    // (tombstone flag, empty payload) so the RTLO4b4c3c listener teardown runs. Complements
+    // object-delete-tombstones-map-0 (which tombstones a map with live entries).
+    @Test
+    func objectDeleteOnMapWithNoLiveEntriesStillEmitsNonNoopTombstoneUpdate() throws {
+        let internalQueue = TestFactories.createInternalQueue()
+        var pool = Self.makePool(internalQueue: internalQueue)
+        let map = Self.makeMap(
+            objectID: "map:test@1000",
+            data: [
+                "name": InternalObjectsMapEntry(tombstonedAt: Date(timeIntervalSince1970: 1_600_000_000), timeserial: "01", data: ProtocolTypes.ObjectData(string: "Alice")),
+                "age": InternalObjectsMapEntry(tombstonedAt: Date(timeIntervalSince1970: 1_600_000_000), timeserial: "01", data: ProtocolTypes.ObjectData(number: NSNumber(value: 30))),
+            ],
+            internalQueue: internalQueue,
+        )
+        map.testsOnly_setSiteTimeserials(["site1": "00"])
+
+        let msg = TestFactories.objectDeleteOperationMessage(objectId: "map:test@1000", serial: "01", siteCode: "site1", serialTimestamp: Date(timeIntervalSince1970: 1_700_000_000))
+        let update = try #require(Self.apply(msg, to: map, pool: &pool, internalQueue: internalQueue))
+
+        #expect(map.testsOnly_isTombstone == true)
+        #expect(map.testsOnly_data.isEmpty)
+        // RTLM22c: the empty tombstone diff is NOT a noop; the payload carries no changed keys.
+        #expect(update.isNoop == false)
+        #expect(update.tombstone == true)
+        #expect(update.update?.update.isEmpty == true)
+        #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
+    }
+
     // UTS: objects/unit/RTLO4e10/object-delete-root-noop-0
     // D-11: exercises the RTLO4e10 implementation fix.
     @Test
@@ -845,6 +876,39 @@ struct InternalLiveMapTests {
         #expect(update.update?.update["unchanged"] == nil)
         #expect(update.update?.update["was_dead"] == nil)
         #expect(update.update?.update["now_dead"] == nil)
+    }
+
+    // UTS: objects/unit/RTLM22c/empty-diff-is-noop-0
+    // As an exception to RTLM22b, when the computed LiveMapUpdate.update contains no changed keys the
+    // diff returns a LiveMapUpdate marked as a no-op per RTLO4b4b. A no-op update is never delivered
+    // to subscribers (RTLO4b4c1), so at the internal tier the flake-free proxy for "no event fires"
+    // is asserting update.noop == true. Here the map's non-tombstoned entries before and after
+    // replaceData are identical under the RTLM22b comparison rules (same key "name", same data; only
+    // timeserial differs 01->02, which RTLM22b3 does not compare), so no key changed.
+    @Test
+    func emptyDiffIsNoop() throws {
+        // Setup
+        let internalQueue = TestFactories.createInternalQueue()
+        var pool = Self.makePool(internalQueue: internalQueue)
+        let map = Self.makeMap(
+            objectID: "root",
+            data: ["name": TestFactories.internalMapEntry(timeserial: "01", data: ProtocolTypes.ObjectData(string: "alice"))],
+            internalQueue: internalQueue,
+        )
+
+        // Test Steps
+        let state = TestFactories.mapObjectState(
+            objectId: "root",
+            siteTimeserials: ["site1": "02"],
+            entries: ["name": TestFactories.mapEntry(timeserial: "02", data: ProtocolTypes.ObjectData(string: "alice"))],
+        )
+        let update = internalQueue.ably_syncNoDeadlock {
+            map.nosync_replaceData(using: state, objectMessageSerialTimestamp: nil, objectsPool: &pool)
+        }
+
+        // Assertions
+        #expect(update.isNoop == true)
+        #expect(map.testsOnly_data["name"]?.data == ProtocolTypes.ObjectData(string: "alice"))
     }
 
     // MARK: - Remaining parent-reference cases (not among the six ported elsewhere)

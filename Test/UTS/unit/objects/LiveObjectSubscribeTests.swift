@@ -310,6 +310,55 @@ final class LiveObjectSubscribeTests {
         #expect(updatesB.events.count == 1)
     }
 
+    // UTS: objects/unit/RTLO4b4c3c/tombstone-zero-value-counter-tears-down-0 — the counter is first driven
+    // to 0, so tombstoning it yields a zero-delta diff. Per RTLC14c that update is NOT a noop (contrast
+    // RTLO4b4c1/noop-no-trigger-0, where a genuine noop does not fire at all): both listeners still receive
+    // the tombstone update (RTLO4b4c3a) and are then deregistered (RTLO4b4c3c). Complements
+    // tombstone-deregisters-listeners-0 (which tombstones a populated counter).
+    @Test
+    func RTLO4b4c3c_tombstone_zero_value_counter_tears_down() throws {
+        let f = Self.makeFixture()
+        Self.seedStandardGraph(f)
+        let updatesA = ObjectsUTSInstanceEventCollector()
+        let updatesB = ObjectsUTSInstanceEventCollector()
+        let control = ObjectsUTSInstanceEventCollector()
+
+        let instance = try Self.counterInstance(f, key: "score")
+
+        // Drive the counter (100 in the standard pool) down to 0 BEFORE registering the listeners under
+        // test, so they observe only the tombstone and not the "-100" update. The spec's
+        // poll_until(root.get("score").value() == 0) barrier is satisfied here by applyAndDrain being
+        // synchronous (the increment is fully applied before we assert its value and subscribe).
+        Self.applyAndDrain([ObjectsUTS.counterIncMessage(objectId: "counter:score@1000", number: -100, serial: "40", siteCode: "remote")], f)
+        #expect(try Self.rootPath(f).get(key: "score").asLiveCounter().value() == 0)
+
+        let subA = try instance.subscribe(listener: updatesA.listener)
+        let subB = try instance.subscribe(listener: updatesB.listener)
+        defer { subA.unsubscribe(); subB.unsubscribe() }
+
+        // OBJECT_DELETE tombstones the already-zero counter (zero-delta diff, RTLC14c -> NOT a noop).
+        Self.applyAndDrain([ObjectsUTS.objectDeleteMessage(objectId: "counter:score@1000", serial: "50", siteCode: "remote")], f)
+
+        // Both listeners received the tombstone update even though the counter data did not change (0 -> 0).
+        #expect(updatesA.events.count == 1)
+        #expect(updatesA.events.first?.message?.operation.action == .objectDelete)
+        #expect(updatesB.events.count == 1)
+        #expect(updatesB.events.first?.message?.operation.action == .objectDelete)
+
+        // Quiescence: a tombstoned object ignores further ops (RTLC7e), so use a SEPARATE live object as
+        // the control barrier. Once the control fires, the "51" dispatch to the dead object is processed.
+        let controlInstance = try Self.mapInstance(f, key: "profile")
+        let ctrl = try controlInstance.subscribe(listener: control.listener)
+        defer { ctrl.unsubscribe() }
+        Self.applyAndDrain([ObjectsUTS.counterIncMessage(objectId: "counter:score@1000", number: 3, serial: "51", siteCode: "remote")], f)
+        Self.applyAndDrain([ObjectsUTS.mapSetMessage(objectId: "map:profile@1000", key: "quiescence_probe", value: ProtocolTypes.ObjectData(string: "x"), serial: "52", siteCode: "remote")], f)
+        #expect(control.events.count >= 1)
+
+        // The tombstone deregistered the original listeners per RTLO4b4c3c: they did not fire again.
+        #expect(updatesA.events.count == 1)
+        #expect(updatesB.events.count == 1)
+    }
+
     // MARK: - RTLO4b4d: the event carries the source public ObjectMessage
 
     // UTS: objects/unit/RTLO4b4d/update-has-object-message-0 — RTLO4b4d/RTINS16e: the delivered event carries

@@ -36,10 +36,13 @@ import Testing
 ///   channel-modes accessor). **echoMessages guard (40000):** RTO26c — no plugin accessor.
 /// - **Implicit-attach cases:** RTO23 get-implicit-attach, RTO23e get-reattaches-detached — RTL33b is
 ///   not implementable (see above).
-/// - **Publish / apply-on-ACK pipeline:** RTO15, RTO20 (all variants — publish-and-apply-local,
-///   missing-site-code, null-serial, waits-for-synced, e1 fails-on-detached/failed, echo-dedup,
+/// - **Publish / apply-on-ACK pipeline:** RTO15, RTO20 (most variants — publish-and-apply-local,
+///   missing-site-code, waits-for-synced, e1 fails-on-detached/failed, echo-dedup,
 ///   ack-no-site-timeserials, ack-after-echo, ack-serials-cleared, subscription-fires-on-ack) — need the
-///   mock-WS OBJECT publish + ACK-driven local apply, for which no unit harness exists.
+///   mock-WS OBJECT publish + ACK-driven local apply, for which no unit harness exists. **Exception:**
+///   RTO20d4 (empty synthetic list skips the sync wait) IS ported below — its assertion (the operation
+///   resolves without a sync-completing message) needs only an all-null ACK, driven through a small
+///   `ObjectsUTSCoreSDK` publishHandler against the real publishAndApply pipeline.
 /// - **Garbage collection:** RTO10, RTO10b1, RTO10c1b1 — need `enable_fake_timers()` + the GC task.
 /// - **Path-subscription dispatch:** RTO24a, RTO24c1 — covered by `PathObjectSubscribeTests`.
 /// - **RTO27 (channel-state data lifecycle):** implemented (DEV-51) — `nosync_onChannelStateChanged`
@@ -176,6 +179,72 @@ final class RealtimeObjectTests {
         let root = try await getTask
         #expect(root.path.isEmpty)
         #expect(try root.size() == 0)
+    }
+
+    // MARK: - publishAndApply sync-wait skip (RTO20d4)
+
+    // UTS: objects/unit/RTO20d4/empty-synthetic-list-skips-sync-wait-0
+    // When every serial from the PublishResult is null and thus skipped per RTO20d1, the resulting
+    // list of synthetic ObjectMessages is empty; there is nothing to apply locally, so publishAndApply
+    // completes successfully WITHOUT performing the RTO20e wait. Positive-assertion design: the channel
+    // is deliberately moved to SYNCING (where a normal write would park in the RTO20e wait, cf. the
+    // RTO20e waits-for-synced case) and no sync-completing message is ever delivered — so the increment
+    // resolving at all proves the RTO20e wait was skipped. Nothing is applied locally, so the local
+    // value is unchanged.
+    //
+    // Harness adaptation: the UNIT tier has no mock WebSocket, so the spec's inline mock is driven
+    // through seams — STANDARD_POOL_OBJECTS' "score"=100 is seeded via a single-message OBJECT_SYNC
+    // (RTO5a5, the stand-in for `build_object_sync_message`); the sync2 re-attach that forces SYNCING is
+    // `nosync_onChannelAttached(hasObjects: true)` (stand-in for the sync2 ATTACHED+HAS_OBJECTS frame);
+    // and the OBJECT ACKed with [null] serials is an `ObjectsUTSCoreSDK` publishHandler returning
+    // `PublishResult(serials: [nil])`. This exercises the real InternalDefaultRealtimeObjects
+    // publishAndApply pipeline (and its RTO20d4 guard) end-to-end.
+    @Test
+    func RTO20d4_empty_synthetic_list_skips_sync_wait() async throws {
+        // Setup
+        let internalQueue = ObjectsUTS.createInternalQueue()
+        let proxied = Self.makeProxied(internalQueue: internalQueue)
+        // The OBJECT publish is ACKed with an all-null serial list, so per RTO20d1 every synthetic
+        // ObjectMessage is skipped and the synthetic list is empty.
+        let coreSDK = ObjectsUTSCoreSDK(
+            channelState: .attached,
+            internalQueue: internalQueue,
+            publishHandler: { messages in PublishResult(serials: messages.map { _ -> String? in nil }) },
+        )
+        let publicObject = PublicDefaultRealtimeObject(proxied: proxied, coreSDK: coreSDK, logger: TestLogger())
+
+        // Seed STANDARD_POOL_OBJECTS' "score"=100 via a single-message OBJECT_SYNC (RTO5a5), and set the
+        // siteCode (so the RTO20c1 gate passes and RTO20d4 is the branch that skips the wait, not RTO20c1).
+        internalQueue.ably_syncNoDeadlock {
+            proxied.nosync_handleObjectSyncProtocolMessage(
+                objectMessages: [
+                    ObjectsUTS.counterSyncMessage(objectId: "counter:score@1000", count: 100),
+                    ObjectsUTS.rootSyncMessage(entries: [
+                        "score": ObjectsUTS.wireMapEntry(data: ProtocolTypes.ObjectData(objectId: "counter:score@1000")),
+                    ]),
+                ],
+                protocolMessageChannelSerial: nil,
+            )
+            proxied.nosync_setSiteCode("test-site")
+        }
+
+        let root = try await publicObject.get()
+        #expect(try root.get(key: "score").asLiveCounter().value() == 100)
+
+        // Test Steps
+        // Move the objects sync state back to SYNCING so a normal publishAndApply would park in the
+        // RTO20e wait for SYNCED.
+        internalQueue.ably_syncNoDeadlock {
+            proxied.nosync_onChannelAttached(hasObjects: true)
+        }
+
+        // No sync-completing message is ever sent: if the RTO20e wait were performed this future would
+        // never resolve.
+        try await root.get(key: "score").asLiveCounter().increment(amount: 10)
+
+        // Assertions
+        // Resolution despite the channel never reaching SYNCED proves the RTO20e wait was skipped.
+        #expect(try root.get(key: "score").asLiveCounter().value() == 100)
     }
 
     // MARK: - get() sync-wait failures (RTO23c1)

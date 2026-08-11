@@ -248,6 +248,53 @@ struct ObjectsPoolTests {
         #expect(update.objectMessage == nil)
     }
 
+    // MARK: - RTO4b2a
+
+    // UTS: objects/unit/RTO4b2a/reset-of-empty-root-emits-no-update-0
+    @available(iOS 17.0.0, tvOS 17.0.0, *)
+    @Test
+    func attachedWithoutHasObjectsOnEmptyRootEmitsNoUpdate() async throws {
+        let internalQueue = TestFactories.createInternalQueue()
+        let ro = Self.makeRealtimeObjects(internalQueue: internalQueue)
+
+        // Seed a non-root object; root is already empty (zero-value InternalLiveMap per RTLM4c).
+        ro.testsOnly_setPoolEntry(.counter(Self.seededCounter(objectID: "counter:abc@1000", data: 0, internalQueue: internalQueue)), forObjectID: "counter:abc@1000")
+        let root = Self.seededRoot(data: [:], internalQueue: internalQueue)
+        ro.testsOnly_setPoolEntry(.map(root), forObjectID: "root")
+
+        let subscriber = Subscriber<DefaultLiveMapUpdate, SubscribeResponse>(callbackQueue: .main)
+        try root.subscribe(listener: subscriber.createListener(), coreSDK: Self.coreSDK(internalQueue: internalQueue))
+
+        Self.attach(ro, hasObjects: false, internalQueue: internalQueue)
+
+        let pool = ro.testsOnly_objectsPool
+        #expect(ro.testsOnly_syncState == .synced)
+        // RTO4b1: non-root objects are still removed; RTO3b: root remains.
+        #expect(pool.entries["counter:abc@1000"] == nil)
+        #expect(pool.entries["root"] != nil)
+        #expect(try #require(pool.entries["root"]?.mapValue).testsOnly_data.isEmpty)
+
+        // RTO4b2a: no keys were removed, so the empty update collapses to a no-op (RTLM22c/RTLO4b4b) and is
+        // not delivered. (`getInvocations` flushes the callback queue, so any emitted update would show up.)
+        let invocations = await subscriber.getInvocations()
+        #expect(invocations.isEmpty)
+
+        // Liveness control (spec `pool2`): a reset that DOES remove a key still emits, proving the empty
+        // count above reflects the empty-root collapse and not a dead subscription. Mirrors RTO4b.
+        let ro2 = Self.makeRealtimeObjects(internalQueue: internalQueue)
+        let root2 = Self.seededRoot(data: ["name": Self.seededStringEntry("Alice", timeserial: "01")], internalQueue: internalQueue)
+        ro2.testsOnly_setPoolEntry(.map(root2), forObjectID: "root")
+        let control = Subscriber<DefaultLiveMapUpdate, SubscribeResponse>(callbackQueue: .main)
+        try root2.subscribe(listener: control.createListener(), coreSDK: Self.coreSDK(internalQueue: internalQueue))
+
+        Self.attach(ro2, hasObjects: false, internalQueue: internalQueue)
+
+        let controlInvocations = await control.getInvocations()
+        #expect(controlInvocations.count >= 1)
+        let controlUpdate = try #require(controlInvocations.map(\.0).first)
+        #expect(controlUpdate.update == ["name": .removed])
+    }
+
     // MARK: - RTO5
 
     // UTS: objects/unit/RTO5/sync-complete-sequence-0
@@ -310,14 +357,20 @@ struct ObjectsPoolTests {
 
         Self.attach(ro, hasObjects: true, internalQueue: internalQueue)
         // No channelSerial: the whole sync is contained in this one message (RTO5a5).
+        // `build_object_sync_message`'s state list permits more than one object state, so we seed
+        // two here — retaining the multi-object coverage previously held by the native twin
+        // `InternalDefaultRealtimeObjectsTests.handlesSingleProtocolMessageSync` (both objects in a
+        // single self-contained OBJECT_SYNC must be applied).
         Self.processSync(ro, channelSerial: nil, internalQueue: internalQueue, [
             Self.syncMsg(Self.counterState(objectId: "counter:new@1000", count: 99, createCount: nil)),
+            Self.syncMsg(Self.counterState(objectId: "counter:other@2000", count: 7, createCount: nil)),
         ])
 
         let pool = ro.testsOnly_objectsPool
         // RTO5a5: objects applied and the sync sequence completes (SYNCED) without a cursor-empty serial.
         #expect(ro.testsOnly_syncState == .synced)
         #expect(pool.entries["counter:new@1000"] != nil)
+        #expect(pool.entries["counter:other@2000"] != nil)
     }
 
     // MARK: - RTO5a6

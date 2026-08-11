@@ -913,16 +913,11 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
                 )
             }
 
-            // I have, for now, not directly implemented the "perform the actions for object sync completion" of RTO4b4 since my implementation doesn't quite match the model given there; here you only have a SyncObjectsPool if you have an OBJECT_SYNC in progress, which you might not have upon receiving an ATTACHED. Instead I've just implemented what seem like the relevant side effects. Can revisit this if "the actions for object sync completion" get more complex.
-
-            // RTO4b3, RTO4b4, RTO5c3, RTO5c4, RTO5c5, RTO5c9, RTO5c8
-            appliedOnAckSerials.removeAll()
-            transition(to: .synced, userCallbackQueue: userCallbackQueue)
-
-            // Resume any publishAndApply waiters now that sync is complete
-            nosync_drainPublishAndApplySyncWaiters(
-                outcome: .synced,
-            )
+            // RTO4b3, RTO4b4, RTO5c3, RTO5c4, RTO5c5, RTO5c8, RTO5c9: run the same sync-completion
+            // actions as the OBJECT_SYNC path (via the shared `nosync_completeSync`), so the two
+            // cannot drift. The differing data step above (`nosync_reset`, versus the OBJECT_SYNC
+            // path's `applySyncObjectsPool` + buffered-op drain) is all that separates them.
+            nosync_completeSync(userCallbackQueue: userCallbackQueue)
         }
 
         /// Implements the `OBJECT_SYNC` handling of RTO5.
@@ -1034,16 +1029,10 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
                     }
                 }
 
-                // RTO5c9: Clear appliedOnAckSerials after sync
-                appliedOnAckSerials.removeAll()
-
-                // RTO5c3, RTO5c4, RTO5c5, RTO5c8
-                transition(to: .synced, userCallbackQueue: userCallbackQueue)
-
-                // Resume any publishAndApply waiters now that sync is complete
-                nosync_drainPublishAndApplySyncWaiters(
-                    outcome: .synced,
-                )
+                // RTO5c3, RTO5c4, RTO5c5, RTO5c8, RTO5c9: shared sync-completion tail (clear
+                // appliedOnAckSerials, transition to SYNCED, resume publishAndApply waiters) — the
+                // same actions the RTO4b ATTACHED-with-HAS_OBJECTS-false path runs.
+                nosync_completeSync(userCallbackQueue: userCallbackQueue)
             }
         }
 
@@ -1201,6 +1190,25 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
             for waiter in waiters {
                 waiter(&self, outcome)
             }
+        }
+
+        /// The sync-completion tail shared by the OBJECT_SYNC completion (RTO5c) path and the RTO4b
+        /// ATTACHED-with-HAS_OBJECTS-false path. Each caller first performs its own (differing) data
+        /// step — RTO5c `applySyncObjectsPool` plus the RTO5c6 buffered-operation drain, versus the
+        /// RTO4b1/RTO4b2 `nosync_reset` — and then runs these identical completion actions, so the two
+        /// paths cannot drift. Mirrors ably-js, where `onAttached(hasObjects=false)` and the
+        /// OBJECT_SYNC path both call the same `_endSync()`.
+        internal mutating func nosync_completeSync(userCallbackQueue: DispatchQueue) {
+            // RTO4b3, RTO4b4, RTO5c9: Clear appliedOnAckSerials after sync
+            appliedOnAckSerials.removeAll()
+
+            // RTO5c3, RTO5c4, RTO5c5, RTO5c8
+            transition(to: .synced, userCallbackQueue: userCallbackQueue)
+
+            // Resume any publishAndApply waiters now that sync is complete
+            nosync_drainPublishAndApplySyncWaiters(
+                outcome: .synced,
+            )
         }
 
         /// RTO27: Called when the channel transitions to a state other than `ATTACHED`. For the

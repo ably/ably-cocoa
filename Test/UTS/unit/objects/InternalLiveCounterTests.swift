@@ -384,6 +384,30 @@ struct InternalLiveCounterTests {
         #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
     }
 
+    // UTS: objects/unit/RTLO5/tombstone-zero-value-counter-emits-update-0 — RTLC14c: the tombstone diff of an
+    // already-zero counter (0 -> 0) is a zero delta, but the RTLC14c tombstone carve-out means it must NOT be
+    // marked a noop; it is still delivered (carrying the tombstone flag and amount 0) so the RTLO4b4c3c
+    // listener teardown runs. Complements object-delete-tombstones-0 (which tombstones a populated counter).
+    @Test
+    func objectDeleteOnZeroValueCounterStillEmitsNonNoopTombstoneUpdate() throws {
+        let internalQueue = TestFactories.createInternalQueue()
+        var pool = Self.makePool(internalQueue: internalQueue)
+        let counter = Self.makeCounter(objectID: "counter:abc@1000", internalQueue: internalQueue)
+        counter.testsOnly_setData(0)
+        counter.testsOnly_setSiteTimeserials(["site1": "00"])
+
+        let msg = TestFactories.objectDeleteOperationMessage(objectId: "counter:abc@1000", serial: "01", siteCode: "site1", serialTimestamp: Date(timeIntervalSince1970: 1_700_000_000))
+        let update = try #require(Self.apply(msg, to: counter, pool: &pool, internalQueue: internalQueue))
+
+        #expect(counter.testsOnly_isTombstone == true)
+        #expect(try Self.data(of: counter, internalQueue: internalQueue) == 0)
+        // RTLC14c: the zero-delta tombstone diff is NOT a noop.
+        #expect(update.isNoop == false)
+        #expect(update.tombstone == true)
+        #expect(update.update?.amount == 0)
+        #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
+    }
+
     // UTS: objects/unit/RTLC7e/tombstoned-reject-ops-0
     @Test
     func operationsOnTombstonedCounterAreRejected() throws {
@@ -559,6 +583,29 @@ struct InternalLiveCounterTests {
 
         #expect(update.update?.amount == 55)
         #expect(update.objectMessage == nil) // D-7
+    }
+
+    // UTS: objects/unit/RTLC14c/zero-delta-diff-is-noop-0
+    // As an exception to RTLC14b, when newData equals previousData the computed delta is 0, so the
+    // diff returns a LiveCounterUpdate marked as a no-op per RTLO4b4b. A no-op update is never
+    // delivered to subscribers (RTLO4b4c1), so at the internal tier the flake-free proxy for "no
+    // event fires" is asserting update.noop == true.
+    @Test
+    func zeroDeltaDiffIsNoop() throws {
+        // Setup
+        let internalQueue = TestFactories.createInternalQueue()
+        let counter = Self.makeCounter(objectID: "counter:abc@1000", internalQueue: internalQueue)
+        counter.testsOnly_setData(100)
+
+        // Test Steps
+        let state = TestFactories.counterObjectState(objectId: "counter:abc@1000", siteTimeserials: ["site1": "01"], count: 100)
+        let update = internalQueue.ably_syncNoDeadlock {
+            counter.nosync_replaceData(using: state, objectMessageSerialTimestamp: nil)
+        }
+
+        // Assertions
+        #expect(update.isNoop == true)
+        #expect(try Self.data(of: counter, internalQueue: internalQueue) == 100)
     }
 
     // MARK: - RTLC8, RTLC16

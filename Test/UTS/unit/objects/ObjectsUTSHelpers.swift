@@ -24,19 +24,38 @@ import Testing
 // MARK: - CoreSDK
 
 /// A minimal ``CoreSDK`` exposing a fixed channel state (for the RTO25/RTO26 precondition checks the
-/// node accessors run) and a canned server time. Publishing goes through ``ObjectsUTSRealtimeObjects``,
-/// not this type, so `nosync_publish` is never exercised by the unit ports.
+/// node accessors run) and a canned server time. Publishing normally goes through
+/// ``ObjectsUTSRealtimeObjects``, not this type — but the RTO20d4 port needs the *real*
+/// `InternalDefaultRealtimeObjects` publishAndApply pipeline (to exercise the RTO20d4 production
+/// guard), so this type optionally accepts a `publishHandler` returning a canned ``PublishResult``
+/// (the unit stand-in for the spec's inline mock ACK). When set, the handler's result is delivered
+/// asynchronously on `internalQueue`, mirroring the real transport's async ACK.
 final class ObjectsUTSCoreSDK: CoreSDK {
     private let channelState: _AblyPluginSupportPrivate.RealtimeChannelState
     private let serverTime: Date
+    private let internalQueue: DispatchQueue?
+    private let publishHandler: (@Sendable ([ProtocolTypes.OutboundObjectMessage]) -> PublishResult)?
 
-    init(channelState: _AblyPluginSupportPrivate.RealtimeChannelState = .attached, serverTime: Date = Date()) {
+    init(
+        channelState: _AblyPluginSupportPrivate.RealtimeChannelState = .attached,
+        serverTime: Date = Date(),
+        internalQueue: DispatchQueue? = nil,
+        publishHandler: (@Sendable ([ProtocolTypes.OutboundObjectMessage]) -> PublishResult)? = nil,
+    ) {
         self.channelState = channelState
         self.serverTime = serverTime
+        self.internalQueue = internalQueue
+        self.publishHandler = publishHandler
     }
 
-    func nosync_publish(objectMessages _: [ProtocolTypes.OutboundObjectMessage], callback _: @escaping @Sendable (Result<PublishResult, ARTErrorInfo>) -> Void) {
-        fatalError("nosync_publish is not exercised by the unit ports (writes go through ObjectsUTSRealtimeObjects)")
+    func nosync_publish(objectMessages: [ProtocolTypes.OutboundObjectMessage], callback: @escaping @Sendable (Result<PublishResult, ARTErrorInfo>) -> Void) {
+        guard let publishHandler, let internalQueue else {
+            fatalError("nosync_publish is not exercised by the unit ports unless a publishHandler is supplied (writes otherwise go through ObjectsUTSRealtimeObjects)")
+        }
+        // Deliver the ACK asynchronously on the internal queue, as the real transport does — the
+        // production `nosync_publishAndApply` expects its callback to fire after the mutex is released.
+        let result = publishHandler(objectMessages)
+        internalQueue.async { callback(.success(result)) }
     }
 
     func nosync_fetchServerTime(callback: @escaping @Sendable (Result<Date, ARTErrorInfo>) -> Void) {

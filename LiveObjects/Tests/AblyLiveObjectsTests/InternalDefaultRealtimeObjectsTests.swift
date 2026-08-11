@@ -27,35 +27,11 @@ struct InternalDefaultRealtimeObjectsTests {
     struct HandleObjectSyncProtocolMessageTests {
         // MARK: - RTO5a5: Single ProtocolMessage Sync Tests
 
-        // @spec RTO5a5
-        @Test
-        func handlesSingleProtocolMessageSync() async throws {
-            let internalQueue = TestFactories.createInternalQueue()
-            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
-            let objectMessages = [
-                TestFactories.simpleMapMessage(objectId: "map:1@123"),
-                TestFactories.simpleMapMessage(objectId: "map:2@456"),
-            ]
-
-            // Verify no sync sequence before handling
-            #expect(!realtimeObjects.testsOnly_hasSyncSequence)
-
-            // Call with no channelSerial (RTO5a5 case)
-            internalQueue.ably_syncNoDeadlock {
-                realtimeObjects.nosync_handleObjectSyncProtocolMessage(
-                    objectMessages: objectMessages,
-                    protocolMessageChannelSerial: nil,
-                )
-            }
-
-            // Verify sync was applied immediately and sequence was cleared (RTO5c3)
-            #expect(!realtimeObjects.testsOnly_hasSyncSequence)
-
-            // Verify objects were added to pool (side effect of applySyncObjectsPool per RTO5c1b1b)
-            let pool = realtimeObjects.testsOnly_objectsPool
-            #expect(pool.entries["map:1@123"] != nil)
-            #expect(pool.entries["map:2@456"] != nil)
-        }
+        // Note: RTO5a5 (an OBJECT_SYNC with no channelSerial is a single-message sync — the objects are
+        // applied and the sync completes SYNCED) is covered by the UTS port in
+        // `Test/UTS/unit/objects/ObjectsPoolTests.swift` (`objectSyncWithNoChannelSerialIsSingleMessageSync`),
+        // which seeds two objects in the single sync message to retain this native twin's multi-object
+        // coverage plus asserts the spec-mandated `syncState == SYNCED`.
 
         // MARK: - Malformed channelSerial (RTO5a6)
 
@@ -495,6 +471,44 @@ struct InternalDefaultRealtimeObjectsTests {
             // RTO4b3, RTO4b4, RTO4d: SyncObjectsPool must be cleared, sync sequence cleared, BufferedObjectOperations cleared, appliedOnAckSerials cleared
             #expect(!realtimeObjects.testsOnly_hasSyncSequence)
             #expect(realtimeObjects.testsOnly_appliedOnAckSerials.isEmpty)
+        }
+
+        // @spec RTO4b4
+        // The RTO4b ATTACHED(HAS_OBJECTS=false) sync completion runs the same completion actions as
+        // the RTO5c OBJECT_SYNC path (both via the shared `nosync_completeSync`), which includes
+        // resolving any parked publishAndApply sync waiter (RTO20e). This complements
+        // `handlesHasObjectsFalse` (which covers the pool reset + appliedOnAckSerials clear) with the
+        // waiter-resolution that the shared completion tail performs — so the two paths cannot drift.
+        @Test
+        func handlesHasObjectsFalseResolvesParkedPublishAndApplyWaiter() async throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            let realtimeObjects = InternalDefaultRealtimeObjectsTests.createDefaultRealtimeObjects(internalQueue: internalQueue)
+            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+
+            // Move to SYNCING (so a publishAndApply parks in the RTO20e wait) and set the siteCode.
+            internalQueue.ably_syncNoDeadlock {
+                realtimeObjects.nosync_onChannelAttached(hasObjects: true)
+                realtimeObjects.nosync_setSiteCode("site1")
+            }
+
+            // After the publish ACK, complete the sync via ATTACHED(HAS_OBJECTS=false) — the RTO4b path,
+            // which must drain the parked waiter via the shared `nosync_completeSync` (RTO5c tail).
+            coreSDK.setPublishCallbackHandler { messages, callback in
+                let result = PublishResult(serials: messages.map { _ in "serial_xyz" })
+
+                internalQueue.async {
+                    callback(.success(result))
+
+                    internalQueue.async {
+                        realtimeObjects.nosync_onChannelAttached(hasObjects: false)
+                    }
+                }
+            }
+
+            // The create parks in the RTO20e wait; resolving at all proves the RTO4b completion drained
+            // the parked waiter (a hang would time the test out).
+            let returnedCounter = try await realtimeObjects.createCounter(count: 42, coreSDK: coreSDK)
+            #expect(try returnedCounter.value(coreSDK: coreSDK) == 42)
         }
 
         // MARK: - Edge Cases and Integration Tests

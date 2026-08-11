@@ -333,7 +333,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
                 )
 
                 // RTLC6f/RTLC6f2: tombstone via LiveObject.tombstone and return its update.
-                // The diff helper is deliberately bypassed here: a zero-valued counter's tombstone must still emit an update (RTLO4b4c3c teardown), whereas calculateCounterDiff would return a noop for the zero delta.
+                // The diff helper is deliberately bypassed here: a zero-valued counter's tombstone must still emit an update (RTLO4b4c3c teardown), whereas calculateCounterDiff would return a noop for the zero delta (the RTLC14c zero-delta exception).
                 return .update(.init(amount: -dataBeforeTombstoning, tombstone: true))
             }
 
@@ -438,7 +438,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
                 )
 
                 // RTLC7d4c, RTLC7d4b: tombstone update drives the RTLO4b4c3c teardown
-                // The diff helper is deliberately bypassed here: a zero-valued counter's tombstone must still emit an update (RTLO4b4c3c teardown), whereas calculateCounterDiff would return a noop for the zero delta.
+                // The diff helper is deliberately bypassed here: a zero-valued counter's tombstone must still emit an update (RTLO4b4c3c teardown), whereas calculateCounterDiff would return a noop for the zero delta (the RTLC14c zero-delta exception).
                 let update: LiveObjectUpdate<DefaultLiveCounterUpdate> = .update(.init(amount: -dataBeforeApplyingOperation, tombstone: true))
                 return nosync_emitAndTearDown(update, sourceObjectMessage: sourceObjectMessage, userCallbackQueue: userCallbackQueue)
             default:
