@@ -38,7 +38,7 @@ internal final class PublicDefaultRealtimeObject: RealtimeObject {
             channelObject: proxied,
             coreSDK: coreSDK,
             internalQueue: proxied.internalQueue,
-            path: "",
+            segments: [],
         )
     }
 

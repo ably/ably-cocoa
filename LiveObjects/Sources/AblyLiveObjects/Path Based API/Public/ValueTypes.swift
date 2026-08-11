@@ -182,6 +182,10 @@ public struct LiveMap: Sendable, Equatable {
 ///     ],
 /// ])
 /// ```
+///
+/// Spec: `RTTS11` — the typed public write-value type carrying the map set-value union
+/// (`Boolean | Binary | Number | String | JsonArray | JsonObject | LiveCounter | LiveMap`) accepted by
+/// `set`. `RTTS11a` names Swift's idiomatic realisation: an enum with literal conformances (below).
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 public enum LiveMapValue: Sendable, Equatable {
     /// A primitive value (string, number, boolean, binary data, JSON array, or JSON object).

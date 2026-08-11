@@ -340,6 +340,97 @@ struct DefaultInstanceTests {
         #expect(messages[0].operation?.mapSet?.value?.string == "hi")
     }
 
+    // MARK: - Blueprint set publishes CREATE(s) + MAP_SET atomically (RTLM20e7g / RTLM20h1)
+
+    /// Builds a `MockRealtimeObjects` that records the single `publishAndApply` array into `published`,
+    /// and a map instance wrapping a fresh node, for the blueprint-set atomicity assertions below.
+    private func makeBlueprintSetFixture(internalQueue: DispatchQueue) throws -> (mapInstance: LiveMapInstance, published: Published) {
+        let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+        let realtimeObjects = MockRealtimeObjects()
+        let published = Published()
+        realtimeObjects.setPublishAndApplyHandler { messages in
+            published.set(messages)
+            return .success(())
+        }
+        let node = Self.makeMap(objectID: "map:x@0", internalQueue: internalQueue)
+        guard case let .liveMap(mapInstance) = Instance.from(internalValue: .liveMap(node), coreSDK: coreSDK, realtimeObjects: realtimeObjects, internalQueue: internalQueue) else {
+            throw BlueprintSetFixtureError.notALiveMap
+        }
+        return (mapInstance, published)
+    }
+
+    private enum BlueprintSetFixtureError: Error { case notALiveMap }
+
+    // @spec RTLM20h1 - setting a LiveCounter blueprint publishes [COUNTER_CREATE, MAP_SET] as one array,
+    // with the MAP_SET value chained to the created counter's objectId (RTLM20e7g2).
+    @Test
+    func mapSetCounterBlueprintPublishesCreateThenSet() async throws {
+        let internalQueue = TestFactories.createInternalQueue()
+        let (mapInstance, published) = try makeBlueprintSetFixture(internalQueue: internalQueue)
+
+        try await mapInstance.set(key: "hits", value: .liveCounter(.create(initialCount: 7)))
+
+        let messages = try #require(published.get())
+        #expect(messages.count == 2)
+        #expect(messages[0].operation?.action == .known(.counterCreate))
+        #expect(messages[0].operation?.objectId.hasPrefix("counter:") == true)
+        #expect(messages[1].operation?.action == .known(.mapSet))
+        #expect(messages[1].operation?.objectId == "map:x@0")
+        #expect(messages[1].operation?.mapSet?.key == "hits")
+        #expect(messages[1].operation?.mapSet?.value?.objectId == messages[0].operation?.objectId)
+    }
+
+    // @spec RTLM20h1 - setting a LiveMap blueprint containing a nested LiveCounter publishes
+    // [COUNTER_CREATE, MAP_CREATE, MAP_SET] in depth-first order (RTLMV4d1/RTLMV4k).
+    @Test
+    func mapSetMapBlueprintWithCounterPublishesDepthFirst() async throws {
+        let internalQueue = TestFactories.createInternalQueue()
+        let (mapInstance, published) = try makeBlueprintSetFixture(internalQueue: internalQueue)
+
+        try await mapInstance.set(key: "stats", value: .liveMap(.create(entries: [
+            "count": .liveCounter(.create(initialCount: 0)),
+            "label": "test",
+        ])))
+
+        let messages = try #require(published.get())
+        #expect(messages.count == 3)
+        #expect(messages[0].operation?.action == .known(.counterCreate))
+        #expect(messages[1].operation?.action == .known(.mapCreate))
+        #expect(messages[2].operation?.action == .known(.mapSet))
+        #expect(messages[2].operation?.mapSet?.key == "stats")
+        // The MAP_SET references the "stats" map (the final CREATE), not the nested counter.
+        #expect(messages[2].operation?.mapSet?.value?.objectId == messages[1].operation?.objectId)
+    }
+
+    // @spec RTLMV4k - a deeply nested blueprint (map -> map -> counter) creates innermost first:
+    // [COUNTER_CREATE, MAP_CREATE(inner), MAP_CREATE(outer), MAP_SET], each entry chained to its child.
+    @Test
+    func mapSetDeeplyNestedBlueprintOrdersCreatesInnermostFirst() async throws {
+        let internalQueue = TestFactories.createInternalQueue()
+        let (mapInstance, published) = try makeBlueprintSetFixture(internalQueue: internalQueue)
+
+        try await mapInstance.set(key: "deep", value: .liveMap(.create(entries: [
+            "inner": .liveMap(.create(entries: [
+                "leaf": .liveCounter(.create(initialCount: 3)),
+            ])),
+        ])))
+
+        let messages = try #require(published.get())
+        #expect(messages.count == 4)
+        #expect(messages[0].operation?.action == .known(.counterCreate)) // innermost
+        #expect(messages[1].operation?.action == .known(.mapCreate)) // inner map
+        #expect(messages[2].operation?.action == .known(.mapCreate)) // outer "deep" map
+        #expect(messages[3].operation?.action == .known(.mapSet)) // root MAP_SET last
+
+        let counterId = try #require(messages[0].operation?.objectId)
+        let innerMapId = try #require(messages[1].operation?.objectId)
+        let outerMapId = try #require(messages[2].operation?.objectId)
+        // inner map's "leaf" -> counter; outer map's "inner" -> inner map; MAP_SET -> outer map.
+        #expect(messages[1].operation?.mapCreateWithObjectId?.derivedFrom?.entries?["leaf"]?.data?.objectId == counterId)
+        #expect(messages[2].operation?.mapCreateWithObjectId?.derivedFrom?.entries?["inner"]?.data?.objectId == innerMapId)
+        #expect(messages[3].operation?.mapSet?.value?.objectId == outerMapId)
+    }
+
     // MARK: - Subscriptions (RTINS16)
 
     // @spec RTINS16e1 - the event carries an Instance wrapping the object

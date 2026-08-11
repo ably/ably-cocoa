@@ -1,4 +1,5 @@
 internal import _AblyPluginSupportPrivate
+import Ably
 import CryptoKit
 import Foundation
 
@@ -85,20 +86,42 @@ internal enum ObjectCreationHelpers {
         )
     }
 
-    /// Creates a `MAP_CREATE` `ObjectMessage` for the `RealtimeObjects.createMap` method per RTLMV4.
-    ///
-    /// - Parameters:
-    ///   - entries: The initial entries for the new LiveMap object
-    ///   - timestamp: The timestamp to use for the generated object ID.
+    /// Adapter over ``creationOperationForLiveMap(entries:timestamp:)`` that accepts already-internal
+    /// map values (`InternalLiveMapValue`), converting each to its `ObjectData` per RTLMV4d before
+    /// delegating to the shared composition builder. Used by the legacy `RealtimeObjects.createMap`
+    /// entry API (whose values may reference *existing* pooled objects by `objectId`, which a
+    /// blueprint cannot express), so it stays `nosync_` — `nosync_toObjectData` reads a referenced
+    /// node's `objectID` and must run on the internal queue.
     internal static func nosync_creationOperationForLiveMap(
         entries: [String: InternalLiveMapValue],
         timestamp: Date,
     ) -> MapCreationOperation {
-        // RTLMV4d: Create initial value for the new LiveMap
-        let mapEntries = entries.mapValues { liveMapValue -> ProtocolTypes.ObjectsMapEntry in
-            ProtocolTypes.ObjectsMapEntry(data: liveMapValue.nosync_toObjectData)
+        // RTLMV4d: Create an ObjectData for each entry value
+        creationOperationForLiveMap(
+            entries: entries.mapValues { $0.nosync_toObjectData },
+            timestamp: timestamp,
+        )
+    }
+
+    /// Shared composition builder that assembles the `MAP_CREATE` `ObjectMessage` for a new LiveMap
+    /// per RTLMV4e–RTLMV4j, given the entries' `ObjectData` already resolved. This is the single
+    /// MAP_CREATE composition path: the recursive ``evaluate(liveMap:coreSDK:internalQueue:)`` uses it
+    /// after building nested-entry `objectId` references, and `RealtimeObjects.createMap` uses it via
+    /// the `nosync_` adapter above. Pure (no node access), so it needs no queue.
+    ///
+    /// - Parameters:
+    ///   - entries: The `ObjectData` for each initial entry of the new LiveMap object (per RTLMV4d).
+    ///   - timestamp: The RTLMV4h server time to use for the generated object ID.
+    internal static func creationOperationForLiveMap(
+        entries: [String: ProtocolTypes.ObjectData],
+        timestamp: Date,
+    ) -> MapCreationOperation {
+        // RTLMV4e2: Wrap each entry's ObjectData in an ObjectsMapEntry
+        let mapEntries = entries.mapValues { objectData -> ProtocolTypes.ObjectsMapEntry in
+            ProtocolTypes.ObjectsMapEntry(data: objectData)
         }
 
+        // RTLMV4e1
         let semantics = ProtocolTypes.ObjectsMapSemantics.lww
         let mapCreate = ProtocolTypes.MapCreate(
             semantics: .known(semantics),
@@ -143,6 +166,97 @@ internal enum ObjectCreationHelpers {
             objectMessage: objectMessage,
             semantics: semantics,
         )
+    }
+
+    // MARK: - Recursive blueprint evaluation (RTLMV4 / RTLCV4)
+
+    /// The result of evaluating a value-type blueprint: the ordered list of `*_CREATE` `ObjectMessages`
+    /// that must be published to bring the described object graph into existence (RTLMV4k, depth-first;
+    /// self-create last), together with the `objectId` of the object the blueprint itself represents —
+    /// which is the `objectId` of the *final* message in the list (RTLM20e7g2 / RTLMV4d2).
+    internal typealias EvaluationResult = (messages: [ProtocolTypes.OutboundObjectMessage], objectId: String)
+
+    /// Evaluates a ``LiveCounter`` blueprint per RTLCV4, producing the single `COUNTER_CREATE`
+    /// `ObjectMessage` needed to create it. Fetches its own RTLCV4e server time (RTO16) so that, when
+    /// nested within a ``LiveMap`` evaluation, each created object is timestamped independently
+    /// (the cached RTO16a offset makes repeat fetches cheap).
+    internal static func evaluate(
+        liveCounter: LiveCounter,
+        coreSDK: CoreSDK,
+        internalQueue: DispatchQueue,
+    ) async throws(ARTErrorInfo) -> EvaluationResult {
+        // RTLCV4a: validate the initial count is finite up front (before any object ID is generated)
+        if !liveCounter.count.isFinite {
+            throw LiveObjectsError.counterInitialValueInvalid(value: liveCounter.count).toARTErrorInfo()
+        }
+
+        // RTLCV4e: get the current server time (per object, per RTO16)
+        let timestamp = try await fetchServerTime(coreSDK: coreSDK, internalQueue: internalQueue)
+
+        // RTLCV4: build the COUNTER_CREATE
+        let operation = creationOperationForLiveCounter(count: liveCounter.count, timestamp: timestamp)
+        return ([operation.objectMessage], operation.objectID)
+    }
+
+    /// Evaluates a ``LiveMap`` blueprint per RTLMV4, producing the ordered `*_CREATE` `ObjectMessages`
+    /// for the map and all objects nested within its entries (depth-first, the map's own `MAP_CREATE`
+    /// last, per RTLMV4k). Recurses for `LiveMap`/`LiveCounter` entry values, pointing each entry at its
+    /// child's final `objectId` (RTLMV4d1/d2); primitives convert 1:1 (RTLMV4d3–d7). Fetches this map's
+    /// own RTLMV4h server time (RTO16) *after* its children, mirroring the depth-first creation order.
+    internal static func evaluate(
+        liveMap: LiveMap,
+        coreSDK: CoreSDK,
+        internalQueue: DispatchQueue,
+    ) async throws(ARTErrorInfo) -> EvaluationResult {
+        // RTLMV4a/b/c: entries is a `[String: LiveMapValue]?`, keys are `String`, and each value is the
+        // closed `LiveMapValue` enum, so "entries is a Dict", "keys are String", and "values are of an
+        // expected type" (including RTLMV4c1: a live graph object cannot be a value) are all satisfied
+        // structurally by the type system — no runtime validation is possible or needed here.
+        var nestedMessages: [ProtocolTypes.OutboundObjectMessage] = []
+        var entries: [String: ProtocolTypes.ObjectData] = [:]
+
+        // RTLMV4d: build the ObjectData for each entry
+        for (key, value) in liveMap.entries ?? [:] {
+            switch value {
+            case let .primitive(primitive):
+                // RTLMV4d3–d7: primitives map 1:1 onto their ObjectData field
+                entries[key] = InternalLiveMapValue(primitive).nosync_toObjectData
+            case let .liveCounter(childBlueprint):
+                // RTLMV4d1: evaluate the nested LiveCounter, collecting its COUNTER_CREATE and
+                // pointing this entry at the created counter's objectId
+                let child = try await evaluate(liveCounter: childBlueprint, coreSDK: coreSDK, internalQueue: internalQueue)
+                nestedMessages.append(contentsOf: child.messages)
+                entries[key] = .init(objectId: child.objectId)
+            case let .liveMap(childBlueprint):
+                // RTLMV4d2: recursively evaluate the nested LiveMap, collecting all its messages and
+                // pointing this entry at the final message's objectId (the child map's MAP_CREATE)
+                let child = try await evaluate(liveMap: childBlueprint, coreSDK: coreSDK, internalQueue: internalQueue)
+                nestedMessages.append(contentsOf: child.messages)
+                entries[key] = .init(objectId: child.objectId)
+            }
+        }
+
+        // RTLMV4h: get the current server time for this map (per object, per RTO16)
+        let timestamp = try await fetchServerTime(coreSDK: coreSDK, internalQueue: internalQueue)
+
+        // RTLMV4e–j: build this map's own MAP_CREATE
+        let operation = creationOperationForLiveMap(entries: entries, timestamp: timestamp)
+
+        // RTLMV4k: nested creates (depth-first) followed by this map's MAP_CREATE
+        return (nestedMessages + [operation.objectMessage], operation.objectID)
+    }
+
+    /// Fetches the current server time (RTO16), bridging the internal-queue callback API to `async`.
+    ///
+    /// `CoreSDK.nosync_fetchServerTime` must be invoked on the internal queue (the underlying core-SDK
+    /// call asserts this), so we hop onto `internalQueue` before calling it.
+    private static func fetchServerTime(coreSDK: CoreSDK, internalQueue: DispatchQueue) async throws(ARTErrorInfo) -> Date {
+        let result: Result<Date, ARTErrorInfo> = await withCheckedContinuation { continuation in
+            internalQueue.async {
+                coreSDK.nosync_fetchServerTime { continuation.resume(returning: $0) }
+            }
+        }
+        return try result.get()
     }
 
     // MARK: - Private Helper Methods

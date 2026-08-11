@@ -269,7 +269,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
     internal func getRoot(coreSDK: CoreSDK) async throws(ARTErrorInfo) -> InternalDefaultLiveMap {
         let state = try mutableStateMutex.withSync { mutableState throws(ARTErrorInfo) in
             // RTO1b: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
-            try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed], operationDescription: "getRoot")
+            try coreSDK.nosync_validateChannelStateForAccessAPI(operationDescription: "getRoot")
 
             return mutableState.state
         }
@@ -338,7 +338,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
             do throws(ARTErrorInfo) {
                 try mutableStateMutex.withSync { _ throws(ARTErrorInfo) in
                     // RTO26
-                    try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: "RealtimeObjects.createMap")
+                    try coreSDK.nosync_validateChannelStateForWriteAPI(operationDescription: "RealtimeObjects.createMap")
 
                     // RTLMV4h
                     coreSDK.nosync_fetchServerTime { [self] result in
@@ -357,17 +357,17 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
                             timestamp: timestamp,
                         )
 
-                        // RTO11i
+                        // RTLMV4k/RTO20: publish the MAP_CREATE and apply it locally on ACK
                         nosync_publishAndApply(objectMessages: [creationOperation.objectMessage], coreSDK: coreSDK) { mutableState, result in
                             switch result {
                             case let .failure(error):
                                 continuation.resume(returning: .failure(error))
                             case .success:
-                                // RTO11h
+                                // RTLMV3: return the created LiveMap
 
-                                // RTO11h2
+                                // RTLMV3
                                 guard case let .map(existingMap) = mutableState.objectsPool.entries[creationOperation.objectID] else {
-                                    // RTO11h3d: Object should have been created by publishAndApply
+                                    // RTLMV3: Object should have been created by publishAndApply
                                     let error = LiveObjectsError.newlyCreatedObjectNotInPool(objectID: creationOperation.objectID).toARTErrorInfo()
                                     continuation.resume(returning: .failure(error))
                                     return
@@ -394,7 +394,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
             do throws(ARTErrorInfo) {
                 try mutableStateMutex.withSync { _ throws(ARTErrorInfo) in
                     // RTO26
-                    try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: "RealtimeObjects.createCounter")
+                    try coreSDK.nosync_validateChannelStateForWriteAPI(operationDescription: "RealtimeObjects.createCounter")
 
                     // RTLCV4a
                     if !count.isFinite {
@@ -419,17 +419,17 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
                             timestamp: timestamp,
                         )
 
-                        // RTO12i
+                        // RTLCV4/RTO20: publish the COUNTER_CREATE and apply it locally on ACK
                         nosync_publishAndApply(objectMessages: [creationOperation.objectMessage], coreSDK: coreSDK) { mutableState, result in
                             switch result {
                             case let .failure(error):
                                 continuation.resume(returning: .failure(error))
                             case .success:
-                                // RTO12h
+                                // RTLCV3: return the created LiveCounter
 
-                                // RTO12h2
+                                // RTLCV3
                                 guard case let .counter(existingCounter) = mutableState.objectsPool.entries[creationOperation.objectID] else {
-                                    // RTO12h3d: Object should have been created by publishAndApply
+                                    // RTLCV3: Object should have been created by publishAndApply
                                     let error = LiveObjectsError.newlyCreatedObjectNotInPool(objectID: creationOperation.objectID).toARTErrorInfo()
                                     continuation.resume(returning: .failure(error))
                                     return

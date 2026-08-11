@@ -66,7 +66,7 @@ struct PathObjectSubscriptionTests {
     /// A ``DefaultLiveMapPathObject`` rooted at the channel's root map (empty path), backed by the
     /// real engine.
     private static func rootPath(_ fixture: Fixture) -> DefaultLiveMapPathObject {
-        DefaultLiveMapPathObject(channelObject: fixture.engine, coreSDK: fixture.coreSDK, internalQueue: fixture.internalQueue, path: "")
+        DefaultLiveMapPathObject(channelObject: fixture.engine, coreSDK: fixture.coreSDK, internalQueue: fixture.internalQueue, segments: [])
     }
 
     private static func makeCounter(objectID: String, _ fixture: Fixture) -> InternalDefaultLiveCounter {

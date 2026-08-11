@@ -30,11 +30,11 @@ import Foundation
 /// Spec: `RTO24`, `RTO24a`, `RTPO19`.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal final class PathObjectSubscriptionRegister: @unchecked Sendable {
-    /// Constructs the ``PathObject`` carried by a path event, for a given (already dot-joined) path.
-    /// Supplied by the subscribing ``DefaultPathObject`` so the register need not itself hold the
-    /// channel object / core SDK. Returns `nil` when its captured context has been released, in which
-    /// case the subscription is effectively dead and the event is dropped.
-    internal typealias PathObjectFactory = @Sendable (_ joinedPath: String) -> (any PathObject)?
+    /// Constructs the ``PathObject`` carried by a path event, for a given segment list. Supplied by the
+    /// subscribing ``DefaultPathObject`` so the register need not itself hold the channel object / core
+    /// SDK. Returns `nil` when its captured context has been released, in which case the subscription is
+    /// effectively dead and the event is dropped.
+    internal typealias PathObjectFactory = @Sendable (_ segments: [String]) -> (any PathObject)?
 
     /// A single registration: the EventEmitter-`Listener` analogue plus its coverage state.
     private struct PathSubscription {
@@ -102,7 +102,7 @@ internal final class PathObjectSubscriptionRegister: @unchecked Sendable {
                 continue
             }
             // The captured context may have been released; drop the event if so (dead subscription).
-            guard let object = subscription.makePathObject(PathSegments.join(chosen)) else {
+            guard let object = subscription.makePathObject(chosen) else {
                 continue
             }
             let event = PathObjectSubscriptionEvent(object: object, message: message)

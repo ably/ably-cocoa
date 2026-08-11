@@ -70,10 +70,10 @@ internal final class DefaultLiveMapInstance: LiveMapInstance {
     }
 
     internal func set(key: String, value: LiveMapValue) async throws(ARTErrorInfo) {
-        // RTINS12c -> RTLM20: convert the public value into the internal representation (materialising
-        // any LiveMap/LiveCounter blueprint into a real object) and delegate to the node's set.
-        let internalValue = try await Self.internalValue(from: value, coreSDK: coreSDK, realtimeObjects: realtimeObjects)
-        try await node.set(key: key, value: internalValue, coreSDK: coreSDK, realtimeObjects: realtimeObjects)
+        // RTINS12c -> RTLM20: delegate straight to the node's set, which handles both primitive values
+        // and LiveMap/LiveCounter blueprints (evaluating a blueprint and publishing its *_CREATE
+        // messages atomically with the MAP_SET, per RTLM20e7g/RTLM20h1).
+        try await node.set(key: key, value: value, coreSDK: coreSDK, realtimeObjects: realtimeObjects)
     }
 
     internal func remove(key: String) async throws(ARTErrorInfo) {
@@ -174,67 +174,6 @@ internal final class DefaultLiveMapInstance: LiveMapInstance {
             }
         }
         return .object(result)
-    }
-
-    // MARK: - Public -> internal value conversion (RTLM20e7)
-
-    /// Converts a public ``LiveMapValue`` into the internal ``InternalLiveMapValue`` accepted by
-    /// `InternalDefaultLiveMap.set`. Primitives map 1:1; a ``LiveMap``/``LiveCounter`` blueprint is
-    /// materialised into a real pooled object first (RTLM20e7g), referenced thereafter by `objectId`.
-    ///
-    /// - Note (DEV): unlike ably-java, which batches every `*_CREATE` message with the `MAP_SET` into a
-    ///   single publish (RTLM20e7g1/g2), this creates each blueprint object via its own
-    ///   `createMap`/`createCounter` publish and then sets by reference. Behaviour is equivalent; the
-    ///   wire traffic is not batched. Blueprint materialisation requires the concrete
-    ///   ``InternalDefaultRealtimeObjects`` (the sole production conformer of
-    ///   ``InternalRealtimeObjectsProtocol`` that can create objects).
-    private static func internalValue(
-        from value: LiveMapValue,
-        coreSDK: CoreSDK,
-        realtimeObjects: any InternalRealtimeObjectsProtocol,
-    ) async throws(ARTErrorInfo) -> InternalLiveMapValue {
-        switch value {
-        case let .primitive(primitive):
-            return internalValue(from: primitive)
-        case let .liveMap(blueprint):
-            // Recursively materialise the blueprint's entries, then create the map object.
-            var entries: [String: InternalLiveMapValue] = [:]
-            for (entryKey, entryValue) in blueprint.entries ?? [:] {
-                entries[entryKey] = try await internalValue(from: entryValue, coreSDK: coreSDK, realtimeObjects: realtimeObjects)
-            }
-            let node = try await Self.objectCreator(realtimeObjects).createMap(entries: entries, coreSDK: coreSDK)
-            return .liveMap(node)
-        case let .liveCounter(blueprint):
-            let node = try await Self.objectCreator(realtimeObjects).createCounter(count: blueprint.count, coreSDK: coreSDK)
-            return .liveCounter(node)
-        }
-    }
-
-    /// 1:1 mapping of a public ``Primitive`` onto the internal ``InternalLiveMapValue`` representation.
-    private static func internalValue(from primitive: Primitive) -> InternalLiveMapValue {
-        switch primitive {
-        case let .string(value):
-            .string(value)
-        case let .number(value):
-            .number(value)
-        case let .bool(value):
-            .bool(value)
-        case let .data(value):
-            .data(value)
-        case let .jsonArray(value):
-            .jsonArray(value)
-        case let .jsonObject(value):
-            .jsonObject(value)
-        }
-    }
-
-    /// Narrows to the concrete realtime-objects type that can create pooled objects for blueprint
-    /// materialisation. In production the delegate is always ``InternalDefaultRealtimeObjects``.
-    private static func objectCreator(_ realtimeObjects: any InternalRealtimeObjectsProtocol) -> InternalDefaultRealtimeObjects {
-        guard let creator = realtimeObjects as? InternalDefaultRealtimeObjects else {
-            preconditionFailure("Setting a LiveMap/LiveCounter blueprint value requires the concrete InternalDefaultRealtimeObjects")
-        }
-        return creator
     }
 }
 

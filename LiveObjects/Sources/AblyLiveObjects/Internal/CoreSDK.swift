@@ -181,16 +181,42 @@ internal final class DefaultCoreSDK: CoreSDK {
 
 // MARK: - Channel State Validation
 
-/// Extension on CoreSDK to provide channel state validation utilities.
+/// Extension on CoreSDK providing the RTO25b/RTO26b channel-state preconditions that the internal
+/// (nosync) engine runs before a public read/write operation touches the object graph.
+///
+/// These two named helpers replace raw per-call-site state lists (e.g.
+/// `notIn: [.detached, .failed, .suspended]`), so a call site names the API kind it guards rather
+/// than restating a state list that could drift out of sync with the spec.
+///
+/// They live here — on the `nosync_` `CoreSDK` layer — rather than in `ChannelConfigGuards` on
+/// purpose: this layer runs with the internal queue already held, whereas `ChannelConfigGuards` is
+/// the public path/instance-API guard layer that performs its own internal-queue hop and also
+/// checks channel modes / `echoMessages`. The two layers are deliberately distinct, so the guards
+/// are not shared between them (`ChannelConfigGuards` keeps its own on-queue channel-state check).
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal extension CoreSDK {
-    /// Validates that the channel is not in any of the specified invalid states.
+    /// RTO25b — the *access API* channel-state precondition for read operations (map get/size/entries,
+    /// counter value, subscribe): throws an `ARTErrorInfo` with code 90001 and statusCode 400 when the
+    /// channel is in the `DETACHED` or `FAILED` state (`SUSPENDED` is permitted for reads).
     ///
-    /// - Parameters:
-    ///   - invalidStates: Array of channel states that are considered invalid for the operation
-    ///   - operationDescription: A description of the operation being performed, used in error messages
-    /// - Throws: `ARTErrorInfo` with code 90001 and statusCode 400 if the channel is in any of the invalid states
-    func nosync_validateChannelState(
+    /// - Parameter operationDescription: A description of the operation, used in the error message.
+    func nosync_validateChannelStateForAccessAPI(operationDescription: String) throws(ARTErrorInfo) {
+        try nosync_validateChannelState(notIn: [.detached, .failed], operationDescription: operationDescription)
+    }
+
+    /// RTO26b — the *write API* channel-state precondition for mutation operations (map set/remove,
+    /// counter increment/decrement, createMap/createCounter): throws an `ARTErrorInfo` with code 90001
+    /// and statusCode 400 when the channel is in the `DETACHED`, `FAILED`, or `SUSPENDED` state.
+    ///
+    /// - Parameter operationDescription: A description of the operation, used in the error message.
+    func nosync_validateChannelStateForWriteAPI(operationDescription: String) throws(ARTErrorInfo) {
+        try nosync_validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: operationDescription)
+    }
+
+    /// Throws an `ARTErrorInfo` with code 90001 and statusCode 400 if the channel is currently in any
+    /// of `invalidStates`. Shared implementation for the RTO25b/RTO26b helpers above; call those named
+    /// helpers from operation call sites rather than this generic one.
+    private func nosync_validateChannelState(
         notIn invalidStates: [_AblyPluginSupportPrivate.RealtimeChannelState],
         operationDescription: String,
     ) throws(ARTErrorInfo) {

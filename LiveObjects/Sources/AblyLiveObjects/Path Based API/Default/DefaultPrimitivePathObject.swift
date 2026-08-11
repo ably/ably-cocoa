@@ -9,13 +9,14 @@ import Ably
 internal final class DefaultPrimitivePathObject: DefaultPathObject, PrimitivePathObject, @unchecked Sendable {
     internal func value() throws(ARTErrorInfo) -> Primitive? {
         try ChannelConfigGuards.throwIfInvalidAccessApiConfiguration(coreSDK: coreSDK, internalQueue: internalQueue)
-        // Unresolved path -> nil.
+        // RTPO7f — path resolution fails -> nil (RTPO3c1).
         guard let resolved = try resolveValueAtCurrentPath() else {
             return nil
         }
         // DEV-2: unlike ably-java's six type-filtered primitive views, this returns whatever primitive
-        // resolved (RTTS6c collapse). A live object (map/counter) is not a primitive -> nil.
+        // resolved (RTTS6c collapse).
         switch resolved {
+        // RTPO7d — a resolved primitive is returned directly.
         case let .string(value):
             return .string(value)
         case let .number(value):
@@ -28,6 +29,8 @@ internal final class DefaultPrimitivePathObject: DefaultPathObject, PrimitivePat
             return .jsonArray(value)
         case let .jsonObject(value):
             return .jsonObject(value)
+        // RTPO7e — an InternalLiveMap resolves to nil; a counter likewise (RTTS6c never yields a
+        // LiveObject's value, unlike the general RTPO7c).
         case .liveMap, .liveCounter:
             return nil
         }

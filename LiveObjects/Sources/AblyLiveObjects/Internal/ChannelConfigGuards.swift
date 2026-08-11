@@ -18,7 +18,8 @@ import Ably
 /// | Connection `isActive` (publishable state) | RTO15b (RTL6c publish conditions) | ✅ via `CoreSDK.nosync_connectionStateError` |
 ///
 /// The channel-state check produces the same 90001 error the internal engine's node accessors run
-/// (`CoreSDK.nosync_validateChannelState`), so no new state check is invented. The connection-active
+/// (`CoreSDK.nosync_validateChannelStateForAccessAPI` / `...ForWriteAPI`), so no new state check is
+/// invented. The connection-active
 /// check is RTO15b: the publish must adhere to the same connection-state conditions as message
 /// publishing (RTL6c), which ably-java enforces via its publishable-connection guard.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)

@@ -29,19 +29,25 @@ internal class DefaultPathObject: PathObject, @unchecked Sendable {
     internal let coreSDK: CoreSDK
     internal let internalQueue: DispatchQueue
 
-    /// The stored dot-delimited path. The empty string is the root (zero segments, RTPO4c).
-    internal let path: String
+    /// The stored path, as an ordered list of raw string segments (RTPO2a). The empty list is the root
+    /// (zero segments, RTPO4c).
+    internal let segments: [String]
+
+    /// RTPO4 — the dot-delimited string rendering of ``segments`` (dots inside a segment escaped).
+    internal var path: String {
+        PathSegments.join(segments)
+    }
 
     internal init(
         channelObject: any InternalRealtimeObjectsProtocol,
         coreSDK: CoreSDK,
         internalQueue: DispatchQueue,
-        path: String,
+        segments: [String],
     ) {
         self.channelObject = channelObject
         self.coreSDK = coreSDK
         self.internalQueue = internalQueue
-        self.path = path
+        self.segments = segments
     }
 
     // MARK: - PathObject
@@ -57,14 +63,11 @@ internal class DefaultPathObject: PathObject, @unchecked Sendable {
     }
 
     internal func compactJson() throws(ARTErrorInfo) -> JSONValue? {
-        try ChannelConfigGuards.throwIfInvalidAccessApiConfiguration(coreSDK: coreSDK, internalQueue: internalQueue) // RTPO14a / RTO25
-        // RTPO3c1 — unresolved path returns nil (nullable compactJson).
-        guard let resolved = try resolveValueAtCurrentPath() else {
-            return nil
-        }
-        // RTPO14b — recursive compaction (cycle markers, base64 binary) is exactly the instance
-        // layer's `compactJson`; reuse it rather than re-deriving.
-        return try Instance.from(internalValue: resolved, coreSDK: coreSDK, realtimeObjects: channelObject, internalQueue: internalQueue).compactJson()
+        // Single access-guard site: `instance()` runs the RTPO14a (RTO25) preconditions — including the
+        // RTO25a `object_subscribe` mode check that the delegated instance layer does not re-run — and
+        // resolves the path (RTPO3c1 -> nil). RTPO14b recursive compaction (cycle markers, base64
+        // binary) is exactly the instance layer's `compactJson`, so reuse it rather than re-deriving.
+        try instance()?.compactJson()
     }
 
     internal func exists() throws(ARTErrorInfo) -> Bool {
@@ -84,17 +87,17 @@ internal class DefaultPathObject: PathObject, @unchecked Sendable {
 
     internal func asLiveMap() -> any LiveMapPathObject {
         // RTTS5a — pure type refinement; does not resolve the path, never throws.
-        DefaultLiveMapPathObject(channelObject: channelObject, coreSDK: coreSDK, internalQueue: internalQueue, path: path)
+        DefaultLiveMapPathObject(channelObject: channelObject, coreSDK: coreSDK, internalQueue: internalQueue, segments: segments)
     }
 
     internal func asLiveCounter() -> any LiveCounterPathObject {
         // RTTS5b
-        DefaultLiveCounterPathObject(channelObject: channelObject, coreSDK: coreSDK, internalQueue: internalQueue, path: path)
+        DefaultLiveCounterPathObject(channelObject: channelObject, coreSDK: coreSDK, internalQueue: internalQueue, segments: segments)
     }
 
     internal func asPrimitive() -> any PrimitivePathObject {
         // RTTS5c
-        DefaultPrimitivePathObject(channelObject: channelObject, coreSDK: coreSDK, internalQueue: internalQueue, path: path)
+        DefaultPrimitivePathObject(channelObject: channelObject, coreSDK: coreSDK, internalQueue: internalQueue, segments: segments)
     }
 
     @discardableResult
@@ -104,8 +107,8 @@ internal class DefaultPathObject: PathObject, @unchecked Sendable {
         // and frozen, so `depth <= 0` (40003) is validated here rather than in the initializer.
         try ChannelConfigGuards.validateSubscriptionDepth(options?.depth)
 
-        // The subscription's coverage path is this object's stored path, as segments (RTPO19f).
-        let segments = PathSegments.parseStored(path)
+        // The subscription's coverage path is this object's stored segments (RTPO19f).
+        let segments = segments
 
         // The factory that builds each event's PathObject (RTO24b2b1 / RTPO19e1). Captures this
         // object's resolution context *weakly*, so the long-lived register never keeps the channel
@@ -113,11 +116,11 @@ internal class DefaultPathObject: PathObject, @unchecked Sendable {
         let channelObject = channelObject
         let coreSDK = coreSDK
         let internalQueue = internalQueue
-        let makePathObject: PathObjectSubscriptionRegister.PathObjectFactory = { [weak channelObject, weak coreSDK] joinedPath in
+        let makePathObject: PathObjectSubscriptionRegister.PathObjectFactory = { [weak channelObject, weak coreSDK] eventSegments in
             guard let channelObject, let coreSDK else {
                 return nil
             }
-            return DefaultPathObject(channelObject: channelObject, coreSDK: coreSDK, internalQueue: internalQueue, path: joinedPath)
+            return DefaultPathObject(channelObject: channelObject, coreSDK: coreSDK, internalQueue: internalQueue, segments: eventSegments)
         }
 
         // Hop onto the internal queue to register (the register is queue-confined). The returned
@@ -144,8 +147,8 @@ internal class DefaultPathObject: PathObject, @unchecked Sendable {
         // Read the root map node on the internal queue (the `nosync_` pool accessor must run there).
         let rootNode = internalQueue.ably_syncNoDeadlock { channelObject.nosync_objectsPool.root }
         var current: InternalLiveMapValue = .liveMap(rootNode)
-        // parseStored: an empty stored path is the root itself — zero segments (RTPO3b).
-        for segment in PathSegments.parseStored(path) {
+        // An empty segment list is the root itself — zero segments (RTPO3b).
+        for segment in segments {
             // RTPO3a1 — a non-map value mid-path cannot be navigated further.
             guard case let .liveMap(mapNode) = current else {
                 return nil

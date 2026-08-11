@@ -12,7 +12,8 @@ internal final class DefaultLiveCounterPathObject: DefaultPathObject, LiveCounte
 
     internal func value() throws(ARTErrorInfo) -> Double? {
         try ChannelConfigGuards.throwIfInvalidAccessApiConfiguration(coreSDK: coreSDK, internalQueue: internalQueue)
-        // Not a LiveCounter (or unresolved) -> nil.
+        // nil when the path is unresolved (RTPO7f -> RTPO3c1) or resolves to an InternalLiveMap (RTPO7e);
+        // a resolved primitive is also nil here (RTTS6b typed refinement, never RTPO7d).
         guard let resolved = try resolveValueAtCurrentPath(), case let .liveCounter(counterNode) = resolved else {
             return nil
         }

@@ -9,13 +9,14 @@ internal final class DefaultLiveMapPathObject: DefaultPathObject, LiveMapPathObj
     // MARK: - Navigation (RTPO5, RTPO6)
 
     internal func get(key: String) -> any PathObject {
-        // RTPO5c/RTPO5d — purely navigational, no resolution; returns the untyped base node (RTTS3h).
-        DefaultPathObject(channelObject: channelObject, coreSDK: coreSDK, internalQueue: internalQueue, path: PathSegments.appendKey(path, key: key))
+        // RTPO5c/RTPO5d — purely navigational, no resolution; appends the raw key (RTTS3h).
+        DefaultPathObject(channelObject: channelObject, coreSDK: coreSDK, internalQueue: internalQueue, segments: segments + [key])
     }
 
     internal func at(path: String) -> any PathObject {
-        // RTPO6b/RTPO6c/RTPO6d — purely navigational, dot-delimited with backslash-escaped dots.
-        DefaultPathObject(channelObject: channelObject, coreSDK: coreSDK, internalQueue: internalQueue, path: PathSegments.appendPath(self.path, subPath: path))
+        // RTPO6b/RTPO6c/RTPO6d — purely navigational; parse the dot-delimited sub-path (backslash-escaped
+        // dots honoured) and append its segments.
+        DefaultPathObject(channelObject: channelObject, coreSDK: coreSDK, internalQueue: internalQueue, segments: segments + PathSegments.parse(path))
     }
 
     // MARK: - Reads (RTPO9, RTPO10, RTPO11, RTPO12)

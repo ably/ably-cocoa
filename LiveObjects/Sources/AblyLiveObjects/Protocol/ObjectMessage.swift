@@ -605,8 +605,8 @@ internal extension ProtocolTypes.ObjectsMapEntry {
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal extension ProtocolTypes.ObjectData {
     /// Converts internal (decoded) object data to the public ``ObjectData`` (OD2). The public shape
-    /// exposes decoded binary directly and has no `encoding`; `number` is a `Double` and `json` is a
-    /// raw JSON string.
+    /// exposes decoded binary directly and has no `encoding`; `number` is a `Double` and `json` is the
+    /// decoded `JSONValue` (the internal field is already the OD5-decoded object/array).
     func toPublicObjectData() -> ObjectData {
         .init(
             objectId: objectId, // OD2a
@@ -615,7 +615,7 @@ internal extension ProtocolTypes.ObjectData {
             bytes: bytes, // OD2d
             number: number?.doubleValue, // OD2e
             string: string, // OD2f
-            json: json?.toJSONString, // OD2g
+            json: json?.toJSONValue, // OD2g — pass the decoded value through, no re-serialization
         )
     }
 }

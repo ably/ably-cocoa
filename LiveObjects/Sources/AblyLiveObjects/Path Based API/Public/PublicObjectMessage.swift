@@ -253,8 +253,9 @@ public struct ObjectData: Sendable, Equatable {
     public var number: Double?
     /// A string value. Spec: `OD2f`.
     public var string: String?
-    /// A JSON-encoded value. Spec: `OD2g`.
-    public var json: String?
+    /// The decoded JSON value (a JSON object or array), per `OD2g`. The wire carries this as a
+    /// JSON-encoded string, decoded per `OD5`. Spec: `OD2g`.
+    public var json: JSONValue?
 
     public init(
         objectId: String? = nil,
@@ -263,7 +264,7 @@ public struct ObjectData: Sendable, Equatable {
         bytes: Data? = nil,
         number: Double? = nil,
         string: String? = nil,
-        json: String? = nil
+        json: JSONValue? = nil
     ) {
         self.objectId = objectId
         self.encoding = encoding

@@ -41,7 +41,7 @@ final class PathObjectTests {
         let pool = ObjectsUTS.standardPool(internalQueue: internalQueue, prefsBackRef: prefsBackRef)
         let realtimeObjects = ObjectsUTSSeededRealtimeObjects(pool: pool, internalQueue: internalQueue)
         let coreSDK = ObjectsUTSCoreSDK(channelState: channelState)
-        return DefaultLiveMapPathObject(channelObject: realtimeObjects, coreSDK: coreSDK, internalQueue: internalQueue, path: "")
+        return DefaultLiveMapPathObject(channelObject: realtimeObjects, coreSDK: coreSDK, internalQueue: internalQueue, segments: [])
     }
 
     // MARK: - RTPO4: path() returns dot-delimited string

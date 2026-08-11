@@ -105,7 +105,7 @@ final class RealtimeObjectTests {
         let internalQueue = ObjectsUTS.createInternalQueue()
         let proxied = makeProxied(internalQueue: internalQueue)
         let coreSDK = ObjectsUTSCoreSDK(channelState: channelState)
-        return DefaultLiveMapPathObject(channelObject: proxied, coreSDK: coreSDK, internalQueue: internalQueue, path: "")
+        return DefaultLiveMapPathObject(channelObject: proxied, coreSDK: coreSDK, internalQueue: internalQueue, segments: [])
     }
 
     /// Awaits one hop on `.main` so any status/get callbacks dispatched to `userCallbackQueue` are

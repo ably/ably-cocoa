@@ -110,14 +110,46 @@ internal final class InternalDefaultLiveMap: Sendable {
         try entries(coreSDK: coreSDK, delegate: delegate).map(\.value)
     }
 
-    internal func set(key: String, value: InternalLiveMapValue, coreSDK: CoreSDK, realtimeObjects: any InternalRealtimeObjectsProtocol) async throws(ARTErrorInfo) {
+    /// Implements `InternalLiveMap#set` (RTLM20). A `LiveCounter`/`LiveMap` blueprint `value` is
+    /// evaluated (RTLM20e7g1) into the ordered `*_CREATE` `ObjectMessages` that create it (and any
+    /// nested objects), and the `MAP_SET` is published together with those creates in a single
+    /// `publishAndApply` array (RTLM20h1) so the whole graph is committed atomically. A primitive
+    /// `value` publishes the `MAP_SET` alone (RTLM20h2). The pooled objects for a blueprint are created
+    /// by the ACK-time local apply of the batched creates (RTLM7g1/RTO6), exactly as for remote creates.
+    internal func set(key: String, value: LiveMapValue, coreSDK: CoreSDK, realtimeObjects: any InternalRealtimeObjectsProtocol) async throws(ARTErrorInfo) {
+        // RTO26: check the write-API channel-state precondition up front, before any evaluation
+        // (which may fetch server time) or publish. Fail fast, matching `RealtimeObjects.createMap`.
+        try mutableStateMutex.withSync { _ throws(ARTErrorInfo) in
+            try coreSDK.nosync_validateChannelStateForWriteAPI(operationDescription: "LiveMap.set")
+        }
+
+        // RTLM20e7: resolve the MAP_SET value's ObjectData and any preceding *_CREATE messages.
+        let mapSetValue: ProtocolTypes.ObjectData
+        let createMessages: [ProtocolTypes.OutboundObjectMessage]
+        switch value {
+        case let .primitive(primitive):
+            // RTLM20e7b–f: a primitive maps 1:1 onto its ObjectData; no creates are needed.
+            mapSetValue = InternalLiveMapValue(primitive).nosync_toObjectData
+            createMessages = []
+        case let .liveCounter(blueprint):
+            // RTLM20e7g1: evaluate the LiveCounter into its COUNTER_CREATE.
+            let evaluated = try await ObjectCreationHelpers.evaluate(liveCounter: blueprint, coreSDK: coreSDK, internalQueue: mutableStateMutex.dispatchQueue)
+            // RTLM20e7g2: reference the created object by its objectId.
+            mapSetValue = .init(objectId: evaluated.objectId)
+            createMessages = evaluated.messages
+        case let .liveMap(blueprint):
+            // RTLM20e7g1: evaluate the LiveMap into its (depth-first) MAP_CREATE messages.
+            let evaluated = try await ObjectCreationHelpers.evaluate(liveMap: blueprint, coreSDK: coreSDK, internalQueue: mutableStateMutex.dispatchQueue)
+            // RTLM20e7g2: reference the created object by the final message's objectId.
+            mapSetValue = .init(objectId: evaluated.objectId)
+            createMessages = evaluated.messages
+        }
+
         try await withCheckedContinuation { (continuation: CheckedContinuation<Result<Void, ARTErrorInfo>, _>) in
             do throws(ARTErrorInfo) {
                 try mutableStateMutex.withSync { mutableState throws(ARTErrorInfo) in
-                    // RTO26
-                    try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: "LiveMap.set")
-
-                    let objectMessage = ProtocolTypes.OutboundObjectMessage(
+                    // RTLM20e: the MAP_SET ObjectMessage
+                    let mapSetMessage = ProtocolTypes.OutboundObjectMessage(
                         operation: .init(
                             // RTLM20e2
                             action: .known(.mapSet),
@@ -127,13 +159,14 @@ internal final class InternalDefaultLiveMap: Sendable {
                                 // RTLM20e6
                                 key: key,
                                 // RTLM20e7
-                                value: value.nosync_toObjectData,
+                                value: mapSetValue,
                             ),
                         ),
                     )
 
-                    // RTLM20h
-                    realtimeObjects.nosync_publishAndApply(objectMessages: [objectMessage], coreSDK: coreSDK) { result in
+                    // RTLM20h: publish the *_CREATE messages (RTLM20h1) — empty for a primitive
+                    // (RTLM20h2) — followed by the MAP_SET, as one atomic array.
+                    realtimeObjects.nosync_publishAndApply(objectMessages: createMessages + [mapSetMessage], coreSDK: coreSDK) { result in
                         continuation.resume(returning: result)
                     }
                 }
@@ -148,7 +181,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             do throws(ARTErrorInfo) {
                 try mutableStateMutex.withSync { mutableState throws(ARTErrorInfo) in
                     // RTO26
-                    try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed, .suspended], operationDescription: "LiveMap.remove")
+                    try coreSDK.nosync_validateChannelStateForWriteAPI(operationDescription: "LiveMap.remove")
 
                     let objectMessage = ProtocolTypes.OutboundObjectMessage(
                         operation: .init(
@@ -1010,7 +1043,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         /// Returns the value associated with a given key, following RTLM5d specification.
         internal func nosync_get(key: String, coreSDK: CoreSDK, objectsPool: ObjectsPool) throws(ARTErrorInfo) -> InternalLiveMapValue? {
             // RTO25: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
-            try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveMap.get")
+            try coreSDK.nosync_validateChannelStateForAccessAPI(operationDescription: "LiveMap.get")
 
             // RTLM5e - Return nil if self is tombstone
             if liveObjectMutableState.isTombstone {
@@ -1028,7 +1061,7 @@ internal final class InternalDefaultLiveMap: Sendable {
 
         internal func nosync_size(coreSDK: CoreSDK, objectsPool: ObjectsPool) throws(ARTErrorInfo) -> Int {
             // RTO25: If the channel is in the DETACHED or FAILED state, the library should throw an ErrorInfo error with statusCode 400 and code 90001
-            try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveMap.size")
+            try coreSDK.nosync_validateChannelStateForAccessAPI(operationDescription: "LiveMap.size")
 
             // RTLM10d: Returns the number of non-tombstoned entries (per RTLM14) in the internal data map
             return data.values.count { entry in
@@ -1038,7 +1071,7 @@ internal final class InternalDefaultLiveMap: Sendable {
 
         internal func nosync_entries(coreSDK: CoreSDK, objectsPool: ObjectsPool) throws(ARTErrorInfo) -> [(key: String, value: InternalLiveMapValue)] {
             // RTO25: If the channel is in the DETACHED or FAILED state, the library should throw an ErrorInfo error with statusCode 400 and code 90001
-            try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveMap.entries")
+            try coreSDK.nosync_validateChannelStateForAccessAPI(operationDescription: "LiveMap.entries")
 
             // RTLM11d: Returns key-value pairs from the internal data map
             // RTLM11d1: Pairs with tombstoned entries (per RTLM14) are not returned

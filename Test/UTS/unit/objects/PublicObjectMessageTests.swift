@@ -230,8 +230,8 @@ final class PublicObjectMessageTests {
 
     // MARK: - Public payload / data type semantics
 
-    // OD2: `ObjectData` holds typed, decoded values. DEV-6: `number` is `Double?`, `json` is a raw
-    // `String?`, and `encoding` is a Swift-only field with no wire/Java counterpart.
+    // OD2: `ObjectData` holds typed, decoded values. DEV-6: `number` is `Double?`, `json` is the
+    // decoded `JSONValue?` (OD2g), and `encoding` is a Swift-only field with no wire/Java counterpart.
     @Test
     func objectData_holds_typed_values() {
         let data = ObjectData(
@@ -241,7 +241,7 @@ final class PublicObjectMessageTests {
             bytes: Data([1, 2, 3, 4]),
             number: 3.5,
             string: "hello",
-            json: #"{"a":1}"#,
+            json: .object(["a": 1]),
         )
 
         #expect(data.objectId == "map:ref@1") // OD2a
@@ -250,7 +250,7 @@ final class PublicObjectMessageTests {
         #expect(data.bytes == Data([1, 2, 3, 4])) // OD2d
         #expect(data.number == 3.5) // OD2e (Double; DEV-6)
         #expect(data.string == "hello") // OD2f
-        #expect(data.json == #"{"a":1}"#) // OD2g (raw String; DEV-6)
+        #expect(data.json == .object(["a": 1])) // OD2g (decoded JSONValue)
 
         // All fields are optional and default to nil.
         let empty = ObjectData()

@@ -59,10 +59,11 @@ assert the cocoa shape. Deviations (defined in `PORT_KOTLIN_TO_SWIFT/05_DEVIATIO
   Unknown wire codes are held internally by `WireEnum.unknown` and never surface publicly. Asserted by
   `DEV5_object_operation_action_seven_distinct_cases`.
 - **DEV-6** — `ObjectData` shape. The public `ObjectData` adds a Swift-only `encoding: String?` (no
-  wire/Java counterpart), exposes `json` as a raw `String?` (vs Java's parsed `JsonElement`), and uses
-  non-optional `Double` for `CounterCreate.count` / `CounterInc.number` (`number` on `ObjectData` is
-  `Double?`). Asserted by `objectData_holds_typed_values`, `PAOOP2_counter_inc_only_relevant_field`
-  and `PAOOP2_counter_create_with_count`.
+  wire/Java counterpart), exposes `json` as a decoded `JSONValue?` (OD2g — the wire's JSON-encoded
+  string decoded per OD5, matching Java's parsed `JsonElement`), and uses non-optional `Double` for
+  `CounterCreate.count` / `CounterInc.number` (`number` on `ObjectData` is `Double?`). Asserted by
+  `objectData_holds_typed_values`, `PAOOP2_counter_inc_only_relevant_field` and
+  `PAOOP2_counter_create_with_count`.
 
 **Scope note:** the source spec's cases all drive the wire→public conversion
 (`PublicObjectMessage.fromObjectMessage` / `PublicObjectOperation.fromObjectOperation`, i.e. cocoa's
@@ -247,20 +248,9 @@ built for them:
 - **`instance.md`**: RTINS16g (subscription follows identity after a `MAP_SET` repoints `root.score` —
   needs a multi-object graph plus the mock-WS send path) and RTINS16h (subscribe has no side effects on
   channel state — needs a real channel/connection).
-- **`value_types.md`**: RTLMV4d1/RTLMV4d2/RTLMV4k (nested depth-first evaluation) — nested blueprint
-  entries are materialised by the async `createMap`/`createCounter` pipeline (concrete
-  `InternalDefaultRealtimeObjects` + `publishAndApply`), not the pure `ObjectCreationHelpers` seam. Also
-  RTLCV4a finiteness (NaN/Infinity → 40003): counter initial-value finiteness is validated in
-  `InternalDefaultRealtimeObjects.createCounter` (RTO12f1), above the pure evaluate seam.
 - **`internal_live_counter_api.md`**: the `MockWebSocket`-based variants of RTLC12/RTLC13 (`captured_messages`
   via the OBJECT publish path) and RTLC12 `increment-applies-locally` — the published message is asserted
   through the `publishAndApply` mock instead; the local-apply value read is out of unit scope.
-- **`internal_live_map_api.md`**: RTLM20e7g (`set` with a `LiveCounter` / `LiveMap`) and RTLM20h1 (nested
-  `LiveMap` containing a `LiveCounter`) — setting a blueprint value materialises it via
-  `RealtimeObjects.createCounter`/`createMap`, which `DefaultLiveMapInstance` narrows to the concrete
-  `InternalDefaultRealtimeObjects` (a `preconditionFailure` otherwise); those publish through the
-  mock-WS OBJECT capture path. The seeded double cannot drive them. Primitive value types
-  (number/boolean/json/bytes) do not need the pipeline and are ported.
 
 ## Untranslated Cases (pending authoring)
 

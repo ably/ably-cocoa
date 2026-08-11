@@ -60,7 +60,7 @@ final class PathObjectSubscribeTests {
     }
 
     private static func rootPath(_ f: Fixture) -> DefaultLiveMapPathObject {
-        DefaultLiveMapPathObject(channelObject: f.engine, coreSDK: f.coreSDK, internalQueue: f.internalQueue, path: "")
+        DefaultLiveMapPathObject(channelObject: f.engine, coreSDK: f.coreSDK, internalQueue: f.internalQueue, segments: [])
     }
 
     private static func makeCounter(objectID: String, data: Double = 0, _ f: Fixture) -> InternalDefaultLiveCounter {

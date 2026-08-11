@@ -8,7 +8,7 @@ import Foundation
 ///
 /// Because a primitive has no backing internal node (and hence no `DispatchQueueMutex`), the RTO25b
 /// access-precondition check is run by hopping onto the shared `internalQueue` and reusing the same
-/// `CoreSDK.nosync_validateChannelState` check that the map/counter node accessors run.
+/// `CoreSDK.nosync_validateChannelStateForAccessAPI` check that the map/counter node accessors run.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal final class DefaultPrimitiveInstance: PrimitiveInstance {
     private let primitive: Primitive
@@ -54,7 +54,7 @@ internal final class DefaultPrimitiveInstance: PrimitiveInstance {
         let result: Result<Void, ARTErrorInfo> = internalQueue.ably_syncNoDeadlock {
             do throws(ARTErrorInfo) {
                 // RTO25b
-                try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed], operationDescription: "PrimitiveInstance")
+                try coreSDK.nosync_validateChannelStateForAccessAPI(operationDescription: "PrimitiveInstance")
                 return .success(())
             } catch {
                 return .failure(error)

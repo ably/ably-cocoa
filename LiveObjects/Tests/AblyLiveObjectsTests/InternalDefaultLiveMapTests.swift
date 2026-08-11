@@ -1806,7 +1806,7 @@ struct InternalDefaultLiveMapTests {
             let realtimeObjects = MockRealtimeObjects()
 
             await #expect {
-                try await map.set(key: "test", value: .string("value"), coreSDK: coreSDK, realtimeObjects: realtimeObjects)
+                try await map.set(key: "test", value: .primitive(.string("value")), coreSDK: coreSDK, realtimeObjects: realtimeObjects)
             } throws: { error in
                 guard let errorInfo = error as? ARTErrorInfo else {
                     return false
@@ -1816,48 +1816,48 @@ struct InternalDefaultLiveMapTests {
             }
         }
 
+        // Primitive value types map 1:1 onto their MAP_SET `ObjectData` and publish a single-element
+        // array (RTLM20h2). Blueprint value types (RTLM20e7g / RTLM20h1) publish the `*_CREATE` messages
+        // ahead of the MAP_SET; that atomic-array behaviour is covered by `DefaultInstanceTests`
+        // (`mapSetCounterBlueprintPublishesCreateThenSet` etc.) and the UTS `InternalLiveMapApiTests`.
         // @spec RTLM20e
         // @specUntested RTLM20e1 - Not needed with Swift's type system
         // @spec RTLM20e2
         // @spec RTLM20e3
         // @spec RTLM20e6
-        // @spec RTLM20e7g
         // @spec RTLM20e7b
         // @spec RTLM20e7c
         // @spec RTLM20e7d
         // @spec RTLM20e7e
         // @spec RTLM20e7f
-        // @spec RTLM20h
+        // @spec RTLM20h2
         @Test(arguments: [
-            // RTLM20e7g
-            (value: { @Sendable internalQueue in .liveMap(.createZeroValued(objectID: "map:test@123", logger: TestLogger(), internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())) }, expectedData: .init(objectId: "map:test@123")),
-            (value: { @Sendable internalQueue in .liveCounter(.createZeroValued(objectID: "counter:test@123", logger: TestLogger(), internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())) }, expectedData: .init(objectId: "counter:test@123")),
             // RTLM20e7b
-            (value: { @Sendable _ in .jsonArray(["test"]) }, expectedData: .init(json: .array(["test"]))),
-            (value: { @Sendable _ in .jsonObject(["foo": "bar"]) }, expectedData: .init(json: .object(["foo": "bar"]))),
+            (value: LiveMapValue.primitive(.jsonArray(["test"])), expectedData: .init(json: .array(["test"]))),
+            (value: .primitive(.jsonObject(["foo": "bar"])), expectedData: .init(json: .object(["foo": "bar"]))),
             // RTLM20e7c
-            (value: { @Sendable _ in .string("test") }, expectedData: .init(string: "test")),
+            (value: .primitive(.string("test")), expectedData: .init(string: "test")),
             // RTLM20e7d
-            (value: { @Sendable _ in .number(42.5) }, expectedData: .init(number: NSNumber(value: 42.5))),
+            (value: .primitive(.number(42.5)), expectedData: .init(number: NSNumber(value: 42.5))),
             // RTLM20e7e
-            (value: { @Sendable _ in .bool(true) }, expectedData: .init(boolean: true)),
+            (value: .primitive(.bool(true)), expectedData: .init(boolean: true)),
             // RTLM20e7f
-            (value: { @Sendable _ in .data(Data([0x01, 0x02])) }, expectedData: .init(bytes: Data([0x01, 0x02]))),
-        ] as [(value: @Sendable (DispatchQueue) -> InternalLiveMapValue, expectedData: ProtocolTypes.ObjectData)])
-        func publishesCorrectObjectMessageForDifferentValueTypes(value: @escaping @Sendable (DispatchQueue) -> InternalLiveMapValue, expectedData: ProtocolTypes.ObjectData) async throws {
+            (value: .primitive(.data(Data([0x01, 0x02]))), expectedData: .init(bytes: Data([0x01, 0x02]))),
+        ] as [(value: LiveMapValue, expectedData: ProtocolTypes.ObjectData)])
+        func publishesCorrectObjectMessageForDifferentValueTypes(value: LiveMapValue, expectedData: ProtocolTypes.ObjectData) async throws {
             let logger = TestLogger()
             let internalQueue = TestFactories.createInternalQueue()
             let map = InternalDefaultLiveMap.createZeroValued(objectID: "map:test@123", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
             let realtimeObjects = MockRealtimeObjects()
 
-            var publishedMessage: ProtocolTypes.OutboundObjectMessage?
+            var publishedMessages: [ProtocolTypes.OutboundObjectMessage]?
             realtimeObjects.setPublishAndApplyHandler { messages in
-                publishedMessage = messages.first
+                publishedMessages = messages
                 return .success(())
             }
 
-            try await map.set(key: "testKey", value: value(internalQueue), coreSDK: coreSDK, realtimeObjects: realtimeObjects)
+            try await map.set(key: "testKey", value: value, coreSDK: coreSDK, realtimeObjects: realtimeObjects)
 
             let expectedMessage = ProtocolTypes.OutboundObjectMessage(
                 operation: ProtocolTypes.ObjectOperation(
@@ -1873,9 +1873,10 @@ struct InternalDefaultLiveMapTests {
                     ),
                 ),
             )
-            // RTLM20h
-            let message = try #require(publishedMessage)
-            #expect(message == expectedMessage)
+            // RTLM20h2: a primitive publishes the MAP_SET as a single-element array
+            let messages = try #require(publishedMessages)
+            #expect(messages.count == 1)
+            #expect(messages.first == expectedMessage)
         }
 
         @Test
@@ -1891,7 +1892,7 @@ struct InternalDefaultLiveMapTests {
             }
 
             await #expect {
-                try await map.set(key: "testKey", value: .string("testValue"), coreSDK: coreSDK, realtimeObjects: realtimeObjects)
+                try await map.set(key: "testKey", value: .primitive(.string("testValue")), coreSDK: coreSDK, realtimeObjects: realtimeObjects)
             } throws: { error in
                 guard let errorInfo = error as? ARTErrorInfo else {
                     return false

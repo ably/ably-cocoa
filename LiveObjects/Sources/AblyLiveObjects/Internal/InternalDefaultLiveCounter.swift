@@ -77,10 +77,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
                     }
 
                     // RTO26
-                    try coreSDK.nosync_validateChannelState(
-                        notIn: [.detached, .failed, .suspended],
-                        operationDescription: "LiveCounter.increment",
-                    )
+                    try coreSDK.nosync_validateChannelStateForWriteAPI(operationDescription: "LiveCounter.increment")
 
                     let objectMessage = ProtocolTypes.OutboundObjectMessage(
                         operation: .init(
@@ -484,7 +481,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
 
         internal func nosync_value(coreSDK: CoreSDK) throws(ARTErrorInfo) -> Double {
             // RTO25: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
-            try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveCounter.value")
+            try coreSDK.nosync_validateChannelStateForAccessAPI(operationDescription: "LiveCounter.value")
 
             // RTLC5c
             return data

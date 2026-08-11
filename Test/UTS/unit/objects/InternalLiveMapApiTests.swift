@@ -28,12 +28,12 @@ import Testing
 /// **raw `Data`**; the base64 encoding is applied at wire (JSON) serialization, below this layer. The
 /// port asserts the raw `Data([1,2,3])`.
 ///
+/// ## Blueprint value types (RTLM20e7g / RTLM20h1)
+/// Setting a `LiveCounter`/`LiveMap` blueprint now evaluates it into its `*_CREATE` `ObjectMessages`
+/// and publishes them atomically with the `MAP_SET` in one `publishAndApply` array (RTLM20h1). The
+/// seeded double captures the exact array, so these are ported directly against `capturedMessages`.
+///
 /// ## Skipped — out of UNIT scope (need the concrete engine's async create pipeline / mock-WS)
-/// - **RTLM20e7g (set with LiveCounter / LiveMap), RTLM20h1 (nested LiveMap + LiveCounter):** setting a
-///   blueprint value materialises it via `RealtimeObjects.createCounter`/`createMap`, which
-///   `DefaultLiveMapInstance` narrows to the concrete `InternalDefaultRealtimeObjects` (a
-///   `preconditionFailure` otherwise). Those publish through the mock-WS OBJECT capture path — out of
-///   scope; the seeded double cannot drive them.
 /// - **RTLM20 set-invalid-values-table (function/undefined/symbol -> 40013):** `LiveMapValue` is a
 ///   closed enum, so a function / undefined / symbol value is compile-time-unrepresentable (as for
 ///   value_types.md RTLMV4c, DEV in deviations.md).
@@ -49,7 +49,7 @@ final class InternalLiveMapApiTests {
         let pool = ObjectsUTS.standardPool(internalQueue: internalQueue)
         let realtimeObjects = ObjectsUTSSeededRealtimeObjects(pool: pool, internalQueue: internalQueue)
         let coreSDK = ObjectsUTSCoreSDK()
-        let root = DefaultLiveMapPathObject(channelObject: realtimeObjects, coreSDK: coreSDK, internalQueue: internalQueue, path: "")
+        let root = DefaultLiveMapPathObject(channelObject: realtimeObjects, coreSDK: coreSDK, internalQueue: internalQueue, segments: [])
         return (root, realtimeObjects)
     }
 
@@ -151,6 +151,63 @@ final class InternalLiveMapApiTests {
 
         let messages = try #require(fixture.realtimeObjects.capturedMessages)
         #expect(messages[0].operation?.mapSet?.value?.bytes == Data([1, 2, 3]))
+    }
+
+    // MARK: - RTLM20e7g: set() with a value-type blueprint publishes CREATE(s) + MAP_SET atomically
+
+    // UTS: objects/unit/RTLM20e7g/set-counter-value-type-0 — RTLM20e7g1/g2/h1 (COUNTER_CREATE then MAP_SET,
+    // value.objectId chained to the created counter).
+    @Test
+    func RTLM20e7g_set_counter_value_type() async throws {
+        let fixture = Self.makeFixture()
+        try await fixture.root.set(key: "new_counter", value: .liveCounter(.create(initialCount: 50)))
+
+        let messages = try #require(fixture.realtimeObjects.capturedMessages)
+        #expect(messages.count == 2) // RTLM20h1
+        #expect(messages[0].operation?.action == .known(.counterCreate)) // RTLM20e7g1
+        #expect(messages[0].operation?.objectId.hasPrefix("counter:") == true)
+        #expect(messages[1].operation?.action == .known(.mapSet))
+        // RTLM20e7g2: the MAP_SET references the created counter's objectId
+        #expect(messages[1].operation?.mapSet?.value?.objectId == messages[0].operation?.objectId)
+    }
+
+    // UTS: objects/unit/RTLM20e7g/set-map-value-type-0 — RTLM20e7g1/g2/h1 (MAP_CREATE then MAP_SET).
+    @Test
+    func RTLM20e7g_set_map_value_type() async throws {
+        let fixture = Self.makeFixture()
+        try await fixture.root.set(key: "nested_map", value: .liveMap(.create(entries: ["key1": "value1"])))
+
+        let messages = try #require(fixture.realtimeObjects.capturedMessages)
+        #expect(messages.count == 2) // RTLM20h1
+        #expect(messages[0].operation?.action == .known(.mapCreate)) // RTLM20e7g1
+        #expect(messages[0].operation?.objectId.hasPrefix("map:") == true)
+        #expect(messages[1].operation?.action == .known(.mapSet))
+        #expect(messages[1].operation?.mapSet?.key == "nested_map")
+        // RTLM20e7g2: the MAP_SET references the final message's (the created map's) objectId
+        #expect(messages[1].operation?.mapSet?.value?.objectId == messages[0].operation?.objectId)
+    }
+
+    // UTS: objects/unit/RTLM20h1/set-nested-value-types-0 — RTLM20h1/RTLMV4d1/RTLMV4d2. A LiveMap
+    // containing a nested LiveCounter: all *_CREATE messages appear before the MAP_SET, depth-first
+    // (COUNTER_CREATE, MAP_CREATE, then the root MAP_SET).
+    @Test
+    func RTLM20h1_set_nested_value_types() async throws {
+        let fixture = Self.makeFixture()
+        try await fixture.root.set(key: "stats", value: .liveMap(.create(entries: [
+            "count": .liveCounter(.create(initialCount: 0)),
+            "label": "test",
+        ])))
+
+        let messages = try #require(fixture.realtimeObjects.capturedMessages)
+        #expect(messages.count == 3) // RTLM20h1: COUNTER_CREATE, MAP_CREATE, MAP_SET
+        #expect(messages[0].operation?.action == .known(.counterCreate)) // RTLMV4d1
+        #expect(messages[0].operation?.objectId.hasPrefix("counter:") == true)
+        #expect(messages[1].operation?.action == .known(.mapCreate)) // RTLMV4d2 (the "stats" map)
+        #expect(messages[1].operation?.objectId.hasPrefix("map:") == true)
+        #expect(messages[2].operation?.action == .known(.mapSet))
+        #expect(messages[2].operation?.mapSet?.key == "stats")
+        // RTLM20e7g2: the MAP_SET references the "stats" map's objectId (the final CREATE message)
+        #expect(messages[2].operation?.mapSet?.value?.objectId == messages[1].operation?.objectId)
     }
 
     // MARK: - RTLM21: remove() sends MAP_REMOVE message

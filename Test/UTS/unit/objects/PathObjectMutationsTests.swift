@@ -39,7 +39,7 @@ final class PathObjectMutationsTests {
         let pool = ObjectsUTS.standardPool(internalQueue: internalQueue)
         let realtimeObjects = ObjectsUTSSeededRealtimeObjects(pool: pool, internalQueue: internalQueue)
         let coreSDK = ObjectsUTSCoreSDK(channelState: channelState)
-        let root = DefaultLiveMapPathObject(channelObject: realtimeObjects, coreSDK: coreSDK, internalQueue: internalQueue, path: "")
+        let root = DefaultLiveMapPathObject(channelObject: realtimeObjects, coreSDK: coreSDK, internalQueue: internalQueue, segments: [])
         return (root, realtimeObjects)
     }
 

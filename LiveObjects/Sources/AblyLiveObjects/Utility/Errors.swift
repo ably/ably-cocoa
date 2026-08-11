@@ -14,7 +14,7 @@ internal enum LiveObjectsError {
     case publishAndApplyFailedChannelStateChanged(channelState: _AblyPluginSupportPrivate.RealtimeChannelState, reason: ARTErrorInfo?)
     /// RTO23c1: The channel entered a non-`ATTACHED` state whilst a `get()` call was waiting for objects sync to complete.
     case getFailedChannelStateChanged(channelState: _AblyPluginSupportPrivate.RealtimeChannelState, reason: ARTErrorInfo?)
-    /// RTO11h3d, RTO12h3d: A newly created object was not found in the pool after `publishAndApply`.
+    /// RTLMV3, RTLCV3: A newly created object was not found in the pool after `publishAndApply`.
     case newlyCreatedObjectNotInPool(objectID: String)
     /// RTO15d: The total size of the `ObjectMessage`s to be published (calculated per OM3) exceeds the connection's `maxMessageSize`.
     case maxMessageSizeExceeded(size: Int, maxSize: Int)

@@ -330,42 +330,44 @@ enum ObjectsUTS {
         [ObjectCreationHelpers.creationOperationForLiveCounter(count: blueprint.count, timestamp: evaluationTimestamp).objectMessage]
     }
 
-    /// Evaluates a ``LiveMap`` blueprint (primitive entries only) into the outbound `ObjectMessage`(s).
-    ///
-    /// The cocoa evaluation seam is `ObjectCreationHelpers.nosync_creationOperationForLiveMap(...)`. The
-    /// blueprint's internal `entries` (RTLMV2a) are converted to `InternalLiveMapValue`s and fed to it.
-    /// Nested `LiveMap`/`LiveCounter` blueprint entries are out of unit scope (they require the async
-    /// materialisation pipeline) and are rejected here.
+    /// Evaluates a ``LiveMap`` blueprint into the outbound `ObjectMessage`(s) it generates, mirroring the
+    /// spec's `evaluate(vt)` (RTLMV4). Recurses for nested `LiveMap`/`LiveCounter` entries, producing the
+    /// depth-first ordered array (RTLMV4k). Uses the shared pure composition builders in
+    /// `ObjectCreationHelpers` directly with a fixed `evaluationTimestamp` (RTO14), so it stays
+    /// synchronous — unlike the production `ObjectCreationHelpers.evaluate(liveMap:)`, which fetches a
+    /// per-object server time via the async `CoreSDK` seam.
     static func evaluate(map blueprint: LiveMap, internalQueue: DispatchQueue) -> [ProtocolTypes.OutboundObjectMessage] {
-        let entries = (blueprint.entries ?? [:]).mapValues { internalValue(from: $0) }
-        let operation = internalQueue.ably_syncNoDeadlock {
-            ObjectCreationHelpers.nosync_creationOperationForLiveMap(entries: entries, timestamp: evaluationTimestamp)
+        internalQueue.ably_syncNoDeadlock {
+            evaluateMap(blueprint).messages
         }
-        return [operation.objectMessage]
     }
 
-    /// 1:1 mapping of a public primitive ``LiveMapValue`` onto its ``InternalLiveMapValue``, mirroring
-    /// `DefaultLiveMapInstance`'s (private) `internalValue(from:)`. Blueprint entries are unsupported.
-    private static func internalValue(from value: LiveMapValue) -> InternalLiveMapValue {
-        switch value {
-        case let .primitive(primitive):
-            switch primitive {
-            case let .string(v):
-                .string(v)
-            case let .number(v):
-                .number(v)
-            case let .bool(v):
-                .bool(v)
-            case let .data(v):
-                .data(v)
-            case let .jsonArray(v):
-                .jsonArray(v)
-            case let .jsonObject(v):
-                .jsonObject(v)
+    /// Recursive synchronous evaluation core for ``evaluate(map:internalQueue:)``. Returns the ordered
+    /// `*_CREATE` messages (RTLMV4k) and the objectId of the map this blueprint represents (the final
+    /// message's objectId, RTLMV4d2). Must be called on the internal queue (`nosync_toObjectData`).
+    private static func evaluateMap(_ blueprint: LiveMap) -> (messages: [ProtocolTypes.OutboundObjectMessage], objectId: String) {
+        var nested: [ProtocolTypes.OutboundObjectMessage] = []
+        var entries: [String: ProtocolTypes.ObjectData] = [:]
+        for (key, value) in blueprint.entries ?? [:] {
+            switch value {
+            case let .primitive(primitive):
+                // RTLMV4d3–d7
+                entries[key] = InternalLiveMapValue(primitive).nosync_toObjectData
+            case let .liveCounter(childBlueprint):
+                // RTLMV4d1
+                let operation = ObjectCreationHelpers.creationOperationForLiveCounter(count: childBlueprint.count, timestamp: evaluationTimestamp)
+                nested.append(operation.objectMessage)
+                entries[key] = .init(objectId: operation.objectID)
+            case let .liveMap(childBlueprint):
+                // RTLMV4d2
+                let child = evaluateMap(childBlueprint)
+                nested.append(contentsOf: child.messages)
+                entries[key] = .init(objectId: child.objectId)
             }
-        case .liveMap, .liveCounter:
-            preconditionFailure("Nested LiveMap/LiveCounter blueprint evaluation is out of UNIT scope")
         }
+        let operation = ObjectCreationHelpers.creationOperationForLiveMap(entries: entries, timestamp: evaluationTimestamp)
+        // RTLMV4k: nested creates depth-first, then this map's MAP_CREATE
+        return (nested + [operation.objectMessage], operation.objectID)
     }
 
     // MARK: Inbound message builders (subscribe ports; `mock_ws.send_to_client` stand-in)

@@ -12,6 +12,27 @@ internal enum InternalLiveMapValue: Sendable, Equatable {
     case liveMap(InternalDefaultLiveMap)
     case liveCounter(InternalDefaultLiveCounter)
 
+    // MARK: - Construction from a public primitive
+
+    /// 1:1 mapping of a public ``Primitive`` onto the internal representation. Used by the RTLM20e7
+    /// `MAP_SET` value conversion and the RTLMV4d3–d7 blueprint-entry conversion.
+    internal init(_ primitive: Primitive) {
+        switch primitive {
+        case let .string(value):
+            self = .string(value)
+        case let .number(value):
+            self = .number(value)
+        case let .bool(value):
+            self = .bool(value)
+        case let .data(value):
+            self = .data(value)
+        case let .jsonArray(value):
+            self = .jsonArray(value)
+        case let .jsonObject(value):
+            self = .jsonObject(value)
+        }
+    }
+
     // MARK: - Representation in the Realtime protocol
 
     /// Converts an `InternalLiveMapValue` to the value that should be used when creating or updating a map entry in the Realtime protocol, per the rules of RTLMV4d and RTLM20e7.

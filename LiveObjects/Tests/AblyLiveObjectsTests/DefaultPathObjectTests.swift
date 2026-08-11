@@ -67,35 +67,29 @@ struct DefaultPathObjectTests {
     }
 
     private static func rootPathObject(_ fixture: (realtimeObjects: SeededRealtimeObjects, coreSDK: MockCoreSDK, internalQueue: DispatchQueue)) -> DefaultLiveMapPathObject {
-        DefaultLiveMapPathObject(channelObject: fixture.realtimeObjects, coreSDK: fixture.coreSDK, internalQueue: fixture.internalQueue, path: "")
+        DefaultLiveMapPathObject(channelObject: fixture.realtimeObjects, coreSDK: fixture.coreSDK, internalQueue: fixture.internalQueue, segments: [])
     }
 
     // MARK: - PathSegments escaping (RTPO4, RTPO6)
 
-    // @spec RTPO4b - dots inside a segment are escaped; @spec RTPO6b - parsing honours the escape
+    // @spec RTPO4b - dots inside a segment are escaped on render; @spec RTPO6b - parsing honours the escape
     @Test
-    func pathSegmentsRoundTrip() {
-        // Empty stored path is the root: zero segments (RTPO4c).
-        #expect(PathSegments.parseStored("").isEmpty)
+    func pathSegmentsEscaping() {
+        // Empty segment list renders to the empty (root) path: zero segments (RTPO4c).
         #expect(PathSegments.join([]).isEmpty)
 
-        // A dot inside a segment survives a join -> parseStored round-trip.
+        // RTPO4b: a dot inside a segment is escaped when rendered.
         #expect(PathSegments.join(["a.b", "c"]) == #"a\.b.c"#)
-        #expect(PathSegments.parseStored(#"a\.b.c"#) == ["a.b", "c"])
+        // RTPO6b: parsing honours the escaped dot.
+        #expect(PathSegments.parse(#"a\.b.c"#) == ["a.b", "c"])
 
-        // A backslash inside a segment is doubled by join and restored by parseStored (the deviation).
-        #expect(PathSegments.join([#"a\"#, "b"]) == #"a\\.b"#)
-        #expect(PathSegments.parseStored(#"a\\.b"#) == [#"a\"#, "b"])
+        // A backslash inside a segment renders as-is (only dots are escaped, ably-js `_escapePath`
+        // parity) — the stored segment is never re-parsed, so no ambiguity arises.
+        #expect(PathSegments.join([#"a\"#, "b"]) == #"a\.b"#)
 
         // User sub-path parsing: "" is one empty segment (ably-js `at("")` parity).
         #expect(PathSegments.parse("") == [""])
         #expect(PathSegments.parse("x.y") == ["x", "y"])
-
-        // appendKey escapes the raw key; appendPath parses a dot-delimited sub-path.
-        #expect(PathSegments.appendKey("root", key: "a.b") == #"root.a\.b"#)
-        #expect(PathSegments.appendPath("root", subPath: "x.y") == "root.x.y")
-        // Appending to the empty (root) base path yields just the escaped key.
-        #expect(PathSegments.appendKey("", key: "k") == "k")
     }
 
     // MARK: - Resolution & type discrimination (RTPO3, RTTS4)
@@ -146,7 +140,10 @@ struct DefaultPathObjectTests {
         let root = Self.rootPathObject(fixture)
 
         #expect(root.get(key: "a").path == "a")
-        #expect(root.get(key: "a.b").path == #"a\.b"#) // dot in key is escaped
+        #expect(root.get(key: "a.b").path == #"a\.b"#) // dot in key is escaped on render (RTPO4b)
+        // A backslash in a key is stored verbatim in the segment and rendered as-is (only dots are
+        // escaped, ably-js parity); the raw key survives navigation unambiguously.
+        #expect(root.get(key: #"a\"#).path == #"a\"#)
         #expect(root.at(path: "x.y").path == "x.y")
         #expect(root.get(key: "a").asLiveMap().at(path: "b.c").path == "a.b.c")
     }

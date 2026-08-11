@@ -16,12 +16,14 @@ import Testing
 /// ## Cocoa evaluation seam (DEV-VT-1)
 /// The spec models `evaluate(vt)` as a method on the blueprint returning `ObjectMessage`s. Cocoa has
 /// no standalone `evaluate`: blueprint→message generation lives in `ObjectCreationHelpers`
-/// (`creationOperationForLiveCounter` / `nosync_creationOperationForLiveMap`), invoked by
-/// `RealtimeObjects.createCounter`/`createMap`. `ObjectsUTS.evaluate(counter:)`/`evaluate(map:)`
-/// bridge the public blueprint to that seam. Consequently the retained-local create (spec
-/// `msg.operation.counterCreate` / `mapCreate`, RTLCV4g5 / RTLMV4j5) is exposed as
-/// `operation.counterCreateWithObjectId.derivedFrom` / `operation.mapCreateWithObjectId.derivedFrom`
-/// on the outbound message, not as a separate top-level field.
+/// (`creationOperationForLiveCounter` / `creationOperationForLiveMap`, and the recursive
+/// `evaluate(liveMap:)`/`evaluate(liveCounter:)` used by `InternalLiveMap#set`).
+/// `ObjectsUTS.evaluate(counter:)`/`evaluate(map:)` bridge the public blueprint to that seam,
+/// evaluating with a fixed timestamp (the production seam fetches a per-object server time).
+/// Consequently the retained-local create (spec `msg.operation.counterCreate` / `mapCreate`, RTLCV4g5 /
+/// RTLMV4j5) is exposed as `operation.counterCreateWithObjectId.derivedFrom` /
+/// `operation.mapCreateWithObjectId.derivedFrom` on the outbound message, not as a separate top-level
+/// field.
 ///
 /// ## Compile-time-unrepresentable cases (recorded in deviations.md)
 /// Swift's strongly-typed blueprint API makes several spec validation cases impossible to express, so
@@ -33,13 +35,14 @@ import Testing
 /// - RTLMV4c / 40013 "invalid value / graph object as map value": values are the closed `LiveMapValue`
 ///   enum — a function, or a live (non-blueprint) map, cannot be constructed as one.
 ///
-/// ## Skipped — out of UNIT scope
-/// - RTLMV4d1/RTLMV4d2/RTLMV4k (nested depth-first evaluation): nested blueprint entries are
-///   materialised by the async `createMap`/`createCounter` pipeline (concrete `InternalDefaultRealtimeObjects`
-///   + `publishAndApply`), not the pure `ObjectCreationHelpers` seam. Not portable at unit tier.
-/// - RTLCV4a finiteness (NaN/Infinity → 40003): counter initial-value finiteness is validated in
-///   `InternalDefaultRealtimeObjects.createCounter` (RTO12f1), one layer above the pure evaluate seam,
-///   so it is not reachable via `ObjectsUTS.evaluate(counter:)`.
+/// ## Notes
+/// - RTLMV4d1/RTLMV4d2/RTLMV4k (nested depth-first evaluation) are now ported (`RTLMV4d1_nested_value_types`):
+///   `ObjectsUTS.evaluate(map:)` recurses through nested blueprint entries, producing the depth-first
+///   ordered array directly from the pure `ObjectCreationHelpers` composition builders.
+/// - RTLCV4a finiteness (NaN/Infinity → 40003) is validated in `ObjectCreationHelpers.evaluate(liveCounter:)`,
+///   but the spec's `evaluate-validates-count-0` case passes the string `"not_a_number"`, which is
+///   compile-time-unrepresentable (`initialCount` is `Double`), so there is no representable runtime case
+///   to port through `ObjectsUTS.evaluate(counter:)`.
 @Suite(.serialized)
 final class ValueTypesTests {
     // MARK: - RTLCV3: LiveCounter.create construction
@@ -138,6 +141,34 @@ final class ValueTypesTests {
         let derivedFrom = try #require(messages[0].operation?.mapCreateWithObjectId?.derivedFrom)
         #expect(derivedFrom.semantics == .known(.lww)) // RTLMV4e1
         #expect(derivedFrom.entries?["name"]?.data?.string == "Alice")
+    }
+
+    // UTS: objects/unit/RTLMV4d1/nested-value-types-0 — RTLMV4d1/RTLMV4d2/RTLMV4k. Nested value types
+    // produce depth-first ObjectMessages: inner creates before outer, each entry pointing at its child's
+    // objectId. The spec's `messages[i].operation.mapCreate.entries` is cocoa's retained
+    // `mapCreateWithObjectId.derivedFrom.entries` (DEV-VT-1).
+    @Test
+    func RTLMV4d1_nested_value_types() throws {
+        let innerCounter = LiveCounter.create(initialCount: 10)
+        let innerMap = LiveMap.create(entries: ["nested_count": .liveCounter(innerCounter)])
+        let outer = LiveMap.create(entries: ["child": .liveMap(innerMap)])
+        let messages = ObjectsUTS.evaluate(map: outer, internalQueue: ObjectsUTS.createInternalQueue())
+
+        #expect(messages.count == 3)
+        #expect(messages[0].operation?.action == .known(.counterCreate)) // RTLMV4d1
+        #expect(messages[0].operation?.objectId.hasPrefix("counter:") == true)
+        #expect(messages[1].operation?.action == .known(.mapCreate)) // RTLMV4d2
+        #expect(messages[1].operation?.objectId.hasPrefix("map:") == true)
+        #expect(messages[2].operation?.action == .known(.mapCreate)) // RTLMV4k: outer map last
+        #expect(messages[2].operation?.objectId.hasPrefix("map:") == true)
+
+        let innerCounterId = try #require(messages[0].operation?.objectId)
+        let innerMapId = try #require(messages[1].operation?.objectId)
+
+        // The inner map's `nested_count` entry references the created counter.
+        #expect(messages[1].operation?.mapCreateWithObjectId?.derivedFrom?.entries?["nested_count"]?.data?.objectId == innerCounterId)
+        // The outer map's `child` entry references the created inner map.
+        #expect(messages[2].operation?.mapCreateWithObjectId?.derivedFrom?.entries?["child"]?.data?.objectId == innerMapId)
     }
 
     // UTS: objects/unit/RTLMV4d/entry-value-types-0 — RTLMV4d3–d6 value-type -> data-field mapping.
