@@ -15,8 +15,8 @@ internal final class DefaultLiveMapInstance: LiveMapInstance {
     private let realtimeObjects: any InternalRealtimeObjectsProtocol
     private let internalQueue: DispatchQueue
 
-    /// The wrapped map's `objectId`, captured once at construction (RTINS3a). It is immutable, so the
-    /// frozen non-throwing `id` property is a plain stored read (O(1)).
+    /// The wrapped map's `objectId` (RTINS3a). Immutable on the node, so the frozen non-throwing `id`
+    /// property is a plain stored read (O(1), no queue hop).
     internal let id: String
 
     internal init(
@@ -29,8 +29,8 @@ internal final class DefaultLiveMapInstance: LiveMapInstance {
         self.coreSDK = coreSDK
         self.realtimeObjects = realtimeObjects
         self.internalQueue = internalQueue
-        // RTINS3a: read the immutable objectId on the shared internal queue.
-        id = internalQueue.ably_syncNoDeadlock { node.nosync_objectID }
+        // RTINS3a: the node's objectId is immutable (set at construction), so it is read directly.
+        id = node.objectID
     }
 
     // MARK: - LiveMapInstance
@@ -108,7 +108,6 @@ internal final class DefaultLiveMapInstance: LiveMapInstance {
             objectID: id,
             coreSDK: coreSDK,
             delegate: realtimeObjects,
-            internalQueue: internalQueue,
             visited: &visited,
         )
     }
@@ -127,7 +126,6 @@ internal final class DefaultLiveMapInstance: LiveMapInstance {
         objectID: String,
         coreSDK: CoreSDK,
         delegate: any InternalRealtimeObjectsProtocol,
-        internalQueue: DispatchQueue,
         visited: inout Set<String>,
     ) throws(ARTErrorInfo) -> JSONValue {
         // RTPO14b2 parity: mark this map visited before descending.
@@ -137,9 +135,9 @@ internal final class DefaultLiveMapInstance: LiveMapInstance {
         for (key, value) in try mapNode.entries(coreSDK: coreSDK, delegate: delegate) {
             switch value {
             case let .liveMap(childNode):
-                // Read the child's immutable objectId via an independent queue access (never holding a
-                // node mutex across the recursion).
-                let childID = internalQueue.ably_syncNoDeadlock { childNode.nosync_objectID }
+                // The child's objectId is immutable (set at construction), so it is read directly —
+                // no per-entry queue hop, and no node mutex held across the recursion.
+                let childID = childNode.objectID
                 if visited.contains(childID) {
                     // RTPO14b2: cyclic reference -> {"objectId": <id>}
                     result[key] = .object(["objectId": .string(childID)])
@@ -150,7 +148,6 @@ internal final class DefaultLiveMapInstance: LiveMapInstance {
                         objectID: childID,
                         coreSDK: coreSDK,
                         delegate: delegate,
-                        internalQueue: internalQueue,
                         visited: &visited,
                     )
                 }

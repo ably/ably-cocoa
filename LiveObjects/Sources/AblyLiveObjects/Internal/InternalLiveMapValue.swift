@@ -53,10 +53,10 @@ internal enum InternalLiveMapValue: Sendable, Equatable {
             .init(json: .object(value))
         case let .liveMap(liveMap):
             // RTLMV4d2: If the value is of type LiveMap, set ObjectsMapEntry.data.objectId to the objectId of that object
-            .init(objectId: liveMap.nosync_objectID)
+            .init(objectId: liveMap.objectID)
         case let .liveCounter(liveCounter):
             // RTLMV4d1: If the value is of type LiveCounter, set ObjectsMapEntry.data.objectId to the objectId of that object
-            .init(objectId: liveCounter.nosync_objectID)
+            .init(objectId: liveCounter.objectID)
         }
     }
 

@@ -1,10 +1,10 @@
 import Ably
 import Foundation
 
-/// Default implementation of ``PrimitiveInstance`` (the per-primitive-type instances are collapsed
-/// into one per DEV-3). An `Instance` is identity/value-addressed
-/// (RTINS2a): a primitive instance binds the already-extracted value, so reads are O(1) and never
-/// re-resolve map state. Spec: `RTINS1`, `RTTS10c`.
+/// Default implementation of ``PrimitiveInstance``. Per RTTS6h, the six per-primitive `Instance`
+/// sub-classes of RTTS10c are collapsed into a single type fronting a ``Primitive`` enum. An
+/// `Instance` is identity/value-addressed (RTINS2a): a primitive instance binds the already-extracted
+/// value, so reads are O(1) and never re-resolve map state. Spec: `RTINS1`, `RTTS10c`, `RTTS6h`.
 ///
 /// Because a primitive has no backing internal node (and hence no `DispatchQueueMutex`), the RTO25b
 /// access-precondition check is run by hopping onto the shared `internalQueue` and reusing the same

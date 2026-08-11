@@ -17,6 +17,10 @@ internal final class InternalDefaultLiveMap: Sendable {
     internal let userCallbackQueue: DispatchQueue // internal for AblyLiveObjectsTesting
     internal let clock: SimpleClock // internal for AblyLiveObjectsTesting
 
+    /// The RTLO3a `objectId`. Set once at construction and never mutated (RTINS3a), so it is stored
+    /// directly on the object and read without a queue hop.
+    internal let objectID: String // internal for AblyLiveObjectsTesting
+
     // MARK: - Initialization
 
     internal init( // internal for AblyLiveObjectsTesting
@@ -28,6 +32,7 @@ internal final class InternalDefaultLiveMap: Sendable {
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock,
     ) {
+        self.objectID = objectID
         mutableStateMutex = .init(
             dispatchQueue: internalQueue,
             initialValue: .init(liveObjectMutableState: .init(objectID: objectID), data: data, semantics: semantics),
@@ -62,12 +67,6 @@ internal final class InternalDefaultLiveMap: Sendable {
     }
 
     // MARK: - Data access
-
-    internal var nosync_objectID: String {
-        mutableStateMutex.withoutSync { mutableState in
-            mutableState.liveObjectMutableState.objectID
-        }
-    }
 
     // MARK: - Internal methods that back LiveMap conformance
 
@@ -421,7 +420,7 @@ internal final class InternalDefaultLiveMap: Sendable {
 
     /// Computes all key-paths from root to this object, per RTLO4f.
     internal func nosync_getFullPaths(objectsPool: ObjectsPool) -> [[String]] {
-        objectsPool.nosync_getFullPaths(forObjectID: nosync_objectID)
+        objectsPool.nosync_getFullPaths(forObjectID: objectID)
     }
 
     /// The raw internal data map. Used by the RTO5c10 rebuild.

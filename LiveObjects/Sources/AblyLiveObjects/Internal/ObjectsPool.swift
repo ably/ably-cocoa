@@ -117,12 +117,12 @@ internal struct ObjectsPool {
                     guard let payload = update.update else {
                         return nil // .noop
                     }
-                    return (objectID: map.nosync_objectID, changedMapKeys: Array(payload.update.keys))
+                    return (objectID: map.objectID, changedMapKeys: Array(payload.update.keys))
                 case let .counter(counter, update):
                     guard update.update != nil else {
                         return nil // .noop
                     }
-                    return (objectID: counter.nosync_objectID, changedMapKeys: [])
+                    return (objectID: counter.objectID, changedMapKeys: [])
                 }
             }
         }

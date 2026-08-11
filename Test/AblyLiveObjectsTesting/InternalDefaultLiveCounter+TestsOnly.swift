@@ -68,7 +68,7 @@ extension InternalDefaultLiveCounter {
     /// `ObjectsPool.nosync_getFullPaths(forObjectID:)`.
     func testsOnly_getFullPaths(objectsPool: ObjectsPool) -> [[String]] {
         mutableStateMutex.dispatchQueue.ably_syncNoDeadlock {
-            objectsPool.nosync_getFullPaths(forObjectID: nosync_objectID)
+            objectsPool.nosync_getFullPaths(forObjectID: objectID)
         }
     }
 

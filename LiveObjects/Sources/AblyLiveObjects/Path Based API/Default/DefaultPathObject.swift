@@ -123,16 +123,14 @@ internal class DefaultPathObject: PathObject, @unchecked Sendable {
             return DefaultPathObject(channelObject: channelObject, coreSDK: coreSDK, internalQueue: internalQueue, segments: eventSegments)
         }
 
-        // Hop onto the internal queue to register (the register is queue-confined). The returned
-        // Subscription's `unsubscribe()` deregisters (SUB2a/SUB2b).
-        return internalQueue.ably_syncNoDeadlock {
-            channelObject.pathObjectSubscriptionRegister.nosync_subscribe(
-                segments: segments,
-                depth: options?.depth,
-                listener: listener,
-                makePathObject: makePathObject,
-            )
-        }
+        // The register is queue-confined; its `subscribe` performs the internal-queue hop itself. The
+        // returned Subscription's `unsubscribe()` deregisters (SUB2a/SUB2b).
+        return channelObject.pathObjectSubscriptionRegister.subscribe(
+            segments: segments,
+            depth: options?.depth,
+            listener: listener,
+            makePathObject: makePathObject,
+        )
     }
 
     // MARK: - Path resolution (RTPO3)

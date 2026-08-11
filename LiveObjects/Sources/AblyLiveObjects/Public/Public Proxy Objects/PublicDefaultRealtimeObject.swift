@@ -45,8 +45,8 @@ internal final class PublicDefaultRealtimeObject: RealtimeObject {
     @discardableResult
     internal func on(event: ObjectsEvent, callback: @escaping @Sendable () -> Void) -> any StatusSubscription {
         // RTO18 — register on the internal engine's status-event emitter, which fires `.syncing` /
-        // `.synced` on `userCallbackQueue`. The public callback is zero-arg (the event is known from
-        // registration, DEV-11), so the internal response is discarded.
+        // `.synced` on `userCallbackQueue`. RTO18e: the public callback takes no arguments (the event is
+        // fixed at registration per RTO18a1/RTO18c), so the internal response is discarded.
         let response = proxied.on(event: event) { _ in
             callback()
         }

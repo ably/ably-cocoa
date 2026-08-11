@@ -11,6 +11,10 @@ internal final class InternalDefaultLiveCounter: Sendable {
     private let userCallbackQueue: DispatchQueue
     private let clock: SimpleClock
 
+    /// The RTLO3a `objectId`. Set once at construction and never mutated (RTINS3a), so it is stored
+    /// directly on the object and read without a queue hop.
+    internal let objectID: String // internal for AblyLiveObjectsTesting
+
     // MARK: - Initialization
 
     internal init( // internal for AblyLiveObjectsTesting
@@ -21,6 +25,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock
     ) {
+        self.objectID = objectID
         mutableStateMutex = .init(
             dispatchQueue: internalQueue,
             initialValue: .init(liveObjectMutableState: .init(objectID: objectID), data: data),
@@ -49,14 +54,6 @@ internal final class InternalDefaultLiveCounter: Sendable {
             userCallbackQueue: userCallbackQueue,
             clock: clock,
         )
-    }
-
-    // MARK: - Data access
-
-    internal var nosync_objectID: String {
-        mutableStateMutex.withoutSync { mutableState in
-            mutableState.liveObjectMutableState.objectID
-        }
     }
 
     // MARK: - Internal methods that back LiveCounter conformance
@@ -287,7 +284,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
 
     /// Computes all key-paths from root to this object, per RTLO4f.
     internal func nosync_getFullPaths(objectsPool: ObjectsPool) -> [[String]] {
-        objectsPool.nosync_getFullPaths(forObjectID: nosync_objectID)
+        objectsPool.nosync_getFullPaths(forObjectID: objectID)
     }
 
     // MARK: - Mutable state and the operations that affect it

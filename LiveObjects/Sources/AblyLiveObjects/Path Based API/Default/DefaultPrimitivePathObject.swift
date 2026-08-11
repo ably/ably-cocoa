@@ -1,10 +1,10 @@
 import Ably
 
-/// Default implementation of ``PrimitivePathObject`` (the six per-primitive-type path objects,
-/// collapsed into one per DEV-2), a terminal primitive view adding a type-narrowed ``value()``
-/// on top of ``DefaultPathObject``.
+/// Default implementation of ``PrimitivePathObject``, a terminal primitive view adding a
+/// type-narrowed ``value()`` on top of ``DefaultPathObject``. Per RTTS6h, the six per-primitive
+/// `PathObject` sub-classes of RTTS6c are collapsed into a single type fronting a ``Primitive`` enum.
 ///
-/// Spec: `RTTS6c`.
+/// Spec: `RTTS6c`, `RTTS6h`.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal final class DefaultPrimitivePathObject: DefaultPathObject, PrimitivePathObject, @unchecked Sendable {
     internal func value() throws(ARTErrorInfo) -> Primitive? {
@@ -13,8 +13,8 @@ internal final class DefaultPrimitivePathObject: DefaultPathObject, PrimitivePat
         guard let resolved = try resolveValueAtCurrentPath() else {
             return nil
         }
-        // DEV-2: rather than six type-filtered primitive views, this returns whatever primitive
-        // resolved (RTTS6c collapse).
+        // RTTS6h: the collapsed primitive view returns whatever primitive resolved (rather than the
+        // six type-filtered views of RTTS6c).
         switch resolved {
         // RTPO7d — a resolved primitive is returned directly.
         case let .string(value):

@@ -58,6 +58,21 @@ internal final class PathObjectSubscriptionRegister: @unchecked Sendable {
         self.userCallbackQueue = userCallbackQueue
     }
 
+    /// Queue-synchronised entry point for public (off-queue) callers: hops onto the internal queue and
+    /// delegates to ``nosync_subscribe(segments:depth:listener:makePathObject:)``. Mirrors the
+    /// self-synchronising deregistration hop the returned ``Subscription`` already performs, so callers
+    /// need not manage the queue boundary themselves. Spec: RTPO19f.
+    internal func subscribe(
+        segments: [String],
+        depth: Int?,
+        listener: @escaping PathObjectSubscriptionCallback,
+        makePathObject: @escaping PathObjectFactory,
+    ) -> any Subscription {
+        internalQueue.ably_syncNoDeadlock {
+            nosync_subscribe(segments: segments, depth: depth, listener: listener, makePathObject: makePathObject)
+        }
+    }
+
     /// Registers a subscription for `segments` with the given depth window, returning a
     /// ``Subscription`` whose `unsubscribe()` deregisters it. Spec: RTPO19f.
     internal func nosync_subscribe(
