@@ -18,8 +18,8 @@
 //   / `nosync_removeParentReference(parentObjectID:key:)` take the parent's objectId string directly,
 //   and (being `nosync_`) must run on the internal queue, so every call is wrapped in
 //   `internalQueue.ably_syncNoDeadlock { }`.
-// - (D-4) Spec `obj.getFullPaths()` is a method on the live object. Per audit deviation DEV-15 the RTLO4f
-//   DFS lives on `ObjectsPool.nosync_getFullPaths(forObjectID:)` (Kotlin's in-object DFS re-enters the
+// - (D-4) Spec `obj.getFullPaths()` is a method on the live object. In this port the RTLO4f
+//   DFS lives on `ObjectsPool.nosync_getFullPaths(forObjectID:)` (a pool-level DFS avoids re-entering the
 //   starting object's mutex — a Swift exclusive-access crash). The per-object wrapper
 //   `obj.testsOnly_getFullPaths(objectsPool:)` forwards to the pool, so every `obj.getFullPaths()`
 //   maps to `obj.testsOnly_getFullPaths(objectsPool: pool)`.

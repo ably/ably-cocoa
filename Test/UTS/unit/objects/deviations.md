@@ -1,14 +1,10 @@
 # Deviations — UTS objects unit suite (`Test/UTS/unit/objects`)
 
-> Records every place a generated `objects/unit` test deviates from its UTS spec. This is the
-> ably-cocoa analogue of ably-java's
-> `liveobjects/src/test/kotlin/io/ably/lib/liveobjects/uts/deviations.md`: the objects UTS ports live
-> in the `UTS` test target (all 15 specs under `Test/UTS/unit/objects/`), so their
+> Records every place a generated `objects/unit` test deviates from its UTS spec. The objects UTS
+> ports live in the `UTS` test target (all 15 specs under `Test/UTS/unit/objects/`), so their
 > deviations are recorded here alongside them rather than in the shared harness file
-> (`Test/UTS/deviations.md`, which covers the rest/realtime tiers).
->
-> Structural deviations named below (DEV-\*) are defined in
-> `PORT_KOTLIN_TO_SWIFT/05_DEVIATIONS.md`.
+> (`Test/UTS/deviations.md`, which covers the rest/realtime tiers). Each deviation below is defined
+> inline, anchored to the governing spec point, with the test that asserts it.
 
 Deviation tests that assert the **spec-correct** behaviour (where the SDK is non-compliant) are gated
 behind the `RUN_DEVIATIONS` environment variable so normal runs stay green:
@@ -51,7 +47,7 @@ and post-clear re-attach + sync repopulation). There is no dedicated RTO27a/b bl
 
 The spec asserts against string action names and a nullable, loosely-typed public shape. ably-cocoa's
 public value types (`Path Based API/Public/PublicObjectMessage.swift`) are strongly typed; the ports
-assert the cocoa shape. Deviations (defined in `PORT_KOTLIN_TO_SWIFT/05_DEVIATIONS.md`):
+assert the cocoa shape. Deviations:
 
 - **DEV-5** — Public enums drop `UNKNOWN`. `ObjectOperationAction` has exactly 7 cases (`.mapCreate`,
   `.mapSet`, `.mapRemove`, `.counterCreate`, `.counterInc`, `.objectDelete`, `.mapClear`) and
@@ -59,8 +55,8 @@ assert the cocoa shape. Deviations (defined in `PORT_KOTLIN_TO_SWIFT/05_DEVIATIO
   Unknown wire codes are held internally by `WireEnum.unknown` and never surface publicly. Asserted by
   `DEV5_object_operation_action_seven_distinct_cases`.
 - **DEV-6** — `ObjectData` shape. The public `ObjectData` adds a Swift-only `encoding: String?` (no
-  wire/Java counterpart), exposes `json` as a decoded `JSONValue?` (OD2g — the wire's JSON-encoded
-  string decoded per OD5, matching Java's parsed `JsonElement`), and uses non-optional `Double` for
+  wire counterpart), exposes `json` as a decoded `JSONValue?` (OD2g — the wire's JSON-encoded
+  string decoded per OD5), and uses non-optional `Double` for
   `CounterCreate.count` / `CounterInc.number` (`number` on `ObjectData` is `Double?`). Asserted by
   `objectData_holds_typed_values`, `PAOOP2_counter_inc_only_relevant_field` and
   `PAOOP2_counter_create_with_count`.
@@ -266,5 +262,5 @@ infra; they simply have not been written).
   `createOp.mapCreate` carries entries at serials straddling that clearTimeserial (`old_key` at `"03"`,
   `new_key` at `"07"`), then asserts the pre-clear `old_key` is dropped while `new_key` survives. It is
   translatable within unit scope via direct pool seeding (no mock transport needed, like the other
-  `ObjectsPoolTests` sync cases), but has not yet been written. Surfaced by the P2 translation audit as
-  `missingInSwift`; recorded here so the gap is tracked pending authoring.
+  `ObjectsPoolTests` sync cases), but has not yet been written — a coverage gap (`missingInSwift`)
+  recorded here so it is tracked pending authoring.

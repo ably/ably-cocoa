@@ -102,7 +102,7 @@ struct PublicRealtimeObjectTests {
     }
 
     // @spec RTL33b - get() on a not-yet-attached channel implicitly attaches (RTL33b), then resolves
-    // after sync. Mirrors ably-java Helpers.kt `ensureAttached`/`attachAsync`.
+    // after sync.
     @Test
     func getImplicitlyAttachesNonAttachedChannelThenResolves() async throws {
         let (publicObject, proxied, coreSDK, internalQueue) = Self.makePublicObject(channelState: .initialized)

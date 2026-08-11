@@ -2,7 +2,7 @@ import Ably
 import Foundation
 
 /// Default implementation of ``PathObject``, the untyped node in the path-addressed view of the
-/// LiveObjects graph (Kotlin `DefaultPathObject`).
+/// LiveObjects graph.
 ///
 /// A `DefaultPathObject` stores a dot-delimited path and resolves it **fresh on every call** against
 /// the live objects graph via ``resolveValueAtCurrentPath()``, walking root → children through the
@@ -23,8 +23,8 @@ import Foundation
 /// add no stored state — so the conformance is sound.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal class DefaultPathObject: PathObject, @unchecked Sendable {
-    /// The channel's realtime-objects engine (Kotlin's `DefaultRealtimeObject`). Supplies the objects
-    /// pool for resolution and backs the node accessors' pool-delegate parameter and the write path.
+    /// The channel's realtime-objects engine. Supplies the objects pool for resolution and backs the
+    /// node accessors' pool-delegate parameter and the write path.
     internal let channelObject: any InternalRealtimeObjectsProtocol
     internal let coreSDK: CoreSDK
     internal let internalQueue: DispatchQueue
@@ -78,7 +78,7 @@ internal class DefaultPathObject: PathObject, @unchecked Sendable {
 
     internal func type() throws(ARTErrorInfo) -> ValueType? {
         try ChannelConfigGuards.throwIfInvalidAccessApiConfiguration(coreSDK: coreSDK, internalQueue: internalQueue)
-        // RTTS4b3 (the diff, not the PR body) — nil when nothing resolves at the path.
+        // RTTS4b3 — nil when nothing resolves at the path.
         guard let resolved = try resolveValueAtCurrentPath() else {
             return nil
         }

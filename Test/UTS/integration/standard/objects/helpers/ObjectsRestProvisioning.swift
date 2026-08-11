@@ -2,8 +2,7 @@ import Foundation
 
 /// REST fixture provisioning for the `objects` integration specs — the Swift implementation of the
 /// spec's `provision_objects_via_rest` helper (`uts/objects/helpers/standard_test_pool.md`,
-/// "REST Fixture Provisioning"). Mirrors ably-java's
-/// `uts/.../integration/standard/liveobjects/Helpers.kt`, camelCased.
+/// "REST Fixture Provisioning").
 ///
 /// The objects REST API uses the **V2 format** (the LiveObjects OpenAPI specification is the source
 /// of truth): `POST /channels/{channel}/object` (**singular**), body is a single operation object
@@ -13,8 +12,7 @@ import Foundation
 /// operation is an idempotency key. (The spec's legacy `POST …/objects` + `messages` shape was
 /// aligned to V2 in ably/specification#497.)
 ///
-/// Unlike ably-java (which drives an `AblyRest` client that must be closed after use), this port
-/// posts through the integration infra's plain `URLSession` helpers — nothing to close.
+/// This port posts through the integration infra's plain `URLSession` helpers — nothing to close.
 
 private let objectsProvisioningSession = makeURLSession(requestTimeout: 30)
 
@@ -43,8 +41,7 @@ func provisionObjectsViaRest(apiKey: String,
         throw HTTPError("POST /channels/\(channelName)/object returned \(status): \(String(decoding: data, as: UTF8.self))")
     }
 
-    // The response is a single result object or an array of them, each carrying `objectIds`
-    // (ably-java flattens `response.items()` the same way).
+    // The response is a single result object or an array of them, each carrying `objectIds`.
     let responseBody = try JSONSerialization.jsonObject(with: data)
     let items: [[String: Any]]
     if let object = responseBody as? [String: Any] {

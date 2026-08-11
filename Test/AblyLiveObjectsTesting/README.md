@@ -34,7 +34,7 @@ files here still satisfy the SwiftFormat/SwiftLint style they were authored unde
 (they were moved verbatim from `LiveObjects/Tests/`), but that style is no longer
 enforced by CI for this directory.
 
-## Hard review rule — dumb accessors only (D3)
+## Hard review rule — dumb accessors only
 
 A helper in this module may **only**:
 
@@ -62,7 +62,7 @@ if a helper needs to do anything more than a pass-through, the logic belongs in
 `Sources/` (properly tested) or the requirement needs a lead-dev decision — do
 not smuggle it into this module.
 
-### Lead-approved D3 exceptions
+### Lead-approved exceptions to the dumb-accessor rule
 
 Helpers in this module that exceed the dumb-accessor rule, each individually
 approved with the reason recorded here. Do not add to this list without a
@@ -102,7 +102,7 @@ neither moved nor guarded:
 | --------------------------------------------------------------------------------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ARTClientOptions.garbageCollectionOptions`                                       | `Internal/ARTClientOptions+Objects.swift:17`       | A real configuration knob for the RTO10 garbage collector; tests set it, but it is production config surface, not a state-poking seam.                                              |
 | `GarbageCollectionOptions.GracePeriod.fixed`                                      | `Internal/InternalDefaultRealtimeObjects.swift:63` | A production config case (a grace period that ignores the server's `objectsGCGracePeriod`); happens to be used mainly by tests but is a legitimate option.                          |
-| `nosync_mergeInitialValue` (counter)                                              | `Internal/InternalDefaultLiveCounter.swift:201`    | Carries spec-mandated create-operation merge logic (RTLO). Test-only-called today but expected to gain production callers; D3 forbids moving logic into a test helper, so it stays. |
+| `nosync_mergeInitialValue` (counter)                                              | `Internal/InternalDefaultLiveCounter.swift:201`    | Carries spec-mandated create-operation merge logic (RTLO). Test-only-called today but expected to gain production callers; the dumb-accessor rule forbids moving logic into a test helper, so it stays. |
 | `nosync_mergeInitialValue` (map)                                                  | `Internal/InternalDefaultLiveMap.swift:258`        | Same as above — spec-mandated merge logic that must stay in tested production code.                                                                                                 |
 | `nosync_applySyncObjectsPool`'s `pathObjectSubscriptionRegister: … = nil` default | `Internal/ObjectsPool.swift:362`                   | A test-convenience default on a production method; the parameter itself is production, only its default is test-oriented. Optional later cleanup, out of scope here.                |
 | `Plugin.defaultPluginAPI`                                                         | `Public/Plugin.swift:42`                           | A production dependency-injection seam (lets tests substitute the plugin API); a DI abstraction, not test plumbing.                                                                 |
@@ -123,6 +123,6 @@ neither moved nor guarded:
    compiler does not force it, so the module stays uniform.
 5. Obey the dumb-accessor rule above. If the backing member you need is
    `private`, raise it to `internal` in `Sources/` with a
-   `// internal (not private) for AblyLiveObjectsTesting` intent comment. If more
+   `// internal for AblyLiveObjectsTesting` intent comment. If more
    than a visibility raise is required (stored state, production write hooks),
    **stop and escalate** — that is a residual-class seam, not a helper.

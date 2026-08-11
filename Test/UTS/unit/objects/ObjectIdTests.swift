@@ -10,9 +10,9 @@
 //   millisecond value `@1700000000000`.
 // - (D2) The spec function is named `generateObjectId`; the Swift equivalent is
 //   `ObjectCreationHelpers.testsOnly_createObjectID(type:initialValue:nonce:timestamp:)`.
-// - (D3) The spec file contains five `##` cases. A sixth test (`different-initialValue`) is added
-//   per the porting task, symmetric to `different-nonce`, asserting that a different initialValue
-//   yields a different objectId. It has no distinct spec-case name.
+// - (D3) The spec file contains five `##` cases. A sixth test (`different-initialValue`) is added,
+//   symmetric to `different-nonce`, asserting that a different initialValue yields a different
+//   objectId. It has no distinct spec-case name.
 //
 // Note: the spec asserts objectId structure (prefix / timestamp / base64url charset) and
 // determinism/uniqueness, not literal hash strings; assertions here mirror the spec faithfully.
@@ -122,7 +122,7 @@ struct ObjectIdTests {
         #expect(!hashPart.hasSuffix("="))
     }
 
-    // Deviation-added case different-initialValue (added per porting task; see deviation D3)
+    // Deviation-added case different-initialValue (symmetric to different-nonce; see deviation D3)
     @Test
     func differentInitialValueProducesDifferentObjectId() {
         let id1 = ObjectCreationHelpers.testsOnly_createObjectID(

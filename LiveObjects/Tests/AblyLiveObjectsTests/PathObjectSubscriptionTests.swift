@@ -135,7 +135,7 @@ struct PathObjectSubscriptionTests {
         #expect(event.message == message.toPublicObjectMessage(channelName: Self.channelName))
     }
 
-    // DEV-20 / PAOM3b: the public `ObjectMessage.channel` reflects the real channel name that the
+    // PAOM3b: the public `ObjectMessage.channel` reflects the real channel name that the
     // engine was constructed with (in production, bound from the `nameForChannel:` plugin bridge in
     // `DefaultInternalPlugin.nosync_prepare`) — no longer the former `""` placeholder.
     // @spec PAOM3b
@@ -193,7 +193,7 @@ struct PathObjectSubscriptionTests {
         #expect(collector.events.isEmpty)
     }
 
-    // MARK: - Depth validation (RTPO19c1a / DEV-9)
+    // MARK: - Depth validation (RTPO19c1a)
 
     // A positive depth (and no options) is accepted.
     @Test

@@ -1,5 +1,5 @@
 {
-  "_comment": "Maps each UTS spec module (a dir under specification/uts/) to its target test directories. Output dir = testRoot + '/' + tier entry (e.g. 'Test/UTS' + 'unit/objects' -> 'Test/UTS/unit/objects'). A tier value beginning with '//' is a generic repo-root-relative override that bypasses testRoot (no module uses it today, kept as a dormant escape hatch for parking a tier outside Test/UTS). Swift has no package concept, so the directory is the full story. An optional 'notes' field points (relative to this skill dir) to a per-module ably-js -> ably-cocoa translation reference, read before translating that module. The resolver derives classNames as <PascalCase-of-spec-stem> + 'Tests' (e.g. internal_live_map.md -> InternalLiveMapTests). Used by the uts-to-swift skill.",
+  "_comment": "Maps each UTS spec module (a dir under specification/uts/) to its target test directories. Output dir = testRoot + '/' + tier entry. Swift has no package concept, so the directory is the full story. An optional 'notes' field points (relative to this skill dir) to a per-module ably-js -> ably-cocoa translation reference, read before translating that module. Used by the uts-to-swift skill.",
   "testRoot": "Test/UTS",
   "packages": {
     "realtime": {

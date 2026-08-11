@@ -231,7 +231,7 @@ final class PublicObjectMessageTests {
     // MARK: - Public payload / data type semantics
 
     // OD2: `ObjectData` holds typed, decoded values. DEV-6: `number` is `Double?`, `json` is the
-    // decoded `JSONValue?` (OD2g), and `encoding` is a Swift-only field with no wire/Java counterpart.
+    // decoded `JSONValue?` (OD2g), and `encoding` is a Swift-only field with no wire counterpart.
     @Test
     func objectData_holds_typed_values() {
         let data = ObjectData(
@@ -312,7 +312,8 @@ final class PublicObjectMessageTests {
 
     // MARK: - PAOM3: wire (protocol) -> public ObjectMessage conversion
 
-    // UTS: objects/unit/PAOM3/construction-all-fields-0 — PAOM3b/PAOM3c/PAOM3d. A fully-populated inbound
+    // UTS: objects/unit/PAOM3/construction-all-fields-0
+    // PAOM3b/PAOM3c/PAOM3d. A fully-populated inbound
     // message converts to a public `ObjectMessage` with every field copied and the operation derived.
     // Wire timestamps are `Date` values here (the wire↔Date translation happens at decode time); the
     // spec's 1700000000000 ms / 1700000001000 ms are the same instants as the Dates below.
@@ -353,7 +354,8 @@ final class PublicObjectMessageTests {
         #expect(publicMsg.operation.mapSet?.key == "name")
     }
 
-    // UTS: objects/unit/PAOM3/construction-optional-fields-missing-0 — PAOM2a–d/PAOM2g–j optional, PAOM3c.
+    // UTS: objects/unit/PAOM3/construction-optional-fields-missing-0
+    // PAOM2a–d/PAOM2g–j optional, PAOM3c.
     // An inbound message with only the operation set converts with all optional fields nil.
     @Test
     func PAOM3_construction_optional_fields_missing() throws {
@@ -379,7 +381,8 @@ final class PublicObjectMessageTests {
         #expect(publicMsg.operation.action == .counterInc) // PAOM2f
     }
 
-    // UTS: objects/unit/PAOM3/channel-from-channel-name-0 — PAOM3b: `channel` comes from the passed-in
+    // UTS: objects/unit/PAOM3/channel-from-channel-name-0
+    // PAOM3b: `channel` comes from the passed-in
     // channel name, never from the message itself (the inbound message has no channel field).
     @Test
     func PAOM3_channel_from_channel_name() throws {
@@ -398,7 +401,8 @@ final class PublicObjectMessageTests {
 
     // MARK: - PAOOP3: wire (protocol) -> public ObjectOperation conversion
 
-    // UTS: objects/unit/PAOOP3/map-set-copies-fields-0 — PAOOP3a/PAOOP2d.
+    // UTS: objects/unit/PAOOP3/map-set-copies-fields-0
+    // PAOOP3a/PAOOP2d.
     @Test
     func PAOOP3_map_set_copies_fields() throws {
         let source = ProtocolTypes.ObjectOperation(
@@ -421,7 +425,8 @@ final class PublicObjectMessageTests {
         #expect(op.mapClear == nil)
     }
 
-    // UTS: objects/unit/PAOOP3/map-remove-copies-fields-0 — PAOOP3a/PAOOP2e.
+    // UTS: objects/unit/PAOOP3/map-remove-copies-fields-0
+    // PAOOP3a/PAOOP2e.
     @Test
     func PAOOP3_map_remove_copies_fields() throws {
         let source = ProtocolTypes.ObjectOperation(
@@ -443,7 +448,8 @@ final class PublicObjectMessageTests {
         #expect(op.mapClear == nil)
     }
 
-    // UTS: objects/unit/PAOOP3/counter-inc-copies-fields-0 — PAOOP3a/PAOOP2g.
+    // UTS: objects/unit/PAOOP3/counter-inc-copies-fields-0
+    // PAOOP3a/PAOOP2g.
     @Test
     func PAOOP3_counter_inc_copies_fields() throws {
         let source = ProtocolTypes.ObjectOperation(
@@ -465,7 +471,8 @@ final class PublicObjectMessageTests {
         #expect(op.mapClear == nil)
     }
 
-    // UTS: objects/unit/PAOOP3/object-delete-copies-fields-0 — PAOOP3a/PAOOP2h.
+    // UTS: objects/unit/PAOOP3/object-delete-copies-fields-0
+    // PAOOP3a/PAOOP2h.
     @Test
     func PAOOP3_object_delete_copies_fields() throws {
         let source = ProtocolTypes.ObjectOperation(
@@ -487,7 +494,8 @@ final class PublicObjectMessageTests {
         #expect(op.mapClear == nil)
     }
 
-    // UTS: objects/unit/PAOOP3/map-clear-copies-fields-0 — PAOOP3a/PAOOP2i.
+    // UTS: objects/unit/PAOOP3/map-clear-copies-fields-0
+    // PAOOP3a/PAOOP2i.
     @Test
     func PAOOP3_map_clear_copies_fields() throws {
         let source = ProtocolTypes.ObjectOperation(
@@ -509,7 +517,8 @@ final class PublicObjectMessageTests {
         #expect(op.objectDelete == nil)
     }
 
-    // UTS: objects/unit/PAOOP3/map-create-direct-0 — PAOOP3b1: a directly-present `mapCreate` is used as-is.
+    // UTS: objects/unit/PAOOP3/map-create-direct-0
+    // PAOOP3b1: a directly-present `mapCreate` is used as-is.
     @Test
     func PAOOP3_map_create_direct() throws {
         let source = ProtocolTypes.ObjectOperation(
@@ -531,7 +540,8 @@ final class PublicObjectMessageTests {
         #expect(op.counterCreate == nil)
     }
 
-    // UTS: objects/unit/PAOOP3/map-create-from-with-object-id-0 — PAOOP3b2: when only
+    // UTS: objects/unit/PAOOP3/map-create-from-with-object-id-0
+    // PAOOP3b2: when only
     // `mapCreateWithObjectId` is present, `mapCreate` resolves to the `MapCreate` it was derived from.
     @Test
     func PAOOP3_map_create_from_with_object_id() throws {
@@ -560,7 +570,8 @@ final class PublicObjectMessageTests {
         #expect(op.counterCreate == nil)
     }
 
-    // UTS: objects/unit/PAOOP3/counter-create-from-with-object-id-0 — PAOOP3c2: when only
+    // UTS: objects/unit/PAOOP3/counter-create-from-with-object-id-0
+    // PAOOP3c2: when only
     // `counterCreateWithObjectId` is present, `counterCreate` resolves to the `CounterCreate` derived from.
     @Test
     func PAOOP3_counter_create_from_with_object_id() throws {
@@ -583,7 +594,8 @@ final class PublicObjectMessageTests {
         #expect(op.mapCreate == nil)
     }
 
-    // UTS: objects/unit/PAOOP3/create-payloads-omitted-0 — PAOOP3b3/PAOOP3c3: with neither create variant
+    // UTS: objects/unit/PAOOP3/create-payloads-omitted-0
+    // PAOOP3b3/PAOOP3c3: with neither create variant
     // present, both `mapCreate` and `counterCreate` are omitted.
     @Test
     func PAOOP3_create_payloads_omitted() throws {
@@ -599,7 +611,8 @@ final class PublicObjectMessageTests {
         #expect(op.counterCreate == nil)
     }
 
-    // UTS: objects/unit/PAOOP3/only-relevant-field-per-action-0 — PAOOP3a: a directly-present `counterCreate`
+    // UTS: objects/unit/PAOOP3/only-relevant-field-per-action-0
+    // PAOOP3a: a directly-present `counterCreate`
     // is the only operation-specific field set; all others are nil.
     @Test
     func PAOOP3_only_relevant_field_per_action() throws {

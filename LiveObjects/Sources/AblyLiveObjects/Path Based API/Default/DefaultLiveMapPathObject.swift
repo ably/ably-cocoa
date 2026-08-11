@@ -1,6 +1,6 @@
 import Ably
 
-/// Default implementation of ``LiveMapPathObject`` (Kotlin `DefaultLiveMapPathObject`), adding map
+/// Default implementation of ``LiveMapPathObject``, adding map
 /// navigation and read/write operations on top of ``DefaultPathObject``.
 ///
 /// Spec: `RTTS6a`.

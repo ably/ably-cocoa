@@ -507,10 +507,9 @@ struct InternalDefaultLiveMapTests {
         // The accessor holds the map's `mutableStateMutex` (via `withSync`) while the RTLM14c
         // tombstone check / RTLM5d2h conversion re-enters the SAME mutex via
         // `objectsPool.entries[objectId].nosync_isTombstone`. Indirect cycles (A→B→A) are fine;
-        // only self-reference crashed. See DEV-15 (`getFullPaths`) for the analogous exclusivity
-        // finding. Observable behaviour must match the Kotlin reference (which has no exclusivity
-        // checker and so needs no guard): a non-tombstoned self-reference is just a normal entry
-        // whose value is the map itself.
+        // only self-reference crashed. See the pool-level `getFullPaths` DFS for the analogous exclusivity
+        // finding. Observable behaviour is unaffected by this Swift-specific guard: a non-tombstoned
+        // self-reference is just a normal entry whose value is the map itself.
         @Test
         func selfReferencingEntryIsTreatedAsNormalEntry() throws {
             let logger = TestLogger()
@@ -2081,7 +2080,7 @@ struct InternalDefaultLiveMapTests {
     }
 
     /// Regression tests for the parent-reference *mutation* sites' self-reference guard (an
-    /// extension of DEV-34, whose read-path counterpart is tested in
+    /// extension of the read-path self-reference guard, whose counterpart is tested in
     /// `AccessPropertiesTests.selfReferencingEntryIsTreatedAsNormalEntry`).
     ///
     /// A wire-delivered MAP_SET (RTLM7a3/RTLM7g2), MAP_REMOVE (RTLM8a3), MAP_CLEAR (RTLM24e1c) or

@@ -45,7 +45,8 @@ final class PathObjectMutationsTests {
 
     // MARK: - RTPO15: set() delegates to InternalLiveMap#set
 
-    // UTS: objects/unit/RTPO15/set-delegates-to-map-0 — RTPO15d (delegates to InternalLiveMap#set).
+    // UTS: objects/unit/RTPO15/set-delegates-to-map-0
+    // RTPO15d (delegates to InternalLiveMap#set).
     @Test
     func RTPO15_set_delegates_to_map() async throws {
         let fixture = Self.makeFixture()
@@ -61,7 +62,8 @@ final class PathObjectMutationsTests {
         #expect(try fixture.root.get(key: "name").asPrimitive().value() == .string("Bob"))
     }
 
-    // UTS: objects/unit/RTPO15/set-nested-path-0 — RTPO15a2/RTPO15b (nested path resolves to the child map).
+    // UTS: objects/unit/RTPO15/set-nested-path-0
+    // RTPO15a2/RTPO15b (nested path resolves to the child map).
     @Test
     func RTPO15_set_nested_path() async throws {
         let fixture = Self.makeFixture()
@@ -76,7 +78,8 @@ final class PathObjectMutationsTests {
         #expect(try fixture.root.get(key: "profile").asLiveMap().get(key: "email").asPrimitive().value() == .string("bob@example.com"))
     }
 
-    // UTS: objects/unit/RTPO15d/set-non-map-throws-0 — RTPO15e (set on a non-map -> 92007).
+    // UTS: objects/unit/RTPO15d/set-non-map-throws-0
+    // RTPO15e (set on a non-map -> 92007).
     @Test
     func RTPO15d_set_non_map_throws() async throws {
         let fixture = Self.makeFixture()
@@ -88,7 +91,8 @@ final class PathObjectMutationsTests {
 
     // MARK: - RTPO16: remove() delegates to InternalLiveMap#remove
 
-    // UTS: objects/unit/RTPO16/remove-delegates-to-map-0 — RTPO16d (delegates to InternalLiveMap#remove).
+    // UTS: objects/unit/RTPO16/remove-delegates-to-map-0
+    // RTPO16d (delegates to InternalLiveMap#remove).
     @Test
     func RTPO16_remove_delegates_to_map() async throws {
         let fixture = Self.makeFixture()
@@ -103,7 +107,8 @@ final class PathObjectMutationsTests {
         #expect(try fixture.root.get(key: "name").asPrimitive().value() == nil)
     }
 
-    // UTS: objects/unit/RTPO16d/remove-non-map-throws-0 — RTPO16e (remove on a non-map -> 92007).
+    // UTS: objects/unit/RTPO16d/remove-non-map-throws-0
+    // RTPO16e (remove on a non-map -> 92007).
     @Test
     func RTPO16d_remove_non_map_throws() async throws {
         let fixture = Self.makeFixture()
@@ -115,7 +120,8 @@ final class PathObjectMutationsTests {
 
     // MARK: - RTPO17: increment() delegates to InternalLiveCounter#increment
 
-    // UTS: objects/unit/RTPO17/increment-delegates-to-counter-0 — RTPO17d (delegates to InternalLiveCounter#
+    // UTS: objects/unit/RTPO17/increment-delegates-to-counter-0
+    // RTPO17d (delegates to InternalLiveCounter#
     // increment).
     @Test
     func RTPO17_increment_delegates_to_counter() async throws {
@@ -131,7 +137,8 @@ final class PathObjectMutationsTests {
         #expect(try fixture.root.get(key: "score").asLiveCounter().value() == 125)
     }
 
-    // UTS: objects/unit/RTPO17/increment-default-amount-0 — RTPO17a1 (amount defaults to 1).
+    // UTS: objects/unit/RTPO17/increment-default-amount-0
+    // RTPO17a1 (amount defaults to 1).
     @Test
     func RTPO17_increment_default_amount() async throws {
         let fixture = Self.makeFixture()
@@ -143,7 +150,8 @@ final class PathObjectMutationsTests {
         #expect(try fixture.root.get(key: "score").asLiveCounter().value() == 101)
     }
 
-    // UTS: objects/unit/RTPO17d/increment-non-counter-throws-0 — RTPO17e (increment on a non-counter -> 92007).
+    // UTS: objects/unit/RTPO17d/increment-non-counter-throws-0
+    // RTPO17e (increment on a non-counter -> 92007).
     @Test
     func RTPO17d_increment_non_counter_throws() async throws {
         let fixture = Self.makeFixture()
@@ -155,7 +163,8 @@ final class PathObjectMutationsTests {
 
     // MARK: - RTPO18: decrement() delegates to InternalLiveCounter#decrement
 
-    // UTS: objects/unit/RTPO18/decrement-delegates-to-counter-0 — RTPO18d (decrement is increment with a
+    // UTS: objects/unit/RTPO18/decrement-delegates-to-counter-0
+    // RTPO18d (decrement is increment with a
     // negated amount, so the published COUNTER_INC carries -10).
     @Test
     func RTPO18_decrement_delegates_to_counter() async throws {
@@ -170,7 +179,8 @@ final class PathObjectMutationsTests {
         #expect(try fixture.root.get(key: "score").asLiveCounter().value() == 90)
     }
 
-    // UTS: objects/unit/RTPO18/decrement-default-amount-0 — RTPO18a1 (amount defaults to 1 => published -1).
+    // UTS: objects/unit/RTPO18/decrement-default-amount-0
+    // RTPO18a1 (amount defaults to 1 => published -1).
     @Test
     func RTPO18_decrement_default_amount() async throws {
         let fixture = Self.makeFixture()
@@ -182,7 +192,8 @@ final class PathObjectMutationsTests {
         #expect(try fixture.root.get(key: "score").asLiveCounter().value() == 99)
     }
 
-    // UTS: objects/unit/RTPO18d/decrement-non-counter-throws-0 — RTPO18e (decrement on a non-counter -> 92007).
+    // UTS: objects/unit/RTPO18d/decrement-non-counter-throws-0
+    // RTPO18e (decrement on a non-counter -> 92007).
     @Test
     func RTPO18d_decrement_non_counter_throws() async throws {
         let fixture = Self.makeFixture()
@@ -194,7 +205,8 @@ final class PathObjectMutationsTests {
 
     // MARK: - RTPO3c2: writes on an unresolvable path throw 92005
 
-    // UTS: objects/unit/RTPO3c2/set-unresolvable-throws-0 — RTPO3c2 (write on unresolvable path -> 92005/400).
+    // UTS: objects/unit/RTPO3c2/set-unresolvable-throws-0
+    // RTPO3c2 (write on unresolvable path -> 92005/400).
     @Test
     func RTPO3c2_set_unresolvable_throws() async throws {
         let fixture = Self.makeFixture()
@@ -205,7 +217,8 @@ final class PathObjectMutationsTests {
         #expect(error?.statusCode == 400)
     }
 
-    // UTS: objects/unit/RTPO3c2/increment-unresolvable-throws-0 — RTPO3c2 (write on unresolvable path ->
+    // UTS: objects/unit/RTPO3c2/increment-unresolvable-throws-0
+    // RTPO3c2 (write on unresolvable path ->
     // 92005/400).
     @Test
     func RTPO3c2_increment_unresolvable_throws() async throws {

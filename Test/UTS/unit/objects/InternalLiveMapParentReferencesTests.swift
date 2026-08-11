@@ -39,8 +39,7 @@
 //   DefaultLiveMapUpdate>` exposes `.update` (a `DefaultLiveMapUpdate` whose `.update` is `[String:
 //   LiveMapUpdateAction]` of `.updated` / `.removed`), plus `.objectMessage` (the PAOM3 public message,
 //   RTLO4b4d) and `.tombstone` (RTLO4b4e). All three are now carried by the gated apply path and asserted
-//   here (`update.objectMessage == msg.toPublicObjectMessage(channelName:)`), so — unlike the P1 revision
-//   of this file — none are omitted.
+//   here (`update.objectMessage == msg.toPublicObjectMessage(channelName:)`); none are omitted.
 
 @testable import AblyLiveObjects
 @testable import AblyLiveObjectsTesting

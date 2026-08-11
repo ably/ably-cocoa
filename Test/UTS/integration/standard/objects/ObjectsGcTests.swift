@@ -27,7 +27,7 @@ final class ObjectsGcTests: IntegrationTestCase {
 
     // UTS: objects/integration/RTO10/tombstoned-object-gc-recreate-0
     @Test(arguments: [false, true]) // useBinaryProtocol: false = JSON, true = msgpack
-    func test_RTO10_tombstoned_object_is_recreatable_with_new_objectId(useBinaryProtocol: Bool) async throws {
+    func RTO10_tombstoned_object_is_recreatable_with_new_objectId(useBinaryProtocol: Bool) async throws {
         // The spec's BEFORE/AFTER ALL sandbox app provisioning is owned by the withSandboxApp scope.
         try await withSandboxApp { app in
             // Setup
@@ -77,7 +77,7 @@ final class ObjectsGcTests: IntegrationTestCase {
 
     // UTS: objects/integration/RTLM19/tombstoned-entry-gc-reset-0
     @Test(arguments: [false, true]) // useBinaryProtocol: false = JSON, true = msgpack
-    func test_RTLM19_tombstoned_map_entry_is_re_settable(useBinaryProtocol: Bool) async throws {
+    func RTLM19_tombstoned_map_entry_is_re_settable(useBinaryProtocol: Bool) async throws {
         // The spec's BEFORE/AFTER ALL sandbox app provisioning is owned by the withSandboxApp scope.
         try await withSandboxApp { app in
             // Setup

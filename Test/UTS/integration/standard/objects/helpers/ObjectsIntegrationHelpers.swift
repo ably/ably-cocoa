@@ -4,8 +4,7 @@ import Ably
 import AblyLiveObjects
 
 /// Shared wiring and read helpers for the `objects` direct-sandbox integration suites
-/// (`integration/standard/objects/`) — the cocoa counterpart of the client/channel builders in
-/// ably-java's `integration/standard/liveobjects/ObjectsLifecycleTest.kt` et al.
+/// (`integration/standard/objects/`).
 
 /// Client options for a realtime client wired straight to the nonprod sandbox (no proxy), with the
 /// LiveObjects plugin installed (accessing `channel.object` without it is a programmer error).
@@ -31,7 +30,7 @@ func objectsChannel(_ client: ARTRealtime,
 // MARK: - Dynamic `value()` reads (RTPO7)
 
 // The spec's dynamic `pathObj.value()` returns "the resolved counter value or any primitive";
-// ably-cocoa's typed views split that read per expected type (`objects-mapping.md` §4). These
+// ably-cocoa's typed views split that read per expected type. These
 // helpers perform the read against the expected type, returning `nil` when the path doesn't resolve
 // or resolves to a different type — which is also how the spec's `value() == null` (the tombstoned /
 // absent case, RTLM5d2h) is asserted. A thrown RTO25 precondition error also reads as `nil` here;
@@ -61,8 +60,8 @@ struct ObjectsHelperError: Error, CustomStringConvertible {
     let description: String
 }
 
-/// The spec's `pathObj.instance().id` against an expected **counter** — unwraps the `Instance` enum
-/// (`objects-mapping.md` §5), stopping the test if nothing resolves or the instance isn't a counter.
+/// The spec's `pathObj.instance().id` against an expected **counter** — unwraps the `Instance` enum,
+/// stopping the test if nothing resolves or the instance isn't a counter.
 func counterInstanceId(at node: any PathObject,
                        sourceLocation: SourceLocation = #_sourceLocation) throws -> String {
     let instance = try #require(try node.instance(),

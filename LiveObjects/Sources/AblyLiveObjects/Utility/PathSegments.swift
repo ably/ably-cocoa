@@ -8,13 +8,13 @@ import Foundation
 /// user-supplied dot-delimited `at()` argument back into segments (RTPO6b). The stored segments are
 /// never re-parsed, so a segment may contain any character (including a backslash) without ambiguity.
 ///
-/// This mirrors ably-js `pathobject.ts` (`_escapePath` / `at`) exactly, so the rendered path string
+/// This mirrors ably-js's path-escaping (`_escapePath` / `at`) exactly, so the rendered path string
 /// agrees byte-for-byte across SDKs.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal enum PathSegments {
     /// RTPO6b — split `path` on unescaped dots; `\.` yields a literal dot; any other `\x` keeps the
-    /// backslash; a trailing lone `\` is kept. `""` parses to one empty segment (ably-js `at("")`
-    /// parity). Manual scanner (no regex lookbehind), ported from ably-js `pathobject.ts#at`.
+    /// backslash; a trailing lone `\` is kept. `""` parses to one empty segment. Manual scanner (no
+    /// regex lookbehind), matching ably-js's path-escaping behaviour.
     internal static func parse(_ path: String) -> [String] {
         var segments: [String] = []
         var currentSegment = ""

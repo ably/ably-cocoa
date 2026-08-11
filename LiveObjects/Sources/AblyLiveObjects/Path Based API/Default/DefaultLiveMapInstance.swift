@@ -1,7 +1,7 @@
 import Ably
 import Foundation
 
-/// Default implementation of ``LiveMapInstance`` (Kotlin `DefaultLiveMapInstance`), bound to a
+/// Default implementation of ``LiveMapInstance``, bound to a
 /// specific ``InternalDefaultLiveMap`` (RTINS2a). Operations dereference the wrapped map in O(1) — no
 /// path resolution. Spec: `RTINS1`, `RTTS10a`.
 ///
@@ -90,7 +90,7 @@ internal final class DefaultLiveMapInstance: LiveMapInstance {
                     return
                 }
                 // RTINS16e1: an Instance wrapping this map (identity-based, RTINS16g).
-                // RTINS16e2: the PAOM3-converted public message stamped onto the update in P2 (nil for
+                // RTINS16e2: the PAOM3-converted public message stamped onto the update (nil for
                 // sync-originated updates).
                 listener(.init(object: .liveMap(self), message: update.objectMessage))
             },
@@ -117,7 +117,7 @@ internal final class DefaultLiveMapInstance: LiveMapInstance {
 
     /// Recursively compacts a map node to a JSON-serializable ``JSONValue`` object.
     ///
-    /// Cycle handling mirrors ably-java (`InternalLiveMap.compactJson`): a visited object id is added
+    /// Cycle handling: a visited object id is added
     /// **before** iterating and never removed, so a map referenced twice on sibling branches yields the
     /// marker on the second sibling too. A cycle is emitted as a single-property object
     /// `{"objectId": <id>}` — the **RTPO14b2** marker format (distinct from RTPO13c5's in-memory-reference
@@ -177,7 +177,7 @@ internal final class DefaultLiveMapInstance: LiveMapInstance {
     }
 }
 
-// MARK: - Instance construction seam (P4 `PathObject.instance()`)
+// MARK: - Instance construction seam (`PathObject.instance()`)
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal extension Instance {
@@ -212,7 +212,7 @@ internal extension Instance {
     }
 
     /// Builds the identity-addressed ``Instance`` wrapping an ``ObjectsPool`` entry — a directly
-    /// referenced `LiveObject` (e.g. the root map, or an `objectId`-resolved object). This is the P4
+    /// referenced `LiveObject` (e.g. the root map, or an `objectId`-resolved object). This is the
     /// seam for resolving a path to a concrete object rather than a map-entry value.
     static func from(
         poolEntry: ObjectsPool.Entry,

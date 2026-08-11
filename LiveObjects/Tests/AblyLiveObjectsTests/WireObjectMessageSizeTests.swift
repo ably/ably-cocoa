@@ -7,14 +7,14 @@ import Testing
 
 /// Tests for the OM3 message-size calculation and the RTO15d publish-size gate.
 ///
-/// These are ported from ably-java's `ObjectMessageSizeTest`. The size algorithm is implemented on
-/// the `ProtocolTypes` (non-wire) `OutboundObjectMessage` — see the explanatory comment in
-/// `ObjectMessage.swift` — so the tests exercise it there.
+/// These vectors mirror ably-java's ObjectMessage size tests so the RTO15d size gate's accept/reject
+/// decisions stay aligned across SDKs (the byte-length semantics the OM3 "length" wording leaves
+/// underspecified). The size algorithm is implemented on the `ProtocolTypes` (non-wire)
+/// `OutboundObjectMessage` — see the explanatory comment in `ObjectMessage.swift` — so the tests
+/// exercise it there.
 struct WireObjectMessageSizeTests {
     // MARK: - OM3 composite size
 
-    // Ported from ably-java `ObjectMessageSizeTest.testObjectMessageSizeWithinLimit`.
-    //
     // A message exercising every size-contributing field, whose expected size is
     // clientId(11) + operation(54) + object(46) + extras(26) = 137 bytes.
     // @spec OM3
@@ -100,8 +100,6 @@ struct WireObjectMessageSizeTests {
         #expect(objectMessage.size == 137)
     }
 
-    // Ported from ably-java `ObjectMessageSizeTest.testObjectMessageSizeForUnicodeCharacters`.
-    //
     // Confirms OD3e measures strings in UTF-8 bytes: 你 -> 3 bytes, 😊 -> 4 bytes.
     // @spec OD3e
     @Test
@@ -203,8 +201,6 @@ struct WireObjectMessageSizeTests {
         )
     }
 
-    // Ported from ably-java `ObjectMessageSizeTest.testObjectMessageSizeAboveLimit`.
-    //
     // Two messages of 60 KiB + 5 KiB = 66560 bytes exceed the 64 KiB (65536-byte) default limit, so
     // the publish is rejected with a 40009 error before reaching the core SDK.
     // @spec RTO15d
@@ -247,7 +243,7 @@ struct WireObjectMessageSizeTests {
         try await realtimeObjects.testsOnly_publish(objectMessages: [message], coreSDK: coreSDK)
     }
 
-    // DEV-23 / RTO15d: the gate reads the connection's negotiated `maxMessageSize` (from the latest
+    // RTO15d: the gate reads the connection's negotiated `maxMessageSize` (from the latest
     // CONNECTED ProtocolMessage's connectionDetails, via `CoreSDK.nosync_maxMessageSize`). A message
     // within the 65536 default but above the smaller negotiated limit is rejected against that limit.
     // @spec RTO15d
@@ -271,7 +267,7 @@ struct WireObjectMessageSizeTests {
         #expect(error.message == "ObjectMessages size 3072 exceeds maximum allowed size of 2048 bytes")
     }
 
-    // DEV-23 / RTO15d: when the core SDK exposes no negotiated `maxMessageSize` (nil — no connection
+    // RTO15d: when the core SDK exposes no negotiated `maxMessageSize` (nil — no connection
     // details, or the server sent no limit), the gate falls back to the 65536 Ably default, so a
     // message that fits the default is accepted.
     // @spec RTO15d

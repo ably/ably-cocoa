@@ -44,7 +44,8 @@ import Testing
 final class InstanceTests {
     // MARK: - RTINS3: id property returns objectId
 
-    // UTS: objects/unit/RTINS3/id-returns-objectid-0 — RTINS3a (LiveObject -> objectId). RTINS3b (primitive
+    // UTS: objects/unit/RTINS3/id-returns-objectid-0
+    // RTINS3a (LiveObject -> objectId). RTINS3b (primitive
     // -> null) is compile-time-unrepresentable (DEV-1).
     @Test
     func RTINS3a_id_returns_objectid() throws {
@@ -68,7 +69,8 @@ final class InstanceTests {
 
     // MARK: - RTINS4: value() returns counter number or primitive
 
-    // UTS: objects/unit/RTINS4/value-counter-0 — RTINS4b (counter -> value) and RTINS4c (primitive ->
+    // UTS: objects/unit/RTINS4/value-counter-0
+    // RTINS4b (counter -> value) and RTINS4c (primitive ->
     // value). RTINS4d (map -> null) is compile-time-unrepresentable (DEV-1).
     @Test
     func RTINS4_value_counter_and_primitive() throws {
@@ -91,7 +93,8 @@ final class InstanceTests {
 
     // MARK: - RTINS5: get() returns Instance wrapping entry value
 
-    // UTS: objects/unit/RTINS5/get-wraps-entry-0 — RTINS5c (look up key, wrap in Instance; nil when absent).
+    // UTS: objects/unit/RTINS5/get-wraps-entry-0
+    // RTINS5c (look up key, wrap in Instance; nil when absent).
     // RTINS5d (non-map -> null) is compile-time-unrepresentable (DEV-1).
     @Test
     func RTINS5c_get_wraps_entry() throws {
@@ -135,7 +138,8 @@ final class InstanceTests {
 
     // MARK: - RTINS6: entries() returns array of [key, Instance] pairs
 
-    // UTS: objects/unit/RTINS6/entries-yields-instances-0 — RTINS6b. RTINS6c (non-map -> empty array) is
+    // UTS: objects/unit/RTINS6/entries-yields-instances-0
+    // RTINS6b. RTINS6c (non-map -> empty array) is
     // compile-time-unrepresentable (DEV-1).
     @Test
     func RTINS6b_entries_yields_instances() throws {
@@ -168,7 +172,8 @@ final class InstanceTests {
 
     // MARK: - RTINS9: size() returns non-tombstoned count
 
-    // UTS: objects/unit/RTINS9/size-0 — RTINS9b (map -> entry count). RTINS9c (non-map -> null) is
+    // UTS: objects/unit/RTINS9/size-0
+    // RTINS9b (map -> entry count). RTINS9c (non-map -> null) is
     // compile-time-unrepresentable (DEV-1).
     @Test
     func RTINS9b_size() throws {
@@ -193,7 +198,8 @@ final class InstanceTests {
 
     // MARK: - RTINS10: compact() recursively compacts
 
-    // UTS: objects/unit/RTINS10/compact-0 — RTINS10b (behaves like PathObject#compact on the wrapped value).
+    // UTS: objects/unit/RTINS10/compact-0
+    // RTINS10b (behaves like PathObject#compact on the wrapped value).
     @Test
     func RTINS10_compact() throws {
         let internalQueue = ObjectsUTS.createInternalQueue()
@@ -231,7 +237,8 @@ final class InstanceTests {
 
     // MARK: - RTINS12: set() delegates to InternalLiveMap#set
 
-    // UTS: objects/unit/RTINS12/set-delegates-0 — RTINS12c. Asserts the published MAP_SET operation (the
+    // UTS: objects/unit/RTINS12/set-delegates-0
+    // RTINS12c. Asserts the published MAP_SET operation (the
     // mock does not apply locally, so the spec's post-apply `root.get("name").value() == "Bob"` is out
     // of unit scope).
     @Test
@@ -262,7 +269,8 @@ final class InstanceTests {
 
     // MARK: - RTINS13: remove() delegates to InternalLiveMap#remove
 
-    // UTS: objects/unit/RTINS13/remove-delegates-0 — RTINS13c. Asserts the published MAP_REMOVE operation.
+    // UTS: objects/unit/RTINS13/remove-delegates-0
+    // RTINS13c. Asserts the published MAP_REMOVE operation.
     @Test
     func RTINS13c_remove_delegates() async throws {
         let internalQueue = ObjectsUTS.createInternalQueue()
@@ -290,7 +298,8 @@ final class InstanceTests {
 
     // MARK: - RTINS14 / RTINS14a: increment() delegates to InternalLiveCounter#increment
 
-    // UTS: objects/unit/RTINS14/increment-delegates-0 — RTINS14c. Asserts the published COUNTER_INC.
+    // UTS: objects/unit/RTINS14/increment-delegates-0
+    // RTINS14c. Asserts the published COUNTER_INC.
     @Test
     func RTINS14c_increment_delegates() async throws {
         let (counterInstance, published) = try makeCounterInstanceCapturingPublish(objectID: "counter:score@1000", data: 100)
@@ -303,7 +312,8 @@ final class InstanceTests {
         #expect(messages[0].operation?.counterInc?.number == NSNumber(value: 25))
     }
 
-    // UTS: objects/unit/RTINS14a/increment-default-0 — RTINS14a1 (amount defaults to 1). Asserts the
+    // UTS: objects/unit/RTINS14a/increment-default-0
+    // RTINS14a1 (amount defaults to 1). Asserts the
     // published number is 1 (the spec's post-apply `value() == 101` needs the full pipeline).
     @Test
     func RTINS14a_increment_default() async throws {
@@ -316,7 +326,8 @@ final class InstanceTests {
 
     // MARK: - RTINS15 / RTINS15a: decrement() delegates to InternalLiveCounter#decrement
 
-    // UTS: objects/unit/RTINS15/decrement-delegates-0 — RTINS15c. Decrement is increment with a negated
+    // UTS: objects/unit/RTINS15/decrement-delegates-0
+    // RTINS15c. Decrement is increment with a negated
     // amount, so the published COUNTER_INC carries a negative number.
     @Test
     func RTINS15c_decrement_delegates() async throws {
@@ -328,7 +339,8 @@ final class InstanceTests {
         #expect(messages[0].operation?.counterInc?.number == NSNumber(value: -10))
     }
 
-    // UTS: objects/unit/RTINS15a/decrement-default-0 — RTINS15a1 (amount defaults to 1 => published -1).
+    // UTS: objects/unit/RTINS15a/decrement-default-0
+    // RTINS15a1 (amount defaults to 1 => published -1).
     @Test
     func RTINS15a_decrement_default() async throws {
         let (counterInstance, published) = try makeCounterInstanceCapturingPublish(objectID: "counter:score@1000", data: 100)
@@ -340,7 +352,8 @@ final class InstanceTests {
 
     // MARK: - RTINS16: subscribe() receives InstanceSubscriptionEvent
 
-    // UTS: objects/unit/RTINS16/subscribe-receives-events-0 — RTINS16d/e1/f/g. The update is driven by
+    // UTS: objects/unit/RTINS16/subscribe-receives-events-0
+    // RTINS16d/e1/f/g. The update is driven by
     // applying a COUNTER_INC to the node directly (the unit stand-in for `mock_ws.send_to_client`).
     @Test
     func RTINS16_subscribe_receives_events() async throws {
@@ -370,7 +383,8 @@ final class InstanceTests {
         sub.unsubscribe()
     }
 
-    // UTS: objects/unit/RTINS16e2/subscription-event-message-0 — RTINS16e1/e2. The event carries both the
+    // UTS: objects/unit/RTINS16e2/subscription-event-message-0
+    // RTINS16e1/e2. The event carries both the
     // Instance and the PublicAPI::ObjectMessage derived from the triggering ObjectMessage.
     @Test
     func RTINS16e2_subscription_event_message() async throws {
@@ -422,7 +436,8 @@ final class InstanceTests {
 
     // MARK: - RTINS16f: subscribe() returns Subscription for deregistration
 
-    // UTS: objects/unit/RTINS16f/subscribe-returns-subscription-0 — after `unsubscribe()` the listener must
+    // UTS: objects/unit/RTINS16f/subscribe-returns-subscription-0
+    // after `unsubscribe()` the listener must
     // not fire for a subsequent update.
     @Test
     func RTINS16f_unsubscribe_stops_delivery() async throws {

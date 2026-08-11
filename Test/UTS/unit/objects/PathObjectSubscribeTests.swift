@@ -122,7 +122,8 @@ final class PathObjectSubscribeTests {
 
     // MARK: - RTPO19: subscribe receives events
 
-    // UTS: objects/unit/RTPO19/subscribe-receives-events-0 — RTPO19d/e1/e2: a Subscription is returned, the
+    // UTS: objects/unit/RTPO19/subscribe-receives-events-0
+    // RTPO19d/e1/e2: a Subscription is returned, the
     // event's object points at the change path, and the event carries the source public ObjectMessage.
     @Test
     func RTPO19_subscribe_receives_events() throws {
@@ -145,7 +146,8 @@ final class PathObjectSubscribeTests {
         #expect(message.channel == Self.channelName)
     }
 
-    // UTS: objects/unit/RTPO19e1/event-path-object-correct-0 — RTPO19e1: the event's PathObject resolves to
+    // UTS: objects/unit/RTPO19e1/event-path-object-correct-0
+    // RTPO19e1: the event's PathObject resolves to
     // the just-updated value (100 + 7 = 107).
     @Test
     func RTPO19e1_event_path_object_correct() throws {
@@ -163,7 +165,8 @@ final class PathObjectSubscribeTests {
         #expect(try event.object.asLiveCounter().value() == 107)
     }
 
-    // UTS: objects/unit/RTPO19e2/event-message-delivery-0 — RTPO19e2/RTO24b2b2: the event's message copies
+    // UTS: objects/unit/RTPO19e2/event-message-delivery-0
+    // RTPO19e2/RTO24b2b2: the event's message copies
     // channel/serial/siteCode/operation from the source ObjectMessage.
     @Test
     func RTPO19e2_event_message_delivery() throws {
@@ -185,7 +188,8 @@ final class PathObjectSubscribeTests {
         #expect(message.operation.counterInc?.number == 42)
     }
 
-    // UTS: objects/unit/RTPO19e2/event-message-omitted-no-operation-0 — RTO4b2a: a sync-triggered update has
+    // UTS: objects/unit/RTPO19e2/event-message-omitted-no-operation-0
+    // RTO4b2a: a sync-triggered update has
     // no operation, so the delivered event has no message.
     @Test
     func RTPO19e2_event_message_omitted_for_sync() throws {
@@ -216,7 +220,8 @@ final class PathObjectSubscribeTests {
 
     // MARK: - RTPO19b: access-config guard (RTO25)
 
-    // UTS: objects/unit/RTPO19b/subscribe-precondition-detached-0 — RTO25b: subscribe on a DETACHED/FAILED
+    // UTS: objects/unit/RTPO19b/subscribe-precondition-detached-0
+    // RTO25b: subscribe on a DETACHED/FAILED
     // channel throws 90001/400.
     @Test(arguments: [_AblyPluginSupportPrivate.RealtimeChannelState.detached, .failed])
     func RTPO19b_subscribe_precondition_unusable_state(state: _AblyPluginSupportPrivate.RealtimeChannelState) throws {
@@ -228,7 +233,7 @@ final class PathObjectSubscribeTests {
         #expect(error?.statusCode == 400)
     }
 
-    // MARK: - RTPO19c1a: depth validation (DEV-9)
+    // MARK: - RTPO19c1a: depth validation
 
     // UTS: objects/unit/RTPO19c1a/subscribe-non-positive-depth-throws-0 & subscribe-negative-depth-throws-0
     // — a non-positive depth throws 40003.
@@ -243,7 +248,8 @@ final class PathObjectSubscribeTests {
 
     // MARK: - RTPO19c1 / RTO24c1: depth-window coverage
 
-    // UTS: objects/unit/RTPO19c1/subscribe-depth-1-self-only-0 — depth=1 covers only the exact path.
+    // UTS: objects/unit/RTPO19c1/subscribe-depth-1-self-only-0
+    // depth=1 covers only the exact path.
     @Test
     func RTPO19c1_depth_1_self_only() throws {
         let f = Self.makeFixture()
@@ -267,7 +273,8 @@ final class PathObjectSubscribeTests {
         #expect(events.events.count == 1)
     }
 
-    // UTS: objects/unit/RTPO19c1/subscribe-depth-2-children-0 — depth=2 covers self and one level of children.
+    // UTS: objects/unit/RTPO19c1/subscribe-depth-2-children-0
+    // depth=2 covers self and one level of children.
     @Test
     func RTPO19c1_depth_2_children() throws {
         let f = Self.makeFixture()
@@ -294,7 +301,8 @@ final class PathObjectSubscribeTests {
         #expect(events.events.count == 2)
     }
 
-    // UTS: objects/unit/RTPO19c1/subscribe-unlimited-depth-0 — no depth: events at any depth.
+    // UTS: objects/unit/RTPO19c1/subscribe-unlimited-depth-0
+    // no depth: events at any depth.
     @Test
     func RTPO19c1_unlimited_depth() throws {
         let f = Self.makeFixture()
@@ -311,7 +319,8 @@ final class PathObjectSubscribeTests {
         #expect(events.events.count >= 3)
     }
 
-    // UTS: objects/unit/RTO24c1/depth-filtering-formula-0 — subPath prefix + depth-window formula: subscribe
+    // UTS: objects/unit/RTO24c1/depth-filtering-formula-0
+    // subPath prefix + depth-window formula: subscribe
     // at "profile" depth 2 covers self and child, not grandchild.
     @Test
     func RTO24c1_depth_filtering_formula() throws {
@@ -345,7 +354,8 @@ final class PathObjectSubscribeTests {
         #expect(events.events.count == 2)
     }
 
-    // UTS: objects/unit/RTO24c1/prefix-mismatch-0 — a subscription at "profile" ignores sibling changes.
+    // UTS: objects/unit/RTO24c1/prefix-mismatch-0
+    // a subscription at "profile" ignores sibling changes.
     @Test
     func RTO24c1_prefix_mismatch() throws {
         let f = Self.makeFixture()
@@ -366,7 +376,8 @@ final class PathObjectSubscribeTests {
 
     // MARK: - RTPO19d: Subscription unsubscribe (SUB2)
 
-    // UTS: objects/unit/RTPO19d/subscribe-returns-subscription-0 — unsubscribe stops further delivery.
+    // UTS: objects/unit/RTPO19d/subscribe-returns-subscription-0
+    // unsubscribe stops further delivery.
     @Test
     func RTPO19d_unsubscribe_stops_delivery() throws {
         let f = Self.makeFixture()
@@ -387,7 +398,8 @@ final class PathObjectSubscribeTests {
 
     // MARK: - RTPO19f: subscription follows path, not identity
 
-    // UTS: objects/unit/RTPO19f/subscribe-follows-path-0 — after "score" is repointed to a new counter, the
+    // UTS: objects/unit/RTPO19f/subscribe-follows-path-0
+    // after "score" is repointed to a new counter, the
     // subscription still receives that new counter's events.
     @Test
     func RTPO19f_subscribe_follows_path() throws {
@@ -407,7 +419,8 @@ final class PathObjectSubscribeTests {
 
     // MARK: - RTPO19: primitive path & MAP_CLEAR
 
-    // UTS: objects/unit/RTPO19/subscribe-primitive-path-0 — a subscription on a primitive path fires when
+    // UTS: objects/unit/RTPO19/subscribe-primitive-path-0
+    // a subscription on a primitive path fires when
     // the map entry at that key changes.
     @Test
     func RTPO19_subscribe_primitive_path() throws {
@@ -424,7 +437,8 @@ final class PathObjectSubscribeTests {
         #expect(events.events.first?.object.path == "name")
     }
 
-    // UTS: objects/unit/RTPO19/map-clear-triggers-child-events-0 — MAP_CLEAR fans out to subscriptions.
+    // UTS: objects/unit/RTPO19/map-clear-triggers-child-events-0
+    // MAP_CLEAR fans out to subscriptions.
     @Test
     func RTPO19_map_clear_triggers_events() throws {
         let f = Self.makeFixture()
@@ -439,7 +453,8 @@ final class PathObjectSubscribeTests {
         #expect(events.events.count >= 1)
     }
 
-    // UTS: objects/unit/RTPO19/child-events-bubble-0 — child events bubble up to a parent subscription.
+    // UTS: objects/unit/RTPO19/child-events-bubble-0
+    // child events bubble up to a parent subscription.
     @Test
     func RTPO19_child_events_bubble() throws {
         let f = Self.makeFixture()
@@ -457,7 +472,8 @@ final class PathObjectSubscribeTests {
 
     // MARK: - RTO24b: candidate-path construction & multi-path dispatch
 
-    // UTS: objects/unit/RTO24b2a/candidate-paths-map-keys-0 — a MAP_SET on root with key "score" notifies
+    // UTS: objects/unit/RTO24b2a/candidate-paths-map-keys-0
+    // a MAP_SET on root with key "score" notifies
     // both the root subscription (candidate []) and the "score" subscription (candidate ["score"]).
     @Test
     func RTO24b2a_candidate_paths_map_keys() throws {
@@ -477,7 +493,8 @@ final class PathObjectSubscribeTests {
         #expect(rootEvents.events.count == 1)
     }
 
-    // UTS: objects/unit/RTO24b2b/fires-once-per-dispatch-0 — a subscription covering multiple candidates
+    // UTS: objects/unit/RTO24b2b/fires-once-per-dispatch-0
+    // a subscription covering multiple candidates
     // fires exactly once per dispatch (with the most-preferred candidate).
     @Test
     func RTO24b2b_fires_once_per_dispatch() throws {
@@ -496,7 +513,8 @@ final class PathObjectSubscribeTests {
         #expect(events.events.count == 2)
     }
 
-    // UTS: objects/unit/RTO24b1/multi-path-dispatch-0 — an object reachable via two paths notifies both.
+    // UTS: objects/unit/RTO24b1/multi-path-dispatch-0
+    // an object reachable via two paths notifies both.
     @Test
     func RTO24b1_multi_path_dispatch() throws {
         let f = Self.makeFixture()
@@ -519,7 +537,8 @@ final class PathObjectSubscribeTests {
         #expect(aliasEvents.events.first?.object.path == "alias")
     }
 
-    // UTS: objects/unit/RTO24b2c/listener-exception-caught-0 — the spec's throwing-listener branch is
+    // UTS: objects/unit/RTO24b2c/listener-exception-caught-0
+    // the spec's throwing-listener branch is
     // compile-time-unrepresentable: `PathObjectSubscriptionCallback` is a non-throwing `@Sendable`
     // closure, so a listener cannot throw (recorded in deviations.md). The observable part —
     // one listener's dispatch does not stop another's — is exercised with two independent listeners.

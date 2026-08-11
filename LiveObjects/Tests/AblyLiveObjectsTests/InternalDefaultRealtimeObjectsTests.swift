@@ -2244,7 +2244,7 @@ struct InternalDefaultRealtimeObjectsTests {
     /// which happens on that queue. The previous blocking `deinit { dispose() }` then tripped
     /// `ably_syncNoDeadlock`'s `.notOnQueue` precondition and crashed (SIGTRAP / EXC_BREAKPOINT).
     /// `deinit` now hops the queue-confined cleanup asynchronously (never sync-blocking its own
-    /// queue), mirroring ably-java's non-blocking `DefaultRealtimeObject.dispose`. This
+    /// queue). This
     /// deinit-on-queue hazard is cocoa-specific (absent in a GC'd runtime).
     struct DisposeTests {
         @Test

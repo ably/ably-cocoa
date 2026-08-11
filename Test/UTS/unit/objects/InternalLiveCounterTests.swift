@@ -9,7 +9,7 @@
 // - (D-1) Construction: the spec writes `InternalLiveCounter(objectId:)`. The Swift counter needs a
 //   logger/queue/callback-queue/clock, so it is built via
 //   `InternalDefaultLiveCounter.createZeroValued(...)` (the `makeCounter` helper). Standard mock
-//   preamble per the audit §2.
+//   preamble.
 // - (D-2) Queue discipline: every mutating `nosync_*` entry point (`nosync_apply`,
 //   `nosync_replaceData`) runs inside `internalQueue.ably_syncNoDeadlock { }`. Construction-time
 //   `testsOnly_set*` seams hop onto the queue themselves, so setup writes are called WITHOUT the
@@ -384,7 +384,8 @@ struct InternalLiveCounterTests {
         #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
     }
 
-    // UTS: objects/unit/RTLO5/tombstone-zero-value-counter-emits-update-0 — RTLC14c: the tombstone diff of an
+    // UTS: objects/unit/RTLO5/tombstone-zero-value-counter-emits-update-0
+    // RTLC14c: the tombstone diff of an
     // already-zero counter (0 -> 0) is a zero delta, but the RTLC14c tombstone carve-out means it must NOT be
     // marked a noop; it is still delivered (carrying the tombstone flag and amount 0) so the RTLO4b4c3c
     // listener teardown runs. Complements object-delete-tombstones-0 (which tombstones a populated counter).

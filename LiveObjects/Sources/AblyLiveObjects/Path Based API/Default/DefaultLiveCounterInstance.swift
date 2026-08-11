@@ -1,13 +1,8 @@
 import Ably
 import Foundation
 
-/// Default implementation of ``LiveCounterInstance`` (Kotlin `DefaultLiveCounterInstance`), bound to a
-/// specific ``InternalDefaultLiveCounter`` (RTINS2a). Operations dereference the wrapped counter in
-/// O(1) — no path resolution. Spec: `RTINS1`, `RTTS10b`.
-///
-/// The RTO25b access-precondition checks are performed by the underlying node accessors
-/// (`value(coreSDK:)`, `subscribe(...)`, `increment(...)`) — the same checks the internal engine
-/// already enforces; no new checks are invented here.
+/// Default implementation of ``LiveCounterInstance``, bound to a specific
+/// ``InternalDefaultLiveCounter`` (RTINS2a). Spec: `RTINS1`, `RTTS10b`.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal final class DefaultLiveCounterInstance: LiveCounterInstance {
     private let node: InternalDefaultLiveCounter
@@ -61,7 +56,7 @@ internal final class DefaultLiveCounterInstance: LiveCounterInstance {
                     return
                 }
                 // RTINS16e1: an Instance wrapping this counter (identity-based, RTINS16g).
-                // RTINS16e2: the PAOM3-converted public message stamped onto the update in P2 (nil for
+                // RTINS16e2: the PAOM3-converted public message stamped onto the update (nil for
                 // sync-originated updates).
                 listener(.init(object: .liveCounter(self), message: update.objectMessage))
             },

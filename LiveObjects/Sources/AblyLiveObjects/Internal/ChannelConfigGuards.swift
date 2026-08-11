@@ -3,31 +3,15 @@ import Ably
 
 /// The channel-configuration precondition guards for the path-based public API. Each public
 /// read/write entry point runs the relevant guard before touching the object graph, per
-/// RTO23a/RTO25/RTO26.
-///
-/// ## Implementability against the plugin API
-///
-/// Only some of ably-java's guard checks are expressible through `_AblyPluginSupportPrivate`
-/// (`PluginAPIProtocol`) as it stands today:
-///
-/// | Check | Spec | Implemented? |
-/// |---|---|---|
-/// | Channel state (DETACHED/FAILED, +SUSPENDED for writes) | RTO25/RTO26 | ✅ via `CoreSDK.nosync_channelState` |
-/// | `object_subscribe` / `object_publish` channel mode | RTO2a2/RTO2b2 (40024) | ✅ via `CoreSDK.nosync_objectChannelModes` |
-/// | `echoMessages` client option | RTO26c | ✅ via `CoreSDK.echoMessages` |
-/// | Connection `isActive` (publishable state) | RTO15b (RTL6c publish conditions) | ✅ via `CoreSDK.nosync_connectionStateError` |
-///
-/// The channel-state check produces the same 90001 error the internal engine's node accessors run
-/// (`CoreSDK.nosync_validateChannelStateForAccessAPI` / `...ForWriteAPI`), so no new state check is
-/// invented. The connection-active
-/// check is RTO15b: the publish must adhere to the same connection-state conditions as message
-/// publishing (RTL6c), which ably-java enforces via its publishable-connection guard.
+/// RTO23a/RTO25/RTO26. The guards reuse the core SDK's own `nosync_` precondition accessors
+/// (channel state, object modes, `echoMessages`, connection state), so they raise the same errors
+/// the internal engine's node accessors already produce rather than inventing new checks.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal enum ChannelConfigGuards {
     /// Validates the access (read/subscribe) API preconditions: the channel must be attachable (not
     /// DETACHED/FAILED) and configured with the `object_subscribe` mode. Spec: RTO25.
     internal static func throwIfInvalidAccessApiConfiguration(coreSDK: CoreSDK, internalQueue: DispatchQueue) throws(ARTErrorInfo) {
-        // Check order (mirrors ably-java): channel state, then `object_subscribe` mode.
+        // Check order: channel state, then `object_subscribe` mode.
         let error = internalQueue.ably_syncNoDeadlock { () -> ARTErrorInfo? in
             // RTO25b — channel state (reuses the engine's node-accessor check).
             nosync_channelStateError(coreSDK: coreSDK, notIn: [.detached, .failed], operationDescription: "access API")
@@ -57,7 +41,7 @@ internal enum ChannelConfigGuards {
     /// must be usable (not DETACHED/FAILED/SUSPENDED) and configured with the `object_publish` mode.
     /// Spec: RTO26.
     internal static func throwIfInvalidWriteApiConfiguration(coreSDK: CoreSDK, internalQueue: DispatchQueue) throws(ARTErrorInfo) {
-        // Check order (mirrors ably-java): echoMessages, then channel state, then `object_publish` mode.
+        // Check order: echoMessages, then channel state, then `object_publish` mode.
         let error = internalQueue.ably_syncNoDeadlock { () -> ARTErrorInfo? in
             // RTO26c — `echoMessages` must be enabled.
             nosync_echoMessagesDisabledError(coreSDK: coreSDK)
@@ -72,7 +56,7 @@ internal enum ChannelConfigGuards {
     }
 
     /// RTO23e / RTL33 — the *ensure-active-channel* procedure that `RealtimeObject.get()` runs before
-    /// waiting for sync. Mirrors ably-java's `ensureAttached` / `attachAsync`:
+    /// waiting for sync:
     ///
     /// - **RTL33a** — ATTACHED or SUSPENDED: already usable, no attach performed.
     /// - **RTL33b** — INITIALIZED / DETACHED / DETACHING / ATTACHING: implicitly attach (per RTL4, via
@@ -126,16 +110,16 @@ internal enum ChannelConfigGuards {
     }
 
     /// Validates that the channel is in a publishable state (connection active, channel not
-    /// FAILED/SUSPENDED). The connection-active portion is RTO15b (the RTL6c publish conditions, which
-    /// ably-java enforces via its publishable-connection guard); the channel-state portion is RTO26b.
+    /// FAILED/SUSPENDED). The connection-active portion is RTO15b (the RTL6c publish conditions); the
+    /// channel-state portion is RTO26b.
     /// Note: currently unused in the write path — the core SDK's publish enforces RTL6c itself — and
     /// retained (with tests) for parity should a pre-publish gate be wanted.
     internal static func throwIfUnpublishableState(coreSDK: CoreSDK, internalQueue: DispatchQueue) throws(ARTErrorInfo) {
-        // Check order (mirrors ably-java): connection active, then channel state (FAILED/SUSPENDED).
+        // Check order: connection active, then channel state (FAILED/SUSPENDED).
         let error = internalQueue.ably_syncNoDeadlock { () -> ARTErrorInfo? in
             // The connection must be in a publishable (active) state; if not, surface the connection's
-            // own state error. cocoa returns the connection's `errorReason`, or a synthetic 80002 error
-            // when it has none, in place of ably-java's `connectionManager.stateErrorInfo`.
+            // own state error: the connection's `errorReason`, or a synthetic 80002 error when it has
+            // none.
             coreSDK.nosync_connectionStateError
                 ?? nosync_channelStateError(coreSDK: coreSDK, notIn: [.failed, .suspended], operationDescription: "publish")
         }
@@ -144,10 +128,9 @@ internal enum ChannelConfigGuards {
         }
     }
 
-    /// RTPO19c1a — validates a subscription `depth`. ably-java throws 40003 from the
-    /// `PathObjectSubscriptionOptions(int)` constructor; the shipped Swift `init(depth:)` is
-    /// non-throwing and frozen, so the check moves here, to be called from `subscribe(options:listener:)`
-    /// once path subscriptions land (part 2).
+    /// RTPO19c1a — validates a subscription `depth` (throws 40003 for a non-positive value). The
+    /// shipped Swift `init(depth:)` is non-throwing and frozen, so the check lives here, to be called
+    /// from `subscribe(options:listener:)` once path subscriptions are wired up.
     internal static func validateSubscriptionDepth(_ depth: Int?) throws(ARTErrorInfo) {
         if let depth, depth <= 0 {
             throw LiveObjectsError.invalidInput(message: "Subscription depth must be a positive integer, got \(depth)").toARTErrorInfo()
@@ -158,7 +141,7 @@ internal enum ChannelConfigGuards {
 
     // The following helpers read `nosync_` core-SDK accessors (each guard wraps its checks in a single
     // `ably_syncNoDeadlock` hop). Each returns the relevant `ARTErrorInfo` if the check fails, or `nil`
-    // if it passes — so a guard can chain them with `??` to mirror ably-java's short-circuiting check
+    // if it passes — so a guard can chain them with `??` for short-circuiting evaluation in check
     // order.
 
     /// RTO25b/RTO26b — the channel-state check (reuses the engine's node-accessor precondition).

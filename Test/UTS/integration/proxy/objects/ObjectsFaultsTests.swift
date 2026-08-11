@@ -32,7 +32,7 @@ final class ObjectsFaultsTests: ProxyTestCase {
 
     // UTS: objects/proxy/RTO5a2-RTO17/sync-interrupted-reconnect-0
     @Test
-    func test_RTO5a2_RTO17_sync_interrupted_by_disconnect_resyncs_on_reconnect() async throws {
+    func RTO5a2_RTO17_sync_interrupted_by_disconnect_resyncs_on_reconnect() async throws {
         // Setup
         // (The spec's BEFORE/AFTER ALL sandbox app provisioning, the session teardown, and the
         // common client-close cleanup are owned by the withProxySession/withRealtimeClient scopes.)
@@ -75,7 +75,7 @@ final class ObjectsFaultsTests: ProxyTestCase {
 
     // UTS: objects/proxy/RTO7-RTO8/mutations-buffered-during-resync-0
     @Test
-    func test_RTO7_RTO8_mutations_during_resync_are_buffered_and_applied() async throws {
+    func RTO7_RTO8_mutations_during_resync_are_buffered_and_applied() async throws {
         // Setup
         let channelName = "objects-buffer-resync-\(UUID().uuidString)"
 
@@ -138,7 +138,7 @@ final class ObjectsFaultsTests: ProxyTestCase {
 
     // UTS: objects/proxy/RTO17/server-detach-resync-0
     @Test
-    func test_RTO17_server_initiated_detach_triggers_resync_on_reattach() async throws {
+    func RTO17_server_initiated_detach_triggers_resync_on_reattach() async throws {
         // Setup
         let channelName = "objects-detach-resync-\(UUID().uuidString)"
 
@@ -178,7 +178,7 @@ final class ObjectsFaultsTests: ProxyTestCase {
 
     // UTS: objects/proxy/RTO20e/publish-fails-on-channel-failed-0
     @Test
-    func test_RTO20e_publishAndApply_fails_when_channel_enters_FAILED_during_SYNCING() async throws {
+    func RTO20e_publishAndApply_fails_when_channel_enters_FAILED_during_SYNCING() async throws {
         // Setup
         let channelName = "objects-publish-failed-\(UUID().uuidString)"
 
@@ -257,7 +257,7 @@ final class ObjectsFaultsTests: ProxyTestCase {
 
     // UTS: objects/proxy/RTO5-RTO7/publish-during-sync-echo-after-0
     @Test
-    func test_RTO5_RTO7_publish_during_sync_echo_arrives_after_sync_completes() async throws {
+    func RTO5_RTO7_publish_during_sync_echo_arrives_after_sync_completes() async throws {
         // Setup
         let channelName = "objects-publish-during-sync-\(UUID().uuidString)"
 

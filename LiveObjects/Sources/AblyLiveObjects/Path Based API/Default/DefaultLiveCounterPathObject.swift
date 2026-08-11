@@ -1,6 +1,6 @@
 import Ably
 
-/// Default implementation of ``LiveCounterPathObject`` (Kotlin `DefaultLiveCounterPathObject`).
+/// Default implementation of ``LiveCounterPathObject``.
 ///
 /// Counters are terminal nodes (no navigation), so this only adds the counter read/write operations
 /// on top of ``DefaultPathObject``.

@@ -2,8 +2,7 @@ import Ably
 import Foundation
 
 /// Registry for ``PathObject`` subscriptions and path-event dispatch. One per ``RealtimeObject``
-/// (owned by ``InternalDefaultRealtimeObjects``), mirroring Kotlin's
-/// `DefaultRealtimeObject.pathObjectSubscriptionRegister` and its `PathObjectSubscriptionRegister`.
+/// (owned by ``InternalDefaultRealtimeObjects``).
 ///
 /// ## Concurrency
 ///
@@ -24,8 +23,8 @@ import Foundation
 /// `SubscriptionStorage` broadcasts the *same* update to every subscriber of an event name. Path
 /// dispatch is per-subscription: each registration resolves its *own* covered path from the
 /// candidate list (RTO24b2b, depth-windowed coverage RTO24c1), so a uniform broadcast cannot express
-/// it. This mirrors Kotlin, which likewise subclasses `EventEmitter` with a per-listener `apply`
-/// rather than reusing the LiveMap/LiveCounter change coordinators verbatim. (Deviation candidate.)
+/// it, so an `EventEmitter`-style per-listener `apply` is used rather than reusing the
+/// LiveMap/LiveCounter change coordinators verbatim. (Deviation candidate.)
 ///
 /// Spec: `RTO24`, `RTO24a`, `RTPO19`.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
@@ -51,7 +50,7 @@ internal final class PathObjectSubscriptionRegister: @unchecked Sendable {
 
     /// Queue-confined registrations, keyed by an identity token used for deregistration. Identity
     /// keying (rather than value equality) ensures `nosync_unsubscribe` removes exactly the intended
-    /// registration, mirroring Kotlin's plain-class `PathSubscription`.
+    /// registration.
     private nonisolated(unsafe) var subscriptions: [UUID: PathSubscription] = [:]
 
     internal init(internalQueue: DispatchQueue, userCallbackQueue: DispatchQueue) {
@@ -136,7 +135,7 @@ internal final class PathObjectSubscriptionRegister: @unchecked Sendable {
     }
 }
 
-/// A ``Subscription`` whose `unsubscribe()` runs a closure (Kotlin's `onceSubscription`). Calling
+/// A ``Subscription`` whose `unsubscribe()` runs a closure. Calling
 /// `unsubscribe()` more than once simply re-runs the closure, whose effect is idempotent. Spec:
 /// `SUB2a`, `SUB2b`.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)

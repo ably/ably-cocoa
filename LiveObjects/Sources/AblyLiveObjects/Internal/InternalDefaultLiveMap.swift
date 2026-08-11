@@ -11,15 +11,15 @@ internal protocol LiveMapObjectsPoolDelegate: AnyObject, Sendable {
 /// This provides the implementation behind ``PublicDefaultLiveMap``, via internal versions of the ``LiveMap`` API.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal final class InternalDefaultLiveMap: Sendable {
-    internal let mutableStateMutex: DispatchQueueMutex<MutableState> // internal (not private) for AblyLiveObjectsTesting
+    internal let mutableStateMutex: DispatchQueueMutex<MutableState> // internal for AblyLiveObjectsTesting
 
-    internal let logger: Logger // internal (not private) for AblyLiveObjectsTesting
-    internal let userCallbackQueue: DispatchQueue // internal (not private) for AblyLiveObjectsTesting
-    internal let clock: SimpleClock // internal (not private) for AblyLiveObjectsTesting
+    internal let logger: Logger // internal for AblyLiveObjectsTesting
+    internal let userCallbackQueue: DispatchQueue // internal for AblyLiveObjectsTesting
+    internal let clock: SimpleClock // internal for AblyLiveObjectsTesting
 
     // MARK: - Initialization
 
-    internal init( // internal (not private) for AblyLiveObjectsTesting
+    internal init( // internal for AblyLiveObjectsTesting
         data: [String: InternalObjectsMapEntry],
         objectID: String,
         semantics: WireEnum<ProtocolTypes.ObjectsMapSemantics>?,
@@ -439,7 +439,7 @@ internal final class InternalDefaultLiveMap: Sendable {
 
     // MARK: - Mutable state and the operations that affect it
 
-    internal struct MutableState: InternalLiveObject { // internal (not private) for AblyLiveObjectsTesting
+    internal struct MutableState: InternalLiveObject { // internal for AblyLiveObjectsTesting
         /// The mutable state common to all LiveObjects.
         internal var liveObjectMutableState: LiveObjectMutableState<DefaultLiveMapUpdate>
 
@@ -1117,8 +1117,8 @@ internal final class InternalDefaultLiveMap: Sendable {
         /// delegating to the static helper would read the pool entry's `nosync_isTombstone`,
         /// re-entering this map's already-held mutex — a Swift exclusive-access **crash** (the same
         /// exclusivity class as the `getFullPaths` finding). In that case we answer the
-        /// tombstone question from the state already in hand. Kotlin has no exclusivity checker and
-        /// so needs no such guard; the observable behaviour is identical.
+        /// tombstone question from the state already in hand. This guard exists only to satisfy
+        /// Swift's exclusive-access enforcement; the observable behaviour is unchanged.
         internal func nosync_isEntryTombstonedGuardingSelfReference(_ entry: InternalObjectsMapEntry, objectsPool: ObjectsPool) -> Bool {
             // RTLM14a
             if entry.tombstone {
@@ -1141,8 +1141,8 @@ internal final class InternalDefaultLiveMap: Sendable {
         /// exclusivity class as the `getFullPaths` finding). A self-parent is a legitimate
         /// graph edge (the map referencing itself under a key), so we record it directly on the
         /// state already in hand; `ObjectsPool.nosync_getFullPaths`'s per-branch visited set
-        /// (RTLO4f2) suppresses the resulting self-loop. Kotlin has no exclusivity checker and so
-        /// needs no such guard; the observable behaviour is identical.
+        /// (RTLO4f2) suppresses the resulting self-loop. This guard exists only to satisfy Swift's
+        /// exclusive-access enforcement; the observable behaviour is unchanged.
         private mutating func nosync_addParentReferenceGuardingSelfReference(onObjectWithID objectID: String, key: String, objectsPool: ObjectsPool) {
             if objectID == liveObjectMutableState.objectID {
                 nosync_addParentReference(parentObjectID: objectID, key: key)

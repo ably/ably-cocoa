@@ -5,15 +5,15 @@ import Foundation
 /// This provides the implementation behind ``PublicDefaultLiveCounter``, via internal versions of the ``LiveCounter`` API.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal final class InternalDefaultLiveCounter: Sendable {
-    internal let mutableStateMutex: DispatchQueueMutex<MutableState> // internal (not private) for AblyLiveObjectsTesting
+    internal let mutableStateMutex: DispatchQueueMutex<MutableState> // internal for AblyLiveObjectsTesting
 
-    internal let logger: Logger // internal (not private) for AblyLiveObjectsTesting
+    internal let logger: Logger // internal for AblyLiveObjectsTesting
     private let userCallbackQueue: DispatchQueue
     private let clock: SimpleClock
 
     // MARK: - Initialization
 
-    internal init( // internal (not private) for AblyLiveObjectsTesting
+    internal init( // internal for AblyLiveObjectsTesting
         data: Double,
         objectID: String,
         logger: Logger,
@@ -292,7 +292,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
 
     // MARK: - Mutable state and the operations that affect it
 
-    internal struct MutableState: InternalLiveObject { // internal (not private) for AblyLiveObjectsTesting
+    internal struct MutableState: InternalLiveObject { // internal for AblyLiveObjectsTesting
         /// The mutable state common to all LiveObjects.
         internal var liveObjectMutableState: LiveObjectMutableState<DefaultLiveCounterUpdate>
 

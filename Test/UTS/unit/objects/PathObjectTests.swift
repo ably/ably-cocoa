@@ -46,7 +46,8 @@ final class PathObjectTests {
 
     // MARK: - RTPO4: path() returns dot-delimited string
 
-    // UTS: objects/unit/RTPO4/path-string-representation-0 — RTPO4a (dot-delimited), RTPO4c (empty == root).
+    // UTS: objects/unit/RTPO4/path-string-representation-0
+    // RTPO4a (dot-delimited), RTPO4c (empty == root).
     @Test
     func RTPO4_path_string_representation() {
         let root = Self.makeRoot()
@@ -55,7 +56,8 @@ final class PathObjectTests {
         #expect(root.get(key: "profile").asLiveMap().get(key: "email").path == "profile.email")
     }
 
-    // UTS: objects/unit/RTPO4b/path-escapes-dots-0 — RTPO4b (dots within a segment escaped with backslash).
+    // UTS: objects/unit/RTPO4b/path-escapes-dots-0
+    // RTPO4b (dots within a segment escaped with backslash).
     @Test
     func RTPO4b_path_escapes_dots() {
         let root = Self.makeRoot()
@@ -65,7 +67,8 @@ final class PathObjectTests {
 
     // MARK: - RTPO5: get() returns new PathObject with appended key
 
-    // UTS: objects/unit/RTPO5/get-appends-key-0 — RTPO5c (key appended), RTPO5d (purely navigational).
+    // UTS: objects/unit/RTPO5/get-appends-key-0
+    // RTPO5c (key appended), RTPO5d (purely navigational).
     @Test
     func RTPO5_get_appends_key() {
         let root = Self.makeRoot()
@@ -79,7 +82,8 @@ final class PathObjectTests {
 
     // MARK: - RTPO6: at() parses dot-delimited path
 
-    // UTS: objects/unit/RTPO6/at-parses-path-0 — RTPO6b (dots are separators), RTPO6d (== chained get()).
+    // UTS: objects/unit/RTPO6/at-parses-path-0
+    // RTPO6b (dots are separators), RTPO6d (== chained get()).
     @Test
     func RTPO6_at_parses_path() throws {
         let root = Self.makeRoot()
@@ -88,7 +92,8 @@ final class PathObjectTests {
         #expect(try po.asPrimitive().value() == .string("alice@example.com"))
     }
 
-    // UTS: objects/unit/RTPO6/at-escaped-dots-0 — RTPO6b (`\.` is a literal dot within a segment).
+    // UTS: objects/unit/RTPO6/at-escaped-dots-0
+    // RTPO6b (`\.` is a literal dot within a segment).
     @Test
     func RTPO6_at_respects_escaped_dots() {
         let root = Self.makeRoot()
@@ -98,14 +103,16 @@ final class PathObjectTests {
 
     // MARK: - RTPO7: value() returns resolved primitive / counter value
 
-    // UTS: objects/unit/RTPO7/value-counter-0 — RTPO7c (counter -> its numeric value).
+    // UTS: objects/unit/RTPO7/value-counter-0
+    // RTPO7c (counter -> its numeric value).
     @Test
     func RTPO7_value_counter() throws {
         let root = Self.makeRoot()
         #expect(try root.get(key: "score").asLiveCounter().value() == 100)
     }
 
-    // UTS: objects/unit/RTPO7/value-primitive-0 — RTPO7d (primitive -> value directly).
+    // UTS: objects/unit/RTPO7/value-primitive-0
+    // RTPO7d (primitive -> value directly).
     @Test
     func RTPO7_value_primitive() throws {
         let root = Self.makeRoot()
@@ -114,14 +121,16 @@ final class PathObjectTests {
         #expect(try root.get(key: "active").asPrimitive().value() == .bool(true))
     }
 
-    // UTS: objects/unit/RTPO7/value-bytes-0 — RTPO7d (binary primitive -> raw bytes).
+    // UTS: objects/unit/RTPO7/value-bytes-0
+    // RTPO7d (binary primitive -> raw bytes).
     @Test
     func RTPO7_value_bytes() throws {
         let root = Self.makeRoot()
         #expect(try root.get(key: "avatar").asPrimitive().value() == .data(Data([1, 2, 3])))
     }
 
-    // UTS: objects/unit/RTPO7d/value-livemap-null-0 — RTPO7e (map -> null; DEV-2: neither typed cast yields
+    // UTS: objects/unit/RTPO7d/value-livemap-null-0
+    // RTPO7e (map -> null; DEV-2: neither typed cast yields
     // a value for a map).
     @Test
     func RTPO7d_value_livemap_null() throws {
@@ -130,7 +139,8 @@ final class PathObjectTests {
         #expect(try root.get(key: "profile").asLiveCounter().value() == nil)
     }
 
-    // UTS: objects/unit/RTPO7e/value-unresolvable-null-0 — RTPO7f (resolution failure -> null per RTPO3c1).
+    // UTS: objects/unit/RTPO7e/value-unresolvable-null-0
+    // RTPO7f (resolution failure -> null per RTPO3c1).
     @Test
     func RTPO7e_value_unresolvable_null() throws {
         let root = Self.makeRoot()
@@ -139,7 +149,8 @@ final class PathObjectTests {
 
     // MARK: - RTPO8: instance() wraps the resolved value
 
-    // UTS: objects/unit/RTPO8/instance-live-object-0 — RTPO8c (LiveObject -> Instance wrapping it).
+    // UTS: objects/unit/RTPO8/instance-live-object-0
+    // RTPO8c (LiveObject -> Instance wrapping it).
     @Test
     func RTPO8_instance_live_object() throws {
         let root = Self.makeRoot()
@@ -157,7 +168,8 @@ final class PathObjectTests {
         #expect(mapInst.id == "map:profile@1000")
     }
 
-    // UTS: objects/unit/RTPO8f/instance-primitive-wrapped-0 — RTPO8f (primitive -> Instance wrapping the
+    // UTS: objects/unit/RTPO8f/instance-primitive-wrapped-0
+    // RTPO8f (primitive -> Instance wrapping the
     // primitive value), RTINS3b (primitive Instance has no id — compile-time-unrepresentable, DEV-1),
     // RTINS4c (Instance#value returns the primitive directly).
     @Test
@@ -172,7 +184,8 @@ final class PathObjectTests {
 
     // MARK: - RTPO9: entries() returns [key, PathObject] pairs
 
-    // UTS: objects/unit/RTPO9/entries-yields-pairs-0 — RTPO9c (array of [key, PathObject]), RTPO9d
+    // UTS: objects/unit/RTPO9/entries-yields-pairs-0
+    // RTPO9c (array of [key, PathObject]), RTPO9d
     // (non-tombstoned only).
     @Test
     func RTPO9_entries_yields_pairs() throws {
@@ -183,7 +196,8 @@ final class PathObjectTests {
         #expect(entriesByKey["profile"] == "profile")
     }
 
-    // UTS: objects/unit/RTPO9d/entries-non-map-empty-0 — RTPO9d (non-map -> empty array).
+    // UTS: objects/unit/RTPO9d/entries-non-map-empty-0
+    // RTPO9d (non-map -> empty array).
     @Test
     func RTPO9d_entries_non_map_empty() throws {
         let root = Self.makeRoot()
@@ -192,7 +206,8 @@ final class PathObjectTests {
 
     // MARK: - RTPO10: keys() returns key strings
 
-    // UTS: objects/unit/RTPO10/keys-returns-array-0 — RTPO10c (delegates to InternalLiveMap#keys).
+    // UTS: objects/unit/RTPO10/keys-returns-array-0
+    // RTPO10c (delegates to InternalLiveMap#keys).
     @Test
     func RTPO10_keys_returns_array() throws {
         let root = Self.makeRoot()
@@ -201,7 +216,8 @@ final class PathObjectTests {
         #expect(Set(keys).isSuperset(of: ["name", "profile", "score"]))
     }
 
-    // UTS: objects/unit/RTPO10d/keys-non-map-empty-0 — RTPO10d (non-map -> empty array).
+    // UTS: objects/unit/RTPO10d/keys-non-map-empty-0
+    // RTPO10d (non-map -> empty array).
     @Test
     func RTPO10d_keys_non_map_empty() throws {
         let root = Self.makeRoot()
@@ -210,7 +226,8 @@ final class PathObjectTests {
 
     // MARK: - RTPO11: values() returns PathObjects
 
-    // UTS: objects/unit/RTPO11/values-returns-array-0 — RTPO11c (array of PathObjects; each path == key).
+    // UTS: objects/unit/RTPO11/values-returns-array-0
+    // RTPO11c (array of PathObjects; each path == key).
     @Test
     func RTPO11_values_returns_array() throws {
         let root = Self.makeRoot()
@@ -219,7 +236,8 @@ final class PathObjectTests {
         #expect(paths.isSuperset(of: ["name", "profile", "score"]))
     }
 
-    // UTS: objects/unit/RTPO11d/values-non-map-empty-0 — RTPO11d (non-map -> empty array).
+    // UTS: objects/unit/RTPO11d/values-non-map-empty-0
+    // RTPO11d (non-map -> empty array).
     @Test
     func RTPO11d_values_non_map_empty() throws {
         let root = Self.makeRoot()
@@ -228,7 +246,8 @@ final class PathObjectTests {
 
     // MARK: - RTPO12: size() returns non-tombstoned count
 
-    // UTS: objects/unit/RTPO12/size-count-0 — RTPO12c (delegates to InternalLiveMap#size).
+    // UTS: objects/unit/RTPO12/size-count-0
+    // RTPO12c (delegates to InternalLiveMap#size).
     @Test
     func RTPO12_size_count() throws {
         let root = Self.makeRoot()
@@ -236,7 +255,8 @@ final class PathObjectTests {
         #expect(try root.get(key: "profile").asLiveMap().size() == 3)
     }
 
-    // UTS: objects/unit/RTPO12c/size-non-map-null-0 — RTPO12d (non-map or resolution failure -> null).
+    // UTS: objects/unit/RTPO12c/size-non-map-null-0
+    // RTPO12d (non-map or resolution failure -> null).
     @Test
     func RTPO12c_size_non_map_null() throws {
         let root = Self.makeRoot()
@@ -246,7 +266,8 @@ final class PathObjectTests {
 
     // MARK: - RTPO14: compactJson() encodes binary as base64 and cycles as objectId
 
-    // UTS: objects/unit/RTPO14/compact-json-bytes-0 — RTPO14b1 (binary values encoded as base64 strings).
+    // UTS: objects/unit/RTPO14/compact-json-bytes-0
+    // RTPO14b1 (binary values encoded as base64 strings).
     // Also covers RTPO13's JSON-shaped subset (primitives/counter/nested map).
     @Test
     func RTPO14_compact_json_bytes() throws {
@@ -270,7 +291,8 @@ final class PathObjectTests {
         ]))
     }
 
-    // UTS: objects/unit/RTPO14/compact-json-0 — RTPO14b2 (a cyclic reference is encoded as {objectId: ...}).
+    // UTS: objects/unit/RTPO14/compact-json-0
+    // RTPO14b2 (a cyclic reference is encoded as {objectId: ...}).
     // The cycle is seeded directly (prefs.back_ref -> profile), the unit stand-in for the spec's
     // `mock_ws.send_to_client` MAP_SET.
     @Test
@@ -288,7 +310,8 @@ final class PathObjectTests {
 
     // MARK: - RTPO3: path resolution walks through InternalLiveMaps
 
-    // UTS: objects/unit/RTPO3/path-resolution-walk-0 — RTPO3a (walk segments), RTPO3b (empty path -> root).
+    // UTS: objects/unit/RTPO3/path-resolution-walk-0
+    // RTPO3a (walk segments), RTPO3b (empty path -> root).
     @Test
     func RTPO3_path_resolution_walk() throws {
         let root = Self.makeRoot()
@@ -296,7 +319,8 @@ final class PathObjectTests {
         #expect(try root.at(path: "profile.prefs.theme").asPrimitive().value() == .string("dark"))
     }
 
-    // UTS: objects/unit/RTPO3a1/intermediate-not-map-0 — resolution fails when an intermediate is not a map.
+    // UTS: objects/unit/RTPO3a1/intermediate-not-map-0
+    // resolution fails when an intermediate is not a map.
     @Test
     func RTPO3a1_intermediate_not_map() throws {
         let root = Self.makeRoot()
@@ -304,7 +328,8 @@ final class PathObjectTests {
         #expect(try root.get(key: "score").asLiveMap().get(key: "something").asPrimitive().value() == nil)
     }
 
-    // UTS: objects/unit/RTPO3c1/read-null-on-failure-0 — read operations return null on resolution failure.
+    // UTS: objects/unit/RTPO3c1/read-null-on-failure-0
+    // read operations return null on resolution failure.
     @Test
     func RTPO3c1_read_null_on_failure() throws {
         let root = Self.makeRoot()

@@ -6,8 +6,8 @@ import Foundation
 import Testing
 
 // Dedicated helper for the objects UNIT-tier UTS ports (the `objects/unit` public-tier specs:
-// InstanceTests, ValueTypesTests, PathObject*Tests, …). This is the UTS suite's analogue of
-// ably-java's `uts/unit/Helpers.kt`: a suite-local fixture namespace, kept dedicated rather than
+// InstanceTests, ValueTypesTests, PathObject*Tests, …). This is a suite-local fixture namespace for the
+// objects unit-tier UTS ports, kept dedicated rather than
 // folded into the broader `AblyLiveObjectsTests` helpers.
 //
 // Now that the ports live in the `AblyLiveObjectsTests` target, the two truly-trivial no-op primitives

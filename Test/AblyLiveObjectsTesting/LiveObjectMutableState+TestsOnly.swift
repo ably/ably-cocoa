@@ -1,7 +1,3 @@
-// Test-only initializer for `LiveObjectMutableState`, moved out of the shipped sources so that
-// production code carries no test plumbing. Consumed by AblyLiveObjectsTests via
-// `@testable import AblyLiveObjectsTesting`. See README.md for the dumb-accessor review rule.
-
 @testable import AblyLiveObjects
 import Foundation
 

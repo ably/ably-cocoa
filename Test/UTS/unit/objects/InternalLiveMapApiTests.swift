@@ -55,7 +55,8 @@ final class InternalLiveMapApiTests {
 
     // MARK: - RTLM5: get() returns resolved value
 
-    // UTS: objects/unit/RTLM5/get-string-value-0 — RTLM5d2 (returns the value at key, resolved).
+    // UTS: objects/unit/RTLM5/get-string-value-0
+    // RTLM5d2 (returns the value at key, resolved).
     @Test
     func RTLM5_get_string_value() throws {
         let root = Self.makeFixture().root
@@ -64,14 +65,16 @@ final class InternalLiveMapApiTests {
         #expect(try root.get(key: "active").asPrimitive().value() == .bool(true))
     }
 
-    // UTS: objects/unit/RTLM5/get-nonexistent-key-0 — no entry at key -> null.
+    // UTS: objects/unit/RTLM5/get-nonexistent-key-0
+    // no entry at key -> null.
     @Test
     func RTLM5_get_nonexistent_key() throws {
         let root = Self.makeFixture().root
         #expect(try root.get(key: "nonexistent").asPrimitive().value() == nil)
     }
 
-    // UTS: objects/unit/RTLM5/get-objectid-reference-0 — a data.objectId entry resolves from the pool.
+    // UTS: objects/unit/RTLM5/get-objectid-reference-0
+    // a data.objectId entry resolves from the pool.
     @Test
     func RTLM5_get_objectid_reference() throws {
         let root = Self.makeFixture().root
@@ -81,7 +84,8 @@ final class InternalLiveMapApiTests {
 
     // MARK: - RTLM10: size() returns non-tombstoned count
 
-    // UTS: objects/unit/RTLM10/size-non-tombstoned-0 — RTLM10d (number of non-tombstoned entries).
+    // UTS: objects/unit/RTLM10/size-non-tombstoned-0
+    // RTLM10d (number of non-tombstoned entries).
     @Test
     func RTLM10_size_non_tombstoned() throws {
         let root = Self.makeFixture().root
@@ -90,7 +94,8 @@ final class InternalLiveMapApiTests {
 
     // MARK: - RTLM11: entries() yields key-value pairs
 
-    // UTS: objects/unit/RTLM11/entries-yields-pairs-0 — RTLM11d (non-tombstoned key-value pairs).
+    // UTS: objects/unit/RTLM11/entries-yields-pairs-0
+    // RTLM11d (non-tombstoned key-value pairs).
     @Test
     func RTLM11_entries_yields_pairs() throws {
         let root = Self.makeFixture().root
@@ -100,7 +105,8 @@ final class InternalLiveMapApiTests {
 
     // MARK: - RTLM12: keys() yields only keys
 
-    // UTS: objects/unit/RTLM12/keys-0 — keys() returns the 7 non-tombstoned keys.
+    // UTS: objects/unit/RTLM12/keys-0
+    // keys() returns the 7 non-tombstoned keys.
     @Test
     func RTLM12_keys() throws {
         let root = Self.makeFixture().root
@@ -111,7 +117,8 @@ final class InternalLiveMapApiTests {
 
     // MARK: - RTLM20: set() sends MAP_SET message with v6 format
 
-    // UTS: objects/unit/RTLM20/set-sends-map-set-0 — RTLM20e2/e3/e6/e7c/h2 (MAP_SET, objectId, key, string
+    // UTS: objects/unit/RTLM20/set-sends-map-set-0
+    // RTLM20e2/e3/e6/e7c/h2 (MAP_SET, objectId, key, string
     // value, single-element array).
     @Test
     func RTLM20_set_sends_map_set() async throws {
@@ -127,7 +134,8 @@ final class InternalLiveMapApiTests {
         #expect(op.mapSet?.value?.string == "Bob") // RTLM20e7c
     }
 
-    // UTS: objects/unit/RTLM20/set-value-types-0 — RTLM20e7b/d/e (json/number/boolean values).
+    // UTS: objects/unit/RTLM20/set-value-types-0
+    // RTLM20e7b/d/e (json/number/boolean values).
     @Test
     func RTLM20_set_value_types() async throws {
         let fixture = Self.makeFixture()
@@ -142,7 +150,8 @@ final class InternalLiveMapApiTests {
         #expect(try #require(fixture.realtimeObjects.capturedMessages)[0].operation?.mapSet?.value?.json == .object(["nested": .bool(true)])) // RTLM20e7b
     }
 
-    // UTS: objects/unit/RTLM20/set-bytes-value-0 — RTLM20e7f (binary value). Cocoa holds raw Data; base64 is
+    // UTS: objects/unit/RTLM20/set-bytes-value-0
+    // RTLM20e7f (binary value). Cocoa holds raw Data; base64 is
     // applied at wire serialization (deviation).
     @Test
     func RTLM20_set_bytes_value() async throws {
@@ -155,7 +164,8 @@ final class InternalLiveMapApiTests {
 
     // MARK: - RTLM20e7g: set() with a value-type blueprint publishes CREATE(s) + MAP_SET atomically
 
-    // UTS: objects/unit/RTLM20e7g/set-counter-value-type-0 — RTLM20e7g1/g2/h1 (COUNTER_CREATE then MAP_SET,
+    // UTS: objects/unit/RTLM20e7g/set-counter-value-type-0
+    // RTLM20e7g1/g2/h1 (COUNTER_CREATE then MAP_SET,
     // value.objectId chained to the created counter).
     @Test
     func RTLM20e7g_set_counter_value_type() async throws {
@@ -171,7 +181,8 @@ final class InternalLiveMapApiTests {
         #expect(messages[1].operation?.mapSet?.value?.objectId == messages[0].operation?.objectId)
     }
 
-    // UTS: objects/unit/RTLM20e7g/set-map-value-type-0 — RTLM20e7g1/g2/h1 (MAP_CREATE then MAP_SET).
+    // UTS: objects/unit/RTLM20e7g/set-map-value-type-0
+    // RTLM20e7g1/g2/h1 (MAP_CREATE then MAP_SET).
     @Test
     func RTLM20e7g_set_map_value_type() async throws {
         let fixture = Self.makeFixture()
@@ -187,7 +198,8 @@ final class InternalLiveMapApiTests {
         #expect(messages[1].operation?.mapSet?.value?.objectId == messages[0].operation?.objectId)
     }
 
-    // UTS: objects/unit/RTLM20h1/set-nested-value-types-0 — RTLM20h1/RTLMV4d1/RTLMV4d2. A LiveMap
+    // UTS: objects/unit/RTLM20h1/set-nested-value-types-0
+    // RTLM20h1/RTLMV4d1/RTLMV4d2. A LiveMap
     // containing a nested LiveCounter: all *_CREATE messages appear before the MAP_SET, depth-first
     // (COUNTER_CREATE, MAP_CREATE, then the root MAP_SET).
     @Test
@@ -212,7 +224,8 @@ final class InternalLiveMapApiTests {
 
     // MARK: - RTLM21: remove() sends MAP_REMOVE message
 
-    // UTS: objects/unit/RTLM21/remove-sends-map-remove-0 — RTLM21e2/e5 (MAP_REMOVE action, key).
+    // UTS: objects/unit/RTLM21/remove-sends-map-remove-0
+    // RTLM21e2/e5 (MAP_REMOVE action, key).
     @Test
     func RTLM21_remove_sends_map_remove() async throws {
         let fixture = Self.makeFixture()

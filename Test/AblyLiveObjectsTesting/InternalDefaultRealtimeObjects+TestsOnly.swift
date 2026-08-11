@@ -1,7 +1,3 @@
-// Test-only accessors for `InternalDefaultRealtimeObjects`, moved out of the shipped sources so that
-// production code carries no test plumbing. Consumed by AblyLiveObjectsTests via
-// `@testable import AblyLiveObjectsTesting`. See README.md for the dumb-accessor review rule.
-
 import Ably
 @testable import AblyLiveObjects
 
@@ -96,7 +92,7 @@ extension InternalDefaultRealtimeObjects {
     /// production RTO15d size check (`ensureMessageSizeWithinLimit`) and publishes them via the
     /// production `CoreSDK.nosync_publish` — deliberately *without* the RTO20 apply-on-ACK stage
     /// of `nosync_publishAndApply`, which its callers (the wire-size RTO15d tests and the plugin
-    /// round-trip test) must not trigger. A lead-approved D3 exception; see README.md.
+    /// round-trip test) must not trigger. A lead-approved exception to the dumb-accessor rule; see README.md.
     func testsOnly_publish(objectMessages: [ProtocolTypes.OutboundObjectMessage], coreSDK: CoreSDK) async throws(ARTErrorInfo) {
         try await withCheckedContinuation { (continuation: CheckedContinuation<Result<Void, ARTErrorInfo>, _>) in
             mutableStateMutex.withSync { _ in

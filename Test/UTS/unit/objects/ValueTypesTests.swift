@@ -47,7 +47,8 @@ import Testing
 final class ValueTypesTests {
     // MARK: - RTLCV3: LiveCounter.create construction
 
-    // UTS: objects/unit/RTLCV3/create-with-count-0 — RTLCV3a1/RTLCV3b (DEV-VT-1: `create(initialCount:)`,
+    // UTS: objects/unit/RTLCV3/create-with-count-0
+    // RTLCV3a1/RTLCV3b (DEV-VT-1: `create(initialCount:)`,
     // count is Double).
     @Test
     func RTLCV3_create_with_count() {
@@ -55,7 +56,8 @@ final class ValueTypesTests {
         #expect(vt.count == 42) // RTLCV3b
     }
 
-    // UTS: objects/unit/RTLCV3/create-default-zero-0 — omitted initialCount defaults to 0.
+    // UTS: objects/unit/RTLCV3/create-default-zero-0
+    // omitted initialCount defaults to 0.
     @Test
     func RTLCV3_create_default_zero() {
         let vt = LiveCounter.create()
@@ -64,7 +66,8 @@ final class ValueTypesTests {
 
     // MARK: - RTLMV3: LiveMap.create construction
 
-    // UTS: objects/unit/RTLMV3/create-with-entries-0 — RTLMV3a1/RTLMV3b. Entries are `LiveMapValue`; a bare
+    // UTS: objects/unit/RTLMV3/create-with-entries-0
+    // RTLMV3a1/RTLMV3b. Entries are `LiveMapValue`; a bare
     // string/number literal lands as `.primitive(.string)` / `.primitive(.number)` (DEV-VT-1).
     @Test
     func RTLMV3_create_with_entries() {
@@ -76,7 +79,8 @@ final class ValueTypesTests {
         #expect(vt.entries?["age"] == .primitive(.number(30)))
     }
 
-    // UTS: objects/unit/RTLMV3/create-no-entries-0 — omitted entries => internal entries is nil.
+    // UTS: objects/unit/RTLMV3/create-no-entries-0
+    // omitted entries => internal entries is nil.
     @Test
     func RTLMV3_create_no_entries() {
         let vt = LiveMap.create()
@@ -85,7 +89,8 @@ final class ValueTypesTests {
 
     // MARK: - RTLCV4: LiveCounter evaluation
 
-    // UTS: objects/unit/RTLCV4/evaluate-generates-message-0 — RTLCV4c/d/f/g1–g4.
+    // UTS: objects/unit/RTLCV4/evaluate-generates-message-0
+    // RTLCV4c/d/f/g1–g4.
     @Test
     func RTLCV4_evaluate_generates_message() throws {
         let messages = ObjectsUTS.evaluate(counter: LiveCounter.create(initialCount: 42))
@@ -100,7 +105,8 @@ final class ValueTypesTests {
         #expect(!withObjectId.initialValue.isEmpty) // RTLCV4c/g4
     }
 
-    // UTS: objects/unit/RTLCV4g5/retains-local-counter-create-0 — the retained local CounterCreate is
+    // UTS: objects/unit/RTLCV4g5/retains-local-counter-create-0
+    // the retained local CounterCreate is
     // `counterCreateWithObjectId.derivedFrom` in cocoa's outbound shape (DEV-VT-1).
     @Test
     func RTLCV4g5_retains_local_counter_create() throws {
@@ -109,7 +115,8 @@ final class ValueTypesTests {
         #expect(derivedFrom.count == 42)
     }
 
-    // UTS: objects/unit/RTLCV4/evaluate-zero-count-0 — count 0 is valid and retained.
+    // UTS: objects/unit/RTLCV4/evaluate-zero-count-0
+    // count 0 is valid and retained.
     @Test
     func RTLCV4_evaluate_zero_count() throws {
         let messages = ObjectsUTS.evaluate(counter: LiveCounter.create(initialCount: 0))
@@ -119,7 +126,8 @@ final class ValueTypesTests {
 
     // MARK: - RTLMV4: LiveMap evaluation
 
-    // UTS: objects/unit/RTLMV4/evaluate-generates-message-0 — RTLMV4f/g/i/j1/j3/j4.
+    // UTS: objects/unit/RTLMV4/evaluate-generates-message-0
+    // RTLMV4f/g/i/j1/j3/j4.
     @Test
     func RTLMV4_evaluate_generates_message() throws {
         let messages = ObjectsUTS.evaluate(map: LiveMap.create(entries: ["name": "Alice"]), internalQueue: ObjectsUTS.createInternalQueue())
@@ -133,7 +141,8 @@ final class ValueTypesTests {
         #expect(!withObjectId.initialValue.isEmpty) // RTLMV4f/j4
     }
 
-    // UTS: objects/unit/RTLMV4j5/retains-local-map-create-0 — retained local MapCreate is
+    // UTS: objects/unit/RTLMV4j5/retains-local-map-create-0
+    // retained local MapCreate is
     // `mapCreateWithObjectId.derivedFrom` (DEV-VT-1); semantics is LWW (RTLMV4e1).
     @Test
     func RTLMV4j5_retains_local_map_create() throws {
@@ -143,7 +152,8 @@ final class ValueTypesTests {
         #expect(derivedFrom.entries?["name"]?.data?.string == "Alice")
     }
 
-    // UTS: objects/unit/RTLMV4d1/nested-value-types-0 — RTLMV4d1/RTLMV4d2/RTLMV4k. Nested value types
+    // UTS: objects/unit/RTLMV4d1/nested-value-types-0
+    // RTLMV4d1/RTLMV4d2/RTLMV4k. Nested value types
     // produce depth-first ObjectMessages: inner creates before outer, each entry pointing at its child's
     // objectId. The spec's `messages[i].operation.mapCreate.entries` is cocoa's retained
     // `mapCreateWithObjectId.derivedFrom.entries` (DEV-VT-1).
@@ -171,7 +181,8 @@ final class ValueTypesTests {
         #expect(messages[2].operation?.mapCreateWithObjectId?.derivedFrom?.entries?["child"]?.data?.objectId == innerMapId)
     }
 
-    // UTS: objects/unit/RTLMV4d/entry-value-types-0 — RTLMV4d3–d6 value-type -> data-field mapping.
+    // UTS: objects/unit/RTLMV4d/entry-value-types-0
+    // RTLMV4d3–d6 value-type -> data-field mapping.
     @Test
     func RTLMV4d_entry_value_types() throws {
         let vt = LiveMap.create(entries: [
@@ -191,7 +202,8 @@ final class ValueTypesTests {
         #expect(entries["json_obj"]?.data?.json == .object(["key": "value"])) // RTLMV4d3
     }
 
-    // UTS: objects/unit/RTLMV4e2/empty-entries-0 — undefined internal entries => empty MapCreate.entries.
+    // UTS: objects/unit/RTLMV4e2/empty-entries-0
+    // undefined internal entries => empty MapCreate.entries.
     @Test
     func RTLMV4e2_empty_entries() throws {
         let messages = ObjectsUTS.evaluate(map: LiveMap.create(), internalQueue: ObjectsUTS.createInternalQueue())
@@ -199,7 +211,8 @@ final class ValueTypesTests {
         #expect(derivedFrom.entries?.isEmpty == true)
     }
 
-    // UTS: objects/unit/RTLMV4d/map-set-all-types-table-0 — every supported value type maps to the correct
+    // UTS: objects/unit/RTLMV4d/map-set-all-types-table-0
+    // every supported value type maps to the correct
     // data field (adapted to MAP_CREATE entries, the cocoa evaluate seam). The `null` scenario is
     // omitted: `LiveMapValue` has no null case (compile-time-unrepresentable).
     @Test

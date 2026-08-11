@@ -18,7 +18,7 @@ final class ObjectsLifecycleTests: IntegrationTestCase {
 
     // UTS: objects/integration/RTO23-RTPO15/set-primitive-propagates-0
     @Test(arguments: [false, true]) // useBinaryProtocol: false = JSON, true = msgpack
-    func test_RTO23_RTPO15_set_primitive_via_PathObject_second_client_reads_it(useBinaryProtocol: Bool) async throws {
+    func RTO23_RTPO15_set_primitive_via_PathObject_second_client_reads_it(useBinaryProtocol: Bool) async throws {
         // The spec's BEFORE/AFTER ALL sandbox app provisioning is owned by the withSandboxApp scope.
         try await withSandboxApp { app in
             // Setup
@@ -64,7 +64,7 @@ final class ObjectsLifecycleTests: IntegrationTestCase {
 
     // UTS: objects/integration/RTPO15/set-counter-value-type-0
     @Test(arguments: [false, true]) // useBinaryProtocol: false = JSON, true = msgpack
-    func test_RTPO15_set_with_LiveCounter_second_client_reads_counter(useBinaryProtocol: Bool) async throws {
+    func RTPO15_set_with_LiveCounter_second_client_reads_counter(useBinaryProtocol: Bool) async throws {
         try await withSandboxApp { app in
             // Setup
             let channelName = "objects-counter-create-\(UUID().uuidString)"
@@ -104,7 +104,7 @@ final class ObjectsLifecycleTests: IntegrationTestCase {
 
     // UTS: objects/integration/RTPO17/increment-propagates-0
     @Test(arguments: [false, true]) // useBinaryProtocol: false = JSON, true = msgpack
-    func test_RTPO17_increment_counter_second_client_sees_updated_value(useBinaryProtocol: Bool) async throws {
+    func RTPO17_increment_counter_second_client_sees_updated_value(useBinaryProtocol: Bool) async throws {
         try await withSandboxApp { app in
             // Setup
             let channelName = "objects-increment-\(UUID().uuidString)"
@@ -151,7 +151,7 @@ final class ObjectsLifecycleTests: IntegrationTestCase {
 
     // UTS: objects/integration/RTPO15/set-map-value-type-0
     @Test(arguments: [false, true]) // useBinaryProtocol: false = JSON, true = msgpack
-    func test_RTPO15_set_with_LiveMap_second_client_reads_nested_map(useBinaryProtocol: Bool) async throws {
+    func RTPO15_set_with_LiveMap_second_client_reads_nested_map(useBinaryProtocol: Bool) async throws {
         try await withSandboxApp { app in
             // Setup
             let channelName = "objects-map-create-\(UUID().uuidString)"
@@ -194,7 +194,7 @@ final class ObjectsLifecycleTests: IntegrationTestCase {
 
     // UTS: objects/integration/RTO23/get-returns-path-object-0
     @Test(arguments: [false, true]) // useBinaryProtocol: false = JSON, true = msgpack
-    func test_RTO23_get_waits_for_sync_and_returns_PathObject(useBinaryProtocol: Bool) async throws {
+    func RTO23_get_waits_for_sync_and_returns_PathObject(useBinaryProtocol: Bool) async throws {
         try await withSandboxApp { app in
             // Setup
             let channelName = "objects-get-root-\(UUID().uuidString)"
@@ -222,7 +222,7 @@ final class ObjectsLifecycleTests: IntegrationTestCase {
 
     // UTS: objects/integration/RTPO15/rest-provisioned-data-sync-0
     @Test(arguments: [false, true]) // useBinaryProtocol: false = JSON, true = msgpack
-    func test_RTPO15_client_syncs_pre_existing_data_provisioned_via_REST(useBinaryProtocol: Bool) async throws {
+    func RTPO15_client_syncs_pre_existing_data_provisioned_via_REST(useBinaryProtocol: Bool) async throws {
         try await withSandboxApp { app in
             // Setup
             let channelName = "objects-rest-provision-\(UUID().uuidString)"

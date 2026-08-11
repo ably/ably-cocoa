@@ -16,7 +16,7 @@
 // - (D-1) Construction: `InternalLiveMap(objectId:, semantics:[, pool:])` maps to
 //   `InternalDefaultLiveMap(testsOnly_data:objectID:…)` (so initial `data` can be seeded) or
 //   `.createZeroValued(objectID:…)`; there is no pool ctor param — the pool is passed `inout`
-//   per-op. Standard mock preamble per the audit §2.
+//   per-op. Standard mock preamble.
 // - (D-2) Queue discipline: mutating `nosync_*` entry points (`nosync_apply`, `nosync_replaceData`,
 //   `nosync_releaseTombstonedEntries`) run inside `internalQueue.ably_syncNoDeadlock { }`;
 //   `testsOnly_set*` seams hop onto the queue themselves, so setup writes are outside the wrapper.
@@ -516,7 +516,8 @@ struct InternalLiveMapTests {
         #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
     }
 
-    // UTS: objects/unit/RTLO5/tombstone-empty-map-emits-update-0 — RTLM22c: when every entry is already
+    // UTS: objects/unit/RTLO5/tombstone-empty-map-emits-update-0
+    // RTLM22c: when every entry is already
     // tombstoned the tombstone diff (RTLM22b considers only non-tombstoned entries) has no changed keys, but
     // the RTLM22c tombstone carve-out means this empty diff must NOT be marked a noop; it is still delivered
     // (tombstone flag, empty payload) so the RTLO4b4c3c listener teardown runs. Complements

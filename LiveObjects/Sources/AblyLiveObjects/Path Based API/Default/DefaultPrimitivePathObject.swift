@@ -1,7 +1,7 @@
 import Ably
 
-/// Default implementation of ``PrimitivePathObject`` (Kotlin's six `Default*PathObject` primitive
-/// types, collapsed into one per DEV-2), a terminal primitive view adding a type-narrowed ``value()``
+/// Default implementation of ``PrimitivePathObject`` (the six per-primitive-type path objects,
+/// collapsed into one per DEV-2), a terminal primitive view adding a type-narrowed ``value()``
 /// on top of ``DefaultPathObject``.
 ///
 /// Spec: `RTTS6c`.
@@ -13,7 +13,7 @@ internal final class DefaultPrimitivePathObject: DefaultPathObject, PrimitivePat
         guard let resolved = try resolveValueAtCurrentPath() else {
             return nil
         }
-        // DEV-2: unlike ably-java's six type-filtered primitive views, this returns whatever primitive
+        // DEV-2: rather than six type-filtered primitive views, this returns whatever primitive
         // resolved (RTTS6c collapse).
         switch resolved {
         // RTPO7d — a resolved primitive is returned directly.

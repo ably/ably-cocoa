@@ -128,12 +128,8 @@ art_dispatch_sync(_queue, ^{
         // released unwillingly.
         if ([self->_channels _exists:name] && [self->_channels _get:name] == channel) {
 #ifdef ABLY_SUPPORTS_PLUGINS
-            // Notify the LiveObjects plugin (if any) that this channel is being released, so it can
-            // dispose of its per-channel resources and fail any in-flight operations with a
-            // release-specific cause rather than waiting for the channel's eventual deallocation. This
-            // callback runs on the internal queue (the `_detach:` callback queue). This release-time
-            // disposal is not specified; it mirrors ably-java's DefaultLiveObjectsPlugin channel-release
-            // disposal.
+            // Runs on the internal queue (the `_detach:` callback queue). See
+            // `-nosync_onChannelRelease:` for what the plugin does with this.
             [self.realtime.options.liveObjectsPlugin nosync_onChannelRelease:channel];
 #endif
 

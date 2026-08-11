@@ -133,7 +133,8 @@ final class LiveObjectSubscribeTests {
 
     // MARK: - RTLO4b: subscribe registers a listener for data updates
 
-    // UTS: objects/unit/RTLO4b/subscribe-receives-updates-0 — RTLO4b3/RTLO4b4c3a/RTLO4b7: a Subscription is
+    // UTS: objects/unit/RTLO4b/subscribe-receives-updates-0
+    // RTLO4b3/RTLO4b4c3a/RTLO4b7: a Subscription is
     // returned and the listener is called with the update.
     @Test
     func RTLO4b_subscribe_receives_updates() throws {
@@ -150,7 +151,8 @@ final class LiveObjectSubscribeTests {
         #expect(collector.events.count == 1)
     }
 
-    // UTS: objects/unit/RTLO4b7/subscribe-returns-subscription-0 — RTLO4b7: `subscribe` returns a
+    // UTS: objects/unit/RTLO4b7/subscribe-returns-subscription-0
+    // RTLO4b7: `subscribe` returns a
     // `Subscription` with an `unsubscribe` method (the returned value is usable to deregister).
     @Test
     func RTLO4b7_subscribe_returns_subscription() throws {
@@ -163,7 +165,8 @@ final class LiveObjectSubscribeTests {
         sub.unsubscribe()
     }
 
-    // UTS: objects/unit/RTLO4b7/subscription-unsubscribe-stops-delivery-0 — after `unsubscribe()`, subsequent
+    // UTS: objects/unit/RTLO4b7/subscription-unsubscribe-stops-delivery-0
+    // after `unsubscribe()`, subsequent
     // updates do not reach the listener (verified via a still-subscribed control listener).
     @Test
     func RTLO4b7_unsubscribe_stops_delivery() throws {
@@ -189,7 +192,8 @@ final class LiveObjectSubscribeTests {
         #expect(updates.events.count == 1) // …but it did not
     }
 
-    // UTS: objects/unit/RTLO4b7/subscription-unsubscribe-idempotent-0 — calling `unsubscribe()` twice does not
+    // UTS: objects/unit/RTLO4b7/subscription-unsubscribe-idempotent-0
+    // calling `unsubscribe()` twice does not
     // throw.
     @Test
     func RTLO4b7_unsubscribe_idempotent() throws {
@@ -204,7 +208,8 @@ final class LiveObjectSubscribeTests {
 
     // MARK: - RTLO4b4c1: noop update does not trigger the listener
 
-    // UTS: objects/unit/RTLO4b4c1/noop-no-trigger-0 — a number-less COUNTER_INC yields a `.noop` (RTLC9h) and
+    // UTS: objects/unit/RTLO4b4c1/noop-no-trigger-0
+    // a number-less COUNTER_INC yields a `.noop` (RTLC9h) and
     // must not fire the listener; the surrounding "01"/"03" increments (which do fire) bracket it.
     @Test
     func RTLO4b4c1_noop_no_trigger() throws {
@@ -236,7 +241,8 @@ final class LiveObjectSubscribeTests {
 
     // MARK: - RTLO4b6: subscribe has no side effects
 
-    // UTS: objects/unit/RTLO4b6/subscribe-no-side-effects-0 — subscribing must not mutate the channel state.
+    // UTS: objects/unit/RTLO4b6/subscribe-no-side-effects-0
+    // subscribing must not mutate the channel state.
     // (The spec observes `channel.state`; the unit fixture has only the fixed `CoreSDK` state, so the
     // observable subset is that subscribe neither throws nor changes that state.)
     @Test
@@ -254,7 +260,8 @@ final class LiveObjectSubscribeTests {
 
     // MARK: - RTLO4b: subscribe on a map instance receives a LiveMapUpdate
 
-    // UTS: objects/unit/RTLO4b/subscribe-map-update-0 — a MAP_SET on the subscribed map fires its listener.
+    // UTS: objects/unit/RTLO4b/subscribe-map-update-0
+    // a MAP_SET on the subscribed map fires its listener.
     @Test
     func RTLO4b_subscribe_map_update() throws {
         let f = Self.makeFixture()
@@ -272,7 +279,8 @@ final class LiveObjectSubscribeTests {
 
     // MARK: - RTLO4b4c3c: tombstone deregisters all Instance#subscribe listeners
 
-    // UTS: objects/unit/RTLO4b4c3c/tombstone-deregisters-listeners-0 — an OBJECT_DELETE tombstone is delivered
+    // UTS: objects/unit/RTLO4b4c3c/tombstone-deregisters-listeners-0
+    // an OBJECT_DELETE tombstone is delivered
     // to every listener (RTLO4b4c3a) and then deregisters them (RTLO4b4c3c); subsequent operations to
     // the tombstoned object do not fire the (now-deregistered) listeners.
     @Test
@@ -310,7 +318,8 @@ final class LiveObjectSubscribeTests {
         #expect(updatesB.events.count == 1)
     }
 
-    // UTS: objects/unit/RTLO4b4c3c/tombstone-zero-value-counter-tears-down-0 — the counter is first driven
+    // UTS: objects/unit/RTLO4b4c3c/tombstone-zero-value-counter-tears-down-0
+    // the counter is first driven
     // to 0, so tombstoning it yields a zero-delta diff. Per RTLC14c that update is NOT a noop (contrast
     // RTLO4b4c1/noop-no-trigger-0, where a genuine noop does not fire at all): both listeners still receive
     // the tombstone update (RTLO4b4c3a) and are then deregistered (RTLO4b4c3c). Complements
@@ -361,7 +370,8 @@ final class LiveObjectSubscribeTests {
 
     // MARK: - RTLO4b4d: the event carries the source public ObjectMessage
 
-    // UTS: objects/unit/RTLO4b4d/update-has-object-message-0 — RTLO4b4d/RTINS16e: the delivered event carries
+    // UTS: objects/unit/RTLO4b4d/update-has-object-message-0
+    // RTLO4b4d/RTINS16e: the delivered event carries
     // the public `ObjectMessage` derived from the triggering inbound frame.
     @Test
     func RTLO4b4d_update_has_object_message() throws {
@@ -386,7 +396,8 @@ final class LiveObjectSubscribeTests {
 
     // MARK: - RTLO4b4e: tombstone identified by OBJECT_DELETE action
 
-    // UTS: objects/unit/RTLO4b4e/tombstone-flag-true-0 — a tombstoning event carries an OBJECT_DELETE action.
+    // UTS: objects/unit/RTLO4b4e/tombstone-flag-true-0
+    // a tombstoning event carries an OBJECT_DELETE action.
     @Test
     func RTLO4b4e_tombstone_flag_true() throws {
         let f = Self.makeFixture()
@@ -403,7 +414,8 @@ final class LiveObjectSubscribeTests {
         #expect(updates.events.first?.message?.operation.action == .objectDelete)
     }
 
-    // UTS: objects/unit/RTLO4b4e/tombstone-flag-false-0 — a normal update carries a non-OBJECT_DELETE action.
+    // UTS: objects/unit/RTLO4b4e/tombstone-flag-false-0
+    // a normal update carries a non-OBJECT_DELETE action.
     @Test
     func RTLO4b4e_tombstone_flag_false() throws {
         let f = Self.makeFixture()

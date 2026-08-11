@@ -37,7 +37,8 @@ import Testing
 final class InternalLiveCounterApiTests {
     // MARK: - RTLC5: value() returns current counter data
 
-    // UTS: objects/unit/RTLC5/value-returns-data-0 — RTLC5c (returns current data value).
+    // UTS: objects/unit/RTLC5/value-returns-data-0
+    // RTLC5c (returns current data value).
     @Test
     func RTLC5c_value_returns_data() throws {
         let internalQueue = ObjectsUTS.createInternalQueue()
@@ -53,7 +54,8 @@ final class InternalLiveCounterApiTests {
 
     // MARK: - RTLC12: increment sends v6 COUNTER_INC message
 
-    // UTS: objects/unit/RTLC12/increment-sends-counter-inc-0 — RTLC12e2/e3/e5/g. Asserts the published
+    // UTS: objects/unit/RTLC12/increment-sends-counter-inc-0
+    // RTLC12e2/e3/e5/g. Asserts the published
     // COUNTER_INC (the spec's `captured_messages[0].state[0]`).
     @Test
     func RTLC12_increment_sends_counter_inc() async throws {
@@ -69,7 +71,8 @@ final class InternalLiveCounterApiTests {
 
     // MARK: - RTLC12e1: increment with non-finite amount throws 40003
 
-    // UTS: objects/unit/RTLC12e1/increment-non-number-0 — the representable non-finite doubles throw 40003.
+    // UTS: objects/unit/RTLC12e1/increment-non-number-0
+    // the representable non-finite doubles throw 40003.
     @Test
     func RTLC12e1_increment_non_finite_throws() async throws {
         let (counter, _) = try makeCounter(objectID: "counter:score@1000", data: 100)
@@ -82,7 +85,8 @@ final class InternalLiveCounterApiTests {
         #expect(error?.statusCode == 400)
     }
 
-    // UTS: objects/unit/RTLC12e1/increment-invalid-amounts-table-0 — every representable non-finite amount
+    // UTS: objects/unit/RTLC12e1/increment-invalid-amounts-table-0
+    // every representable non-finite amount
     // throws 40003. The non-numeric rows are compile-time-unrepresentable (Double parameter).
     @Test
     func RTLC12e1_increment_invalid_amounts_table() async throws {
@@ -103,7 +107,8 @@ final class InternalLiveCounterApiTests {
 
     // MARK: - RTLC13: decrement delegates to increment with negated amount
 
-    // UTS: objects/unit/RTLC13/decrement-negates-0 — RTLC13b. Asserts the negated published number (the
+    // UTS: objects/unit/RTLC13/decrement-negates-0
+    // RTLC13b. Asserts the negated published number (the
     // spec's `value() == 85` post-apply assertion needs the full pipeline; out of unit scope).
     @Test
     func RTLC13_decrement_negates() async throws {
@@ -116,7 +121,8 @@ final class InternalLiveCounterApiTests {
 
     // MARK: - RTLC11: LiveCounterUpdate emitted on increment
 
-    // UTS: objects/unit/RTLC11/counter-update-on-inc-0 — RTLC11b1 (update carries the increment value). The
+    // UTS: objects/unit/RTLC11/counter-update-on-inc-0
+    // RTLC11b1 (update carries the increment value). The
     // remote update is simulated by applying a COUNTER_INC to the node with a stamped source message.
     @Test
     func RTLC11_counter_update_on_inc() async throws {

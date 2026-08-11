@@ -138,10 +138,7 @@ static ARTLogLevel _convertPluginLogLevel(APLogLevel pluginLogLevel) {
 }
 
 - (NSString *)nameForChannel:(id<APRealtimeChannel>)channel {
-    // ably-java binds the channel name via `AblyClientAdapter.getChannelName` /
-    // `DefaultRealtimeObject.channelName` (DefaultRealtimeObject.kt:35), threaded into
-    // `WireObjectMessage.toPublicMessage(channelName)` (message/DefaultObjectMessage.kt:17). The name is
-    // immutable (set at channel creation), so no queue assertion is needed.
+    // The name is immutable (set at channel creation), so no queue assertion is needed.
     return _internalRealtimeChannel(channel).name;
 }
 
@@ -191,7 +188,7 @@ static ARTLogLevel _convertPluginLogLevel(APLogLevel pluginLogLevel) {
     dispatch_assert_queue(internalChannel.queue);
 
     // RTO2a: use the attached modes if present (non-empty); RTO2b: otherwise fall back to the
-    // user-provided channel-options modes. Mirrors ably-java `Helpers.kt:76` `getChannelModes`.
+    // user-provided channel-options modes.
     ARTChannelMode effectiveModes = internalChannel.modes_nosync;
     if (effectiveModes == 0) {
         ARTRealtimeChannelOptions *options = internalChannel.options_nosync;
@@ -200,6 +197,10 @@ static ARTLogLevel _convertPluginLogLevel(APLogLevel pluginLogLevel) {
         }
     }
 
+    // `ARTChannelMode` and `APChannelMode` are distinct option types: this both masks out the
+    // non-object modes (this accessor exposes only the object modes to the plugin) and maps each
+    // object bit to its `APChannelMode` counterpart, so the result does not depend on the two
+    // types' raw bit values coinciding.
     APChannelMode result = 0;
     if (effectiveModes & ARTChannelModeObjectSubscribe) {
         result |= APChannelModeObjectSubscribe;
@@ -214,7 +215,9 @@ static ARTLogLevel _convertPluginLogLevel(APLogLevel pluginLogLevel) {
     ARTRealtimeInternal *internalRealtimeClient = _internalRealtimeClient(client);
     dispatch_assert_queue(internalRealtimeClient.queue);
 
-    // ably-java `Helpers.kt:110-114`: `if (!connectionManager.isActive) throw ablyException(stateErrorInfo)`.
+    // Object publishing must meet the same connection-state preconditions as message publishing
+    // (RTO15b -> RTL6c): if the connection is not active, publishing cannot proceed (RTL6c4), so
+    // report the connection's error to the caller.
     ARTConnectionInternal *connection = internalRealtimeClient.connection;
     if ([connection isActive_nosync]) {
         return nil;

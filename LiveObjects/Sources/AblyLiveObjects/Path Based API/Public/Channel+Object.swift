@@ -16,7 +16,7 @@ public extension ARTRealtimeChannel {
         nonTypeErasedObject
     }
 
-    internal var nonTypeErasedObject: PublicDefaultRealtimeObject { // internal (not private) for AblyLiveObjectsTesting
+    internal var nonTypeErasedObject: PublicDefaultRealtimeObject { // internal for AblyLiveObjectsTesting
         let pluginAPI = Plugin.defaultPluginAPI
         let underlyingObjects = pluginAPI.underlyingObjects(for: asPluginPublicRealtimeChannel)
         let internalQueue = pluginAPI.internalQueue(for: underlyingObjects.client)

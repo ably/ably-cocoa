@@ -225,7 +225,7 @@ internal struct ObjectsPool {
     /// Keyed by `objectId`.
     ///
     /// Per RTO3b, always contains an entry for `ObjectsPool.rootKey`, and this entry is always of type `map`.
-    internal var entries: [String: Entry] // internal (not private(set)) for AblyLiveObjectsTesting
+    internal var entries: [String: Entry] // internal setter for AblyLiveObjectsTesting
 
     /// The key under which the root object is stored.
     internal static let rootKey = "root"
@@ -248,7 +248,7 @@ internal struct ObjectsPool {
         )
     }
 
-    internal init( // internal (not private) for AblyLiveObjectsTesting
+    internal init( // internal for AblyLiveObjectsTesting
         logger: Logger,
         internalQueue: DispatchQueue,
         userCallbackQueue: DispatchQueue,

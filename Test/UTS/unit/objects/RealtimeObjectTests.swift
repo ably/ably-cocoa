@@ -118,7 +118,8 @@ final class RealtimeObjectTests {
 
     // MARK: - get() (RTO23)
 
-    // UTS: objects/unit/RTO23/get-returns-path-object-0 & RTO23d/get-resolves-immediately-synced-0 — RTO23d:
+    // UTS: objects/unit/RTO23/get-returns-path-object-0 & RTO23d/get-resolves-immediately-synced-0
+    // RTO23d:
     // get() returns a LiveMapPathObject rooted at the root map (empty path) once synced.
     @Test
     func RTO23d_get_returns_root_path_object() async throws {
@@ -134,7 +135,8 @@ final class RealtimeObjectTests {
         #expect(root2.path.isEmpty)
     }
 
-    // UTS: objects/unit/RTO23c/get-waits-for-synced-0 — RTO23c: get() before the sync completes waits, then
+    // UTS: objects/unit/RTO23c/get-waits-for-synced-0
+    // RTO23c: get() before the sync completes waits, then
     // resolves once SYNCED.
     @Test
     func RTO23c_get_waits_for_synced() async throws {
@@ -150,7 +152,8 @@ final class RealtimeObjectTests {
         #expect(root.path.isEmpty)
     }
 
-    // UTS: objects/unit/RTO23e/get-rejects-failed-0 — RTO23e/RTL33c: get() on a FAILED channel is rejected by
+    // UTS: objects/unit/RTO23e/get-rejects-failed-0
+    // RTO23e/RTL33c: get() on a FAILED channel is rejected by
     // ensure-active-channel with code 90001 / statusCode 400.
     @Test
     func RTO23e_get_rejects_failed_channel() async throws {
@@ -163,7 +166,8 @@ final class RealtimeObjectTests {
         #expect(error?.statusCode == 400)
     }
 
-    // UTS: objects/unit/RTO4b — get() resolves via an ATTACHED with HAS_OBJECTS false (no-objects sync
+    // UTS: objects/unit/RTO4b
+    // get() resolves via an ATTACHED with HAS_OBJECTS false (no-objects sync
     // completion): the root is an empty map.
     @Test
     func RTO4b_get_resolves_after_no_objects_attach() async throws {
@@ -256,7 +260,8 @@ final class RealtimeObjectTests {
     // infra-driving stand-in for the spec's `channel.detach()` (DETACHED) and mock_ws ERROR (FAILED);
     // the observable outcome (get() fails 92008/400, with cause on FAILED) is identical.
 
-    // UTS: objects/unit/RTO23c1/fails-on-channel-detached-0 — get() waiting for sync fails with
+    // UTS: objects/unit/RTO23c1/fails-on-channel-detached-0
+    // get() waiting for sync fails with
     // 92008/400 when the channel enters DETACHED during the wait.
     @Test
     func RTO23c1_get_fails_on_channel_detached() async throws {
@@ -288,7 +293,8 @@ final class RealtimeObjectTests {
         }
     }
 
-    // UTS: objects/unit/RTO23c1/fails-on-channel-suspended-0 — get() waiting for sync fails with
+    // UTS: objects/unit/RTO23c1/fails-on-channel-suspended-0
+    // get() waiting for sync fails with
     // 92008/400 when the channel enters SUSPENDED during the wait (RTO27b retains data, but the
     // in-flight get() must still fail).
     @Test
@@ -320,7 +326,8 @@ final class RealtimeObjectTests {
         }
     }
 
-    // UTS: objects/unit/RTO23c1/fails-on-channel-failed-0 — get() waiting for sync fails with 92008/400
+    // UTS: objects/unit/RTO23c1/fails-on-channel-failed-0
+    // get() waiting for sync fails with 92008/400
     // when the channel enters FAILED during the wait, with `cause` set to the channel's errorReason.
     @Test
     func RTO23c1_get_fails_on_channel_failed_with_cause() async throws {
@@ -356,7 +363,8 @@ final class RealtimeObjectTests {
 
     // MARK: - Status events (RTO17 / RTO18 / RTO19)
 
-    // UTS: objects/unit/RTO17/sync-state-events-0 — RTO17b/RTO18b1/RTO18b2/RTO18e: on(.syncing) and
+    // UTS: objects/unit/RTO17/sync-state-events-0
+    // RTO17b/RTO18b1/RTO18b2/RTO18e: on(.syncing) and
     // on(.synced) fire, in that order, as the sync completes. (Zero-arg callbacks — DEV-11.)
     @Test
     func RTO17_RTO18_sync_state_events() async throws {
@@ -372,7 +380,8 @@ final class RealtimeObjectTests {
         #expect(events.snapshot == ["SYNCING", "SYNCED"])
     }
 
-    // UTS: objects/unit/RTO18/on-synced-fires-0 — RTO18: on(.synced) fires when the sync completes.
+    // UTS: objects/unit/RTO18/on-synced-fires-0
+    // RTO18: on(.synced) fires when the sync completes.
     @Test
     func RTO18_on_synced_fires() async throws {
         let (publicObject, proxied, _, internalQueue) = Self.makePublicObject()
@@ -383,7 +392,8 @@ final class RealtimeObjectTests {
         }
     }
 
-    // UTS: objects/unit/RTO18d/duplicate-listener-0 — the SAME listener registered twice (via two on() calls)
+    // UTS: objects/unit/RTO18d/duplicate-listener-0
+    // the SAME listener registered twice (via two on() calls)
     // fires twice per event (RTE4 reference behaviour; cocoa does not de-duplicate).
     @Test
     func RTO18d_duplicate_listener_fires_twice() async throws {
@@ -400,7 +410,8 @@ final class RealtimeObjectTests {
         #expect(counter.count == 2)
     }
 
-    // UTS: objects/unit/RTO19/off-deregisters-0 — RTO19/RTO18f1: off() deregisters the listener; it is not
+    // UTS: objects/unit/RTO19/off-deregisters-0
+    // RTO19/RTO18f1: off() deregisters the listener; it is not
     // called for the subsequent sync.
     @Test
     func RTO19_off_deregisters() async throws {
@@ -416,7 +427,8 @@ final class RealtimeObjectTests {
         #expect(counter.count == 0) // swiftformat:disable:this isEmpty — swiftlint:disable:this empty_count
     }
 
-    // UTS: objects/unit/RTO17-RTO18/sync-event-sequences-0 (scenario "initial attach") — a first sync emits
+    // UTS: objects/unit/RTO17-RTO18/sync-event-sequences-0 (scenario "initial attach")
+    // a first sync emits
     // [SYNCING, SYNCED] to listeners registered before it.
     @Test
     func RTO17_RTO18_sequence_initial_attach() async throws {
@@ -431,7 +443,8 @@ final class RealtimeObjectTests {
         #expect(events.snapshot == ["SYNCING", "SYNCED"])
     }
 
-    // UTS: objects/unit/RTO17-RTO18/sync-event-sequences-0 (scenario "re-sync on new ATTACHED") — a new
+    // UTS: objects/unit/RTO17-RTO18/sync-event-sequences-0 (scenario "re-sync on new ATTACHED")
+    // a new
     // ATTACHED (HAS_OBJECTS) followed by an OBJECT_SYNC re-emits [SYNCING, SYNCED].
     @Test
     func RTO17_RTO18_sequence_resync_on_attached() async throws {
@@ -452,7 +465,8 @@ final class RealtimeObjectTests {
         #expect(events.snapshot == ["SYNCING", "SYNCED"])
     }
 
-    // UTS: objects/unit/RTO17-RTO18/sync-event-sequences-0 (scenario "ATTACHED without HAS_OBJECTS") — RTO4c
+    // UTS: objects/unit/RTO17-RTO18/sync-event-sequences-0 (scenario "ATTACHED without HAS_OBJECTS")
+    // RTO4c
     // emits SYNCING, RTO4b then completes immediately emitting SYNCED.
     @Test
     func RTO17_RTO18_sequence_attached_without_objects() async throws {
@@ -474,7 +488,8 @@ final class RealtimeObjectTests {
 
     // MARK: - Access / write preconditions on channel state (RTO25b / RTO26b)
 
-    // UTS: objects/unit/RTO25b/access-throws-detached-0 & access-throws-failed-0 — an access method (keys())
+    // UTS: objects/unit/RTO25b/access-throws-detached-0 & access-throws-failed-0
+    // an access method (keys())
     // on a DETACHED/FAILED channel throws 90001 / 400.
     @Test(arguments: [_AblyPluginSupportPrivate.RealtimeChannelState.detached, .failed])
     func RTO25b_access_throws_on_unusable_state(state: _AblyPluginSupportPrivate.RealtimeChannelState) throws {
@@ -486,7 +501,8 @@ final class RealtimeObjectTests {
         #expect(error?.statusCode == 400)
     }
 
-    // UTS: objects/unit/RTO26b/write-throws-detached-0 & write-throws-failed-0 (+ SUSPENDED per RTO26b) — a
+    // UTS: objects/unit/RTO26b/write-throws-detached-0 & write-throws-failed-0 (+ SUSPENDED per RTO26b)
+    // a
     // write (set()) on a DETACHED/FAILED/SUSPENDED channel throws 90001 / 400.
     @Test(arguments: [_AblyPluginSupportPrivate.RealtimeChannelState.detached, .failed, .suspended])
     func RTO26b_write_throws_on_unusable_state(state: _AblyPluginSupportPrivate.RealtimeChannelState) async throws {

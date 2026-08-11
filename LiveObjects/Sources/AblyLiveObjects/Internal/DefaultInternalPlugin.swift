@@ -20,13 +20,6 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
         self.pluginAPI = pluginAPI
     }
 
-    // Channel-release disposal: the channel-release callback `nosync_onChannelRelease(_:)` (see below),
-    // which the core SDK invokes from `-[ARTRealtimeChannels release:]`, disposes the channel's
-    // `InternalDefaultRealtimeObjects` with a release-specific cause, proactively failing any in-flight
-    // operation rather than waiting for the channel's eventual deallocation (which would fail waiters
-    // with a generic cause via `deinit`). This release-time disposal is not specified; it mirrors
-    // ably-java's `DefaultLiveObjectsPlugin` channel-release disposal.
-
     // MARK: - Channel `objects` property
 
     /// The `pluginDataValue(forKey:channel:)` key that we use to store the value of the `ARTRealtimeChannel.objects` property.
@@ -77,23 +70,24 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
         pluginAPI.nosync_setPluginDataValue(liveObjects, forKey: Self.pluginDataKey, channel: channel)
 
         // Seed the RTO20c1 siteCode from the latest connection details at engine creation, through the
-        // same `nosync_setSiteCode` path that the CONNECTED push (`nosync_onConnected`) uses. The core
-        // SDK's CONNECTED push (`ARTRealtime.m` `nosync_onConnectedWithConnectionDetails:`) only reaches
-        // channels that already exist at CONNECTED time; a channel created *after* connect (the normal
-        // `connect → channels.get(name)` flow) would otherwise never receive a siteCode, leaving
-        // `publishAndApply` unable to apply local echo (RTO20c1) until the next reconnect. ably-java has
-        // no such hole because it reads `connectionManager.siteCode` at publish time; cocoa is
-        // push-based, so we seed here and let the CONNECTED push keep it fresh. A channel created before
-        // connect seeds nil and is covered by the later push.
+        // same `nosync_setSiteCode` path that the CONNECTED `ProtocolMessage` handler
+        // (`nosync_onConnected`) uses. That handler (`ARTRealtime.m`
+        // `nosync_onConnectedWithConnectionDetails:`) only reaches channels that already exist at
+        // CONNECTED time; a channel created *after* connect (the normal `connect → channels.get(name)`
+        // flow) would otherwise never receive a siteCode, leaving `publishAndApply` unable to apply
+        // local echo (RTO20c1) until the next reconnect. Seeding here closes that gap; the later
+        // CONNECTED handler keeps it fresh. A channel created before connect seeds nil and is covered by
+        // that later handler.
         liveObjects.nosync_setSiteCode(pluginAPI.nosync_latestConnectionDetails(for: client)?.siteCode)
     }
 
     // The core SDK calls this from `-[ARTRealtimeChannels release:]` when a channel is released.
     // Disposes the channel's objects engine with a release-specific cause, failing any in-flight
-    // operation proactively. This release-time disposal is not specified; it mirrors ably-java's
-    // `DefaultLiveObjectsPlugin` channel-release disposal. A channel may be released without ever having
-    // had its objects engine accessed, but `nosync_prepare` runs for every channel at creation, so the
-    // plugin data is present; we still guard defensively so a teardown race cannot trap.
+    // operation proactively (rather than waiting for the channel's eventual deallocation, which would
+    // fail waiters with a generic cause via `deinit`). This release-time disposal is not specified. A
+    // channel may be released without ever having had its objects engine accessed, but `nosync_prepare`
+    // runs for every channel at creation, so the plugin data is present; we still guard defensively so
+    // a teardown race cannot trap.
     internal func nosync_onChannelRelease(_ channel: _AblyPluginSupportPrivate.RealtimeChannel) {
         guard pluginAPI.nosync_pluginDataValue(forKey: Self.pluginDataKey, channel: channel) != nil else {
             return

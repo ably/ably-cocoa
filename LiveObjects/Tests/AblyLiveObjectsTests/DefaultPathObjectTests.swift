@@ -391,7 +391,7 @@ struct DefaultPathObjectTests {
         #expect(error.message == "\"echoMessages\" client option must be enabled for this operation")
     }
 
-    // The write guard checks echoMessages before channel state (matching ably-java's guard order): with
+    // The write guard checks echoMessages before channel state: with
     // echo disabled AND the channel SUSPENDED, the echoMessages error (40000) is the one surfaced.
     // @spec RTO26
     @Test

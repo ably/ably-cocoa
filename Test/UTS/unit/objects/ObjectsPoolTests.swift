@@ -3,7 +3,7 @@
 // Port of the `objects/unit/objects_pool.md` spec — the ObjectsPool data structure and the
 // INITIALIZED -> SYNCING -> SYNCED sync state machine, driven end-to-end through
 // `InternalDefaultRealtimeObjects` (the spec's monolithic `pool` splits across `ObjectsPool` +
-// `InternalDefaultRealtimeObjects`; see the audit report §3.4).
+// `InternalDefaultRealtimeObjects`).
 //
 // Name mapping (UTS pseudocode -> Swift):
 // - `pool = ObjectsPool()`                 -> `makeRealtimeObjects(internalQueue:)`; the pool is read
@@ -67,8 +67,7 @@
 //   OBJECT message left a spurious zero-value object in the pool (the case here asserts pool size
 //   1, i.e. only root). Fixed minimally in `Sources/AblyLiveObjects/Internal/
 //   InternalDefaultRealtimeObjects.swift`: the RTO9a2b unknown-action guard now runs before the
-//   object creation, matching ably-java (`ObjectsManager.applyObjectMessages`, whose RTO9a3 comment
-//   likewise notes the discard checks must precede creation).
+//   object creation, per RTO9a3 (the discard checks must precede creation).
 
 import _AblyPluginSupportPrivate
 import Ably

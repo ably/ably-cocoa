@@ -9,8 +9,8 @@ suites — plus `ObjectsUTSHelpers.swift`).
   `object_id`, `objects_pool`, `parent_references`) reach `internal` members of the plugin. From the
   `UTS` target that access travels via `@testable import AblyLiveObjects` plus the
   `AblyLiveObjectsTesting` extension module (which re-exposes the needed internals through
-  `@testable import AblyLiveObjectsTesting`), so — unlike ably-java, where Kotlin `internal` is
-  module-private and forced the ports in-module — cocoa keeps them in the UTS-standard tree.
+  `@testable import AblyLiveObjectsTesting`), so the internal graph is reachable and these ports live in
+  the UTS-standard tree (rather than needing to sit inside the plugin module).
 - **Tag convention:** every port carries a per-test `// UTS: objects/unit/<id>` comment immediately above
   its `@Test`, naming the spec Test ID it covers (consumed by `audit_translation.py`). Each file opens
   with a prose comment naming the source spec (`objects/unit/<spec>.md`). Suite types are named
@@ -29,6 +29,5 @@ suites — plus `ObjectsUTSHelpers.swift`).
 The plugin's own hand-written unit tests live in the plugin test target
 (`LiveObjects/Tests/AblyLiveObjectsTests/`) — e.g. `DefaultInstanceTests`, `ParentReferencesTests`,
 `PathObjectSubscriptionTests`, `PublicRealtimeObjectTests`, `DefaultPathObjectTests`,
-`TestsOnlySeamsTests`, `WireObjectMessageSizeTests`, `InternalDefaultRealtimeObjectsTests`, etc. These
-are the analogue of ably-java's non-UTS unit tests, which it likewise keeps outside `uts/` (in
-`.../liveobjects/unit/`). Only skill-generated UTS spec ports belong here under `Test/UTS/unit/objects/`.
+`TestsOnlySeamsTests`, `WireObjectMessageSizeTests`, `InternalDefaultRealtimeObjectsTests`, etc. Only
+skill-generated UTS spec ports belong here under `Test/UTS/unit/objects/`.

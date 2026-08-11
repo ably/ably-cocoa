@@ -5,8 +5,8 @@ import Ably
 import Foundation
 import Testing
 
-/// Tests for `DefaultInternalPlugin`'s engine setup, in particular the DEV-23-adjacent siteCode
-/// seeding at channel preparation (Item 6).
+/// Tests for `DefaultInternalPlugin`'s engine setup, in particular the siteCode
+/// seeding at channel preparation.
 struct DefaultInternalPluginTests {
     // MARK: - Test doubles
 
@@ -115,7 +115,7 @@ struct DefaultInternalPluginTests {
         }
     }
 
-    // MARK: - siteCode seeding (Item 6)
+    // MARK: - siteCode seeding
 
     /// Prepares a channel and returns the engine the plugin stored for it.
     private static func prepareEngine(connectionDetails: (any _AblyPluginSupportPrivate.ConnectionDetailsProtocol)?) -> InternalDefaultRealtimeObjects {
@@ -138,8 +138,8 @@ struct DefaultInternalPluginTests {
     }
 
     // When the latest connection details carry a siteCode, the engine is seeded with it at prepare time
-    // (so a channel created after CONNECTED — which never receives the CONNECTED push — can apply local
-    // echo per RTO20c1). DEV-23-adjacent (siteCode seeding hole).
+    // (so a channel created after CONNECTED — which never receives the CONNECTED ProtocolMessage — can
+    // apply local echo per RTO20c1).
     @Test
     func seedsSiteCodeFromConnectionDetailsAtPrepare() {
         let engine = Self.prepareEngine(connectionDetails: StubConnectionDetails(siteCode: "site42"))
@@ -147,7 +147,7 @@ struct DefaultInternalPluginTests {
     }
 
     // When there are no connection details (channel created before CONNECTED), the seed is nil; the
-    // later CONNECTED push (nosync_onConnected) will supply the siteCode. The current skip-with-warning
+    // later CONNECTED ProtocolMessage handler (nosync_onConnected) will supply the siteCode. The current skip-with-warning
     // behaviour on publish is preserved.
     @Test
     func seedsNilSiteCodeWhenNoConnectionDetails() {

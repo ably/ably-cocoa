@@ -9,17 +9,6 @@ directory (a directory directly under .../specification/uts/), it:
   - resolves, per tier, the target output directory, and
   - lists the candidate spec files with their derived Swift class names.
 
-Per-tier target resolution: normally a tier's mapping value is joined onto the
-global `testRoot` ('Test/UTS' + 'unit/realtime' -> 'Test/UTS/unit/realtime').
-A tier value that begins with '//' is a per-tier override: the rest is taken as
-a path relative to the repo root, bypassing `testRoot` entirely. This lets a
-module park one tier outside the shared Test/UTS tree. No module uses it today
-(objects' `unit` tier resolves to the default 'Test/UTS/unit/objects'); it is
-kept as a dormant, generic escape hatch. See resolve_target_dir.
-
-Class name: class_name() derives '<PascalCase-of-spec-stem>' + 'Tests' (e.g.
-internal_live_map.md -> InternalLiveMapTests).
-
 Doing this in code (rather than asking the model to eyeball regexes, join
 paths, and hand-convert snake_case -> PascalCase every run) keeps the skill's
 selection phase byte-for-byte deterministic.
@@ -49,25 +38,8 @@ def fail(code, message):
     sys.exit(1)
 
 
-def resolve_target_dir(test_root: str, tier_value: str) -> str:
-    """Resolve a tier's mapping value to a repo-root-relative target directory.
-
-    Default scheme: join the value onto the global `testRoot`
-    ('Test/UTS' + 'unit/realtime' -> 'Test/UTS/unit/realtime'). Override scheme:
-    a value beginning with '//' is repo-root-relative and bypasses `testRoot`
-    ('//Some/Other/Dir' -> that path verbatim), so a module can route one tier
-    outside the shared Test/UTS tree. No module uses the override today (it is a
-    dormant, generic escape hatch); the fallback is the unchanged default join.
-    """
-    if tier_value.startswith("//"):
-        return tier_value[2:].rstrip("/")
-    return f"{test_root}/{tier_value}"
-
-
 def class_name(md_path: Path) -> str:
-    """objects_batch_test.md -> ObjectsBatchTests; instance.md -> InstanceTests.
-
-    'Tests' is appended to the PascalCase stem."""
+    """objects_batch_test.md -> ObjectsBatchTests; instance.md -> InstanceTests."""
     stem = md_path.stem
     if stem.endswith("_test"):
         stem = stem[: -len("_test")]
@@ -193,7 +165,7 @@ def main():
 
     tiers_out = {}
     for tier in TIERS:
-        target_dir = resolve_target_dir(test_root, entry[tier]) if (mapped and tier in entry) else None
+        target_dir = f"{test_root}/{entry[tier]}" if (mapped and tier in entry) else None
         tiers_out[tier] = {
             "present": src[tier].is_dir(),
             "sourceDir": str(src[tier]),

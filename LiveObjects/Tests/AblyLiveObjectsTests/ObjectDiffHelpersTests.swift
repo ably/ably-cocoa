@@ -17,7 +17,7 @@ struct ObjectDiffHelpersTests {
         }
 
         // @specOneOf(2/2) RTLC14b - a zero delta (unchanged value) is collapsed to a no-op update
-        // (permitted by RTLO4b4b) so no spurious subscriber callback fires. Matches ably-java/js.
+        // (permitted by RTLO4b4b) so no spurious subscriber callback fires.
         @Test
         func zeroDeltaIsNoop() {
             let update = ObjectDiffHelpers.calculateCounterDiff(
@@ -104,7 +104,7 @@ struct ObjectDiffHelpersTests {
             )
 
             // An empty diff (nothing changed) is collapsed to a no-op update (permitted by
-            // RTLO4b4b) rather than an empty non-noop update. Matches ably-java/js.
+            // RTLO4b4b) rather than an empty non-noop update.
             #expect(update.isNoop)
         }
 

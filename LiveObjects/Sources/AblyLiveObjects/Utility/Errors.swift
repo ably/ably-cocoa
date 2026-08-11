@@ -28,11 +28,11 @@ internal enum LiveObjectsError {
     /// `object_publish` for writes). Code 40024.
     case channelModeRequired(mode: String)
     /// RTO26: A write (mutation) operation was attempted while the client's `echoMessages` option is
-    /// disabled. Code 40000 (ably-java `ObjectErrorCode.BadRequest`).
+    /// disabled. Code 40000.
     case echoMessagesDisabled
     /// The channel was released via `channels.release()`, so any in-flight objects operation is failed
-    /// with this as the cause. Code 40000. Unspecified; mirrors ably-java, which fails
-    /// released-channel operations with a client error.
+    /// with this as the cause. Code 40000. Unspecified; released-channel operations are failed with a
+    /// client error.
     case channelReleased
     /// The LiveObjects plugin is not configured on the client. Code 40019. The code is defined here;
     /// plugin-missing detection is not yet wired up.
@@ -53,9 +53,9 @@ internal enum LiveObjectsError {
         case .channelModeRequired:
             40024 // RTO2a2/RTO2b2
         case .echoMessagesDisabled:
-            40000 // RTO26 (ably-java ObjectErrorCode.BadRequest)
+            40000 // RTO26
         case .channelReleased:
-            40000 // ably-java clientError / ObjectErrorCode.BadRequest
+            40000 // client error (channel released)
         case .pluginUnavailable:
             40019
         case .invalidInput:
@@ -119,7 +119,7 @@ internal enum LiveObjectsError {
         case let .newlyCreatedObjectNotInPool(objectID: objectID):
             "Newly created object \(objectID) not found in pool after publishAndApply"
         case let .maxMessageSizeExceeded(size: size, maxSize: maxSize):
-            // RTO15d - matches the message format used by ably-java
+            // RTO15d
             "ObjectMessages size \(size) exceeds maximum allowed size of \(maxSize) bytes"
         case let .pathNotResolved(path: path):
             // RTPO3c2
@@ -131,10 +131,10 @@ internal enum LiveObjectsError {
             // RTO2a2/RTO2b2
             "\"\(mode)\" channel mode must be set for this operation"
         case .echoMessagesDisabled:
-            // RTO26 - matches ably-java's message verbatim
+            // RTO26
             "\"echoMessages\" client option must be enabled for this operation"
         case .channelReleased:
-            // matches ably-java's message verbatim
+            // Unspecified message for the channel-released cause.
             "Channel has been released using channels.release()"
         case .pluginUnavailable:
             "The LiveObjects plugin is not configured on this client"
@@ -253,4 +253,4 @@ extension JSONObjectOrArray.ConversionError: ConvertibleToLiveObjectsError {
 
 /// The `ARTErrorInfo.userInfo` key under which we store the underlying `LiveObjectsError` (see `toARTErrorInfo()`), preserving it for diagnostics.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal let liveObjectsErrorUserInfoKey = "LiveObjectsError" // internal (not private) for AblyLiveObjectsTesting
+internal let liveObjectsErrorUserInfoKey = "LiveObjectsError" // internal for AblyLiveObjectsTesting

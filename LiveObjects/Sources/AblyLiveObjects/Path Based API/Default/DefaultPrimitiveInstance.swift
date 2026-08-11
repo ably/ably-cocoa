@@ -1,8 +1,8 @@
 import Ably
 import Foundation
 
-/// Default implementation of ``PrimitiveInstance`` (Kotlin `Default{String,Number,Boolean,Binary,
-/// JsonArray,JsonObject}Instance`, collapsed per DEV-3). An `Instance` is identity/value-addressed
+/// Default implementation of ``PrimitiveInstance`` (the per-primitive-type instances are collapsed
+/// into one per DEV-3). An `Instance` is identity/value-addressed
 /// (RTINS2a): a primitive instance binds the already-extracted value, so reads are O(1) and never
 /// re-resolve map state. Spec: `RTINS1`, `RTTS10c`.
 ///

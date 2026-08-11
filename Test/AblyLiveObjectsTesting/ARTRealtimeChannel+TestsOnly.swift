@@ -1,7 +1,3 @@
-// Test-only accessors for the `ARTRealtimeChannel` LiveObjects seam, moved out of the shipped sources so that
-// production code carries no test plumbing. Consumed by AblyLiveObjectsTests via
-// `@testable import AblyLiveObjectsTesting`. See README.md for the dumb-accessor review rule.
-
 import Ably
 @testable import AblyLiveObjects
 

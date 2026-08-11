@@ -59,7 +59,7 @@ final class Subscriber<each CallbackArg: Sendable>: Sendable {
 
     /// A wrapper that allows us to store a callback that takes variadic args.
     ///
-    /// This allows us to avoid the error "Cannot fully abstract a value of variadic function type '@Sendable (repeat each CallbackArg) -> ()' because different contexts will not be able to reliably agree on a calling convention; try wrapping it in a struct" that we get if we try to directly store the callback in an array. Claude suggested this solution.
+    /// This allows us to avoid the error "Cannot fully abstract a value of variadic function type '@Sendable (repeat each CallbackArg) -> ()' because different contexts will not be able to reliably agree on a calling convention; try wrapping it in a struct" that we get if we try to directly store the callback in an array.
     private struct CallbackWrapper {
         let callback: @Sendable (repeat each CallbackArg) -> Void
 

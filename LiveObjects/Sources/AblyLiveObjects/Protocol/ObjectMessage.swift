@@ -622,13 +622,11 @@ internal extension ProtocolTypes.ObjectData {
 
 // MARK: - Message size calculation (OM3, OOP4, OST3, OD3)
 
-// The size algorithm below is a direct port of ably-java's `WireObjectMessage.size()`
-// (io.ably.lib.liveobjects.message). It is implemented on the `ProtocolTypes` (non-wire) types
-// rather than on `OutboundWireObjectMessage` because ably-java's algorithm depends on the
+// The size algorithm below is implemented on the `ProtocolTypes` (non-wire) types
+// rather than on `OutboundWireObjectMessage` because it depends on the
 // `MapCreate`/`CounterCreate` retained in `mapCreateWithObjectId`/`counterCreateWithObjectId`
-// (RTLMV4j5 / RTLCV4g5), which ably-java keeps as `@Transient` fields on its wire type but which
-// our `toWire(...)` conversion deliberately drops. Those payloads survive only on the
-// `ProtocolTypes` types, which is also exactly what `nosync_publish` carries.
+// (RTLMV4j5 / RTLCV4g5), which our `toWire(...)` conversion deliberately drops. Those payloads
+// survive only on the `ProtocolTypes` types, which is also exactly what `nosync_publish` carries.
 //
 // Note on string measurement: the spec's "length" (OM3d, OMP4a1, MCR3a1, OD3e) is ambiguous for
 // non-ASCII text — it does not say whether "length" means UTF-8 bytes or UTF-16 code units — and the

@@ -24,11 +24,11 @@ internal protocol InternalRealtimeObjectsProtocol: LiveMapObjectsPoolDelegate {
 /// This provides the implementation behind ``PublicDefaultRealtimeObjects``, via internal versions of the ``RealtimeObjects`` API.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeObjectsProtocol {
-    internal let mutableStateMutex: DispatchQueueMutex<MutableState> // internal (not private) for AblyLiveObjectsTesting
+    internal let mutableStateMutex: DispatchQueueMutex<MutableState> // internal for AblyLiveObjectsTesting
 
-    internal let logger: Logger // internal (not private) for AblyLiveObjectsTesting
-    internal let userCallbackQueue: DispatchQueue // internal (not private) for AblyLiveObjectsTesting
-    internal let clock: SimpleClock // internal (not private) for AblyLiveObjectsTesting
+    internal let logger: Logger // internal for AblyLiveObjectsTesting
+    internal let userCallbackQueue: DispatchQueue // internal for AblyLiveObjectsTesting
+    internal let clock: SimpleClock // internal for AblyLiveObjectsTesting
 
     /// The channel's path-subscription registry (RTO24a). A `Sendable` reference type with its own
     /// internal synchronisation, so it lives here as an immutable class-level property rather than
@@ -89,7 +89,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
     }
 
     /// Contains the data gathered during an `OBJECT_SYNC` sequence.
-    internal struct SyncSequence { // internal (not private) for AblyLiveObjectsTesting (cascade: reachable from the raised MutableState)
+    internal struct SyncSequence { // internal for AblyLiveObjectsTesting (cascade: reachable from the raised MutableState)
         /// The sync sequence ID, per RTO5a1.
         internal var id: String
 
@@ -159,8 +159,8 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
         // queue (e.g. when the owning `ARTRealtimeChannel` is deallocated during client/channel
         // teardown, which happens on that queue), and `dispose()`'s `withSync` asserts `.notOnQueue`
         // (`ably_syncNoDeadlock`) — so a blocking teardown from deinit would trap (SIGTRAP). Instead,
-        // mirroring ably-java's non-blocking `DefaultRealtimeObject.dispose` (which cancels via
-        // structured cancellation, never sync-hopping its own queue): cancel the GC task (thread-safe
+        // use a non-blocking teardown that cancels via structured cancellation and never sync-hops
+        // its own queue: cancel the GC task (thread-safe
         // from any thread), then hop the queue-confined cleanup onto the internal queue with `async`,
         // capturing ONLY the mutex and the (`Sendable`) register by value — never `self`, which is
         // being deallocated. This deinit-on-queue hazard is cocoa-specific (absent in a GC'd runtime).
@@ -176,28 +176,26 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
         }
     }
 
-    /// The channel objects engine's internal serial queue (Kotlin's `sequentialScope`). Shared out
+    /// The channel objects engine's internal serial queue. Shared out
     /// so the public proxy can construct path objects (whose accessors hop onto it). Every mutation
     /// of this object's state still goes through `mutableStateMutex`.
     internal var internalQueue: DispatchQueue {
         mutableStateMutex.dispatchQueue
     }
 
-    // MARK: - Dispose lifecycle (ably-java `DefaultRealtimeObject.dispose`)
+    // MARK: - Dispose lifecycle
 
-    /// Tears down the resources associated with this objects engine, mirroring ably-java's
-    /// `DefaultRealtimeObject.dispose`:
+    /// Tears down the resources associated with this objects engine:
     ///
-    /// - cancels the periodic garbage-collection `Task` (ably-java `ObjectsPool.dispose`);
-    /// - fails every in-flight `publishAndApply` / `get()` sync waiter (ably-java's `cancelChildren`
-    ///   structured cancellation), so a suspended `get()` awaiting sync is resolved rather than
+    /// - cancels the periodic garbage-collection `Task`;
+    /// - fails every in-flight `publishAndApply` / `get()` sync waiter (via structured cancellation),
+    ///   so a suspended `get()` awaiting sync is resolved rather than
     ///   orphaned — it surfaces the RTO20e1 error (code 92008);
-    /// - drops all path subscriptions (ably-java `pathObjectSubscriptionRegister.dispose`);
-    /// - drops all status-event (`.syncing`/`.synced`) subscriptions (ably-java
-    ///   `objectsManager.dispose` → `offAll`).
+    /// - drops all path subscriptions;
+    /// - drops all status-event (`.syncing`/`.synced`) subscriptions.
     ///
-    /// It deliberately does **not** invalidate the sync state or the objects pool: like ably-java,
-    /// which keeps its dispatch scope alive so a later `get()` still works, the instance stays usable —
+    /// It deliberately does **not** invalidate the sync state or the objects pool: the dispatch scope
+    /// stays alive so a later `get()` still works, and the instance stays usable —
     /// a subsequent `get()` returns the root path object once the channel re-syncs. Idempotent.
     ///
     /// `ObjectsPool` itself needs no dispose hook: it is a value type owned inside `MutableState`
@@ -216,13 +214,11 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
     /// in-flight sync waiters with a **release-specific** cause (a 40000 "Channel has been released"
     /// error) rather than the generic `.channelStateFailed` reason used by `deinit`/`dispose()`. Called
     /// on the internal queue by the core SDK's channel-release path (via the plugin's
-    /// `nosync_onChannelRelease:` hook → `DefaultInternalPlugin`). Mirrors ably-java
-    /// `DefaultLiveObjectsPlugin.dispose(channelName)` → `DefaultRealtimeObject.dispose(cause)`.
+    /// `nosync_onChannelRelease:` hook → `DefaultInternalPlugin`).
     /// Idempotent.
     ///
     /// Like `dispose()`, this keeps the instance usable (the sync state and pool are untouched), so a
-    /// later `get()` after a re-attach still works, matching ably-java's scope-survives-dispose
-    /// behaviour.
+    /// later `get()` after a re-attach still works (the dispatch scope survives dispose).
     internal func nosync_disposeForChannelRelease() {
         garbageCollectionTask.cancel()
         let releaseCause = LiveObjectsError.channelReleased.toARTErrorInfo()
@@ -559,7 +555,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
     // MARK: - Sending `OBJECT` ProtocolMessage
 
     /// The Ably default maximum message size, in bytes, used as a fallback when the connection has not
-    /// negotiated one. Mirrors `Defaults.maxMessageSize` in ably-java (and `ARTDefault.maxMessageSize`).
+    /// negotiated one. Matches the core SDK's `ARTDefault.maxMessageSize`.
     private static let defaultMaxMessageSize = 65536
 
     /// RTO15d: Validates that the total size of `objectMessages` (each calculated per OM3) does not
@@ -569,11 +565,10 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
     /// The effective limit is the connection's negotiated `maxMessageSize`, read from the latest
     /// `CONNECTED` `ProtocolMessage`'s `connectionDetails` via `CoreSDK.nosync_maxMessageSize`; we fall
     /// back to ``defaultMaxMessageSize`` when the core SDK has no connection details yet or the server
-    /// did not send a limit. Mirrors ably-java's `ensureMessageSizeWithinLimit`
-    /// (`connectionManager.maxMessageSize`).
+    /// did not send a limit.
     ///
     /// Must be called on the internal queue (it reads the `nosync_` connection-details accessor).
-    internal static func ensureMessageSizeWithinLimit(_ objectMessages: [ProtocolTypes.OutboundObjectMessage], coreSDK: CoreSDK) throws(ARTErrorInfo) { // internal (not private) for AblyLiveObjectsTesting
+    internal static func ensureMessageSizeWithinLimit(_ objectMessages: [ProtocolTypes.OutboundObjectMessage], coreSDK: CoreSDK) throws(ARTErrorInfo) { // internal for AblyLiveObjectsTesting
         let maximumAllowedSize = coreSDK.nosync_maxMessageSize ?? defaultMaxMessageSize
         let totalSize = objectMessages.reduce(0) { $0 + $1.size }
         if totalSize > maximumAllowedSize {
@@ -774,7 +769,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
 
     // MARK: - Mutable state and the operations that affect it
 
-    internal struct MutableState { // internal (not private) for AblyLiveObjectsTesting
+    internal struct MutableState { // internal for AblyLiveObjectsTesting
         internal var objectsPool: ObjectsPool
 
         /// The name of the channel these objects belong to. Used to populate the `channel` field of
@@ -782,7 +777,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
         ///
         /// In production this is bound to the real channel name at construction: the `channelName`
         /// init parameter is supplied by `DefaultInternalPlugin.nosync_prepare` via the
-        /// `nameForChannel:` plugin bridge (ably-java `DefaultRealtimeObject.channelName`).
+        /// `nameForChannel:` plugin bridge.
         internal var channelName: String
 
         internal var onChannelAttachedHasObjects: Bool?
@@ -1096,8 +1091,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
 
             // RTO9a2b: Discard unsupported actions *before* creating any zero-value object. Both this
             // and the RTO9a3 check above must precede the RTO9a2a1 creation so that a message that
-            // will be discarded never leaves a spurious zero-value object in the pool (matches
-            // ably-java, ObjectsManager.applyObjectMessages).
+            // will be discarded never leaves a spurious zero-value object in the pool.
             guard case let .known(action) = operation.action else {
                 logger.log("Unsupported OBJECT operation action \(operation.action) received", level: .warn)
                 return
@@ -1196,8 +1190,8 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
         /// ATTACHED-with-HAS_OBJECTS-false path. Each caller first performs its own (differing) data
         /// step — RTO5c `applySyncObjectsPool` plus the RTO5c6 buffered-operation drain, versus the
         /// RTO4b1/RTO4b2 `nosync_reset` — and then runs these identical completion actions, so the two
-        /// paths cannot drift. Mirrors ably-js, where `onAttached(hasObjects=false)` and the
-        /// OBJECT_SYNC path both call the same `_endSync()`.
+        /// paths cannot drift: the ATTACHED-with-HAS_OBJECTS-false path and the OBJECT_SYNC path both
+        /// funnel through this single completion tail.
         internal mutating func nosync_completeSync(userCallbackQueue: DispatchQueue) {
             // RTO4b3, RTO4b4, RTO5c9: Clear appliedOnAckSerials after sync
             appliedOnAckSerials.removeAll()
@@ -1263,7 +1257,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
         /// `OBJECT_SYNC` data of a partial multi-`ProtocolMessage` sync sequence — by discarding the
         /// stored sync sequence. A no-op when no sync sequence is in progress. Deliberately does not
         /// clear `bufferedObjectOperations` (RTO27a2 concerns only the `SyncObjectsPool`) nor change
-        /// the sync state, mirroring Kotlin's `ObjectsManager.clearSyncObjectsPool`.
+        /// the sync state.
         private mutating func nosync_clearSyncObjectsPool() {
             if case let .syncing(syncingData) = state {
                 syncingData.syncSequence = nil
