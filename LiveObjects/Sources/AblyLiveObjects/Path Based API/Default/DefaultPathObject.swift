@@ -160,7 +160,7 @@ internal class DefaultPathObject: PathObject, @unchecked Sendable {
         return current // RTPO3a3
     }
 
-    /// Maps a resolved value to its ``ValueType`` (RTTS2). O(1), no queue hop.
+    /// Maps a resolved value to its ``ValueType`` (RTTS2).
     private static func valueType(of value: InternalLiveMapValue) -> ValueType {
         switch value {
         case .liveMap:

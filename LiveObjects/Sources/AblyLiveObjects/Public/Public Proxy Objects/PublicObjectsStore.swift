@@ -46,10 +46,8 @@ internal final class PublicObjectsStore: Sendable {
                 logObjectType: String,
                 createProxy: () -> Proxy,
             ) -> Proxy {
-                // Remove any entries that are no longer useful
                 removeDeallocatedEntries(logger: logger, logObjectType: logObjectType)
 
-                // Do the get-or-create
                 let proxiedObjectIdentifier = ObjectIdentifier(proxied)
 
                 if let existing = proxiesByProxiedObjectIdentifier[proxiedObjectIdentifier]?.referenced {

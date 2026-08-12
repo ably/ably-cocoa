@@ -52,7 +52,7 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
                 // If we already have connection details, then use its grace period per RTO10b2
                 .init(gracePeriod: .dynamic(gracePeriod.doubleValue))
             } else {
-                // Use the default grace period
+                // RTO10b3: use the default grace period
                 .init()
             }
         }()

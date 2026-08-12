@@ -508,7 +508,6 @@ internal final class InternalDefaultLiveMap: Sendable {
 
             // RTLM6c: Set data to ObjectState.map.entries, or to an empty map if it does not exist
             data = state.map?.entries?.mapValues { entry in
-                // Set tombstonedAt for tombstoned entries
                 let tombstonedAt: Date?
                 if entry.tombstone == true {
                     // RTLO6a
@@ -1073,7 +1072,7 @@ internal final class InternalDefaultLiveMap: Sendable {
             var result: [(key: String, value: InternalLiveMapValue)] = []
 
             for (key, entry) in data where !nosync_isEntryTombstonedGuardingSelfReference(entry, objectsPool: objectsPool) {
-                // Convert entry to LiveMapValue using the same logic as get(key:)
+                // RTLM11d3: entry values are mapped following the same procedure as get(key:) (RTLM5d2)
                 if let value = nosync_convertEntryToLiveMapValue(entry, objectsPool: objectsPool) {
                     result.append((key: key, value: value))
                 }

@@ -25,15 +25,15 @@ internal struct SyncCursor {
         let scanner = Scanner(string: channelSerial)
         scanner.charactersToBeSkipped = nil
 
-        // Everything up to the first colon is the sequence id.
+        // RTO5a1: everything up to the first colon is the sequence id.
         let sequenceID = scanner.scanUpToString(":") ?? ""
 
-        // There must be a colon separator; a serial with no colon (e.g. "sequence123") is malformed.
+        // RTO5a6: a serial with no colon separator (e.g. "sequence123") is malformed.
         guard scanner.scanString(":") != nil else {
             throw LiveObjectsError.other(Error.channelSerialDoesNotMatchExpectedFormat(channelSerial)).toARTErrorInfo()
         }
 
-        // Everything after the colon (if anything) is the cursor value.
+        // RTO5a1: everything after the colon is the cursor value; empty marks the end of the sequence (RTO5a4).
         let remainingString = channelSerial[scanner.currentIndex...]
         let cursorValue = remainingString.isEmpty ? nil : String(remainingString)
 

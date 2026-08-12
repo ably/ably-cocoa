@@ -4,7 +4,7 @@ import Foundation
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal struct SubscriptionStorage<EventName: Hashable & Sendable, Update: Sendable> {
     /// Internal bookkeeping for subscriptions, organized by event name.
-    /// Each event name maps to a dictionary of subscriptions keyed by their ID for O(1) operations.
+    /// Each event name maps to a dictionary of subscriptions keyed by their ID.
     private var subscriptionsByEventName: [EventName: [Subscription.ID: Subscription]] = [:]
 
     // MARK: - Subscriptions
@@ -42,12 +42,10 @@ internal struct SubscriptionStorage<EventName: Hashable & Sendable, Update: Send
     ) -> any AblyLiveObjects.SubscribeResponse {
         let subscription = Subscription(listener: listener, updateSubscriptionStorage: updateSelfLater)
 
-        // Initialize the dictionary for this event name if it doesn't exist
         if subscriptionsByEventName[eventName] == nil {
             subscriptionsByEventName[eventName] = [:]
         }
 
-        // Add the subscription to the appropriate event name dictionary
         subscriptionsByEventName[eventName]?[subscription.id] = subscription
 
         return SubscribeResponse(subscriptionID: subscription.id, eventName: eventName, updateSubscriptionStorage: updateSelfLater)
@@ -58,17 +56,14 @@ internal struct SubscriptionStorage<EventName: Hashable & Sendable, Update: Send
     }
 
     private mutating func unsubscribe(subscriptionID: Subscription.ID, eventName: EventName) {
-        // O(1) removal using dictionary key
         subscriptionsByEventName[eventName]?.removeValue(forKey: subscriptionID)
 
-        // Clean up empty event name dictionaries
         if subscriptionsByEventName[eventName]?.isEmpty == true {
             subscriptionsByEventName.removeValue(forKey: eventName)
         }
     }
 
     internal func emit(_ update: Update, eventName: EventName, on queue: DispatchQueue) {
-        // Only emit to subscribers who subscribed to this specific event name
         guard let subscriptions = subscriptionsByEventName[eventName] else {
             return
         }

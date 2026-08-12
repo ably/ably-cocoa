@@ -145,8 +145,7 @@ public protocol LiveMapPathObject: PathObject {
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 public protocol LiveCounterPathObject: PathObject {
     /// Resolves the path and, if it resolves to a counter, returns its current value (per `RTPO7c`).
-    /// Returns `nil` if the resolved value is an `InternalLiveMap` (`RTPO7e`) or resolution fails
-    /// (`RTPO7f`); a resolved primitive is also `nil` (the `RTTS6b` typed refinement, never `RTPO7d`).
+    /// Returns `nil` otherwise, including when resolution fails or the value is not a counter.
     /// Spec: `RTTS6b`.
     func value() throws(ARTErrorInfo) -> Double?
 

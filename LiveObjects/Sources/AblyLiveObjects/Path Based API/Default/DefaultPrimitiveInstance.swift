@@ -2,13 +2,11 @@ import Ably
 import Foundation
 
 /// Default implementation of ``PrimitiveInstance``. Per RTTS6h, the six per-primitive `Instance`
-/// sub-classes of RTTS10c are collapsed into a single type fronting a ``Primitive`` enum. An
-/// `Instance` is identity/value-addressed (RTINS2a): a primitive instance binds the already-extracted
-/// value, so reads are O(1) and never re-resolve map state. Spec: `RTINS1`, `RTTS10c`, `RTTS6h`.
+/// sub-classes of RTTS10c are collapsed into a single type fronting a ``Primitive`` enum, bound to an
+/// already-extracted value (RTINS2a). Spec: `RTINS1`, `RTTS10c`, `RTTS6h`.
 ///
-/// Because a primitive has no backing internal node (and hence no `DispatchQueueMutex`), the RTO25b
-/// access-precondition check is run by hopping onto the shared `internalQueue` and reusing the same
-/// `CoreSDK.nosync_validateChannelStateForAccessAPI` check that the map/counter node accessors run.
+/// A primitive has no backing internal node, so the RTO25b access-precondition check is run by
+/// hopping onto the shared `internalQueue`.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal final class DefaultPrimitiveInstance: PrimitiveInstance {
     private let primitive: Primitive
@@ -28,29 +26,30 @@ internal final class DefaultPrimitiveInstance: PrimitiveInstance {
     internal var value: Primitive {
         get throws(ARTErrorInfo) {
             // RTINS4a: access API preconditions per RTO25
-            try nosync_checkAccessPreconditionsOnQueue()
+            try sync_checkAccessPreconditionsOnQueue()
             // RTINS4c: return the value directly
             return primitive
         }
     }
 
     internal var type: ValueType {
-        // RTTS8: O(1), no precondition check (matches the non-throwing frozen signature)
+        // RTTS8: no access-precondition check (non-throwing accessor)
         valueType
     }
 
     internal func compactJson() throws(ARTErrorInfo) -> JSONValue {
         // RTINS11a: access API preconditions per RTO25
-        try nosync_checkAccessPreconditionsOnQueue()
+        try sync_checkAccessPreconditionsOnQueue()
         // RTINS11b -> RTPO14: a primitive compacts to itself, with binary base64-encoded (RTPO14b1)
         return Self.compactJson(for: primitive)
     }
 
     // MARK: - Helpers
 
-    /// Runs the RTO25b channel-state check (DETACHED/FAILED -> 90001) on the shared internal queue,
-    /// reusing the exact check the map/counter node accessors run (`value(coreSDK:)`, `get(...)`).
-    private func nosync_checkAccessPreconditionsOnQueue() throws(ARTErrorInfo) {
+    /// Performs its own synchronisation: hops onto the shared internal queue to run the RTO25b
+    /// channel-state check (DETACHED/FAILED -> 90001), reusing the exact check the map/counter node
+    /// accessors run (`value(coreSDK:)`, `get(...)`). Must NOT be called while already on the queue.
+    private func sync_checkAccessPreconditionsOnQueue() throws(ARTErrorInfo) {
         let result: Result<Void, ARTErrorInfo> = internalQueue.ably_syncNoDeadlock {
             do throws(ARTErrorInfo) {
                 // RTO25b

@@ -692,7 +692,6 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
                     }
                 }
 
-                // Check sync state: if synced, invoke the waiter immediately; otherwise store it.
                 if mutableState.state.toObjectsSyncState != .synced {
                     // RTO20e, RTO20e1: Store as a waiter; will be invoked when sync completes
                     // or when the channel enters detached/suspended/failed.
@@ -1195,7 +1194,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
             // RTO5c3, RTO5c4, RTO5c5, RTO5c8
             transition(to: .synced, userCallbackQueue: userCallbackQueue)
 
-            // Resume any publishAndApply waiters now that sync is complete
+            // RTO20e: resume any publishAndApply waiters now that sync is complete
             nosync_drainPublishAndApplySyncWaiters(
                 outcome: .synced,
             )

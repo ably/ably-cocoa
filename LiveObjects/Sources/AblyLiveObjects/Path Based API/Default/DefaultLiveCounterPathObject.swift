@@ -12,12 +12,10 @@ internal final class DefaultLiveCounterPathObject: DefaultPathObject, LiveCounte
 
     internal func value() throws(ARTErrorInfo) -> Double? {
         try ChannelConfigGuards.throwIfInvalidAccessApiConfiguration(coreSDK: coreSDK, internalQueue: internalQueue)
-        // nil when the path is unresolved (RTPO7f -> RTPO3c1) or resolves to an InternalLiveMap (RTPO7e);
-        // a resolved primitive is also nil here (RTTS6b typed refinement, never RTPO7d).
         guard let resolved = try resolveValueAtCurrentPath(), case let .liveCounter(counterNode) = resolved else {
-            return nil
+            return nil // RTTS6b
         }
-        // RTPO7c via RTLC5c (the node accessor runs the RTO25b check).
+        // RTPO7c via RTLC5 (the node accessor runs the RTO25b check).
         return try counterNode.value(coreSDK: coreSDK)
     }
 
@@ -45,7 +43,7 @@ internal final class DefaultLiveCounterPathObject: DefaultPathObject, LiveCounte
             throw LiveObjectsError.pathNotResolved(path: path).toARTErrorInfo() // RTPO3c2
         }
         guard case let .liveCounter(counterNode) = resolved else {
-            throw LiveObjectsError.pathTypeMismatch(operationDescription: "Cannot \(operation) a non-LiveCounter object at path: \"\(path)\"").toARTErrorInfo()
+            throw LiveObjectsError.pathTypeMismatch(operationDescription: "Cannot \(operation) a non-LiveCounter object at path: \"\(path)\"").toARTErrorInfo() // RTPO17e/RTPO18e
         }
         return counterNode
     }

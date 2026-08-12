@@ -75,7 +75,6 @@ internal enum ObjectCreationHelpers {
             ),
         )
 
-        // Create the OutboundObjectMessage
         let objectMessage = ProtocolTypes.OutboundObjectMessage(
             operation: operation,
         )
@@ -156,7 +155,6 @@ internal enum ObjectCreationHelpers {
             ),
         )
 
-        // Create the OutboundObjectMessage
         let objectMessage = ProtocolTypes.OutboundObjectMessage(
             operation: operation,
         )

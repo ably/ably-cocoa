@@ -69,7 +69,7 @@
     // message-size accounting), i.e. the number of UTF-16 code units (`NSString.length`),
     // not its UTF-8 byte length.
     finalResult += [[self.extras toJSONString] length];
-    // clientId is measured as the size in bytes of its UTF-8 representation.
+    // TO3l8f: clientId is measured as its UTF-8 byte length.
     finalResult += [self.clientId lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
     if (self.data) {
         if ([self.data isKindOfClass:[NSString class]]) {

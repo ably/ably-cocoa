@@ -34,7 +34,7 @@ internal struct ObjectsPool {
         /// signal and what the RTO24 path-subscription dispatch needs.
         internal struct ApplyResult {
             /// `true` if an operation was applied (a non-nil update, including a `.noop`), `false` if
-            /// it was skipped (RTLM15g/RTLC10g). Drives the RTO9a2a4 applied-on-ACK dedup.
+            /// it was skipped (RTLM15g/RTLC7g). Drives the RTO9a2a4 applied-on-ACK dedup.
             internal let applied: Bool
             /// The changed map keys of the emitted update, used to build the RTO24b2a2 deeper path
             /// candidates (empty for a counter update). `nil` when nothing should be dispatched to
@@ -505,7 +505,7 @@ internal struct ObjectsPool {
     /// Fans one object update out to path subscriptions. For every full path to the updated object (RTO24b1),
     /// dispatches one path event whose candidates are the object's own path (most-preferred,
     /// RTO24b2a1) followed by one deeper candidate per changed map key (RTO24b2a2). An orphaned
-    /// object (unreachable from root) produces no events (RTO24b1a).
+    /// object (unreachable from root) produces no events (RTO24b1).
     ///
     /// Hosted on the pool (like the `getFullPaths` DFS it drives) so both the operation
     /// apply path and the sync deferred-update path can share it.
@@ -538,7 +538,7 @@ internal struct ObjectsPool {
 
         let pathsToThis = nosync_getFullPaths(forObjectID: objectID) // RTO24b1
         if pathsToThis.isEmpty {
-            return // orphaned object (not reachable from root) — no path events (RTO24b1a)
+            return // orphaned object (not reachable from root) — no path events (RTO24b1)
         }
         for pathToThis in pathsToThis { // RTO24b2
             var candidates = [pathToThis] // RTO24b2a1 — most preferred first

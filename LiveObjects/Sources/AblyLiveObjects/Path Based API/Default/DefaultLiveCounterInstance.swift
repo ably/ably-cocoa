@@ -10,8 +10,7 @@ internal final class DefaultLiveCounterInstance: LiveCounterInstance {
     private let realtimeObjects: any InternalRealtimeObjectsProtocol
     private let internalQueue: DispatchQueue
 
-    /// The wrapped counter's `objectId` (RTINS3a). Immutable on the node, so the frozen non-throwing
-    /// `id` property is a plain stored read (O(1), no queue hop).
+    /// The wrapped counter's `objectId` (RTINS3a).
     internal let id: String
 
     internal init(

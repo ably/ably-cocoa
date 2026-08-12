@@ -84,7 +84,6 @@ internal final class DefaultCoreSDK: CoreSDK {
     internal func nosync_publish(objectMessages: [ProtocolTypes.OutboundObjectMessage], callback: @escaping @Sendable (Result<PublishResult, ARTErrorInfo>) -> Void) {
         logger.log("nosync_publish(objectMessages: \(LoggingUtilities.formatObjectMessagesForLogging(objectMessages)))", level: .debug)
 
-        // Use the overridden implementation if supplied
         let overriddenImplementation = mutex.withLock {
             overriddenPublishImplementation
         }

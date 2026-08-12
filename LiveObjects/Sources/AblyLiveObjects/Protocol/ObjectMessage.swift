@@ -505,7 +505,7 @@ internal extension ProtocolTypes.InboundObjectMessage {
     ///
     /// Returns `nil` unless the message carries an operation with a *known* action (PAOM3a1): a
     /// message with no operation is not surfaced, and an unknown wire action must never surface
-    /// publicly (there is no `UNKNOWN` case in the public ``ObjectOperationAction``; DEV-5). Callers
+    /// publicly (there is no `UNKNOWN` case in the public ``ObjectOperationAction``). Callers
     /// only pass op-bearing, non-sync messages (sync-originated updates carry `nil`, RTO4b2a).
     ///
     /// - Parameter channelName: the name of the channel the message was received on (PAOM2e/PAOM3b).
@@ -535,7 +535,7 @@ internal extension ProtocolTypes.ObjectOperation {
     /// Converts this operation to the public ``ObjectOperation`` (PAOOP), resolving the outbound-only
     /// `*CreateWithObjectId` variants back to their derived create payloads (PAOOP3b/PAOOP3c).
     ///
-    /// Returns `nil` for an unknown wire action, which must never surface publicly (DEV-5).
+    /// Returns `nil` for an unknown wire action, which must never surface publicly (PAOOP2a).
     func toPublicObjectOperation() -> ObjectOperation? {
         // PAOOP2a: an unknown action has no public representation.
         guard case let .known(action) = action else {

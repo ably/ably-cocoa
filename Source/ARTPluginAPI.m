@@ -227,8 +227,8 @@ static ARTLogLevel _convertPluginLogLevel(APLogLevel pluginLogLevel) {
     if (errorReason) {
         return errorReason;
     }
-    // The connection is not active but carries no error reason (e.g. INITIALIZED/CONNECTING before any
-    // failure). Synthesise a generic disconnected error so the caller still receives an `ErrorInfo`.
+    // RTL6c4: the operation must result in an error even when the inactive connection carries no
+    // error reason (e.g. INITIALIZED/CONNECTING before any failure), so synthesise a generic one.
     return [ARTErrorInfo createWithCode:ARTErrorConnectionSuspended
                                 status:400
                                message:@"Connection is not in an active state"];

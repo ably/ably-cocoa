@@ -1,13 +1,8 @@
 import Ably
 import Foundation
 
-/// Default implementation of ``LiveMapInstance``, bound to a
-/// specific ``InternalDefaultLiveMap`` (RTINS2a). Operations dereference the wrapped map in O(1) — no
-/// path resolution. Spec: `RTINS1`, `RTTS10a`.
-///
-/// The RTO25b access-precondition checks are performed by the underlying node accessors
-/// (`get(...)`, `entries(...)`, `size(...)`, `set(...)`, `remove(...)`, `subscribe(...)`) — the same
-/// checks the internal engine already enforces; no new checks are invented here.
+/// Default implementation of ``LiveMapInstance``, bound to a specific
+/// ``InternalDefaultLiveMap`` (RTINS2a). Spec: `RTINS1`, `RTTS10a`.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal final class DefaultLiveMapInstance: LiveMapInstance {
     private let node: InternalDefaultLiveMap
@@ -15,8 +10,7 @@ internal final class DefaultLiveMapInstance: LiveMapInstance {
     private let realtimeObjects: any InternalRealtimeObjectsProtocol
     private let internalQueue: DispatchQueue
 
-    /// The wrapped map's `objectId` (RTINS3a). Immutable on the node, so the frozen non-throwing `id`
-    /// property is a plain stored read (O(1), no queue hop).
+    /// The wrapped map's `objectId` (RTINS3a).
     internal let id: String
 
     internal init(
@@ -135,8 +129,6 @@ internal final class DefaultLiveMapInstance: LiveMapInstance {
         for (key, value) in try mapNode.entries(coreSDK: coreSDK, delegate: delegate) {
             switch value {
             case let .liveMap(childNode):
-                // The child's objectId is immutable (set at construction), so it is read directly —
-                // no per-entry queue hop, and no node mutex held across the recursion.
                 let childID = childNode.objectID
                 if visited.contains(childID) {
                     // RTPO14b2: cyclic reference -> {"objectId": <id>}
