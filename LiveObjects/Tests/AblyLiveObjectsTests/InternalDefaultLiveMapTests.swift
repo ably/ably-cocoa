@@ -1520,9 +1520,7 @@ struct InternalDefaultLiveMapTests {
                 map.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts1", // Less than existing "ts2"
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: TestFactories.inboundObjectMessage(serial: "ts1", siteCode: "site1"), // Less than existing "ts2"
                     objectsPool: &pool,
                 )
             }
@@ -1557,13 +1555,12 @@ struct InternalDefaultLiveMapTests {
             var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Apply MAP_CREATE operation
+            let message = TestFactories.inboundObjectMessage(serial: "ts1", siteCode: "site1")
             let applied = internalQueue.ably_syncNoDeadlock {
                 map.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts1",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: message,
                     objectsPool: &pool,
                 )
             }
@@ -1575,9 +1572,9 @@ struct InternalDefaultLiveMapTests {
             // Verify RTLM15c side-effect: site timeserial was updated
             #expect(map.testsOnly_siteTimeserials == ["site1": "ts1"])
 
-            // Verify update was emitted per RTLM15d1a
+            // Verify update was emitted per RTLM15d1a, carrying the stamped source message (RTLO4b4d)
             let subscriberInvocations = await subscriber.getInvocations()
-            #expect(subscriberInvocations.map(\.0) == [.init(update: ["key1": .updated])])
+            #expect(subscriberInvocations.map(\.0) == [.init(update: ["key1": .updated], objectMessage: message)])
         }
 
         // @specOneOf(2/5) RTLM15c - We test this spec point for each possible operation
@@ -1617,13 +1614,12 @@ struct InternalDefaultLiveMapTests {
             )
 
             // Apply MAP_SET operation
+            let message = TestFactories.inboundObjectMessage(serial: "ts1", siteCode: "site1")
             let applied = internalQueue.ably_syncNoDeadlock {
                 map.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts1",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: message,
                     objectsPool: &pool,
                 )
             }
@@ -1634,9 +1630,9 @@ struct InternalDefaultLiveMapTests {
             // Verify RTLM15c side-effect: site timeserial was updated
             #expect(map.testsOnly_siteTimeserials == ["site1": "ts1"])
 
-            // Verify update was emitted per RTLM15d6a
+            // Verify update was emitted per RTLM15d6a, carrying the stamped source message (RTLO4b4d)
             let subscriberInvocations = await subscriber.getInvocations()
-            #expect(subscriberInvocations.map(\.0) == [.init(update: ["key1": .updated])])
+            #expect(subscriberInvocations.map(\.0) == [.init(update: ["key1": .updated], objectMessage: message)])
         }
 
         // @specOneOf(3/5) RTLM15c - We test this spec point for each possible operation
@@ -1676,13 +1672,12 @@ struct InternalDefaultLiveMapTests {
             )
 
             // Apply MAP_REMOVE operation
+            let message = TestFactories.inboundObjectMessage(serial: "ts1", siteCode: "site1")
             let applied = internalQueue.ably_syncNoDeadlock {
                 map.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts1",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: message,
                     objectsPool: &pool,
                 )
             }
@@ -1693,9 +1688,9 @@ struct InternalDefaultLiveMapTests {
             // Verify RTLM15c side-effect: site timeserial was updated
             #expect(map.testsOnly_siteTimeserials == ["site1": "ts1"])
 
-            // Verify update was emitted per RTLM15d7a
+            // Verify update was emitted per RTLM15d7a, carrying the stamped source message (RTLO4b4d)
             let subscriberInvocations = await subscriber.getInvocations()
-            #expect(subscriberInvocations.map(\.0) == [.init(update: ["key1": .removed])])
+            #expect(subscriberInvocations.map(\.0) == [.init(update: ["key1": .removed], objectMessage: message)])
         }
 
         // @specOneOf(4/5) RTLM15c - We test this spec point for each possible operation
@@ -1735,13 +1730,12 @@ struct InternalDefaultLiveMapTests {
             )
 
             // Apply MAP_CLEAR operation
+            let message = TestFactories.inboundObjectMessage(serial: "ts1", siteCode: "site1")
             let applied = internalQueue.ably_syncNoDeadlock {
                 map.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts1",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: message,
                     objectsPool: &pool,
                 )
             }
@@ -1753,9 +1747,9 @@ struct InternalDefaultLiveMapTests {
             // Verify RTLM15c side-effect: site timeserial was updated
             #expect(map.testsOnly_siteTimeserials == ["site1": "ts1"])
 
-            // Verify update was emitted per RTLM15d8a
+            // Verify update was emitted per RTLM15d8a, carrying the stamped source message (RTLO4b4d)
             let subscriberInvocations = await subscriber.getInvocations()
-            #expect(subscriberInvocations.map(\.0) == [.init(update: ["key1": .removed])])
+            #expect(subscriberInvocations.map(\.0) == [.init(update: ["key1": .removed], objectMessage: message)])
         }
 
         // @specOneOf(5/5) RTLM15c - Tests that siteTimeserials is NOT updated when source is LOCAL
@@ -1778,9 +1772,7 @@ struct InternalDefaultLiveMapTests {
                 map.nosync_apply(
                     operation,
                     source: .local,
-                    objectMessageSerial: "ts1",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: TestFactories.inboundObjectMessage(serial: "ts1", siteCode: "site1"),
                     objectsPool: &pool,
                 )
             }
@@ -2022,9 +2014,7 @@ struct InternalDefaultLiveMapTests {
                 map.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "01",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: Date(timeIntervalSince1970: 1_700_000_000),
+                    objectMessage: TestFactories.inboundObjectMessage(serial: "01", siteCode: "site1", serialTimestamp: Date(timeIntervalSince1970: 1_700_000_000)),
                     objectsPool: &pool,
                 )
             }
@@ -2133,9 +2123,7 @@ struct InternalDefaultLiveMapTests {
                 map.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts1",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: TestFactories.inboundObjectMessage(serial: "ts1", siteCode: "site1"),
                     objectsPool: &pool,
                 )
             }
@@ -2175,9 +2163,7 @@ struct InternalDefaultLiveMapTests {
                 map.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts2", // greater than the entry's "ts1" so RTLM9 allows it
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: TestFactories.inboundObjectMessage(serial: "ts2", siteCode: "site1"), // greater than the entry's "ts1" so RTLM9 allows it
                     objectsPool: &pool,
                 )
             }
@@ -2206,9 +2192,7 @@ struct InternalDefaultLiveMapTests {
                 map.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts2", // greater than the entry's "ts1" so RTLM9 allows it
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: TestFactories.inboundObjectMessage(serial: "ts2", siteCode: "site1"), // greater than the entry's "ts1" so RTLM9 allows it
                     objectsPool: &pool,
                 )
             }
@@ -2239,9 +2223,7 @@ struct InternalDefaultLiveMapTests {
                 map.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts2", // greater than the entry's "ts1" so RTLM24e1 clears it
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: TestFactories.inboundObjectMessage(serial: "ts2", siteCode: "site1"), // greater than the entry's "ts1" so RTLM24e1 clears it
                     objectsPool: &pool,
                 )
             }
@@ -2272,9 +2254,7 @@ struct InternalDefaultLiveMapTests {
                 map.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts1",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: TestFactories.inboundObjectMessage(serial: "ts1", siteCode: "site1"),
                     objectsPool: &pool,
                 )
             }

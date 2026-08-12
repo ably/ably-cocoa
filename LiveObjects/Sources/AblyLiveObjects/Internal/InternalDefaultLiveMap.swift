@@ -307,20 +307,14 @@ internal final class InternalDefaultLiveMap: Sendable {
     internal func nosync_apply(
         _ operation: ProtocolTypes.ObjectOperation,
         source: ObjectsOperationSource,
-        objectMessageSerial: String?,
-        objectMessageSiteCode: String?,
-        objectMessageSerialTimestamp: Date?,
-        sourceObjectMessage: ObjectMessage? = nil,
+        objectMessage: ProtocolTypes.InboundObjectMessage,
         objectsPool: inout ObjectsPool,
     ) -> LiveObjectUpdate<DefaultLiveMapUpdate>? {
         mutableStateMutex.withoutSync { mutableState in
             mutableState.apply(
                 operation,
                 source: source,
-                objectMessageSerial: objectMessageSerial,
-                objectMessageSiteCode: objectMessageSiteCode,
-                objectMessageSerialTimestamp: objectMessageSerialTimestamp,
-                sourceObjectMessage: sourceObjectMessage,
+                objectMessage: objectMessage,
                 objectsPool: &objectsPool,
                 logger: logger,
                 internalQueue: mutableStateMutex.dispatchQueue,
@@ -622,19 +616,21 @@ internal final class InternalDefaultLiveMap: Sendable {
         internal mutating func apply(
             _ operation: ProtocolTypes.ObjectOperation,
             source: ObjectsOperationSource,
-            objectMessageSerial: String?,
-            objectMessageSiteCode: String?,
-            objectMessageSerialTimestamp: Date?,
-            sourceObjectMessage: ObjectMessage?,
+            objectMessage: ProtocolTypes.InboundObjectMessage,
             objectsPool: inout ObjectsPool,
             logger: Logger,
             internalQueue: DispatchQueue,
             userCallbackQueue: DispatchQueue,
             clock: SimpleClock,
         ) -> LiveObjectUpdate<DefaultLiveMapUpdate>? {
-            guard let applicableOperation = liveObjectMutableState.canApplyOperation(objectMessageSerial: objectMessageSerial, objectMessageSiteCode: objectMessageSiteCode, logger: logger) else {
+            // The map's helpers keep taking an extracted serialTimestamp; read it off the source
+            // message once here (RTLM15d5/RTLM15d7 tombstone-clock inputs).
+            let objectMessageSerialTimestamp = objectMessage.serialTimestamp
+
+            // RTLO4a3: the serial/siteCode guard reads these off the source message (same values).
+            guard let applicableOperation = liveObjectMutableState.canApplyOperation(objectMessageSerial: objectMessage.serial, objectMessageSiteCode: objectMessage.siteCode, logger: logger) else {
                 // RTLM15b
-                logger.log("Operation \(operation) (serial: \(String(describing: objectMessageSerial)), siteCode: \(String(describing: objectMessageSiteCode))) should not be applied; discarding", level: .debug)
+                logger.log("Operation \(operation) (serial: \(String(describing: objectMessage.serial)), siteCode: \(String(describing: objectMessage.siteCode))) should not be applied; discarding", level: .debug)
                 return nil
             }
 
@@ -661,7 +657,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                     clock: clock,
                 )
                 // RTLM15d1a, RTLM15d1b: emit the enriched update (carrying the source message)
-                return nosync_emitAndTearDown(update, sourceObjectMessage: sourceObjectMessage, userCallbackQueue: userCallbackQueue)
+                return nosync_emitAndTearDown(update, sourceObjectMessage: objectMessage, userCallbackQueue: userCallbackQueue)
             case .known(.mapSet):
                 guard let mapSet = operation.mapSet else {
                     logger.log("Could not apply MAP_SET since operation.mapSet is missing", level: .warn)
@@ -684,7 +680,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                     clock: clock,
                 )
                 // RTLM15d6a, RTLM15d6b
-                return nosync_emitAndTearDown(update, sourceObjectMessage: sourceObjectMessage, userCallbackQueue: userCallbackQueue)
+                return nosync_emitAndTearDown(update, sourceObjectMessage: objectMessage, userCallbackQueue: userCallbackQueue)
             case .known(.mapRemove):
                 guard let mapRemove = operation.mapRemove else {
                     return nil
@@ -700,7 +696,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                     clock: clock,
                 )
                 // RTLM15d7a, RTLM15d7b
-                return nosync_emitAndTearDown(update, sourceObjectMessage: sourceObjectMessage, userCallbackQueue: userCallbackQueue)
+                return nosync_emitAndTearDown(update, sourceObjectMessage: objectMessage, userCallbackQueue: userCallbackQueue)
             case .known(.objectDelete):
                 // RTLO4e10: the root object must never be tombstoned — an OBJECT_DELETE targeting
                 // `root` is a faulty message. Log and return a noop update without performing any
@@ -727,7 +723,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                 // RTLO4e5/RTLM22b: diff considers only NON-tombstoned entries, so already-tombstoned
                 // entries (not visible to subscribers) must not be reported as newly `removed`.
                 let update: LiveObjectUpdate<DefaultLiveMapUpdate> = .update(.init(update: dataBeforeApplyingOperation.filter { !$0.value.tombstone }.mapValues { _ in .removed }, tombstone: true))
-                return nosync_emitAndTearDown(update, sourceObjectMessage: sourceObjectMessage, userCallbackQueue: userCallbackQueue)
+                return nosync_emitAndTearDown(update, sourceObjectMessage: objectMessage, userCallbackQueue: userCallbackQueue)
             case .known(.mapClear):
                 // RTLM15d8
                 let update = applyMapClearOperation(
@@ -736,7 +732,7 @@ internal final class InternalDefaultLiveMap: Sendable {
                 )
                 // RTLM15d8a, RTLM15d8b. MAP_CLEAR clears the map's data but does not tombstone the
                 // object (tombstone stays false), so no teardown.
-                return nosync_emitAndTearDown(update, sourceObjectMessage: sourceObjectMessage, userCallbackQueue: userCallbackQueue)
+                return nosync_emitAndTearDown(update, sourceObjectMessage: objectMessage, userCallbackQueue: userCallbackQueue)
             default:
                 // RTLM15d4
                 logger.log("Operation \(operation) has unsupported action for LiveMap; discarding", level: .warn)

@@ -205,20 +205,14 @@ internal final class InternalDefaultLiveCounter: Sendable {
     internal func nosync_apply(
         _ operation: ProtocolTypes.ObjectOperation,
         source: ObjectsOperationSource,
-        objectMessageSerial: String?,
-        objectMessageSiteCode: String?,
-        objectMessageSerialTimestamp: Date?,
-        sourceObjectMessage: ObjectMessage? = nil,
+        objectMessage: ProtocolTypes.InboundObjectMessage,
         objectsPool: inout ObjectsPool,
     ) -> LiveObjectUpdate<DefaultLiveCounterUpdate>? {
         mutableStateMutex.withoutSync { mutableState in
             mutableState.apply(
                 operation,
                 source: source,
-                objectMessageSerial: objectMessageSerial,
-                objectMessageSiteCode: objectMessageSiteCode,
-                objectMessageSerialTimestamp: objectMessageSerialTimestamp,
-                sourceObjectMessage: sourceObjectMessage,
+                objectMessage: objectMessage,
                 objectsPool: &objectsPool,
                 logger: logger,
                 clock: clock,
@@ -380,18 +374,16 @@ internal final class InternalDefaultLiveCounter: Sendable {
         internal mutating func apply(
             _ operation: ProtocolTypes.ObjectOperation,
             source: ObjectsOperationSource,
-            objectMessageSerial: String?,
-            objectMessageSiteCode: String?,
-            objectMessageSerialTimestamp: Date?,
-            sourceObjectMessage: ObjectMessage?,
+            objectMessage: ProtocolTypes.InboundObjectMessage,
             objectsPool: inout ObjectsPool,
             logger: Logger,
             clock: SimpleClock,
             userCallbackQueue: DispatchQueue,
         ) -> LiveObjectUpdate<DefaultLiveCounterUpdate>? {
-            guard let applicableOperation = liveObjectMutableState.canApplyOperation(objectMessageSerial: objectMessageSerial, objectMessageSiteCode: objectMessageSiteCode, logger: logger) else {
+            // RTLO4a3: the serial/siteCode guard reads these off the source message (same values).
+            guard let applicableOperation = liveObjectMutableState.canApplyOperation(objectMessageSerial: objectMessage.serial, objectMessageSiteCode: objectMessage.siteCode, logger: logger) else {
                 // RTLC7b
-                logger.log("Operation \(operation) (serial: \(String(describing: objectMessageSerial)), siteCode: \(String(describing: objectMessageSiteCode))) should not be applied; discarding", level: .debug)
+                logger.log("Operation \(operation) (serial: \(String(describing: objectMessage.serial)), siteCode: \(String(describing: objectMessage.siteCode))) should not be applied; discarding", level: .debug)
                 return nil
             }
 
@@ -414,18 +406,18 @@ internal final class InternalDefaultLiveCounter: Sendable {
                     logger: logger,
                 )
                 // RTLC7d1a, RTLC7d1b: emit the enriched update (carrying the source message)
-                return nosync_emitAndTearDown(update, sourceObjectMessage: sourceObjectMessage, userCallbackQueue: userCallbackQueue)
+                return nosync_emitAndTearDown(update, sourceObjectMessage: objectMessage, userCallbackQueue: userCallbackQueue)
             case .known(.counterInc):
                 // RTLC7d5
                 let update = applyCounterIncOperation(operation.counterInc)
                 // RTLC7d5a, RTLC7d5b
-                return nosync_emitAndTearDown(update, sourceObjectMessage: sourceObjectMessage, userCallbackQueue: userCallbackQueue)
+                return nosync_emitAndTearDown(update, sourceObjectMessage: objectMessage, userCallbackQueue: userCallbackQueue)
             case .known(.objectDelete):
                 let dataBeforeApplyingOperation = data
 
                 // RTLC7d4
                 applyObjectDeleteOperation(
-                    objectMessageSerialTimestamp: objectMessageSerialTimestamp,
+                    objectMessageSerialTimestamp: objectMessage.serialTimestamp,
                     logger: logger,
                     clock: clock,
                     userCallbackQueue: userCallbackQueue,
@@ -434,7 +426,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
                 // RTLC7d4c, RTLC7d4b: tombstone update drives the RTLO4b4c3c teardown
                 // The diff helper is deliberately bypassed here: a zero-valued counter's tombstone must still emit an update (RTLO4b4c3c teardown), whereas calculateCounterDiff would return a noop for the zero delta (the RTLC14c zero-delta exception).
                 let update: LiveObjectUpdate<DefaultLiveCounterUpdate> = .update(.init(amount: -dataBeforeApplyingOperation, tombstone: true))
-                return nosync_emitAndTearDown(update, sourceObjectMessage: sourceObjectMessage, userCallbackQueue: userCallbackQueue)
+                return nosync_emitAndTearDown(update, sourceObjectMessage: objectMessage, userCallbackQueue: userCallbackQueue)
             default:
                 // RTLC7d3
                 logger.log("Operation \(operation) has unsupported action for LiveCounter; discarding", level: .warn)

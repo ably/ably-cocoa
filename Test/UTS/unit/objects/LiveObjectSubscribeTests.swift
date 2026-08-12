@@ -48,7 +48,9 @@ final class LiveObjectSubscribeTests {
     private static func makeFixture() -> Fixture {
         let internalQueue = ObjectsUTS.createInternalQueue()
         let userCallbackQueue = DispatchQueue(label: "LiveObjectSubscribeTests.userCallback")
-        let coreSDK = ObjectsUTSCoreSDK(channelState: .attached)
+        // Same channel name as the engine: the instance wrapper projects the delivered public
+        // message per PAOM3 at delivery using this coreSDK's channel name (PAOM2e).
+        let coreSDK = ObjectsUTSCoreSDK(channelState: .attached, channelName: channelName)
         let engine = InternalDefaultRealtimeObjects(
             logger: TestLogger(),
             internalQueue: internalQueue,

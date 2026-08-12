@@ -20,10 +20,9 @@
 //   timeserial:data:)`. `{ objectId: "x" }` → `ProtocolTypes.ObjectData(objectId: "x")`; `{ string: "x" }`
 //   → `ProtocolTypes.ObjectData(string: "x")`. Reads of `map.data[k]` map to `map.testsOnly_data[k]`.
 // - (D-3) Drive path: spec `map.applyOperation(build_map_set/remove/clear(…), source: CHANNEL)` maps to
-//   the gated `nosync_apply(operation, source:, objectMessageSerial:, objectMessageSiteCode:,
-//   objectMessageSerialTimestamp:, sourceObjectMessage:, objectsPool:&)`. The built message is
-//   decomposed and its PAOM3 public form passed as `sourceObjectMessage` (RTLO4b4d) so the returned
-//   update carries it — see D-6. (An earlier revision drove the granular `testsOnly_applyMap*Operation`
+//   the gated `nosync_apply(operation, source:, objectMessage:, objectsPool:&)`. The built message
+//   supplies the `operation` and is threaded down as the source message (RTLO4b4d) so the returned
+//   update carries it — see D-6; its PAOM3 public form is projected only at delivery. (An earlier revision drove the granular `testsOnly_applyMap*Operation`
 //   seams, which bypass the RTLM15 gate AND the message-stamping; they were switched to `nosync_apply`
 //   so the `update.objectMessage` assertions the spec has could be honoured. The maps' `siteTimeserials`
 //   start empty, so any first op passes the RTLO4a5 gate with no seeding needed.) `nosync_apply` is
@@ -37,9 +36,10 @@
 // - (D-6) LiveMapUpdate shape: the spec asserts `update.update == { "ref": "updated" }`, `update.objectMessage
 //   == msg`, and (for OBJECT_DELETE) `update.tombstone == true`. Swift's `LiveObjectUpdate<
 //   DefaultLiveMapUpdate>` exposes `.update` (a `DefaultLiveMapUpdate` whose `.update` is `[String:
-//   LiveMapUpdateAction]` of `.updated` / `.removed`), plus `.objectMessage` (the PAOM3 public message,
-//   RTLO4b4d) and `.tombstone` (RTLO4b4e). All three are now carried by the gated apply path and asserted
-//   here (`update.objectMessage == msg.toPublicObjectMessage(channelName:)`); none are omitted.
+//   LiveMapUpdateAction]` of `.updated` / `.removed`), plus `.objectMessage` (the internal source
+//   message, RTLO4b4d — its PAOM3 public form is projected only at delivery) and `.tombstone`
+//   (RTLO4b4e). All three are now carried by the gated apply path and asserted here
+//   (`update.objectMessage == msg`); none are omitted.
 
 @testable import AblyLiveObjects
 @testable import AblyLiveObjectsTesting
@@ -47,9 +47,6 @@ import Foundation
 import Testing
 
 struct InternalLiveMapParentReferencesTests {
-    /// The channel name used when converting inbound messages to their PAOM3 public form (PAOM2e).
-    private static let channelName = "test-channel"
-
     // MARK: - Helpers (D-1)
 
     private static func makeCounter(objectID: String, internalQueue: DispatchQueue) -> InternalDefaultLiveCounter {
@@ -77,8 +74,8 @@ struct InternalLiveMapParentReferencesTests {
         ObjectsPool(logger: TestLogger(), internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
     }
 
-    /// Drives the gated `nosync_apply` from an inbound message, decomposing it (D-3) and passing its
-    /// PAOM3 public form as `sourceObjectMessage` (D-6).
+    /// Drives the gated `nosync_apply` from an inbound message, decomposing it (D-3) and threading
+    /// the source message down (D-6); the public form is projected per PAOM3 at delivery.
     private static func apply(
         _ message: ProtocolTypes.InboundObjectMessage,
         to map: InternalDefaultLiveMap,
@@ -90,10 +87,7 @@ struct InternalLiveMapParentReferencesTests {
             map.nosync_apply(
                 operation,
                 source: .channel,
-                objectMessageSerial: message.serial,
-                objectMessageSiteCode: message.siteCode,
-                objectMessageSerialTimestamp: message.serialTimestamp,
-                sourceObjectMessage: message.toPublicObjectMessage(channelName: channelName),
+                objectMessage: message,
                 objectsPool: &pool,
             )
         }
@@ -127,7 +121,7 @@ struct InternalLiveMapParentReferencesTests {
         // addParentReference was called on the new child
         #expect(newCounter.testsOnly_parentReferences["root"]?.contains("ref") == true)
         #expect(update.update?.update == ["ref": .updated])
-        #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
+        #expect(update.objectMessage == msg)
     }
 
     // UTS: objects/unit/RTLM7g2/map-set-new-entry-add-parent-ref-0
@@ -147,7 +141,7 @@ struct InternalLiveMapParentReferencesTests {
         #expect(map.testsOnly_data["score"]?.data?.objectId == "counter:child@1000")
         #expect(childCounter.testsOnly_parentReferences["root"]?.contains("score") == true)
         #expect(update.update?.update == ["score": .updated])
-        #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
+        #expect(update.objectMessage == msg)
     }
 
     // UTS: objects/unit/RTLM7/map-set-primitive-no-parent-refs-0
@@ -174,7 +168,7 @@ struct InternalLiveMapParentReferencesTests {
         #expect(oldCounter.testsOnly_parentReferences["root"]?.contains("ref") != true)
         // No addParentReference call because the new value is a primitive
         #expect(update.update?.update == ["ref": .updated])
-        #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
+        #expect(update.objectMessage == msg)
     }
 
     // UTS: objects/unit/RTLM8a3/map-remove-objectid-parent-refs-0
@@ -200,7 +194,7 @@ struct InternalLiveMapParentReferencesTests {
         // removeParentReference was called on the child
         #expect(childCounter.testsOnly_parentReferences["root"]?.contains("score") != true)
         #expect(update.update?.update == ["score": .removed])
-        #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
+        #expect(update.objectMessage == msg)
     }
 
     // UTS: objects/unit/RTLM24e1c/map-clear-parent-refs-0
@@ -239,7 +233,7 @@ struct InternalLiveMapParentReferencesTests {
         #expect(counterA.testsOnly_parentReferences["root"]?.contains("ref_a") != true)
         #expect(counterB.testsOnly_parentReferences["root"]?.contains("ref_b") != true)
         #expect(update.update?.update == ["ref_a": .removed, "ref_b": .removed, "primitive": .removed])
-        #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
+        #expect(update.objectMessage == msg)
     }
 
     // UTS: objects/unit/RTLO4e9/tombstone-map-parent-refs-0
@@ -277,6 +271,6 @@ struct InternalLiveMapParentReferencesTests {
         #expect(childMap.testsOnly_parentReferences["map:test@1000"]?.contains("map_ref") != true)
         #expect(update.update?.update == ["counter_ref": .removed, "map_ref": .removed, "name": .removed])
         #expect(update.tombstone == true)
-        #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
+        #expect(update.objectMessage == msg)
     }
 }

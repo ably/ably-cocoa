@@ -448,9 +448,7 @@ struct InternalDefaultLiveCounterTests {
                 counter.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts1", // Less than existing "ts2"
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: TestFactories.inboundObjectMessage(serial: "ts1", siteCode: "site1"), // Less than existing "ts2"
                     objectsPool: &pool,
                 )
             }
@@ -482,13 +480,12 @@ struct InternalDefaultLiveCounterTests {
             var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Apply COUNTER_CREATE operation
+            let message = TestFactories.inboundObjectMessage(serial: "ts1", siteCode: "site1")
             let applied = internalQueue.ably_syncNoDeadlock {
                 counter.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts1",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: message,
                     objectsPool: &pool,
                 )
             }
@@ -500,9 +497,9 @@ struct InternalDefaultLiveCounterTests {
             // Verify RTLC7c side-effect: site timeserial was updated
             #expect(counter.testsOnly_siteTimeserials == ["site1": "ts1"])
 
-            // Verify update was emitted per RTLC7d1a
+            // Verify update was emitted per RTLC7d1a, carrying the stamped source message (RTLO4b4d)
             let subscriberInvocations = await subscriber.getInvocations()
-            #expect(subscriberInvocations.map(\.0) == [.init(amount: 15)])
+            #expect(subscriberInvocations.map(\.0) == [.init(amount: 15, objectMessage: message)])
         }
 
         // @specOneOf(2/2) RTLC7c - We test this spec point for each possible operation
@@ -533,13 +530,12 @@ struct InternalDefaultLiveCounterTests {
             var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Apply COUNTER_INC operation
+            let message = TestFactories.inboundObjectMessage(serial: "ts1", siteCode: "site1")
             let applied = internalQueue.ably_syncNoDeadlock {
                 counter.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts1",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: message,
                     objectsPool: &pool,
                 )
             }
@@ -550,9 +546,9 @@ struct InternalDefaultLiveCounterTests {
             // Verify RTLC7c side-effect: site timeserial was updated
             #expect(counter.testsOnly_siteTimeserials == ["site1": "ts1"])
 
-            // Verify update was emitted per RTLC7d5a
+            // Verify update was emitted per RTLC7d5a, carrying the stamped source message (RTLO4b4d)
             let subscriberInvocations = await subscriber.getInvocations()
-            #expect(subscriberInvocations.map(\.0) == [.init(amount: 10)])
+            #expect(subscriberInvocations.map(\.0) == [.init(amount: 10, objectMessage: message)])
         }
     }
 

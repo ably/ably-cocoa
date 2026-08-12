@@ -35,16 +35,19 @@ final class ObjectsUTSCoreSDK: CoreSDK {
     private let serverTime: Date
     private let internalQueue: DispatchQueue?
     private let publishHandler: (@Sendable ([ProtocolTypes.OutboundObjectMessage]) -> PublishResult)?
+    private let _channelName: String
 
     init(
         channelState: _AblyPluginSupportPrivate.RealtimeChannelState = .attached,
         serverTime: Date = Date(),
         internalQueue: DispatchQueue? = nil,
+        channelName: String = "",
         publishHandler: (@Sendable ([ProtocolTypes.OutboundObjectMessage]) -> PublishResult)? = nil,
     ) {
         self.channelState = channelState
         self.serverTime = serverTime
         self.internalQueue = internalQueue
+        self._channelName = channelName
         self.publishHandler = publishHandler
     }
 
@@ -71,8 +74,9 @@ final class ObjectsUTSCoreSDK: CoreSDK {
     }
 
     var channelName: String {
-        // The unit ports do not assert the public ObjectMessage channel name through this CoreSDK.
-        ""
+        // Delivery-boundary ports (RTINS16e2) set this so the projected PAOM3 message carries the
+        // channel name (PAOM2e); it defaults to empty for ports that do not assert on it.
+        _channelName
     }
 
     // The unit ports run against a fully-configured channel (the RTO2a2/RTO2b2/RTO26 guards must pass),
@@ -588,23 +592,20 @@ final class ObjectsUTSSeededRealtimeObjects: InternalRealtimeObjectsProtocol {
                 else {
                     continue
                 }
+                let objectMessage = ObjectsUTS.inboundOperation(operation, serial: "uts-apply-serial", siteCode: "uts-apply")
                 switch entry {
                 case let .map(map):
                     _ = map.nosync_apply(
                         operation,
                         source: .channel,
-                        objectMessageSerial: "uts-apply-serial",
-                        objectMessageSiteCode: "uts-apply",
-                        objectMessageSerialTimestamp: nil,
+                        objectMessage: objectMessage,
                         objectsPool: &pool,
                     )
                 case let .counter(counter):
                     _ = counter.nosync_apply(
                         operation,
                         source: .channel,
-                        objectMessageSerial: "uts-apply-serial",
-                        objectMessageSiteCode: "uts-apply",
-                        objectMessageSerialTimestamp: nil,
+                        objectMessage: objectMessage,
                         objectsPool: &pool,
                     )
                 }

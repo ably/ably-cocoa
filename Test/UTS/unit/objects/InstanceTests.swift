@@ -389,7 +389,7 @@ final class InstanceTests {
     @Test
     func RTINS16e2_subscription_event_message() async throws {
         let internalQueue = ObjectsUTS.createInternalQueue()
-        let coreSDK = ObjectsUTSCoreSDK()
+        let coreSDK = ObjectsUTSCoreSDK(channelName: "test")
         let realtimeObjects = ObjectsUTSRealtimeObjects(poolDelegate: ObjectsUTSPoolDelegate(internalQueue: internalQueue))
         let node = ObjectsUTS.makeMap(objectID: "root", internalQueue: internalQueue)
 
@@ -401,20 +401,16 @@ final class InstanceTests {
         let collector = ObjectsUTSEventCollector()
         try mapInstance.subscribe(listener: collector.listener)
 
-        // The public ObjectMessage that the update is stamped with (RTINS16e2).
-        let sourceMessage = ObjectMessage(
-            channel: "test",
-            operation: ObjectOperation(action: .mapSet, objectId: "root", mapSet: MapSet(key: "name", value: ObjectData(string: "Bob"))),
-        )
+        // The internal source message threaded through apply; its PAOM3 public form (channel from
+        // the coreSDK, PAOM2e) is what the subscriber receives (RTINS16e2).
+        let operation = ProtocolTypes.ObjectOperation(action: .known(.mapSet), objectId: "root", mapSet: ProtocolTypes.MapSet(key: "name", value: ProtocolTypes.ObjectData(string: "Bob")))
+        let sourceMessage = ObjectsUTS.inboundOperation(operation, serial: "ts1", siteCode: "site1")
         var pool = ObjectsUTS.freshPool(internalQueue: internalQueue)
         internalQueue.ably_syncNoDeadlock {
             _ = node.nosync_apply(
-                ProtocolTypes.ObjectOperation(action: .known(.mapSet), objectId: "root", mapSet: ProtocolTypes.MapSet(key: "name", value: ProtocolTypes.ObjectData(string: "Bob"))),
+                operation,
                 source: .channel,
-                objectMessageSerial: "ts1",
-                objectMessageSiteCode: "site1",
-                objectMessageSerialTimestamp: nil,
-                sourceObjectMessage: sourceMessage,
+                objectMessage: sourceMessage,
                 objectsPool: &pool,
             )
         }
@@ -480,13 +476,12 @@ final class InstanceTests {
 
     private func applyCounterInc(to node: InternalDefaultLiveCounter, objectID: String, number: Int, internalQueue: DispatchQueue) {
         var pool = ObjectsUTS.freshPool(internalQueue: internalQueue)
+        let message = ObjectsUTS.counterIncMessage(objectId: objectID, number: number, serial: "ts1", siteCode: "site1")
         internalQueue.ably_syncNoDeadlock {
             _ = node.nosync_apply(
                 ProtocolTypes.ObjectOperation(action: .known(.counterInc), objectId: objectID, counterInc: WireCounterInc(number: NSNumber(value: number))),
                 source: .channel,
-                objectMessageSerial: "ts1",
-                objectMessageSiteCode: "site1",
-                objectMessageSerialTimestamp: nil,
+                objectMessage: message,
                 objectsPool: &pool,
             )
         }

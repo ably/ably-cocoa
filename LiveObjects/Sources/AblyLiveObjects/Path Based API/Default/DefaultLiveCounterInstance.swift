@@ -56,9 +56,9 @@ internal final class DefaultLiveCounterInstance: LiveCounterInstance {
                     return
                 }
                 // RTINS16e1: an Instance wrapping this counter (identity-based, RTINS16g).
-                // RTINS16e2: the PAOM3-converted public message stamped onto the update (nil for
-                // sync-originated updates).
-                listener(.init(object: .liveCounter(self), message: update.objectMessage))
+                // RTINS16e2: project the stored internal source message to the public message per
+                // PAOM3 at this delivery boundary (nil for sync-originated updates).
+                listener(.init(object: .liveCounter(self), message: update.objectMessage?.toPublicObjectMessage(channelName: coreSDK.channelName)))
             },
             coreSDK: coreSDK,
         )

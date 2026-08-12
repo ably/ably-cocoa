@@ -21,17 +21,16 @@
 //   `testsOnly_setTombstonedAt` (isTombstone is computed from tombstonedAt, so a non-nil
 //   `tombstonedAt` makes `isTombstone` true).
 // - (D-4) Message decomposition: `counter.applyOperation(msg, source)` maps to
-//   `counter.nosync_apply(operation, source:, objectMessageSerial:, objectMessageSiteCode:,
-//   objectMessageSerialTimestamp:, sourceObjectMessage:, objectsPool:&)`. The spec's built `msg` is
-//   produced by `TestFactories` builders and decomposed into its operation + serial + siteCode +
-//   serialTimestamp; the PAOM3 public form `msg.toPublicObjectMessage(channelName:)` is passed as
-//   `sourceObjectMessage` (RTLO4b4d) so the returned update carries it.
+//   `counter.nosync_apply(operation, source:, objectMessage:, objectsPool:&)`. The spec's built `msg`
+//   is produced by `TestFactories` builders; it supplies the `operation` and is threaded down as the
+//   source message (RTLO4b4d) so the returned update carries it, with its PAOM3 public form projected
+//   only at delivery.
 // - (D-5) `nosync_apply` returns `LiveObjectUpdate<…>?`: `nil` == the operation was gate-rejected
 //   (RTLC7g). So the spec's `result == false` maps to `== nil`, `result IS NOT false` / `result ==
 //   true` to `!= nil`; `update.noop` maps to `.isNoop`; `update.update.amount` to `update.update?.amount`.
-// - (D-6) `update.objectMessage == msg`: the enriched update carries the public `ObjectMessage`
-//   (RTLO4b4d), asserted via field-level equality against `msg.toPublicObjectMessage(channelName:)`.
-//   `update.tombstone == true` maps to `update.tombstone` (RTLO4b4e, via `LiveObjectUpdatePayload`).
+// - (D-6) `update.objectMessage == msg`: the enriched update carries the internal source message
+//   (RTLO4b4d — its PAOM3 public form is projected only at delivery), asserted via equality against
+//   `msg`. `update.tombstone == true` maps to `update.tombstone` (RTLO4b4e, via `LiveObjectUpdatePayload`).
 // - (D-7) RTO4b2a — the sync path (`nosync_replaceData`) is sync-originated, so its returned update
 //   carries `objectMessage == nil`. The spec's `ASSERT update.objectMessage == state_msg` for the
 //   RTLC6 / RTLC6f / RTLC14 cases therefore does NOT hold in cocoa; those are asserted as
@@ -53,9 +52,6 @@ import Foundation
 import Testing
 
 struct InternalLiveCounterTests {
-    /// The channel name used when converting inbound messages to their PAOM3 public form (PAOM2e).
-    private static let channelName = "test-channel"
-
     // MARK: - Helpers (D-1)
 
     private static func makeCounter(objectID: String, internalQueue: DispatchQueue) -> InternalDefaultLiveCounter {
@@ -87,8 +83,8 @@ struct InternalLiveCounterTests {
         try counter.value(coreSDK: MockCoreSDK(channelState: .attaching, internalQueue: internalQueue))
     }
 
-    /// Drives the gated `nosync_apply` from an inbound message, decomposing it (D-4) and passing its
-    /// PAOM3 public form as `sourceObjectMessage`.
+    /// Drives the gated `nosync_apply` from an inbound message, decomposing it (D-4) and threading
+    /// the source message down; the public form is projected per PAOM3 at delivery.
     private static func apply(
         _ message: ProtocolTypes.InboundObjectMessage,
         to counter: InternalDefaultLiveCounter,
@@ -101,10 +97,7 @@ struct InternalLiveCounterTests {
             counter.nosync_apply(
                 operation,
                 source: source,
-                objectMessageSerial: message.serial,
-                objectMessageSiteCode: message.siteCode,
-                objectMessageSerialTimestamp: message.serialTimestamp,
-                sourceObjectMessage: message.toPublicObjectMessage(channelName: channelName),
+                objectMessage: message,
                 objectsPool: &pool,
             )
         }
@@ -140,7 +133,7 @@ struct InternalLiveCounterTests {
         #expect(try Self.data(of: counter, internalQueue: internalQueue) == 5)
         #expect(update.isNoop == false)
         #expect(update.update?.amount == 5)
-        #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
+        #expect(update.objectMessage == msg)
     }
 
     // UTS: objects/unit/RTLC9/counter-inc-negative-0
@@ -157,7 +150,7 @@ struct InternalLiveCounterTests {
 
         #expect(try Self.data(of: counter, internalQueue: internalQueue) == 7)
         #expect(update.update?.amount == -3)
-        #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
+        #expect(update.objectMessage == msg)
     }
 
     // UTS: objects/unit/RTLC9/counter-inc-missing-number-0
@@ -209,7 +202,7 @@ struct InternalLiveCounterTests {
         #expect(try Self.data(of: counter, internalQueue: internalQueue) == 42)
         #expect(counter.testsOnly_createOperationIsMerged == true)
         #expect(update.update?.amount == 42)
-        #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
+        #expect(update.objectMessage == msg)
     }
 
     // UTS: objects/unit/RTLC8/counter-create-already-merged-0
@@ -381,7 +374,7 @@ struct InternalLiveCounterTests {
         #expect(counter.testsOnly_tombstonedAt == Date(timeIntervalSince1970: 1_700_000_000))
         #expect(update.update?.amount == -42)
         #expect(update.tombstone == true)
-        #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
+        #expect(update.objectMessage == msg)
     }
 
     // UTS: objects/unit/RTLO5/tombstone-zero-value-counter-emits-update-0
@@ -406,7 +399,7 @@ struct InternalLiveCounterTests {
         #expect(update.isNoop == false)
         #expect(update.tombstone == true)
         #expect(update.update?.amount == 0)
-        #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
+        #expect(update.objectMessage == msg)
     }
 
     // UTS: objects/unit/RTLC7e/tombstoned-reject-ops-0

@@ -47,10 +47,7 @@ internal struct ObjectsPool {
         internal func nosync_apply(
             _ operation: ProtocolTypes.ObjectOperation,
             source: ObjectsOperationSource,
-            objectMessageSerial: String?,
-            objectMessageSiteCode: String?,
-            objectMessageSerialTimestamp: Date?,
-            sourceObjectMessage: ObjectMessage? = nil,
+            objectMessage: ProtocolTypes.InboundObjectMessage,
             objectsPool: inout ObjectsPool,
         ) -> ApplyResult {
             switch self {
@@ -60,10 +57,7 @@ internal struct ObjectsPool {
                 let update = map.nosync_apply(
                     operation,
                     source: source,
-                    objectMessageSerial: objectMessageSerial,
-                    objectMessageSiteCode: objectMessageSiteCode,
-                    objectMessageSerialTimestamp: objectMessageSerialTimestamp,
-                    sourceObjectMessage: sourceObjectMessage,
+                    objectMessage: objectMessage,
                     objectsPool: &objectsPool,
                 )
                 return .init(applied: update != nil, changedMapKeysForPathEvent: update?.update.map { Array($0.update.keys) })
@@ -73,10 +67,7 @@ internal struct ObjectsPool {
                 let update = counter.nosync_apply(
                     operation,
                     source: source,
-                    objectMessageSerial: objectMessageSerial,
-                    objectMessageSiteCode: objectMessageSiteCode,
-                    objectMessageSerialTimestamp: objectMessageSerialTimestamp,
-                    sourceObjectMessage: sourceObjectMessage,
+                    objectMessage: objectMessage,
                     objectsPool: &objectsPool,
                 )
                 return .init(applied: update != nil, changedMapKeysForPathEvent: update?.update.map { _ in [String]() })
@@ -429,7 +420,8 @@ internal struct ObjectsPool {
                 nosync_notifyPathSubscriptions(
                     objectID: info.objectID,
                     changedMapKeys: info.changedMapKeys,
-                    message: nil,
+                    objectMessage: nil,
+                    channelName: nil,
                     register: register,
                 )
             }
@@ -525,12 +517,26 @@ internal struct ObjectsPool {
     ///   object-level apply/emit has returned.
     ///
     /// Spec: RTO24b (RTO24b1, RTO24b2, RTO24b2a1, RTO24b2a2).
+    ///
+    /// PAOM3: the public ``ObjectMessage`` handed to each path event is derived here — the path
+    /// delivery boundary (RTPO19e2/RTO24b2b2) — from the internal source message, so the
+    /// channel-agnostic register never needs the channel name. A sync-originated dispatch has no
+    /// source message (RTO4b2a), passing `objectMessage`/`channelName` as `nil` and delivering a
+    /// `nil` public message.
     internal func nosync_notifyPathSubscriptions(
         objectID: String,
         changedMapKeys: [String],
-        message: ObjectMessage?,
+        objectMessage: ProtocolTypes.InboundObjectMessage?,
+        channelName: String?,
         register: PathObjectSubscriptionRegister,
     ) {
+        // PAOM3: convert the internal source message to the public message at this delivery boundary.
+        let message: ObjectMessage? = if let objectMessage, let channelName {
+            objectMessage.toPublicObjectMessage(channelName: channelName)
+        } else {
+            nil
+        }
+
         let pathsToThis = nosync_getFullPaths(forObjectID: objectID) // RTO24b1
         if pathsToThis.isEmpty {
             return // orphaned object (not reachable from root) — no path events (RTO24b1a)

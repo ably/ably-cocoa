@@ -34,9 +34,7 @@ struct TestsOnlySeamsTests {
                 counter.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts1",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: TestFactories.inboundObjectMessage(serial: "ts1", siteCode: "site1"),
                     objectsPool: &pool,
                 )
             }
@@ -47,9 +45,7 @@ struct TestsOnlySeamsTests {
                 counter.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts3",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: TestFactories.inboundObjectMessage(serial: "ts3", siteCode: "site1"),
                     objectsPool: &pool,
                 )
             }
@@ -76,9 +72,7 @@ struct TestsOnlySeamsTests {
                 map.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts1",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: TestFactories.inboundObjectMessage(serial: "ts1", siteCode: "site1"),
                     objectsPool: &pool,
                 )
             }
@@ -89,9 +83,7 @@ struct TestsOnlySeamsTests {
                 map.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts3",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: TestFactories.inboundObjectMessage(serial: "ts3", siteCode: "site1"),
                     objectsPool: &pool,
                 )
             }
@@ -219,22 +211,23 @@ struct TestsOnlySeamsTests {
 
     // MARK: - Update-model enrichment (objectMessage + tombstone, RTLO4b4d/RTLO4b4e) and PAOM3
 
-    /// Smoke tests for the update-model enrichment: op-path updates carry the source public
-    /// ``ObjectMessage`` (RTLO4b4d), sync-path updates carry `nil` (RTO4b2a), tombstoning sets the
-    /// `tombstone` flag (RTLO4b4e), and a tombstone teardown deregisters subscriptions (RTLO4b4c3c).
+    /// Smoke tests for the update-model enrichment: op-path updates carry the internal source
+    /// ``ProtocolTypes/InboundObjectMessage`` (RTLO4b4d), sync-path updates carry `nil` (RTO4b2a),
+    /// tombstoning sets the `tombstone` flag (RTLO4b4e), and a tombstone teardown deregisters
+    /// subscriptions (RTLO4b4c3c).
     struct UpdateEnrichmentTests {
-        /// A public ObjectMessage carrying a COUNTER_INC operation, for use as a `sourceObjectMessage`.
-        private static func counterIncMessage(objectId: String) -> ObjectMessage {
-            .init(
+        /// An internal source object message carrying a COUNTER_INC operation, for use as the
+        /// threaded `objectMessage`.
+        private static func counterIncMessage(objectId: String) -> ProtocolTypes.InboundObjectMessage {
+            TestFactories.inboundObjectMessage(
                 id: "msg-1",
-                channel: "channel-1",
-                operation: .init(action: .counterInc, objectId: objectId, counterInc: .init(number: 10)),
+                operation: TestFactories.objectOperation(action: .known(.counterInc), objectId: objectId, counterInc: TestFactories.counterInc(number: 10)),
                 serial: "ts1",
                 siteCode: "site1",
             )
         }
 
-        // An op-path apply threads the source public message onto the emitted/returned update.
+        // An op-path apply threads the source message onto the emitted/returned update (RTLO4b4d).
         @Test
         func opPathApplyCarriesObjectMessage() {
             let logger = TestLogger()
@@ -253,10 +246,7 @@ struct TestsOnlySeamsTests {
                 counter.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts1",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
-                    sourceObjectMessage: sourceObjectMessage,
+                    objectMessage: sourceObjectMessage,
                     objectsPool: &pool,
                 )
             }
@@ -292,26 +282,22 @@ struct TestsOnlySeamsTests {
             let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "counter:1@1", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
-            let sourceObjectMessage = ObjectMessage(
-                channel: "channel-1",
-                operation: .init(action: .objectDelete, objectId: "counter:1@1", objectDelete: .init()),
-                serial: "ts1",
-                siteCode: "site1",
-            )
             let operation = TestFactories.objectOperation(
                 action: .known(.objectDelete),
                 objectId: "counter:1@1",
                 objectDelete: WireObjectDelete(),
+            )
+            let sourceObjectMessage = TestFactories.inboundObjectMessage(
+                operation: operation,
+                serial: "ts1",
+                siteCode: "site1",
             )
 
             let update = internalQueue.ably_syncNoDeadlock {
                 counter.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts1",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
-                    sourceObjectMessage: sourceObjectMessage,
+                    objectMessage: sourceObjectMessage,
                     objectsPool: &pool,
                 )
             }
@@ -345,9 +331,7 @@ struct TestsOnlySeamsTests {
                 _ = counter.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts1",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: TestFactories.inboundObjectMessage(serial: "ts1", siteCode: "site1"),
                     objectsPool: &pool,
                 )
                 // A further emission must not reach the (now-deregistered) subscriber.

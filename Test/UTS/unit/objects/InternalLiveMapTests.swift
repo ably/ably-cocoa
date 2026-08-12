@@ -28,17 +28,16 @@
 //   tombstoned entry is built with `InternalObjectsMapEntry(tombstonedAt:timeserial:data:)` directly
 //   (the `TestFactories.internalMapEntry` helper's `data` is non-optional).
 // - (D-4) Message decomposition: `map.applyOperation(msg, source)` maps to
-//   `map.nosync_apply(operation, source:, objectMessageSerial:, objectMessageSiteCode:,
-//   objectMessageSerialTimestamp:, sourceObjectMessage:, objectsPool:&)`. The built `msg` is
-//   decomposed and its PAOM3 public form (`toPublicObjectMessage(channelName:)`) passed as
-//   `sourceObjectMessage` (RTLO4b4d).
+//   `map.nosync_apply(operation, source:, objectMessage:, objectsPool:&)`. The built `msg` supplies
+//   the `operation` and is threaded down as the source message (RTLO4b4d); its PAOM3 public form is
+//   projected only at delivery.
 // - (D-5) `nosync_apply` returns `LiveObjectUpdate<…>?`: `nil` == gate-rejected (RTLM15b). So the
 //   spec's `result == false` / `update == false` maps to `== nil`; `update.noop` to `.isNoop`;
 //   `update.update` to `update.update?.update` (a `[String: LiveMapUpdateAction]` of `.updated` /
 //   `.removed`).
-// - (D-6) `update.objectMessage == msg` maps to field-level equality against
-//   `msg.toPublicObjectMessage(channelName:)` (RTLO4b4d); `update.tombstone == true` to
-//   `update.tombstone` (RTLO4b4e). Both carried by the enriched update returned from the gated path.
+// - (D-6) `update.objectMessage == msg` maps to equality against the internal source message the
+//   update stores (RTLO4b4d — the PAOM3 public form is projected only at delivery); `update.tombstone
+//   == true` to `update.tombstone` (RTLO4b4e). Both carried by the enriched update from the gated path.
 // - (D-7) RTO4b2a — the sync path (`nosync_replaceData`) is sync-originated, so its returned update
 //   carries `objectMessage == nil`. The spec's `ASSERT update.objectMessage == state_msg` for the
 //   RTLM6 / RTLM6f cases therefore does NOT hold in cocoa; asserted as `objectMessage == nil`.
@@ -64,9 +63,6 @@ import Foundation
 import Testing
 
 struct InternalLiveMapTests {
-    /// The channel name used when converting inbound messages to their PAOM3 public form (PAOM2e).
-    private static let channelName = "test-channel"
-
     // MARK: - Helpers (D-1)
 
     private static func makeMap(objectID: String, data: [String: InternalObjectsMapEntry] = [:], internalQueue: DispatchQueue) -> InternalDefaultLiveMap {
@@ -98,8 +94,8 @@ struct InternalLiveMapTests {
         MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
     }
 
-    /// Drives the gated `nosync_apply` from an inbound message, decomposing it (D-4) and passing its
-    /// PAOM3 public form as `sourceObjectMessage`.
+    /// Drives the gated `nosync_apply` from an inbound message, decomposing it (D-4) and threading
+    /// the source message down; the public form is projected per PAOM3 at delivery.
     private static func apply(
         _ message: ProtocolTypes.InboundObjectMessage,
         to map: InternalDefaultLiveMap,
@@ -112,10 +108,7 @@ struct InternalLiveMapTests {
             map.nosync_apply(
                 operation,
                 source: source,
-                objectMessageSerial: message.serial,
-                objectMessageSiteCode: message.siteCode,
-                objectMessageSerialTimestamp: message.serialTimestamp,
-                sourceObjectMessage: message.toPublicObjectMessage(channelName: channelName),
+                objectMessage: message,
                 objectsPool: &pool,
             )
         }
@@ -152,7 +145,7 @@ struct InternalLiveMapTests {
         #expect(map.testsOnly_data["name"]?.timeserial == "01")
         #expect(map.testsOnly_data["name"]?.tombstone == false)
         #expect(update.update?.update == ["name": .updated])
-        #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
+        #expect(update.objectMessage == msg)
     }
 
     // UTS: objects/unit/RTLM7/map-set-update-entry-0
@@ -172,7 +165,7 @@ struct InternalLiveMapTests {
         #expect(map.testsOnly_data["name"]?.data == ProtocolTypes.ObjectData(string: "Bob"))
         #expect(map.testsOnly_data["name"]?.timeserial == "02")
         #expect(update.update?.update == ["name": .updated])
-        #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
+        #expect(update.objectMessage == msg)
     }
 
     // MARK: - RTLM9: LWW
@@ -250,7 +243,7 @@ struct InternalLiveMapTests {
 
         #expect(map.testsOnly_data["name"]?.data == ProtocolTypes.ObjectData(string: "Bob"))
         #expect(update.update?.update == ["name": .updated])
-        #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
+        #expect(update.objectMessage == msg)
     }
 
     // MARK: - RTLM7h, RTLM7g
@@ -305,7 +298,7 @@ struct InternalLiveMapTests {
         #expect(map.testsOnly_data["name"]?.timeserial == "02")
         #expect(map.testsOnly_data["name"]?.tombstonedAt == Date(timeIntervalSince1970: 1_700_000_000))
         #expect(update.update?.update == ["name": .removed])
-        #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
+        #expect(update.objectMessage == msg)
     }
 
     // UTS: objects/unit/RTLM8/map-remove-nonexistent-0
@@ -321,7 +314,7 @@ struct InternalLiveMapTests {
         #expect(map.testsOnly_data["ghost"]?.tombstone == true)
         #expect(map.testsOnly_data["ghost"]?.tombstonedAt == Date(timeIntervalSince1970: 1_700_000_000))
         #expect(update.update?.update == ["ghost": .removed])
-        #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
+        #expect(update.objectMessage == msg)
     }
 
     // UTS: objects/unit/RTLM8g/map-remove-clear-timeserial-floor-0
@@ -371,7 +364,7 @@ struct InternalLiveMapTests {
         #expect(map.testsOnly_data["same"] != nil)
         #expect(map.testsOnly_data["new"] != nil)
         #expect(update.update?.update == ["old": .removed])
-        #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
+        #expect(update.objectMessage == msg)
     }
 
     // UTS: objects/unit/RTLM24c/map-clear-stale-0
@@ -413,7 +406,7 @@ struct InternalLiveMapTests {
         #expect(update.update?.update["before"] == .removed)
         #expect(update.update?.update["no_ts"] == .removed)
         #expect(update.update?.update["after"] == nil)
-        #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
+        #expect(update.objectMessage == msg)
     }
 
     // MARK: - RTLM16, RTLM23: MAP_CREATE
@@ -436,7 +429,7 @@ struct InternalLiveMapTests {
         #expect(map.testsOnly_data["removed_key"]?.tombstone == true)
         #expect(map.testsOnly_createOperationIsMerged == true)
         #expect(update.update?.update == ["name": .updated, "removed_key": .removed])
-        #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
+        #expect(update.objectMessage == msg)
     }
 
     // UTS: objects/unit/RTLM16b/map-create-already-merged-0
@@ -513,7 +506,7 @@ struct InternalLiveMapTests {
         #expect(map.testsOnly_data.isEmpty)
         #expect(update.update?.update == ["name": .removed, "age": .removed])
         #expect(update.tombstone == true)
-        #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
+        #expect(update.objectMessage == msg)
     }
 
     // UTS: objects/unit/RTLO5/tombstone-empty-map-emits-update-0
@@ -545,7 +538,7 @@ struct InternalLiveMapTests {
         #expect(update.isNoop == false)
         #expect(update.tombstone == true)
         #expect(update.update?.update.isEmpty == true)
-        #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
+        #expect(update.objectMessage == msg)
     }
 
     // UTS: objects/unit/RTLO4e10/object-delete-root-noop-0
@@ -650,7 +643,7 @@ struct InternalLiveMapTests {
         #expect(map.testsOnly_data["name"]?.tombstone == false)
         #expect(map.testsOnly_data["name"]?.tombstonedAt == nil)
         #expect(update.update?.update == ["name": .updated])
-        #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
+        #expect(update.objectMessage == msg)
     }
 
     // MARK: - RTLM15d4
@@ -930,7 +923,7 @@ struct InternalLiveMapTests {
 
         #expect(map.testsOnly_data["name"]?.tombstone == true)
         #expect(update.update?.update == ["name": .removed])
-        #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
+        #expect(update.objectMessage == msg)
     }
 
     // UTS: objects/unit/RTLM7a3/map-set-replace-objectid-both-refs-0
@@ -960,6 +953,6 @@ struct InternalLiveMapTests {
         // New child references root
         #expect(newMap.testsOnly_parentReferences["root"]?.contains("child") == true)
         #expect(update.update?.update == ["child": .updated])
-        #expect(update.objectMessage == msg.toPublicObjectMessage(channelName: Self.channelName))
+        #expect(update.objectMessage == msg)
     }
 }

@@ -41,19 +41,20 @@ internal extension InternalLiveObject {
         liveObjectMutableState.emitLifecycleEvent(.deleted, on: userCallbackQueue)
     }
 
-    /// Stamps the source public object message onto `rawUpdate`, emits the enriched update to this
+    /// Stamps the internal source object message onto `rawUpdate`, emits the enriched update to this
     /// object's subscribers (RTLO4b4c3a), and — if the update tombstones the object —
     /// deregisters all of this object's subscriptions afterwards (RTLO4b4c3c teardown).
     ///
-    /// - Parameter sourceObjectMessage: the PAOM3-converted public message (op-bearing paths), or
-    ///   `nil` for sync-originated updates (RTO4b2a).
+    /// - Parameter sourceObjectMessage: the internal source ``ProtocolTypes/InboundObjectMessage``
+    ///   this op-bearing update derives from; the public message is projected per PAOM3 only at
+    ///   delivery. Only the op-apply path calls this (sync-originated updates emit via `nosync_emit`).
     /// - Returns: the enriched update, so the apply return carries the enrichment too.
     mutating func nosync_emitAndTearDown(
         _ rawUpdate: LiveObjectUpdate<Update>,
-        sourceObjectMessage: ObjectMessage?,
+        sourceObjectMessage: ProtocolTypes.InboundObjectMessage,
         userCallbackQueue: DispatchQueue,
     ) -> LiveObjectUpdate<Update> where Update: LiveObjectUpdatePayload {
-        // RTLO4b4d: stamp the source public message onto the update
+        // RTLO4b4d: stamp the internal source message onto the update
         let enriched = rawUpdate.nosync_stampingObjectMessage(sourceObjectMessage)
         // RTLO4b4c3a: emit to instance listeners (noops are dropped in emit)
         liveObjectMutableState.emit(enriched, on: userCallbackQueue)

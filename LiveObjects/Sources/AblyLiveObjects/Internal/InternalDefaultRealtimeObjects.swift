@@ -903,7 +903,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
                 nosync_notifyPathSubscriptions(
                     objectID: ObjectsPool.rootKey,
                     changedMapKeys: removedRootKeys,
-                    message: nil,
+                    objectMessage: nil,
                     pathObjectSubscriptionRegister: pathObjectSubscriptionRegister,
                 )
             }
@@ -1118,20 +1118,12 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
 
             switch action {
             case .mapCreate, .mapSet, .mapRemove, .counterCreate, .counterInc, .objectDelete, .mapClear:
-                // PAOM3: convert the inbound op-bearing message to the public ObjectMessage that
-                // the emitted update will carry (RTLO4b4d). The action is known here (unknown
-                // actions returned early above, never surfacing publicly — DEV-5), so the
-                // conversion yields a non-nil message.
-                let sourceObjectMessage = objectMessage.toPublicObjectMessage(channelName: channelName)
-
-                // RTO9a2a3
+                // RTO9a2a3: thread the internal source message down through apply; the update stores
+                // it (RTLO4b4d) and the public ObjectMessage is derived per PAOM3 only at delivery.
                 let result = entry.nosync_apply(
                     operation,
                     source: source,
-                    objectMessageSerial: objectMessage.serial,
-                    objectMessageSiteCode: objectMessage.siteCode,
-                    objectMessageSerialTimestamp: objectMessage.serialTimestamp,
-                    sourceObjectMessage: sourceObjectMessage,
+                    objectMessage: objectMessage,
                     objectsPool: &objectsPool,
                 )
 
@@ -1148,7 +1140,7 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
                     nosync_notifyPathSubscriptions(
                         objectID: operation.objectId,
                         changedMapKeys: changedMapKeys,
-                        message: sourceObjectMessage,
+                        objectMessage: objectMessage,
                         pathObjectSubscriptionRegister: pathObjectSubscriptionRegister,
                     )
                 }
@@ -1156,18 +1148,22 @@ internal final class InternalDefaultRealtimeObjects: Sendable, InternalRealtimeO
         }
 
         /// Fans one object update out to path subscriptions, forwarding to the pool-hosted
-        /// `ObjectsPool.nosync_notifyPathSubscriptions` (which documents the RTO24b semantics and
-        /// the no-mutex-held precondition) with the given register.
+        /// `ObjectsPool.nosync_notifyPathSubscriptions` (which documents the RTO24b semantics, the
+        /// no-mutex-held precondition, and performs the PAOM3 conversion) with the given register.
+        ///
+        /// Passes this state's `channelName` so the pool can derive the public message (PAOM3);
+        /// `objectMessage` is `nil` for sync-originated dispatch (RTO4b2a), which surfaces no message.
         internal func nosync_notifyPathSubscriptions(
             objectID: String,
             changedMapKeys: [String],
-            message: ObjectMessage?,
+            objectMessage: ProtocolTypes.InboundObjectMessage?,
             pathObjectSubscriptionRegister: PathObjectSubscriptionRegister,
         ) {
             objectsPool.nosync_notifyPathSubscriptions(
                 objectID: objectID,
                 changedMapKeys: changedMapKeys,
-                message: message,
+                objectMessage: objectMessage,
+                channelName: channelName,
                 register: pathObjectSubscriptionRegister,
             )
         }

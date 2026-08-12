@@ -138,19 +138,14 @@ final class InternalLiveCounterApiTests {
         let collector = ObjectsUTSEventCollector()
         try counter.subscribe(listener: collector.listener)
 
-        let sourceMessage = ObjectMessage(
-            channel: "test",
-            operation: ObjectOperation(action: .counterInc, objectId: "counter:score@1000", counterInc: CounterInc(number: 7)),
-        )
+        // The internal source message threaded through apply; its PAOM3 public form is delivered.
+        let sourceMessage = ObjectsUTS.counterIncMessage(objectId: "counter:score@1000", number: 7, serial: "ts1", siteCode: "remote-site")
         var pool = ObjectsUTS.freshPool(internalQueue: internalQueue)
         internalQueue.ably_syncNoDeadlock {
             _ = node.nosync_apply(
                 ProtocolTypes.ObjectOperation(action: .known(.counterInc), objectId: "counter:score@1000", counterInc: WireCounterInc(number: NSNumber(value: 7))),
                 source: .channel,
-                objectMessageSerial: "ts1",
-                objectMessageSiteCode: "remote-site",
-                objectMessageSerialTimestamp: nil,
-                sourceObjectMessage: sourceMessage,
+                objectMessage: sourceMessage,
                 objectsPool: &pool,
             )
         }

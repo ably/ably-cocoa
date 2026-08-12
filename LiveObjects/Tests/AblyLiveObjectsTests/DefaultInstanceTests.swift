@@ -450,16 +450,14 @@ struct DefaultInstanceTests {
         let subscriber = Subscriber<InstanceSubscriptionEvent>(callbackQueue: .main)
         let subscription = try counterInstance.subscribe(listener: subscriber.createListener())
 
-        let sourceMessage = ObjectMessage(channel: "channel", operation: .init(action: .counterInc, objectId: "counter:sub@0"))
+        let operation = TestFactories.objectOperation(action: .known(.counterInc), objectId: "counter:sub@0", counterInc: TestFactories.counterInc(number: 3))
+        let sourceMessage = TestFactories.inboundObjectMessage(operation: operation, serial: "ts1", siteCode: "site1")
         var pool = ObjectsPool(logger: TestLogger(), internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
         internalQueue.ably_syncNoDeadlock {
             _ = node.nosync_apply(
-                TestFactories.objectOperation(action: .known(.counterInc), objectId: "counter:sub@0", counterInc: TestFactories.counterInc(number: 3)),
+                operation,
                 source: .channel,
-                objectMessageSerial: "ts1",
-                objectMessageSiteCode: "site1",
-                objectMessageSerialTimestamp: nil,
-                sourceObjectMessage: sourceMessage,
+                objectMessage: sourceMessage,
                 objectsPool: &pool,
             )
         }
@@ -467,7 +465,8 @@ struct DefaultInstanceTests {
         let invocations = await subscriber.getInvocations()
         #expect(invocations.count == 1)
         let event = try #require(invocations.first)
-        #expect(event.message == sourceMessage)
+        // RTINS16e2: the subscriber receives the PAOM3 projection of the source message.
+        #expect(event.message == sourceMessage.toPublicObjectMessage(channelName: coreSDK.channelName))
         // RTINS16e1: the wrapped object is the same counter (identity), exposing the same id.
         guard case let .liveCounter(eventCounter) = event.object else {
             Issue.record("Expected .liveCounter in event")
@@ -499,9 +498,7 @@ struct DefaultInstanceTests {
             _ = node.nosync_apply(
                 TestFactories.objectOperation(action: .known(.mapSet), objectId: "map:sub@0", mapSet: ProtocolTypes.MapSet(key: "k", value: ProtocolTypes.ObjectData(string: "v"))),
                 source: .channel,
-                objectMessageSerial: "ts1",
-                objectMessageSiteCode: "site1",
-                objectMessageSerialTimestamp: nil,
+                objectMessage: TestFactories.inboundObjectMessage(serial: "ts1", siteCode: "site1"),
                 objectsPool: &pool,
             )
         }
