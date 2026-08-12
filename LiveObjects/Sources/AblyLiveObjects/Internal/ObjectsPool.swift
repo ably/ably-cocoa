@@ -385,7 +385,6 @@ internal struct ObjectsPool {
                 // RTO5c1b: If an object with ObjectState.objectId does not exist in the internal ObjectsPool
                 // (The nosync_createObjectFromSync precondition that this is not the root object is satisfied because the pool always contains a root object. The precondition that state has counter or map is satisfied because SyncObjectsPool guarantees this for every yielded message.)
                 nosync_createObjectFromSync(
-                    state: state,
                     objectMessage: objectMessage,
                     logger: logger,
                     internalQueue: internalQueue,
@@ -552,16 +551,19 @@ internal struct ObjectsPool {
 
     /// Creates a new object from a sync entry and adds it to the pool, per RTO5c1b.
     ///
-    /// - Precondition: `state.objectId` must not be the root object ID, in order to preserve the RTO3b invariant that the root is always a map.
-    /// - Precondition: `state` must have either `.counter` or `.map` populated.
+    /// - Precondition: `objectMessage.object` (OM2g) must be non-nil.
+    /// - Precondition: the object's `objectId` must not be the root object ID, in order to preserve the RTO3b invariant that the root is always a map.
+    /// - Precondition: the object must have either `.counter` or `.map` populated.
     private mutating func nosync_createObjectFromSync(
-        state: ProtocolTypes.ObjectState,
         objectMessage: ProtocolTypes.InboundObjectMessage,
         logger: Logger,
         internalQueue: DispatchQueue,
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock,
     ) {
+        guard let state = objectMessage.object else {
+            preconditionFailure("SyncObjectsPool yielded a message with nil object")
+        }
         precondition(state.objectId != ObjectsPool.rootKey)
 
         logger.log("Creating new object with ID: \(state.objectId)", level: .debug)
