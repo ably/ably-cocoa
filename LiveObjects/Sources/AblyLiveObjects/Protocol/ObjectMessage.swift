@@ -628,15 +628,18 @@ internal extension ProtocolTypes.ObjectData {
 // (RTLMV4j5 / RTLCV4g5), which our `toWire(...)` conversion deliberately drops. Those payloads
 // survive only on the `ProtocolTypes` types, which is also exactly what `nosync_publish` carries.
 //
-// Note on string measurement: the spec's "length" (OM3d, OMP4a1, MCR3a1, OD3e) is ambiguous for
-// non-ASCII text — it does not say whether "length" means UTF-8 bytes or UTF-16 code units — and the
-// spec is itself inconsistent, since OD3g instead says "byte length". The per-field choices below
-// deliberately mirror ably-java so that the RTO15d client-side size gate accepts or rejects a given
-// message identically across SDKs; a spec issue will nail down the definition, after which all SDKs
-// can align:
-//   - `clientId`, `MapCreate`/`MapSet`/`MapRemove` keys and `ObjectData.string`/`json` are measured
-//     as their UTF-8 byte length.
-//   - `extras` (OM3d) and `ObjectsMap` entry keys (OMP4a1) are measured as their UTF-16 `.length`.
+// Note on string measurement: message-size accounting measures string fields two different ways,
+// per the resolved convention (the spec's TO3l8f canonical definition, and Ably's published "How
+// does Ably measure message size" accounting). The RTO15d client-side size gate therefore accepts
+// or rejects a given message identically across the cocoa, java and js SDKs:
+//   - UTF-8 byte length for every plain string and map key: `clientId` (OM3f), the
+//     `MapCreate`/`MapSet`/`MapRemove` operation keys (MCR3a1/MST3c/MRM3a), the `ObjectsMap`
+//     map-state entry keys (OMP4a1) and `ObjectData.string`/`json` (OD3e/OD3g). Keys are the same
+//     kind of string as values, and because the server counts bytes, measuring in UTF-8 bytes can
+//     never under-count and thus never false-reject a message the server would accept.
+//   - String length (the number of UTF-16 code units) for `extras` (OM3d), matching the docs'
+//     verbatim rule that `extras` is "the string length of its JSON representation". All three SDKs
+//     already agree on this.
 // For ASCII these coincide; they differ only for non-ASCII text.
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
@@ -644,10 +647,11 @@ internal extension ProtocolTypes.OutboundObjectMessage {
     /// The size of this `ObjectMessage` in bytes, calculated per OM3. Used by RTO15d to enforce `maxMessageSize`.
     var size: Int {
         // OM3a: sum of the sizes of the clientId, operation, object and extras properties.
-        let clientIdSize = clientId?.utf8.count ?? 0 // OM3f (ably-java: UTF-8 byte length)
+        let clientIdSize = clientId?.utf8.count ?? 0 // OM3f (UTF-8 byte length)
         let operationSize = operation?.size ?? 0 // OM3b, OOP4
         let objectSize = object?.size ?? 0 // OM3c, OST3
-        // OM3d: the string length of the JSON representation of `extras` (ably-java: UTF-16 length).
+        // OM3d: "the string length of its JSON representation" (docs verbatim) — measured as the
+        // number of UTF-16 code units (`.utf16.count`), not UTF-8 bytes; all three SDKs agree.
         let extrasSize = extras.map { JSONObjectOrArray.object($0).toJSONString.utf16.count } ?? 0
         // OM3e: a null or omitted property contributes zero.
         return clientIdSize + operationSize + objectSize + extrasSize
@@ -686,8 +690,8 @@ internal extension ProtocolTypes.ObjectState {
 internal extension ProtocolTypes.MapCreate {
     /// The size of this `MapCreate` in bytes, calculated per MCR3.
     var size: Int {
-        // MCR3a: sum over entries of the key size plus the entry size. ably-java measures the key
-        // as its UTF-8 byte length here (diverging from MCR3a1's "length" wording); mirrored as-is.
+        // MCR3a: sum over entries of the key size plus the entry size. MCR3a1 keys are measured as
+        // their UTF-8 byte length.
         entries?.reduce(0) { $0 + $1.key.utf8.count + $1.value.size } ?? 0 // MCR3a1, MCR3a2, MCR3b
     }
 }
@@ -696,7 +700,7 @@ internal extension ProtocolTypes.MapCreate {
 internal extension ProtocolTypes.MapSet {
     /// The size of this `MapSet` in bytes, calculated per MST3.
     var size: Int {
-        // MST3a: sum of the key and value sizes. ably-java measures the key as its UTF-8 byte length.
+        // MST3a: sum of the key and value sizes. MST3c: the key is measured as its UTF-8 byte length.
         key.utf8.count + (value?.size ?? 0) // MST3b (OD3), MST3c, MST3d
     }
 }
@@ -705,9 +709,9 @@ internal extension ProtocolTypes.MapSet {
 internal extension ProtocolTypes.ObjectsMap {
     /// The size of this `ObjectsMap` in bytes, calculated per OMP4.
     var size: Int {
-        // OMP4a: sum over entries of the key size plus the entry size. Per OMP4a1 (and ably-java) the
-        // key is measured as its length; ably-java uses `String.length`, i.e. the UTF-16 length.
-        entries?.reduce(0) { $0 + $1.key.utf16.count + $1.value.size } ?? 0 // OMP4a1, OMP4a2, OMP4b
+        // OMP4a: sum over entries of the key size plus the entry size. OMP4a1 map-state entry keys
+        // are measured as their UTF-8 byte length, consistent with all other operation/map keys.
+        entries?.reduce(0) { $0 + $1.key.utf8.count + $1.value.size } ?? 0 // OMP4a1, OMP4a2, OMP4b
     }
 }
 
@@ -726,7 +730,7 @@ internal extension ProtocolTypes.ObjectData {
     var size: Int {
         // OD3: ably-java returns the size of the first present leaf, checked in this order.
         if let string {
-            return string.utf8.count // OD3e (ably-java: UTF-8 byte length)
+            return string.utf8.count // OD3e (UTF-8 byte length)
         }
         if number != nil {
             return 8 // OD3d
@@ -751,7 +755,7 @@ internal extension ProtocolTypes.ObjectData {
 internal extension WireMapRemove {
     /// The size of this `MapRemove` in bytes, calculated per MRM3.
     var size: Int {
-        // MRM3a: the string length of the `key` property. ably-java measures it as its UTF-8 byte length.
+        // MRM3a: the `key` property, measured as its UTF-8 byte length.
         key.utf8.count
     }
 }

@@ -189,6 +189,55 @@ struct WireObjectMessageSizeTests {
         #expect(objectMessage.size == 26)
     }
 
+    // MARK: - String measurement convention (UTF-8 for strings/keys; UTF-16 string length for extras)
+
+    // OM3f measures clientId as its UTF-8 byte length, not its UTF-16 code-unit count.
+    // @spec OM3f
+    @Test
+    func clientIdIsUTF8ByteLength() {
+        // 你 -> 3 UTF-8 bytes, 😊 -> 4 UTF-8 bytes (7 total), versus 3 UTF-16 code units.
+        let objectMessage = ProtocolTypes.OutboundObjectMessage(clientId: "你😊")
+        #expect(objectMessage.size == 7)
+    }
+
+    // MST3c measures the MapSet key as its UTF-8 byte length.
+    // @spec MST3c
+    @Test
+    func mapSetKeyIsUTF8ByteLength() {
+        // 你 -> 3 UTF-8 bytes (key); string value "v" -> 1 byte.
+        let mapSet = ProtocolTypes.MapSet(key: "你", value: .init(string: "v"))
+        #expect(mapSet.size == 4)
+    }
+
+    // OMP4a1 measures map-state entry keys as their UTF-8 byte length (changed from UTF-16 for
+    // key-consistency with the MapCreate/MapSet/MapRemove operation keys).
+    // @spec OMP4a1
+    @Test
+    func objectsMapEntryKeyIsUTF8ByteLength() {
+        // 你😊 -> 7 UTF-8 bytes (key), versus 3 UTF-16 code units; entry data string "v" -> 1 byte.
+        let map = ProtocolTypes.ObjectsMap(
+            semantics: .known(.lww),
+            entries: [
+                "你😊": .init(data: .init(string: "v")),
+            ],
+        )
+        #expect(map.size == 8)
+    }
+
+    // OM3d measures extras as the UTF-16 string length of its JSON representation (the docs'
+    // verbatim "string length of its JSON representation"), not its UTF-8 byte length.
+    // @spec OM3d
+    @Test
+    func extrasIsUTF16StringLengthOfJSON() {
+        let objectMessage = ProtocolTypes.OutboundObjectMessage(
+            extras: [
+                "k": "你",
+            ],
+        )
+        // The JSON representation {"k":"你"} is 9 UTF-16 code units (你 is one), versus 11 UTF-8 bytes.
+        #expect(objectMessage.size == 9)
+    }
+
     // MARK: - RTO15d publish-size gate
 
     private static func createRealtimeObjects(internalQueue: DispatchQueue) -> InternalDefaultRealtimeObjects {
