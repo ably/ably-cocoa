@@ -52,7 +52,7 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
                 // If we already have connection details, then use its grace period per RTO10b2
                 .init(gracePeriod: .dynamic(gracePeriod.doubleValue))
             } else {
-                // Use the default grace period
+                // RTO10b3: use the default grace period
                 .init()
             }
         }()
@@ -64,9 +64,35 @@ internal final class DefaultInternalPlugin: NSObject, _AblyPluginSupportPrivate.
             internalQueue: internalQueue,
             userCallbackQueue: callbackQueue,
             clock: DefaultSimpleClock(),
+            channelName: pluginAPI.name(for: channel),
             garbageCollectionOptions: garbageCollectionOptions,
         )
         pluginAPI.nosync_setPluginDataValue(liveObjects, forKey: Self.pluginDataKey, channel: channel)
+
+        // Seed the RTO20c1 siteCode from the latest connection details at engine creation, through the
+        // same `nosync_setSiteCode` path that the CONNECTED `ProtocolMessage` handler
+        // (`nosync_onConnected`) uses. That handler (`ARTRealtime.m`
+        // `nosync_onConnectedWithConnectionDetails:`) only reaches channels that already exist at
+        // CONNECTED time; a channel created *after* connect (the normal `connect → channels.get(name)`
+        // flow) would otherwise never receive a siteCode, leaving `publishAndApply` unable to apply
+        // local echo (RTO20c1) until the next reconnect. Seeding here closes that gap; the later
+        // CONNECTED handler keeps it fresh. A channel created before connect seeds nil and is covered by
+        // that later handler.
+        liveObjects.nosync_setSiteCode(pluginAPI.nosync_latestConnectionDetails(for: client)?.siteCode)
+    }
+
+    // The core SDK calls this from `-[ARTRealtimeChannels release:]` when a channel is released.
+    // Disposes the channel's objects engine with a release-specific cause, failing any in-flight
+    // operation proactively (rather than waiting for the channel's eventual deallocation, which would
+    // fail waiters with a generic cause via `deinit`). This release-time disposal is not specified. A
+    // channel may be released without ever having had its objects engine accessed, but `nosync_prepare`
+    // runs for every channel at creation, so the plugin data is present; we still guard defensively so
+    // a teardown race cannot trap.
+    internal func nosync_onChannelRelease(_ channel: _AblyPluginSupportPrivate.RealtimeChannel) {
+        guard pluginAPI.nosync_pluginDataValue(forKey: Self.pluginDataKey, channel: channel) != nil else {
+            return
+        }
+        nosync_realtimeObjects(for: channel).nosync_disposeForChannelRelease()
     }
 
     /// Retrieves the internally-typed `objects` property for the channel.

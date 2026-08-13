@@ -12,11 +12,32 @@ internal enum InternalLiveMapValue: Sendable, Equatable {
     case liveMap(InternalDefaultLiveMap)
     case liveCounter(InternalDefaultLiveCounter)
 
+    // MARK: - Construction from a public primitive
+
+    /// 1:1 mapping of a public ``Primitive`` onto the internal representation. Used by the RTLM20e7
+    /// `MAP_SET` value conversion and the RTLMV4d3–d7 blueprint-entry conversion.
+    internal init(_ primitive: Primitive) {
+        switch primitive {
+        case let .string(value):
+            self = .string(value)
+        case let .number(value):
+            self = .number(value)
+        case let .bool(value):
+            self = .bool(value)
+        case let .data(value):
+            self = .data(value)
+        case let .jsonArray(value):
+            self = .jsonArray(value)
+        case let .jsonObject(value):
+            self = .jsonObject(value)
+        }
+    }
+
     // MARK: - Representation in the Realtime protocol
 
-    /// Converts an `InternalLiveMapValue` to the value that should be used when creating or updating a map entry in the Realtime protocol, per the rules of RTO11f14 and RTLM20e7.
+    /// Converts an `InternalLiveMapValue` to the value that should be used when creating or updating a map entry in the Realtime protocol, per the rules of RTLMV4d and RTLM20e7.
     internal var nosync_toObjectData: ProtocolTypes.ObjectData {
-        // RTO11f14c1: Create an ObjectsMapEntry for the current value
+        // RTLMV4d: Create an ObjectsMapEntry for the current value
         switch self {
         case let .bool(value):
             .init(boolean: value)
@@ -31,11 +52,11 @@ internal enum InternalLiveMapValue: Sendable, Equatable {
         case let .jsonObject(value):
             .init(json: .object(value))
         case let .liveMap(liveMap):
-            // RTO11f14c1a: If the value is of type LiveMap, set ObjectsMapEntry.data.objectId to the objectId of that object
-            .init(objectId: liveMap.nosync_objectID)
+            // RTLMV4d2: If the value is of type LiveMap, set ObjectsMapEntry.data.objectId to the objectId of that object
+            .init(objectId: liveMap.objectID)
         case let .liveCounter(liveCounter):
-            // RTO11f14c1a: If the value is of type LiveCounter, set ObjectsMapEntry.data.objectId to the objectId of that object
-            .init(objectId: liveCounter.nosync_objectID)
+            // RTLMV4d1: If the value is of type LiveCounter, set ObjectsMapEntry.data.objectId to the objectId of that object
+            .init(objectId: liveCounter.objectID)
         }
     }
 

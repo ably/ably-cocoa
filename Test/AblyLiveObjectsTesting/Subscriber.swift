@@ -3,7 +3,7 @@ import Foundation
 /// A class for testing LiveObjects subscriptions.
 ///
 /// Create a listener function using ``createListener``, and pass it to the `subscribe(listener:)` method of a LiveObject. Fetch details of the invocations of this listener function using ``getInvocations``.
-@available(iOS 17.0.0, tvOS 17.0.0, *) // "Parameter packs in generic types are only available in tvOS 17.0.0 or newer". I wrote this class using this language feature and only after a while realised that this issue exists. So I've gone and marked all of the tests that use this as having the same availability. Might revisit this class at some point if this turns out to be a big nuisance (it's annoying that you can't mark whole suites as @available).
+@available(macOS 14.0, iOS 17.0, tvOS 17.0, *) // "Parameter packs in generic types are only available in tvOS 17.0.0 or newer". I wrote this class using this language feature and only after a while realised that this issue exists. So I've gone and marked all of the tests that use this as having the same availability. Might revisit this class at some point if this turns out to be a big nuisance (it's annoying that you can't mark whole suites as @available).
 final class Subscriber<each CallbackArg: Sendable>: Sendable {
     private let callbackQueue: DispatchQueue
     // Used to synchronize access to the nonisolated(unsafe) mutable state.
@@ -59,7 +59,7 @@ final class Subscriber<each CallbackArg: Sendable>: Sendable {
 
     /// A wrapper that allows us to store a callback that takes variadic args.
     ///
-    /// This allows us to avoid the error "Cannot fully abstract a value of variadic function type '@Sendable (repeat each CallbackArg) -> ()' because different contexts will not be able to reliably agree on a calling convention; try wrapping it in a struct" that we get if we try to directly store the callback in an array. Claude suggested this solution.
+    /// This allows us to avoid the error "Cannot fully abstract a value of variadic function type '@Sendable (repeat each CallbackArg) -> ()' because different contexts will not be able to reliably agree on a calling convention; try wrapping it in a struct" that we get if we try to directly store the callback in an array.
     private struct CallbackWrapper {
         let callback: @Sendable (repeat each CallbackArg) -> Void
 

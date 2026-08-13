@@ -20,16 +20,16 @@ import Ably
 /// }
 /// ```
 ///
-/// > Note: This enum shape is the Swift-specific decision recorded on **AIT-1023** (chosen over the
-/// > language-agnostic base-type + `as*`-cast model of spec `RTTS9`, so that discrimination is
-/// > compile-time-exhaustive and there is no undefined mismatch path). Spec: `RTINS1`, `RTTS9`.
+/// > Note: This enum shape is a Swift-specific decision (chosen over the language-agnostic
+/// > base-type + `as*`-cast model of spec `RTTS9`, so that discrimination is compile-time-exhaustive
+/// > and there is no undefined mismatch path). Spec: `RTINS1`, `RTTS9`.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 public enum Instance: Sendable {
     case liveMap(any LiveMapInstance)
     case liveCounter(any LiveCounterInstance)
     case primitive(any PrimitiveInstance)
 
-    /// The type of the wrapped value. Spec: `RTTS8`. O(1).
+    /// The type of the wrapped value. Spec: `RTTS8`.
     public var type: ValueType {
         switch self {
         case .liveMap:
@@ -164,7 +164,7 @@ public protocol PrimitiveInstance: Sendable {
     var value: Primitive { get throws(ARTErrorInfo) }
 
     /// The specific primitive type of the wrapped value (e.g. ``ValueType/string``, ``ValueType/number``).
-    /// Spec: `RTTS8`. O(1).
+    /// Spec: `RTTS8`.
     var type: ValueType { get }
 
     /// A JSON-serializable representation of the wrapped primitive. Spec: `RTINS11`, `RTINS11c` (never `nil`).

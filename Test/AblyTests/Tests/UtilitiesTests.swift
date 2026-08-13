@@ -547,6 +547,27 @@ class UtilitiesTests: XCTestCase {
         XCTAssertEqual(message.messageSize(), expectedSize)
     }
 
+    // Non-ASCII cases locking the string-measurement convention of Ably's published message-size
+    // accounting: name, clientId and string data are measured as their UTF-8 byte length, while
+    // extras (and JSON-stringified object/array data) are measured as the string length (the number
+    // of UTF-16 code units) of their JSON representation. 你 is 3 UTF-8 bytes / 1 UTF-16 code unit;
+    // 😊 is 4 UTF-8 bytes / 2 UTF-16 code units.
+    func test__027__Utilities__maxMessageSize__measures_unicode_fields_per_documented_accounting() {
+        // name (7) + clientId (7) + string data (7), all UTF-8 byte lengths.
+        let message = ARTMessage(name: "你😊", data: "你😊")
+        message.clientId = "你😊"
+        XCTAssertEqual(message.messageSize(), 21)
+
+        // extras: {"k":"你😊"} is 11 UTF-16 code units (versus 15 UTF-8 bytes).
+        let messageWithExtras = ARTMessage(name: nil, data: "")
+        messageWithExtras.extras = ["k": "你😊"] as ARTJsonCompatible
+        XCTAssertEqual(messageWithExtras.messageSize(), 11)
+
+        // object data: {"k":"你😊"} JSON-stringified is 11 UTF-16 code units.
+        let messageWithJSONData = ARTMessage(name: nil, data: ["k": "你😊"])
+        XCTAssertEqual(messageWithJSONData.messageSize(), 11)
+    }
+
     /// - TM2s
     /// - TM2s1
     /// - TM2s2

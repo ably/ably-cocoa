@@ -2,6 +2,7 @@
 import Foundation
 
 /// A mock delegate that can return predefined objects
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 final class MockLiveMapObjectsPoolDelegate: LiveMapObjectsPoolDelegate {
     private let poolMutex: DispatchQueueMutex<ObjectsPool>
 

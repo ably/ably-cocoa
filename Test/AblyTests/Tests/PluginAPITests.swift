@@ -22,18 +22,24 @@ class PluginAPITests: XCTestCase {
         internal var receivedConnectionDetails: [(connectionDetails: (any ConnectionDetailsProtocol)?, channel: any RealtimeChannel)] = []
         internal var receivedChannelAttached: [(channel: any RealtimeChannel, hasObjects: Bool)] = []
         internal var receivedStateChanges: [(channel: any RealtimeChannel, state: RealtimeChannelState, reason: (any PublicErrorInfo)?)] = []
+        internal var receivedChannelReleased: [any RealtimeChannel] = []
 
         /// Resets all recorded mock state. Called in `setUp()` since this is a shared static instance.
         func clearState() {
             receivedConnectionDetails.removeAll()
             receivedChannelAttached.removeAll()
             receivedStateChanges.removeAll()
+            receivedChannelReleased.removeAll()
         }
 
         var compatibleWithProtocolV6: Bool { true }
 
         func nosync_prepare(_ channel: any RealtimeChannel, client: any RealtimeClient) {
             // no-op
+        }
+
+        func nosync_onChannelRelease(_ channel: any RealtimeChannel) {
+            receivedChannelReleased.append(channel)
         }
 
         func decodeObjectMessage(_ serialized: [String : Any], context: any DecodingContextProtocol, format: EncodingFormat, error: AutoreleasingUnsafeMutablePointer<(any PublicErrorInfo)?>?) -> (any ObjectMessageProtocol)? {

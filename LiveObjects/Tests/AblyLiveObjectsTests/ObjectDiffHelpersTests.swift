@@ -1,11 +1,12 @@
 @testable import AblyLiveObjects
+@testable import AblyLiveObjectsTesting
 import Foundation
 import Testing
 
 struct ObjectDiffHelpersTests {
     /// Tests for the `calculateCounterDiff` method, covering RTLC14 specification points
     struct CalculateCounterDiffTests {
-        // @spec RTLC14b
+        // @specOneOf(1/2) RTLC14b
         @Test
         func calculatesDifference() {
             let update = ObjectDiffHelpers.calculateCounterDiff(
@@ -13,6 +14,17 @@ struct ObjectDiffHelpersTests {
                 newData: 15.0,
             )
             #expect(update.update?.amount == 5.0)
+        }
+
+        // @specOneOf(2/2) RTLC14b - a zero delta (unchanged value) is collapsed to a no-op update
+        // (permitted by RTLO4b4b) so no spurious subscriber callback fires.
+        @Test
+        func zeroDeltaIsNoop() {
+            let update = ObjectDiffHelpers.calculateCounterDiff(
+                previousData: 10.0,
+                newData: 10.0,
+            )
+            #expect(update.isNoop)
         }
     }
 
@@ -91,7 +103,9 @@ struct ObjectDiffHelpersTests {
                 newData: newData,
             )
 
-            #expect(update.update?.update.isEmpty == true)
+            // An empty diff (nothing changed) is collapsed to a no-op update (permitted by
+            // RTLO4b4b) rather than an empty non-noop update.
+            #expect(update.isNoop)
         }
 
         // @specOneOf(1/3) RTLM22b - Ignores tombstoned entries in previousData
@@ -110,9 +124,9 @@ struct ObjectDiffHelpersTests {
                 newData: newData,
             )
 
-            // key1 was tombstoned in previousData, so it's not considered "removed"
-            #expect(update.update?.update["key1"] == nil)
-            #expect(update.update?.update.isEmpty == true)
+            // key1 was tombstoned in previousData, so it's not considered "removed"; the diff is
+            // therefore empty and collapses to a no-op (RTLO4b4b).
+            #expect(update.isNoop)
         }
 
         // @specOneOf(2/3) RTLM22b - Ignores tombstoned entries in newData
@@ -149,8 +163,8 @@ struct ObjectDiffHelpersTests {
                 newData: newData,
             )
 
-            // Both tombstoned, so no change
-            #expect(update.update?.update.isEmpty == true)
+            // Both tombstoned, so no change; the empty diff collapses to a no-op (RTLO4b4b).
+            #expect(update.isNoop)
         }
 
         // Test combined changes

@@ -11,7 +11,9 @@ metadata:
 ---
 
 Translate the UTS pseudocode test specs under the **module directory** `$ARGUMENTS` into runnable Swift
-tests in the ably-cocoa `UTS` test target (`Test/UTS`).
+tests in the ably-cocoa `UTS` test target (`Test/UTS`). Every tier lands under `Test/UTS` via the
+resolver's per-module mapping. The resolver output (Step A) is always the single source of truth for where
+a file goes and what it is named — never hand-compute the path or class name.
 
 `$ARGUMENTS` is a UTS *module* directory — a directory sitting directly under the spec repo's `uts/`,
 e.g. `<cloned-ably-specification-repo-path>/uts/objects`. Its name (`objects`, `realtime`,
@@ -56,22 +58,25 @@ It prints one JSON object. **If `ok` is `false`, relay `message` to the user and
 or `integration/`). On success it gives `sourceModule`, `mapped`, `testRoot`, `translationNotes`, and a
 `tiers` object with one entry per tier (`unit` / `integration` / `proxy`), each carrying `present`,
 `sourceDir`, `targetDir`, and `specs` (a list of `{file, className}`). Everything downstream reads from
-this output — treat it as the single source of truth and don't recompute paths or names by hand.
+this output — treat it as the single source of truth and don't recompute paths or names by hand. A tier's
+`targetDir` comes from the module mapping (`testRoot` + the tier entry, e.g. `Test/UTS/unit/objects`), and
+a module may also declare a per-tier className suffix (so `className` isn't always `<Stem>Tests` — see
+Step 2), which is exactly why you read both from here rather than assuming a `Test/UTS/...` path or a name.
 
 `translationNotes` is the path to a per-module ably-js → ably-cocoa type/interface map when the module
 declares one (its `notes` field in `uts-package-mapping.json`, e.g. `objects` →
 `references/objects-mapping.md`), else `null`. When it's non-null, it is **required reading before
-Phase 2** — see Step 1. (The `objects` notes file is currently a **placeholder** — if it still only
-carries the "intentionally empty" stub, tell the user the module's mapping hasn't been authored yet and
-treat the module as not-yet-translatable rather than guessing a mapping.)
+Phase 2** — see Step 1. (If a module's notes file only carries an "intentionally empty" placeholder
+stub, tell the user the module's mapping hasn't been authored yet and treat the module as
+not-yet-translatable rather than guessing a mapping.)
 
 ## Step B — Confirm or create the target mapping
 
-The target dirs come from `uts-package-mapping.json` (alongside this skill); spec and ably-cocoa module
-names don't always match (ably-java, for example, maps `objects` → `liveobjects`), which is why it's
-explicit.
+The target dirs come from `uts-package-mapping.json` (alongside this skill); a spec module's name and
+the SDK's internal naming for that area don't necessarily match, which is why the mapping is explicit.
 
-- **If `mapped` is `true`**: show the resolved `targetDir` for each present tier and ask the user to confirm.
+- **If `mapped` is `true`**: show the resolved `targetDir` for each present tier and ask the user to confirm
+  (show whatever the resolver returned verbatim).
   If they say the mapping is wrong, ask for the correct ably-cocoa module base name and re-run with `--create`
   (below) to overwrite the entry, then re-resolve.
 - **If `mapped` is `false`**: there's no mapping for `sourceModule` yet. Ask for the target ably-cocoa module
@@ -152,6 +157,13 @@ Don't derive anything here — the resolver (Step A) already produced it. For th
 `targetDir`, and for the spec being translated use its `className` from that tier's `specs` list. Write the
 test to `<targetDir>/<className>.swift`.
 
+> **className.** The resolver derives `className` as `<Stem>Tests` (e.g. `internal_live_map.md` →
+> `InternalLiveMapTests`). Use the resolver's `className` verbatim — it stays authoritative.
+> **Add to an existing suite** when one matches: if a spec's tests fan out across more than
+> one suite (e.g. `internal_live_map.md`'s parent-reference cases live in the separate
+> `InternalLiveMapParentReferencesTests`), add the new methods to the existing suite rather than
+> creating a duplicate (per the "add to an existing suite" rule below).
+
 The spec's own `<sub>` grouping (e.g. `connection/`, `channels/`) is **not** reflected in the output — every
 test sits directly in `targetDir` (the resolver flattens it). The chosen tier also fixes the translation
 flow: **unit** → the rules in Steps 3–4 below; **integration** (direct sandbox) → the **Direct-sandbox
@@ -188,11 +200,26 @@ For a **unit** test, read ALL files under `infra/unit/` plus `infra/Utils.swift`
 (you need exact method signatures). For an **integration** or **proxy** spec, follow the reading list in
 the **Integration tests** section instead.
 
+> **Objects module, unit tier — different reading list.** The `objects` unit ports don't use the mocked
+> `infra/unit/` transport (`MockWebSocket`/`UTSTestCase`/`import Ably.Private`) at all; they drive the
+> Swift `AblyLiveObjects` CRDT internals directly. **Instead of `infra/unit/`, read** (before generating):
+> `Test/UTS/unit/objects/ObjectsUTSHelpers.swift` (the port-only harness — `ObjectsUTS*` doubles and
+> fixtures), the `Test/AblyLiveObjectsTesting` module (its `README.md`, `TestFactories.swift`,
+> `UTSTestPoolFactories.swift`), and `objects-mapping.md` §13 (the internal-access ladder — required
+> reading). Objects unit reaches internals via `@testable import AblyLiveObjects` (every suite) +
+> `@testable import AblyLiveObjectsTesting` (added when a case uses a `testsOnly_` accessor),
+> **not** `import Ably.Private` (the ladder in Step 4 below is
+> for the core Objective-C SDK only).
+
 ## Step 4 — Generate the Swift test file
 
 Apply the translation rules below, then write the file.
 
 ### Accessing SDK internals (`import Ably.Private`)
+
+> **Not for the `objects` unit tier** — those ports reach Swift `AblyLiveObjects` internals via the
+> `@testable`-import ladder in `objects-mapping.md` §13 (see the Step 3 objects branch above), not
+> `import Ably.Private`. The rest of this section is for the core Objective-C SDK.
 
 The SDK is Objective-C, so Swift access levels (`internal`/`package`/`private`) don't apply to it —
 visibility is controlled by **headers + the module map**:
@@ -706,7 +733,7 @@ Test fails
   |     YES
   |       +-- Does test accurately translate the UTS spec?
   |             NO  → fix the test (no deviation entry needed)
-  |             YES → SDK deviation — adapt test, record in deviations file
+  |             YES → SDK deviation — env-gated skip or adapted assertion (below); record in the deviations file
 ```
 
 ### Test patterns for a diagnosed failure
@@ -714,8 +741,10 @@ Test fails
 Two patterns are for an **SDK deviation** (both write the spec-correct assertions); the third,
 **spec-error fail-fast**, is for a **UTS spec error** and is not a deviation.
 
-**Env-gated skip (preferred)** — test contains spec-correct assertions but is disabled by default via the
-Swift Testing `.enabled(if:)` trait, so it only runs when `RUN_DEVIATIONS` is set:
+**Env-gated skip** *(preferred for a deviation you expect to be fixed)* — the test carries the
+**spec-correct** assertions, but is disabled by default via the Swift Testing `.enabled(if:)` trait, so it
+only runs when `RUN_DEVIATIONS` is set. Use this when the SDK diverges from the spec **today** but is
+expected to converge — the skipped test becomes the executable record of what "correct" will look like:
 
 ```swift
 // UTS: realtime/unit/RSA4c2/callback-error-connecting-disconnected-0
@@ -728,7 +757,10 @@ func test_RSA4c2_callback_error_connecting_disconnected() throws {
 
 Reproduce with `RUN_DEVIATIONS=1 swift test --filter "UTS.<className>/<method>"`.
 
-**Adapted assertion** — when you still want to assert on the SDK's actual behaviour to prevent regressions:
+**Adapted assertion** — assert the SDK's actual behaviour to prevent regressions. **Prefer this over an
+env-gated skip when the divergence is permanent or intentional** (a documented, deliberate departure from
+the spec that the SDK is *not* going to change): a running test guards against regressions, whereas a
+permanently-skipped spec assertion verifies nothing. Record it as a permanent documented divergence:
 
 ```swift
 // DEVIATION: spec requires error code 40106, SDK returns 40160 — see deviations.md
@@ -742,13 +774,15 @@ quietly adapted to green. This is the opposite of the SDK-deviation patterns abo
 assert actual behaviour) — failing fast is the forcing function that gets the spec fixed early.
 
 ```swift
-// UTS: objects/unit/RTLC7c2/local-source-no-sitetimeserials-0
+// UTS: realtime/unit/RTN15c4/resume-token-error-0
 @Test
-func test_RTLC7c2_LOCAL_source_does_not_write_siteTimeserials() throws {
-    // SPEC ERROR RTLC7c2: replayed ACK serial "t:1:0" contradicts the harness ("ack-0:0").
+func test_RTN15c4_resume_with_token_error_reattaches() throws {
+    // SPEC ERROR RTN15c4: the replayed CONNECTED message contradicts the harness's resume rules.
     // Fix the UTS spec first — see deviations.md (UTS Spec Errors).
-    Issue.record("UTS spec error RTLC7c2 — fix the spec first; see deviations.md")
+    Issue.record("UTS spec error RTN15c4 — fix the spec first; see deviations.md")
 }
+// (For the objects unit tier the same pattern applies, but with the tier's bare camelCase
+// method naming — see the module notes' naming override.)
 ```
 
 **Never use the accommodate-both pattern** (accept either spec or SDK behaviour). Every test must assert
@@ -760,12 +794,14 @@ queue-ordering workaround) is **not** an SDK deviation — explain it in a code 
 
 ### Deviations file
 
-Append to `Test/UTS/deviations.md`, using the manual's **Recording deviations** entry format and sections
-(the `writing-derived-tests.md` you fetched up front — not a home-grown format). The ably-cocoa-specific
-mapping: a **UTS Spec Error** (test fails fast — fix in the spec) goes under the manual's *UTS Spec Errors*
-section (the file doesn't have that section yet — add the heading on first use, alongside the existing
-three); an **SDK deviation** (env-gated/adapted — fix in the SDK) goes under *Failing Tests* / *Adapted
-Tests*; a mock-capability gap goes under *Mock Infrastructure Limitations*.
+Append to the deviations file that belongs to the tier's module, using the manual's **Recording
+deviations** entry format and sections (the `writing-derived-tests.md` you fetched up front — not a
+home-grown format). For most tiers that is the shared `Test/UTS/deviations.md`; for the **`objects` unit**
+tier it is the module-scoped `Test/UTS/unit/objects/deviations.md` (which sits beside those suites and
+already carries the objects-unit entries). The ably-cocoa-specific section mapping: a **UTS Spec Error**
+(test fails fast — fix in the spec) goes under the manual's *UTS Spec Errors* section (add the heading on
+first use if absent); an **SDK deviation** (env-gated/adapted — fix in the SDK) goes under *Failing Tests*
+/ *Adapted Tests*; a mock-capability gap goes under *Mock Infrastructure Limitations*.
 
 ---
 
@@ -848,7 +884,11 @@ This is the guarantee that no setup step, operation, or assertion was dropped �
       type — is a valid account.)
 - [ ] `awaitShortfall > 0` (`summary.testsWithAwaitShortfall`) is the **softer secondary signal** — fewer
       infra wait calls than spec `AWAIT`s. A custom continuation-bridged helper (like `awaitTime`)
-      legitimately replaces a wait call, so account for those rather than treating this as a gate.
+      legitimately replaces a wait call, and on a **natively-async SDK API** (a module whose SDK
+      surface is `async` methods — its translation notes will say) a
+      spec `AWAIT op` correctly becomes a plain `try await` expression the counter doesn't see —
+      expect a benign shortfall on nearly every such test. Account for those rather than treating
+      this as a gate.
 
 ### Setup fidelity — preconditions match the spec
 
@@ -932,6 +972,11 @@ options.useBinaryProtocol = useBinaryProtocol
 options.autoConnect = false
 ```
 
+For a **plugin-backed module**, the client options must also install the module's plugin — the
+module's entry-point property traps without it. The module's translation notes name the exact
+wiring, and the module packages it as a client-options builder in its module `helpers/` directory
+(see **Module helpers** below) — use that builder; don't hand-wire the plugin per test.
+
 **Class docstring** — use a direct-sandbox variant (no proxy/fault-injection wording):
 
 ```swift
@@ -968,6 +1013,32 @@ or poll:
 Use generous timeouts (10–30s) — real network is involved. Everything else is the shared foundation
 described at the top of this section; a direct-sandbox test just skips the proxy-only subsections
 (`ProxySession`, rule factories, the event log).
+
+**Natively-async SDK APIs** (modules whose SDK surface is typed-throws `async` methods — their
+translation notes will say): a spec `AWAIT op`
+translates to a plain `try await op` — no continuation bridging, no infra wait call. Only core-SDK
+callback APIs (attach/detach/publish/history) still need the continuation helpers above. Two
+consequences:
+
+- `AWAIT x WITH timeout: N seconds` on such an op has **no per-call Swift equivalent** (`await`
+  takes no timeout). Keep the plain `try await` and note the spec's timeout in a comment — a hang
+  surfaces as the test-runner timeout. (Only `AWAIT_STATE` timeouts map to a parameter:
+  `awaitState(..., timeout: N)`.)
+- The Step 7 audit counts only infra wait calls, so these tests report a benign `awaitShortfall` —
+  see the Step 7 checklist for the valid account.
+
+**`try?` in `pollUntil` conditions — SE-0230 trap.** Poll closures are non-throwing, so typed
+throwing reads get wrapped in `try?` — and Swift **flattens** the nested optional:
+`try? node.asPrimitive().value()` (a `throws → Primitive?` call) yields `Primitive?`, not
+`Primitive??`, making both "threw" and "resolved to nil" read as `nil` (and making a further `?.`
+chain on the unwrapped value a compile error). Package such reads as small non-throwing helpers
+(`guard let value = try? … else { return nil }`) rather than inlining the `try?`.
+
+**Module helpers** — wiring/read helpers shared by *several* of a module's suites (client-options
+builders, channel builders, typed `value()` readers) go in a `helpers/` directory **next to the
+suites**: `integration/standard/<module>/helpers/`. Do not put module-specific helpers under
+`infra/` — that stays module-agnostic. Suite-specific helpers (a continuation bridge used by one
+file) stay in the per-file extension as usual.
 
 **File template — direct sandbox** (`integration/standard/<module>/`):
 

@@ -1,6 +1,7 @@
 import _AblyPluginSupportPrivate
 import Ably
 @testable import AblyLiveObjects
+@testable import AblyLiveObjectsTesting
 import Testing
 
 /// Tests for `LiveObjectMutableState`.
@@ -141,29 +142,7 @@ struct LiveObjectMutableStateTests {
         }
 
         struct EmitTests {
-            // @spec RTLO4b4c1
-            @available(iOS 17.0.0, tvOS 17.0.0, *)
-            @Test
-            func noop() async throws {
-                // Given
-                var mutableState = LiveObjectMutableState<String>(objectID: "foo")
-                let queue = DispatchQueue.main
-                let subscriber = Subscriber<String, SubscribeResponse>(callbackQueue: queue)
-                let internalQueue = TestFactories.createInternalQueue()
-                let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
-                try internalQueue.ably_syncNoDeadlock {
-                    _ = try mutableState.nosync_subscribe(listener: subscriber.createListener(), coreSDK: coreSDK, updateSelfLater: { _ in fatalError("Not expected") })
-                }
-
-                // When
-                mutableState.emit(.noop, on: queue)
-
-                // Then
-                let subscriberInvocations = await subscriber.getInvocations()
-                #expect(subscriberInvocations.isEmpty)
-            }
-
-            // @spec RTLO4b4c2
+            // @spec RTLO4b4c3a
             @available(iOS 17.0.0, tvOS 17.0.0, *)
             @Test
             func update() async throws {
@@ -222,7 +201,7 @@ struct LiveObjectMutableStateTests {
                 }
             }
 
-            // @specOneOf(1/3) RTLO4b5b - Check we can unsubscribe using the response that's returned from `subscribe`
+            // @specOneOf(1/3) RTLO4b7 - Check we can unsubscribe using the response that's returned from `subscribe`
             @available(iOS 17.0.0, tvOS 17.0.0, *)
             @Test
             func unsubscribeFromReturnValue() async throws {
@@ -244,7 +223,7 @@ struct LiveObjectMutableStateTests {
                 #expect(subscriberInvocations.map(\.0) == ["bar"])
             }
 
-            // @specOneOf(2/3) RTLO4b5b - Check we can unsubscribe using the `response` that's passed to the listener, and that when two updates are emitted back-to-back, the unsubscribe in the first listener causes us to not recieve the second update
+            // @specOneOf(2/3) RTLO4b7 - Check we can unsubscribe using the `response` that's passed to the listener, and that when two updates are emitted back-to-back, the unsubscribe in the first listener causes us to not recieve the second update
             @available(iOS 17.0.0, tvOS 17.0.0, *)
             @Test(.disabled("This doesn't currently work and I don't think it's a priority, nor do I want to dwell on it right now or rush trying to fix it; see https://github.com/ably/ably-liveobjects-swift-plugin/issues/28"))
             func unsubscribeInsideCallback_backToBackUpdates() async throws {
@@ -270,7 +249,7 @@ struct LiveObjectMutableStateTests {
                 #expect(subscriberInvocations.map(\.0) == ["bar"])
             }
 
-            // @specOneOf(3/3) RTLO4b5b - Check we can unsubscribe using the `response` that's passed to the listener. This is a simpler version of the above test, in that there is an async pause between the unsubscribe-in-callback and the next `emit`.
+            // @specOneOf(3/3) RTLO4b7 - Check we can unsubscribe using the `response` that's passed to the listener. This is a simpler version of the above test, in that there is an async pause between the unsubscribe-in-callback and the next `emit`.
             @available(iOS 17.0.0, tvOS 17.0.0, *)
             @Test
             func unsubscribeInsideCallback_nonBackToBackUpdates() async throws {

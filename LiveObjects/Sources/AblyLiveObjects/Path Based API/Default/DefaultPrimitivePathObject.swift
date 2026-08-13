@@ -1,53 +1,38 @@
 import Ably
 
-/// Skeleton implementation of ``PrimitivePathObject``. Every member currently traps via
-/// `notImplemented()`; this is a standalone `final class` (no shared base) so that we don't commit to
-/// a particular implementation shape before the path-based API is actually built. `Sendable` is a
-/// checked conformance: the class holds no state.
+/// Default implementation of ``PrimitivePathObject``, a terminal primitive view adding a
+/// type-narrowed ``value()`` on top of ``DefaultPathObject``. Per RTTS6h, the six per-primitive
+/// `PathObject` sub-classes of RTTS6c are collapsed into a single type fronting a ``Primitive`` enum.
+///
+/// Spec: `RTTS6c`, `RTTS6h`.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal final class DefaultPrimitivePathObject: PrimitivePathObject, Sendable {
-    // MARK: - PathObject
-
-    internal var path: String {
-        notImplemented()
-    }
-
-    internal func instance() throws(ARTErrorInfo) -> Instance? {
-        notImplemented()
-    }
-
-    internal func compactJson() throws(ARTErrorInfo) -> JSONValue? {
-        notImplemented()
-    }
-
-    @discardableResult
-    internal func subscribe(options _: PathObjectSubscriptionOptions?, listener _: @escaping PathObjectSubscriptionCallback) throws(ARTErrorInfo) -> any Subscription {
-        notImplemented()
-    }
-
-    internal func exists() throws(ARTErrorInfo) -> Bool {
-        notImplemented()
-    }
-
-    internal func type() throws(ARTErrorInfo) -> ValueType? {
-        notImplemented()
-    }
-
-    internal func asLiveMap() -> any LiveMapPathObject {
-        notImplemented()
-    }
-
-    internal func asLiveCounter() -> any LiveCounterPathObject {
-        notImplemented()
-    }
-
-    internal func asPrimitive() -> any PrimitivePathObject {
-        notImplemented()
-    }
-
-    // MARK: - PrimitivePathObject
-
+internal final class DefaultPrimitivePathObject: DefaultPathObject, PrimitivePathObject, @unchecked Sendable {
     internal func value() throws(ARTErrorInfo) -> Primitive? {
-        notImplemented()
+        try ChannelConfigGuards.throwIfInvalidAccessApiConfiguration(coreSDK: coreSDK, internalQueue: internalQueue)
+        // RTPO7f — path resolution fails -> nil (RTPO3c1).
+        guard let resolved = try resolveValueAtCurrentPath() else {
+            return nil
+        }
+        // RTTS6h: the collapsed primitive view returns whatever primitive resolved (rather than the
+        // six type-filtered views of RTTS6c).
+        switch resolved {
+        // RTPO7d — a resolved primitive is returned directly.
+        case let .string(value):
+            return .string(value)
+        case let .number(value):
+            return .number(value)
+        case let .bool(value):
+            return .bool(value)
+        case let .data(value):
+            return .data(value)
+        case let .jsonArray(value):
+            return .jsonArray(value)
+        case let .jsonObject(value):
+            return .jsonObject(value)
+        // RTPO7e — an InternalLiveMap resolves to nil; a counter likewise (RTTS6c never yields a
+        // LiveObject's value, unlike the general RTPO7c).
+        case .liveMap, .liveCounter:
+            return nil
+        }
     }
 }

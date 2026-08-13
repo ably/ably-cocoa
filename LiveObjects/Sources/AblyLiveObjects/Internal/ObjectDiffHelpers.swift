@@ -13,8 +13,11 @@ internal enum ObjectDiffHelpers {
         previousData: Double,
         newData: Double,
     ) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
-        // RTLC14b
-        .update(DefaultLiveCounterUpdate(amount: newData - previousData))
+        // RTLC14c: a zero delta (newData == previousData) is a no-op update per RTLO4b4b, not a spurious zero-amount update.
+        if newData == previousData {
+            return .noop
+        }
+        return .update(DefaultLiveCounterUpdate(amount: newData - previousData))
     }
 
     /// Calculates the diff between two LiveMap data values, per RTLM22.
@@ -51,6 +54,11 @@ internal enum ObjectDiffHelpers {
             if previousEntry.data != newEntry.data {
                 update[key] = .updated
             }
+        }
+
+        // RTLM22c: an empty key diff (no changed keys) is a no-op update per RTLO4b4b, not a spurious empty update.
+        if update.isEmpty {
+            return .noop
         }
 
         return .update(DefaultLiveMapUpdate(update: update))

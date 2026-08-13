@@ -21,6 +21,12 @@ internal struct LiveObjectMutableState<Update: Sendable> {
     // RTLO3e
     internal var tombstonedAt: Date?
 
+    /// Reverse references: parent map `objectID` -> the set of keys at which that map references
+    /// this object. Keyed by objectID per RTLO3f/RTLO3f1 (references between objects are stored as
+    /// objectIds and resolved via the pool).
+    /// Spec: RTLO3f, RTLO3f2 (initialised to an empty map).
+    internal var parentReferences: [String: Set<String>] = [:]
+
     private enum EventName {
         case update
     }
@@ -31,14 +37,8 @@ internal struct LiveObjectMutableState<Update: Sendable> {
     /// Internal lifecycle event subscription storage.
     private var lifecycleEventSubscriptionStorage = SubscriptionStorage<LiveObjectLifecycleEvent, Void>()
 
-    internal init(
-        objectID: String,
-        testsOnly_siteTimeserials siteTimeserials: [String: String]? = nil,
-        testsOnly_tombstonedAt tombstonedAt: Date? = nil,
-    ) {
+    internal init(objectID: String) {
         self.objectID = objectID
-        self.siteTimeserials = siteTimeserials ?? [:]
-        self.tombstonedAt = tombstonedAt
     }
 
     /// Represents parameters of an operation that `canApplyOperation` has decided can be applied to a `LiveObject`.
@@ -84,8 +84,8 @@ internal struct LiveObjectMutableState<Update: Sendable> {
 
     @discardableResult
     internal mutating func nosync_subscribe(listener: @escaping LiveObjectUpdateCallback<Update>, coreSDK: CoreSDK, updateSelfLater: @escaping UpdateLiveObject) throws(ARTErrorInfo) -> any AblyLiveObjects.SubscribeResponse {
-        // RTLO4b2
-        try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed], operationDescription: "subscribe")
+        // RTO25
+        try coreSDK.nosync_validateChannelStateForAccessAPI(operationDescription: "subscribe")
 
         let updateSubscriptionStorage: SubscriptionStorage<EventName, Update>.UpdateSubscriptionStorage = { action in
             updateSelfLater { liveObject in
@@ -142,7 +142,7 @@ internal struct LiveObjectMutableState<Update: Sendable> {
             // RTLO4b4c1
             return
         case let .update(update):
-            // RTLO4b4c2
+            // RTLO4b4c3a
             subscriptionStorage.emit(update, eventName: .update, on: queue)
         }
     }

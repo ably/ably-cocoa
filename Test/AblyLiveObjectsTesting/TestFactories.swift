@@ -182,6 +182,7 @@ import Foundation
 ///     return map
 /// }
 /// ```
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 struct TestFactories {
     // MARK: - ObjectState Factory
 

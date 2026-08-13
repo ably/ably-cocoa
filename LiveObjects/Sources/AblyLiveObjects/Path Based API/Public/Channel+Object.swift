@@ -16,7 +16,7 @@ public extension ARTRealtimeChannel {
         nonTypeErasedObject
     }
 
-    private var nonTypeErasedObject: PublicDefaultRealtimeObject {
+    internal var nonTypeErasedObject: PublicDefaultRealtimeObject { // internal for AblyLiveObjectsTesting
         let pluginAPI = Plugin.defaultPluginAPI
         let underlyingObjects = pluginAPI.underlyingObjects(for: asPluginPublicRealtimeChannel)
         let internalQueue = pluginAPI.internalQueue(for: underlyingObjects.client)
@@ -41,10 +41,5 @@ public extension ARTRealtimeChannel {
                 logger: logger,
             ),
         )
-    }
-
-    /// For tests to access the non-public API of `PublicDefaultRealtimeObject`.
-    internal var testsOnly_nonTypeErasedObject: PublicDefaultRealtimeObject {
-        nonTypeErasedObject
     }
 }

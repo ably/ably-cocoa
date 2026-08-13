@@ -1,9 +1,15 @@
 import Ably
 @testable import AblyLiveObjects
+@testable import AblyLiveObjectsTesting
 import Testing
 
+/// Tests for `SyncCursor`'s parsing of an `OBJECT_SYNC` `channelSerial` (RTO5a1, RTO5a4).
+///
+/// A `channelSerial` with no colon separator is malformed (handling unspecified by RTO5a); parsing it
+/// throws. The resulting behaviour is exercised end-to-end in
+/// `InternalDefaultRealtimeObjectsTests.HandleObjectSyncProtocolMessageTests`.
 struct SyncCursorTests {
-    // The parsing described in RTO5a1
+    // The parsing described in RTO5a1: `<sequence id>:<cursor value>`.
     @Test
     func validChannelSerialWithCursorValue() throws {
         // Given
@@ -18,7 +24,7 @@ struct SyncCursorTests {
         #expect(!cursor.isEndOfSequence)
     }
 
-    // The scenario described in RTO5a2
+    // RTO5a4: the sequence is complete once the cursor is empty, i.e. `<sequence id>:`.
     @Test
     func validChannelSerialAtEndOfSequence() throws {
         // Given
@@ -33,6 +39,7 @@ struct SyncCursorTests {
         #expect(cursor.isEndOfSequence)
     }
 
+    // A channelSerial with no colon separator does not conform to RTO5a1, so parsing throws.
     @Test
     func invalidChannelSerialWithoutColon() {
         // Given
@@ -52,6 +59,7 @@ struct SyncCursorTests {
         }
     }
 
+    // An empty channelSerial has no colon separator either, so parsing throws.
     @Test
     func invalidEmptyChannelSerial() {
         // Given
@@ -71,7 +79,8 @@ struct SyncCursorTests {
         }
     }
 
-    // The spec isn't explicit here but doesn't rule this out
+    // The spec does not rule out an empty sequence id, so we accept it (everything before the first
+    // colon is the sequence id, RTO5a1).
     @Test
     func validChannelSerialWithEmptySequenceID() throws {
         // Given
@@ -87,7 +96,7 @@ struct SyncCursorTests {
         #expect(!cursor.isEndOfSequence)
     }
 
-    // The spec isn't explicit here but doesn't rule this out
+    // As above, an empty sequence id is accepted even when the cursor is also empty.
     @Test
     func validChannelSerialWithEmptySequenceIDAtEndOfSequence() throws {
         // Given

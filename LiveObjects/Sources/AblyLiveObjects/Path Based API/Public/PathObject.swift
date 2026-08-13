@@ -34,8 +34,9 @@ public protocol PathObject: Sendable {
     /// is the empty string. Spec: `RTPO4`.
     var path: String { get }
 
-    /// Resolves the path and, if it resolves to a `LiveObject`, returns an ``Instance`` wrapping it.
-    /// Returns `nil` if the resolved value is a primitive or if resolution fails. Spec: `RTPO8`.
+    /// Resolves the path and returns an ``Instance`` wrapping the resolved value — whether that value
+    /// is a `LiveObject` (RTPO8c) or a primitive (RTPO8f). Returns `nil` only if resolution fails
+    /// (RTPO8e). Spec: `RTPO8`.
     func instance() throws(ARTErrorInfo) -> Instance?
 
     /// Resolves the path and returns a JSON-serializable, recursively-compacted representation of the
@@ -143,8 +144,9 @@ public protocol LiveMapPathObject: PathObject {
 /// a counter. Spec: `RTTS6`.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 public protocol LiveCounterPathObject: PathObject {
-    /// Resolves the path and, if it resolves to a counter, returns its current value. Returns `nil`
-    /// if the resolved value is not a counter or resolution fails. Spec: `RTTS6b`.
+    /// Resolves the path and, if it resolves to a counter, returns its current value (per `RTPO7c`).
+    /// Returns `nil` otherwise, including when resolution fails or the value is not a counter.
+    /// Spec: `RTTS6b`.
     func value() throws(ARTErrorInfo) -> Double?
 
     /// Sends an operation to increment the counter at this path. Spec: `RTPO17`.
@@ -178,7 +180,8 @@ public extension LiveCounterPathObject {
 /// sub-types.)
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 public protocol PrimitivePathObject: PathObject {
-    /// Resolves the path and, if it resolves to a primitive, returns it. Returns `nil` if the
-    /// resolved value is not a primitive or resolution fails. Spec: `RTTS6b`.
+    /// Resolves the path and, if it resolves to a primitive, returns it (per `RTPO7d`). Returns `nil`
+    /// if the resolved value is a `LiveObject` (`RTPO7e`) or resolution fails (`RTPO7f`). Spec:
+    /// `RTTS6b`.
     func value() throws(ARTErrorInfo) -> Primitive?
 }

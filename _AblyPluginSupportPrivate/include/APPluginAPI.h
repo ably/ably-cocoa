@@ -3,6 +3,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// A copy of the object-related subset of ably-cocoa's `ARTChannelMode`. The raw values match
+/// `ARTChannelMode` (`ARTChannelModeObjectSubscribe`/`ARTChannelModeObjectPublish`) so the two can be
+/// bridged bit-for-bit. Used by the RTO2a2/RTO2b2 channel-mode guards of the LiveObjects plugin.
+typedef NS_OPTIONS(NSUInteger, APChannelMode) {
+    APChannelModeObjectSubscribe = 1 << 24,
+    APChannelModeObjectPublish = 1 << 25,
+} NS_SWIFT_NAME(ChannelMode);
+
 @protocol APLogger;
 @protocol APObjectMessageProtocol;
 @protocol APRealtimeChannel;
@@ -67,6 +75,12 @@ NS_SWIFT_SENDABLE
 /// - Parameter channel: The channel whose logger the returned logger should wrap.
 - (id<APLogger>)loggerForChannel:(id<APRealtimeChannel>)channel;
 
+/// The name of a realtime channel.
+///
+/// Used by the LiveObjects plugin to populate the `channel` field of a public `ObjectMessage`
+/// (PAOM2e/PAOM3b).
+- (NSString *)nameForChannel:(id<APRealtimeChannel>)channel;
+
 /// Provides plugins with the queue on which all user callbacks for a given client should be called.
 - (dispatch_queue_t)callbackQueueForClient:(id<APRealtimeClient>)client;
 
@@ -95,6 +109,30 @@ NS_SWIFT_SENDABLE
 
 /// Returns a realtime channel's current state.
 - (APRealtimeChannelState)nosync_stateForChannel:(id<APRealtimeChannel>)channel;
+
+/// The channel's effective object-related channel modes, resolved per RTO2a/RTO2b: the attached modes
+/// if present (RTO2a), otherwise the user-provided channel-options modes (RTO2b). Only the
+/// `ObjectSubscribe`/`ObjectPublish` bits are reported. Used by the RTO2a2/RTO2b2 channel-mode guards.
+- (APChannelMode)nosync_objectChannelModesForChannel:(id<APRealtimeChannel>)channel;
+
+/// The error that makes the client's connection unpublishable, or `nil` if the connection is in a
+/// state from which messages can be published. When not active, returns the connection's current error
+/// reason if it has one. Spec: RTO15b (the publish adheres to the RTL6c connection-state conditions).
+- (nullable id<APPublicErrorInfo>)nosync_connectionStateErrorForClient:(id<APRealtimeClient>)client;
+
+/// Initiates an attach on a realtime channel, per the RTL33b implicit-attach used by a plugin's
+/// *ensure-active-channel* procedure (RTL33 / RTO23e). This is a thin bridge onto the channel's
+/// existing attach (equivalent to the public `-[ARTRealtimeChannel attach:]`): if the channel is
+/// already attached (or an attach/detach is in flight) it resolves per RTL4h without starting a
+/// redundant attach.
+///
+/// The completion handler is called with a `nil` error on success, or the `ErrorInfo` that caused
+/// the attach to fail (RTL33b1).
+///
+/// The completion handler will be called on the client's internal queue (see
+/// `-internalQueueForClient:`).
+- (void)nosync_attachChannel:(id<APRealtimeChannel>)channel
+                  completion:(void (^ _Nullable)(_Nullable id<APPublicErrorInfo> error))completion;
 
 /// Fetches the Ably server time from the REST API, per RTO16.
 ///

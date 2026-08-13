@@ -1,25 +1,8 @@
 import _AblyPluginSupportPrivate
 @testable import AblyLiveObjects
+@testable import AblyLiveObjectsTesting
+import Foundation
 import Testing
-
-private extension SyncObjectsPool {
-    /// Test-only convenience to create a `SyncObjectsPool` from an array of `(state, serialTimestamp)` pairs,
-    /// wrapping each in an `InboundObjectMessage` and calling `accumulate`.
-    static func testsOnly_fromStates(
-        _ states: [(state: ProtocolTypes.ObjectState, serialTimestamp: Date?)],
-        logger: AblyLiveObjects.Logger = TestLogger(),
-    ) -> SyncObjectsPool {
-        var pool = SyncObjectsPool()
-        let messages = states.map { pair in
-            TestFactories.inboundObjectMessage(
-                object: pair.state,
-                serialTimestamp: pair.serialTimestamp,
-            )
-        }
-        pool.accumulate(messages, logger: logger)
-        return pool
-    }
-}
 
 struct ObjectsPoolTests {
     /// Tests for the `createZeroValueObject` method, covering RTO6 specification points
@@ -246,36 +229,6 @@ struct ObjectsPoolTests {
 
         // MARK: - RTO5c2 Tests
 
-        // @spec RTO5c2
-        @Test
-        func removesObjectsNotInSync() throws {
-            let logger = TestLogger()
-            let internalQueue = TestFactories.createInternalQueue()
-            let existingMap1 = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-            let existingMap2 = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-            let existingCounter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-
-            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock(), testsOnly_otherEntries: [
-                "map:hash@1": .map(existingMap1),
-                "map:hash@2": .map(existingMap2),
-                "counter:hash@1": .counter(existingCounter),
-            ])
-
-            // Only sync one of the existing objects
-            let objectState = TestFactories.mapObjectState(objectId: "map:hash@1")
-
-            internalQueue.ably_syncNoDeadlock {
-                pool.nosync_applySyncObjectsPool(.testsOnly_fromStates([(state: objectState, serialTimestamp: nil)]), logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-            }
-
-            // Verify only synced object and root remain
-            #expect(pool.entries.count == 2) // root + map:hash@1
-            #expect(pool.entries["root"] != nil)
-            #expect(pool.entries["map:hash@1"] != nil)
-            #expect(pool.entries["map:hash@2"] == nil) // Should be removed
-            #expect(pool.entries["counter:hash@1"] == nil) // Should be removed
-        }
-
         // @spec RTO5c2a
         @Test
         func doesNotRemoveRootObject() throws {
@@ -398,6 +351,44 @@ struct ObjectsPoolTests {
 
             // Removed object
             #expect(pool.entries["map:toremove@1"] == nil)
+        }
+    }
+
+    /// Tests for `nosync_performGarbageCollection`, covering RTO10c specification points.
+    struct GarbageCollectionTests {
+        // @spec RTO10c1b1 - the root object must never be removed by GC (RTO3b), even if it somehow
+        // became tombstoned past the grace period. Root can never actually be tombstoned per RTLO4e10,
+        // so this exercises the belt-and-braces safeguard by forcing that otherwise-unreachable state,
+        // alongside a non-root object that is correctly swept.
+        @Test
+        func rootObjectIsNeverGarbageCollectedEvenWhenTombstoned() {
+            let logger = TestLogger()
+            let internalQueue = TestFactories.createInternalQueue()
+            let clock = MockSimpleClock()
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: clock)
+
+            // Add a non-root object so the sweep is observable.
+            let childID = "map:child@1"
+            internalQueue.ably_syncNoDeadlock {
+                _ = pool.createZeroValueObject(forObjectID: childID, logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: clock)
+            }
+
+            // Force both root and the child into a past-grace tombstoned state (root's state is
+            // unreachable in production per RTLO4e10; we set it directly to test the safeguard).
+            let tombstonedAt = clock.now.addingTimeInterval(-3600)
+            pool.entries[ObjectsPool.rootKey]?.mapValue?.testsOnly_setTombstonedAt(tombstonedAt)
+            pool.entries[childID]?.mapValue?.testsOnly_setTombstonedAt(tombstonedAt)
+
+            var continuation: AsyncStream<Void>.Continuation!
+            _ = AsyncStream<Void> { continuation = $0 }
+
+            internalQueue.ably_syncNoDeadlock {
+                pool.nosync_performGarbageCollection(gracePeriod: 0, clock: clock, logger: logger, eventsContinuation: continuation)
+            }
+
+            // The non-root child is swept; the root survives per RTO10c1b1 / RTO3b.
+            #expect(pool.entries[childID] == nil)
+            #expect(pool.entries[ObjectsPool.rootKey] != nil)
         }
     }
 }

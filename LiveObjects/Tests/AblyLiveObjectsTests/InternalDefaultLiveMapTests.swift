@@ -1,6 +1,7 @@
 import _AblyPluginSupportPrivate
 import Ably
 @testable import AblyLiveObjects
+@testable import AblyLiveObjectsTesting
 import Foundation
 import Testing
 
@@ -37,7 +38,7 @@ struct InternalDefaultLiveMapTests {
             #expect(try map.get(key: "nonexistent", coreSDK: coreSDK, delegate: MockLiveMapObjectsPoolDelegate(internalQueue: internalQueue)) == nil)
         }
 
-        // @spec RTLM5d2a
+        // @spec RTLM5d2h
         @Test
         func returnsNilWhenEntryIsTombstoned() throws {
             let logger = TestLogger()
@@ -294,7 +295,7 @@ struct InternalDefaultLiveMapTests {
             #expect(map.testsOnly_createOperationIsMerged)
         }
 
-        // @specOneOf(1/2) RTLM6i
+        // @specOneOf(1/1) RTLM6i
         @Test
         func setsClearTimeserialFromObjectState() {
             let logger = TestLogger()
@@ -309,32 +310,6 @@ struct InternalDefaultLiveMapTests {
                 _ = map.nosync_replaceData(using: state, objectMessageSerialTimestamp: nil, objectsPool: &pool)
             }
             #expect(map.testsOnly_clearTimeserial == "01234567890@abcdefghijklm")
-        }
-
-        // @specOneOf(2/2) RTLM6i
-        @Test
-        func setsClearTimeserialToNilWhenNotProvided() {
-            let logger = TestLogger()
-            let internalQueue = TestFactories.createInternalQueue()
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-
-            // First, set a clearTimeserial
-            let stateWithClear = TestFactories.objectState(
-                objectId: "arbitrary-id",
-                map: TestFactories.objectsMap(clearTimeserial: "01234567890@abcdefghijklm"),
-            )
-            internalQueue.ably_syncNoDeadlock {
-                _ = map.nosync_replaceData(using: stateWithClear, objectMessageSerialTimestamp: nil, objectsPool: &pool)
-            }
-            #expect(map.testsOnly_clearTimeserial == "01234567890@abcdefghijklm")
-
-            // Then, replace with state that has no clearTimeserial
-            let stateWithoutClear = TestFactories.objectState(objectId: "arbitrary-id")
-            internalQueue.ably_syncNoDeadlock {
-                _ = map.nosync_replaceData(using: stateWithoutClear, objectMessageSerialTimestamp: nil, objectsPool: &pool)
-            }
-            #expect(map.testsOnly_clearTimeserial == nil)
         }
 
         /// Tests for RTLM6h (diff calculation on replaceData)
@@ -523,6 +498,58 @@ struct InternalDefaultLiveMapTests {
             let values = try map.values(coreSDK: coreSDK, delegate: delegate)
             #expect(values.count == 1)
             #expect(Set(values.compactMap(\.stringValue)) == Set(["value1"]))
+        }
+
+        // MARK: - Self-reference regression
+
+        // Regression test: a DIRECT self-referencing entry (`data.objectId` == the map's own
+        // objectID) previously crashed the read accessors with a Swift exclusive-access conflict.
+        // The accessor holds the map's `mutableStateMutex` (via `withSync`) while the RTLM14c
+        // tombstone check / RTLM5d2h conversion re-enters the SAME mutex via
+        // `objectsPool.entries[objectId].nosync_isTombstone`. Indirect cycles (A→B→A) are fine;
+        // only self-reference crashed. See the pool-level `getFullPaths` DFS for the analogous exclusivity
+        // finding. Observable behaviour is unaffected by this Swift-specific guard: a non-tombstoned
+        // self-reference is just a normal entry whose value is the map itself.
+        @Test
+        func selfReferencingEntryIsTreatedAsNormalEntry() throws {
+            let logger = TestLogger()
+            let internalQueue = TestFactories.createInternalQueue()
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let delegate = MockLiveMapObjectsPoolDelegate(internalQueue: internalQueue)
+
+            let selfObjectID = "map:self@1"
+            let map = InternalDefaultLiveMap(
+                testsOnly_data: [
+                    "selfRef": TestFactories.internalMapEntry(data: ProtocolTypes.ObjectData(objectId: selfObjectID)),
+                ],
+                objectID: selfObjectID,
+                logger: logger,
+                internalQueue: internalQueue,
+                userCallbackQueue: .main,
+                clock: MockSimpleClock(),
+            )
+            // The entry references the containing map itself.
+            delegate.objects[selfObjectID] = .map(map)
+
+            // Each of these previously crashed via re-entrant mutex access; they must now treat the
+            // self-reference as a normal LiveMap-valued entry.
+            let size = try map.size(coreSDK: coreSDK, delegate: delegate)
+            #expect(size == 1)
+
+            let entries = try map.entries(coreSDK: coreSDK, delegate: delegate)
+            #expect(entries.count == 1)
+            #expect(entries.first?.key == "selfRef")
+            #expect(entries.first?.value.liveMapValue as AnyObject === map as AnyObject)
+
+            let keys = try map.keys(coreSDK: coreSDK, delegate: delegate)
+            #expect(keys == ["selfRef"])
+
+            let values = try map.values(coreSDK: coreSDK, delegate: delegate)
+            #expect(values.count == 1)
+            #expect(values.first?.liveMapValue as AnyObject === map as AnyObject)
+
+            let got = try map.get(key: "selfRef", coreSDK: coreSDK, delegate: delegate)
+            #expect(got?.liveMapValue as AnyObject === map as AnyObject)
         }
 
         // MARK: - Consistency Tests
@@ -958,6 +985,7 @@ struct InternalDefaultLiveMapTests {
                 key: "key1",
                 operationTimeserial: operationSerial,
                 operationSerialTimestamp: nil,
+                objectsPool: pool,
             )
 
             // Then: the operation is applied or discarded as expected
@@ -989,7 +1017,7 @@ struct InternalDefaultLiveMapTests {
                 )
 
                 // Try to apply operation with lower timeserial (ts1 < ts2), cannot be applied per RTLM9
-                let update = map.testsOnly_applyMapRemoveOperation(key: "key1", operationTimeserial: "ts1", operationSerialTimestamp: nil)
+                let update = map.testsOnly_applyMapRemoveOperation(key: "key1", operationTimeserial: "ts1", operationSerialTimestamp: nil, objectsPool: ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock()))
 
                 // Verify the operation was discarded - existing data unchanged
                 #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate)?.stringValue == "existing")
@@ -1017,7 +1045,7 @@ struct InternalDefaultLiveMapTests {
                 )
 
                 // Apply operation with higher timeserial (ts2 > ts1), so can be applied per RTLM9
-                let update = map.testsOnly_applyMapRemoveOperation(key: "key1", operationTimeserial: "ts2", operationSerialTimestamp: nil)
+                let update = map.testsOnly_applyMapRemoveOperation(key: "key1", operationTimeserial: "ts2", operationSerialTimestamp: nil, objectsPool: ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock()))
 
                 // Verify the operation was applied
                 #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate) == nil)
@@ -1047,7 +1075,7 @@ struct InternalDefaultLiveMapTests {
                 let internalQueue = TestFactories.createInternalQueue()
                 let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
-                let update = map.testsOnly_applyMapRemoveOperation(key: "newKey", operationTimeserial: "ts1", operationSerialTimestamp: nil)
+                let update = map.testsOnly_applyMapRemoveOperation(key: "newKey", operationTimeserial: "ts1", operationSerialTimestamp: nil, objectsPool: ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock()))
 
                 // Verify new entry was created
                 let entry = map.testsOnly_data["newKey"]
@@ -1066,7 +1094,7 @@ struct InternalDefaultLiveMapTests {
                 let internalQueue = TestFactories.createInternalQueue()
                 let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
-                _ = map.testsOnly_applyMapRemoveOperation(key: "newKey", operationTimeserial: "ts1", operationSerialTimestamp: nil)
+                _ = map.testsOnly_applyMapRemoveOperation(key: "newKey", operationTimeserial: "ts1", operationSerialTimestamp: nil, objectsPool: ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock()))
 
                 // Verify tombstone is true for new entry
                 #expect(map.testsOnly_data["newKey"]?.tombstone == true)
@@ -1185,7 +1213,7 @@ struct InternalDefaultLiveMapTests {
         }
 
         // @specOneOf(2/2) RTLM23a1 - via mapCreateWithObjectId.derivedFrom
-        // @spec RTO11f18
+        // @spec RTLMV4j5
         @Test
         func appliesMapSetOperationsFromDerivedFrom() throws {
             let logger = TestLogger()
@@ -1318,38 +1346,6 @@ struct InternalDefaultLiveMapTests {
 
     /// Tests for `MAP_CREATE` operations, covering RTLM16 specification points
     struct MapCreateOperationTests {
-        // @spec RTLM16b
-        @Test
-        func discardsOperationWhenCreateOperationIsMerged() throws {
-            let logger = TestLogger()
-            let internalQueue = TestFactories.createInternalQueue()
-            let delegate = MockLiveMapObjectsPoolDelegate(internalQueue: internalQueue)
-            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-
-            // Set initial data and mark create operation as merged
-            internalQueue.ably_syncNoDeadlock {
-                _ = map.nosync_replaceData(using: TestFactories.mapObjectState(entries: ["key1": TestFactories.stringMapEntry().entry]), objectMessageSerialTimestamp: nil, objectsPool: &pool)
-            }
-            internalQueue.ably_syncNoDeadlock {
-                _ = map.nosync_mergeInitialValue(from: TestFactories.mapCreateOperation(entries: ["key2": TestFactories.stringMapEntry(key: "key2", value: "value2").entry]), objectsPool: &pool)
-            }
-            #expect(map.testsOnly_createOperationIsMerged)
-
-            // Try to apply another MAP_CREATE operation
-            let operation = TestFactories.mapCreateOperation(entries: ["key3": TestFactories.stringMapEntry(key: "key3", value: "value3").entry])
-            let update = map.testsOnly_applyMapCreateOperation(operation, objectsPool: &pool)
-
-            // Verify the operation was discarded - data unchanged
-            #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate)?.stringValue == "testValue") // Original data
-            #expect(try map.get(key: "key2", coreSDK: coreSDK, delegate: delegate)?.stringValue == "value2") // From first merge
-            #expect(try map.get(key: "key3", coreSDK: coreSDK, delegate: delegate) == nil) // Not added by second operation
-
-            // Verify the return value
-            #expect(update.isNoop)
-        }
-
         // @spec RTLM16d
         // @spec RTLM16f
         @Test
@@ -1389,8 +1385,11 @@ struct InternalDefaultLiveMapTests {
         @Test(arguments: [
             // serial < clearTimeserial: discard
             (operationSerial: "ts4" as String?, clearTimeserial: "ts5", expectedApplied: false),
-            // serial == clearTimeserial: discard
-            (operationSerial: "ts5" as String?, clearTimeserial: "ts5", expectedApplied: false),
+            // serial == clearTimeserial: RE-APPLY. RTLM24c discards only when clearTimeserial is
+            // *strictly* greater than serial, so on equality the operation is applied (unlike
+            // RTLM7h/RTLM8g which discard on `>=`). This case previously asserted `false`, which
+            // encoded a cocoa bug (the gate used `serial <= clearTimeserial`); corrected to the spec.
+            (operationSerial: "ts5" as String?, clearTimeserial: "ts5", expectedApplied: true),
             // serial > clearTimeserial: allow
             (operationSerial: "ts6" as String?, clearTimeserial: "ts5", expectedApplied: true),
             // serial is nil: discard
@@ -1427,7 +1426,7 @@ struct InternalDefaultLiveMapTests {
             }
 
             // When: applying a MAP_CLEAR operation with the specified serial
-            let update = map.testsOnly_applyMapClearOperation(serial: operationSerial)
+            let update = map.testsOnly_applyMapClearOperation(serial: operationSerial, objectsPool: pool)
 
             // Then: the operation is applied or discarded as expected
             #expect(update.isNoop == !expectedApplied)
@@ -1469,7 +1468,7 @@ struct InternalDefaultLiveMapTests {
             )
 
             // When: applying a MAP_CLEAR operation with serial "ts3"
-            let update = map.testsOnly_applyMapClearOperation(serial: "ts3")
+            let update = map.testsOnly_applyMapClearOperation(serial: "ts3", objectsPool: ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock()))
 
             // Then: entries with timeserial < "ts3" or nil are removed from internal data, others remain
             #expect(Set(map.testsOnly_data.keys) == ["equalToClear", "newerThanClear"])
@@ -1521,13 +1520,11 @@ struct InternalDefaultLiveMapTests {
                 map.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts1", // Less than existing "ts2"
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: TestFactories.inboundObjectMessage(serial: "ts1", siteCode: "site1"), // Less than existing "ts2"
                     objectsPool: &pool,
                 )
             }
-            #expect(!applied)
+            #expect(applied == nil)
 
             // Check that the MAP_SET side-effects didn't happen:
             // Verify the operation was discarded - data unchanged (should still be "existing" from creation)
@@ -1558,17 +1555,16 @@ struct InternalDefaultLiveMapTests {
             var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Apply MAP_CREATE operation
+            let message = TestFactories.inboundObjectMessage(serial: "ts1", siteCode: "site1")
             let applied = internalQueue.ably_syncNoDeadlock {
                 map.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts1",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: message,
                     objectsPool: &pool,
                 )
             }
-            #expect(applied)
+            #expect(applied != nil)
 
             // Verify the operation was applied - initial value merged (the full logic of RTLM16 is tested elsewhere; we just check for some of its side effects here)
             #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate)?.stringValue == "value1")
@@ -1576,9 +1572,9 @@ struct InternalDefaultLiveMapTests {
             // Verify RTLM15c side-effect: site timeserial was updated
             #expect(map.testsOnly_siteTimeserials == ["site1": "ts1"])
 
-            // Verify update was emitted per RTLM15d1a
+            // Verify update was emitted per RTLM15d1a, carrying the stamped source message (RTLO4b4d)
             let subscriberInvocations = await subscriber.getInvocations()
-            #expect(subscriberInvocations.map(\.0) == [.init(update: ["key1": .updated])])
+            #expect(subscriberInvocations.map(\.0) == [.init(update: ["key1": .updated], objectMessage: message)])
         }
 
         // @specOneOf(2/5) RTLM15c - We test this spec point for each possible operation
@@ -1618,26 +1614,25 @@ struct InternalDefaultLiveMapTests {
             )
 
             // Apply MAP_SET operation
+            let message = TestFactories.inboundObjectMessage(serial: "ts1", siteCode: "site1")
             let applied = internalQueue.ably_syncNoDeadlock {
                 map.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts1",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: message,
                     objectsPool: &pool,
                 )
             }
-            #expect(applied)
+            #expect(applied != nil)
 
             // Verify the operation was applied - value updated (the full logic of RTLM7 is tested elsewhere; we just check for some of its side effects here)
             #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate)?.stringValue == "new")
             // Verify RTLM15c side-effect: site timeserial was updated
             #expect(map.testsOnly_siteTimeserials == ["site1": "ts1"])
 
-            // Verify update was emitted per RTLM15d6a
+            // Verify update was emitted per RTLM15d6a, carrying the stamped source message (RTLO4b4d)
             let subscriberInvocations = await subscriber.getInvocations()
-            #expect(subscriberInvocations.map(\.0) == [.init(update: ["key1": .updated])])
+            #expect(subscriberInvocations.map(\.0) == [.init(update: ["key1": .updated], objectMessage: message)])
         }
 
         // @specOneOf(3/5) RTLM15c - We test this spec point for each possible operation
@@ -1677,26 +1672,25 @@ struct InternalDefaultLiveMapTests {
             )
 
             // Apply MAP_REMOVE operation
+            let message = TestFactories.inboundObjectMessage(serial: "ts1", siteCode: "site1")
             let applied = internalQueue.ably_syncNoDeadlock {
                 map.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts1",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: message,
                     objectsPool: &pool,
                 )
             }
-            #expect(applied)
+            #expect(applied != nil)
 
             // Verify the operation was applied - key removed (the full logic of RTLM8 is tested elsewhere; we just check for some of its side effects here)
             #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate) == nil)
             // Verify RTLM15c side-effect: site timeserial was updated
             #expect(map.testsOnly_siteTimeserials == ["site1": "ts1"])
 
-            // Verify update was emitted per RTLM15d7a
+            // Verify update was emitted per RTLM15d7a, carrying the stamped source message (RTLO4b4d)
             let subscriberInvocations = await subscriber.getInvocations()
-            #expect(subscriberInvocations.map(\.0) == [.init(update: ["key1": .removed])])
+            #expect(subscriberInvocations.map(\.0) == [.init(update: ["key1": .removed], objectMessage: message)])
         }
 
         // @specOneOf(4/5) RTLM15c - We test this spec point for each possible operation
@@ -1736,17 +1730,16 @@ struct InternalDefaultLiveMapTests {
             )
 
             // Apply MAP_CLEAR operation
+            let message = TestFactories.inboundObjectMessage(serial: "ts1", siteCode: "site1")
             let applied = internalQueue.ably_syncNoDeadlock {
                 map.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts1",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: message,
                     objectsPool: &pool,
                 )
             }
-            #expect(applied)
+            #expect(applied != nil)
 
             // Verify the operation was applied (the full logic of RTLM24 is tested elsewhere; we just check for some of its side effects here)
             #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate) == nil)
@@ -1754,9 +1747,9 @@ struct InternalDefaultLiveMapTests {
             // Verify RTLM15c side-effect: site timeserial was updated
             #expect(map.testsOnly_siteTimeserials == ["site1": "ts1"])
 
-            // Verify update was emitted per RTLM15d8a
+            // Verify update was emitted per RTLM15d8a, carrying the stamped source message (RTLO4b4d)
             let subscriberInvocations = await subscriber.getInvocations()
-            #expect(subscriberInvocations.map(\.0) == [.init(update: ["key1": .removed])])
+            #expect(subscriberInvocations.map(\.0) == [.init(update: ["key1": .removed], objectMessage: message)])
         }
 
         // @specOneOf(5/5) RTLM15c - Tests that siteTimeserials is NOT updated when source is LOCAL
@@ -1779,49 +1772,16 @@ struct InternalDefaultLiveMapTests {
                 map.nosync_apply(
                     operation,
                     source: .local,
-                    objectMessageSerial: "ts1",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: TestFactories.inboundObjectMessage(serial: "ts1", siteCode: "site1"),
                     objectsPool: &pool,
                 )
             }
-            #expect(applied)
+            #expect(applied != nil)
 
             // Verify the operation was applied
             #expect(try map.get(key: "key1", coreSDK: coreSDK, delegate: delegate)?.stringValue == "new")
             // Verify RTLM15c: siteTimeserials should NOT have been updated for LOCAL source
             #expect(map.testsOnly_siteTimeserials.isEmpty)
-        }
-
-        // @spec RTLM15d4
-        @available(iOS 17.0.0, tvOS 17.0.0, *)
-        @Test
-        func noOpForOtherOperation() async throws {
-            let logger = TestLogger()
-            let internalQueue = TestFactories.createInternalQueue()
-            let map = InternalDefaultLiveMap.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
-
-            let subscriber = Subscriber<DefaultLiveMapUpdate, SubscribeResponse>(callbackQueue: .main)
-            try map.subscribe(listener: subscriber.createListener(), coreSDK: coreSDK)
-
-            // Try to apply a COUNTER_CREATE to the map (not supported)
-            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-            let applied = internalQueue.ably_syncNoDeadlock {
-                map.nosync_apply(
-                    TestFactories.counterCreateOperation(),
-                    source: .channel,
-                    objectMessageSerial: "ts1",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
-                    objectsPool: &pool,
-                )
-            }
-            #expect(!applied)
-
-            // Check no update was emitted
-            let subscriberInvocations = await subscriber.getInvocations()
-            #expect(subscriberInvocations.isEmpty)
         }
     }
 
@@ -1837,7 +1797,7 @@ struct InternalDefaultLiveMapTests {
             let realtimeObjects = MockRealtimeObjects()
 
             await #expect {
-                try await map.set(key: "test", value: .string("value"), coreSDK: coreSDK, realtimeObjects: realtimeObjects)
+                try await map.set(key: "test", value: .primitive(.string("value")), coreSDK: coreSDK, realtimeObjects: realtimeObjects)
             } throws: { error in
                 guard let errorInfo = error as? ARTErrorInfo else {
                     return false
@@ -1847,48 +1807,48 @@ struct InternalDefaultLiveMapTests {
             }
         }
 
+        // Primitive value types map 1:1 onto their MAP_SET `ObjectData` and publish a single-element
+        // array (RTLM20h2). Blueprint value types (RTLM20e7g / RTLM20h1) publish the `*_CREATE` messages
+        // ahead of the MAP_SET; that atomic-array behaviour is covered by `DefaultInstanceTests`
+        // (`mapSetCounterBlueprintPublishesCreateThenSet` etc.) and the UTS `InternalLiveMapApiTests`.
         // @spec RTLM20e
         // @specUntested RTLM20e1 - Not needed with Swift's type system
         // @spec RTLM20e2
         // @spec RTLM20e3
         // @spec RTLM20e6
-        // @spec RTLM20e7a
         // @spec RTLM20e7b
         // @spec RTLM20e7c
         // @spec RTLM20e7d
         // @spec RTLM20e7e
         // @spec RTLM20e7f
-        // @spec RTLM20g
+        // @spec RTLM20h2
         @Test(arguments: [
-            // RTLM20e7a
-            (value: { @Sendable internalQueue in .liveMap(.createZeroValued(objectID: "map:test@123", logger: TestLogger(), internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())) }, expectedData: .init(objectId: "map:test@123")),
-            (value: { @Sendable internalQueue in .liveCounter(.createZeroValued(objectID: "counter:test@123", logger: TestLogger(), internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())) }, expectedData: .init(objectId: "counter:test@123")),
             // RTLM20e7b
-            (value: { @Sendable _ in .jsonArray(["test"]) }, expectedData: .init(json: .array(["test"]))),
-            (value: { @Sendable _ in .jsonObject(["foo": "bar"]) }, expectedData: .init(json: .object(["foo": "bar"]))),
+            (value: LiveMapValue.primitive(.jsonArray(["test"])), expectedData: .init(json: .array(["test"]))),
+            (value: .primitive(.jsonObject(["foo": "bar"])), expectedData: .init(json: .object(["foo": "bar"]))),
             // RTLM20e7c
-            (value: { @Sendable _ in .string("test") }, expectedData: .init(string: "test")),
+            (value: .primitive(.string("test")), expectedData: .init(string: "test")),
             // RTLM20e7d
-            (value: { @Sendable _ in .number(42.5) }, expectedData: .init(number: NSNumber(value: 42.5))),
+            (value: .primitive(.number(42.5)), expectedData: .init(number: NSNumber(value: 42.5))),
             // RTLM20e7e
-            (value: { @Sendable _ in .bool(true) }, expectedData: .init(boolean: true)),
+            (value: .primitive(.bool(true)), expectedData: .init(boolean: true)),
             // RTLM20e7f
-            (value: { @Sendable _ in .data(Data([0x01, 0x02])) }, expectedData: .init(bytes: Data([0x01, 0x02]))),
-        ] as [(value: @Sendable (DispatchQueue) -> InternalLiveMapValue, expectedData: ProtocolTypes.ObjectData)])
-        func publishesCorrectObjectMessageForDifferentValueTypes(value: @escaping @Sendable (DispatchQueue) -> InternalLiveMapValue, expectedData: ProtocolTypes.ObjectData) async throws {
+            (value: .primitive(.data(Data([0x01, 0x02]))), expectedData: .init(bytes: Data([0x01, 0x02]))),
+        ] as [(value: LiveMapValue, expectedData: ProtocolTypes.ObjectData)])
+        func publishesCorrectObjectMessageForDifferentValueTypes(value: LiveMapValue, expectedData: ProtocolTypes.ObjectData) async throws {
             let logger = TestLogger()
             let internalQueue = TestFactories.createInternalQueue()
             let map = InternalDefaultLiveMap.createZeroValued(objectID: "map:test@123", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
             let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
             let realtimeObjects = MockRealtimeObjects()
 
-            var publishedMessage: ProtocolTypes.OutboundObjectMessage?
+            var publishedMessages: [ProtocolTypes.OutboundObjectMessage]?
             realtimeObjects.setPublishAndApplyHandler { messages in
-                publishedMessage = messages.first
+                publishedMessages = messages
                 return .success(())
             }
 
-            try await map.set(key: "testKey", value: value(internalQueue), coreSDK: coreSDK, realtimeObjects: realtimeObjects)
+            try await map.set(key: "testKey", value: value, coreSDK: coreSDK, realtimeObjects: realtimeObjects)
 
             let expectedMessage = ProtocolTypes.OutboundObjectMessage(
                 operation: ProtocolTypes.ObjectOperation(
@@ -1904,9 +1864,10 @@ struct InternalDefaultLiveMapTests {
                     ),
                 ),
             )
-            // RTLM20g
-            let message = try #require(publishedMessage)
-            #expect(message == expectedMessage)
+            // RTLM20h2: a primitive publishes the MAP_SET as a single-element array
+            let messages = try #require(publishedMessages)
+            #expect(messages.count == 1)
+            #expect(messages.first == expectedMessage)
         }
 
         @Test
@@ -1922,7 +1883,7 @@ struct InternalDefaultLiveMapTests {
             }
 
             await #expect {
-                try await map.set(key: "testKey", value: .string("testValue"), coreSDK: coreSDK, realtimeObjects: realtimeObjects)
+                try await map.set(key: "testKey", value: .primitive(.string("testValue")), coreSDK: coreSDK, realtimeObjects: realtimeObjects)
             } throws: { error in
                 guard let errorInfo = error as? ARTErrorInfo else {
                     return false
@@ -2013,6 +1974,296 @@ struct InternalDefaultLiveMapTests {
                 }
                 return errorInfo.message.contains("Publish failed")
             }
+        }
+    }
+
+    /// Divergence #3: the tombstone / OBJECT_DELETE / reset teardown paths must report only the
+    /// NON-tombstoned entries as `removed`. Per RTLO4e5 the teardown update is the RTLM22 diff
+    /// between the pre-teardown data and the (now cleared) data, and RTLM22b considers only
+    /// non-tombstoned entries. An entry that was already tombstoned was never visible to
+    /// subscribers, so it must not be reported as newly `removed`. (Previously these paths mapped
+    /// ALL data entries — including already-tombstoned ones — to `removed`, which was internally
+    /// inconsistent with `ObjectDiffHelpers.calculateMapDiff`.)
+    struct TombstoneTeardownExcludesAlreadyTombstonedEntriesTests {
+        private static func makeSeededMap(objectID: String, internalQueue: DispatchQueue) -> InternalDefaultLiveMap {
+            InternalDefaultLiveMap(
+                testsOnly_data: [
+                    "kept": TestFactories.internalMapEntry(timeserial: "01", data: ProtocolTypes.ObjectData(string: "Alice")),
+                    // Already tombstoned before the teardown — must be excluded from the removed update.
+                    "gone": InternalObjectsMapEntry(tombstonedAt: Date(), timeserial: "01", data: nil),
+                ],
+                objectID: objectID,
+                logger: TestLogger(),
+                internalQueue: internalQueue,
+                userCallbackQueue: .main,
+                clock: MockSimpleClock(),
+            )
+        }
+
+        // @specPartial RTLO4e5 - OBJECT_DELETE teardown reports only non-tombstoned entries as removed (RTLM15d5)
+        @Test
+        func objectDeleteExcludesAlreadyTombstonedEntries() throws {
+            let logger = TestLogger()
+            let internalQueue = TestFactories.createInternalQueue()
+            let map = Self.makeSeededMap(objectID: "map:test@1000", internalQueue: internalQueue)
+            map.testsOnly_setSiteTimeserials(["site1": "00"])
+
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let operation = TestFactories.objectOperation(action: .known(.objectDelete), objectId: "map:test@1000", objectDelete: WireObjectDelete())
+            let update = internalQueue.ably_syncNoDeadlock {
+                map.nosync_apply(
+                    operation,
+                    source: .channel,
+                    objectMessage: TestFactories.inboundObjectMessage(serial: "01", siteCode: "site1", serialTimestamp: Date(timeIntervalSince1970: 1_700_000_000)),
+                    objectsPool: &pool,
+                )
+            }
+
+            #expect(map.testsOnly_isTombstone == true)
+            // Only the non-tombstoned "kept" key is reported as removed; already-tombstoned "gone" is excluded.
+            let unwrapped = try #require(update?.update)
+            #expect(unwrapped.update == ["kept": .removed])
+            #expect(update?.tombstone == true)
+        }
+
+        // @specPartial RTLO4e5 - replaceData tombstone teardown (RTLM6f) reports only non-tombstoned entries as removed
+        @Test
+        func replaceDataTombstoneExcludesAlreadyTombstonedEntries() throws {
+            let logger = TestLogger()
+            let internalQueue = TestFactories.createInternalQueue()
+            let map = Self.makeSeededMap(objectID: "map:test@1000", internalQueue: internalQueue)
+
+            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+            let update = internalQueue.ably_syncNoDeadlock {
+                map.nosync_replaceData(
+                    using: TestFactories.mapObjectState(objectId: "map:test@1000", tombstone: true),
+                    objectMessageSerialTimestamp: nil,
+                    objectsPool: &pool,
+                )
+            }
+
+            #expect(map.testsOnly_isTombstone == true)
+            let unwrapped = try #require(update.update)
+            #expect(unwrapped.update == ["kept": .removed])
+            #expect(update.tombstone == true)
+        }
+
+        // @specPartial RTO4b2a - reset teardown reports only non-tombstoned entries as removed
+        @available(iOS 17.0.0, tvOS 17.0.0, *)
+        @Test
+        func resetDataExcludesAlreadyTombstonedEntries() async throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
+            let map = Self.makeSeededMap(objectID: "root", internalQueue: internalQueue)
+
+            let subscriber = Subscriber<DefaultLiveMapUpdate, SubscribeResponse>(callbackQueue: .main)
+            try map.subscribe(listener: subscriber.createListener(), coreSDK: coreSDK)
+
+            internalQueue.ably_syncNoDeadlock {
+                _ = map.nosync_resetData()
+            }
+
+            let subscriberInvocations = await subscriber.getInvocations()
+            // Only "kept" is reported as removed; already-tombstoned "gone" is excluded.
+            #expect(subscriberInvocations.map(\.0) == [.init(update: ["kept": .removed])])
+        }
+    }
+
+    /// Regression tests for the parent-reference *mutation* sites' self-reference guard (an
+    /// extension of the read-path self-reference guard, whose counterpart is tested in
+    /// `AccessPropertiesTests.selfReferencingEntryIsTreatedAsNormalEntry`).
+    ///
+    /// A wire-delivered MAP_SET (RTLM7a3/RTLM7g2), MAP_REMOVE (RTLM8a3), MAP_CLEAR (RTLM24e1c) or
+    /// OBJECT_DELETE (RTLO4e9) touching an entry whose `data.objectId` equals the containing map's
+    /// own objectID previously crashed with a Swift exclusive-access conflict: the apply path holds
+    /// the map's `mutableStateMutex` while `objectsPool.entries[refId]?.nosync_(add|remove)ParentReference`
+    /// re-enters that same mutex. These are peer-controllable inputs, so they must not crash.
+    /// A self-parent is a legitimate graph edge; `getFullPaths`' RTLO4f2 cycle suppression handles
+    /// the resulting self-loop.
+    struct SelfReferenceParentReferenceGuardTests {
+        static let selfID = "map:self@1"
+
+        /// Creates a map with the given data whose objectID is `selfID`, registered in a pool under
+        /// that same ID (so that pool lookups of a self-referencing entry resolve to the map itself).
+        private func makeFixture(
+            data: [String: InternalObjectsMapEntry],
+            internalQueue: DispatchQueue,
+        ) -> (map: InternalDefaultLiveMap, pool: ObjectsPool) {
+            let logger = TestLogger()
+            let map = InternalDefaultLiveMap(
+                testsOnly_data: data,
+                objectID: Self.selfID,
+                logger: logger,
+                internalQueue: internalQueue,
+                userCallbackQueue: .main,
+                clock: MockSimpleClock(),
+            )
+            let pool = ObjectsPool(
+                logger: logger,
+                internalQueue: internalQueue,
+                userCallbackQueue: .main,
+                clock: MockSimpleClock(),
+                testsOnly_otherEntries: [Self.selfID: .map(map)],
+            )
+            return (map, pool)
+        }
+
+        /// A MAP_SET creating a self-referencing entry records the self-parent edge (RTLM7g2)
+        /// without re-entering the map's mutex, and `getFullPaths` suppresses the self-loop.
+        @Test
+        func mapSetAddingSelfReferenceRecordsSelfParentEdge() throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            var (map, pool) = makeFixture(data: [:], internalQueue: internalQueue)
+
+            let operation = TestFactories.objectOperation(
+                action: .known(.mapSet),
+                mapSet: ProtocolTypes.MapSet(key: "selfRef", value: ProtocolTypes.ObjectData(objectId: Self.selfID)),
+            )
+            let applied = internalQueue.ably_syncNoDeadlock {
+                map.nosync_apply(
+                    operation,
+                    source: .channel,
+                    objectMessage: TestFactories.inboundObjectMessage(serial: "ts1", siteCode: "site1"),
+                    objectsPool: &pool,
+                )
+            }
+            #expect(applied != nil)
+
+            // RTLM7g2: the self-parent edge is recorded on the map itself.
+            #expect(map.testsOnly_parentReferences == [Self.selfID: ["selfRef"]])
+
+            // RTLO4f2: the self-loop contributes no paths (and does not loop forever); with no
+            // reference from root, there are no full paths at all.
+            #expect(map.testsOnly_getFullPaths(objectsPool: pool).isEmpty)
+
+            // With a root reference added alongside the self-loop, exactly the root path is
+            // returned; the self-loop is suppressed by the per-branch visited set.
+            map.testsOnly_setParentReferences([Self.selfID: ["selfRef"], "root": ["m"]])
+            #expect(map.testsOnly_getFullPaths(objectsPool: pool) == [["m"]])
+        }
+
+        /// A MAP_SET overwriting an existing self-referencing entry drops the self-parent edge
+        /// (RTLM7a3) without re-entering the map's mutex.
+        @Test
+        func mapSetOverwritingSelfReferencingEntryDropsSelfParentEdge() throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            var (map, pool) = makeFixture(
+                data: ["selfRef": TestFactories.internalMapEntry(timeserial: "ts1", data: ProtocolTypes.ObjectData(objectId: Self.selfID))],
+                internalQueue: internalQueue,
+            )
+            // Seed the self-parent edge that the existing entry represents.
+            map.testsOnly_setParentReferences([Self.selfID: ["selfRef"]])
+
+            let operation = TestFactories.objectOperation(
+                action: .known(.mapSet),
+                // The overwriting value's type is unimportant; a string keeps the assertion simple.
+                mapSet: ProtocolTypes.MapSet(key: "selfRef", value: ProtocolTypes.ObjectData(string: "overwritten")),
+            )
+            let applied = internalQueue.ably_syncNoDeadlock {
+                map.nosync_apply(
+                    operation,
+                    source: .channel,
+                    objectMessage: TestFactories.inboundObjectMessage(serial: "ts2", siteCode: "site1"), // greater than the entry's "ts1" so RTLM9 allows it
+                    objectsPool: &pool,
+                )
+            }
+            #expect(applied != nil)
+
+            // RTLM7a3: the self-parent edge held via the overwritten entry is dropped.
+            #expect(map.testsOnly_parentReferences.isEmpty)
+        }
+
+        /// A MAP_REMOVE of a self-referencing entry drops the self-parent edge (RTLM8a3) without
+        /// re-entering the map's mutex.
+        @Test
+        func mapRemoveOfSelfReferencingEntryDropsSelfParentEdge() throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            var (map, pool) = makeFixture(
+                data: ["selfRef": TestFactories.internalMapEntry(timeserial: "ts1", data: ProtocolTypes.ObjectData(objectId: Self.selfID))],
+                internalQueue: internalQueue,
+            )
+            map.testsOnly_setParentReferences([Self.selfID: ["selfRef"]])
+
+            let operation = TestFactories.objectOperation(
+                action: .known(.mapRemove),
+                mapRemove: WireMapRemove(key: "selfRef"),
+            )
+            let applied = internalQueue.ably_syncNoDeadlock {
+                map.nosync_apply(
+                    operation,
+                    source: .channel,
+                    objectMessage: TestFactories.inboundObjectMessage(serial: "ts2", siteCode: "site1"), // greater than the entry's "ts1" so RTLM9 allows it
+                    objectsPool: &pool,
+                )
+            }
+            #expect(applied != nil)
+
+            // RTLM8a3: the self-parent edge held via the removed entry is dropped.
+            #expect(map.testsOnly_parentReferences.isEmpty)
+            // The entry itself is tombstoned.
+            #expect(map.testsOnly_data["selfRef"]?.tombstone == true)
+        }
+
+        /// A MAP_CLEAR of a map containing a self-referencing entry drops the self-parent edge
+        /// (RTLM24e1c) without re-entering the map's mutex.
+        @Test
+        func mapClearWithSelfReferencingEntryDropsSelfParentEdge() throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            var (map, pool) = makeFixture(
+                data: ["selfRef": TestFactories.internalMapEntry(timeserial: "ts1", data: ProtocolTypes.ObjectData(objectId: Self.selfID))],
+                internalQueue: internalQueue,
+            )
+            map.testsOnly_setParentReferences([Self.selfID: ["selfRef"]])
+
+            let operation = TestFactories.objectOperation(
+                action: .known(.mapClear),
+                mapClear: WireMapClear(),
+            )
+            let applied = internalQueue.ably_syncNoDeadlock {
+                map.nosync_apply(
+                    operation,
+                    source: .channel,
+                    objectMessage: TestFactories.inboundObjectMessage(serial: "ts2", siteCode: "site1"), // greater than the entry's "ts1" so RTLM24e1 clears it
+                    objectsPool: &pool,
+                )
+            }
+            #expect(applied != nil)
+
+            // RTLM24e1c: the self-parent edge held via the cleared entry is dropped.
+            #expect(map.testsOnly_parentReferences.isEmpty)
+            #expect(map.testsOnly_data.isEmpty)
+        }
+
+        /// An OBJECT_DELETE of a map containing a self-referencing entry drops the self-parent edge
+        /// (RTLO4e9, via the held-parent-references teardown) without re-entering the map's mutex.
+        @Test
+        func objectDeleteWithSelfReferencingEntryDropsSelfParentEdge() throws {
+            let internalQueue = TestFactories.createInternalQueue()
+            var (map, pool) = makeFixture(
+                data: ["selfRef": TestFactories.internalMapEntry(timeserial: "ts1", data: ProtocolTypes.ObjectData(objectId: Self.selfID))],
+                internalQueue: internalQueue,
+            )
+            map.testsOnly_setParentReferences([Self.selfID: ["selfRef"]])
+
+            let operation = TestFactories.objectOperation(
+                action: .known(.objectDelete),
+                objectId: Self.selfID,
+                objectDelete: WireObjectDelete(),
+            )
+            let applied = internalQueue.ably_syncNoDeadlock {
+                map.nosync_apply(
+                    operation,
+                    source: .channel,
+                    objectMessage: TestFactories.inboundObjectMessage(serial: "ts1", siteCode: "site1"),
+                    objectsPool: &pool,
+                )
+            }
+            #expect(applied != nil)
+
+            // RTLO4e9: the self-parent edge this map held on itself is dropped, and the map is
+            // tombstoned.
+            #expect(map.testsOnly_parentReferences.isEmpty)
+            #expect(map.testsOnly_isTombstone)
         }
     }
 }

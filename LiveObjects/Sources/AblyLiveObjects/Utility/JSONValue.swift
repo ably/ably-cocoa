@@ -203,6 +203,17 @@ internal enum JSONObjectOrArray: Equatable {
         }
         return nil
     }
+
+    /// The equivalent ``JSONValue``: an `object`/`array` case carries straight across. Used to surface
+    /// the OD2g decoded value publicly (the wire form is the OD5-decoded JSON-encoded string).
+    internal var toJSONValue: JSONValue {
+        switch self {
+        case let .object(object):
+            .object(object)
+        case let .array(array):
+            .array(array)
+        }
+    }
 }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)

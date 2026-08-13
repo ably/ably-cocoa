@@ -84,7 +84,6 @@ internal extension InboundWireObjectMessage {
             connectionId = parentConnectionID
         }
 
-        // Convert WireValue extras to JSONValue extras
         if let wireExtras = try wireObject.optionalObjectValueForKey(WireObjectMessageWireKey.extras.rawValue) {
             extras = try wireExtras.ablyLiveObjects_mapValuesWithTypedThrow { wireValue throws(ARTErrorInfo) in
                 try wireValue.toJSONValue
@@ -132,7 +131,6 @@ extension OutboundWireObjectMessage: WireObjectEncodable {
             result[WireObjectMessageWireKey.clientId.rawValue] = .string(clientId)
         }
         if let extras {
-            // Convert JSONValue extras to WireValue extras
             result[WireObjectMessageWireKey.extras.rawValue] = .object(extras.mapValues { .init(jsonValue: $0) })
         }
         if let operation {
@@ -510,9 +508,7 @@ extension WireCounterInc: WireObjectCodable {
 }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal struct WireObjectDelete: Equatable {
-    // Empty struct
-}
+internal struct WireObjectDelete: Equatable {}
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 extension WireObjectDelete: WireObjectCodable {
@@ -526,9 +522,7 @@ extension WireObjectDelete: WireObjectCodable {
 }
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-internal struct WireMapClear: Equatable {
-    // Empty struct
-}
+internal struct WireMapClear: Equatable {}
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 extension WireMapClear: WireObjectCodable {

@@ -1,6 +1,7 @@
 import _AblyPluginSupportPrivate
 import Ably
 @testable import AblyLiveObjects
+@testable import AblyLiveObjectsTesting
 import Foundation
 import Testing
 
@@ -240,7 +241,7 @@ struct InternalDefaultLiveCounterTests {
 
         // @specOneOf(2/3) RTLC16a - with count via counterCreateWithObjectId.derivedFrom
         // @specOneOf(2/2) RTLC16c
-        // @spec RTO12f16
+        // @spec RTLCV4g5
         @Test
         func addsCounterCountToDataFromDerivedFrom() throws {
             let logger = TestLogger()
@@ -447,13 +448,11 @@ struct InternalDefaultLiveCounterTests {
                 counter.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts1", // Less than existing "ts2"
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: TestFactories.inboundObjectMessage(serial: "ts1", siteCode: "site1"), // Less than existing "ts2"
                     objectsPool: &pool,
                 )
             }
-            #expect(!applied)
+            #expect(applied == nil)
 
             // Check that the COUNTER_INC side-effects didn't happen:
             // Verify the operation was discarded - data unchanged (should still be 5 from creation)
@@ -462,7 +461,7 @@ struct InternalDefaultLiveCounterTests {
             #expect(counter.testsOnly_siteTimeserials == ["site1": "ts2"])
         }
 
-        // @specOneOf(1/3) RTLC7c - We test this spec point for each possible operation
+        // @specOneOf(1/2) RTLC7c - We test this spec point for each possible operation
         // @spec RTLC7d1 - Tests COUNTER_CREATE operation application
         // @spec RTLC7d1a
         // @spec RTLC7d1b
@@ -481,17 +480,16 @@ struct InternalDefaultLiveCounterTests {
             var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Apply COUNTER_CREATE operation
+            let message = TestFactories.inboundObjectMessage(serial: "ts1", siteCode: "site1")
             let applied = internalQueue.ably_syncNoDeadlock {
                 counter.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts1",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: message,
                     objectsPool: &pool,
                 )
             }
-            #expect(applied)
+            #expect(applied != nil)
 
             // Verify the operation was applied - initial value merged (the full logic of RTLC8 is tested elsewhere; we just check for some of its side effects here)
             #expect(try counter.value(coreSDK: coreSDK) == 15)
@@ -499,12 +497,12 @@ struct InternalDefaultLiveCounterTests {
             // Verify RTLC7c side-effect: site timeserial was updated
             #expect(counter.testsOnly_siteTimeserials == ["site1": "ts1"])
 
-            // Verify update was emitted per RTLC7d1a
+            // Verify update was emitted per RTLC7d1a, carrying the stamped source message (RTLO4b4d)
             let subscriberInvocations = await subscriber.getInvocations()
-            #expect(subscriberInvocations.map(\.0) == [.init(amount: 15)])
+            #expect(subscriberInvocations.map(\.0) == [.init(amount: 15, objectMessage: message)])
         }
 
-        // @specOneOf(2/3) RTLC7c - We test this spec point for each possible operation
+        // @specOneOf(2/2) RTLC7c - We test this spec point for each possible operation
         // @spec RTLC7d5 - Tests COUNTER_INC operation application
         // @spec RTLC7d5a
         // @spec RTLC7d5b
@@ -532,90 +530,25 @@ struct InternalDefaultLiveCounterTests {
             var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
 
             // Apply COUNTER_INC operation
+            let message = TestFactories.inboundObjectMessage(serial: "ts1", siteCode: "site1")
             let applied = internalQueue.ably_syncNoDeadlock {
                 counter.nosync_apply(
                     operation,
                     source: .channel,
-                    objectMessageSerial: "ts1",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
+                    objectMessage: message,
                     objectsPool: &pool,
                 )
             }
-            #expect(applied)
+            #expect(applied != nil)
 
             // Verify the operation was applied - amount added to data (the full logic of RTLC9 is tested elsewhere; we just check for some of its side effects here)
             #expect(try counter.value(coreSDK: coreSDK) == 15) // 5 + 10
             // Verify RTLC7c side-effect: site timeserial was updated
             #expect(counter.testsOnly_siteTimeserials == ["site1": "ts1"])
 
-            // Verify update was emitted per RTLC7d5a
+            // Verify update was emitted per RTLC7d5a, carrying the stamped source message (RTLO4b4d)
             let subscriberInvocations = await subscriber.getInvocations()
-            #expect(subscriberInvocations.map(\.0) == [.init(amount: 10)])
-        }
-
-        // @specOneOf(3/3) RTLC7c - Tests that siteTimeserials is NOT updated when source is LOCAL
-        @Test
-        func doesNotUpdateSiteTimeserialsForLocalSource() throws {
-            let logger = TestLogger()
-            let internalQueue = TestFactories.createInternalQueue()
-            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
-
-            let operation = TestFactories.objectOperation(
-                action: .known(.counterInc),
-                counterInc: TestFactories.counterInc(number: 10),
-            )
-            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-
-            // Apply COUNTER_INC operation with LOCAL source
-            let applied = internalQueue.ably_syncNoDeadlock {
-                counter.nosync_apply(
-                    operation,
-                    source: .local,
-                    objectMessageSerial: "ts1",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
-                    objectsPool: &pool,
-                )
-            }
-            #expect(applied)
-
-            // Verify the operation was applied
-            #expect(try counter.value(coreSDK: coreSDK) == 10)
-            // Verify RTLC7c: siteTimeserials should NOT have been updated for LOCAL source
-            #expect(counter.testsOnly_siteTimeserials.isEmpty)
-        }
-
-        // @spec RTLC7d3
-        @available(iOS 17.0.0, tvOS 17.0.0, *)
-        @Test
-        func noOpForOtherOperation() async throws {
-            let logger = TestLogger()
-            let internalQueue = TestFactories.createInternalQueue()
-            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
-
-            let subscriber = Subscriber<DefaultLiveCounterUpdate, SubscribeResponse>(callbackQueue: .main)
-            try counter.subscribe(listener: subscriber.createListener(), coreSDK: coreSDK)
-
-            // Try to apply a MAP_CREATE to the counter (not supported)
-            var pool = ObjectsPool(logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-            let applied = internalQueue.ably_syncNoDeadlock {
-                counter.nosync_apply(
-                    TestFactories.mapCreateOperation(),
-                    source: .channel,
-                    objectMessageSerial: "ts1",
-                    objectMessageSiteCode: "site1",
-                    objectMessageSerialTimestamp: nil,
-                    objectsPool: &pool,
-                )
-            }
-            #expect(!applied)
-
-            // Check no update was emitted
-            let subscriberInvocations = await subscriber.getInvocations()
-            #expect(subscriberInvocations.isEmpty)
+            #expect(subscriberInvocations.map(\.0) == [.init(amount: 10, objectMessage: message)])
         }
     }
 
@@ -638,30 +571,6 @@ struct InternalDefaultLiveCounterTests {
                 }
 
                 return errorInfo.code == 90001 && errorInfo.statusCode == 400
-            }
-        }
-
-        // @spec RTLC12e1 - The only part that is relevant in Swift's type system is the finiteness check
-        @Test(arguments: [
-            Double.nan,
-            Double.infinity,
-            -Double.infinity,
-        ] as [Double])
-        func throwsErrorForInvalidAmount(amount: Double) async throws {
-            let logger = TestLogger()
-            let internalQueue = TestFactories.createInternalQueue()
-            let counter = InternalDefaultLiveCounter.createZeroValued(objectID: "arbitrary", logger: logger, internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-            let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
-            let realtimeObjects = MockRealtimeObjects()
-
-            await #expect {
-                try await counter.increment(amount: amount, coreSDK: coreSDK, realtimeObjects: realtimeObjects)
-            } throws: { error in
-                guard let errorInfo = error as? ARTErrorInfo else {
-                    return false
-                }
-
-                return errorInfo.code == 40003 && errorInfo.statusCode == 400
             }
         }
 

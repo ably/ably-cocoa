@@ -5,45 +5,19 @@ import Foundation
 /// This provides the implementation behind ``PublicDefaultLiveCounter``, via internal versions of the ``LiveCounter`` API.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal final class InternalDefaultLiveCounter: Sendable {
-    private let mutableStateMutex: DispatchQueueMutex<MutableState>
+    internal let mutableStateMutex: DispatchQueueMutex<MutableState> // internal for AblyLiveObjectsTesting
 
-    internal var testsOnly_siteTimeserials: [String: String] {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.liveObjectMutableState.siteTimeserials
-        }
-    }
-
-    internal var testsOnly_createOperationIsMerged: Bool {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.liveObjectMutableState.createOperationIsMerged
-        }
-    }
-
-    private let logger: Logger
+    internal let logger: Logger // internal for AblyLiveObjectsTesting
     private let userCallbackQueue: DispatchQueue
     private let clock: SimpleClock
 
+    /// The RTLO3a `objectId`. Set once at construction and never mutated (RTINS3a), so it is stored
+    /// directly on the object and read without a queue hop.
+    internal let objectID: String // internal for AblyLiveObjectsTesting
+
     // MARK: - Initialization
 
-    internal convenience init(
-        testsOnly_data data: Double,
-        objectID: String,
-        logger: Logger,
-        internalQueue: DispatchQueue,
-        userCallbackQueue: DispatchQueue,
-        clock: SimpleClock
-    ) {
-        self.init(
-            data: data,
-            objectID: objectID,
-            logger: logger,
-            internalQueue: internalQueue,
-            userCallbackQueue: userCallbackQueue,
-            clock: clock,
-        )
-    }
-
-    private init(
+    internal init( // internal for AblyLiveObjectsTesting
         data: Double,
         objectID: String,
         logger: Logger,
@@ -51,6 +25,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
         userCallbackQueue: DispatchQueue,
         clock: SimpleClock
     ) {
+        self.objectID = objectID
         mutableStateMutex = .init(
             dispatchQueue: internalQueue,
             initialValue: .init(liveObjectMutableState: .init(objectID: objectID), data: data),
@@ -81,21 +56,6 @@ internal final class InternalDefaultLiveCounter: Sendable {
         )
     }
 
-    // MARK: - Data access
-
-    internal var nosync_objectID: String {
-        mutableStateMutex.withoutSync { mutableState in
-            mutableState.liveObjectMutableState.objectID
-        }
-    }
-
-    /// Test-only accessor for objectID that handles locking internally.
-    internal var testsOnly_objectID: String {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.liveObjectMutableState.objectID
-        }
-    }
-
     // MARK: - Internal methods that back LiveCounter conformance
 
     internal func value(coreSDK: CoreSDK) throws(ARTErrorInfo) -> Double {
@@ -113,11 +73,8 @@ internal final class InternalDefaultLiveCounter: Sendable {
                         throw LiveObjectsError.counterIncrementAmountInvalid(amount: amount).toARTErrorInfo()
                     }
 
-                    // RTLC12c
-                    try coreSDK.nosync_validateChannelState(
-                        notIn: [.detached, .failed, .suspended],
-                        operationDescription: "LiveCounter.increment",
-                    )
+                    // RTO26
+                    try coreSDK.nosync_validateChannelStateForWriteAPI(operationDescription: "LiveCounter.increment")
 
                     let objectMessage = ProtocolTypes.OutboundObjectMessage(
                         operation: .init(
@@ -224,6 +181,16 @@ internal final class InternalDefaultLiveCounter: Sendable {
         }
     }
 
+    /// RTO27a1: Clears this counter's data to that of a new empty object of its type (a counter with
+    /// `data` `0` per RTLC4b) **without emitting any update event**. Used by the RTO27a
+    /// DETACHED/FAILED channel-state clear; the object itself remains in the pool.
+    internal func nosync_resetDataToZeroValued() {
+        mutableStateMutex.withoutSync { mutableState in
+            // RTLC4: reset the counter's data to zero.
+            mutableState.resetDataToZeroValued()
+        }
+    }
+
     /// Merges the initial value from an ObjectOperation into this LiveCounter, per RTLC16.
     internal func nosync_mergeInitialValue(from operation: ProtocolTypes.ObjectOperation) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
         mutableStateMutex.withoutSync { mutableState in
@@ -231,43 +198,35 @@ internal final class InternalDefaultLiveCounter: Sendable {
         }
     }
 
-    /// Test-only method to apply a COUNTER_CREATE operation, per RTLC8.
-    internal func testsOnly_applyCounterCreateOperation(_ operation: ProtocolTypes.ObjectOperation) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.applyCounterCreateOperation(operation, logger: logger)
-        }
-    }
-
-    /// Test-only method to apply a COUNTER_INC operation, per RTLC9.
-    internal func testsOnly_applyCounterIncOperation(_ operation: WireCounterInc?) -> LiveObjectUpdate<DefaultLiveCounterUpdate> {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.applyCounterIncOperation(operation)
-        }
-    }
-
     /// Attempts to apply an operation from an inbound `ObjectMessage`, per RTLC7.
     ///
-    /// - Returns: `true` if the operation was applied, `false` if it was skipped (RTLC7g).
+    /// - Returns: The update that was emitted if the operation was applied (which may be `.noop`), or `nil` if the operation was skipped (RTLC7g).
+    @discardableResult
     internal func nosync_apply(
         _ operation: ProtocolTypes.ObjectOperation,
         source: ObjectsOperationSource,
-        objectMessageSerial: String?,
-        objectMessageSiteCode: String?,
-        objectMessageSerialTimestamp: Date?,
+        objectMessage: ProtocolTypes.InboundObjectMessage,
         objectsPool: inout ObjectsPool,
-    ) -> Bool {
+    ) -> LiveObjectUpdate<DefaultLiveCounterUpdate>? {
         mutableStateMutex.withoutSync { mutableState in
             mutableState.apply(
                 operation,
                 source: source,
-                objectMessageSerial: objectMessageSerial,
-                objectMessageSiteCode: objectMessageSiteCode,
-                objectMessageSerialTimestamp: objectMessageSerialTimestamp,
+                objectMessage: objectMessage,
                 objectsPool: &objectsPool,
                 logger: logger,
                 clock: clock,
                 userCallbackQueue: userCallbackQueue,
             )
+        }
+    }
+
+    /// Performs the RTLO4b4c3c tombstone teardown (deregistering this counter's subscriptions) for
+    /// the deferred OBJECT_SYNC path (RTO5c), which computes updates during the sync and emits them
+    /// once it finishes; the inline apply path instead tears down within `nosync_emitAndTearDown`.
+    internal func nosync_deregisterSubscriptionsForTombstone() {
+        mutableStateMutex.withoutSync { mutableState in
+            mutableState.liveObjectMutableState.unsubscribeAll()
         }
     }
 
@@ -280,13 +239,6 @@ internal final class InternalDefaultLiveCounter: Sendable {
         }
     }
 
-    /// Test-only accessor for isTombstone that handles locking internally.
-    internal var testsOnly_isTombstone: Bool {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.liveObjectMutableState.isTombstone
-        }
-    }
-
     /// Returns the object's RTLO3e `tombstonedAt` property.
     internal var nosync_tombstonedAt: Date? {
         mutableStateMutex.withoutSync { mutableState in
@@ -294,16 +246,44 @@ internal final class InternalDefaultLiveCounter: Sendable {
         }
     }
 
-    /// Test-only accessor for tombstonedAt that handles locking internally.
-    internal var testsOnly_tombstonedAt: Date? {
-        mutableStateMutex.withSync { mutableState in
-            mutableState.liveObjectMutableState.tombstonedAt
+    // MARK: - Parent-reference graph (RTLO3f)
+
+    /// The object's RTLO3f `parentReferences`.
+    internal var nosync_parentReferences: [String: Set<String>] {
+        mutableStateMutex.withoutSync { mutableState in
+            mutableState.liveObjectMutableState.parentReferences
         }
+    }
+
+    /// Records that the map identified by `parentObjectID` references this object at `key`, per RTLO4g.
+    internal func nosync_addParentReference(parentObjectID: String, key: String) {
+        mutableStateMutex.withoutSync { mutableState in
+            mutableState.nosync_addParentReference(parentObjectID: parentObjectID, key: key)
+        }
+    }
+
+    /// Removes the recorded reference from the map identified by `parentObjectID` at `key`, per RTLO4h.
+    internal func nosync_removeParentReference(parentObjectID: String, key: String) {
+        mutableStateMutex.withoutSync { mutableState in
+            mutableState.nosync_removeParentReference(parentObjectID: parentObjectID, key: key)
+        }
+    }
+
+    /// Resets `parentReferences` to an empty map, per RTO5c10a.
+    internal func nosync_clearParentReferences() {
+        mutableStateMutex.withoutSync { mutableState in
+            mutableState.nosync_clearParentReferences()
+        }
+    }
+
+    /// Computes all key-paths from root to this object, per RTLO4f.
+    internal func nosync_getFullPaths(objectsPool: ObjectsPool) -> [[String]] {
+        objectsPool.nosync_getFullPaths(forObjectID: objectID)
     }
 
     // MARK: - Mutable state and the operations that affect it
 
-    private struct MutableState: InternalLiveObject {
+    internal struct MutableState: InternalLiveObject { // internal for AblyLiveObjectsTesting
         /// The mutable state common to all LiveObjects.
         internal var liveObjectMutableState: LiveObjectMutableState<DefaultLiveCounterUpdate>
 
@@ -340,8 +320,9 @@ internal final class InternalDefaultLiveCounter: Sendable {
                     userCallbackQueue: userCallbackQueue,
                 )
 
-                // RTLC6f1
-                return .update(.init(amount: -dataBeforeTombstoning))
+                // RTLC6f/RTLC6f2: tombstone via LiveObject.tombstone and return its update.
+                // The diff helper is deliberately bypassed here: a zero-valued counter's tombstone must still emit an update (RTLO4b4c3c teardown), whereas calculateCounterDiff would return a noop for the zero delta (the RTLC14c zero-delta exception).
+                return .update(.init(amount: -dataBeforeTombstoning, tombstone: true))
             }
 
             // RTLC6g: Store the current data value as previousData for use in RTLC6h
@@ -368,7 +349,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
             let update: LiveObjectUpdate<DefaultLiveCounterUpdate>
 
             // RTLC16: Resolve counterCreate from either the direct property or the one
-            // from which counterCreateWithObjectId was derived (RTO12f16)
+            // from which counterCreateWithObjectId was derived (RTLCV4g5)
             let counterCreate = operation.counterCreate ?? operation.counterCreateWithObjectId?.derivedFrom
 
             // RTLC16a: Add counterCreate.count to data, if it exists
@@ -389,22 +370,21 @@ internal final class InternalDefaultLiveCounter: Sendable {
 
         /// Attempts to apply an operation from an inbound `ObjectMessage`, per RTLC7.
         ///
-        /// - Returns: `true` if the operation was applied, `false` if skipped (RTLC7g).
+        /// - Returns: The update that was emitted if the operation was applied (which may be `.noop`), or `nil` if the operation was skipped (RTLC7g).
         internal mutating func apply(
             _ operation: ProtocolTypes.ObjectOperation,
             source: ObjectsOperationSource,
-            objectMessageSerial: String?,
-            objectMessageSiteCode: String?,
-            objectMessageSerialTimestamp: Date?,
+            objectMessage: ProtocolTypes.InboundObjectMessage,
             objectsPool: inout ObjectsPool,
             logger: Logger,
             clock: SimpleClock,
             userCallbackQueue: DispatchQueue,
-        ) -> Bool {
-            guard let applicableOperation = liveObjectMutableState.canApplyOperation(objectMessageSerial: objectMessageSerial, objectMessageSiteCode: objectMessageSiteCode, logger: logger) else {
+        ) -> LiveObjectUpdate<DefaultLiveCounterUpdate>? {
+            // RTLO4a3: the serial/siteCode guard reads these off the source message (same values).
+            guard let applicableOperation = liveObjectMutableState.canApplyOperation(objectMessageSerial: objectMessage.serial, objectMessageSiteCode: objectMessage.siteCode, logger: logger) else {
                 // RTLC7b
-                logger.log("Operation \(operation) (serial: \(String(describing: objectMessageSerial)), siteCode: \(String(describing: objectMessageSiteCode))) should not be applied; discarding", level: .debug)
-                return false
+                logger.log("Operation \(operation) (serial: \(String(describing: objectMessage.serial)), siteCode: \(String(describing: objectMessage.siteCode))) should not be applied; discarding", level: .debug)
+                return nil
             }
 
             // RTLC7c
@@ -415,7 +395,7 @@ internal final class InternalDefaultLiveCounter: Sendable {
             // RTLC7e
             // TODO: are we still meant to update siteTimeserials? https://github.com/ably/specification/pull/350/files#r2218718854
             if liveObjectMutableState.isTombstone {
-                return false
+                return nil
             }
 
             switch operation.action {
@@ -425,36 +405,32 @@ internal final class InternalDefaultLiveCounter: Sendable {
                     operation,
                     logger: logger,
                 )
-                // RTLC7d1a
-                liveObjectMutableState.emit(update, on: userCallbackQueue)
-                // RTLC7d1b
-                return true
+                // RTLC7d1a, RTLC7d1b: emit the enriched update (carrying the source message)
+                return nosync_emitAndTearDown(update, sourceObjectMessage: objectMessage, userCallbackQueue: userCallbackQueue)
             case .known(.counterInc):
                 // RTLC7d5
                 let update = applyCounterIncOperation(operation.counterInc)
-                // RTLC7d5a
-                liveObjectMutableState.emit(update, on: userCallbackQueue)
-                // RTLC7d5b
-                return true
+                // RTLC7d5a, RTLC7d5b
+                return nosync_emitAndTearDown(update, sourceObjectMessage: objectMessage, userCallbackQueue: userCallbackQueue)
             case .known(.objectDelete):
                 let dataBeforeApplyingOperation = data
 
                 // RTLC7d4
                 applyObjectDeleteOperation(
-                    objectMessageSerialTimestamp: objectMessageSerialTimestamp,
+                    objectMessageSerialTimestamp: objectMessage.serialTimestamp,
                     logger: logger,
                     clock: clock,
                     userCallbackQueue: userCallbackQueue,
                 )
 
-                // RTLC7d4a
-                liveObjectMutableState.emit(.update(.init(amount: -dataBeforeApplyingOperation)), on: userCallbackQueue)
-                // RTLC7d4b
-                return true
+                // RTLC7d4c, RTLC7d4b: tombstone update drives the RTLO4b4c3c teardown
+                // The diff helper is deliberately bypassed here: a zero-valued counter's tombstone must still emit an update (RTLO4b4c3c teardown), whereas calculateCounterDiff would return a noop for the zero delta (the RTLC14c zero-delta exception).
+                let update: LiveObjectUpdate<DefaultLiveCounterUpdate> = .update(.init(amount: -dataBeforeApplyingOperation, tombstone: true))
+                return nosync_emitAndTearDown(update, sourceObjectMessage: objectMessage, userCallbackQueue: userCallbackQueue)
             default:
                 // RTLC7d3
                 logger.log("Operation \(operation) has unsupported action for LiveCounter; discarding", level: .warn)
-                return false
+                return nil
             }
         }
 
@@ -487,14 +463,14 @@ internal final class InternalDefaultLiveCounter: Sendable {
         }
 
         /// Needed for ``InternalLiveObject`` conformance.
-        mutating func resetDataToZeroValued() {
+        internal mutating func resetDataToZeroValued() {
             // RTLC4
             data = 0
         }
 
         internal func nosync_value(coreSDK: CoreSDK) throws(ARTErrorInfo) -> Double {
-            // RTLC5b: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
-            try coreSDK.nosync_validateChannelState(notIn: [.detached, .failed], operationDescription: "LiveCounter.value")
+            // RTO25: If the channel is in the DETACHED or FAILED state, the library should indicate an error with code 90001
+            try coreSDK.nosync_validateChannelStateForAccessAPI(operationDescription: "LiveCounter.value")
 
             // RTLC5c
             return data

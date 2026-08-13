@@ -26,3 +26,30 @@ internal enum LiveObjectUpdate<Update: Sendable>: Sendable {
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 extension LiveObjectUpdate: Equatable where Update: Equatable {}
+
+// MARK: - Message/tombstone enrichment
+
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+internal extension LiveObjectUpdate where Update: LiveObjectUpdatePayload {
+    /// The internal source object message carried by an `update` payload (`nil` for `noop` or
+    /// sync-originated updates). The public message is projected per PAOM3 at delivery. Spec: RTLO4b4d.
+    var objectMessage: ProtocolTypes.InboundObjectMessage? {
+        update?.objectMessage
+    }
+
+    /// Whether this update tombstones the object. `false` for `noop`. Spec: RTLO4b4e.
+    var tombstone: Bool {
+        update?.tombstone ?? false
+    }
+
+    /// Returns a copy of this update whose `update` payload carries the given internal source object
+    /// message; `noop` updates are returned unchanged. Used to stamp the source message onto an
+    /// update at emission time (RTLO4b4d); the public message is projected per PAOM3 at delivery.
+    func nosync_stampingObjectMessage(_ message: ProtocolTypes.InboundObjectMessage?) -> Self {
+        guard case var .update(payload) = self else {
+            return self
+        }
+        payload.objectMessage = message
+        return .update(payload)
+    }
+}
