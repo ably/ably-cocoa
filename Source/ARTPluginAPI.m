@@ -228,10 +228,10 @@ static ARTLogLevel _convertPluginLogLevel(APLogLevel pluginLogLevel) {
         return errorReason;
     }
     // RTL6c4: the operation must result in an error even when the inactive connection carries no
-    // error reason (e.g. INITIALIZED/CONNECTING before any failure), so synthesise a generic one.
-    return [ARTErrorInfo createWithCode:ARTErrorConnectionSuspended
-                                status:400
-                               message:@"Connection is not in an active state"];
+    // error reason (e.g. a cleanly closed connection), so fall back to the same error this SDK's
+    // attach/detach use for an inactive connection.
+    return [ARTErrorInfo createWithCode:ARTErrorChannelOperationFailed
+                                message:@"Can't publish when not in an active state"];
 }
 
 - (void)nosync_attachChannel:(id<APRealtimeChannel>)channel

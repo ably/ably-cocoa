@@ -118,8 +118,8 @@ internal enum ChannelConfigGuards {
         // Check order: connection active, then channel state (FAILED/SUSPENDED).
         let error = internalQueue.ably_syncNoDeadlock { () -> ARTErrorInfo? in
             // The connection must be in a publishable (active) state; if not, surface the connection's
-            // own state error: the connection's `errorReason`, or a synthetic 80002 error when it has
-            // none.
+            // own state error: the connection's `errorReason`, or the core SDK's inactive-connection
+            // error when it has none (RTL6c4).
             coreSDK.nosync_connectionStateError
                 ?? nosync_channelStateError(coreSDK: coreSDK, notIn: [.failed, .suspended], operationDescription: "publish")
         }
