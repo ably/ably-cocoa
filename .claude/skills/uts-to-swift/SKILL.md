@@ -180,9 +180,11 @@ methods to it rather than creating a duplicate.
 
 > **Orientation — read `Test/UTS/README.md` first.** It's the human-readable guide to this target: the
 > tier model (unit / direct-sandbox / proxy, §2), the run commands (§10), the integration & proxy
-> infrastructure (§11), and a per-file API reference for every infra helper (§13). Skim it for the *why*
-> and the *what's available*; the per-file list below is the *what to open for exact signatures* before
-> writing code.
+> infrastructure (§11), and a per-file API reference for the core realtime/rest infra helpers (§13). The
+> objects unit tier is **not** covered by that README — for objects, rely on the module notes
+> (`references/objects-mapping.md` §13) and `Test/UTS/unit/objects/ObjectsUTSHelpers.swift`. Skim it for
+> the *why* and the *what's available*; the per-file list below is the *what to open for exact signatures*
+> before writing code.
 
 Infrastructure is split by tier under `Test/UTS/infra/`:
 
@@ -204,8 +206,8 @@ the **Integration tests** section instead.
 > `infra/unit/` transport (`MockWebSocket`/`UTSTestCase`/`import Ably.Private`) at all; they drive the
 > Swift `AblyLiveObjects` CRDT internals directly. **Instead of `infra/unit/`, read** (before generating):
 > `Test/UTS/unit/objects/ObjectsUTSHelpers.swift` (the port-only harness — `ObjectsUTS*` doubles and
-> fixtures), the `Test/AblyLiveObjectsTesting` module (its `README.md`, `TestFactories.swift`,
-> `UTSTestPoolFactories.swift`), and `objects-mapping.md` §13 (the internal-access ladder — required
+> fixtures), the `Test/AblyLiveObjectsTesting` module (its `README.md`, `Helpers/TestFactories.swift`,
+> `Helpers/PoolFactories.swift`), and `objects-mapping.md` §13 (the internal-access ladder — required
 > reading). Objects unit reaches internals via `@testable import AblyLiveObjects` (every suite) +
 > `@testable import AblyLiveObjectsTesting` (added when a case uses a `testsOnly_` accessor),
 > **not** `import Ably.Private` (the ladder in Step 4 below is

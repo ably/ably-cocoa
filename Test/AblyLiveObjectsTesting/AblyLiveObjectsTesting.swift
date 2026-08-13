@@ -5,7 +5,8 @@
 // test-only plumbing. See README.md for the dumb-accessor review rule and the
 // recipe for adding a helper.
 //
-// The per-type helpers live in the sibling `<Type>+TestsOnly.swift` files in
-// this directory (e.g. `InternalDefaultRealtimeObjects+TestsOnly.swift`).
+// The per-type internal-access seams live in `Internals/<Type>+TestsOnly.swift`
+// (e.g. `InternalDefaultRealtimeObjects+TestsOnly.swift`); mocks, factories,
+// loggers, and assertion helpers live in `Helpers/`. See README.md.
 
 @testable import AblyLiveObjects

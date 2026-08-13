@@ -13,13 +13,37 @@ plumbing: it hosts `@testable import AblyLiveObjects` extensions that expose the
 internal state the tests need, keeping the shipped sources clean.
 
 It is a **regular** SPM target (not a test target) so that the test target can
-consume it via `@testable import AblyLiveObjectsTesting`. It is **not** a member
+consume it via `@testable import AblyLiveObjectsTesting`. SPM discovers sources
+recursively, so the two-directory split below needs no `Package.swift` change.
+It is **not** a member
 of any product, so it is unreachable from — and never built by — consumers of
 the shipped `AblyLiveObjects` library (verified: debug and release consumer
 builds are unaffected). SwiftPM enables testability for it automatically in
 debug builds; the release CI job is deliberately scoped to
 `--target AblyLiveObjects` so it never builds this debug-only tooling (for an
 in-package build, `--product` does not provide that scoping — `--target` does).
+
+## Directory layout
+
+The module's files are split into two subdirectories by role. `AblyLiveObjectsTesting.swift`
+(the umbrella/doc file) and this `README.md` stay at the module root.
+
+- **`Internals/`** — internal-access seam files, one per type, named
+  `<Type>+TestsOnly.swift`. Each is an `@testable import AblyLiveObjects` extension that
+  exposes internal members/state of an `AblyLiveObjects` (or core) type as `testsOnly_`
+  accessors. `PublicDefaultRealtimeObject+TestsOnly.swift` lives here too: although it
+  extends a *public* type, it reaches the type's **internal** `proxied` / `coreSDK`
+  members via `@testable`, so it is an internal-access seam, not public-API convenience.
+- **`Helpers/`** — mocks, factories, loggers, and assertion utilities that build on the
+  public/testable surface: `Assertions.swift`, `MockCoreSDK.swift`,
+  `MockLiveMapObjectsPoolDelegate.swift`, `MockRealtimeObjects.swift`,
+  `MockSimpleClock.swift`, `Subscriber.swift`, `TestFactories.swift`, `TestLogger.swift`,
+  and `PoolFactories.swift` (shared `SyncObjectsPool` and operation-message builders used
+  by both `AblyLiveObjectsTests` and the UTS objects tier).
+
+**Classification rule:** a file goes in `Internals/` if it is a `<Type>+TestsOnly.swift`
+extension whose purpose is to expose internal members via `@testable` access; everything
+else (mocks, factories, loggers, assertions) goes in `Helpers/`.
 
 ## Linting
 
@@ -111,7 +135,7 @@ neither moved nor guarded:
 ## How to add a helper
 
 1. One file per LiveObjects type, named `<Type>+TestsOnly.swift` (e.g.
-   `InternalDefaultLiveCounter+TestsOnly.swift`).
+   `InternalDefaultLiveCounter+TestsOnly.swift`), placed in `Internals/`.
 2. `@testable import AblyLiveObjects` at the top of the file.
 3. Declare an `extension <Type>` and add the accessor as a `testsOnly_`-prefixed
    member (keep the prefix verbatim — it matches the existing 700+ test call
