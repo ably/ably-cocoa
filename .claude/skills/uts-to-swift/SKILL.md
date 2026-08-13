@@ -140,8 +140,10 @@ through the steps in order.
 **If Step A reported a non-null `translationNotes`, read that file first (once per run).** UTS specs are
 written in a language-agnostic pseudocode that mirrors the *ably-js* API; for modules whose ably-cocoa
 types diverge, the notes map each spec symbol to its ably-cocoa equivalent. Skipping them yields tests
-that read like ably-js and won't compile. (If the notes file is still the "intentionally empty"
-placeholder, stop and tell the user — see Step A.)
+that read like ably-js and won't compile. A module's notes may also **override parts of the generic flow
+below** — Step 3's infrastructure reading list, Step 4's `import Ably.Private` internal-access ladder,
+Step 4's method-naming rule, and Step 6's deviations-file location; where the notes override, they win.
+(If the notes file is still the "intentionally empty" placeholder, stop and tell the user — see Step A.)
 
 Then read the current spec file (the one being translated from the Step D selection). Identify:
 - All test cases — each has a structured ID like `realtime/unit/RSA4c2/callback-error-connecting-disconnected-0` and a description
@@ -180,11 +182,10 @@ methods to it rather than creating a duplicate.
 
 > **Orientation — read `Test/UTS/README.md` first.** It's the human-readable guide to this target: the
 > tier model (unit / direct-sandbox / proxy, §2), the run commands (§10), the integration & proxy
-> infrastructure (§11), and a per-file API reference for the core realtime/rest infra helpers (§13). The
-> objects unit tier is **not** covered by that README — for objects, rely on the module notes
-> (`references/objects-mapping.md` §13) and `Test/UTS/unit/objects/ObjectsUTSHelpers.swift`. Skim it for
-> the *why* and the *what's available*; the per-file list below is the *what to open for exact signatures*
-> before writing code.
+> infrastructure (§11), and a per-file API reference for the core realtime/rest infra helpers (§13). A
+> module whose translation notes override the reading list (Step 1) may fall outside that README — when
+> the notes say so, follow them instead. Skim it for the *why* and the *what's available*; the per-file
+> list below is the *what to open for exact signatures* before writing code.
 
 Infrastructure is split by tier under `Test/UTS/infra/`:
 
@@ -200,18 +201,8 @@ Infrastructure is split by tier under `Test/UTS/infra/`:
 
 For a **unit** test, read ALL files under `infra/unit/` plus `infra/Utils.swift` before generating any code
 (you need exact method signatures). For an **integration** or **proxy** spec, follow the reading list in
-the **Integration tests** section instead.
-
-> **Objects module, unit tier — different reading list.** The `objects` unit ports don't use the mocked
-> `infra/unit/` transport (`MockWebSocket`/`UTSTestCase`/`import Ably.Private`) at all; they drive the
-> Swift `AblyLiveObjects` CRDT internals directly. **Instead of `infra/unit/`, read** (before generating):
-> `Test/UTS/unit/objects/ObjectsUTSHelpers.swift` (the port-only harness — `ObjectsUTS*` doubles and
-> fixtures), the `Test/AblyLiveObjectsTesting` module (its `README.md`, `Helpers/TestFactories.swift`,
-> `Helpers/PoolFactories.swift`), and `objects-mapping.md` §13 (the internal-access ladder — required
-> reading). Objects unit reaches internals via `@testable import AblyLiveObjects` (every suite) +
-> `@testable import AblyLiveObjectsTesting` (added when a case uses a `testsOnly_` accessor),
-> **not** `import Ably.Private` (the ladder in Step 4 below is
-> for the core Objective-C SDK only).
+the **Integration tests** section instead. A module whose translation notes override this reading list
+(Step 1) follows the notes' list instead of `infra/unit/`.
 
 ## Step 4 — Generate the Swift test file
 
@@ -219,9 +210,9 @@ Apply the translation rules below, then write the file.
 
 ### Accessing SDK internals (`import Ably.Private`)
 
-> **Not for the `objects` unit tier** — those ports reach Swift `AblyLiveObjects` internals via the
-> `@testable`-import ladder in `objects-mapping.md` §13 (see the Step 3 objects branch above), not
-> `import Ably.Private`. The rest of this section is for the core Objective-C SDK.
+> **A module's translation notes may override this ladder** (Step 1) — a module whose SDK layer isn't
+> the core Objective-C SDK can specify its own internal-access mechanism instead of `import Ably.Private`;
+> follow the notes where they do. The rest of this section is for the core Objective-C SDK.
 
 The SDK is Objective-C, so Swift access levels (`internal`/`package`/`private`) don't apply to it —
 visibility is controlled by **headers + the module map**:
@@ -783,8 +774,6 @@ func test_RTN15c4_resume_with_token_error_reattaches() throws {
     // Fix the UTS spec first — see deviations.md (UTS Spec Errors).
     Issue.record("UTS spec error RTN15c4 — fix the spec first; see deviations.md")
 }
-// (For the objects unit tier the same pattern applies, but with the tier's bare camelCase
-// method naming — see the module notes' naming override.)
 ```
 
 **Never use the accommodate-both pattern** (accept either spec or SDK behaviour). Every test must assert
@@ -798,9 +787,9 @@ queue-ordering workaround) is **not** an SDK deviation — explain it in a code 
 
 Append to the deviations file that belongs to the tier's module, using the manual's **Recording
 deviations** entry format and sections (the `writing-derived-tests.md` you fetched up front — not a
-home-grown format). For most tiers that is the shared `Test/UTS/deviations.md`; for the **`objects` unit**
-tier it is the module-scoped `Test/UTS/unit/objects/deviations.md` (which sits beside those suites and
-already carries the objects-unit entries). The ably-cocoa-specific section mapping: a **UTS Spec Error**
+home-grown format). For most tiers that is the shared `Test/UTS/deviations.md`; a module whose notes
+declare a module-scoped deviations file (Step 1) uses that one instead. The ably-cocoa-specific section
+mapping: a **UTS Spec Error**
 (test fails fast — fix in the spec) goes under the manual's *UTS Spec Errors* section (add the heading on
 first use if absent); an **SDK deviation** (env-gated/adapted — fix in the SDK) goes under *Failing Tests*
 / *Adapted Tests*; a mock-capability gap goes under *Mock Infrastructure Limitations*.

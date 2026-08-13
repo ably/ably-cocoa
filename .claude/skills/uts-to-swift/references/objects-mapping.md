@@ -660,6 +660,12 @@ modules; it does **not** apply here):
      `Test/AblyLiveObjectsTesting/Helpers/` — extend the existing file if one fits (message/state
      factories into `TestFactories.swift` or `PoolFactories.swift`, mock behaviour into the
      relevant `Mock*.swift`); create a new `Helpers/` file only when nothing fits.
+   - **Placement boundary — shared module vs port harness.** `Test/AblyLiveObjectsTesting` is for
+     code consumed by **both** test targets (the native `AblyLiveObjectsTests` suite and `UTS`).
+     A helper needed **only by the UTS port suites** (an `ObjectsUTS*`-style double or fixture)
+     belongs in `Test/UTS/unit/objects/ObjectsUTSHelpers.swift` instead — do **not** move that
+     harness (or add port-only types) into the shared module: it is single-consumer by design and
+     imports the `Testing` framework, which the shared non-test module must not.
 4. This ladder is for the **unit tier only.** The integration and proxy objects tiers exercise the
    public path-based API exclusively and never touch `AblyLiveObjectsTesting` — see §14 and the
    integration helpers under `Test/UTS/integration/standard/objects/helpers/`.
@@ -691,8 +697,12 @@ modules; it does **not** apply here):
 
 ### Harness surface — `Test/UTS/unit/objects/ObjectsUTSHelpers.swift`
 
-The port-only harness (it rides in the `UTS` target alongside the suites, not in `AblyLiveObjectsTesting`,
-because it exists purely for these ports). Types and their roles:
+The port-only harness. It rides in the `UTS` target alongside the suites — deliberately **not** in
+`Test/AblyLiveObjectsTesting/Helpers/` — because it exists purely for these ports: the native
+`AblyLiveObjectsTests` suite never uses it (the shared module is reserved for code both test targets
+consume), and it imports the `Testing` framework, which the shared non-test module must not. New
+port-only doubles/fixtures go here; anything genuinely needed by both suites goes to the shared
+module per the §13 ladder. Types and their roles:
 
 | Type | Role | Key members |
 |---|---|---|
@@ -793,6 +803,10 @@ target-qualified filter form, `swift test --filter "UTS.<SuiteName>"`, which dis
 **Pure-function specs** (no channel/pool/sync interaction — e.g. `object_id.md`): the Step 3
 reading list collapses — you only need the §16 symbol mapping and this file template; skip
 `ObjectsUTSHelpers.swift` and the pool factories.
+
+**Deviations file** (overrides SKILL.md Step 6's shared-file default): objects-unit deviations go in the
+module-scoped `Test/UTS/unit/objects/deviations.md` (beside these suites; it already carries the
+objects-unit entries), not the shared `Test/UTS/deviations.md`.
 
 ```swift
 // Derived from the UTS spec `objects/unit/<spec_file>.md`.
