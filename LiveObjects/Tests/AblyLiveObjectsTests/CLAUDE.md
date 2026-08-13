@@ -13,3 +13,4 @@
 - When you need to pass a logger to internal components in tests, pass `TestLogger()`.
 - When you need to unwrap an optional value in tests, use `#require` instead of `guard let`.
 - When creating `testsOnly_` property declarations, do not write generic comments describing them; their meaning is already well understood.
+- Place unit test suites in `Unit/`; place integration suites in `Integration/` and give them `.tags(.integration)` (the tag, via the UnitTests test plan's `skippedTags`, is what excludes them from the fast unit loop — the directory is the human-readable signal).
