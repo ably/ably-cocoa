@@ -1,176 +1,221 @@
 // Derived from the UTS spec `objects/unit/internal_live_counter_api.md`.
+//
+// Drives `InternalLiveCounter`'s public-facing API — value reads, `increment`/`decrement` writes, and
+// the emitted update event — through the path/instance layer (`RTPO*`/`RTINS*` delegate to `RTLC*`).
+// The spec's `setup_synced_channel` mock-WebSocket fixture has no unit-tier counterpart: the standard
+// pool is seeded straight into an `ObjectsPool` (`ObjectsUTS.standardPool`) behind an
+// `ObjectsUTSSeededRealtimeObjects`, and the spec's `root` is a `DefaultLiveMapPathObject` over it. The
+// seeded double captures each published message (`capturedMessages`, the spec's
+// `captured_messages[0].state[0]` → `capturedMessages[0].operation`) AND asynchronously applies the
+// operation back onto the pool entry (the RTO20 ACK echo), so the post-apply value reads
+// (`value() == 150` / `== 85`) are directly portable.
+//
+// Deviations from the UTS spec:
+// - (D-1) RTLC12e1's non-numeric table rows (`null`, `"10"`, `true`, `[1,2]`, `{n:1}`) are
+//   compile-time-unrepresentable because cocoa's `increment(amount:)` takes a `Double` (objects-mapping
+//   §6). Only the expressible non-finite doubles (`NaN`, `Infinity`, `-Infinity`) are ported as runtime
+//   40003 assertions. `null` ≡ omitted here (nullish default), so per the spec's own note the default is
+//   pinned directly via the no-argument `increment()` (increments by 1).
+//
+// Prose-only sections with no Test ID get no test method:
+// - RTLC5a/RTLC5b (access-API preconditions) are replaced by RTO25 and live in
+//   `objects/unit/realtime_object.md`.
+// - RTLC12b/RTLC12c/RTLC12d (write-API preconditions) are replaced by RTO26 and live in
+//   `objects/unit/realtime_object.md`.
 
 import Ably
 @testable import AblyLiveObjects
 import Foundation
 import Testing
 
-/// `InternalLiveCounter` public-facing API — value reads, increment/decrement writes, and update
-/// events.
-/// Derived from https://github.com/ably/specification/blob/main/uts/objects/unit/internal_live_counter_api.md
-/// (spec points `RTLC5`, `RTLC11`–`RTLC13`).
-///
-/// The spec declares mock-WebSocket infrastructure (`setup_synced_channel`, `MockWebSocket`,
-/// `captured_messages`, `mock_ws.send_to_client`) for these cases. Per the UNIT-only scope, this file
-/// ports the subset exercisable without it: the counter node is built directly and driven through the
-/// public `LiveCounterInstance` (the counter surface the spec's `root.get("score")` resolves to),
-/// with `publishAndApply` captured by a local mock and remote updates simulated by applying an
-/// operation to the node (the unit stand-in for `mock_ws.send_to_client`). Mocks are replicated in
-/// `helpers/ObjectsUTSHelpers.swift`.
-///
-/// ## Mock-realtime adaptation
-/// `ObjectsUTSRealtimeObjects` captures the published `ObjectMessage` but does not apply it back onto
-/// the counter. So the spec's post-apply value assertions are out of unit scope:
-/// - RTLC12 `increment-applies-locally` (`value() == 150`) — skipped; only the published COUNTER_INC
-///   is asserted (RTLC12 `increment-sends-counter-inc`).
-/// - RTLC13 `value() == 85` — skipped; only the negated published number is asserted.
-///
-/// ## Compile-time-unrepresentable (recorded in deviations.md)
-/// RTLC12e1's non-finite table: `increment(amount:)` takes a `Double`, so the `string`/`boolean`/
-/// `array`/`object`/`null` rows cannot be constructed. Only the representable non-finite doubles
-/// (`NaN`/`Infinity`/`-Infinity`) reach the RTLC12e1 finiteness check — those are ported below. `null`
-/// maps to the no-argument `increment()` default of 1 (see `InstanceTests.test_RTINS14a...`).
-///
-/// ## Cross-referenced elsewhere (not in this spec's scope)
-/// RTLC12b/c/d (write preconditions) are replaced by RTO26 and live in `objects/unit/realtime_object.md`.
-@Suite(.serialized)
-final class InternalLiveCounterApiTests {
+struct InternalLiveCounterApiTests {
+    // MARK: - Fixture
+
+    private typealias Fixture = (
+        root: DefaultLiveMapPathObject,
+        realtimeObjects: ObjectsUTSSeededRealtimeObjects,
+        internalQueue: DispatchQueue
+    )
+
+    /// The unit stand-in for `setup_synced_channel("test")`: seeds the standard pool directly and wraps
+    /// it in a `DefaultLiveMapPathObject` root (`root.get("score")` resolves to `counter:score@1000`,
+    /// value 100).
+    private static func makeFixture() -> Fixture {
+        let internalQueue = ObjectsUTS.createInternalQueue()
+        let pool = ObjectsUTS.standardPool(internalQueue: internalQueue)
+        let realtimeObjects = ObjectsUTSSeededRealtimeObjects(pool: pool, internalQueue: internalQueue)
+        let coreSDK = ObjectsUTSCoreSDK()
+        let root = DefaultLiveMapPathObject(channelObject: realtimeObjects, coreSDK: coreSDK, internalQueue: internalQueue, segments: [])
+        return (root, realtimeObjects, internalQueue)
+    }
+
     // MARK: - RTLC5: value() returns current counter data
 
     // UTS: objects/unit/RTLC5/value-returns-data-0
-    // RTLC5c (returns current data value).
     @Test
-    func RTLC5c_value_returns_data() throws {
-        let internalQueue = ObjectsUTS.createInternalQueue()
-        let coreSDK = ObjectsUTSCoreSDK()
-        let node = ObjectsUTS.makeCounter(objectID: "counter:score@1000", data: 100, internalQueue: internalQueue)
+    func valueReturnsCurrentCounterData() throws {
+        // Setup
+        let root = Self.makeFixture().root
 
-        guard case let .liveCounter(counter) = Instance.from(internalValue: .liveCounter(node), coreSDK: coreSDK, realtimeObjects: ObjectsUTSRealtimeObjects(), internalQueue: internalQueue) else {
-            Issue.record("Expected .liveCounter")
-            return
-        }
-        #expect(try counter.value == 100)
+        // Assertions
+        let counter = root.get(key: "score")
+        #expect(try counter.asLiveCounter().value() == 100) // RTLC5c
     }
 
     // MARK: - RTLC12: increment sends v6 COUNTER_INC message
 
     // UTS: objects/unit/RTLC12/increment-sends-counter-inc-0
-    // RTLC12e2/e3/e5/g. Asserts the published
-    // COUNTER_INC (the spec's `captured_messages[0].state[0]`).
     @Test
-    func RTLC12_increment_sends_counter_inc() async throws {
-        let (counter, published) = try makeCounter(objectID: "counter:score@1000", data: 100)
-        try await counter.increment(amount: 25)
+    func incrementSendsCounterIncMessage() async throws {
+        // Setup
+        let fixture = Self.makeFixture()
 
-        let messages = try #require(published.get())
-        #expect(messages.count == 1)
-        #expect(messages[0].operation?.action == .known(.counterInc)) // RTLC12e2
-        #expect(messages[0].operation?.objectId == "counter:score@1000") // RTLC12e3
-        #expect(messages[0].operation?.counterInc?.number == NSNumber(value: 25)) // RTLC12e5
+        // Test Steps
+        try await fixture.root.get(key: "score").asLiveCounter().increment(amount: 25)
+
+        // Assertions
+        let messages = try #require(fixture.realtimeObjects.capturedMessages)
+        #expect(messages.count == 1) // RTLC12g (published via publishAndApply)
+        let op = try #require(messages[0].operation)
+        #expect(op.action == .known(.counterInc)) // RTLC12e2
+        #expect(op.objectId == "counter:score@1000") // RTLC12e3
+        #expect(op.counterInc?.number == NSNumber(value: 25)) // RTLC12e5
     }
 
-    // MARK: - RTLC12e1: increment with non-finite amount throws 40003
+    // MARK: - RTLC12: increment applies locally after ACK
+
+    // UTS: objects/unit/RTLC12/increment-applies-locally-0
+    @Test
+    func incrementAppliesLocallyAfterAck() async throws {
+        // Setup
+        let fixture = Self.makeFixture()
+
+        // Test Steps
+        try await fixture.root.get(key: "score").asLiveCounter().increment(amount: 50)
+
+        // Assertions
+        // Via publishAndApply, the value reflects the change after the awaited write (100 + 50).
+        #expect(try fixture.root.get(key: "score").asLiveCounter().value() == 150)
+    }
+
+    // MARK: - RTLC12e1: increment with non-number throws
 
     // UTS: objects/unit/RTLC12e1/increment-non-number-0
-    // the representable non-finite doubles throw 40003.
     @Test
-    func RTLC12e1_increment_non_finite_throws() async throws {
-        let (counter, _) = try makeCounter(objectID: "counter:score@1000", data: 100)
-        let error = await #expect(throws: ARTErrorInfo.self) {
-            try await counter.increment(amount: .nan)
-        }
-        #expect(error?.code == 40003)
-        // Ported from the native IncrementTests.throwsErrorForInvalidAmount before its removal
-        // (Wave-1 dedup): the invalid-amount error also carries HTTP status 400.
-        #expect(error?.statusCode == 400)
-    }
+    func incrementWithNonNumberThrows() async throws {
+        // Setup
+        let fixture = Self.makeFixture()
 
-    // UTS: objects/unit/RTLC12e1/increment-invalid-amounts-table-0
-    // every representable non-finite amount
-    // throws 40003. The non-numeric rows are compile-time-unrepresentable (Double parameter).
-    @Test
-    func RTLC12e1_increment_invalid_amounts_table() async throws {
-        let invalidAmounts: [(Double, String)] = [
-            (.nan, "NaN"),
-            (.infinity, "Infinity"),
-            (-.infinity, "-Infinity"),
-        ]
-        for (amount, label) in invalidAmounts {
-            let (counter, _) = try makeCounter(objectID: "counter:score@1000", data: 100)
-            let error = await #expect(throws: ARTErrorInfo.self, "increment(\(label)) should throw 40003") {
-                try await counter.increment(amount: amount)
-            }
-            #expect(error?.code == 40003)
-            #expect(error?.statusCode == 400)
+        // Test Steps
+        // Spec: `AWAIT root.get("score").increment("not_a_number") FAILS WITH error`.
+        // A string amount is compile-time-unrepresentable (increment(amount: Double), D-1); the
+        // expressible "not finite" case is a non-finite double, which reaches the same RTLC12e1 check.
+        do {
+            try await fixture.root.get(key: "score").asLiveCounter().increment(amount: .nan)
+            Issue.record("expected increment(NaN) to throw 40003")
+        } catch {
+            // Assertions — typed throws: `error` is already an ARTErrorInfo.
+            #expect(error.code == 40003)
         }
     }
 
     // MARK: - RTLC13: decrement delegates to increment with negated amount
 
     // UTS: objects/unit/RTLC13/decrement-negates-0
-    // RTLC13b. Asserts the negated published number (the
-    // spec's `value() == 85` post-apply assertion needs the full pipeline; out of unit scope).
     @Test
-    func RTLC13_decrement_negates() async throws {
-        let (counter, published) = try makeCounter(objectID: "counter:score@1000", data: 100)
-        try await counter.decrement(amount: 15)
+    func decrementNegatesAmount() async throws {
+        // Setup
+        let fixture = Self.makeFixture()
 
-        let messages = try #require(published.get())
-        #expect(messages[0].operation?.counterInc?.number == NSNumber(value: -15))
+        // Test Steps
+        try await fixture.root.get(key: "score").asLiveCounter().decrement(amount: 15)
+
+        // Assertions
+        let messages = try #require(fixture.realtimeObjects.capturedMessages)
+        #expect(messages[0].operation?.counterInc?.number == NSNumber(value: -15)) // RTLC13b
+        // Via publishAndApply, the value reflects the negated change (100 - 15).
+        #expect(try fixture.root.get(key: "score").asLiveCounter().value() == 85)
     }
 
     // MARK: - RTLC11: LiveCounterUpdate emitted on increment
 
     // UTS: objects/unit/RTLC11/counter-update-on-inc-0
-    // RTLC11b1 (update carries the increment value). The
-    // remote update is simulated by applying a COUNTER_INC to the node with a stamped source message.
     @Test
-    func RTLC11_counter_update_on_inc() async throws {
-        let internalQueue = ObjectsUTS.createInternalQueue()
-        let coreSDK = ObjectsUTSCoreSDK()
-        let node = ObjectsUTS.makeCounter(objectID: "counter:score@1000", data: 100, internalQueue: internalQueue)
+    func counterUpdateEmittedOnIncrement() async throws {
+        // Setup
+        let fixture = Self.makeFixture()
 
-        guard case let .liveCounter(counter) = Instance.from(internalValue: .liveCounter(node), coreSDK: coreSDK, realtimeObjects: ObjectsUTSRealtimeObjects(), internalQueue: internalQueue) else {
-            Issue.record("Expected .liveCounter")
+        // updates = []; instance = root.get("score").instance(); instance.subscribe(...)
+        guard case let .liveCounter(counter) = try fixture.root.get(key: "score").instance() else {
+            Issue.record("expected a counter instance at root.get(\"score\")")
             return
         }
-
         let collector = ObjectsUTSEventCollector()
         try counter.subscribe(listener: collector.listener)
 
-        // The internal source message threaded through apply; its PAOM3 public form is delivered.
-        let sourceMessage = ObjectsUTS.counterIncMessage(objectId: "counter:score@1000", number: 7, serial: "ts1", siteCode: "remote-site")
-        var pool = ObjectsUTS.freshPool(internalQueue: internalQueue)
-        internalQueue.ably_syncNoDeadlock {
-            _ = node.nosync_apply(
-                ProtocolTypes.ObjectOperation(action: .known(.counterInc), objectId: "counter:score@1000", counterInc: WireCounterInc(number: NSNumber(value: 7))),
-                source: .channel,
-                objectMessage: sourceMessage,
-                objectsPool: &pool,
-            )
+        // Test Steps
+        // Spec: `mock_ws.send_to_client(build_object_message("test", [build_counter_inc(...7, "99",
+        // "remote-site")]))`. The unit stand-in for `send_to_client` applies the inbound COUNTER_INC
+        // directly to the internal node the instance wraps (the spec's literal remote serial/siteCode).
+        let objectMessage = ObjectsUTS.counterIncMessage(objectId: "counter:score@1000", number: 7, serial: "99", siteCode: "remote-site")
+        let operation = try #require(objectMessage.operation)
+        fixture.internalQueue.ably_syncNoDeadlock {
+            // Pool access is queue-confined (the seeded double's mutex asserts on-queue).
+            var pool = fixture.realtimeObjects.nosync_objectsPool
+            guard case let .counter(node) = pool.entries["counter:score@1000"] else {
+                Issue.record("expected counter node in the seeded pool")
+                return
+            }
+            _ = node.nosync_apply(operation, source: .channel, objectMessage: objectMessage, objectsPool: &pool)
         }
 
-        let events = await collector.events()
-        #expect(events.count == 1)
-        let event = try #require(events.first)
+        // poll_until(updates.length >= 1): drain the callback queue (never sleep).
+        let updates = await collector.events()
+
+        // Assertions
+        #expect(updates.count >= 1)
+        let event = try #require(updates.first)
         #expect(event.message?.operation.counterInc?.number == 7) // RTLC11b1
     }
 
-    // MARK: - Helpers
+    // MARK: - RTLC12e1: Table-driven invalid increment amounts
 
-    private func makeCounter(objectID: String, data: Double) throws -> (any LiveCounterInstance, ObjectsUTSPublished) {
-        let internalQueue = ObjectsUTS.createInternalQueue()
-        let coreSDK = ObjectsUTSCoreSDK()
-        let realtimeObjects = ObjectsUTSRealtimeObjects()
-        let published = ObjectsUTSPublished()
-        realtimeObjects.setPublishAndApplyHandler { messages in
-            published.set(messages)
-            return .success(())
+    // UTS: objects/unit/RTLC12e1/increment-invalid-amounts-table-0
+    @Test
+    func incrementInvalidAmountsTable() async throws {
+        // The spec's invalid_amounts table:
+        //   { value: null,        label: "null" }        # language-applicability: null ≡ omitted here
+        //   { value: NaN,         label: "NaN" }
+        //   { value: Infinity,    label: "Infinity" }
+        //   { value: -Infinity,   label: "-Infinity" }
+        //   { value: "10",        label: "string" }      # unrepresentable: increment(amount: Double)
+        //   { value: true,        label: "boolean" }     # unrepresentable
+        //   { value: [1, 2],      label: "array" }       # unrepresentable
+        //   { value: { n: 1 },    label: "object" }      # unrepresentable
+        // Only the non-finite doubles are expressible (D-1); each throws 40003.
+        let invalidAmounts: [(value: Double, label: String)] = [
+            (.nan, "NaN"),
+            (.infinity, "Infinity"),
+            (-.infinity, "-Infinity"),
+        ]
+
+        // Test Steps
+        for scenario in invalidAmounts {
+            let fixture = Self.makeFixture()
+            do {
+                try await fixture.root.get(key: "score").asLiveCounter().increment(amount: scenario.value)
+                Issue.record("expected increment(\(scenario.label)) to throw 40003")
+            } catch {
+                // Assertions
+                #expect(error.code == 40003)
+            }
         }
-        let node = ObjectsUTS.makeCounter(objectID: objectID, data: data, internalQueue: internalQueue)
-        guard case let .liveCounter(counter) = Instance.from(internalValue: .liveCounter(node), coreSDK: coreSDK, realtimeObjects: realtimeObjects, internalQueue: internalQueue) else {
-            throw NSError(domain: "InternalLiveCounterApiTests", code: 0, userInfo: [NSLocalizedDescriptionKey: "Expected .liveCounter"])
-        }
-        return (counter, published)
+
+        // The `null` row is not applicable (null ≡ omitted): pin the default directly so a later
+        // signature/coalescing change surfaces as a conscious decision — `increment()` succeeds and
+        // increments by the default of 1 (100 + 1).
+        let fixture = Self.makeFixture()
+        try await fixture.root.get(key: "score").asLiveCounter().increment()
+        #expect(try fixture.root.get(key: "score").asLiveCounter().value() == 101)
     }
 }

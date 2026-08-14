@@ -1,131 +1,90 @@
 // Derived from the UTS spec `objects/unit/internal_live_map.md`.
 //
-// Port of the REMAINING `objects/unit/internal_live_map.md` cases — everything except the six
-// parent-reference cases already covered by `UTS/InternalLiveMapParentReferencesTests.swift`
-// (RTLM7a3 overwrite, RTLM7g2 new-entry, RTLM7 primitive-no-refs, RTLM8a3, RTLM24e1c, RTLO4e9).
-// The two OTHER parent-reference cases the spec has but that file omitted — RTLM8
-// (map-remove-primitive-no-parent-refs) and RTLM7a3 (map-set-replace-objectid-both-refs) — ARE
-// remaining, so they are ported here.
+// Drives the internal `InternalDefaultLiveMap` CRDT node directly — no channel, no public path API.
+// The spec's `map.applyOperation(msg, source: CHANNEL)` maps to `nosync_apply(_:source:objectMessage:objectsPool:)`
+// (the full RTLM15 pipeline: RTLO4a serial/siteCode gate, RTLM15c siteTimeserials, RTLM15e tombstone
+// rejection, entry-level LWW), and `map.replaceData(msg)` maps to
+// `nosync_replaceData(using:objectMessageSerialTimestamp:objectsPool:)`. Both run on the internal
+// queue via `ably_syncNoDeadlock` (the harness pool/node accessors `dispatchPrecondition`-trap off it).
+// The static `InternalLiveMap.diff(previous, new)` maps to `ObjectDiffHelpers.calculateMapDiff(previousData:newData:)`.
+// Serials are the spec's own literal strings ("01"/"02"/…) kept verbatim — they are not the
+// standard_test_pool vocabulary — and compare as strings (RTLM9e).
 //
-// These drive `InternalDefaultLiveMap` directly: zero value, MAP_SET / MAP_REMOVE / MAP_CLEAR /
-// MAP_CREATE application, LWW (RTLM9) and clearTimeserial (RTLM7h/8g) gating, tombstoning
-// (OBJECT_DELETE, RTLO5) and the RTLO4e10 root-delete rejection, the sync `replaceData` path
-// (RTLM6*), GC (RTLM19), the RTLM22 diff, and the RTLM14 tombstoned-entry check.
+// Deviations from the UTS spec (see Test/UTS/deviations.md):
+// - (S-4) The apply pipeline stamps `LiveMapUpdate.objectMessage` (RTLM7f/RTLM8e/RTLM15) via
+//   `nosync_emitAndTearDown`, so the op-path `update.objectMessage == msg` assertions hold. The
+//   OBJECT_SYNC path (`nosync_replaceData`, RTLM6h) takes the `ObjectState` + `serialTimestamp`
+//   rather than the whole `ObjectMessage`, and its returned update carries NO `objectMessage`
+//   (nil for sync-originated updates, per RTO4b2a / the `DefaultLiveMapUpdate` doc). So the
+//   replaceData/tombstone-via-sync cases assert the diff (the substantive RTLM6h/RTLM22 coverage)
+//   and keep the `update.objectMessage == state_msg` ASSERT as a comment documenting nil. See (S-4) in deviations.md.
 //
-// Deviations from the UTS spec:
-// - (D-1) Construction: `InternalLiveMap(objectId:, semantics:[, pool:])` maps to
-//   `InternalDefaultLiveMap(testsOnly_data:objectID:…)` (so initial `data` can be seeded) or
-//   `.createZeroValued(objectID:…)`; there is no pool ctor param — the pool is passed `inout`
-//   per-op. Standard mock preamble.
-// - (D-2) Queue discipline: mutating `nosync_*` entry points (`nosync_apply`, `nosync_replaceData`,
-//   `nosync_releaseTombstonedEntries`) run inside `internalQueue.ably_syncNoDeadlock { }`;
-//   `testsOnly_set*` seams hop onto the queue themselves, so setup writes are outside the wrapper.
-// - (D-3) Setup writes: spec direct assignments (`map.data = {…}`, `map.clearTimeserial = "05"`,
-//   `map.isTombstone = true`, `map.siteTimeserials = {…}`) map to the `testsOnly_data:` ctor arg and
-//   the seams `testsOnly_setClearTimeserial`, `testsOnly_setTombstonedAt` (isTombstone is computed
-//   from tombstonedAt), `testsOnly_setSiteTimeserials`. Entry fields map to `InternalObjectsMapEntry`
-//   (`tombstone` computed from `tombstonedAt`); spec ms epoch → `Date`. A `{ data: null … }`
-//   tombstoned entry is built with `InternalObjectsMapEntry(tombstonedAt:timeserial:data:)` directly
-//   (the `TestFactories.internalMapEntry` helper's `data` is non-optional).
-// - (D-4) Message decomposition: `map.applyOperation(msg, source)` maps to
-//   `map.nosync_apply(operation, source:, objectMessage:, objectsPool:&)`. The built `msg` supplies
-//   the `operation` and is threaded down as the source message (RTLO4b4d); its PAOM3 public form is
-//   projected only at delivery.
-// - (D-5) `nosync_apply` returns `LiveObjectUpdate<…>?`: `nil` == gate-rejected (RTLM15b). So the
-//   spec's `result == false` / `update == false` maps to `== nil`; `update.noop` to `.isNoop`;
-//   `update.update` to `update.update?.update` (a `[String: LiveMapUpdateAction]` of `.updated` /
-//   `.removed`).
-// - (D-6) `update.objectMessage == msg` maps to equality against the internal source message the
-//   update stores (RTLO4b4d — the PAOM3 public form is projected only at delivery); `update.tombstone
-//   == true` to `update.tombstone` (RTLO4b4e). Both carried by the enriched update from the gated path.
-// - (D-7) RTO4b2a — the sync path (`nosync_replaceData`) is sync-originated, so its returned update
-//   carries `objectMessage == nil`. The spec's `ASSERT update.objectMessage == state_msg` for the
-//   RTLM6 / RTLM6f cases therefore does NOT hold in cocoa; asserted as `objectMessage == nil`.
-// - (D-8) Reads through functional accessors: `map.size()` / `map.get(key)` map to
-//   `size(coreSDK:delegate:)` / `get(key:coreSDK:delegate:)` with `MockCoreSDK` (`.attaching`) +
-//   `MockLiveMapObjectsPoolDelegate`. `map.data[k]` maps to `map.testsOnly_data[k]`.
-// - (D-9) `InternalLiveMap.diff(prev, new)` (RTLM22) maps to
-//   `ObjectDiffHelpers.calculateMapDiff(previousData:newData:)`.
-// - (D-10) `map.gcTombstonedEntries(grace, now)` (RTLM19) maps to
-//   `nosync_releaseTombstonedEntries(gracePeriod:clock:)` with grace in SECONDS (spec ms) and `now`
-//   supplied by a `MockSimpleClock`.
-// - (D-11) IMPLEMENTATION FIX (flagged in the report): RTLO4e10 (the root object must never be
-//   tombstoned) was unimplemented — `InternalDefaultLiveMap`'s OBJECT_DELETE / tombstone-flag paths
-//   would wrongly tombstone `root`. Fixed minimally in `Sources/AblyLiveObjects/Internal/
-//   InternalDefaultLiveMap.swift` (both `apply` OBJECT_DELETE and `replaceData` tombstone-flag paths
-//   now short-circuit to a noop for `objectID == root`). The two RTLO4e10 cases here exercise it.
+// Infra-driving stand-ins (direct node seeding via `ObjectsUTS.makeMap`, seeding serials/timeserials
+// via the `testsOnly_*` setters, `MockSimpleClock` for the RTLM19 GC clock) are NOT deviations.
 
-import _AblyPluginSupportPrivate
-import Ably
 @testable import AblyLiveObjects
 @testable import AblyLiveObjectsTesting
 import Foundation
 import Testing
 
 struct InternalLiveMapTests {
-    // MARK: - Helpers (D-1)
+    // MARK: - Helpers
 
-    private static func makeMap(objectID: String, data: [String: InternalObjectsMapEntry] = [:], internalQueue: DispatchQueue) -> InternalDefaultLiveMap {
-        InternalDefaultLiveMap(
-            testsOnly_data: data,
-            objectID: objectID,
-            logger: TestLogger(),
-            internalQueue: internalQueue,
-            userCallbackQueue: .main,
-            clock: MockSimpleClock(),
-        )
+    /// Converts a spec epoch-millis timestamp to the `Date` cocoa stores (objects-mapping §11).
+    private static func date(millis: Double) -> Date {
+        Date(timeIntervalSince1970: millis / 1000)
     }
 
-    private static func makeCounter(objectID: String, internalQueue: DispatchQueue) -> InternalDefaultLiveCounter {
-        InternalDefaultLiveCounter.createZeroValued(
-            objectID: objectID,
-            logger: TestLogger(),
-            internalQueue: internalQueue,
-            userCallbackQueue: .main,
-            clock: MockSimpleClock(),
-        )
-    }
-
-    private static func makePool(internalQueue: DispatchQueue) -> ObjectsPool {
-        ObjectsPool(logger: TestLogger(), internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
-    }
-
-    private static func coreSDK(internalQueue: DispatchQueue) -> MockCoreSDK {
-        MockCoreSDK(channelState: .attaching, internalQueue: internalQueue)
-    }
-
-    /// Drives the gated `nosync_apply` from an inbound message, decomposing it (D-4) and threading
-    /// the source message down; the public form is projected per PAOM3 at delivery.
+    /// Applies an inbound operation message through the full RTLM15 pipeline (`nosync_apply`), on the
+    /// internal queue. Returns the update (which may be `.noop`, or `nil` when the op is skipped per
+    /// RTLM15b/RTLM15e/RTLM15d4) and the mutated pool (a value type).
     private static func apply(
         _ message: ProtocolTypes.InboundObjectMessage,
         to map: InternalDefaultLiveMap,
-        source: ObjectsOperationSource = .channel,
-        pool: inout ObjectsPool,
-        internalQueue: DispatchQueue,
-    ) throws -> LiveObjectUpdate<DefaultLiveMapUpdate>? {
+        pool: ObjectsPool,
+        on queue: DispatchQueue,
+    ) throws -> (update: LiveObjectUpdate<DefaultLiveMapUpdate>?, pool: ObjectsPool) {
         let operation = try #require(message.operation)
-        return internalQueue.ably_syncNoDeadlock {
-            map.nosync_apply(
-                operation,
-                source: source,
-                objectMessage: message,
-                objectsPool: &pool,
-            )
+        var pool = pool
+        let update = queue.ably_syncNoDeadlock {
+            map.nosync_apply(operation, source: .channel, objectMessage: message, objectsPool: &pool)
         }
+        return (update, pool)
     }
 
-    // MARK: - RTLM4
+    /// Replaces the map's data from an `ObjectState` (`nosync_replaceData`, RTLM6), on the internal queue.
+    private static func replaceData(
+        _ state: ProtocolTypes.ObjectState,
+        into map: InternalDefaultLiveMap,
+        pool: ObjectsPool,
+        serialTimestamp: Date? = nil,
+        on queue: DispatchQueue,
+    ) -> (update: LiveObjectUpdate<DefaultLiveMapUpdate>, pool: ObjectsPool) {
+        var pool = pool
+        let update = queue.ably_syncNoDeadlock {
+            map.nosync_replaceData(using: state, objectMessageSerialTimestamp: serialTimestamp, objectsPool: &pool)
+        }
+        return (update, pool)
+    }
+
+    // MARK: - RTLM4: zero-value
 
     // UTS: objects/unit/RTLM4/zero-value-0
     @Test
-    func zeroValueMap() {
-        let internalQueue = TestFactories.createInternalQueue()
-        let map = Self.makeMap(objectID: "root", internalQueue: internalQueue)
+    func zeroValueMapIsEmpty() {
+        let queue = ObjectsUTS.createInternalQueue()
+        // map = InternalLiveMap(objectId: "root", semantics: "LWW")
+        let map = ObjectsUTS.makeMap(objectID: "root", internalQueue: queue)
 
+        // ASSERT map.data == {}
         #expect(map.testsOnly_data.isEmpty)
+        // ASSERT map.clearTimeserial == null
         #expect(map.testsOnly_clearTimeserial == nil)
+        // ASSERT map.isTombstone == false
         #expect(map.testsOnly_isTombstone == false)
+        // ASSERT map.createOperationIsMerged == false
         #expect(map.testsOnly_createOperationIsMerged == false)
+        // ASSERT map.siteTimeserials == {}
         #expect(map.testsOnly_siteTimeserials.isEmpty)
     }
 
@@ -134,147 +93,204 @@ struct InternalLiveMapTests {
     // UTS: objects/unit/RTLM7/map-set-new-entry-0
     @Test
     func mapSetCreatesNewEntry() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(objectID: "root", internalQueue: internalQueue)
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(objectID: "root", internalQueue: queue)
 
-        let msg = TestFactories.mapSetOperationMessage(objectId: "root", key: "name", value: "Alice", serial: "01", siteCode: "site1")
-        let update = try #require(Self.apply(msg, to: map, pool: &pool, internalQueue: internalQueue))
+        // msg = build_map_set("root", "name", { string: "Alice" }, "01", "site1")
+        let msg = ObjectsUTS.mapSetMessage(objectId: "root", key: "name", value: ProtocolTypes.ObjectData(string: "Alice"), serial: "01", siteCode: "site1")
+        let (update, _) = try Self.apply(msg, to: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
-        #expect(map.testsOnly_data["name"]?.data == ProtocolTypes.ObjectData(string: "Alice"))
-        #expect(map.testsOnly_data["name"]?.timeserial == "01")
-        #expect(map.testsOnly_data["name"]?.tombstone == false)
-        #expect(update.update?.update == ["name": .updated])
-        #expect(update.objectMessage == msg)
+        let entry = try #require(map.testsOnly_data["name"])
+        // ASSERT map.data["name"].data == { string: "Alice" }
+        #expect(entry.data == ProtocolTypes.ObjectData(string: "Alice"))
+        // ASSERT map.data["name"].timeserial == "01"
+        #expect(entry.timeserial == "01")
+        // ASSERT map.data["name"].tombstone == false
+        #expect(entry.tombstone == false)
+        // ASSERT update.update == { "name": "updated" }
+        #expect(update?.update?.update == ["name": .updated])
+        // ASSERT update.objectMessage == msg
+        #expect(update?.objectMessage == msg)
     }
 
     // UTS: objects/unit/RTLM7/map-set-update-entry-0
     @Test
     func mapSetUpdatesExistingEntry() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(
             objectID: "root",
-            data: ["name": TestFactories.internalMapEntry(timeserial: "01", data: ProtocolTypes.ObjectData(string: "Alice"))],
-            internalQueue: internalQueue,
+            data: ["name": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "Alice"), timeserial: "01")],
+            internalQueue: queue,
         )
 
-        let msg = TestFactories.mapSetOperationMessage(objectId: "root", key: "name", value: "Bob", serial: "02", siteCode: "site1")
-        let update = try #require(Self.apply(msg, to: map, pool: &pool, internalQueue: internalQueue))
+        // msg = build_map_set("root", "name", { string: "Bob" }, "02", "site1")
+        let msg = ObjectsUTS.mapSetMessage(objectId: "root", key: "name", value: ProtocolTypes.ObjectData(string: "Bob"), serial: "02", siteCode: "site1")
+        let (update, _) = try Self.apply(msg, to: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
-        #expect(map.testsOnly_data["name"]?.data == ProtocolTypes.ObjectData(string: "Bob"))
-        #expect(map.testsOnly_data["name"]?.timeserial == "02")
-        #expect(update.update?.update == ["name": .updated])
-        #expect(update.objectMessage == msg)
+        let entry = try #require(map.testsOnly_data["name"])
+        // ASSERT map.data["name"].data == { string: "Bob" }
+        #expect(entry.data == ProtocolTypes.ObjectData(string: "Bob"))
+        // ASSERT map.data["name"].timeserial == "02"
+        #expect(entry.timeserial == "02")
+        // ASSERT update.update == { "name": "updated" }
+        #expect(update?.update?.update == ["name": .updated])
+        // ASSERT update.objectMessage == msg
+        #expect(update?.objectMessage == msg)
     }
 
-    // MARK: - RTLM9: LWW
+    // UTS: objects/unit/RTLM7/map-set-revives-tombstoned-0
+    @Test
+    func mapSetRevivesTombstonedEntry() throws {
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(
+            objectID: "root",
+            // "name": { data: null, timeserial: "01", tombstone: true, tombstonedAt: 1700000000000 }
+            data: ["name": InternalObjectsMapEntry(tombstonedAt: Self.date(millis: 1_700_000_000_000), timeserial: "01", data: nil)],
+            internalQueue: queue,
+        )
+
+        // msg = build_map_set("root", "name", { string: "Alice" }, "02", "site1")
+        let msg = ObjectsUTS.mapSetMessage(objectId: "root", key: "name", value: ProtocolTypes.ObjectData(string: "Alice"), serial: "02", siteCode: "site1")
+        let (update, _) = try Self.apply(msg, to: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
+
+        let entry = try #require(map.testsOnly_data["name"])
+        // ASSERT map.data["name"].data == { string: "Alice" }
+        #expect(entry.data == ProtocolTypes.ObjectData(string: "Alice"))
+        // ASSERT map.data["name"].tombstone == false
+        #expect(entry.tombstone == false)
+        // ASSERT map.data["name"].tombstonedAt == null
+        #expect(entry.tombstonedAt == nil)
+        // ASSERT update.update == { "name": "updated" }
+        #expect(update?.update?.update == ["name": .updated])
+        // ASSERT update.objectMessage == msg
+        #expect(update?.objectMessage == msg)
+    }
+
+    // MARK: - RTLM9: LWW entry-level comparison
 
     // UTS: objects/unit/RTLM9/lww-reject-stale-0
     @Test
     func lwwRejectsStaleSerialOnExistingEntry() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(
             objectID: "root",
-            data: ["name": TestFactories.internalMapEntry(timeserial: "05", data: ProtocolTypes.ObjectData(string: "Alice"))],
-            internalQueue: internalQueue,
+            data: ["name": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "Alice"), timeserial: "05")],
+            internalQueue: queue,
         )
 
-        let msg = TestFactories.mapSetOperationMessage(objectId: "root", key: "name", value: "Bob", serial: "03", siteCode: "site1")
-        let update = try #require(Self.apply(msg, to: map, pool: &pool, internalQueue: internalQueue))
+        // msg = build_map_set("root", "name", { string: "Bob" }, "03", "site1")
+        let msg = ObjectsUTS.mapSetMessage(objectId: "root", key: "name", value: ProtocolTypes.ObjectData(string: "Bob"), serial: "03", siteCode: "site1")
+        let (update, _) = try Self.apply(msg, to: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
+        // ASSERT map.data["name"].data == { string: "Alice" }
         #expect(map.testsOnly_data["name"]?.data == ProtocolTypes.ObjectData(string: "Alice"))
-        #expect(update.isNoop == true)
+        // ASSERT update.noop == true
+        #expect(update?.isNoop == true)
     }
 
     // UTS: objects/unit/RTLM9/lww-reject-equal-0
     @Test
     func lwwRejectsEqualSerial() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(
             objectID: "root",
-            data: ["name": TestFactories.internalMapEntry(timeserial: "05", data: ProtocolTypes.ObjectData(string: "Alice"))],
-            internalQueue: internalQueue,
+            data: ["name": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "Alice"), timeserial: "05")],
+            internalQueue: queue,
         )
 
-        let msg = TestFactories.mapSetOperationMessage(objectId: "root", key: "name", value: "Bob", serial: "05", siteCode: "site1")
-        let update = try #require(Self.apply(msg, to: map, pool: &pool, internalQueue: internalQueue))
+        // msg = build_map_set("root", "name", { string: "Bob" }, "05", "site1")
+        let msg = ObjectsUTS.mapSetMessage(objectId: "root", key: "name", value: ProtocolTypes.ObjectData(string: "Bob"), serial: "05", siteCode: "site1")
+        let (update, _) = try Self.apply(msg, to: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
+        // ASSERT map.data["name"].data == { string: "Alice" }
         #expect(map.testsOnly_data["name"]?.data == ProtocolTypes.ObjectData(string: "Alice"))
-        #expect(update.isNoop == true)
+        // ASSERT update.noop == true
+        #expect(update?.isNoop == true)
     }
 
     // UTS: objects/unit/RTLM9b/both-empty-reject-0
     @Test
     func bothSerialsEmptyRejectsOperation() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(
             objectID: "root",
-            data: ["name": TestFactories.internalMapEntry(timeserial: "", data: ProtocolTypes.ObjectData(string: "Alice"))],
-            internalQueue: internalQueue,
+            data: ["name": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "Alice"), timeserial: "")],
+            internalQueue: queue,
         )
 
-        let msg = TestFactories.mapSetOperationMessage(objectId: "root", key: "name", value: "Bob", serial: "", siteCode: "site1")
-        let update = try Self.apply(msg, to: map, pool: &pool, internalQueue: internalQueue)
+        // msg = build_map_set("root", "name", { string: "Bob" }, "", "site1")
+        let msg = ObjectsUTS.mapSetMessage(objectId: "root", key: "name", value: ProtocolTypes.ObjectData(string: "Bob"), serial: "", siteCode: "site1")
+        let (update, _) = try Self.apply(msg, to: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
+        // ASSERT map.data["name"].data == { string: "Alice" }
         #expect(map.testsOnly_data["name"]?.data == ProtocolTypes.ObjectData(string: "Alice"))
-        // The op's serial is empty, so the OBJECT-level gate (RTLO4a3) rejects it before the
-        // entry-level RTLM9b comparison; nosync_apply returns nil (D-5). The RTLM9b "both empty" case
-        // is thus unreachable via applyOperation — a spec layering tension noted in the spec itself.
+        // The op's ObjectMessage.serial is empty, so the OBJECT-level gate (RTLO4a3, via
+        // canApplyOperation) rejects it before the entry-level RTLM9b comparison, and applyOperation
+        // returns false (RTLM15b) — a plain false, not a noop update.
+        // ASSERT update == false
         #expect(update == nil)
     }
 
     // UTS: objects/unit/RTLM9d/missing-entry-serial-allows-0
     @Test
     func missingEntrySerialAllowsOperation() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(
             objectID: "root",
-            data: ["name": TestFactories.internalMapEntry(timeserial: nil, data: ProtocolTypes.ObjectData(string: "Alice"))],
-            internalQueue: internalQueue,
+            // "name": { data: { string: "Alice" }, timeserial: null, tombstone: false }
+            data: ["name": InternalObjectsMapEntry(tombstonedAt: nil, timeserial: nil, data: ProtocolTypes.ObjectData(string: "Alice"))],
+            internalQueue: queue,
         )
 
-        let msg = TestFactories.mapSetOperationMessage(objectId: "root", key: "name", value: "Bob", serial: "01", siteCode: "site1")
-        let update = try #require(Self.apply(msg, to: map, pool: &pool, internalQueue: internalQueue))
+        // msg = build_map_set("root", "name", { string: "Bob" }, "01", "site1")
+        let msg = ObjectsUTS.mapSetMessage(objectId: "root", key: "name", value: ProtocolTypes.ObjectData(string: "Bob"), serial: "01", siteCode: "site1")
+        let (update, _) = try Self.apply(msg, to: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
+        // ASSERT map.data["name"].data == { string: "Bob" }
         #expect(map.testsOnly_data["name"]?.data == ProtocolTypes.ObjectData(string: "Bob"))
-        #expect(update.update?.update == ["name": .updated])
-        #expect(update.objectMessage == msg)
+        // ASSERT update.update == { "name": "updated" }
+        #expect(update?.update?.update == ["name": .updated])
+        // ASSERT update.objectMessage == msg
+        #expect(update?.objectMessage == msg)
     }
 
-    // MARK: - RTLM7h, RTLM7g
+    // MARK: - RTLM7h: MAP_SET clearTimeserial floor
 
     // UTS: objects/unit/RTLM7h/map-set-clear-timeserial-floor-0
     @Test
-    func mapSetRejectedWhenSerialAtOrBelowClearTimeserial() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(objectID: "root", internalQueue: internalQueue)
+    func mapSetRejectedWhenSerialBelowClearTimeserial() throws {
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(objectID: "root", internalQueue: queue)
         map.testsOnly_setClearTimeserial("05")
 
-        let msg = TestFactories.mapSetOperationMessage(objectId: "root", key: "name", value: "Alice", serial: "03", siteCode: "site1")
-        let update = try #require(Self.apply(msg, to: map, pool: &pool, internalQueue: internalQueue))
+        // msg = build_map_set("root", "name", { string: "Alice" }, "03", "site1")
+        let msg = ObjectsUTS.mapSetMessage(objectId: "root", key: "name", value: ProtocolTypes.ObjectData(string: "Alice"), serial: "03", siteCode: "site1")
+        let (update, _) = try Self.apply(msg, to: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
+        // ASSERT "name" NOT IN map.data
         #expect(map.testsOnly_data["name"] == nil)
-        #expect(update.isNoop == true)
+        // ASSERT update.noop == true
+        #expect(update?.isNoop == true)
     }
+
+    // MARK: - RTLM7g: MAP_SET with objectId creates zero-value object
 
     // UTS: objects/unit/RTLM7g/map-set-objectid-creates-zero-value-0
     @Test
     func mapSetWithObjectIdCreatesZeroValueObject() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(objectID: "root", internalQueue: internalQueue)
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(objectID: "root", internalQueue: queue)
 
-        let msg = TestFactories.mapSetOperationMessage(objectId: "root", key: "score", data: ProtocolTypes.ObjectData(objectId: "counter:new@2000"), serial: "01", siteCode: "site1")
-        _ = try Self.apply(msg, to: map, pool: &pool, internalQueue: internalQueue)
+        // msg = build_map_set("root", "score", { objectId: "counter:new@2000" }, "01", "site1")
+        let msg = ObjectsUTS.mapSetMessage(objectId: "root", key: "score", value: ProtocolTypes.ObjectData(objectId: "counter:new@2000"), serial: "01", siteCode: "site1")
+        let (_, pool) = try Self.apply(msg, to: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
-        let createdCounter = try #require(pool.entries["counter:new@2000"]?.counterValue)
-        #expect(try createdCounter.value(coreSDK: Self.coreSDK(internalQueue: internalQueue)) == 0)
+        // ASSERT "counter:new@2000" IN pool
+        let entry = try #require(pool.entries["counter:new@2000"])
+        // ASSERT pool["counter:new@2000"] IS InternalLiveCounter
+        let counter = try #require(entry.counterValue)
+        // ASSERT pool["counter:new@2000"].data == 0
+        #expect(counter.testsOnly_data == 0)
     }
 
     // MARK: - RTLM8: MAP_REMOVE
@@ -282,59 +298,77 @@ struct InternalLiveMapTests {
     // UTS: objects/unit/RTLM8/map-remove-existing-0
     @Test
     func mapRemoveTombstonesExistingEntry() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(
             objectID: "root",
-            data: ["name": TestFactories.internalMapEntry(timeserial: "01", data: ProtocolTypes.ObjectData(string: "Alice"))],
-            internalQueue: internalQueue,
+            data: ["name": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "Alice"), timeserial: "01")],
+            internalQueue: queue,
         )
 
-        let msg = TestFactories.mapRemoveOperationMessage(objectId: "root", key: "name", serial: "02", siteCode: "site1", serialTimestamp: Date(timeIntervalSince1970: 1_700_000_000))
-        let update = try #require(Self.apply(msg, to: map, pool: &pool, internalQueue: internalQueue))
+        // msg = build_map_remove("root", "name", "02", "site1", 1700000000000)
+        let msg = TestFactories.mapRemoveOperationMessage(objectId: "root", key: "name", serial: "02", siteCode: "site1", serialTimestamp: Self.date(millis: 1_700_000_000_000))
+        let (update, _) = try Self.apply(msg, to: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
-        #expect(map.testsOnly_data["name"]?.data == nil)
-        #expect(map.testsOnly_data["name"]?.tombstone == true)
-        #expect(map.testsOnly_data["name"]?.timeserial == "02")
-        #expect(map.testsOnly_data["name"]?.tombstonedAt == Date(timeIntervalSince1970: 1_700_000_000))
-        #expect(update.update?.update == ["name": .removed])
-        #expect(update.objectMessage == msg)
+        let entry = try #require(map.testsOnly_data["name"])
+        // ASSERT map.data["name"].data == null
+        #expect(entry.data == nil)
+        // ASSERT map.data["name"].tombstone == true
+        #expect(entry.tombstone == true)
+        // ASSERT map.data["name"].timeserial == "02"
+        #expect(entry.timeserial == "02")
+        // ASSERT map.data["name"].tombstonedAt == 1700000000000
+        #expect(entry.tombstonedAt == Self.date(millis: 1_700_000_000_000))
+        // ASSERT update.update == { "name": "removed" }
+        #expect(update?.update?.update == ["name": .removed])
+        // ASSERT update.objectMessage == msg
+        #expect(update?.objectMessage == msg)
     }
 
     // UTS: objects/unit/RTLM8/map-remove-nonexistent-0
     @Test
     func mapRemoveCreatesTombstonedEntryIfNotExists() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(objectID: "root", internalQueue: internalQueue)
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(objectID: "root", internalQueue: queue)
 
-        let msg = TestFactories.mapRemoveOperationMessage(objectId: "root", key: "ghost", serial: "01", siteCode: "site1", serialTimestamp: Date(timeIntervalSince1970: 1_700_000_000))
-        let update = try #require(Self.apply(msg, to: map, pool: &pool, internalQueue: internalQueue))
+        // msg = build_map_remove("root", "ghost", "01", "site1", 1700000000000)
+        let msg = TestFactories.mapRemoveOperationMessage(objectId: "root", key: "ghost", serial: "01", siteCode: "site1", serialTimestamp: Self.date(millis: 1_700_000_000_000))
+        let (update, _) = try Self.apply(msg, to: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
-        #expect(map.testsOnly_data["ghost"]?.tombstone == true)
-        #expect(map.testsOnly_data["ghost"]?.tombstonedAt == Date(timeIntervalSince1970: 1_700_000_000))
-        #expect(update.update?.update == ["ghost": .removed])
-        #expect(update.objectMessage == msg)
+        let entry = try #require(map.testsOnly_data["ghost"])
+        // ASSERT map.data["ghost"].tombstone == true
+        #expect(entry.tombstone == true)
+        // ASSERT map.data["ghost"].tombstonedAt == 1700000000000
+        #expect(entry.tombstonedAt == Self.date(millis: 1_700_000_000_000))
+        // ASSERT update.update == { "ghost": "removed" }
+        #expect(update?.update?.update == ["ghost": .removed])
+        // ASSERT update.objectMessage == msg
+        #expect(update?.objectMessage == msg)
     }
+
+    // MARK: - RTLM8g: MAP_REMOVE clearTimeserial floor
 
     // UTS: objects/unit/RTLM8g/map-remove-clear-timeserial-floor-0
     @Test
-    func mapRemoveRejectedWhenSerialAtOrBelowClearTimeserial() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(
+    func mapRemoveRejectedWhenSerialBelowClearTimeserial() throws {
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(
             objectID: "root",
-            data: ["name": TestFactories.internalMapEntry(timeserial: "04", data: ProtocolTypes.ObjectData(string: "Alice"))],
-            internalQueue: internalQueue,
+            data: ["name": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "Alice"), timeserial: "04")],
+            internalQueue: queue,
         )
         map.testsOnly_setClearTimeserial("05")
 
-        let msg = TestFactories.mapRemoveOperationMessage(objectId: "root", key: "name", serial: "03", siteCode: "site1", serialTimestamp: Date(timeIntervalSince1970: 1_700_000_000))
-        let update = try #require(Self.apply(msg, to: map, pool: &pool, internalQueue: internalQueue))
+        // msg = build_map_remove("root", "name", "03", "site1", 1700000000000)
+        let msg = TestFactories.mapRemoveOperationMessage(objectId: "root", key: "name", serial: "03", siteCode: "site1", serialTimestamp: Self.date(millis: 1_700_000_000_000))
+        let (update, _) = try Self.apply(msg, to: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
-        #expect(map.testsOnly_data["name"]?.data == ProtocolTypes.ObjectData(string: "Alice"))
-        #expect(map.testsOnly_data["name"]?.tombstone == false)
-        #expect(update.isNoop == true)
+        let entry = try #require(map.testsOnly_data["name"])
+        // ASSERT map.data["name"].data == { string: "Alice" }
+        #expect(entry.data == ProtocolTypes.ObjectData(string: "Alice"))
+        // ASSERT map.data["name"].tombstone == false
+        #expect(entry.tombstone == false)
+        // ASSERT update.noop == true
+        #expect(update?.isNoop == true)
     }
 
     // MARK: - RTLM24: MAP_CLEAR
@@ -342,505 +376,561 @@ struct InternalLiveMapTests {
     // UTS: objects/unit/RTLM24/map-clear-basic-0
     @Test
     func mapClearSetsClearTimeserialAndRemovesOlderEntries() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(
             objectID: "root",
             data: [
-                "old": TestFactories.internalMapEntry(timeserial: "02", data: ProtocolTypes.ObjectData(string: "old")),
-                "new": TestFactories.internalMapEntry(timeserial: "06", data: ProtocolTypes.ObjectData(string: "new")),
-                "same": TestFactories.internalMapEntry(timeserial: "04", data: ProtocolTypes.ObjectData(string: "same")),
+                "old": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "old"), timeserial: "02"),
+                "new": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "new"), timeserial: "06"),
+                "same": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "same"), timeserial: "04"),
             ],
-            internalQueue: internalQueue,
+            internalQueue: queue,
         )
 
-        let msg = TestFactories.mapClearOperationMessage(objectId: "root", serial: "04", siteCode: "site1")
-        let update = try #require(Self.apply(msg, to: map, pool: &pool, internalQueue: internalQueue))
+        // msg = build_map_clear("root", "04", "site1")
+        let msg = ObjectsUTS.mapClearMessage(objectId: "root", serial: "04", siteCode: "site1")
+        let (update, _) = try Self.apply(msg, to: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
+        // ASSERT map.clearTimeserial == "04"
         #expect(map.testsOnly_clearTimeserial == "04")
+        // ASSERT "old" NOT IN map.data
         #expect(map.testsOnly_data["old"] == nil)
-        // RTLM24e1: removed only if clear serial is strictly greater than the entry's timeserial;
-        // "same" has timeserial "04" == the clear serial (not greater), so it is KEPT.
+        // "same" has timeserial "04" == the clear serial "04" (not greater per RTLM24e1), so KEPT.
+        // ASSERT "same" IN map.data
         #expect(map.testsOnly_data["same"] != nil)
+        // ASSERT "new" IN map.data
         #expect(map.testsOnly_data["new"] != nil)
-        #expect(update.update?.update == ["old": .removed])
-        #expect(update.objectMessage == msg)
-    }
-
-    // UTS: objects/unit/RTLM24c/map-clear-stale-0
-    @Test
-    func mapClearRejectedWhenClearTimeserialAlreadyGreater() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(objectID: "root", internalQueue: internalQueue)
-        map.testsOnly_setClearTimeserial("10")
-
-        let msg = TestFactories.mapClearOperationMessage(objectId: "root", serial: "05", siteCode: "site1")
-        let update = try #require(Self.apply(msg, to: map, pool: &pool, internalQueue: internalQueue))
-
-        #expect(map.testsOnly_clearTimeserial == "10")
-        #expect(update.isNoop == true)
+        // ASSERT update.update == { "old": "removed" }
+        #expect(update?.update?.update == ["old": .removed])
+        // ASSERT update.objectMessage == msg
+        #expect(update?.objectMessage == msg)
     }
 
     // UTS: objects/unit/RTLM24/map-clear-preserves-newer-0
     @Test
     func mapClearPreservesEntriesWithNewerSerial() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(
             objectID: "root",
             data: [
-                "before": TestFactories.internalMapEntry(timeserial: "03", data: ProtocolTypes.ObjectData(string: "a")),
-                "after": TestFactories.internalMapEntry(timeserial: "07", data: ProtocolTypes.ObjectData(string: "b")),
-                "no_ts": TestFactories.internalMapEntry(timeserial: nil, data: ProtocolTypes.ObjectData(string: "c")),
+                "before": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "a"), timeserial: "03"),
+                "after": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "b"), timeserial: "07"),
+                // "no_ts": timeserial null
+                "no_ts": InternalObjectsMapEntry(tombstonedAt: nil, timeserial: nil, data: ProtocolTypes.ObjectData(string: "c")),
             ],
-            internalQueue: internalQueue,
+            internalQueue: queue,
         )
 
-        let msg = TestFactories.mapClearOperationMessage(objectId: "root", serial: "05", siteCode: "site1")
-        let update = try #require(Self.apply(msg, to: map, pool: &pool, internalQueue: internalQueue))
+        // msg = build_map_clear("root", "05", "site1")
+        let msg = ObjectsUTS.mapClearMessage(objectId: "root", serial: "05", siteCode: "site1")
+        let (update, _) = try Self.apply(msg, to: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
+        // ASSERT "before" NOT IN map.data
         #expect(map.testsOnly_data["before"] == nil)
+        // ASSERT "no_ts" NOT IN map.data
         #expect(map.testsOnly_data["no_ts"] == nil)
+        // ASSERT map.data["after"].data == { string: "b" }
         #expect(map.testsOnly_data["after"]?.data == ProtocolTypes.ObjectData(string: "b"))
-        #expect(update.update?.update["before"] == .removed)
-        #expect(update.update?.update["no_ts"] == .removed)
-        #expect(update.update?.update["after"] == nil)
-        #expect(update.objectMessage == msg)
+        // ASSERT "before" IN update.update
+        #expect(update?.update?.update["before"] == .removed)
+        // ASSERT "no_ts" IN update.update
+        #expect(update?.update?.update["no_ts"] == .removed)
+        // ASSERT "after" NOT IN update.update
+        #expect(update?.update?.update["after"] == nil)
+        // ASSERT update.objectMessage == msg
+        #expect(update?.objectMessage == msg)
     }
 
-    // MARK: - RTLM16, RTLM23: MAP_CREATE
+    // UTS: objects/unit/RTLM24c/map-clear-stale-0
+    @Test
+    func mapClearRejectedWhenClearTimeserialAlreadyGreater() throws {
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(objectID: "root", internalQueue: queue)
+        map.testsOnly_setClearTimeserial("10")
+
+        // msg = build_map_clear("root", "05", "site1")
+        let msg = ObjectsUTS.mapClearMessage(objectId: "root", serial: "05", siteCode: "site1")
+        let (update, _) = try Self.apply(msg, to: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
+
+        // ASSERT map.clearTimeserial == "10"
+        #expect(map.testsOnly_clearTimeserial == "10")
+        // ASSERT update.noop == true
+        #expect(update?.isNoop == true)
+    }
+
+    // MARK: - RTLM16 / RTLM23: MAP_CREATE
 
     // UTS: objects/unit/RTLM16/map-create-merge-0
     @Test
     func mapCreateMergesEntries() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(objectID: "map:test@1000", internalQueue: internalQueue)
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(objectID: "map:test@1000", internalQueue: queue)
 
-        let entries: [String: ProtocolTypes.ObjectsMapEntry] = [
-            "name": ProtocolTypes.ObjectsMapEntry(tombstone: false, timeserial: "01", data: ProtocolTypes.ObjectData(string: "Alice")),
-            "removed_key": ProtocolTypes.ObjectsMapEntry(tombstone: true, timeserial: "01", data: nil, serialTimestamp: Date(timeIntervalSince1970: 1_700_000_000)),
-        ]
-        let msg = TestFactories.mapCreateOperationMessage(objectId: "map:test@1000", entries: entries, serial: "02", siteCode: "site1")
-        let update = try #require(Self.apply(msg, to: map, pool: &pool, internalQueue: internalQueue))
+        // msg = build_map_create("map:test@1000", { entries: { "name": {...}, "removed_key": {tombstone,...} } }, "02", "site1")
+        let msg = TestFactories.mapCreateOperationMessage(
+            objectId: "map:test@1000",
+            entries: [
+                "name": ProtocolTypes.ObjectsMapEntry(tombstone: false, timeserial: "01", data: ProtocolTypes.ObjectData(string: "Alice")),
+                "removed_key": ProtocolTypes.ObjectsMapEntry(tombstone: true, timeserial: "01", data: nil, serialTimestamp: Self.date(millis: 1_700_000_000_000)),
+            ],
+            serial: "02",
+            siteCode: "site1",
+        )
+        let (update, _) = try Self.apply(msg, to: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
+        // ASSERT map.data["name"].data == { string: "Alice" }
         #expect(map.testsOnly_data["name"]?.data == ProtocolTypes.ObjectData(string: "Alice"))
+        // ASSERT map.data["removed_key"].tombstone == true
         #expect(map.testsOnly_data["removed_key"]?.tombstone == true)
+        // ASSERT map.createOperationIsMerged == true
         #expect(map.testsOnly_createOperationIsMerged == true)
-        #expect(update.update?.update == ["name": .updated, "removed_key": .removed])
-        #expect(update.objectMessage == msg)
+        // ASSERT update.update == { "name": "updated", "removed_key": "removed" }
+        #expect(update?.update?.update == ["name": .updated, "removed_key": .removed])
+        // ASSERT update.objectMessage == msg
+        #expect(update?.objectMessage == msg)
     }
 
     // UTS: objects/unit/RTLM16b/map-create-already-merged-0
     @Test
     func mapCreateNoopWhenAlreadyMerged() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(objectID: "map:test@1000", internalQueue: internalQueue)
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(objectID: "map:test@1000", internalQueue: queue)
         map.testsOnly_setCreateOperationIsMerged(true)
         map.testsOnly_setSiteTimeserials(["site1": "00"])
 
-        let entries: [String: ProtocolTypes.ObjectsMapEntry] = [
-            "name": ProtocolTypes.ObjectsMapEntry(tombstone: false, timeserial: "01", data: ProtocolTypes.ObjectData(string: "Bob")),
-        ]
-        let msg = TestFactories.mapCreateOperationMessage(objectId: "map:test@1000", entries: entries, serial: "01", siteCode: "site1")
-        let update = try #require(Self.apply(msg, to: map, pool: &pool, internalQueue: internalQueue))
+        // msg = build_map_create("map:test@1000", { entries: { "name": { string: "Bob" } } }, "01", "site1")
+        let msg = TestFactories.mapCreateOperationMessage(
+            objectId: "map:test@1000",
+            entries: ["name": ProtocolTypes.ObjectsMapEntry(tombstone: false, timeserial: "01", data: ProtocolTypes.ObjectData(string: "Bob"))],
+            serial: "01",
+            siteCode: "site1",
+        )
+        let (update, _) = try Self.apply(msg, to: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
+        // ASSERT "name" NOT IN map.data
         #expect(map.testsOnly_data["name"] == nil)
-        #expect(update.isNoop == true)
+        // ASSERT update.noop == true
+        #expect(update?.isNoop == true)
     }
 
-    // MARK: - RTLM15c, RTLM15e
+    // MARK: - RTLM15: apply pipeline gating
 
     // UTS: objects/unit/RTLM15c/channel-source-updates-serials-0
     @Test
     func channelSourceUpdatesSiteTimeserials() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(objectID: "root", internalQueue: internalQueue)
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(objectID: "root", internalQueue: queue)
 
-        let msg = TestFactories.mapSetOperationMessage(objectId: "root", key: "x", data: ProtocolTypes.ObjectData(number: NSNumber(value: 1)), serial: "01", siteCode: "site1")
-        _ = try Self.apply(msg, to: map, source: .channel, pool: &pool, internalQueue: internalQueue)
+        // msg = build_map_set("root", "x", { number: 1 }, "01", "site1")
+        let msg = ObjectsUTS.mapSetMessage(objectId: "root", key: "x", value: ProtocolTypes.ObjectData(number: NSNumber(value: 1)), serial: "01", siteCode: "site1")
+        _ = try Self.apply(msg, to: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
+        // ASSERT map.siteTimeserials["site1"] == "01"
         #expect(map.testsOnly_siteTimeserials["site1"] == "01")
     }
 
     // UTS: objects/unit/RTLM15e/tombstoned-reject-ops-0
     @Test
     func operationsOnTombstonedMapAreRejected() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(objectID: "root", internalQueue: internalQueue)
-        // D-3: isTombstone is computed from tombstonedAt
-        map.testsOnly_setTombstonedAt(Date(timeIntervalSince1970: 1_700_000_000))
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(objectID: "root", internalQueue: queue)
+        // map.isTombstone = true (modelled by setting tombstonedAt; isTombstone == tombstonedAt != nil)
+        map.testsOnly_setTombstonedAt(Self.date(millis: 1_700_000_000_000))
 
-        let msg = TestFactories.mapSetOperationMessage(objectId: "root", key: "x", data: ProtocolTypes.ObjectData(number: NSNumber(value: 1)), serial: "01", siteCode: "site1")
-        let result = try Self.apply(msg, to: map, pool: &pool, internalQueue: internalQueue)
+        // msg = build_map_set("root", "x", { number: 1 }, "01", "site1")
+        let msg = ObjectsUTS.mapSetMessage(objectId: "root", key: "x", value: ProtocolTypes.ObjectData(number: NSNumber(value: 1)), serial: "01", siteCode: "site1")
+        let (result, _) = try Self.apply(msg, to: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
+        // ASSERT result == false
         #expect(result == nil)
+        // ASSERT map.data == {}
         #expect(map.testsOnly_data.isEmpty)
     }
 
-    // MARK: - RTLO5, RTLO4e10: OBJECT_DELETE / tombstoning
+    // UTS: objects/unit/RTLM15d4/unsupported-action-0
+    @Test
+    func unsupportedActionIsDiscarded() throws {
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(objectID: "root", internalQueue: queue)
+
+        // msg = ObjectMessage(serial: "01", siteCode: "site1", operation: { action: "COUNTER_INC", objectId: "root", counterInc: { number: 5 } })
+        let msg = ObjectsUTS.counterIncMessage(objectId: "root", number: 5, serial: "01", siteCode: "site1")
+        let (result, _) = try Self.apply(msg, to: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
+
+        // ASSERT result == false
+        #expect(result == nil)
+    }
+
+    // MARK: - RTLO5 / RTLO4e10: OBJECT_DELETE
 
     // UTS: objects/unit/RTLO5/object-delete-tombstones-map-0
     @Test
     func objectDeleteTombstonesMap() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(
             objectID: "map:test@1000",
             data: [
-                "name": TestFactories.internalMapEntry(timeserial: "01", data: ProtocolTypes.ObjectData(string: "Alice")),
-                "age": TestFactories.internalMapEntry(timeserial: "01", data: ProtocolTypes.ObjectData(number: NSNumber(value: 30))),
+                "name": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "Alice"), timeserial: "01"),
+                "age": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(number: NSNumber(value: 30)), timeserial: "01"),
             ],
-            internalQueue: internalQueue,
+            internalQueue: queue,
         )
         map.testsOnly_setSiteTimeserials(["site1": "00"])
 
-        let msg = TestFactories.objectDeleteOperationMessage(objectId: "map:test@1000", serial: "01", siteCode: "site1", serialTimestamp: Date(timeIntervalSince1970: 1_700_000_000))
-        let update = try #require(Self.apply(msg, to: map, pool: &pool, internalQueue: internalQueue))
+        // msg = build_object_delete("map:test@1000", "01", "site1", 1700000000000)
+        let msg = TestFactories.objectDeleteOperationMessage(objectId: "map:test@1000", serial: "01", siteCode: "site1", serialTimestamp: Self.date(millis: 1_700_000_000_000))
+        let (update, _) = try Self.apply(msg, to: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
+        // ASSERT map.isTombstone == true
         #expect(map.testsOnly_isTombstone == true)
+        // ASSERT map.data == {}
         #expect(map.testsOnly_data.isEmpty)
-        #expect(update.update?.update == ["name": .removed, "age": .removed])
-        #expect(update.tombstone == true)
-        #expect(update.objectMessage == msg)
+        // ASSERT update.update == { "name": "removed", "age": "removed" }
+        #expect(update?.update?.update == ["name": .removed, "age": .removed])
+        // ASSERT update.tombstone == true
+        #expect(update?.tombstone == true)
+        // ASSERT update.objectMessage == msg
+        #expect(update?.objectMessage == msg)
     }
 
     // UTS: objects/unit/RTLO5/tombstone-empty-map-emits-update-0
-    // RTLM22c: when every entry is already
-    // tombstoned the tombstone diff (RTLM22b considers only non-tombstoned entries) has no changed keys, but
-    // the RTLM22c tombstone carve-out means this empty diff must NOT be marked a noop; it is still delivered
-    // (tombstone flag, empty payload) so the RTLO4b4c3c listener teardown runs. Complements
-    // object-delete-tombstones-map-0 (which tombstones a map with live entries).
     @Test
-    func objectDeleteOnMapWithNoLiveEntriesStillEmitsNonNoopTombstoneUpdate() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(
+    func objectDeleteOnAllTombstonedMapStillEmitsNonNoopTombstoneUpdate() throws {
+        let queue = ObjectsUTS.createInternalQueue()
+        let deadAt = Self.date(millis: 1_600_000_000_000)
+        let map = ObjectsUTS.makeMap(
             objectID: "map:test@1000",
+            // every entry already tombstoned (tombstonedAt set)
             data: [
-                "name": InternalObjectsMapEntry(tombstonedAt: Date(timeIntervalSince1970: 1_600_000_000), timeserial: "01", data: ProtocolTypes.ObjectData(string: "Alice")),
-                "age": InternalObjectsMapEntry(tombstonedAt: Date(timeIntervalSince1970: 1_600_000_000), timeserial: "01", data: ProtocolTypes.ObjectData(number: NSNumber(value: 30))),
+                "name": InternalObjectsMapEntry(tombstonedAt: deadAt, timeserial: "01", data: ProtocolTypes.ObjectData(string: "Alice")),
+                "age": InternalObjectsMapEntry(tombstonedAt: deadAt, timeserial: "01", data: ProtocolTypes.ObjectData(number: NSNumber(value: 30))),
             ],
-            internalQueue: internalQueue,
+            internalQueue: queue,
         )
         map.testsOnly_setSiteTimeserials(["site1": "00"])
 
-        let msg = TestFactories.objectDeleteOperationMessage(objectId: "map:test@1000", serial: "01", siteCode: "site1", serialTimestamp: Date(timeIntervalSince1970: 1_700_000_000))
-        let update = try #require(Self.apply(msg, to: map, pool: &pool, internalQueue: internalQueue))
+        // msg = build_object_delete("map:test@1000", "01", "site1", 1700000000000)
+        let msg = TestFactories.objectDeleteOperationMessage(objectId: "map:test@1000", serial: "01", siteCode: "site1", serialTimestamp: Self.date(millis: 1_700_000_000_000))
+        let (update, _) = try Self.apply(msg, to: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
+        // ASSERT map.isTombstone == true
         #expect(map.testsOnly_isTombstone == true)
+        // ASSERT map.data == {}
         #expect(map.testsOnly_data.isEmpty)
-        // RTLM22c: the empty tombstone diff is NOT a noop; the payload carries no changed keys.
-        #expect(update.isNoop == false)
-        #expect(update.tombstone == true)
-        #expect(update.update?.update.isEmpty == true)
-        #expect(update.objectMessage == msg)
+        // ASSERT update.noop == false (RTLM22c tombstone carve-out: empty diff still delivered)
+        #expect(update?.isNoop == false)
+        // ASSERT update.tombstone == true
+        #expect(update?.tombstone == true)
+        // ASSERT update.update == {}
+        #expect(update?.update?.update == [:])
+        // ASSERT update.objectMessage == msg
+        #expect(update?.objectMessage == msg)
     }
 
     // UTS: objects/unit/RTLO4e10/object-delete-root-noop-0
-    // D-11: exercises the RTLO4e10 implementation fix.
     @Test
     func objectDeleteTargetingRootIsRejected() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(
             objectID: "root",
-            data: ["name": TestFactories.internalMapEntry(timeserial: "01", data: ProtocolTypes.ObjectData(string: "Alice"))],
-            internalQueue: internalQueue,
+            data: ["name": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "Alice"), timeserial: "01")],
+            internalQueue: queue,
         )
         map.testsOnly_setSiteTimeserials(["site1": "00"])
 
-        let msg = TestFactories.objectDeleteOperationMessage(objectId: "root", serial: "01", siteCode: "site1", serialTimestamp: Date(timeIntervalSince1970: 1_700_000_000))
-        let update = try #require(Self.apply(msg, to: map, pool: &pool, internalQueue: internalQueue))
+        // msg = build_object_delete("root", "01", "site1", 1700000000000)
+        let msg = TestFactories.objectDeleteOperationMessage(objectId: "root", serial: "01", siteCode: "site1", serialTimestamp: Self.date(millis: 1_700_000_000_000))
+        let (update, _) = try Self.apply(msg, to: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
+        // ASSERT map.isTombstone == false
         #expect(map.testsOnly_isTombstone == false)
+        // ASSERT map.data["name"].data.string == "Alice" (data untouched)
         #expect(map.testsOnly_data["name"]?.data?.string == "Alice")
-        #expect(update.isNoop == true)
+        // ASSERT update.noop == true
+        #expect(update?.isNoop == true)
     }
 
-    // MARK: - RTLM14: tombstoned-entry check
+    // MARK: - RTLM14: tombstone check
 
     // UTS: objects/unit/RTLM14/tombstone-check-objectid-ref-0
     @Test
     func tombstonedEntryCheckIncludesObjectIdReference() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let tombstonedCounter = Self.makeCounter(objectID: "counter:dead@1000", internalQueue: internalQueue)
-        tombstonedCounter.testsOnly_setTombstonedAt(Date(timeIntervalSince1970: 1_700_000_000))
-        pool.testsOnly_setEntry(.counter(tombstonedCounter), forObjectID: "counter:dead@1000")
+        let queue = ObjectsUTS.createInternalQueue()
 
-        let map = Self.makeMap(
+        // A tombstoned counter in the pool.
+        let deadCounter = ObjectsUTS.makeCounter(objectID: "counter:dead@1000", internalQueue: queue)
+        deadCounter.testsOnly_setTombstonedAt(Self.date(millis: 1_700_000_000_000))
+        var pool = ObjectsUTS.freshPool(internalQueue: queue)
+        pool.testsOnly_setEntry(.counter(deadCounter), forObjectID: "counter:dead@1000")
+
+        let map = ObjectsUTS.makeMap(
             objectID: "root",
             data: [
-                "alive": TestFactories.internalMapEntry(timeserial: "01", data: ProtocolTypes.ObjectData(string: "ok")),
-                "dead_entry": InternalObjectsMapEntry(tombstonedAt: Date(timeIntervalSince1970: 1_700_000_000), timeserial: "01", data: nil),
-                "dead_ref": TestFactories.internalMapEntry(timeserial: "01", data: ProtocolTypes.ObjectData(objectId: "counter:dead@1000")),
+                "alive": InternalObjectsMapEntry(tombstonedAt: nil, timeserial: "01", data: ProtocolTypes.ObjectData(string: "ok")),
+                // dead_entry: entry-level tombstone (tombstonedAt set, data null)
+                "dead_entry": InternalObjectsMapEntry(tombstonedAt: Self.date(millis: 1_700_000_000_000), timeserial: "01", data: nil),
+                // dead_ref: entry not tombstoned, but references a tombstoned object
+                "dead_ref": InternalObjectsMapEntry(tombstonedAt: nil, timeserial: "01", data: ProtocolTypes.ObjectData(objectId: "counter:dead@1000")),
             ],
-            internalQueue: internalQueue,
+            internalQueue: queue,
         )
 
-        let alive = try #require(map.testsOnly_data["alive"])
-        let deadEntry = try #require(map.testsOnly_data["dead_entry"])
-        let deadRef = try #require(map.testsOnly_data["dead_ref"])
-
-        // isEntryTombstoned reads the referenced object's `nosync_isTombstone`, which asserts
-        // ownership of the internal queue (D-2), so the checks run inside the queue block.
-        let (aliveTombstoned, deadEntryTombstoned, deadRefTombstoned) = internalQueue.ably_syncNoDeadlock {
+        let data = map.testsOnly_data
+        let aliveEntry = try #require(data["alive"])
+        let deadEntryEntry = try #require(data["dead_entry"])
+        let deadRefEntry = try #require(data["dead_ref"])
+        // `testsOnly_isEntryTombstoned` reads the referenced pool object's `nosync_isTombstone` for the
+        // objectId-ref case (RTLM14c), which `dispatchPrecondition`-traps off the internal queue — so
+        // run the checks on the queue.
+        let (aliveTombstoned, deadEntryTombstoned, deadRefTombstoned) = queue.ably_syncNoDeadlock {
             (
-                map.testsOnly_isEntryTombstoned(alive, objectsPool: pool),
-                map.testsOnly_isEntryTombstoned(deadEntry, objectsPool: pool),
-                map.testsOnly_isEntryTombstoned(deadRef, objectsPool: pool),
+                map.testsOnly_isEntryTombstoned(aliveEntry, objectsPool: pool),
+                map.testsOnly_isEntryTombstoned(deadEntryEntry, objectsPool: pool),
+                map.testsOnly_isEntryTombstoned(deadRefEntry, objectsPool: pool),
             )
         }
-
+        // ASSERT isTombstoned(map.data["alive"]) == false
         #expect(aliveTombstoned == false)
+        // ASSERT isTombstoned(map.data["dead_entry"]) == true
         #expect(deadEntryTombstoned == true)
+        // ASSERT isTombstoned(map.data["dead_ref"]) == true
         #expect(deadRefTombstoned == true)
     }
 
     // UTS: objects/unit/RTLM14c/tombstoned-ref-yields-null-0
     @Test
-    func mapSetReferencingTombstonedObjectIdYieldsNull() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        let tombstonedCounter = Self.makeCounter(objectID: "counter:dead@1000", internalQueue: internalQueue)
-        tombstonedCounter.testsOnly_setTombstonedAt(Date(timeIntervalSince1970: 1_700_000_000))
+    func mapSetReferencingTombstonedObjectIdYieldsNullValue() throws {
+        let queue = ObjectsUTS.createInternalQueue()
 
-        let delegate = MockLiveMapObjectsPoolDelegate(internalQueue: internalQueue)
-        delegate.objects["counter:dead@1000"] = .counter(tombstonedCounter)
+        let deadCounter = ObjectsUTS.makeCounter(objectID: "counter:dead@1000", internalQueue: queue)
+        deadCounter.testsOnly_setTombstonedAt(Self.date(millis: 1_700_000_000_000))
+        let delegate = ObjectsUTSPoolDelegate(internalQueue: queue, entries: ["counter:dead@1000": .counter(deadCounter)])
+        let coreSDK = ObjectsUTSCoreSDK()
 
-        let map = Self.makeMap(
+        let map = ObjectsUTS.makeMap(
             objectID: "root",
-            data: ["ref": TestFactories.internalMapEntry(timeserial: "01", data: ProtocolTypes.ObjectData(objectId: "counter:dead@1000"))],
-            internalQueue: internalQueue,
+            data: ["ref": InternalObjectsMapEntry(tombstonedAt: nil, timeserial: "01", data: ProtocolTypes.ObjectData(objectId: "counter:dead@1000"))],
+            internalQueue: queue,
         )
-        let coreSDK = Self.coreSDK(internalQueue: internalQueue)
 
-        // The entry itself is not tombstoned, but the referenced object is (RTLM14c)
+        // ASSERT map.data["ref"].tombstone == false (the entry itself is not tombstoned)
         #expect(map.testsOnly_data["ref"]?.tombstone == false)
+        // ASSERT map.size() == 0 (RTLM14c makes the entry tombstoned via its referenced object)
         #expect(try map.size(coreSDK: coreSDK, delegate: delegate) == 0)
+        // ASSERT map.get("ref") == null
         #expect(try map.get(key: "ref", coreSDK: coreSDK, delegate: delegate) == nil)
     }
 
-    // UTS: objects/unit/RTLM7/map-set-revives-tombstoned-0
-    @Test
-    func mapSetRevivesTombstonedEntry() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(
-            objectID: "root",
-            data: ["name": InternalObjectsMapEntry(tombstonedAt: Date(timeIntervalSince1970: 1_700_000_000), timeserial: "01", data: nil)],
-            internalQueue: internalQueue,
-        )
-
-        let msg = TestFactories.mapSetOperationMessage(objectId: "root", key: "name", value: "Alice", serial: "02", siteCode: "site1")
-        let update = try #require(Self.apply(msg, to: map, pool: &pool, internalQueue: internalQueue))
-
-        #expect(map.testsOnly_data["name"]?.data == ProtocolTypes.ObjectData(string: "Alice"))
-        #expect(map.testsOnly_data["name"]?.tombstone == false)
-        #expect(map.testsOnly_data["name"]?.tombstonedAt == nil)
-        #expect(update.update?.update == ["name": .updated])
-        #expect(update.objectMessage == msg)
-    }
-
-    // MARK: - RTLM15d4
-
-    // UTS: objects/unit/RTLM15d4/unsupported-action-0
-    @Test
-    func unsupportedActionIsDiscarded() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(objectID: "root", internalQueue: internalQueue)
-
-        // A COUNTER_INC action targeting the map is unsupported for LiveMap
-        let msg = TestFactories.counterIncOperationMessage(objectId: "root", number: 5, serial: "01", siteCode: "site1")
-        let result = try Self.apply(msg, to: map, pool: &pool, internalQueue: internalQueue)
-
-        #expect(result == nil)
-    }
-
-    // MARK: - RTLM6: replaceData (sync path)
+    // MARK: - RTLM6: replaceData (OBJECT_SYNC ingestion)
 
     // UTS: objects/unit/RTLM6/replace-data-basic-0
     @Test
     func replaceDataSetsDataFromObjectState() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(
             objectID: "root",
-            data: ["old": TestFactories.internalMapEntry(timeserial: "01", data: ProtocolTypes.ObjectData(string: "old"))],
-            internalQueue: internalQueue,
+            data: ["old": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "old"), timeserial: "01")],
+            internalQueue: queue,
         )
         map.testsOnly_setCreateOperationIsMerged(true)
 
-        let state = TestFactories.objectState(
+        // state_msg = build_object_state("root", {"site2": "05"}, { map: { clearTimeserial: "03", entries: { "new": ... } } })
+        let state = ProtocolTypes.ObjectState(
             objectId: "root",
             siteTimeserials: ["site2": "05"],
-            map: TestFactories.objectsMap(
-                entries: ["new": TestFactories.mapEntry(timeserial: "04", data: ProtocolTypes.ObjectData(string: "new"))],
+            tombstone: false,
+            createOp: nil,
+            map: ProtocolTypes.ObjectsMap(
+                semantics: .known(.lww),
+                entries: ["new": ProtocolTypes.ObjectsMapEntry(tombstone: false, timeserial: "04", data: ProtocolTypes.ObjectData(string: "new"))],
                 clearTimeserial: "03",
             ),
+            counter: nil,
         )
-        let update = internalQueue.ably_syncNoDeadlock {
-            map.nosync_replaceData(using: state, objectMessageSerialTimestamp: nil, objectsPool: &pool)
-        }
+        let (update, _) = Self.replaceData(state, into: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
+        // ASSERT map.siteTimeserials == { "site2": "05" }
         #expect(map.testsOnly_siteTimeserials == ["site2": "05"])
+        // ASSERT map.createOperationIsMerged == false
         #expect(map.testsOnly_createOperationIsMerged == false)
+        // ASSERT map.clearTimeserial == "03"
         #expect(map.testsOnly_clearTimeserial == "03")
+        // ASSERT "old" NOT IN map.data
         #expect(map.testsOnly_data["old"] == nil)
+        // ASSERT map.data["new"].data == { string: "new" }
         #expect(map.testsOnly_data["new"]?.data == ProtocolTypes.ObjectData(string: "new"))
+        // ASSERT update.update == { "old": "removed", "new": "updated" }
         #expect(update.update?.update == ["old": .removed, "new": .updated])
-        // D-7: RTO4b2a — sync-originated, so objectMessage is nil (spec asserts == state_msg)
+        // ASSERT update.objectMessage == state_msg — see (S-4): `nosync_replaceData` takes the
+        // ObjectState (not the message) and sync-originated updates carry nil objectMessage (RTO4b2a).
         #expect(update.objectMessage == nil)
     }
 
     // UTS: objects/unit/RTLM6c1/replace-data-tombstoned-entries-0
     @Test
     func replaceDataSetsTombstonedAtOnTombstonedEntries() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(objectID: "root", internalQueue: internalQueue)
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(objectID: "root", internalQueue: queue)
 
-        let state = TestFactories.objectState(
+        // state_msg = build_object_state("root", {"site1": "01"}, { map: { entries: { "dead": { tombstone, serialTimestamp: 1700000050000 } } } })
+        let state = TestFactories.mapObjectState(
             objectId: "root",
             siteTimeserials: ["site1": "01"],
-            map: TestFactories.objectsMap(entries: [
-                "dead": ProtocolTypes.ObjectsMapEntry(tombstone: true, timeserial: "01", data: nil, serialTimestamp: Date(timeIntervalSince1970: 1_700_000_050)),
-            ]),
+            entries: ["dead": ProtocolTypes.ObjectsMapEntry(tombstone: true, timeserial: "01", data: nil, serialTimestamp: Self.date(millis: 1_700_000_050_000))],
         )
-        internalQueue.ably_syncNoDeadlock {
-            _ = map.nosync_replaceData(using: state, objectMessageSerialTimestamp: nil, objectsPool: &pool)
-        }
+        _ = Self.replaceData(state, into: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
-        #expect(map.testsOnly_data["dead"]?.tombstonedAt == Date(timeIntervalSince1970: 1_700_000_050))
+        // ASSERT map.data["dead"].tombstonedAt == 1700000050000
+        #expect(map.testsOnly_data["dead"]?.tombstonedAt == Self.date(millis: 1_700_000_050_000))
     }
 
     // UTS: objects/unit/RTLM6d/replace-data-with-create-op-0
     @Test
     func replaceDataWithCreateOpMergesInitialEntries() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(objectID: "map:test@1000", internalQueue: internalQueue)
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(objectID: "map:test@1000", internalQueue: queue)
 
+        // state_msg = build_object_state("map:test@1000", {"site1": "01"}, { map: { entries: { "from_sync": ... } }, createOp: { mapCreate: { entries: { "from_create": ... } } } })
         let state = TestFactories.mapObjectState(
             objectId: "map:test@1000",
             siteTimeserials: ["site1": "01"],
             createOp: TestFactories.mapCreateOperation(
                 objectId: "map:test@1000",
-                entries: ["from_create": TestFactories.mapEntry(timeserial: "00", data: ProtocolTypes.ObjectData(string: "created"))],
+                entries: ["from_create": ProtocolTypes.ObjectsMapEntry(tombstone: false, timeserial: "00", data: ProtocolTypes.ObjectData(string: "created"))],
             ),
-            entries: ["from_sync": TestFactories.mapEntry(timeserial: "01", data: ProtocolTypes.ObjectData(string: "synced"))],
+            entries: ["from_sync": ProtocolTypes.ObjectsMapEntry(tombstone: false, timeserial: "01", data: ProtocolTypes.ObjectData(string: "synced"))],
         )
-        internalQueue.ably_syncNoDeadlock {
-            _ = map.nosync_replaceData(using: state, objectMessageSerialTimestamp: nil, objectsPool: &pool)
-        }
+        _ = Self.replaceData(state, into: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
+        // ASSERT map.data["from_sync"].data == { string: "synced" }
         #expect(map.testsOnly_data["from_sync"]?.data == ProtocolTypes.ObjectData(string: "synced"))
+        // ASSERT map.data["from_create"].data == { string: "created" }
         #expect(map.testsOnly_data["from_create"]?.data == ProtocolTypes.ObjectData(string: "created"))
+        // ASSERT map.createOperationIsMerged == true
         #expect(map.testsOnly_createOperationIsMerged == true)
     }
 
     // UTS: objects/unit/RTLM6f/replace-data-tombstone-flag-0
     @Test
     func replaceDataWithTombstoneFlagTombstonesMap() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(
             objectID: "map:test@1000",
-            data: ["name": TestFactories.internalMapEntry(timeserial: "01", data: ProtocolTypes.ObjectData(string: "Alice"))],
-            internalQueue: internalQueue,
+            data: ["name": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "Alice"), timeserial: "01")],
+            internalQueue: queue,
         )
 
-        let state = TestFactories.mapObjectState(objectId: "map:test@1000", siteTimeserials: ["site1": "01"], tombstone: true, entries: [:])
-        let update = internalQueue.ably_syncNoDeadlock {
-            map.nosync_replaceData(using: state, objectMessageSerialTimestamp: nil, objectsPool: &pool)
-        }
+        // state_msg = build_object_state("map:test@1000", {"site1": "01"}, { map: { entries: {} }, tombstone: true })
+        let state = TestFactories.mapObjectState(
+            objectId: "map:test@1000",
+            siteTimeserials: ["site1": "01"],
+            tombstone: true,
+            entries: [:],
+        )
+        let (update, _) = Self.replaceData(state, into: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
+        // ASSERT map.isTombstone == true
         #expect(map.testsOnly_isTombstone == true)
+        // ASSERT map.data == {}
         #expect(map.testsOnly_data.isEmpty)
+        // ASSERT update.update == { "name": "removed" }
         #expect(update.update?.update == ["name": .removed])
+        // ASSERT update.tombstone == true
         #expect(update.tombstone == true)
-        #expect(update.objectMessage == nil) // D-7
+        // ASSERT update.objectMessage == state_msg — see (S-4): the tombstone-via-sync update carries
+        // nil objectMessage (the seam takes the ObjectState, not the message).
+        #expect(update.objectMessage == nil)
     }
 
     // UTS: objects/unit/RTLO4e10/replace-data-tombstone-root-noop-0
-    // D-11: exercises the RTLO4e10 implementation fix on the sync path.
     @Test
     func replaceDataWithTombstoneFlagTargetingRootIsRejected() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(
             objectID: "root",
-            data: ["name": TestFactories.internalMapEntry(timeserial: "01", data: ProtocolTypes.ObjectData(string: "Alice"))],
-            internalQueue: internalQueue,
+            data: ["name": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "Alice"), timeserial: "01")],
+            internalQueue: queue,
         )
 
-        let state = TestFactories.mapObjectState(objectId: "root", siteTimeserials: ["site1": "01"], tombstone: true, entries: [:])
-        let update = internalQueue.ably_syncNoDeadlock {
-            map.nosync_replaceData(using: state, objectMessageSerialTimestamp: nil, objectsPool: &pool)
-        }
+        // state_msg = build_object_state("root", {"site1": "01"}, { map: { entries: {} }, tombstone: true })
+        let state = TestFactories.mapObjectState(
+            objectId: "root",
+            siteTimeserials: ["site1": "01"],
+            tombstone: true,
+            entries: [:],
+        )
+        let (update, _) = Self.replaceData(state, into: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
+        // ASSERT map.isTombstone == false
         #expect(map.testsOnly_isTombstone == false)
+        // ASSERT map.data["name"].data.string == "Alice" (data untouched)
         #expect(map.testsOnly_data["name"]?.data?.string == "Alice")
+        // ASSERT update.noop == true
         #expect(update.isNoop == true)
     }
 
     // UTS: objects/unit/RTLM6i/replace-data-resets-clear-timeserial-0
     @Test
     func replaceDataWithoutClearTimeserialResetsToNull() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(
             objectID: "root",
-            data: ["x": TestFactories.internalMapEntry(timeserial: "03", data: ProtocolTypes.ObjectData(number: NSNumber(value: 1)))],
-            internalQueue: internalQueue,
+            data: ["x": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(number: NSNumber(value: 1)), timeserial: "03")],
+            internalQueue: queue,
         )
         map.testsOnly_setClearTimeserial("05")
 
+        // state_msg = build_object_state("root", {"site1": "01"}, { map: { entries: { "y": { number: 2 } } } }) — no clearTimeserial
         let state = TestFactories.mapObjectState(
             objectId: "root",
             siteTimeserials: ["site1": "01"],
-            entries: ["y": TestFactories.mapEntry(timeserial: "01", data: ProtocolTypes.ObjectData(number: NSNumber(value: 2)))],
+            entries: ["y": ProtocolTypes.ObjectsMapEntry(tombstone: false, timeserial: "01", data: ProtocolTypes.ObjectData(number: NSNumber(value: 2)))],
         )
-        internalQueue.ably_syncNoDeadlock {
-            _ = map.nosync_replaceData(using: state, objectMessageSerialTimestamp: nil, objectsPool: &pool)
-        }
+        _ = Self.replaceData(state, into: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
+        // ASSERT map.clearTimeserial == null
         #expect(map.testsOnly_clearTimeserial == nil)
+        // ASSERT "y" IN map.data
         #expect(map.testsOnly_data["y"] != nil)
     }
 
-    // MARK: - RTLM19: GC
+    // MARK: - RTLM19: GC of tombstoned entries
 
     // UTS: objects/unit/RTLM19/gc-tombstoned-entries-0
     @Test
     func gcRemovesTombstonedEntriesPastGracePeriod() {
-        let internalQueue = TestFactories.createInternalQueue()
-        // D-10: grace in SECONDS; `now` supplied by the mock clock.
-        let gracePeriod: TimeInterval = 86400
-        let now = Date(timeIntervalSince1970: 1_700_100_000)
-        let clock = MockSimpleClock(currentTime: now)
+        let queue = ObjectsUTS.createInternalQueue()
+        // grace_period = 86400000 (ms); now = 1700100000000 (ms). cocoa's gracePeriod is a TimeInterval
+        // (seconds) and the clock is a Date, so convert both (objects-mapping §11).
+        let gracePeriodMillis = 86_400_000.0
+        let nowMillis = 1_700_100_000_000.0
 
-        let map = Self.makeMap(
-            objectID: "root",
-            data: [
-                "recent_dead": InternalObjectsMapEntry(tombstonedAt: now.addingTimeInterval(-1), timeserial: "01", data: nil),
-                "old_dead": InternalObjectsMapEntry(tombstonedAt: now.addingTimeInterval(-gracePeriod - 1), timeserial: "01", data: nil),
-                "alive": TestFactories.internalMapEntry(timeserial: "01", data: ProtocolTypes.ObjectData(string: "ok")),
+        let map = InternalDefaultLiveMap(
+            testsOnly_data: [
+                // recent_dead: tombstonedAt = now - 1000 (well within grace)
+                "recent_dead": InternalObjectsMapEntry(tombstonedAt: Self.date(millis: nowMillis - 1000), timeserial: "01", data: nil),
+                // old_dead: tombstonedAt = now - grace_period - 1 (just past grace)
+                "old_dead": InternalObjectsMapEntry(tombstonedAt: Self.date(millis: nowMillis - gracePeriodMillis - 1), timeserial: "01", data: nil),
+                // alive: not tombstoned
+                "alive": InternalObjectsMapEntry(tombstonedAt: nil, timeserial: "01", data: ProtocolTypes.ObjectData(string: "ok")),
             ],
-            internalQueue: internalQueue,
+            objectID: "root",
+            logger: TestLogger(),
+            internalQueue: queue,
+            userCallbackQueue: .main,
+            clock: MockSimpleClock(),
         )
 
-        internalQueue.ably_syncNoDeadlock {
-            map.nosync_releaseTombstonedEntries(gracePeriod: gracePeriod, clock: clock)
+        // map.gcTombstonedEntries(grace_period, now) — cocoa reads `now` off the passed clock.
+        queue.ably_syncNoDeadlock {
+            map.nosync_releaseTombstonedEntries(gracePeriod: gracePeriodMillis / 1000, clock: MockSimpleClock(currentTime: Self.date(millis: nowMillis)))
         }
 
+        // ASSERT "recent_dead" IN map.data
         #expect(map.testsOnly_data["recent_dead"] != nil)
+        // ASSERT "old_dead" NOT IN map.data
         #expect(map.testsOnly_data["old_dead"] == nil)
+        // ASSERT "alive" IN map.data
         #expect(map.testsOnly_data["alive"] != nil)
     }
 
@@ -848,111 +938,326 @@ struct InternalLiveMapTests {
 
     // UTS: objects/unit/RTLM22/diff-calculation-0
     @Test
-    func diffBetweenTwoDataStates() {
+    func diffBetweenTwoDataStates() throws {
+        // previousData / newData — only non-tombstoned entries are considered (RTLM22b).
         let previousData: [String: InternalObjectsMapEntry] = [
-            "removed": TestFactories.internalMapEntry(timeserial: "01", data: ProtocolTypes.ObjectData(string: "gone")),
-            "changed": TestFactories.internalMapEntry(timeserial: "01", data: ProtocolTypes.ObjectData(string: "old")),
-            "unchanged": TestFactories.internalMapEntry(timeserial: "01", data: ProtocolTypes.ObjectData(string: "same")),
-            "was_dead": InternalObjectsMapEntry(tombstonedAt: Date(timeIntervalSince1970: 1_700_000_000), timeserial: "01", data: nil),
+            "removed": InternalObjectsMapEntry(tombstonedAt: nil, timeserial: "01", data: ProtocolTypes.ObjectData(string: "gone")),
+            "changed": InternalObjectsMapEntry(tombstonedAt: nil, timeserial: "01", data: ProtocolTypes.ObjectData(string: "old")),
+            "unchanged": InternalObjectsMapEntry(tombstonedAt: nil, timeserial: "01", data: ProtocolTypes.ObjectData(string: "same")),
+            "was_dead": InternalObjectsMapEntry(tombstonedAt: Self.date(millis: 1_600_000_000_000), timeserial: "01", data: nil),
         ]
         let newData: [String: InternalObjectsMapEntry] = [
-            "added": TestFactories.internalMapEntry(timeserial: "02", data: ProtocolTypes.ObjectData(string: "new")),
-            "changed": TestFactories.internalMapEntry(timeserial: "02", data: ProtocolTypes.ObjectData(string: "new_val")),
-            "unchanged": TestFactories.internalMapEntry(timeserial: "01", data: ProtocolTypes.ObjectData(string: "same")),
-            "now_dead": InternalObjectsMapEntry(tombstonedAt: Date(timeIntervalSince1970: 1_700_000_000), timeserial: "02", data: nil),
+            "added": InternalObjectsMapEntry(tombstonedAt: nil, timeserial: "02", data: ProtocolTypes.ObjectData(string: "new")),
+            "changed": InternalObjectsMapEntry(tombstonedAt: nil, timeserial: "02", data: ProtocolTypes.ObjectData(string: "new_val")),
+            "unchanged": InternalObjectsMapEntry(tombstonedAt: nil, timeserial: "01", data: ProtocolTypes.ObjectData(string: "same")),
+            "now_dead": InternalObjectsMapEntry(tombstonedAt: Self.date(millis: 1_600_000_000_000), timeserial: "02", data: nil),
         ]
 
+        // update = InternalLiveMap.diff(previousData, newData)
         let update = ObjectDiffHelpers.calculateMapDiff(previousData: previousData, newData: newData)
+        let diff = try #require(update.update?.update)
 
-        #expect(update.update?.update["removed"] == .removed)
-        #expect(update.update?.update["added"] == .updated)
-        #expect(update.update?.update["changed"] == .updated)
-        #expect(update.update?.update["unchanged"] == nil)
-        #expect(update.update?.update["was_dead"] == nil)
-        #expect(update.update?.update["now_dead"] == nil)
+        // ASSERT update.update["removed"] == "removed"
+        #expect(diff["removed"] == .removed)
+        // ASSERT update.update["added"] == "updated"
+        #expect(diff["added"] == .updated)
+        // ASSERT update.update["changed"] == "updated"
+        #expect(diff["changed"] == .updated)
+        // ASSERT "unchanged" NOT IN update.update
+        #expect(diff["unchanged"] == nil)
+        // ASSERT "was_dead" NOT IN update.update
+        #expect(diff["was_dead"] == nil)
+        // ASSERT "now_dead" NOT IN update.update
+        #expect(diff["now_dead"] == nil)
     }
 
     // UTS: objects/unit/RTLM22c/empty-diff-is-noop-0
-    // As an exception to RTLM22b, when the computed LiveMapUpdate.update contains no changed keys the
-    // diff returns a LiveMapUpdate marked as a no-op per RTLO4b4b. A no-op update is never delivered
-    // to subscribers (RTLO4b4c1), so at the internal tier the flake-free proxy for "no event fires"
-    // is asserting update.noop == true. Here the map's non-tombstoned entries before and after
-    // replaceData are identical under the RTLM22b comparison rules (same key "name", same data; only
-    // timeserial differs 01->02, which RTLM22b3 does not compare), so no key changed.
     @Test
-    func emptyDiffIsNoop() throws {
-        // Setup
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(
+    func emptyDiffIsNoop() {
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(
             objectID: "root",
-            data: ["name": TestFactories.internalMapEntry(timeserial: "01", data: ProtocolTypes.ObjectData(string: "alice"))],
-            internalQueue: internalQueue,
+            data: ["name": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "alice"), timeserial: "01")],
+            internalQueue: queue,
         )
 
-        // Test Steps
+        // state_msg re-states "name" with the same data (only timeserial differs, which is not compared).
         let state = TestFactories.mapObjectState(
             objectId: "root",
             siteTimeserials: ["site1": "02"],
-            entries: ["name": TestFactories.mapEntry(timeserial: "02", data: ProtocolTypes.ObjectData(string: "alice"))],
+            entries: ["name": ProtocolTypes.ObjectsMapEntry(tombstone: false, timeserial: "02", data: ProtocolTypes.ObjectData(string: "alice"))],
         )
-        let update = internalQueue.ably_syncNoDeadlock {
-            map.nosync_replaceData(using: state, objectMessageSerialTimestamp: nil, objectsPool: &pool)
-        }
+        let (update, _) = Self.replaceData(state, into: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
-        // Assertions
+        // ASSERT update.noop == true
         #expect(update.isNoop == true)
+        // ASSERT map.data["name"].data == { string: "alice" }
         #expect(map.testsOnly_data["name"]?.data == ProtocolTypes.ObjectData(string: "alice"))
     }
 
-    // MARK: - Remaining parent-reference cases (not among the six ported elsewhere)
+    // MARK: - parentReferences
+
+    // UTS: objects/unit/RTLM7a3/map-set-overwrite-objectid-parent-refs-0
+    @Test
+    func mapSetOverwriteObjectIdUpdatesParentReferences() throws {
+        let queue = ObjectsUTS.createInternalQueue()
+        let oldCounter = ObjectsUTS.makeCounter(objectID: "counter:old@1000", internalQueue: queue)
+        let newCounter = ObjectsUTS.makeCounter(objectID: "counter:new@2000", internalQueue: queue)
+        var pool = ObjectsUTS.freshPool(internalQueue: queue)
+        pool.testsOnly_setEntry(.counter(oldCounter), forObjectID: "counter:old@1000")
+        pool.testsOnly_setEntry(.counter(newCounter), forObjectID: "counter:new@2000")
+
+        let map = ObjectsUTS.makeMap(
+            objectID: "root",
+            data: ["ref": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(objectId: "counter:old@1000"), timeserial: "01")],
+            internalQueue: queue,
+        )
+        // Simulate existing parentReference: old_counter.parentReferences = { "root": {"ref"} }
+        oldCounter.testsOnly_setParentReferences(["root": ["ref"]])
+
+        // msg = build_map_set("root", "ref", { objectId: "counter:new@2000" }, "02", "site1")
+        let msg = ObjectsUTS.mapSetMessage(objectId: "root", key: "ref", value: ProtocolTypes.ObjectData(objectId: "counter:new@2000"), serial: "02", siteCode: "site1")
+        let (update, _) = try Self.apply(msg, to: map, pool: pool, on: queue)
+
+        // ASSERT map.data["ref"].data == { objectId: "counter:new@2000" }
+        #expect(map.testsOnly_data["ref"]?.data == ProtocolTypes.ObjectData(objectId: "counter:new@2000"))
+        // removeParentReference was called on the old child
+        #expect(oldCounter.testsOnly_parentReferences["root"]?.contains("ref") != true)
+        // addParentReference was called on the new child
+        // ASSERT "root" IN new_counter.parentReferences
+        #expect(newCounter.testsOnly_parentReferences["root"] != nil)
+        // ASSERT "ref" IN new_counter.parentReferences["root"]
+        #expect(newCounter.testsOnly_parentReferences["root"]?.contains("ref") == true)
+        // ASSERT update.update == { "ref": "updated" }
+        #expect(update?.update?.update == ["ref": .updated])
+        // ASSERT update.objectMessage == msg
+        #expect(update?.objectMessage == msg)
+    }
+
+    // UTS: objects/unit/RTLM7g2/map-set-new-entry-add-parent-ref-0
+    @Test
+    func mapSetNewEntryReferencingLiveObjectAddsParentReference() throws {
+        let queue = ObjectsUTS.createInternalQueue()
+        let childCounter = ObjectsUTS.makeCounter(objectID: "counter:child@1000", internalQueue: queue)
+        var pool = ObjectsUTS.freshPool(internalQueue: queue)
+        pool.testsOnly_setEntry(.counter(childCounter), forObjectID: "counter:child@1000")
+
+        let map = ObjectsUTS.makeMap(objectID: "root", internalQueue: queue)
+
+        // msg = build_map_set("root", "score", { objectId: "counter:child@1000" }, "01", "site1")
+        let msg = ObjectsUTS.mapSetMessage(objectId: "root", key: "score", value: ProtocolTypes.ObjectData(objectId: "counter:child@1000"), serial: "01", siteCode: "site1")
+        let (update, _) = try Self.apply(msg, to: map, pool: pool, on: queue)
+
+        // ASSERT map.data["score"].data == { objectId: "counter:child@1000" }
+        #expect(map.testsOnly_data["score"]?.data == ProtocolTypes.ObjectData(objectId: "counter:child@1000"))
+        // ASSERT "root" IN child_counter.parentReferences
+        #expect(childCounter.testsOnly_parentReferences["root"] != nil)
+        // ASSERT "score" IN child_counter.parentReferences["root"]
+        #expect(childCounter.testsOnly_parentReferences["root"]?.contains("score") == true)
+        // ASSERT update.objectMessage == msg
+        #expect(update?.objectMessage == msg)
+    }
+
+    // UTS: objects/unit/RTLM7/map-set-primitive-no-parent-refs-0
+    @Test
+    func mapSetWithPrimitiveValueDoesNotAffectParentReferences() throws {
+        let queue = ObjectsUTS.createInternalQueue()
+        let oldCounter = ObjectsUTS.makeCounter(objectID: "counter:old@1000", internalQueue: queue)
+        var pool = ObjectsUTS.freshPool(internalQueue: queue)
+        pool.testsOnly_setEntry(.counter(oldCounter), forObjectID: "counter:old@1000")
+
+        let map = ObjectsUTS.makeMap(
+            objectID: "root",
+            data: ["ref": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(objectId: "counter:old@1000"), timeserial: "01")],
+            internalQueue: queue,
+        )
+        oldCounter.testsOnly_setParentReferences(["root": ["ref"]])
+
+        // msg = build_map_set("root", "ref", { string: "plain_value" }, "02", "site1")
+        let msg = ObjectsUTS.mapSetMessage(objectId: "root", key: "ref", value: ProtocolTypes.ObjectData(string: "plain_value"), serial: "02", siteCode: "site1")
+        let (update, _) = try Self.apply(msg, to: map, pool: pool, on: queue)
+
+        // ASSERT map.data["ref"].data == { string: "plain_value" }
+        #expect(map.testsOnly_data["ref"]?.data == ProtocolTypes.ObjectData(string: "plain_value"))
+        // removeParentReference was called on old child (entry previously had objectId)
+        #expect(oldCounter.testsOnly_parentReferences["root"]?.contains("ref") != true)
+        // ASSERT update.update == { "ref": "updated" }
+        #expect(update?.update?.update == ["ref": .updated])
+        // ASSERT update.objectMessage == msg
+        #expect(update?.objectMessage == msg)
+    }
+
+    // UTS: objects/unit/RTLM8a3/map-remove-objectid-parent-refs-0
+    @Test
+    func mapRemoveEntryReferencingLiveObjectRemovesParentReference() throws {
+        let queue = ObjectsUTS.createInternalQueue()
+        let childCounter = ObjectsUTS.makeCounter(objectID: "counter:child@1000", internalQueue: queue)
+        var pool = ObjectsUTS.freshPool(internalQueue: queue)
+        pool.testsOnly_setEntry(.counter(childCounter), forObjectID: "counter:child@1000")
+
+        let map = ObjectsUTS.makeMap(
+            objectID: "root",
+            data: ["score": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(objectId: "counter:child@1000"), timeserial: "01")],
+            internalQueue: queue,
+        )
+        childCounter.testsOnly_setParentReferences(["root": ["score"]])
+
+        // msg = build_map_remove("root", "score", "02", "site1", 1700000000000)
+        let msg = TestFactories.mapRemoveOperationMessage(objectId: "root", key: "score", serial: "02", siteCode: "site1", serialTimestamp: Self.date(millis: 1_700_000_000_000))
+        let (update, _) = try Self.apply(msg, to: map, pool: pool, on: queue)
+
+        // ASSERT map.data["score"].tombstone == true
+        #expect(map.testsOnly_data["score"]?.tombstone == true)
+        // removeParentReference was called on the child
+        #expect(childCounter.testsOnly_parentReferences["root"]?.contains("score") != true)
+        // ASSERT update.update == { "score": "removed" }
+        #expect(update?.update?.update == ["score": .removed])
+        // ASSERT update.objectMessage == msg
+        #expect(update?.objectMessage == msg)
+    }
 
     // UTS: objects/unit/RTLM8/map-remove-primitive-no-parent-refs-0
     @Test
-    func mapRemovePrimitiveDoesNotAffectParentReferences() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-        let map = Self.makeMap(
+    func mapRemoveEntryWithNonLiveObjectValue() throws {
+        let queue = ObjectsUTS.createInternalQueue()
+        let map = ObjectsUTS.makeMap(
             objectID: "root",
-            data: ["name": TestFactories.internalMapEntry(timeserial: "01", data: ProtocolTypes.ObjectData(string: "Alice"))],
-            internalQueue: internalQueue,
+            data: ["name": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "Alice"), timeserial: "01")],
+            internalQueue: queue,
         )
 
-        let msg = TestFactories.mapRemoveOperationMessage(objectId: "root", key: "name", serial: "02", siteCode: "site1", serialTimestamp: Date(timeIntervalSince1970: 1_700_000_000))
-        let update = try #require(Self.apply(msg, to: map, pool: &pool, internalQueue: internalQueue))
+        // msg = build_map_remove("root", "name", "02", "site1", 1700000000000)
+        let msg = TestFactories.mapRemoveOperationMessage(objectId: "root", key: "name", serial: "02", siteCode: "site1", serialTimestamp: Self.date(millis: 1_700_000_000_000))
+        let (update, _) = try Self.apply(msg, to: map, pool: ObjectsUTS.freshPool(internalQueue: queue), on: queue)
 
+        // ASSERT map.data["name"].tombstone == true
         #expect(map.testsOnly_data["name"]?.tombstone == true)
-        #expect(update.update?.update == ["name": .removed])
-        #expect(update.objectMessage == msg)
+        // ASSERT update.update == { "name": "removed" }
+        #expect(update?.update?.update == ["name": .removed])
+        // ASSERT update.objectMessage == msg (no parentReference calls needed — passes without errors)
+        #expect(update?.objectMessage == msg)
+    }
+
+    // UTS: objects/unit/RTLM24e1c/map-clear-parent-refs-0
+    @Test
+    func mapClearRemovesParentReferencesForClearedEntries() throws {
+        let queue = ObjectsUTS.createInternalQueue()
+        let counterA = ObjectsUTS.makeCounter(objectID: "counter:a@1000", internalQueue: queue)
+        let counterB = ObjectsUTS.makeCounter(objectID: "counter:b@1000", internalQueue: queue)
+        var pool = ObjectsUTS.freshPool(internalQueue: queue)
+        pool.testsOnly_setEntry(.counter(counterA), forObjectID: "counter:a@1000")
+        pool.testsOnly_setEntry(.counter(counterB), forObjectID: "counter:b@1000")
+
+        let map = ObjectsUTS.makeMap(
+            objectID: "root",
+            data: [
+                "ref_a": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(objectId: "counter:a@1000"), timeserial: "02"),
+                "ref_b": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(objectId: "counter:b@1000"), timeserial: "02"),
+                "primitive": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "hello"), timeserial: "02"),
+                "newer": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "kept"), timeserial: "09"),
+            ],
+            internalQueue: queue,
+        )
+        counterA.testsOnly_setParentReferences(["root": ["ref_a"]])
+        counterB.testsOnly_setParentReferences(["root": ["ref_b"]])
+
+        // msg = build_map_clear("root", "05", "site1")
+        let msg = ObjectsUTS.mapClearMessage(objectId: "root", serial: "05", siteCode: "site1")
+        let (update, _) = try Self.apply(msg, to: map, pool: pool, on: queue)
+
+        // ref_a and ref_b removed (timeserial "02" < "05"), newer kept (timeserial "09" > "05")
+        // ASSERT "ref_a" NOT IN map.data
+        #expect(map.testsOnly_data["ref_a"] == nil)
+        // ASSERT "ref_b" NOT IN map.data
+        #expect(map.testsOnly_data["ref_b"] == nil)
+        // ASSERT "primitive" NOT IN map.data
+        #expect(map.testsOnly_data["primitive"] == nil)
+        // ASSERT "newer" IN map.data
+        #expect(map.testsOnly_data["newer"] != nil)
+        // removeParentReference was called on both child counters
+        #expect(counterA.testsOnly_parentReferences["root"]?.contains("ref_a") != true)
+        #expect(counterB.testsOnly_parentReferences["root"]?.contains("ref_b") != true)
+        // ASSERT update.update == { "ref_a": "removed", "ref_b": "removed", "primitive": "removed" }
+        #expect(update?.update?.update == ["ref_a": .removed, "ref_b": .removed, "primitive": .removed])
+        // ASSERT update.objectMessage == msg
+        #expect(update?.objectMessage == msg)
+    }
+
+    // UTS: objects/unit/RTLO4e9/tombstone-map-parent-refs-0
+    @Test
+    func tombstoneMapRemovesParentReferencesForAllEntries() throws {
+        let queue = ObjectsUTS.createInternalQueue()
+        let childCounter = ObjectsUTS.makeCounter(objectID: "counter:child@1000", internalQueue: queue)
+        let childMap = ObjectsUTS.makeMap(objectID: "map:child@1000", internalQueue: queue)
+        var pool = ObjectsUTS.freshPool(internalQueue: queue)
+        pool.testsOnly_setEntry(.counter(childCounter), forObjectID: "counter:child@1000")
+        pool.testsOnly_setEntry(.map(childMap), forObjectID: "map:child@1000")
+
+        let map = ObjectsUTS.makeMap(
+            objectID: "map:test@1000",
+            data: [
+                "counter_ref": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(objectId: "counter:child@1000"), timeserial: "01"),
+                "map_ref": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(objectId: "map:child@1000"), timeserial: "01"),
+                "name": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "Alice"), timeserial: "01"),
+            ],
+            internalQueue: queue,
+        )
+        map.testsOnly_setSiteTimeserials(["site1": "00"])
+        childCounter.testsOnly_setParentReferences(["map:test@1000": ["counter_ref"]])
+        childMap.testsOnly_setParentReferences(["map:test@1000": ["map_ref"]])
+
+        // msg = build_object_delete("map:test@1000", "01", "site1", 1700000000000)
+        let msg = TestFactories.objectDeleteOperationMessage(objectId: "map:test@1000", serial: "01", siteCode: "site1", serialTimestamp: Self.date(millis: 1_700_000_000_000))
+        let (update, _) = try Self.apply(msg, to: map, pool: pool, on: queue)
+
+        // ASSERT map.isTombstone == true
+        #expect(map.testsOnly_isTombstone == true)
+        // ASSERT map.data == {}
+        #expect(map.testsOnly_data.isEmpty)
+        // removeParentReference was called on both children
+        #expect(childCounter.testsOnly_parentReferences["map:test@1000"]?.contains("counter_ref") != true)
+        #expect(childMap.testsOnly_parentReferences["map:test@1000"]?.contains("map_ref") != true)
+        // ASSERT update.update == { "counter_ref": "removed", "map_ref": "removed", "name": "removed" }
+        #expect(update?.update?.update == ["counter_ref": .removed, "map_ref": .removed, "name": .removed])
+        // ASSERT update.tombstone == true
+        #expect(update?.tombstone == true)
+        // ASSERT update.objectMessage == msg
+        #expect(update?.objectMessage == msg)
     }
 
     // UTS: objects/unit/RTLM7a3/map-set-replace-objectid-both-refs-0
     @Test
-    func mapSetReplacingObjectIdCallsBothRemoveAndAdd() throws {
-        let internalQueue = TestFactories.createInternalQueue()
-        var pool = Self.makePool(internalQueue: internalQueue)
-
-        let oldMap = Self.makeMap(objectID: "map:old@1000", internalQueue: internalQueue)
-        let newMap = Self.makeMap(objectID: "map:new@2000", internalQueue: internalQueue)
+    func mapSetOverwritingLiveObjectWithLiveObjectCallsBothRemoveAndAdd() throws {
+        let queue = ObjectsUTS.createInternalQueue()
+        let oldMap = ObjectsUTS.makeMap(objectID: "map:old@1000", internalQueue: queue)
+        let newMap = ObjectsUTS.makeMap(objectID: "map:new@2000", internalQueue: queue)
+        var pool = ObjectsUTS.freshPool(internalQueue: queue)
         pool.testsOnly_setEntry(.map(oldMap), forObjectID: "map:old@1000")
         pool.testsOnly_setEntry(.map(newMap), forObjectID: "map:new@2000")
 
-        let map = Self.makeMap(
+        let map = ObjectsUTS.makeMap(
             objectID: "root",
-            data: ["child": TestFactories.internalMapEntry(timeserial: "01", data: ProtocolTypes.ObjectData(objectId: "map:old@1000"))],
-            internalQueue: internalQueue,
+            data: ["child": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(objectId: "map:old@1000"), timeserial: "01")],
+            internalQueue: queue,
         )
         oldMap.testsOnly_setParentReferences(["root": ["child"]])
 
-        let msg = TestFactories.mapSetOperationMessage(objectId: "root", key: "child", data: ProtocolTypes.ObjectData(objectId: "map:new@2000"), serial: "02", siteCode: "site1")
-        let update = try #require(Self.apply(msg, to: map, pool: &pool, internalQueue: internalQueue))
+        // msg = build_map_set("root", "child", { objectId: "map:new@2000" }, "02", "site1")
+        let msg = ObjectsUTS.mapSetMessage(objectId: "root", key: "child", value: ProtocolTypes.ObjectData(objectId: "map:new@2000"), serial: "02", siteCode: "site1")
+        let (update, _) = try Self.apply(msg, to: map, pool: pool, on: queue)
 
-        #expect(map.testsOnly_data["child"]?.data?.objectId == "map:new@2000")
+        // ASSERT map.data["child"].data == { objectId: "map:new@2000" }
+        #expect(map.testsOnly_data["child"]?.data == ProtocolTypes.ObjectData(objectId: "map:new@2000"))
         // Old child no longer references root
         #expect(oldMap.testsOnly_parentReferences["root"]?.contains("child") != true)
         // New child references root
+        // ASSERT "root" IN new_map.parentReferences
+        #expect(newMap.testsOnly_parentReferences["root"] != nil)
+        // ASSERT "child" IN new_map.parentReferences["root"]
         #expect(newMap.testsOnly_parentReferences["root"]?.contains("child") == true)
-        #expect(update.update?.update == ["child": .updated])
-        #expect(update.objectMessage == msg)
+        // ASSERT update.update == { "child": "updated" }
+        #expect(update?.update?.update == ["child": .updated])
+        // ASSERT update.objectMessage == msg
+        #expect(update?.objectMessage == msg)
     }
 }

@@ -1,190 +1,243 @@
 // Derived from the UTS spec `objects/unit/value_types.md`.
+//
+// Drives the public `LiveCounter.create` / `LiveMap.create` value-type blueprints (RTLCV/RTLMV) and
+// their evaluation into outbound `*_CREATE` `ObjectMessage`s. Construction is pure struct-building;
+// evaluation goes through the harness's synchronous `ObjectsUTS.evaluate(counter:)` /
+// `evaluate(map:internalQueue:)` (the unit stand-in for the spec's `evaluate(vt)`), which drive the
+// production `ObjectCreationHelpers` composition builders with the fixed `ObjectsUTS.evaluationTimestamp`
+// in place of a live per-object server time. The runtime-expressible RTLCV4a validation (a non-finite
+// count) is asserted against the real production `ObjectCreationHelpers.evaluate(liveCounter:...)`,
+// which performs the RTLCV4a finiteness check. There is no channel/connection/mock-WebSocket — a
+// blueprint is evaluated directly. These infra stand-ins are NOT deviations.
+//
+// Deviations from the UTS spec (recorded in deviations.md):
+// - (S-shape) The spec's outbound message carries `operation.counterCreate` / `operation.mapCreate`
+//   with the retained local create (RTLCV4g5 / RTLMV4j5). cocoa's `ProtocolTypes.OutboundObjectMessage`
+//   instead exposes `counterCreateWithObjectId` / `mapCreateWithObjectId` (the wire `initialValue` +
+//   `nonce`), and the retained `WireCounterCreate` / `MapCreate` lives on that variant's `derivedFrom`
+//   field — so every spec assertion on `operation.counterCreate.*` / `operation.mapCreate.*` maps to
+//   `operation.<x>CreateWithObjectId.derivedFrom.*`.
+// - (D-typed) The wrong-typed-input validation cases (RTLCV4a's `"not_a_number"`, RTLMV4a's `null`,
+//   RTLMV4b's non-string key, RTLMV4c's function value) are compile-time-blocked by the typed
+//   `create(initialCount: Double)` / `create(entries: [String: LiveMapValue])` signatures
+//   (objects-mapping §6), so the invalid input cannot be constructed. The spec pseudocode is retained
+//   as comments; only the runtime-expressible subset (RTLCV4a's non-finite `Double`) is a real assertion.
 
 import Ably
 @testable import AblyLiveObjects
 import Foundation
 import Testing
 
-/// LiveCounter / LiveMap value types (blueprints) and their evaluation into `ObjectMessage`s.
-/// Derived from https://github.com/ably/specification/blob/main/uts/objects/unit/value_types.md
-/// (spec points `RTLCV1`–`RTLCV4`, `RTLMV1`–`RTLMV4`).
-///
-/// Pure construction/evaluation tests — no mocks, no WebSocket. The blueprints are the public
-/// `LiveCounter` / `LiveMap` value types (`Path Based API/Public/ValueTypes.swift`); their internal
-/// `count` / `entries` are read via `@testable`.
-///
-/// ## Cocoa evaluation seam (DEV-VT-1)
-/// The spec models `evaluate(vt)` as a method on the blueprint returning `ObjectMessage`s. Cocoa has
-/// no standalone `evaluate`: blueprint→message generation lives in `ObjectCreationHelpers`
-/// (`creationOperationForLiveCounter` / `creationOperationForLiveMap`, and the recursive
-/// `evaluate(liveMap:)`/`evaluate(liveCounter:)` used by `InternalLiveMap#set`).
-/// `ObjectsUTS.evaluate(counter:)`/`evaluate(map:)` bridge the public blueprint to that seam,
-/// evaluating with a fixed timestamp (the production seam fetches a per-object server time).
-/// Consequently the retained-local create (spec `msg.operation.counterCreate` / `mapCreate`, RTLCV4g5 /
-/// RTLMV4j5) is exposed as `operation.counterCreateWithObjectId.derivedFrom` /
-/// `operation.mapCreateWithObjectId.derivedFrom` on the outbound message, not as a separate top-level
-/// field.
-///
-/// ## Compile-time-unrepresentable cases (recorded in deviations.md)
-/// Swift's strongly-typed blueprint API makes several spec validation cases impossible to express, so
-/// the runtime tests do not exist (the type system enforces at compile time what the spec enforces at
-/// runtime):
-/// - RTLCV3c / RTLCV4a `LiveCounter.create("not_a_number")`: `initialCount` is `Double`.
-/// - RTLMV4a `LiveMap.create(null)`: `create()` (no entries) vs `create(entries:)` — there is no null.
-/// - RTLMV4b non-String key: keys are `String` by type.
-/// - RTLMV4c / 40013 "invalid value / graph object as map value": values are the closed `LiveMapValue`
-///   enum — a function, or a live (non-blueprint) map, cannot be constructed as one.
-///
-/// ## Notes
-/// - RTLMV4d1/RTLMV4d2/RTLMV4k (nested depth-first evaluation) are now ported (`RTLMV4d1_nested_value_types`):
-///   `ObjectsUTS.evaluate(map:)` recurses through nested blueprint entries, producing the depth-first
-///   ordered array directly from the pure `ObjectCreationHelpers` composition builders.
-/// - RTLCV4a finiteness (NaN/Infinity → 40003) is validated in `ObjectCreationHelpers.evaluate(liveCounter:)`,
-///   but the spec's `evaluate-validates-count-0` case passes the string `"not_a_number"`, which is
-///   compile-time-unrepresentable (`initialCount` is `Double`), so there is no representable runtime case
-///   to port through `ObjectsUTS.evaluate(counter:)`.
-@Suite(.serialized)
-final class ValueTypesTests {
-    // MARK: - RTLCV3: LiveCounter.create construction
+struct ValueTypesTests {
+    // MARK: - LiveCounter.create (RTLCV)
 
     // UTS: objects/unit/RTLCV3/create-with-count-0
-    // RTLCV3a1/RTLCV3b (DEV-VT-1: `create(initialCount:)`,
-    // count is Double).
     @Test
-    func RTLCV3_create_with_count() {
+    func createCounterWithInitialCount() throws {
+        // Test Steps
+        // vt = LiveCounter.create(42)
         let vt = LiveCounter.create(initialCount: 42)
-        #expect(vt.count == 42) // RTLCV3b
+
+        // Assertions
+        // ASSERT vt IS LiveCounter — statically guaranteed: `create` returns `LiveCounter` (RTLCV3b/RTLCV3d).
+        // ASSERT vt.count == 42
+        #expect(vt.count == 42)
     }
 
     // UTS: objects/unit/RTLCV3/create-default-zero-0
-    // omitted initialCount defaults to 0.
     @Test
-    func RTLCV3_create_default_zero() {
+    func createCounterDefaultsToZero() throws {
+        // Test Steps
+        // vt = LiveCounter.create()
         let vt = LiveCounter.create()
-        #expect(vt.count == 0) // swiftformat:disable:this isEmpty — swiftlint:disable:this empty_count
+
+        // Assertions
+        // ASSERT vt.count == 0
+        #expect(vt.count == 0)
     }
 
-    // MARK: - RTLMV3: LiveMap.create construction
-
-    // UTS: objects/unit/RTLMV3/create-with-entries-0
-    // RTLMV3a1/RTLMV3b. Entries are `LiveMapValue`; a bare
-    // string/number literal lands as `.primitive(.string)` / `.primitive(.number)` (DEV-VT-1).
+    // UTS: objects/unit/RTLCV3c/no-validation-at-create-0
     @Test
-    func RTLMV3_create_with_entries() {
-        let vt = LiveMap.create(entries: [
-            "name": "Alice",
-            "age": 30,
-        ])
-        #expect(vt.entries?["name"] == .primitive(.string("Alice")))
-        #expect(vt.entries?["age"] == .primitive(.number(30)))
-    }
+    func createCounterPerformsNoValidation() throws {
+        // Test Steps
+        // vt = LiveCounter.create("not_a_number")
+        // A non-number is compile-time-blocked by `create(initialCount: Double)` (D-typed). The
+        // runtime-expressible facet of RTLCV3c — creation performs no validation, so even a value the
+        // evaluator would later reject (a non-finite Double) is accepted without throwing — is asserted
+        // here; the validation itself is deferred to evaluation (RTLCV4a, below).
+        let vt = LiveCounter.create(initialCount: .nan)
 
-    // UTS: objects/unit/RTLMV3/create-no-entries-0
-    // omitted entries => internal entries is nil.
-    @Test
-    func RTLMV3_create_no_entries() {
-        let vt = LiveMap.create()
-        #expect(vt.entries == nil)
+        // Assertions
+        // ASSERT vt IS LiveCounter  // does not throw
+        #expect(vt.count.isNaN)
     }
-
-    // MARK: - RTLCV4: LiveCounter evaluation
 
     // UTS: objects/unit/RTLCV4/evaluate-generates-message-0
-    // RTLCV4c/d/f/g1–g4.
     @Test
-    func RTLCV4_evaluate_generates_message() throws {
-        let messages = ObjectsUTS.evaluate(counter: LiveCounter.create(initialCount: 42))
+    func evaluateCounterGeneratesCounterCreateMessage() throws {
+        // Test Steps
+        // vt = LiveCounter.create(42); messages = evaluate(vt)
+        let vt = LiveCounter.create(initialCount: 42)
+        let messages = ObjectsUTS.evaluate(counter: vt)
 
+        // Assertions
+        // ASSERT messages.length == 1
         #expect(messages.count == 1)
         let operation = try #require(messages[0].operation)
-        #expect(operation.action == .known(.counterCreate)) // RTLCV4g1
-        #expect(operation.objectId.hasPrefix("counter:")) // RTLCV4f/g2
+        // ASSERT msg.operation.action == "COUNTER_CREATE" (RTLCV4g1)
+        #expect(operation.action == .known(.counterCreate))
+        // ASSERT msg.operation.objectId STARTS WITH "counter:" / CONTAINS "@" (RTLCV4f/RTLCV4g2, RTO14)
+        #expect(operation.objectId.hasPrefix("counter:"))
         #expect(operation.objectId.contains("@"))
+        // ASSERT msg.operation.counterCreateWithObjectId IS NOT null (RTLCV4g3/RTLCV4g4)
         let withObjectId = try #require(operation.counterCreateWithObjectId)
-        #expect(withObjectId.nonce.count >= 16) // RTLCV4d/g3
-        #expect(!withObjectId.initialValue.isEmpty) // RTLCV4c/g4
+        // ASSERT counterCreateWithObjectId.nonce IS NOT null / length >= 16 (RTLCV4d/RTLCV4g3)
+        // `nonce` is a non-optional String in cocoa, so "IS NOT null" is structural.
+        #expect(withObjectId.nonce.count >= 16)
+        // ASSERT counterCreateWithObjectId.initialValue IS NOT null (RTLCV4c/RTLCV4g4)
+        #expect(!withObjectId.initialValue.isEmpty)
     }
 
     // UTS: objects/unit/RTLCV4g5/retains-local-counter-create-0
-    // the retained local CounterCreate is
-    // `counterCreateWithObjectId.derivedFrom` in cocoa's outbound shape (DEV-VT-1).
     @Test
-    func RTLCV4g5_retains_local_counter_create() throws {
-        let messages = ObjectsUTS.evaluate(counter: LiveCounter.create(initialCount: 42))
+    func evaluateCounterRetainsLocalCounterCreate() throws {
+        // Test Steps
+        // vt = LiveCounter.create(42); messages = evaluate(vt)
+        let vt = LiveCounter.create(initialCount: 42)
+        let messages = ObjectsUTS.evaluate(counter: vt)
+
+        // Assertions
+        // ASSERT msg.operation.counterCreate IS NOT null / .count == 42 (RTLCV4g5)
+        // (S-shape) cocoa retains the local `WireCounterCreate` on `counterCreateWithObjectId.derivedFrom`,
+        // not on a top-level `operation.counterCreate`.
         let derivedFrom = try #require(messages[0].operation?.counterCreateWithObjectId?.derivedFrom)
         #expect(derivedFrom.count == 42)
     }
 
-    // UTS: objects/unit/RTLCV4/evaluate-zero-count-0
-    // count 0 is valid and retained.
+    // UTS: objects/unit/RTLCV4a/evaluate-validates-count-0
     @Test
-    func RTLCV4_evaluate_zero_count() throws {
-        let messages = ObjectsUTS.evaluate(counter: LiveCounter.create(initialCount: 0))
-        let derivedFrom = try #require(messages[0].operation?.counterCreateWithObjectId?.derivedFrom)
-        #expect(derivedFrom.count == 0) // swiftformat:disable:this isEmpty — swiftlint:disable:this empty_count
+    func evaluateCounterValidatesCountType() async throws {
+        // Test Steps
+        // vt = LiveCounter.create("not_a_number"); evaluate(vt) FAILS WITH error
+        // The `"not_a_number"` input is compile-time-blocked by `create(initialCount: Double)` (D-typed).
+        // RTLCV4a rejects "not a Number OR not finite" with 40003; the runtime-expressible half — a
+        // non-finite Double — is asserted here against the production evaluate, which performs the
+        // RTLCV4a finiteness check (the harness's synchronous `evaluate(counter:)` skips it).
+        let internalQueue = ObjectsUTS.createInternalQueue()
+        let coreSDK = ObjectsUTSCoreSDK()
+        let vt = LiveCounter.create(initialCount: .infinity)
+
+        // Assertions
+        // ASSERT error.code == 40003
+        do {
+            _ = try await ObjectCreationHelpers.evaluate(liveCounter: vt, coreSDK: coreSDK, internalQueue: internalQueue)
+            Issue.record("expected evaluation of a non-finite count to throw")
+        } catch {
+            #expect(error.code == 40003)
+        }
     }
 
-    // MARK: - RTLMV4: LiveMap evaluation
+    // UTS: objects/unit/RTLCV4/evaluate-zero-count-0
+    @Test
+    func evaluateCounterWithZeroCount() throws {
+        // Test Steps
+        // vt = LiveCounter.create(0); messages = evaluate(vt)
+        let vt = LiveCounter.create(initialCount: 0)
+        let messages = ObjectsUTS.evaluate(counter: vt)
+
+        // Assertions
+        // ASSERT msg.operation.counterCreate.count == 0
+        // (S-shape) retained create lives on `counterCreateWithObjectId.derivedFrom`.
+        let derivedFrom = try #require(messages[0].operation?.counterCreateWithObjectId?.derivedFrom)
+        #expect(derivedFrom.count == 0)
+    }
+
+    // MARK: - LiveMap.create (RTLMV)
+
+    // UTS: objects/unit/RTLMV3/create-with-entries-0
+    @Test
+    func createMapWithEntries() throws {
+        // Test Steps
+        // vt = LiveMap.create({ "name": "Alice", "age": 30 })
+        let vt = LiveMap.create(entries: [
+            "name": "Alice",
+            "age": 30,
+        ])
+
+        // Assertions
+        // ASSERT vt IS LiveMap — statically guaranteed: `create` returns `LiveMap` (RTLMV3b/RTLMV3d).
+        // ASSERT vt.entries["name"] == "Alice" / vt.entries["age"] == 30
+        #expect(vt.entries?["name"]?.stringValue == "Alice")
+        #expect(vt.entries?["age"]?.numberValue == 30)
+    }
+
+    // UTS: objects/unit/RTLMV3/create-no-entries-0
+    @Test
+    func createMapWithNoEntries() throws {
+        // Test Steps
+        // vt = LiveMap.create()
+        let vt = LiveMap.create()
+
+        // Assertions
+        // ASSERT vt IS LiveMap — statically guaranteed; internal entries is undefined (RTLMV3a1).
+        #expect(vt.entries == nil)
+    }
 
     // UTS: objects/unit/RTLMV4/evaluate-generates-message-0
-    // RTLMV4f/g/i/j1/j3/j4.
     @Test
-    func RTLMV4_evaluate_generates_message() throws {
-        let messages = ObjectsUTS.evaluate(map: LiveMap.create(entries: ["name": "Alice"]), internalQueue: ObjectsUTS.createInternalQueue())
+    func evaluateMapGeneratesMapCreateMessage() throws {
+        // Setup
+        let internalQueue = ObjectsUTS.createInternalQueue()
 
+        // Test Steps
+        // vt = LiveMap.create({ "name": "Alice" }); messages = evaluate(vt)
+        let vt = LiveMap.create(entries: ["name": "Alice"])
+        let messages = ObjectsUTS.evaluate(map: vt, internalQueue: internalQueue)
+
+        // Assertions
+        // ASSERT messages.length == 1
         #expect(messages.count == 1)
         let operation = try #require(messages[0].operation)
-        #expect(operation.action == .known(.mapCreate)) // RTLMV4j1
-        #expect(operation.objectId.hasPrefix("map:")) // RTLMV4i
+        // ASSERT msg.operation.action == "MAP_CREATE" (RTLMV4j1)
+        #expect(operation.action == .known(.mapCreate))
+        // ASSERT msg.operation.objectId STARTS WITH "map:" (RTLMV4i, RTO14)
+        #expect(operation.objectId.hasPrefix("map:"))
+        // ASSERT msg.operation.mapCreateWithObjectId IS NOT null (RTLMV4j3/RTLMV4j4)
         let withObjectId = try #require(operation.mapCreateWithObjectId)
-        #expect(withObjectId.nonce.count >= 16) // RTLMV4g/j3
-        #expect(!withObjectId.initialValue.isEmpty) // RTLMV4f/j4
+        // ASSERT mapCreateWithObjectId.nonce.length >= 16 (RTLMV4g/RTLMV4j3) — `nonce` is non-optional.
+        #expect(withObjectId.nonce.count >= 16)
+        // ASSERT mapCreateWithObjectId.initialValue IS NOT null (RTLMV4f/RTLMV4j4)
+        #expect(!withObjectId.initialValue.isEmpty)
     }
 
     // UTS: objects/unit/RTLMV4j5/retains-local-map-create-0
-    // retained local MapCreate is
-    // `mapCreateWithObjectId.derivedFrom` (DEV-VT-1); semantics is LWW (RTLMV4e1).
     @Test
-    func RTLMV4j5_retains_local_map_create() throws {
-        let messages = ObjectsUTS.evaluate(map: LiveMap.create(entries: ["name": "Alice"]), internalQueue: ObjectsUTS.createInternalQueue())
+    func evaluateMapRetainsLocalMapCreate() throws {
+        // Setup
+        let internalQueue = ObjectsUTS.createInternalQueue()
+
+        // Test Steps
+        // vt = LiveMap.create({ "name": "Alice" }); messages = evaluate(vt)
+        let vt = LiveMap.create(entries: ["name": "Alice"])
+        let messages = ObjectsUTS.evaluate(map: vt, internalQueue: internalQueue)
+
+        // Assertions
+        // ASSERT msg.operation.mapCreate IS NOT null / .semantics == "LWW" /
+        //        .entries["name"].data.string == "Alice" (RTLMV4j5, RTLMV4e1)
+        // (S-shape) cocoa retains the local `MapCreate` on `mapCreateWithObjectId.derivedFrom`.
         let derivedFrom = try #require(messages[0].operation?.mapCreateWithObjectId?.derivedFrom)
-        #expect(derivedFrom.semantics == .known(.lww)) // RTLMV4e1
+        #expect(derivedFrom.semantics == .known(.lww))
         #expect(derivedFrom.entries?["name"]?.data?.string == "Alice")
     }
 
-    // UTS: objects/unit/RTLMV4d1/nested-value-types-0
-    // RTLMV4d1/RTLMV4d2/RTLMV4k. Nested value types
-    // produce depth-first ObjectMessages: inner creates before outer, each entry pointing at its child's
-    // objectId. The spec's `messages[i].operation.mapCreate.entries` is cocoa's retained
-    // `mapCreateWithObjectId.derivedFrom.entries` (DEV-VT-1).
-    @Test
-    func RTLMV4d1_nested_value_types() throws {
-        let innerCounter = LiveCounter.create(initialCount: 10)
-        let innerMap = LiveMap.create(entries: ["nested_count": .liveCounter(innerCounter)])
-        let outer = LiveMap.create(entries: ["child": .liveMap(innerMap)])
-        let messages = ObjectsUTS.evaluate(map: outer, internalQueue: ObjectsUTS.createInternalQueue())
-
-        #expect(messages.count == 3)
-        #expect(messages[0].operation?.action == .known(.counterCreate)) // RTLMV4d1
-        #expect(messages[0].operation?.objectId.hasPrefix("counter:") == true)
-        #expect(messages[1].operation?.action == .known(.mapCreate)) // RTLMV4d2
-        #expect(messages[1].operation?.objectId.hasPrefix("map:") == true)
-        #expect(messages[2].operation?.action == .known(.mapCreate)) // RTLMV4k: outer map last
-        #expect(messages[2].operation?.objectId.hasPrefix("map:") == true)
-
-        let innerCounterId = try #require(messages[0].operation?.objectId)
-        let innerMapId = try #require(messages[1].operation?.objectId)
-
-        // The inner map's `nested_count` entry references the created counter.
-        #expect(messages[1].operation?.mapCreateWithObjectId?.derivedFrom?.entries?["nested_count"]?.data?.objectId == innerCounterId)
-        // The outer map's `child` entry references the created inner map.
-        #expect(messages[2].operation?.mapCreateWithObjectId?.derivedFrom?.entries?["child"]?.data?.objectId == innerMapId)
-    }
-
     // UTS: objects/unit/RTLMV4d/entry-value-types-0
-    // RTLMV4d3–d6 value-type -> data-field mapping.
     @Test
-    func RTLMV4d_entry_value_types() throws {
+    func evaluateMapEntryValueTypeMapping() throws {
+        // Setup
+        let internalQueue = ObjectsUTS.createInternalQueue()
+
+        // Test Steps
+        // vt = LiveMap.create({ str, num, bool, json_arr, json_obj }); messages = evaluate(vt)
         let vt = LiveMap.create(entries: [
             "str": "hello",
             "num": 42,
@@ -192,48 +245,164 @@ final class ValueTypesTests {
             "json_arr": [1, 2, 3],
             "json_obj": ["key": "value"],
         ])
-        let messages = ObjectsUTS.evaluate(map: vt, internalQueue: ObjectsUTS.createInternalQueue())
-        let entries = try #require(messages[0].operation?.mapCreateWithObjectId?.derivedFrom?.entries)
+        let messages = ObjectsUTS.evaluate(map: vt, internalQueue: internalQueue)
 
-        #expect(entries["str"]?.data?.string == "hello") // RTLMV4d4
-        #expect(entries["num"]?.data?.number == NSNumber(value: 42)) // RTLMV4d5
-        #expect(entries["bool"]?.data?.boolean == true) // RTLMV4d6
-        #expect(entries["json_arr"]?.data?.json == .array([1, 2, 3])) // RTLMV4d3
-        #expect(entries["json_obj"]?.data?.json == .object(["key": "value"])) // RTLMV4d3
+        // Assertions
+        // (S-shape) entries live on `mapCreateWithObjectId.derivedFrom.entries`.
+        let entries = try #require(messages[0].operation?.mapCreateWithObjectId?.derivedFrom?.entries)
+        // ASSERT entries["str"].data.string == "hello" (RTLMV4d4)
+        #expect(entries["str"]?.data?.string == "hello")
+        // ASSERT entries["num"].data.number == 42 (RTLMV4d5)
+        #expect(entries["num"]?.data?.number == 42)
+        // ASSERT entries["bool"].data.boolean == true (RTLMV4d6)
+        #expect(entries["bool"]?.data?.boolean == true)
+        // ASSERT entries["json_arr"].data.json == [1, 2, 3] (RTLMV4d3)
+        #expect(entries["json_arr"]?.data?.json == .array([1, 2, 3]))
+        // ASSERT entries["json_obj"].data.json == { "key": "value" } (RTLMV4d3)
+        #expect(entries["json_obj"]?.data?.json == .object(["key": "value"]))
+    }
+
+    // UTS: objects/unit/RTLMV4d1/nested-value-types-0
+    @Test
+    func evaluateNestedValueTypesDepthFirst() throws {
+        // Setup
+        let internalQueue = ObjectsUTS.createInternalQueue()
+
+        // Test Steps
+        // inner_counter = LiveCounter.create(10)
+        // inner_map = LiveMap.create({ "nested_count": inner_counter })
+        // outer = LiveMap.create({ "child": inner_map })
+        // messages = evaluate(outer)
+        let outer = LiveMap.create(entries: [
+            "child": .liveMap(.create(entries: [
+                "nested_count": .liveCounter(.create(initialCount: 10)),
+            ])),
+        ])
+        let messages = ObjectsUTS.evaluate(map: outer, internalQueue: internalQueue)
+
+        // Assertions
+        // ASSERT messages.length == 3 (RTLMV4k depth-first: inner creates before outer)
+        #expect(messages.count == 3)
+        // ASSERT messages[0].operation.action == "COUNTER_CREATE" / objectId STARTS WITH "counter:" (RTLMV4d1)
+        #expect(messages[0].operation?.action == .known(.counterCreate))
+        #expect(messages[0].operation?.objectId.hasPrefix("counter:") == true)
+        // ASSERT messages[1].operation.action == "MAP_CREATE" / objectId STARTS WITH "map:" (RTLMV4d2)
+        #expect(messages[1].operation?.action == .known(.mapCreate))
+        #expect(messages[1].operation?.objectId.hasPrefix("map:") == true)
+        // ASSERT messages[2].operation.action == "MAP_CREATE" / objectId STARTS WITH "map:"
+        #expect(messages[2].operation?.action == .known(.mapCreate))
+        #expect(messages[2].operation?.objectId.hasPrefix("map:") == true)
+
+        let innerCounterId = try #require(messages[0].operation?.objectId)
+        let innerMapId = try #require(messages[1].operation?.objectId)
+
+        // ASSERT messages[1].operation.mapCreate.entries["nested_count"].data.objectId == inner_counter_id
+        // ASSERT messages[2].operation.mapCreate.entries["child"].data.objectId == inner_map_id
+        // (S-shape) entries live on `mapCreateWithObjectId.derivedFrom.entries`.
+        let innerMapEntries = try #require(messages[1].operation?.mapCreateWithObjectId?.derivedFrom?.entries)
+        #expect(innerMapEntries["nested_count"]?.data?.objectId == innerCounterId)
+        let outerMapEntries = try #require(messages[2].operation?.mapCreateWithObjectId?.derivedFrom?.entries)
+        #expect(outerMapEntries["child"]?.data?.objectId == innerMapId)
+    }
+
+    // UTS: objects/unit/RTLMV4a/evaluate-validates-entries-0
+    @Test
+    func evaluateMapValidatesEntriesType() throws {
+        // Test Steps
+        // vt = LiveMap.create(null); evaluate(vt) FAILS WITH error
+        // Assertions
+        // ASSERT error.code == 40003
+        //
+        // (D-typed) NOT EXPRESSIBLE. `LiveMap.create(entries: [String: LiveMapValue])` cannot take
+        // `null`; the only "no entries" form is `LiveMap.create()`, which is a *valid* empty map
+        // (RTLMV4e2, below), not a 40003 error. There is no runtime-expressible facet of RTLMV4a's
+        // "entries is null / not a Dict" rejection — the type system forbids constructing the invalid
+        // input entirely (objects-mapping §6). Retained as a documented omission per the translation
+        // gate; no runtime assertion is possible.
+    }
+
+    // UTS: objects/unit/RTLMV4b/evaluate-validates-keys-0
+    @Test
+    func evaluateMapValidatesKeyTypes() throws {
+        // Test Steps
+        // vt = LiveMap.create({ 123: "value" }); evaluate(vt) FAILS WITH error
+        // Assertions
+        // ASSERT error.code == 40003
+        //
+        // (D-typed) NOT EXPRESSIBLE. Map keys in `create(entries: [String: LiveMapValue])` are `String`
+        // by type, so a non-string key cannot be constructed (objects-mapping §6). The spec itself marks
+        // this case non-applicable in languages where map keys are always strings. Retained as a
+        // documented omission per the translation gate; no runtime assertion is possible.
+    }
+
+    // UTS: objects/unit/RTLMV4c/evaluate-validates-values-0
+    @Test
+    func evaluateMapValidatesValueTypes() throws {
+        // Test Steps
+        // vt = LiveMap.create({ "fn": some_function }); evaluate(vt) FAILS WITH error
+        // Assertions
+        // ASSERT error.code == 40013
+        //
+        // (D-typed) NOT EXPRESSIBLE. Entry values are the closed `LiveMapValue` enum, so an
+        // unsupported value (a function, a live graph object) cannot be constructed (objects-mapping §6);
+        // every constructible value is an "expected type", so the 40013 rejection path is unreachable.
+        // Retained as a documented omission per the translation gate; no runtime assertion is possible.
     }
 
     // UTS: objects/unit/RTLMV4e2/empty-entries-0
-    // undefined internal entries => empty MapCreate.entries.
     @Test
-    func RTLMV4e2_empty_entries() throws {
-        let messages = ObjectsUTS.evaluate(map: LiveMap.create(), internalQueue: ObjectsUTS.createInternalQueue())
+    func evaluateMapWithNoEntriesProducesEmptyEntries() throws {
+        // Setup
+        let internalQueue = ObjectsUTS.createInternalQueue()
+
+        // Test Steps
+        // vt = LiveMap.create(); messages = evaluate(vt)
+        let vt = LiveMap.create()
+        let messages = ObjectsUTS.evaluate(map: vt, internalQueue: internalQueue)
+
+        // Assertions
+        // ASSERT msg.operation.mapCreate.entries == {} (RTLMV4e2)
+        // (S-shape) retained create lives on `mapCreateWithObjectId.derivedFrom`.
         let derivedFrom = try #require(messages[0].operation?.mapCreateWithObjectId?.derivedFrom)
-        #expect(derivedFrom.entries?.isEmpty == true)
+        #expect(derivedFrom.entries == [:])
     }
 
     // UTS: objects/unit/RTLMV4d/map-set-all-types-table-0
-    // every supported value type maps to the correct
-    // data field (adapted to MAP_CREATE entries, the cocoa evaluate seam). The `null` scenario is
-    // omitted: `LiveMapValue` has no null case (compile-time-unrepresentable).
     @Test
-    func RTLMV4d_all_types_table() throws {
+    func evaluateMapAllValueTypesTable() throws {
+        // Setup
         let internalQueue = ObjectsUTS.createInternalQueue()
 
-        func dataFor(_ value: LiveMapValue) throws -> ProtocolTypes.ObjectData {
-            let messages = ObjectsUTS.evaluate(map: LiveMap.create(entries: ["test_key": value]), internalQueue: internalQueue)
-            return try #require(messages[0].operation?.mapCreateWithObjectId?.derivedFrom?.entries?["test_key"]?.data)
+        // Evaluates a single-entry map and returns the entry's ObjectData (the spec's per-scenario
+        // `messages[0].operation.mapCreate.entries["test_key"]`, S-shape: `derivedFrom.entries`).
+        func dataField(for value: LiveMapValue) throws -> ProtocolTypes.ObjectData {
+            let messages = ObjectsUTS.evaluate(map: .create(entries: ["test_key": value]), internalQueue: internalQueue)
+            let entries = try #require(messages[0].operation?.mapCreateWithObjectId?.derivedFrom?.entries)
+            return try #require(entries["test_key"]?.data)
         }
 
-        #expect(try dataFor("hello").string == "hello")
-        #expect(try dataFor(42).number == NSNumber(value: 42))
-        #expect(try dataFor(3.14).number == NSNumber(value: 3.14))
-        #expect(try dataFor(0).number == NSNumber(value: 0))
-        #expect(try dataFor(-1).number == NSNumber(value: -1))
-        #expect(try dataFor(true).boolean == true)
-        #expect(try dataFor(false).boolean == false)
-        #expect(try dataFor([1, "a"]).json == .array([1, "a"]))
-        #expect(try dataFor(["k": "v"]).json == .object(["k": "v"]))
-        // Binary: there is no binary literal for LiveMapValue; construct the primitive explicitly.
-        #expect(try dataFor(.primitive(.data(Data([1, 2, 3])))).bytes == Data([1, 2, 3]))
+        // Test Steps + Assertions
+        // FOR scenario IN type_scenarios: evaluate({ "test_key": input }); ASSERT entry.data[field] == value
+        // { input: "hello", expected_field: "string", expected_value: "hello" }
+        #expect(try dataField(for: "hello").string == "hello")
+        // { input: 42, expected_field: "number", expected_value: 42 }
+        #expect(try dataField(for: 42).number == 42)
+        // { input: 3.14, expected_field: "number", expected_value: 3.14 }
+        #expect(try dataField(for: 3.14).number == 3.14)
+        // { input: 0, expected_field: "number", expected_value: 0 }
+        #expect(try dataField(for: 0).number == 0)
+        // { input: -1, expected_field: "number", expected_value: -1 }
+        #expect(try dataField(for: -1).number == -1)
+        // { input: true, expected_field: "boolean", expected_value: true }
+        #expect(try dataField(for: true).boolean == true)
+        // { input: false, expected_field: "boolean", expected_value: false }
+        #expect(try dataField(for: false).boolean == false)
+        // { input: [1, "a", null], expected_field: "json", expected_value: [1, "a", null] }
+        #expect(try dataField(for: [1, "a", .null]).json == .array([1, "a", .null]))
+        // { input: { "k": "v" }, expected_field: "json", expected_value: { "k": "v" } }
+        #expect(try dataField(for: ["k": "v"]).json == .object(["k": "v"]))
+        // { input: bytes([1, 2, 3]), expected_field: "bytes", expected_value: "AQID" }
+        // cocoa stores raw `Data`, not the spec's base64 string "AQID"; compare the raw bytes.
+        #expect(try dataField(for: .primitive(.data(Data([1, 2, 3])))).bytes == Data([1, 2, 3]))
     }
 }

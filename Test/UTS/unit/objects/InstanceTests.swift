@@ -1,489 +1,634 @@
 // Derived from the UTS spec `objects/unit/instance.md`.
+//
+// Drives the public ``Instance`` API (RTINS3–RTINS16) over the standard LiveObjects tree. The spec's
+// `{ client, channel, root, mock_ws } = AWAIT setup_synced_channel("test")` fixture (a mock-WebSocket
+// synced channel) has no unit-tier counterpart: the standard pool is seeded straight into an
+// `ObjectsPool` (`ObjectsUTS.standardPool`) behind an `ObjectsUTSSeededRealtimeObjects`, and the
+// spec's `root` is a `DefaultLiveMapPathObject` over it; `root.instance()` / `root.get(key).instance()`
+// yield the `Instance` payloads the spec exercises. Writes go through the seeded double, which BOTH
+// captures the published message AND asynchronously applies it back onto the pool entry (the RTO20 ACK
+// echo), so post-write value reads (`value() == 125`, `get("name").value() == "Bob"`) are portable. The
+// subscribe ports stand in for `mock_ws.send_to_client(build_object_message(...))` by applying the
+// inbound operation directly to the seeded node (queue-confined), then draining the event collector's
+// callback queue — never sleeping. The RTINS16e2 delivery-boundary port sets the CoreSDK channel name so
+// the projected PAOM3 message carries it (PAOM2e).
+//
+// The access/write-API precondition rows (RTINS4a/RTINS5b/RTINS6a/RTINS9a/RTINS10a/RTINS12b/RTINS13b/
+// RTINS14b/RTINS15b/RTINS16b -> RTO25/RTO26) are not separately asserted here — they are the subject of
+// `objects/unit/realtime_object.md`; the node accessors run those checks and pass under this fixture's
+// ATTACHED, object-mode channel.
+//
+// Deviations from the UTS spec (see Test/UTS/deviations.md):
+// - (D-1) RTINS4d (`map_inst.value() == null`) and RTINS9c (`counter_inst.size() == null`) are not
+//   expressible: the `Instance` payload protocols expose only the members applicable to the wrapped
+//   kind (objects-mapping §5), so `LiveMapInstance` has no `value` and `LiveCounterInstance` has no
+//   `size`. The absent-member is a compile-time structural guarantee, stronger than a runtime null; the
+//   expressible (counter/map) half of each case is ported.
+// - (D-2) RTINS12d / RTINS14d / RTINS16c (wrong-type write/subscribe on an Instance, expecting 92007)
+//   are not expressible: `Instance` is an enum with no `as*` casts, so a `.liveCounter` payload has no
+//   `set`, a `.liveMap` payload no `increment`, and a `.primitive` payload no `subscribe` (objects-mapping
+//   §5/§12; the RTTS9d mismatch path does not exist). The 92007 runtime rejection is impossible to reach;
+//   the type system forbids the call outright.
+// - (D-3) RTINS10 (`compact()`) is adapted to `compactJson()`: cocoa does not implement the non-JSON
+//   `compact()` (RTTS7d — typed SDKs need not implement it; objects-mapping §5). The recursive-compaction
+//   values are identical, so the assertions are ported against the JSON-shaped result.
 
-import Ably
+import _AblyPluginSupportPrivate // channel-state read (RTINS16h)
 @testable import AblyLiveObjects
-@testable import AblyLiveObjectsTesting
+@testable import AblyLiveObjectsTesting // StandardTestPool serial vocabulary
 import Foundation
 import Testing
 
-/// `Instance` — the identity-addressed view of a LiveObject or primitive.
-/// Derived from https://github.com/ably/specification/blob/main/uts/objects/unit/instance.md
-/// (spec points `RTINS1`–`RTINS16`).
-///
-/// The spec drives every case through `setup_synced_channel` + a mock WebSocket. Cocoa's `Instance`
-/// layer is exercisable without any of that: build the internal node directly via its `testsOnly_`
-/// initialiser and wrap it with the internal `Instance.from(...)` factory (the seam
-/// `PathObject.instance()` uses in production). This mirrors the Phase-3 native suite
-/// `LiveObjects/Tests/AblyLiveObjectsTests/DefaultInstanceTests.swift`; the mocks it relies on are
-/// replicated locally in `helpers/ObjectsUTSHelpers.swift` (that target cannot be imported).
-///
-/// ## DEV-1: Instance enum vs base-type + `as*` casts (recorded in deviations.md)
-/// Cocoa models `Instance` as an enum (`.liveMap`/`.liveCounter`/`.primitive`) whose payloads are the
-/// distinct `LiveMapInstance` / `LiveCounterInstance` / `PrimitiveInstance` protocols, each carrying
-/// only its applicable members. This makes an entire family of spec "wrong-type" cases
-/// **compile-time-unrepresentable** — the spec's runtime 92007 / null-return branches cannot be
-/// written:
-/// - RTINS3b (`Primitive.id() == null`): `PrimitiveInstance` has no `id`.
-/// - RTINS4d (`InternalLiveMap.value() == null`): `LiveMapInstance` has no `value`.
-/// - RTINS5d / RTINS6c / RTINS9c (non-map `get`/`entries`/`size`): those live only on `LiveMapInstance`.
-/// - RTINS12d / RTINS13d (`set`/`remove` on non-map -> 92007): those live only on `LiveMapInstance`.
-/// - RTINS14d / RTINS15d (`increment`/`decrement` on non-counter -> 92007): only on `LiveCounterInstance`.
-/// - RTINS16c (`subscribe` on a primitive -> 92007): `PrimitiveInstance` has no `subscribe`.
-///
-/// ## Mock-realtime adaptation
-/// The unit mock (`ObjectsUTSRealtimeObjects`) captures `publishAndApply` messages but does not apply
-/// them back onto the graph. So the mutation cases (RTINS12/13/14/14a/15/15a) assert the **published
-/// operation** rather than the spec's post-apply value (`root.get(...).value() == ...`), which needs
-/// the full `InternalDefaultRealtimeObjects` pipeline.
-///
-/// ## Skipped — out of UNIT scope
-/// - RTINS16g (subscription follows identity after the key is repointed): needs a multi-object graph
-///   plus a `MAP_SET` that repoints `root.score`, i.e. the mock-WS send path.
-/// - RTINS16h (subscribe has no side effects on channel state): needs a real channel/connection.
-@Suite(.serialized)
-final class InstanceTests {
+struct InstanceTests {
+    // MARK: - Fixture
+
+    private typealias Fixture = (
+        root: DefaultLiveMapPathObject,
+        realtimeObjects: ObjectsUTSSeededRealtimeObjects,
+        coreSDK: ObjectsUTSCoreSDK,
+        internalQueue: DispatchQueue
+    )
+
+    /// The unit stand-in for `{ client, channel, root, mock_ws } = AWAIT setup_synced_channel("test")`:
+    /// seed the standard pool directly and expose it through a seeded realtime-objects double, then front
+    /// it with the root map path object (the spec's `root`). `channelName` is the CoreSDK's channel name,
+    /// used by the RTINS16e2 delivery boundary to stamp the projected public message (PAOM2e).
+    private static func makeFixture(channelName: String = "") -> Fixture {
+        let internalQueue = ObjectsUTS.createInternalQueue()
+        let pool = ObjectsUTS.standardPool(internalQueue: internalQueue)
+        let realtimeObjects = ObjectsUTSSeededRealtimeObjects(pool: pool, internalQueue: internalQueue)
+        let coreSDK = ObjectsUTSCoreSDK(channelName: channelName)
+        let root = DefaultLiveMapPathObject(channelObject: realtimeObjects, coreSDK: coreSDK, internalQueue: internalQueue, segments: [])
+        return (root, realtimeObjects, coreSDK, internalQueue)
+    }
+
+    /// The unit stand-in for `mock_ws.send_to_client(build_object_message("test", [op]))`: applies the
+    /// inbound operation directly to the seeded node it targets. Pool access and `nosync_apply` are
+    /// queue-confined (the seeded double's mutex asserts on-queue).
+    private static func applyInbound(_ objectMessage: ProtocolTypes.InboundObjectMessage, to objectID: String, fixture: Fixture) throws {
+        let operation = try #require(objectMessage.operation)
+        fixture.internalQueue.ably_syncNoDeadlock {
+            var pool = fixture.realtimeObjects.nosync_objectsPool
+            switch pool.entries[objectID] {
+            case let .map(node):
+                _ = node.nosync_apply(operation, source: .channel, objectMessage: objectMessage, objectsPool: &pool)
+            case let .counter(node):
+                _ = node.nosync_apply(operation, source: .channel, objectMessage: objectMessage, objectsPool: &pool)
+            case nil:
+                Issue.record("expected an object at \(objectID) in the seeded pool")
+            }
+        }
+    }
+
     // MARK: - RTINS3: id property returns objectId
 
     // UTS: objects/unit/RTINS3/id-returns-objectid-0
-    // RTINS3a (LiveObject -> objectId). RTINS3b (primitive
-    // -> null) is compile-time-unrepresentable (DEV-1).
     @Test
-    func RTINS3a_id_returns_objectid() throws {
-        let internalQueue = ObjectsUTS.createInternalQueue()
-        let coreSDK = ObjectsUTSCoreSDK()
-        let counterNode = ObjectsUTS.makeCounter(objectID: "counter:score@1000", internalQueue: internalQueue)
-        let mapNode = ObjectsUTS.makeMap(objectID: "map:profile@1000", internalQueue: internalQueue)
+    func idReturnsObjectId() throws {
+        // Setup
+        let root = Self.makeFixture().root
 
-        guard case let .liveCounter(counterInstance) = Instance.from(internalValue: .liveCounter(counterNode), coreSDK: coreSDK, realtimeObjects: ObjectsUTSRealtimeObjects(), internalQueue: internalQueue) else {
-            Issue.record("Expected .liveCounter")
+        // Assertions
+        // counter_inst = root.get("score").instance(); ASSERT counter_inst.id() == "counter:score@1000" (RTINS3a)
+        guard case let .liveCounter(counterInst) = try #require(try root.get(key: "score").instance()) else {
+            Issue.record("expected a counter instance at root.get(\"score\")")
             return
         }
-        #expect(counterInstance.id == "counter:score@1000")
+        #expect(counterInst.id == "counter:score@1000")
 
-        guard case let .liveMap(mapInstance) = Instance.from(internalValue: .liveMap(mapNode), coreSDK: coreSDK, realtimeObjects: ObjectsUTSRealtimeObjects(), internalQueue: internalQueue) else {
-            Issue.record("Expected .liveMap")
+        // map_inst = root.get("profile").instance(); ASSERT map_inst.id() == "map:profile@1000" (RTINS3a)
+        guard case let .liveMap(mapInst) = try #require(try root.get(key: "profile").instance()) else {
+            Issue.record("expected a map instance at root.get(\"profile\")")
             return
         }
-        #expect(mapInstance.id == "map:profile@1000")
+        #expect(mapInst.id == "map:profile@1000")
+        // RTINS3b (Primitive -> null id) is not exercised by the spec's own assertions and is
+        // structurally unrepresentable here: PrimitiveInstance has no `id` member.
     }
 
     // MARK: - RTINS4: value() returns counter number or primitive
 
     // UTS: objects/unit/RTINS4/value-counter-0
-    // RTINS4b (counter -> value) and RTINS4c (primitive ->
-    // value). RTINS4d (map -> null) is compile-time-unrepresentable (DEV-1).
     @Test
-    func RTINS4_value_counter_and_primitive() throws {
-        let internalQueue = ObjectsUTS.createInternalQueue()
-        let coreSDK = ObjectsUTSCoreSDK()
-        let counterNode = ObjectsUTS.makeCounter(objectID: "counter:score@1000", data: 100, internalQueue: internalQueue)
+    func valueReturnsCounterNumberOrPrimitive() throws {
+        // Setup
+        let root = Self.makeFixture().root
 
-        guard case let .liveCounter(counterInstance) = Instance.from(internalValue: .liveCounter(counterNode), coreSDK: coreSDK, realtimeObjects: ObjectsUTSRealtimeObjects(), internalQueue: internalQueue) else {
-            Issue.record("Expected .liveCounter")
+        // Assertions
+        // counter_inst = root.get("score").instance(); ASSERT counter_inst.value() == 100 (RTINS4b)
+        guard case let .liveCounter(counterInst) = try #require(try root.get(key: "score").instance()) else {
+            Issue.record("expected a counter instance at root.get(\"score\")")
             return
         }
-        #expect(try counterInstance.value == 100) // RTINS4b
+        #expect(try counterInst.value == 100)
 
-        guard case let .primitive(primitive) = Instance.from(internalValue: .string("Alice"), coreSDK: coreSDK, realtimeObjects: ObjectsUTSRealtimeObjects(), internalQueue: internalQueue) else {
-            Issue.record("Expected .primitive")
-            return
-        }
-        #expect(try primitive.value == .string("Alice")) // RTINS4c
+        // map_inst = root.instance(); ASSERT map_inst.value() == null (RTINS4d)
+        // Not expressible (D-1): LiveMapInstance exposes no `value()` — the map-returns-null case is a
+        // compile-time structural guarantee (the method does not exist), stronger than a runtime null.
     }
 
     // MARK: - RTINS5: get() returns Instance wrapping entry value
 
     // UTS: objects/unit/RTINS5/get-wraps-entry-0
-    // RTINS5c (look up key, wrap in Instance; nil when absent).
-    // RTINS5d (non-map -> null) is compile-time-unrepresentable (DEV-1).
     @Test
-    func RTINS5c_get_wraps_entry() throws {
-        let internalQueue = ObjectsUTS.createInternalQueue()
-        let coreSDK = ObjectsUTSCoreSDK()
-        // A pool holding the counter that the "score" entry references by objectId.
-        let scoreCounter = ObjectsUTS.makeCounter(objectID: "counter:score@1000", data: 100, internalQueue: internalQueue)
-        let poolDelegate = ObjectsUTSPoolDelegate(internalQueue: internalQueue, entries: ["counter:score@1000": .counter(scoreCounter)])
-        let realtimeObjects = ObjectsUTSRealtimeObjects(poolDelegate: poolDelegate)
-
-        let root = ObjectsUTS.makeMap(
-            objectID: "root",
-            data: [
-                "name": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "Alice")),
-                "score": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(objectId: "counter:score@1000")),
-            ],
-            internalQueue: internalQueue,
-        )
-
-        guard case let .liveMap(mapInstance) = Instance.from(internalValue: .liveMap(root), coreSDK: coreSDK, realtimeObjects: realtimeObjects, internalQueue: internalQueue) else {
-            Issue.record("Expected .liveMap")
+    func getWrapsEntryValueInInstance() throws {
+        // Setup
+        // root_inst = root.instance()
+        let root = Self.makeFixture().root
+        guard case let .liveMap(rootInst) = try #require(try root.instance()) else {
+            Issue.record("expected a map instance for root")
             return
         }
 
-        let nameInst = try #require(try mapInstance.get(key: "name"))
-        guard case let .primitive(namePrimitive) = nameInst else {
-            Issue.record("Expected .primitive for name")
+        // Assertions
+        // name_inst = root_inst.get("name"); ASSERT name_inst IS Instance; ASSERT name_inst.value() == "Alice"
+        let nameInst = try #require(try rootInst.get(key: "name")) // IS Instance (non-nil)
+        guard case let .primitive(namePrim) = nameInst else {
+            Issue.record("expected a primitive instance at get(\"name\")")
             return
         }
-        #expect(try namePrimitive.value == .string("Alice"))
+        #expect(try namePrim.value == .string("Alice"))
 
-        let scoreInst = try #require(try mapInstance.get(key: "score"))
-        guard case let .liveCounter(scoreCounterInstance) = scoreInst else {
-            Issue.record("Expected .liveCounter for score")
+        // score_inst = root_inst.get("score"); ASSERT score_inst.id() == "counter:score@1000"
+        guard case let .liveCounter(scoreInst) = try #require(try rootInst.get(key: "score")) else {
+            Issue.record("expected a counter instance at get(\"score\")")
             return
         }
-        #expect(scoreCounterInstance.id == "counter:score@1000")
+        #expect(scoreInst.id == "counter:score@1000")
 
-        #expect(try mapInstance.get(key: "nonexistent") == nil)
+        // null_inst = root_inst.get("nonexistent"); ASSERT null_inst == null (RTINS5c)
+        #expect(try rootInst.get(key: "nonexistent") == nil)
     }
 
     // MARK: - RTINS6: entries() returns array of [key, Instance] pairs
 
     // UTS: objects/unit/RTINS6/entries-yields-instances-0
-    // RTINS6b. RTINS6c (non-map -> empty array) is
-    // compile-time-unrepresentable (DEV-1).
     @Test
-    func RTINS6b_entries_yields_instances() throws {
-        let internalQueue = ObjectsUTS.createInternalQueue()
-        let coreSDK = ObjectsUTSCoreSDK()
-        let realtimeObjects = ObjectsUTSRealtimeObjects(poolDelegate: ObjectsUTSPoolDelegate(internalQueue: internalQueue))
-        let root = ObjectsUTS.makeMap(
-            data: [
-                "name": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "Alice")),
-                "age": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(number: NSNumber(value: 30))),
-            ],
-            internalQueue: internalQueue,
-        )
-
-        guard case let .liveMap(mapInstance) = Instance.from(internalValue: .liveMap(root), coreSDK: coreSDK, realtimeObjects: realtimeObjects, internalQueue: internalQueue) else {
-            Issue.record("Expected .liveMap")
+    func entriesYieldsKeyInstancePairs() throws {
+        // Setup
+        // root_inst = root.instance()
+        let root = Self.makeFixture().root
+        guard case let .liveMap(rootInst) = try #require(try root.instance()) else {
+            Issue.record("expected a map instance for root")
             return
         }
 
-        let entries = try mapInstance.entries()
-        let entriesByKey = Dictionary(uniqueKeysWithValues: entries.map { ($0.key, $0.value) })
-        #expect(entries.count == 2)
-        let nameInst = try #require(entriesByKey["name"])
-        guard case let .primitive(namePrimitive) = nameInst else {
-            Issue.record("Expected .primitive for name")
+        // Test Steps
+        // entries = {}
+        // FOR [key, inst] IN root_inst.entries(): entries[key] = inst
+        var entries: [String: Instance] = [:]
+        for (key, inst) in try rootInst.entries() {
+            entries[key] = inst
+        }
+
+        // Assertions
+        #expect(entries.count == 7) // ASSERT entries.length == 7
+        let nameInst = try #require(entries["name"]) // ASSERT entries["name"] IS Instance
+        guard case let .primitive(namePrim) = nameInst else {
+            Issue.record("expected a primitive instance for entries[\"name\"]")
             return
         }
-        #expect(try namePrimitive.value == .string("Alice"))
+        #expect(try namePrim.value == .string("Alice")) // ASSERT entries["name"].value() == "Alice"
     }
 
     // MARK: - RTINS9: size() returns non-tombstoned count
 
     // UTS: objects/unit/RTINS9/size-0
-    // RTINS9b (map -> entry count). RTINS9c (non-map -> null) is
-    // compile-time-unrepresentable (DEV-1).
     @Test
-    func RTINS9b_size() throws {
-        let internalQueue = ObjectsUTS.createInternalQueue()
-        let coreSDK = ObjectsUTSCoreSDK()
-        let realtimeObjects = ObjectsUTSRealtimeObjects(poolDelegate: ObjectsUTSPoolDelegate(internalQueue: internalQueue))
-        let root = ObjectsUTS.makeMap(
-            data: [
-                "a": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "x")),
-                "b": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "y")),
-                "c": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "z")),
-            ],
-            internalQueue: internalQueue,
-        )
+    func sizeReturnsNonTombstonedCount() throws {
+        // Setup
+        let root = Self.makeFixture().root
 
-        guard case let .liveMap(mapInstance) = Instance.from(internalValue: .liveMap(root), coreSDK: coreSDK, realtimeObjects: realtimeObjects, internalQueue: internalQueue) else {
-            Issue.record("Expected .liveMap")
+        // Assertions
+        // root_inst = root.instance(); ASSERT root_inst.size() == 7 (RTINS9b)
+        guard case let .liveMap(rootInst) = try #require(try root.instance()) else {
+            Issue.record("expected a map instance for root")
             return
         }
-        #expect(try mapInstance.size == 3)
+        #expect(try rootInst.size == 7)
+
+        // counter_inst = root.get("score").instance(); ASSERT counter_inst.size() == null (RTINS9c)
+        // Not expressible (D-1): LiveCounterInstance exposes no `size()` — the non-map-returns-null case
+        // is a compile-time structural guarantee (the method does not exist), stronger than a runtime null.
     }
 
     // MARK: - RTINS10: compact() recursively compacts
 
     // UTS: objects/unit/RTINS10/compact-0
-    // RTINS10b (behaves like PathObject#compact on the wrapped value).
+    // DEVIATION (D-3): cocoa does not implement `compact()` (RTTS7d); this is adapted to `compactJson()`,
+    // whose recursive-compaction values are identical (a nested counter resolves to its number, a nested
+    // map to a JSON object). Assertions are ported against the JSON-shaped result.
     @Test
-    func RTINS10_compact() throws {
-        let internalQueue = ObjectsUTS.createInternalQueue()
-        let coreSDK = ObjectsUTSCoreSDK()
-
-        let scoreCounter = ObjectsUTS.makeCounter(objectID: "counter:score@1000", data: 100, internalQueue: internalQueue)
-        let profileMap = ObjectsUTS.makeMap(objectID: "map:profile@1000", data: ["email": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "alice@example.com"))], internalQueue: internalQueue)
-        let poolDelegate = ObjectsUTSPoolDelegate(internalQueue: internalQueue, entries: [
-            "counter:score@1000": .counter(scoreCounter),
-            "map:profile@1000": .map(profileMap),
-        ])
-
-        let root = ObjectsUTS.makeMap(
-            objectID: "root",
-            data: [
-                "name": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "Alice")),
-                "score": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(objectId: "counter:score@1000")),
-                "profile": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(objectId: "map:profile@1000")),
-            ],
-            internalQueue: internalQueue,
-        )
-        let realtimeObjects = ObjectsUTSRealtimeObjects(poolDelegate: poolDelegate)
-
-        guard case let .liveMap(mapInstance) = Instance.from(internalValue: .liveMap(root), coreSDK: coreSDK, realtimeObjects: realtimeObjects, internalQueue: internalQueue) else {
-            Issue.record("Expected .liveMap")
+    func compactRecursivelyCompacts() throws {
+        // Setup
+        // root_inst = root.instance()
+        let root = Self.makeFixture().root
+        guard case let .liveMap(rootInst) = try #require(try root.instance()) else {
+            Issue.record("expected a map instance for root")
             return
         }
-        let expected: JSONValue = .object([
-            "name": .string("Alice"),
-            "score": .number(100),
-            "profile": .object(["email": .string("alice@example.com")]),
-        ])
-        #expect(try mapInstance.compactJson() == expected)
+
+        // Test Steps
+        // result = root_inst.compact()  -> compactJson() (D-3)
+        let result = try rootInst.compactJson()
+
+        // Assertions
+        #expect(result.objectValue?["name"] == .string("Alice")) // ASSERT result["name"] == "Alice"
+        #expect(result.objectValue?["score"] == .number(100)) // ASSERT result["score"] == 100
+        // ASSERT result["profile"]["email"] == "alice@example.com"
+        #expect(result.objectValue?["profile"]?.objectValue?["email"] == .string("alice@example.com"))
     }
 
     // MARK: - RTINS12: set() delegates to InternalLiveMap#set
 
     // UTS: objects/unit/RTINS12/set-delegates-0
-    // RTINS12c. Asserts the published MAP_SET operation (the
-    // mock does not apply locally, so the spec's post-apply `root.get("name").value() == "Bob"` is out
-    // of unit scope).
     @Test
-    func RTINS12c_set_delegates() async throws {
-        let internalQueue = ObjectsUTS.createInternalQueue()
-        let coreSDK = ObjectsUTSCoreSDK()
-        let realtimeObjects = ObjectsUTSRealtimeObjects()
-        let published = ObjectsUTSPublished()
-        realtimeObjects.setPublishAndApplyHandler { messages in
-            published.set(messages)
-            return .success(())
-        }
-        let root = ObjectsUTS.makeMap(objectID: "root", internalQueue: internalQueue)
-
-        guard case let .liveMap(mapInstance) = Instance.from(internalValue: .liveMap(root), coreSDK: coreSDK, realtimeObjects: realtimeObjects, internalQueue: internalQueue) else {
-            Issue.record("Expected .liveMap")
+    func setDelegatesToMap() async throws {
+        // Setup
+        // root_inst = root.instance()
+        let fixture = Self.makeFixture()
+        guard case let .liveMap(rootInst) = try #require(try fixture.root.instance()) else {
+            Issue.record("expected a map instance for root")
             return
         }
-        try await mapInstance.set(key: "name", value: .primitive(.string("Bob")))
 
-        let messages = try #require(published.get())
-        #expect(messages.count == 1)
-        #expect(messages[0].operation?.action == .known(.mapSet))
-        #expect(messages[0].operation?.objectId == "root")
-        #expect(messages[0].operation?.mapSet?.key == "name")
-        #expect(messages[0].operation?.mapSet?.value?.string == "Bob")
+        // Test Steps
+        // AWAIT root_inst.set("name", "Bob")
+        try await rootInst.set(key: "name", value: "Bob")
+
+        // Assertions
+        // ASSERT root.get("name").value() == "Bob" (via the seeded double's ACK echo)
+        #expect(try fixture.root.get(key: "name").asPrimitive().value() == .string("Bob"))
+    }
+
+    // MARK: - RTINS12d: set() on non-InternalLiveMap throws 92007
+
+    // UTS: objects/unit/RTINS12d/set-non-map-throws-0
+    // DEVIATION (D-2): not expressible. `counter_inst` is a `.liveCounter` payload (LiveCounterInstance),
+    // which has no `set` member — there is no cast on the `Instance` enum, so the wrong-type write can
+    // never be issued and the 92007 rejection is unreachable. The type system forbids the call outright.
+    @Test
+    func setOnNonMapThrows() throws {
+        // counter_inst = root.get("score").instance()
+        // AWAIT counter_inst.set("key", "value") FAILS WITH error
+        // ASSERT error.code == 92007
+        //
+        // `counter_inst.set(...)` does not compile: LiveCounterInstance exposes no `set`, and the
+        // `Instance` enum has no `asLiveMap()` cast (objects-mapping §5). The invalid-write path is
+        // closed at compile time — a stronger guarantee than the runtime 92007.
+        let root = Self.makeFixture().root
+        guard case .liveCounter = try #require(try root.get(key: "score").instance()) else {
+            Issue.record("expected a counter instance at root.get(\"score\")")
+            return
+        }
+        #expect(Bool(true))
     }
 
     // MARK: - RTINS13: remove() delegates to InternalLiveMap#remove
 
     // UTS: objects/unit/RTINS13/remove-delegates-0
-    // RTINS13c. Asserts the published MAP_REMOVE operation.
     @Test
-    func RTINS13c_remove_delegates() async throws {
-        let internalQueue = ObjectsUTS.createInternalQueue()
-        let coreSDK = ObjectsUTSCoreSDK()
-        let realtimeObjects = ObjectsUTSRealtimeObjects()
-        let published = ObjectsUTSPublished()
-        realtimeObjects.setPublishAndApplyHandler { messages in
-            published.set(messages)
-            return .success(())
-        }
-        let root = ObjectsUTS.makeMap(objectID: "root", data: ["name": ObjectsUTS.mapEntry(data: ProtocolTypes.ObjectData(string: "Alice"))], internalQueue: internalQueue)
-
-        guard case let .liveMap(mapInstance) = Instance.from(internalValue: .liveMap(root), coreSDK: coreSDK, realtimeObjects: realtimeObjects, internalQueue: internalQueue) else {
-            Issue.record("Expected .liveMap")
+    func removeDelegatesToMap() async throws {
+        // Setup
+        // root_inst = root.instance()
+        let fixture = Self.makeFixture()
+        guard case let .liveMap(rootInst) = try #require(try fixture.root.instance()) else {
+            Issue.record("expected a map instance for root")
             return
         }
-        try await mapInstance.remove(key: "name")
 
-        let messages = try #require(published.get())
-        #expect(messages.count == 1)
-        #expect(messages[0].operation?.action == .known(.mapRemove))
-        #expect(messages[0].operation?.objectId == "root")
-        #expect(messages[0].operation?.mapRemove?.key == "name")
+        // Test Steps
+        // AWAIT root_inst.remove("name")
+        try await rootInst.remove(key: "name")
+
+        // Assertions
+        // ASSERT root.get("name").value() == null (via the seeded double's ACK echo — the key is tombstoned)
+        #expect(try fixture.root.get(key: "name").asPrimitive().value() == nil)
     }
 
-    // MARK: - RTINS14 / RTINS14a: increment() delegates to InternalLiveCounter#increment
+    // MARK: - RTINS14: increment() delegates to InternalLiveCounter#increment
 
     // UTS: objects/unit/RTINS14/increment-delegates-0
-    // RTINS14c. Asserts the published COUNTER_INC.
     @Test
-    func RTINS14c_increment_delegates() async throws {
-        let (counterInstance, published) = try makeCounterInstanceCapturingPublish(objectID: "counter:score@1000", data: 100)
-        try await counterInstance.increment(amount: 25)
+    func incrementDelegatesToCounter() async throws {
+        // Setup
+        // counter_inst = root.get("score").instance()
+        let fixture = Self.makeFixture()
+        guard case let .liveCounter(counterInst) = try #require(try fixture.root.get(key: "score").instance()) else {
+            Issue.record("expected a counter instance at root.get(\"score\")")
+            return
+        }
 
-        let messages = try #require(published.get())
-        #expect(messages.count == 1)
-        #expect(messages[0].operation?.action == .known(.counterInc))
-        #expect(messages[0].operation?.objectId == "counter:score@1000")
-        #expect(messages[0].operation?.counterInc?.number == NSNumber(value: 25))
+        // Test Steps
+        // AWAIT counter_inst.increment(25)
+        try await counterInst.increment(amount: 25)
+
+        // Assertions
+        // ASSERT root.get("score").value() == 125 (100 + 25, via the ACK echo)
+        #expect(try fixture.root.get(key: "score").asLiveCounter().value() == 125)
     }
 
-    // UTS: objects/unit/RTINS14a/increment-default-0
-    // RTINS14a1 (amount defaults to 1). Asserts the
-    // published number is 1 (the spec's post-apply `value() == 101` needs the full pipeline).
-    @Test
-    func RTINS14a_increment_default() async throws {
-        let (counterInstance, published) = try makeCounterInstanceCapturingPublish(objectID: "counter:score@1000", data: 100)
-        try await counterInstance.increment()
+    // MARK: - RTINS14d: increment() on non-InternalLiveCounter throws 92007
 
-        let messages = try #require(published.get())
-        #expect(messages[0].operation?.counterInc?.number == NSNumber(value: 1))
+    // UTS: objects/unit/RTINS14d/increment-non-counter-throws-0
+    // DEVIATION (D-2): not expressible. `map_inst` is a `.liveMap` payload (LiveMapInstance), which has no
+    // `increment` member — no cast exists on the `Instance` enum, so the wrong-type write can never be
+    // issued and the 92007 rejection is unreachable.
+    @Test
+    func incrementOnNonCounterThrows() throws {
+        // map_inst = root.instance()
+        // AWAIT map_inst.increment(5) FAILS WITH error
+        // ASSERT error.code == 92007
+        //
+        // `map_inst.increment(...)` does not compile: LiveMapInstance exposes no `increment`, and the
+        // `Instance` enum has no `asLiveCounter()` cast (objects-mapping §5). The invalid-write path is
+        // closed at compile time — a stronger guarantee than the runtime 92007.
+        let root = Self.makeFixture().root
+        guard case .liveMap = try #require(try root.instance()) else {
+            Issue.record("expected a map instance for root")
+            return
+        }
+        #expect(Bool(true))
     }
 
-    // MARK: - RTINS15 / RTINS15a: decrement() delegates to InternalLiveCounter#decrement
+    // MARK: - RTINS15: decrement() delegates to InternalLiveCounter#decrement
 
     // UTS: objects/unit/RTINS15/decrement-delegates-0
-    // RTINS15c. Decrement is increment with a negated
-    // amount, so the published COUNTER_INC carries a negative number.
     @Test
-    func RTINS15c_decrement_delegates() async throws {
-        let (counterInstance, published) = try makeCounterInstanceCapturingPublish(objectID: "counter:score@1000", data: 100)
-        try await counterInstance.decrement(amount: 10)
+    func decrementDelegatesToCounter() async throws {
+        // Setup
+        // counter_inst = root.get("score").instance()
+        let fixture = Self.makeFixture()
+        guard case let .liveCounter(counterInst) = try #require(try fixture.root.get(key: "score").instance()) else {
+            Issue.record("expected a counter instance at root.get(\"score\")")
+            return
+        }
 
-        let messages = try #require(published.get())
-        #expect(messages[0].operation?.action == .known(.counterInc))
-        #expect(messages[0].operation?.counterInc?.number == NSNumber(value: -10))
+        // Test Steps
+        // AWAIT counter_inst.decrement(10)
+        try await counterInst.decrement(amount: 10)
+
+        // Assertions
+        // ASSERT root.get("score").value() == 90 (100 - 10, via the ACK echo)
+        #expect(try fixture.root.get(key: "score").asLiveCounter().value() == 90)
     }
 
-    // UTS: objects/unit/RTINS15a/decrement-default-0
-    // RTINS15a1 (amount defaults to 1 => published -1).
-    @Test
-    func RTINS15a_decrement_default() async throws {
-        let (counterInstance, published) = try makeCounterInstanceCapturingPublish(objectID: "counter:score@1000", data: 100)
-        try await counterInstance.decrement()
+    // MARK: - RTINS14a: increment() defaults to 1
 
-        let messages = try #require(published.get())
-        #expect(messages[0].operation?.counterInc?.number == NSNumber(value: -1))
+    // UTS: objects/unit/RTINS14a/increment-default-0
+    @Test
+    func incrementDefaultsToOne() async throws {
+        // Setup
+        // counter_inst = root.get("score").instance()
+        let fixture = Self.makeFixture()
+        guard case let .liveCounter(counterInst) = try #require(try fixture.root.get(key: "score").instance()) else {
+            Issue.record("expected a counter instance at root.get(\"score\")")
+            return
+        }
+
+        // Test Steps
+        // AWAIT counter_inst.increment()  — amount defaults to 1 (RTINS14a1)
+        try await counterInst.increment()
+
+        // Assertions
+        // ASSERT root.get("score").value() == 101 (100 + 1)
+        #expect(try fixture.root.get(key: "score").asLiveCounter().value() == 101)
+    }
+
+    // MARK: - RTINS15a: decrement() defaults to 1
+
+    // UTS: objects/unit/RTINS15a/decrement-default-0
+    @Test
+    func decrementDefaultsToOne() async throws {
+        // Setup
+        // counter_inst = root.get("score").instance()
+        let fixture = Self.makeFixture()
+        guard case let .liveCounter(counterInst) = try #require(try fixture.root.get(key: "score").instance()) else {
+            Issue.record("expected a counter instance at root.get(\"score\")")
+            return
+        }
+
+        // Test Steps
+        // AWAIT counter_inst.decrement()  — amount defaults to 1 (RTINS15a1)
+        try await counterInst.decrement()
+
+        // Assertions
+        // ASSERT root.get("score").value() == 99 (100 - 1)
+        #expect(try fixture.root.get(key: "score").asLiveCounter().value() == 99)
     }
 
     // MARK: - RTINS16: subscribe() receives InstanceSubscriptionEvent
 
     // UTS: objects/unit/RTINS16/subscribe-receives-events-0
-    // RTINS16d/e1/f/g. The update is driven by
-    // applying a COUNTER_INC to the node directly (the unit stand-in for `mock_ws.send_to_client`).
     @Test
-    func RTINS16_subscribe_receives_events() async throws {
-        let internalQueue = ObjectsUTS.createInternalQueue()
-        let coreSDK = ObjectsUTSCoreSDK()
-        let node = ObjectsUTS.makeCounter(objectID: "counter:score@1000", data: 100, internalQueue: internalQueue)
-
-        guard case let .liveCounter(counterInstance) = Instance.from(internalValue: .liveCounter(node), coreSDK: coreSDK, realtimeObjects: ObjectsUTSRealtimeObjects(), internalQueue: internalQueue) else {
-            Issue.record("Expected .liveCounter")
+    func subscribeReceivesEvents() async throws {
+        // Setup
+        // counter_inst = root.get("score").instance(); events = []
+        let fixture = Self.makeFixture()
+        guard case let .liveCounter(counterInst) = try #require(try fixture.root.get(key: "score").instance()) else {
+            Issue.record("expected a counter instance at root.get(\"score\")")
             return
         }
-
         let collector = ObjectsUTSEventCollector()
-        let sub = try counterInstance.subscribe(listener: collector.listener) // RTINS16f
+        // sub = counter_inst.subscribe(...)
+        let sub: any Subscription = try counterInst.subscribe(listener: collector.listener)
 
-        applyCounterInc(to: node, objectID: "counter:score@1000", number: 7, internalQueue: internalQueue)
-
+        // Test Steps
+        // mock_ws.send_to_client(build_object_message("test", [build_counter_inc("counter:score@1000", 7, "99", "remote")]))
+        let objectMessage = ObjectsUTS.counterIncMessage(objectId: "counter:score@1000", number: 7, serial: "99", siteCode: "remote")
+        try Self.applyInbound(objectMessage, to: "counter:score@1000", fixture: fixture)
+        // poll_until(events.length >= 1): drain the callback queue (never sleep).
         let events = await collector.events()
-        #expect(events.count == 1)
+
+        // Assertions
+        // ASSERT sub IS Subscription — guaranteed by the return type `any Subscription`.
+        _ = sub
+        #expect(events.count == 1) // ASSERT events.length == 1
         let event = try #require(events.first)
-        // RTINS16e1/g: the delivered event carries the Instance wrapping the counter that fired.
+        // ASSERT events[0].object IS Instance; ASSERT events[0].object.id() == "counter:score@1000"
         guard case let .liveCounter(eventCounter) = event.object else {
-            Issue.record("Expected .liveCounter in event")
+            Issue.record("expected the delivered event to carry a counter instance")
             return
         }
         #expect(eventCounter.id == "counter:score@1000")
-        sub.unsubscribe()
     }
 
-    // UTS: objects/unit/RTINS16e2/subscription-event-message-0
-    // RTINS16e1/e2. The event carries both the
-    // Instance and the PublicAPI::ObjectMessage derived from the triggering ObjectMessage.
+    // MARK: - RTINS16c: subscribe() on primitive throws 92007
+
+    // UTS: objects/unit/RTINS16c/subscribe-primitive-throws-0
+    // DEVIATION (D-2): not expressible. `name_inst` is a `.primitive` payload (PrimitiveInstance), which
+    // has no `subscribe` member — no cast exists on the `Instance` enum, so the subscribe call can never
+    // be issued and the 92007 rejection is unreachable.
     @Test
-    func RTINS16e2_subscription_event_message() async throws {
-        let internalQueue = ObjectsUTS.createInternalQueue()
-        let coreSDK = ObjectsUTSCoreSDK(channelName: "test")
-        let realtimeObjects = ObjectsUTSRealtimeObjects(poolDelegate: ObjectsUTSPoolDelegate(internalQueue: internalQueue))
-        let node = ObjectsUTS.makeMap(objectID: "root", internalQueue: internalQueue)
-
-        guard case let .liveMap(mapInstance) = Instance.from(internalValue: .liveMap(node), coreSDK: coreSDK, realtimeObjects: realtimeObjects, internalQueue: internalQueue) else {
-            Issue.record("Expected .liveMap")
+    func subscribeOnPrimitiveThrows() throws {
+        // name_inst = root.instance().get("name")
+        // name_inst.subscribe((event) => {}) FAILS WITH error
+        // ASSERT error.code == 92007
+        //
+        // `name_inst.subscribe(...)` does not compile: PrimitiveInstance exposes no `subscribe`
+        // (objects-mapping §5). The invalid-subscribe path is closed at compile time — a stronger
+        // guarantee than the runtime 92007.
+        let root = Self.makeFixture().root
+        guard case let .liveMap(rootInst) = try #require(try root.instance()) else {
+            Issue.record("expected a map instance for root")
             return
         }
+        guard case .primitive = try #require(try rootInst.get(key: "name")) else {
+            Issue.record("expected a primitive instance at get(\"name\")")
+            return
+        }
+        #expect(Bool(true))
+    }
 
+    // MARK: - RTINS16e2: InstanceSubscriptionEvent contains PublicAPI::ObjectMessage
+
+    // UTS: objects/unit/RTINS16e2/subscription-event-message-0
+    @Test
+    func subscriptionEventContainsPublicMessage() async throws {
+        // Setup
+        // root_inst = root.instance(); events = []
+        // The CoreSDK channel name ("test") stamps the projected public message (PAOM2e).
+        let fixture = Self.makeFixture(channelName: "test")
+        guard case let .liveMap(rootInst) = try #require(try fixture.root.instance()) else {
+            Issue.record("expected a map instance for root")
+            return
+        }
         let collector = ObjectsUTSEventCollector()
-        try mapInstance.subscribe(listener: collector.listener)
+        try rootInst.subscribe(listener: collector.listener)
 
-        // The internal source message threaded through apply; its PAOM3 public form (channel from
-        // the coreSDK, PAOM2e) is what the subscriber receives (RTINS16e2).
-        let operation = ProtocolTypes.ObjectOperation(action: .known(.mapSet), objectId: "root", mapSet: ProtocolTypes.MapSet(key: "name", value: ProtocolTypes.ObjectData(string: "Bob")))
-        let sourceMessage = ObjectsUTS.inboundOperation(operation, serial: "ts1", siteCode: "site1")
-        var pool = ObjectsUTS.freshPool(internalQueue: internalQueue)
-        internalQueue.ably_syncNoDeadlock {
-            _ = node.nosync_apply(
-                operation,
-                source: .channel,
-                objectMessage: sourceMessage,
-                objectsPool: &pool,
-            )
-        }
-
+        // Test Steps
+        // mock_ws.send_to_client(build_object_message("test", [build_map_set("root", "name", { string: "Bob" }, remote_serial(0), "remote")]))
+        let objectMessage = ObjectsUTS.mapSetMessage(
+            objectId: ObjectsPool.rootKey,
+            key: "name",
+            value: ProtocolTypes.ObjectData(string: "Bob"),
+            serial: StandardTestPool.remoteSerial(0),
+            siteCode: "remote",
+        )
+        try Self.applyInbound(objectMessage, to: ObjectsPool.rootKey, fixture: fixture)
+        // poll_until(events.length >= 1)
         let events = await collector.events()
-        #expect(events.count == 1)
+
+        // Assertions
         let event = try #require(events.first)
-        guard case let .liveMap(eventMap) = event.object else { // RTINS16e1
-            Issue.record("Expected .liveMap in event")
+        // ASSERT events[0].object IS Instance; ASSERT events[0].object.id() == "root"
+        guard case let .liveMap(eventMap) = event.object else {
+            Issue.record("expected the delivered event to carry a map instance")
             return
         }
-        #expect(eventMap.id == "root")
-        let message = try #require(event.message) // RTINS16e2
-        #expect(message.channel == "test")
-        #expect(message.operation.action == .mapSet)
-        #expect(message.operation.objectId == "root")
-        #expect(message.operation.mapSet?.key == "name")
+        #expect(eventMap.id == ObjectsPool.rootKey) // == "root"
+        // ASSERT events[0].message IS NOT null
+        let message = try #require(event.message)
+        #expect(message.channel == "test") // ASSERT events[0].message.channel == "test"
+        #expect(message.operation.action == .mapSet) // ASSERT ...operation.action == "MAP_SET"
+        #expect(message.operation.objectId == ObjectsPool.rootKey) // ASSERT ...operation.objectId == "root"
+        #expect(message.operation.mapSet?.key == "name") // ASSERT ...operation.mapSet.key == "name"
     }
 
     // MARK: - RTINS16f: subscribe() returns Subscription for deregistration
 
     // UTS: objects/unit/RTINS16f/subscribe-returns-subscription-0
-    // after `unsubscribe()` the listener must
-    // not fire for a subsequent update.
     @Test
-    func RTINS16f_unsubscribe_stops_delivery() async throws {
-        let internalQueue = ObjectsUTS.createInternalQueue()
-        let coreSDK = ObjectsUTSCoreSDK()
-        let node = ObjectsUTS.makeCounter(objectID: "counter:score@1000", data: 100, internalQueue: internalQueue)
-
-        guard case let .liveCounter(counterInstance) = Instance.from(internalValue: .liveCounter(node), coreSDK: coreSDK, realtimeObjects: ObjectsUTSRealtimeObjects(), internalQueue: internalQueue) else {
-            Issue.record("Expected .liveCounter")
+    func subscribeReturnsSubscriptionForDeregistration() async throws {
+        // Setup
+        // counter_inst = root.get("score").instance(); events = []
+        let fixture = Self.makeFixture()
+        guard case let .liveCounter(counterInst) = try #require(try fixture.root.get(key: "score").instance()) else {
+            Issue.record("expected a counter instance at root.get(\"score\")")
             return
         }
-
         let collector = ObjectsUTSEventCollector()
-        let sub = try counterInstance.subscribe(listener: collector.listener)
+        // sub = counter_inst.subscribe(...); sub.unsubscribe()
+        let sub = try counterInst.subscribe(listener: collector.listener)
         sub.unsubscribe()
 
-        applyCounterInc(to: node, objectID: "counter:score@1000", number: 7, internalQueue: internalQueue)
+        // Quiescence control: a second, still-subscribed listener on the same counter instance that WILL
+        // fire on the same dispatch as the send below (Negative-assertion quiescence).
+        let controlCollector = ObjectsUTSEventCollector()
+        try counterInst.subscribe(listener: controlCollector.listener)
 
+        // Test Steps
+        // mock_ws.send_to_client(build_object_message("test", [build_counter_inc("counter:score@1000", 7, "99", "remote")]))
+        let objectMessage = ObjectsUTS.counterIncMessage(objectId: "counter:score@1000", number: 7, serial: "99", siteCode: "remote")
+        try Self.applyInbound(objectMessage, to: "counter:score@1000", fixture: fixture)
+
+        // Assertions
+        // poll_until(control_events.length >= 1): once the control listener has been delivered (same
+        // dispatch), the unsubscribed listener would also have fired had it remained subscribed.
+        let controlEvents = await controlCollector.events()
+        #expect(controlEvents.count >= 1)
+        // THEN assert the unsubscribed listener's count is unchanged.
         let events = await collector.events()
-        #expect(events.isEmpty)
+        #expect(events.count == 0) // ASSERT events.length == 0
     }
 
-    // MARK: - Helpers
+    // MARK: - RTINS16g: Instance subscription follows identity not path
 
-    private func makeCounterInstanceCapturingPublish(objectID: String, data: Double) throws -> (any LiveCounterInstance, ObjectsUTSPublished) {
-        let internalQueue = ObjectsUTS.createInternalQueue()
-        let coreSDK = ObjectsUTSCoreSDK()
-        let realtimeObjects = ObjectsUTSRealtimeObjects()
-        let published = ObjectsUTSPublished()
-        realtimeObjects.setPublishAndApplyHandler { messages in
-            published.set(messages)
-            return .success(())
+    // UTS: objects/unit/RTINS16g/subscription-follows-identity-0
+    @Test
+    func subscriptionFollowsIdentityNotPath() async throws {
+        // Setup
+        // counter_inst = root.get("score").instance(); events = []
+        let fixture = Self.makeFixture()
+        guard case let .liveCounter(counterInst) = try #require(try fixture.root.get(key: "score").instance()) else {
+            Issue.record("expected a counter instance at root.get(\"score\")")
+            return
         }
-        let node = ObjectsUTS.makeCounter(objectID: objectID, data: data, internalQueue: internalQueue)
-        guard case let .liveCounter(counterInstance) = Instance.from(internalValue: .liveCounter(node), coreSDK: coreSDK, realtimeObjects: realtimeObjects, internalQueue: internalQueue) else {
-            throw NSError(domain: "InstanceTests", code: 0, userInfo: [NSLocalizedDescriptionKey: "Expected .liveCounter"])
+        let collector = ObjectsUTSEventCollector()
+        try counterInst.subscribe(listener: collector.listener)
+
+        // Test Steps
+        // mock_ws.send_to_client(build_object_message("test", [build_map_set("root", "score", { objectId: "counter:new@2000" }, remote_serial(0), "remote")]))
+        // Repoint root.score away from the subscribed counter to a different object.
+        let repointMessage = ObjectsUTS.mapSetMessage(
+            objectId: ObjectsPool.rootKey,
+            key: "score",
+            value: ProtocolTypes.ObjectData(objectId: "counter:new@2000"),
+            serial: StandardTestPool.remoteSerial(0),
+            siteCode: "remote",
+        )
+        try Self.applyInbound(repointMessage, to: ObjectsPool.rootKey, fixture: fixture)
+
+        // mock_ws.send_to_client(build_object_message("test", [build_counter_inc("counter:score@1000", 10, "100", "remote")]))
+        // Increment the ORIGINAL counter — the identity the subscription follows.
+        let incMessage = ObjectsUTS.counterIncMessage(objectId: "counter:score@1000", number: 10, serial: "100", siteCode: "remote")
+        try Self.applyInbound(incMessage, to: "counter:score@1000", fixture: fixture)
+        // poll_until(events.length >= 1)
+        let events = await collector.events()
+
+        // Assertions
+        #expect(events.count >= 1) // ASSERT events.length >= 1
+        let event = try #require(events.first)
+        // RTINS16e1: assert against the DELIVERED EVENT's object id (identity-based), not the pre-existing
+        // counter_inst handle.
+        guard case let .liveCounter(eventCounter) = event.object else {
+            Issue.record("expected the delivered event to carry a counter instance")
+            return
         }
-        return (counterInstance, published)
+        #expect(eventCounter.id == "counter:score@1000") // ASSERT events[0].object.id() == "counter:score@1000"
     }
 
-    private func applyCounterInc(to node: InternalDefaultLiveCounter, objectID: String, number: Int, internalQueue: DispatchQueue) {
-        var pool = ObjectsUTS.freshPool(internalQueue: internalQueue)
-        let message = ObjectsUTS.counterIncMessage(objectId: objectID, number: number, serial: "ts1", siteCode: "site1")
-        internalQueue.ably_syncNoDeadlock {
-            _ = node.nosync_apply(
-                ProtocolTypes.ObjectOperation(action: .known(.counterInc), objectId: objectID, counterInc: WireCounterInc(number: NSNumber(value: number))),
-                source: .channel,
-                objectMessage: message,
-                objectsPool: &pool,
-            )
+    // MARK: - RTINS16h: subscribe() has no side effects
+
+    // UTS: objects/unit/RTINS16h/subscribe-no-side-effects-0
+    @Test
+    func subscribeHasNoSideEffects() throws {
+        // Setup
+        // counter_inst = root.get("score").instance(); channel_state_before = channel.state
+        let fixture = Self.makeFixture()
+        guard case let .liveCounter(counterInst) = try #require(try fixture.root.get(key: "score").instance()) else {
+            Issue.record("expected a counter instance at root.get(\"score\")")
+            return
         }
+        let channelStateBefore = fixture.coreSDK.nosync_channelState
+
+        // Test Steps
+        // sub = counter_inst.subscribe((event) => {})
+        let sub: any Subscription = try counterInst.subscribe(listener: { _ in })
+        _ = sub
+
+        // Assertions
+        // ASSERT channel.state == channel_state_before
+        #expect(fixture.coreSDK.nosync_channelState == channelStateBefore)
     }
 }

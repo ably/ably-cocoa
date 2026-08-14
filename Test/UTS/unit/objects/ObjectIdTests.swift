@@ -1,21 +1,11 @@
 // Derived from the UTS spec `objects/unit/object_id.md`.
 //
-// Port of the UTS ObjectId generation spec (RTO14). ObjectId format is
-// `{type}:{base64url(SHA-256(initialValue:nonce))}@{timestamp}`.
-//
-// Deviations from the UTS spec:
-// - (D1) The spec passes timestamps as epoch-millisecond integers (e.g. 1700000000000). The
-//   Swift API takes a `Date`, so each is translated as `Date(timeIntervalSince1970: 1_700_000_000)`
-//   (= 1_700_000_000 s == 1700000000000 ms). The generated objectId still embeds the
-//   millisecond value `@1700000000000`.
-// - (D2) The spec function is named `generateObjectId`; the Swift equivalent is
-//   `ObjectCreationHelpers.testsOnly_createObjectID(type:initialValue:nonce:timestamp:)`.
-// - (D3) The spec file contains five `##` cases. A sixth test (`different-initialValue`) is added,
-//   symmetric to `different-nonce`, asserting that a different initialValue yields a different
-//   objectId. It has no distinct spec-case name.
-//
-// Note: the spec asserts objectId structure (prefix / timestamp / base64url charset) and
-// determinism/uniqueness, not literal hash strings; assertions here mirror the spec faithfully.
+// Drives the internal RTO14 object-id generation directly via the sanctioned
+// `ObjectCreationHelpers.testsOnly_createObjectID(type:initialValue:nonce:timestamp:)` wrapper —
+// a pure function, no channel/pool/mocks. ObjectId format is
+// `{type}:{base64url(SHA-256(initialValue:nonce))}@{timestamp}`. The spec passes epoch-ms integer
+// timestamps; cocoa's wrapper takes a `Date`, so each spec `timestamp: 1700000000000` maps to
+// `Date(timeIntervalSince1970: 1700000000000 / 1000)` and the emitted `@{timestamp}` is the ms form.
 
 @testable import AblyLiveObjects
 @testable import AblyLiveObjectsTesting
@@ -23,121 +13,131 @@ import Foundation
 import Testing
 
 struct ObjectIdTests {
-    /// The spec's `1700000000000` epoch-millis, expressed as a `Date` (see deviation D1).
-    private static let timestamp = Date(timeIntervalSince1970: 1_700_000_000)
+    // The base64url alphabet (RFC 4648 s.5): A-Z, a-z, 0-9, '-', '_' — no '+', '/', or '=' padding.
+    private static let base64URLCharacters = Set("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_")
+
+    // MARK: - RTO14 - ObjectId format for counter type
 
     // UTS: objects/unit/RTO14/objectid-format-counter-0
     @Test
-    func objectIdFormatCounter() {
+    func objectIdFormatForCounterType() throws {
+        // Test Steps
+        // timestamp: 1700000000000 (spec epoch ms → Date)
         let objectId = ObjectCreationHelpers.testsOnly_createObjectID(
             type: "counter",
             initialValue: #"{"counter":{"count":42}}"#,
             nonce: "test-nonce-12345678",
-            timestamp: Self.timestamp,
+            timestamp: Date(timeIntervalSince1970: 1_700_000_000),
         )
 
+        // Assertions
         #expect(objectId.hasPrefix("counter:"))
         #expect(objectId.contains("@1700000000000"))
-
-        let typePart = String(objectId.prefix { $0 != ":" })
-        let rest = String(objectId.dropFirst(typePart.count + 1))
-        let hashPart = String(rest.prefix { $0 != "@" })
-        let tsPart = String(rest.dropFirst(hashPart.count + 1))
-
+        let parts = objectId.split(separator: ":", maxSplits: 1)
+        try #require(parts.count == 2) // a shape regression fails the test instead of trapping on the subscript
+        let typePart = String(parts[0])
+        let rest = String(parts[1])
+        let hashAndTs = rest.split(separator: "@", maxSplits: 1)
+        try #require(hashAndTs.count == 2)
+        let hashPart = String(hashAndTs[0])
+        let tsPart = String(hashAndTs[1])
         #expect(typePart == "counter")
         #expect(tsPart == "1700000000000")
-        // hashPart IS a valid base64url string: no standard-base64 / padding characters
+        // RTO14b2: hash_part IS valid base64url string (non-empty, only base64url alphabet)
+        #expect(!hashPart.isEmpty)
+        #expect(hashPart.allSatisfy { Self.base64URLCharacters.contains($0) })
+        // RTO14b2: hash_part does NOT contain "+" or "/" or "="
         #expect(!hashPart.contains("+"))
         #expect(!hashPart.contains("/"))
         #expect(!hashPart.contains("="))
     }
 
+    // MARK: - RTO14 - ObjectId format for map type
+
     // UTS: objects/unit/RTO14/objectid-format-map-0
     @Test
-    func objectIdFormatMap() {
+    func objectIdFormatForMapType() throws {
+        // Test Steps
         let objectId = ObjectCreationHelpers.testsOnly_createObjectID(
             type: "map",
             initialValue: #"{"map":{"semantics":"LWW","entries":{}}}"#,
             nonce: "test-nonce-12345678",
-            timestamp: Self.timestamp,
+            timestamp: Date(timeIntervalSince1970: 1_700_000_000),
         )
 
+        // Assertions
         #expect(objectId.hasPrefix("map:"))
         #expect(objectId.contains("@1700000000000"))
     }
 
+    // MARK: - RTO14 - Deterministic output for same inputs
+
     // UTS: objects/unit/RTO14/deterministic-0
     @Test
-    func deterministicForSameInputs() {
+    func deterministicOutputForSameInputs() throws {
+        // Test Steps
         let id1 = ObjectCreationHelpers.testsOnly_createObjectID(
             type: "counter",
             initialValue: #"{"counter":{"count":0}}"#,
             nonce: "same-nonce-1234567",
-            timestamp: Self.timestamp,
+            timestamp: Date(timeIntervalSince1970: 1_700_000_000),
         )
         let id2 = ObjectCreationHelpers.testsOnly_createObjectID(
             type: "counter",
             initialValue: #"{"counter":{"count":0}}"#,
             nonce: "same-nonce-1234567",
-            timestamp: Self.timestamp,
+            timestamp: Date(timeIntervalSince1970: 1_700_000_000),
         )
 
+        // Assertions
         #expect(id1 == id2)
     }
 
+    // MARK: - RTO14 - Different nonce produces different objectId
+
     // UTS: objects/unit/RTO14/different-nonce-0
     @Test
-    func differentNonceProducesDifferentObjectId() {
+    func differentNonceProducesDifferentObjectId() throws {
+        // Test Steps
         let id1 = ObjectCreationHelpers.testsOnly_createObjectID(
             type: "counter",
             initialValue: #"{"counter":{"count":0}}"#,
             nonce: "nonce-aaaaaaaaaaaaa",
-            timestamp: Self.timestamp,
+            timestamp: Date(timeIntervalSince1970: 1_700_000_000),
         )
         let id2 = ObjectCreationHelpers.testsOnly_createObjectID(
             type: "counter",
             initialValue: #"{"counter":{"count":0}}"#,
             nonce: "nonce-bbbbbbbbbbbbb",
-            timestamp: Self.timestamp,
+            timestamp: Date(timeIntervalSince1970: 1_700_000_000),
         )
 
+        // Assertions
         #expect(id1 != id2)
     }
 
+    // MARK: - RTO14b - SHA-256 hash is base64url encoded (not standard base64)
+
     // UTS: objects/unit/RTO14b/base64url-encoding-0
     @Test
-    func hashIsBase64urlEncoded() {
+    func sha256HashIsBase64URLEncodedNotStandardBase64() throws {
+        // Test Steps
         let objectId = ObjectCreationHelpers.testsOnly_createObjectID(
             type: "counter",
             initialValue: #"{"counter":{"count":0}}"#,
             nonce: "test-nonce-12345678",
-            timestamp: Self.timestamp,
+            timestamp: Date(timeIntervalSince1970: 1_700_000_000),
         )
+        let idParts = objectId.split(separator: ":", maxSplits: 1)
+        try #require(idParts.count == 2) // a shape regression fails the test instead of trapping on the subscript
+        let hashAndTs = idParts[1].split(separator: "@", maxSplits: 1)
+        try #require(hashAndTs.count == 2)
+        let hashPart = String(hashAndTs[0])
 
-        let rest = String(objectId.drop { $0 != ":" }.dropFirst())
-        let hashPart = String(rest.prefix { $0 != "@" })
-
+        // Assertions
+        // RTO14b2: Must use URL-safe Base64 per RFC 4648 s.5, not standard Base64
         #expect(!hashPart.contains("+"))
         #expect(!hashPart.contains("/"))
         #expect(!hashPart.hasSuffix("="))
-    }
-
-    // Deviation-added case different-initialValue (symmetric to different-nonce; see deviation D3)
-    @Test
-    func differentInitialValueProducesDifferentObjectId() {
-        let id1 = ObjectCreationHelpers.testsOnly_createObjectID(
-            type: "counter",
-            initialValue: #"{"counter":{"count":0}}"#,
-            nonce: "same-nonce-1234567",
-            timestamp: Self.timestamp,
-        )
-        let id2 = ObjectCreationHelpers.testsOnly_createObjectID(
-            type: "counter",
-            initialValue: #"{"counter":{"count":1}}"#,
-            nonce: "same-nonce-1234567",
-            timestamp: Self.timestamp,
-        )
-
-        #expect(id1 != id2)
     }
 }
