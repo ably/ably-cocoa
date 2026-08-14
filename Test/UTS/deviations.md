@@ -120,18 +120,24 @@ RUN_DEVIATIONS=1 swift test --filter UTS.<TestClass>/<testMethod>
    wrong payload kind, and pass documenting the compile-time guarantee.
 6. **Status**: intentional deviation (type-system guarantee).
 
-### RTINS10 / RTTS7d — `compact()` is not implemented; adapted to `compactJson()`
+### RTINS10 / RTTS7d / RTTS3f — `compact()` is not implemented; adapted to `compactJson()`
 
-1. **Spec point**: RTINS10 (UTS `objects/unit/RTINS10/compact-0`)
-2. **Spec requirement**: `instance.compact()` recursively compacts the object graph into plain
-   language values.
-3. **Actual SDK behaviour**: ably-cocoa does not implement the non-JSON `compact()` — RTTS7d
-   permits typed SDKs to omit it; `compactJson()` is the provided equivalent, whose recursive
-   compaction values are identical (nested counter → its number, nested map → JSON object).
+1. **Spec point**: RTINS10, RTPO13, RTPO13c, RTPO3c1 (UTS `objects/unit/RTINS10/compact-0`,
+   `objects/unit/RTPO13/compact-recursive-0`, `objects/unit/RTPO13c/compact-counter-0`, the
+   `compact()` line of `objects/unit/RTPO3c1/read-null-on-failure-0`)
+2. **Spec requirement**: `instance.compact()` / `pathObj.compact()` recursively compact the object
+   graph into plain language values.
+3. **Actual SDK behaviour**: ably-cocoa does not implement the non-JSON `compact()` — RTTS7d /
+   RTTS3f permit typed SDKs to omit it; `compactJson()` is the provided equivalent, whose
+   recursive compaction values are identical (nested counter → its number, nested map → JSON
+   object). Within RTPO13, binary is additionally base64-encoded by `compactJson` (RTPO14b1)
+   where `compact()` would return raw bytes — the `avatar` line asserts `"AQID"`.
 4. **Root cause**: deliberate API surface decision (objects-mapping §5).
-5. **Test impact**: `UTS.InstanceTests/compactRecursivelyCompacts` asserts the spec's values
-   against the `compactJson()` result; the `compact()` spec line is kept as a comment.
-6. **Status**: intentional deviation (documented API omission per RTTS7d).
+5. **Test impact**: `UTS.InstanceTests/compactRecursivelyCompacts`,
+   `UTS.PathObjectTests/compactRecursivelyCompacts`, `compactReturnsNumberForCounter`, and the
+   `compact()` line of `readOperationsReturnNullOnResolutionFailure` assert the spec's values
+   against the `compactJson()` result; the `compact()` spec lines are kept as comments.
+6. **Status**: intentional deviation (documented API omission per RTTS7d/RTTS3f).
 
 ### RTLCV4a — non-Number counter initial value is compile-time-unrepresentable
 
@@ -213,6 +219,60 @@ RUN_DEVIATIONS=1 swift test --filter UTS.<TestClass>/<testMethod>
    (the observable behaviour); the spec's `THROW` line is kept as a comment.
 6. **Status**: intentional deviation (type-system guarantee).
 
+### RTPO13c5 — `compact()` shared-reference cycle reuse is not expressible via `compactJson()`
+
+1. **Spec point**: RTPO13c5 (UTS `objects/unit/RTPO13c5/compact-cycle-detection-0`)
+2. **Spec requirement**: `compact()` reuses the already-compacted in-memory object for a cyclic
+   reference (`result["prefs"]["back_ref"] IS result` — reference identity).
+3. **Actual SDK behaviour**: ably-cocoa does not implement the non-JSON `compact()` (RTTS3f);
+   `compactJson()` encodes cycles as `{objectId: ...}` (RTPO14b2), a value-shaped form in which
+   an identity (`IS`) comparison is meaningless.
+4. **Root cause**: deliberate API surface decision (objects-mapping §5; same class as the
+   RTINS10/RTTS7d entry above).
+5. **Test impact**: `UTS.PathObjectTests/compactHandlesCyclesViaSharedReference` retains the spec
+   pseudocode as comments and passes trivially; the JSON cycle behaviour is asserted by
+   `UTS.PathObjectTests/compactJsonEncodesCyclesAsObjectId`
+   (`objects/unit/RTPO14/compact-json-0`).
+6. **Status**: intentional deviation (documented API omission per RTTS3f).
+
+### RTPO5b / RTPO6b — non-string path/key inputs are compile-time-unrepresentable
+
+1. **Spec point**: RTPO5b, RTPO6b (UTS `objects/unit/RTPO5b/get-non-string-throws-0`,
+   `objects/unit/RTPO6b/at-non-string-throws-0`)
+2. **Spec requirement**: `get(123)` / `at(123)` (non-String input) throw 40003.
+3. **Actual SDK behaviour**: `LiveMapPathObject.get(key: String)` / `at(path: String)` reject a
+   non-string at compile time, so the invalid call cannot be written; the 40003 rejection is
+   compile-time-unrepresentable — a stronger guarantee than the runtime check.
+4. **Root cause**: typed Swift API surface (same class as RTLMV4c / RTLC12e1).
+5. **Test impact**: `UTS.PathObjectTests/getNonStringKeyIsCompileTimeBlocked` and
+   `atNonStringIsCompileTimeBlocked` retain the spec pseudocode as comments and pass trivially.
+6. **Status**: intentional deviation (type-system guarantee).
+
+### RTLM6h / RTLC6 — `replaceData` updates carry no `objectMessage`
+
+1. **Spec point**: RTLM6h and its counter counterpart (UTS `objects/unit/RTLM6/*` and
+   `objects/unit/RTLC6/*` replaceData cases)
+2. **Spec requirement**: `replaceData(state_msg)` takes the whole `ObjectMessage` and sets
+   `LiveObjectUpdate.objectMessage` on the returned update to it (`objects-features.md` RTLM6h:
+   "set `LiveMapUpdate.objectMessage` on the resulting update to the provided `ObjectMessage`").
+3. **Actual SDK behaviour**: `nosync_replaceData(using:objectMessageSerialTimestamp:)` takes only
+   the `ObjectState` (plus the extracted `serialTimestamp`), and its returned update carries
+   `objectMessage == nil` — cocoa generalizes RTO4b2a ("without populating
+   `LiveMapUpdate.objectMessage`", specified there for the ATTACHED empty-reset case) to all
+   sync-originated updates; the op-apply path (RTLM7f/RTLM8e via `nosync_apply`) does stamp
+   `objectMessage`, so all op-path `update.objectMessage == msg` assertions hold.
+4. **Root cause**: `LiveObjects/Sources/AblyLiveObjects/Internal/` — the OBJECT_SYNC pipeline
+   deliberately does not pass the message down to `replaceData` (the public message is projected
+   per PAOM3 at delivery; sync emits via `nosync_emit`, not the stamping `nosync_emitAndTearDown`).
+   Note the tension between RTLM6h (stamp always) and the RTO4b2a generalization is worth raising
+   upstream in the features spec.
+5. **Test impact**: the replaceData / tombstone-via-sync cases of `UTS.InternalLiveCounterTests`
+   and `UTS.InternalLiveMapTests` assert the substantive state/diff coverage and the actual
+   `objectMessage == nil`; each `update.objectMessage == state_msg` spec ASSERT is kept as a
+   comment citing S-4.
+6. **Status**: intentional deviation (internal-level; observable public behaviour unchanged —
+   sync-originated public events carry no message either way).
+
 ## Mock Infrastructure Limitations
 
 *(none)*
@@ -241,3 +301,16 @@ from the suites that hit it. Observable coverage is always preserved.
   `initialValue` + `nonce`, and the retained create is local-only on `derivedFrom` (not a wire
   field). The public `ObjectOperation` resolves it back per PAOOP3b2/PAOOP3c2. Cited by:
   `UTS.ValueTypesTests`, `UTS.PublicObjectMessageTests`.
+- **(S-3) The apply seam returns an optional `LiveObjectUpdate`, not a Bool.** The spec's
+  `applyOperation(msg, source)` returns a Bool (applied/discarded);
+  `InternalDefault{LiveCounter,LiveMap}.nosync_apply(...)` returns `LiveObjectUpdate?` — `nil`
+  for a discarded op (RTLO4a gate, RTLC7b/RTLC7e, unsupported actions), a non-nil update
+  (possibly `.noop`) when applied. Spec `result == false` → `#expect(result == nil)`;
+  `result == true` / `IS NOT false` → `#expect(result != nil)`. Cited by:
+  `UTS.InternalLiveCounterTests`, `UTS.InternalLiveMapTests`.
+- **(S-4) `replaceData` takes an `ObjectState` and its update carries no `objectMessage`.** The
+  spec's `replaceData(state_msg)` takes the full ObjectMessage and stamps it on the returned
+  update (RTLM6h); cocoa's `nosync_replaceData(using:objectMessageSerialTimestamp:)` takes only
+  the `ObjectState` (+ serialTimestamp) and returns `objectMessage == nil` — see the
+  "RTLM6h / RTLC6 — `replaceData` updates carry no `objectMessage`" Adapted Tests entry for the
+  behaviour half. Cited by: `UTS.InternalLiveCounterTests`, `UTS.InternalLiveMapTests`.
