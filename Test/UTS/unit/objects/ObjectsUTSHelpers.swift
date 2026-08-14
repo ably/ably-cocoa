@@ -6,16 +6,16 @@ import Foundation
 import Testing
 
 // Dedicated helper for the objects UNIT-tier UTS ports (the `objects/unit` public-tier specs:
-// InstanceTests, ValueTypesTests, PathObject*Tests, …). This is a suite-local fixture namespace for the
-// objects unit-tier UTS ports, kept dedicated rather than
-// folded into the broader `AblyLiveObjectsTests` helpers.
+// InstanceTests, ValueTypesTests, PathObject*Tests, …). This is a suite-local fixture namespace that
+// rides in the `UTS` target alongside the ports — deliberately not in the shared
+// `AblyLiveObjectsTesting` module, which is reserved for support code the native suite also consumes.
 //
-// Now that the ports live in the `AblyLiveObjectsTests` target, the two truly-trivial no-op primitives
-// this file used to replicate — `ObjectsUTSLogger` / `ObjectsUTSClock` — have been deduped to the
-// native `TestLogger` / `MockSimpleClock`. The remaining `ObjectsUTS*` doubles are kept because they
-// have no drop-in native equivalent (see `UTS/README.md`): the native `MockCoreSDK` init requires a
-// mutating `internalQueue:`-backed channel-state mutex, `SeededRealtimeObjects` is `private` to
-// `DefaultPathObjectTests`, and the native event collectors are `private` per-suite.
+// The two truly-trivial no-op primitives this file used to replicate — `ObjectsUTSLogger` /
+// `ObjectsUTSClock` — have been deduped to the shared `TestLogger` / `MockSimpleClock`. The remaining
+// `ObjectsUTS*` doubles are kept because they have no drop-in shared equivalent (see `UTS/README.md`):
+// the shared `MockCoreSDK` init requires a mutating `internalQueue:`-backed channel-state mutex,
+// `SeededRealtimeObjects` is `private` to `DefaultPathObjectTests`, and the native event collectors
+// are `private` per-suite.
 //
 // UNIT SCOPE: none of these helpers open a connection, attach a channel, or run `setup_synced_channel`.
 // Objects are built directly via the `testsOnly_` node initialisers and wrapped with the internal

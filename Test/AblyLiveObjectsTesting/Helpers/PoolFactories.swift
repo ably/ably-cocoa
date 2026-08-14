@@ -2,58 +2,17 @@ import _AblyPluginSupportPrivate
 @testable import AblyLiveObjects
 import Foundation
 
-// Mirrors the shared UTS helper `uts/objects/helpers/standard_test_pool.md` for the
-// AblyLiveObjectsTests target: the canonical constants/serial helpers plus the
-// `build_object_delete` operation-message builder that `TestFactories` did not yet cover.
+// Shared object-pool construction and operation-message builders consumed by both
+// AblyLiveObjectsTests and the UTS objects tier: the `SyncObjectsPool` factory plus the
+// `build_object_delete` / arbitrary-value MAP_SET / timestamped MAP_REMOVE builders that
+// `TestFactories` did not yet cover.
 //
-// Name mapping (UTS pseudocode -> Swift):
-// - `SITE_CODE`            -> `UTSTestPool.utsSiteCode`
-// - `POOL_SERIAL`          -> `UTSTestPool.utsPoolSerial`
-// - `ack_serial(m, i)`     -> `UTSTestPool.utsAckSerial(msgSerial:_:)`
-// - `remote_serial(i)`     -> `UTSTestPool.utsRemoteSerial(_:)`
-// - `below_ack_serial(i)`  -> `UTSTestPool.utsBelowAckSerial(_:)`
-// - `build_object_delete`  -> `TestFactories.objectDeleteOperationMessage(...)`
-//
-// The other `build_*` operation builders from the helper are already covered by
+// The other `build_*` operation builders from the shared UTS helper are already covered by
 // `TestFactories`: `build_counter_inc` (counterIncOperationMessage), `build_map_set`
 // (mapSetOperationMessage), `build_map_remove` (mapRemoveOperationMessage), `build_map_clear`
 // (mapClearOperationMessage), `build_map_create` (mapCreateOperationMessage),
 // `build_counter_create` (counterCreateOperationMessage); and the state builders
 // `build_object_state` variants via mapObjectState/counterObjectState/objectState.
-
-/// Canonical constants and serial helpers from the UTS standard test pool.
-///
-/// See `uts/objects/helpers/standard_test_pool.md` -> "Canonical Constants". All serials are
-/// compared lexicographically as strings (RTLM9e) and are defined relative to the pool baseline
-/// `utsPoolSerial`.
-@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-enum UTSTestPool {
-    /// `SITE_CODE` — the harness ConnectionDetails siteCode (the connection's own site).
-    static let utsSiteCode = "test-site"
-
-    /// `POOL_SERIAL` — the timeserial every standard-pool entry and object is seeded with.
-    static let utsPoolSerial = "t:0"
-
-    /// `ack_serial(msgSerial, i)` — the serial the harness assigns to a locally-published
-    /// operation when it is applied on its ACK. First publish's first op = `utsAckSerial(0, 0)`
-    /// == `"t:1:0"`. Sorts AFTER `utsPoolSerial`.
-    static func utsAckSerial(msgSerial: Int, _ i: Int) -> String {
-        "t:\(msgSerial + 1):\(i)"
-    }
-
-    /// `remote_serial(i)` — a remote inbound "winning" serial for a MAP_SET / MAP_REMOVE on an
-    /// existing pool entry. 0-based: `utsRemoteSerial(0)` == `"t:1"`. Sorts AFTER `utsPoolSerial`.
-    static func utsRemoteSerial(_ i: Int) -> String {
-        "t:\(i + 1)"
-    }
-
-    /// `below_ack_serial(i)` — a serial that is NOT an ack_serial (escapes the RTO9a3 apply-on-ACK
-    /// echo dedup) yet sorts BELOW the first ack_serial (`utsAckSerial(0, 0)` == `"t:1:0"`), while
-    /// still after `utsPoolSerial`. 0-based: `utsBelowAckSerial(9)` == `"t:0:9"`.
-    static func utsBelowAckSerial(_ i: Int) -> String {
-        "t:0:\(i)"
-    }
-}
 
 // MARK: - SyncObjectsPool construction
 

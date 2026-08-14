@@ -640,18 +640,32 @@ modules; it does **not** apply here):
    returned by that internal call** (e.g. the `LiveObjectUpdate` from `testsOnly_applyMapSetOperation`),
    not only on public subscription events — check what the spec's `ASSERT` actually reads before
    reaching for the event-based helpers.
-2. To find whether an accessor already exists, grep the test-support module first:
-   `grep -rn "<symbol>" Test/AblyLiveObjectsTesting --include="*.swift"`. If a
-   `testsOnly_` helper is there, use it.
-3. If it is missing, **create it in the test-support module** (never in `Sources/`):
-   `Test/AblyLiveObjectsTesting/<Type>+TestsOnly.swift`, following the recipe in that
-   directory's `README.md` — a **dumb accessor only** (read/write existing internal state, or 1:1
-   delegation; no computation, branching, or state of its own), `testsOnly_` prefix,
-   `@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)`. If the backing member is `private`, raise it
-   to `internal` in `Sources/` with the `// internal (not private) for AblyLiveObjectsTesting`
-   intent comment. If **more than a visibility raise** is needed (stored state, production write
-   hooks), **stop** — that is a residual-class seam: check the README's residual allowlist and
-   escalate to the lead dev rather than hacking around it in a helper.
+2. **Check first — always.** Before adding ANY test-support code (a `testsOnly_` seam **or** a
+   helper/factory/mock), grep the existing module for it:
+   `grep -rn "<symbol>" Test/AblyLiveObjectsTesting --include="*.swift"`. If an existing
+   `testsOnly_` member or helper/factory/mock covers the need, **reuse it — never duplicate it**.
+3. Only if it is missing, **extend the test-support module** (never `Sources/`), by kind:
+   - **Internal-access seam** (a missing `testsOnly_` method/property): add it to the matching
+     `Test/AblyLiveObjectsTesting/Internals/<Type>+TestsOnly.swift` — extend the existing file for
+     that type if present; create a new `Internals/<Type>+TestsOnly.swift` only when no file for
+     that type exists. Follow the recipe in the module's `README.md` — a **dumb accessor only**
+     (read/write existing internal state, or 1:1 delegation; no computation, branching, or state of
+     its own), `testsOnly_` prefix, `@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)`. If the
+     backing member is `private`, raise it to `internal` in `Sources/` with the
+     `// internal (not private) for AblyLiveObjectsTesting` intent comment. If **more than a
+     visibility raise** is needed (stored state, production write hooks), **stop** — that is a
+     residual-class seam: check the README's residual allowlist and escalate to the lead dev rather
+     than hacking around it in a helper.
+   - **Helper/mock/factory**: add it to the matching file under
+     `Test/AblyLiveObjectsTesting/Helpers/` — extend the existing file if one fits (message/state
+     factories into `TestFactories.swift` or `PoolFactories.swift`, mock behaviour into the
+     relevant `Mock*.swift`); create a new `Helpers/` file only when nothing fits.
+   - **Placement boundary — shared module vs port harness.** `Test/AblyLiveObjectsTesting` is for
+     code consumed by **both** test targets (the native `AblyLiveObjectsTests` suite and `UTS`).
+     A helper needed **only by the UTS port suites** (an `ObjectsUTS*`-style double or fixture)
+     belongs in `Test/UTS/unit/objects/ObjectsUTSHelpers.swift` instead — do **not** move that
+     harness (or add port-only types) into the shared module: it is single-consumer by design and
+     imports the `Testing` framework, which the shared non-test module must not.
 4. This ladder is for the **unit tier only.** The integration and proxy objects tiers exercise the
    public path-based API exclusively and never touch `AblyLiveObjectsTesting` — see §14 and the
    integration helpers under `Test/UTS/integration/standard/objects/helpers/`.
@@ -666,14 +680,13 @@ modules; it does **not** apply here):
 2. ✅ **The spec helpers are implemented.** Every objects unit spec opens with a synced-channel
    setup and builds messages with `build_*` helpers, all specified in
    `uts/objects/helpers/standard_test_pool.md`. The Swift implementations exist:
-   - `Test/AblyLiveObjectsTesting/UTSTestPoolFactories.swift` — the canonical
-     serial constants/helpers as the `UTSTestPool` enum (`utsSiteCode`, `utsPoolSerial`,
-     `utsAckSerial(msgSerial:_:)`, `utsRemoteSerial(_:)`, `utsBelowAckSerial(_:)`), plus the
-     `build_*` operation/state builders on `TestFactories` (`objectDeleteOperationMessage`,
-     `counterIncOperationMessage`, `mapSetOperationMessage`, `mapRemoveOperationMessage`,
-     `mapClearOperationMessage`, `mapCreateOperationMessage`, `counterCreateOperationMessage`, the
-     `*ObjectState` state builders) and `testsOnly_fromStates` for pool construction. The file's
-     header documents the full UTS-pseudocode → Swift name map.
+   - `Test/AblyLiveObjectsTesting/Helpers/PoolFactories.swift` — the shared
+     `build_*` operation/state builders on `TestFactories` (`objectDeleteOperationMessage`, the
+     `data:`/`serialTimestamp:` `mapSetOperationMessage`/`mapRemoveOperationMessage` overloads) plus
+     `SyncObjectsPool.testsOnly_fromStates` for pool construction. The rest of the `build_*` operation
+     and `*ObjectState` builders live in `Helpers/TestFactories.swift`. The spec's serial helpers
+     (`SITE_CODE`, `POOL_SERIAL`, `ack_serial`, `remote_serial`, `below_ack_serial`) have no named
+     Swift constants — the ports pass the serial/`siteCode` string literals inline at each call site.
    - `Test/UTS/unit/objects/ObjectsUTSHelpers.swift` — the port-only mock/harness types
      (`ObjectsUTSCoreSDK`, the seeded `InternalRealtimeObjectsProtocol` fixtures, the pool
      delegate, and the event collectors) that stand in for the spec's `setup_synced_channel` /
@@ -684,8 +697,12 @@ modules; it does **not** apply here):
 
 ### Harness surface — `Test/UTS/unit/objects/ObjectsUTSHelpers.swift`
 
-The port-only harness (it rides in the `UTS` target alongside the suites, not in `AblyLiveObjectsTesting`,
-because it exists purely for these ports). Types and their roles:
+The port-only harness. It rides in the `UTS` target alongside the suites — deliberately **not** in
+`Test/AblyLiveObjectsTesting/Helpers/` — because it exists purely for these ports: the native
+`AblyLiveObjectsTests` suite never uses it (the shared module is reserved for code both test targets
+consume), and it imports the `Testing` framework, which the shared non-test module must not. New
+port-only doubles/fixtures go here; anything genuinely needed by both suites goes to the shared
+module per the §13 ladder. Types and their roles:
 
 | Type | Role | Key members |
 |---|---|---|
@@ -702,25 +719,25 @@ because it exists purely for these ports). Types and their roles:
 ### Spec-helper coverage — `uts/objects/helpers/standard_test_pool.md` → cocoa
 
 Every symbol the standard test pool defines, and its cocoa implementation. Most builders live in
-`Test/AblyLiveObjectsTesting/UTSTestPoolFactories.swift` + `TestFactories.swift`; the pool/harness
-stand-ins live in `Test/UTS/unit/objects/ObjectsUTSHelpers.swift`.
+`Test/AblyLiveObjectsTesting/Helpers/PoolFactories.swift` + `Helpers/TestFactories.swift`; the
+pool/harness stand-ins live in `Test/UTS/unit/objects/ObjectsUTSHelpers.swift`.
 
 | Spec symbol | cocoa implementation (file · symbol) |
 |---|---|
-| `SITE_CODE` | `UTSTestPoolFactories.swift` · `UTSTestPool.utsSiteCode` |
-| `POOL_SERIAL` | `UTSTestPoolFactories.swift` · `UTSTestPool.utsPoolSerial` |
-| `ack_serial(msgSerial, i)` | `UTSTestPoolFactories.swift` · `UTSTestPool.utsAckSerial(msgSerial:_:)` |
-| `remote_serial(i)` | `UTSTestPoolFactories.swift` · `UTSTestPool.utsRemoteSerial(_:)` |
-| `below_ack_serial(i)` | `UTSTestPoolFactories.swift` · `UTSTestPool.utsBelowAckSerial(_:)` |
-| `build_counter_inc` | `TestFactories.swift` · `TestFactories.counterIncOperationMessage(objectId:number:serial:siteCode:)` (also `ObjectsUTS.counterIncMessage`) |
-| `build_map_set` | `TestFactories.swift` / `UTSTestPoolFactories.swift` · `TestFactories.mapSetOperationMessage(…)` (`value:` String and `data:` `ObjectData` overloads; also `ObjectsUTS.mapSetMessage`) |
-| `build_map_remove` | `TestFactories.swift` / `UTSTestPoolFactories.swift` · `TestFactories.mapRemoveOperationMessage(…)` (incl. the `serialTimestamp:` overload for RTLM8f) |
-| `build_map_clear` | `TestFactories.swift` · `TestFactories.mapClearOperationMessage(…)` (also `ObjectsUTS.mapClearMessage`) |
-| `build_object_delete` | `UTSTestPoolFactories.swift` · `TestFactories.objectDeleteOperationMessage(…)` (also `ObjectsUTS.objectDeleteMessage`) |
-| `build_counter_create` | `TestFactories.swift` · `TestFactories.counterCreateOperationMessage(…)` |
-| `build_map_create` | `TestFactories.swift` · `TestFactories.mapCreateOperationMessage(…)` |
-| `build_object_state` | `TestFactories.swift` · `TestFactories.objectState` / `mapObjectState` / `counterObjectState` / `rootObjectState` |
-| `build_object_message_with_state` | `TestFactories.swift` · `TestFactories.inboundObjectMessage(object:)` (and `mapObjectMessage`/`counterObjectMessage`/`rootObjectMessage`) |
+| `SITE_CODE` | no named constant — ports pass the `siteCode:` string literal inline (e.g. `"site1"`, `"remote"`) |
+| `POOL_SERIAL` | no named constant — ports pass the `serial:` string literal inline (e.g. `"t:0"`) |
+| `ack_serial(msgSerial, i)` | no named helper — ports pass the ACK serial literal inline (e.g. `"t:1:0"`) |
+| `remote_serial(i)` | no named helper — ports pass the remote serial literal inline (e.g. `"t:1"`) |
+| `below_ack_serial(i)` | no named helper — ports pass the below-ack serial literal inline (e.g. `"t:0:9"`) |
+| `build_counter_inc` | `Helpers/TestFactories.swift` · `TestFactories.counterIncOperationMessage(objectId:number:serial:siteCode:)` (also `ObjectsUTS.counterIncMessage`) |
+| `build_map_set` | `Helpers/TestFactories.swift` / `Helpers/PoolFactories.swift` · `TestFactories.mapSetOperationMessage(…)` (`value:` String and `data:` `ObjectData` overloads; also `ObjectsUTS.mapSetMessage`) |
+| `build_map_remove` | `Helpers/TestFactories.swift` / `Helpers/PoolFactories.swift` · `TestFactories.mapRemoveOperationMessage(…)` (incl. the `serialTimestamp:` overload for RTLM8f) |
+| `build_map_clear` | `Helpers/TestFactories.swift` · `TestFactories.mapClearOperationMessage(…)` (also `ObjectsUTS.mapClearMessage`) |
+| `build_object_delete` | `Helpers/PoolFactories.swift` · `TestFactories.objectDeleteOperationMessage(…)` (also `ObjectsUTS.objectDeleteMessage`) |
+| `build_counter_create` | `Helpers/TestFactories.swift` · `TestFactories.counterCreateOperationMessage(…)` |
+| `build_map_create` | `Helpers/TestFactories.swift` · `TestFactories.mapCreateOperationMessage(…)` |
+| `build_object_state` | `Helpers/TestFactories.swift` · `TestFactories.objectState` / `mapObjectState` / `counterObjectState` / `rootObjectState` |
+| `build_object_message_with_state` | `Helpers/TestFactories.swift` · `TestFactories.inboundObjectMessage(object:)` (and `mapObjectMessage`/`counterObjectMessage`/`rootObjectMessage`) |
 | `build_public_object_message` | `LiveObjects/Sources/…/Protocol/ObjectMessage.swift` · `ProtocolTypes.InboundObjectMessage.toPublicObjectMessage(channelName:)` (the PAOM3 conversion) |
 | `STANDARD_POOL_OBJECTS` (the tree) | `ObjectsUTSHelpers.swift` · `ObjectsUTS.standardPool(internalQueue:prefsBackRef:)` (seeds the same tree straight into an `ObjectsPool`) |
 | `assert_unchanged_after_quiescence` | The event collectors drain-then-read (`ObjectsUTSEventCollector.events()` awaits `.main`; `ObjectsUTSInstanceEventCollector` / `ObjectsUTSPathEventCollector` read after `queue.sync {}`) |
@@ -733,9 +750,9 @@ seeds the CRDT graph directly, so there is no PROTOCOL frame to build:
 | Spec symbol | cocoa stand-in (file · symbol) · rationale |
 |---|---|
 | `setup_synced_channel(channel_name)` | `ObjectsUTSHelpers.swift` · `ObjectsUTS.standardPool(…)` + `ObjectsUTSSeededRealtimeObjects` — seed the pool directly; the unit tier has no channel/connection to sync |
-| `setup_synced_channel_no_ack(channel_name)` | same direct seeding; ACK timing is modelled via the serial helpers (`UTSTestPool.utsAckSerial`) rather than a live ACK frame |
+| `setup_synced_channel_no_ack(channel_name)` | same direct seeding; ACK timing is modelled by seeding the ACK serial string literal directly rather than a live ACK frame |
 | `build_object_sync_message(channel, channelSerial, objectMessages)` | `SyncObjectsPool.testsOnly_fromStates(_:logger:)` (accumulate states) / `ObjectsUTS.standardPool` (seed the pool); for engine-driven ports, `ObjectsUTS.counterSyncMessage` / `rootSyncMessage` build the inbound OBJECT_SYNC state message applied directly — no OBJECT_SYNC PROTOCOL frame is built |
-| `build_ack_message(msgSerial, serials)` | no ACK frame — apply-on-ACK is modelled by seeding the ACK serial directly (`UTSTestPool.utsAckSerial`); there is no mock transport to ACK |
+| `build_ack_message(msgSerial, serials)` | no ACK frame — apply-on-ACK is modelled by seeding the ACK serial string literal directly; there is no mock transport to ACK |
 
 ### Publish-capture recipe (the spec's `capturedObjectMessages` equivalent)
 
@@ -743,17 +760,17 @@ Ported write cases assert on the **outbound** `ObjectMessage`(s) an operation pu
 WebSocket to read a sent frame from; instead capture at the `publishAndApply` seam. Two flavours, both in
 `ObjectsUTSHelpers.swift`:
 
-- **`ObjectsUTSRealtimeObjects.setPublishAndApplyHandler(_:)`** (`ObjectsUTSHelpers.swift:123`) — install a
+- **`ObjectsUTSRealtimeObjects.setPublishAndApplyHandler(_:)`** (`ObjectsUTSHelpers.swift`) — install a
   handler that receives the outbound `[ProtocolTypes.OutboundObjectMessage]`; store them (e.g. into an
   `ObjectsUTSPublished`) and assert afterwards. Return `.success(())` unless the case asserts a publish
   failure.
-- **`ObjectsUTSSeededRealtimeObjects.capturedMessages`** (`ObjectsUTSHelpers.swift:541`) — the seeded double
+- **`ObjectsUTSSeededRealtimeObjects.capturedMessages`** (`ObjectsUTSHelpers.swift`) — the seeded double
   auto-captures the most recent `publishAndApply`'s messages; just read the property after the write. Used
   by the path-object / seeded-pool ports.
 
 Either is cocoa's equivalent of ably-java's `mockWs.capturedObjectMessages()`. **Note:** the native
 `AblyLiveObjects` suite instead uses `MockCoreSDK.setPublishHandler(_:)`
-(`Test/AblyLiveObjectsTesting/MockCoreSDK.swift`); the port-tier `ObjectsUTSCoreSDK`'s publish paths
+(`Test/AblyLiveObjectsTesting/Helpers/MockCoreSDK.swift`); the port-tier `ObjectsUTSCoreSDK`'s publish paths
 deliberately `fatalError`, so writes in the ports go through the realtime-objects doubles above, never
 through the CoreSDK.
 
@@ -786,6 +803,10 @@ target-qualified filter form, `swift test --filter "UTS.<SuiteName>"`, which dis
 **Pure-function specs** (no channel/pool/sync interaction — e.g. `object_id.md`): the Step 3
 reading list collapses — you only need the §16 symbol mapping and this file template; skip
 `ObjectsUTSHelpers.swift` and the pool factories.
+
+**Deviations file** (overrides SKILL.md Step 6's shared-file default): objects-unit deviations go in the
+module-scoped `Test/UTS/unit/objects/deviations.md` (beside these suites; it already carries the
+objects-unit entries), not the shared `Test/UTS/deviations.md`.
 
 ```swift
 // Derived from the UTS spec `objects/unit/<spec_file>.md`.
@@ -972,6 +993,6 @@ listener capturing through `Captured`; `event.object` re-cast with `asLiveCounte
 | `PublicAPI::ObjectMessage` | `struct ObjectMessage` (properties + public init; timestamps are `Date`) |
 | `PublicAPI::ObjectOperation` | `struct ObjectOperation` (one payload non-nil; no `.unknown` action) |
 | `InternalLiveMap` / `InternalLiveCounter` / `ObjectsPool` | `internal` in `AblyLiveObjects` — reach via `@testable import AblyLiveObjects` + `@testable import AblyLiveObjectsTesting`, §13 |
-| `generateObjectId(type, initialValue, nonce, timestamp)` | `ObjectCreationHelpers.testsOnly_createObjectID(type:initialValue:nonce:timestamp:)` (`Test/AblyLiveObjectsTesting/ObjectCreationHelpers+TestsOnly.swift`) — use this sanctioned wrapper, not the raw internal `createObjectID`. The spec passes an epoch-**ms** integer; cocoa takes a `Date` — convert with `Date(timeIntervalSince1970: TimeInterval(ms) / 1000)` |
-| `setup_synced_channel` / `build_*` (unit) | **implemented** — `Test/AblyLiveObjectsTesting/UTSTestPoolFactories.swift` + `Test/UTS/unit/objects/ObjectsUTSHelpers.swift`, §13 |
+| `generateObjectId(type, initialValue, nonce, timestamp)` | `ObjectCreationHelpers.testsOnly_createObjectID(type:initialValue:nonce:timestamp:)` (`Test/AblyLiveObjectsTesting/Internals/ObjectCreationHelpers+TestsOnly.swift`) — use this sanctioned wrapper, not the raw internal `createObjectID`. The spec passes an epoch-**ms** integer; cocoa takes a `Date` — convert with `Date(timeIntervalSince1970: TimeInterval(ms) / 1000)` |
+| `setup_synced_channel` / `build_*` (unit) | **implemented** — `Test/AblyLiveObjectsTesting/Helpers/PoolFactories.swift` + `Test/UTS/unit/objects/ObjectsUTSHelpers.swift`, §13 |
 | `provision_objects_via_rest` (integration) | **implemented** — `Test/UTS/integration/standard/objects/helpers/ObjectsRestProvisioning.swift`, §14 |
