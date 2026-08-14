@@ -28,10 +28,8 @@ struct AblyLiveObjectsTests {
     /// A basic test of the core interactions between this plugin and ably-cocoa.
     @Test(arguments: [true, false])
     func plumbingSmokeTest(useBinaryProtocol: Bool) async throws {
-        let key = try await Sandbox.fetchSharedAPIKey()
-        let clientOptions = ARTClientOptions(key: key)
+        let clientOptions = try await Sandbox.clientOptions()
         clientOptions.plugins = [.liveObjects: AblyLiveObjects.Plugin.self]
-        clientOptions.environment = "sandbox"
         clientOptions.useBinaryProtocol = useBinaryProtocol
 
         let realtime = ARTRealtime(options: clientOptions)

@@ -6,10 +6,8 @@ import Ably
 enum ClientHelper {
     /// Creates a sandbox Realtime client with LiveObjects support.
     static func realtimeWithObjects(options: PartialClientOptions = .init()) async throws -> ARTRealtime {
-        let key = try await Sandbox.fetchSharedAPIKey()
-        let clientOptions = ARTClientOptions(key: key)
+        let clientOptions = try await Sandbox.clientOptions()
         clientOptions.plugins = [.liveObjects: AblyLiveObjects.Plugin.self]
-        clientOptions.environment = "sandbox"
 
         clientOptions.testOptions.transportFactory = TestProxyTransportFactory()
 

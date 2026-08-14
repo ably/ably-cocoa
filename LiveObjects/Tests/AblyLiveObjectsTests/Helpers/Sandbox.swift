@@ -1,7 +1,13 @@
+import Ably
 import Foundation
 
 /// Provides the ``createAPIKey()`` function to create an API key for the Ably sandbox environment.
 enum Sandbox {
+    /// The Ably **nonprod sandbox** host (the same endpoint the UTS integration tier and ably-java
+    /// use). Keys created by ``createAPIKey()`` are only valid against this environment, so clients
+    /// must point `restHost`/`realtimeHost` here.
+    static let sandboxHost = "sandbox.realtime.ably-nonprod.net"
+
     private struct TestApp: Codable {
         var keys: [Key]
 
@@ -32,8 +38,11 @@ enum Sandbox {
     }
 
     static func createAPIKey() async throws -> String {
-        var request = URLRequest(url: .init(string: "https://sandbox-rest.ably.io/apps")!)
+        var request = URLRequest(url: .init(string: "https://\(sandboxHost)/apps")!)
         request.httpMethod = "POST"
+        // Not retried (a timed-out POST may still have provisioned an app); fail fast instead of
+        // the 60s URLSession default.
+        request.timeoutInterval = 30
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try await loadAppCreationRequestBody()
 
@@ -92,5 +101,15 @@ enum Sandbox {
     /// - Throws: Any error that occurred during key generation
     static func fetchSharedAPIKey() async throws -> String {
         try await keyManager.getKey()
+    }
+
+    /// Client options wired for the sandbox: the shared API key plus both transports pointed at
+    /// ``sandboxHost`` — the key is environment-scoped, so key and hosts must travel together.
+    static func clientOptions() async throws -> ARTClientOptions {
+        let key = try await fetchSharedAPIKey()
+        let options = ARTClientOptions(key: key)
+        options.restHost = sandboxHost
+        options.realtimeHost = sandboxHost
+        return options
     }
 }
