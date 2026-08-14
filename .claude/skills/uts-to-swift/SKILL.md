@@ -466,12 +466,16 @@ the `MockHTTPClient` `onConnectionAttempt`. `request` is the `PendingHTTPRequest
 | `req.respond_with_timeout()` | `request.respondWithTimeout()` |
 | `conn.respond_with_refused/timeout/dns_error()` (HTTP) | `connection.respondWithRefused()` / `respondWithTimeout()` / `respondWithDNSError()` |
 
-**Known WS-mock gap:** the WS-level `conn.respond_with_timeout()` / `conn.respond_with_dns_error()` some
-specs use have **no** `MockWebSocket` counterpart yet (only success/refused/disconnect exist; the
-timeout/refused/DNS-error trio exists HTTP-side on `PendingHTTPConnection`). When a spec calls them, either
-extend `MockWebSocket` (small — mirror `respondWithRefused()`, plumbing the matching transport error) or
-record the case in `deviations.md` under **Mock Infrastructure Limitations** — never silently substitute
-`respondWithRefused()`.
+**Known WS-mock gap (core realtime/rest tier only):** the WS-level `conn.respond_with_timeout()` /
+`conn.respond_with_dns_error()` some specs use have **no** `MockWebSocket` counterpart yet (only
+success/refused/disconnect exist; the timeout/refused/DNS-error trio exists HTTP-side on
+`PendingHTTPConnection`). When a spec calls them, either extend `MockWebSocket` (small — mirror
+`respondWithRefused()`, plumbing the matching transport error) or record the case in `deviations.md`
+under **Mock Infrastructure Limitations** — never silently substitute `respondWithRefused()`. This is a
+genuine *missing* capability: a case that **cannot run**. It does **not** cover a tier that deliberately
+drives without a WS mock by design (e.g. the objects unit tier seeds the graph directly — see
+`objects-mapping.md` §13); that is a sanctioned infra choice whose ports all run, is **not** a Mock
+Infrastructure Limitation, and is **not** recorded in `deviations.md`.
 
 ### Protocol messages and types
 
@@ -779,9 +783,12 @@ func test_RTN15c4_resume_with_token_error_reattaches() throws {
 **Never use the accommodate-both pattern** (accept either spec or SDK behaviour). Every test must assert
 either spec behaviour or the SDK's actual behaviour — never both at once.
 
-Note: an *infra-driving* difference (e.g. using fake timers where the spec uses real ones, or a
-queue-ordering workaround) is **not** an SDK deviation — explain it in a code comment, not `deviations.md`.
-`deviations.md` is only for SDK non-compliance and mock-capability gaps.
+Note: an *infra-driving* difference (e.g. using fake timers where the spec uses real ones, a
+queue-ordering workaround, or standing in for the spec's mock transport by seeding state directly and
+capturing at an internal publish seam) is **not** an SDK deviation — explain it in a code comment, not
+`deviations.md`. `deviations.md` is only for SDK non-compliance and for mock-capability gaps that leave a
+case **unable to run** (a skipped stub, per `writing-derived-tests.md`); a sanctioned stand-in whose ports
+all run is neither.
 
 ### Deviations file
 

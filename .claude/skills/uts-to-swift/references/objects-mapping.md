@@ -775,9 +775,13 @@ pattern; do not add the missing shorthand:
   `assert_unchanged_after_quiescence` coverage-table row — the control must ride the same dispatch
   as the message under test (the spec's same-dispatch guarantee); never a sleep.
 
-**Transport-level stand-ins (sanctioned unit-scope deviation).** The four spec helpers that materialise a
-mock WebSocket transport have **no** cocoa builder — the unit tier drops the mock transport entirely and
-seeds the CRDT graph directly, so there is no PROTOCOL frame to build:
+**Transport-level stand-ins (sanctioned unit-scope infra design — NOT a deviation).** The four spec
+helpers that materialise a mock WebSocket transport have **no** cocoa builder — the unit tier drops the
+mock transport entirely and seeds the CRDT graph directly, so there is no PROTOCOL frame to build. This is
+a deliberate infra-driving choice, **not** an SDK deviation and **not** a mock-capability gap: every
+ported case still runs. **Do not record it in `deviations.md`** (SKILL.md Step 6 — infra-driving
+differences are explained in a code comment, not the deviations file). Describe it in the suite's
+file-header comment instead:
 
 | Spec symbol | cocoa stand-in (file · symbol) · rationale |
 |---|---|
@@ -798,7 +802,12 @@ WebSocket to read a sent frame from; instead capture at the `publishAndApply` se
   failure.
 - **`ObjectsUTSSeededRealtimeObjects.capturedMessages`** (`ObjectsUTSHelpers.swift`) — the seeded double
   auto-captures the most recent `publishAndApply`'s messages; just read the property after the write. Used
-  by the path-object / seeded-pool ports.
+  by the path-object / seeded-pool ports. It retains **only the most recent** publish, so a spec case that
+  indexes an *accumulated* array across multiple publishes (`captured_messages[0]`/`[1]`/`[2]` — only
+  `objects/unit/RTLM20/set-value-types-0` does this today) reads `capturedMessages[0]` **after each write**
+  rather than one array. That read-after-each-write shape is an infra-driving choice, not a deviation —
+  note it in a code comment, never in `deviations.md`. (If a future tier needs true accumulation, extend
+  the double with a `capturedPublishes: [[OutboundObjectMessage]]` accessor that appends per publish.)
 
 Either is cocoa's equivalent of ably-java's `mockWs.capturedObjectMessages()`. **Note:** the native
 `AblyLiveObjects` suite instead uses `MockCoreSDK.setPublishHandler(_:)`
@@ -812,6 +821,14 @@ through the CoreSDK.
 > `queue.sync {}` for the engine's own `userCallbackQueue`) before asserting a count, and read a value
 > only after the apply has settled. Never assume `apply(...)`/`send_to_client(...)` has taken effect the
 > instant it returns.
+
+> **Queue-confinement caution.** The harness's pool/state holders are `DispatchQueueMutex`-backed and
+> `dispatchPrecondition`-assert their internal queue — reading `nosync_objectsPool` (or calling any
+> `nosync_*` accessor / `nosync_apply`) off that queue **traps at runtime** (a `dispatchPrecondition`
+> failure, surfaced as a platform-dependent trap/abort), it doesn't just race. When a port drives an internal node directly (e.g. the `mock_ws.send_to_client` stand-in that
+> applies an inbound operation to a seeded node), do the pool read, entry lookup, and
+> `nosync_apply(...)` all inside one `internalQueue.ably_syncNoDeadlock { … }` block — mirroring how
+> `ObjectsUTSSeededRealtimeObjects`'s own echo does it.
 
 ### Objects-unit file template
 
@@ -836,6 +853,16 @@ target-qualified filter form, `swift test --filter "UTS.<SuiteName>"`, which dis
 reading list collapses — you only need the §16 symbol mapping and this file template; skip
 `ObjectsUTSHelpers.swift` and the pool factories.
 
+**Audit `awaitShortfall` is benign on this tier — expect it on nearly every test.** The Step 7
+audit counts only the core-tier infra wait calls (`awaitConnectionState`/`poll`/…), which the
+objects unit ports never use: spec `AWAIT op` lines become plain `try await` expressions
+(natively-async SDK, §3), and the spec's `AWAIT setup_synced_channel(...)` maps to the
+*synchronous* direct-seeding fixture (`ObjectsUTS.standardPool` + the doubles). Both are invisible
+to the await counter, so a positive `awaitShortfall` here needs no investigation as long as every
+spec `AWAIT` line is visibly accounted for in the code (a `try await`, the fixture builder, or an
+event-collector drain). The hard gates (`missingInSwift`/`orphanInSwift`/`duplicateInSwift`,
+`assertionShortfall`) apply unchanged.
+
 **Deviations file** (no override — SKILL.md Step 6's shared-file default applies): objects-unit
 deviations go in the shared `Test/UTS/deviations.md`, like every other tier, **inserted into the
 respective section** of the manual's four-section structure (*UTS Spec Errors* / *Failing Tests* /
@@ -851,8 +878,10 @@ cited by tag per entry.
 //
 // <one line: what these ports drive and why (e.g. drive InternalDefaultLiveCounter directly, no channel)>.
 //
-// Deviations from the UTS spec:
-// - (D-1) <deviation the reader must know before reading the cases; see deviations.md>
+// Deviations from the UTS spec (only if there are genuine SDK deviations recorded in deviations.md):
+// - (D-1) <SDK-behaviour deviation the reader must know before reading the cases; see deviations.md>
+// Infra-driving stand-ins (direct seeding, the publishAndApply capture seam, the async ACK echo) are
+// NOT deviations — describe them in the "what these ports drive" line above, not here.
 
 import _AblyPluginSupportPrivate      // only if you touch plugin-facing types (channel state/modes)
 import Ably                            // only if you touch ARTErrorInfo / core types
