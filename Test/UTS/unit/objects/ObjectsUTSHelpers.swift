@@ -250,7 +250,7 @@ enum ObjectsUTS {
         InternalDefaultLiveMap(testsOnly_data: data, objectID: objectID, logger: TestLogger(), internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
     }
 
-    static func mapEntry(data: ProtocolTypes.ObjectData, timeserial: String = "ts1") -> InternalObjectsMapEntry {
+    static func mapEntry(data: ProtocolTypes.ObjectData, timeserial: String = StandardTestPool.poolSerial) -> InternalObjectsMapEntry {
         InternalObjectsMapEntry(tombstonedAt: nil, timeserial: timeserial, data: data)
     }
 
@@ -278,6 +278,11 @@ enum ObjectsUTS {
     ///
     /// If `prefsBackRef` is true, `map:prefs@1000` gains a `back_ref -> map:profile@1000` entry,
     /// forming the `profile -> prefs -> profile` cycle the RTPO14b2 compactJson test exercises.
+    ///
+    /// Serial baseline (per the spec's standard tree): every map entry carries
+    /// `timeserial: StandardTestPool.poolSerial` (`"t:0"`, the `mapEntry` default) and every object
+    /// `siteTimeserials: ["aaa": StandardTestPool.poolSerial]` — so `StandardTestPool.remoteSerial(i)`
+    /// operations win entry-level LWW against the pool baseline, as the spec intends.
     static func standardPool(internalQueue: DispatchQueue, prefsBackRef: Bool = false) -> ObjectsPool {
         let scoreCounter = makeCounter(objectID: "counter:score@1000", data: 100, internalQueue: internalQueue)
         let nestedCounter = makeCounter(objectID: "counter:nested@1000", data: 5, internalQueue: internalQueue)
@@ -310,6 +315,14 @@ enum ObjectsUTS {
             ],
             internalQueue: internalQueue,
         )
+
+        // Spec baseline: all objects have `siteTimeserials: { "aaa": POOL_SERIAL }`.
+        let poolSiteTimeserials = ["aaa": StandardTestPool.poolSerial]
+        scoreCounter.testsOnly_setSiteTimeserials(poolSiteTimeserials)
+        nestedCounter.testsOnly_setSiteTimeserials(poolSiteTimeserials)
+        prefs.testsOnly_setSiteTimeserials(poolSiteTimeserials)
+        profile.testsOnly_setSiteTimeserials(poolSiteTimeserials)
+        root.testsOnly_setSiteTimeserials(poolSiteTimeserials)
 
         var pool = freshPool(internalQueue: internalQueue)
         pool.testsOnly_setEntry(.counter(scoreCounter), forObjectID: "counter:score@1000")
@@ -444,7 +457,7 @@ enum ObjectsUTS {
             operation: nil,
             object: ProtocolTypes.ObjectState(
                 objectId: objectId,
-                siteTimeserials: ["aaa": "t:0"],
+                siteTimeserials: ["aaa": StandardTestPool.poolSerial],
                 tombstone: false,
                 createOp: nil,
                 map: nil,
@@ -467,7 +480,7 @@ enum ObjectsUTS {
             operation: nil,
             object: ProtocolTypes.ObjectState(
                 objectId: ObjectsPool.rootKey,
-                siteTimeserials: ["aaa": "t:0"],
+                siteTimeserials: ["aaa": StandardTestPool.poolSerial],
                 tombstone: false,
                 createOp: nil,
                 map: ProtocolTypes.ObjectsMap(semantics: .known(.lww), entries: entries),
@@ -481,7 +494,7 @@ enum ObjectsUTS {
 
     /// An inbound map entry (wire form) for `rootSyncMessage`.
     static func wireMapEntry(data: ProtocolTypes.ObjectData) -> ProtocolTypes.ObjectsMapEntry {
-        ProtocolTypes.ObjectsMapEntry(tombstone: false, timeserial: "t:0", data: data)
+        ProtocolTypes.ObjectsMapEntry(tombstone: false, timeserial: StandardTestPool.poolSerial, data: data)
     }
 }
 

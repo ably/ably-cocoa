@@ -2,17 +2,56 @@ import _AblyPluginSupportPrivate
 @testable import AblyLiveObjects
 import Foundation
 
-// Shared object-pool construction and operation-message builders consumed by both
-// AblyLiveObjectsTests and the UTS objects tier: the `SyncObjectsPool` factory plus the
-// `build_object_delete` / arbitrary-value MAP_SET / timestamped MAP_REMOVE builders that
-// `TestFactories` did not yet cover.
+// Shared-module mirror of the UTS spec helper `uts/objects/helpers/standard_test_pool.md`: the
+// serial/siteCode vocabulary plus the spec-pool operation-message and `SyncObjectsPool` builders
+// that the native `AblyLiveObjectsTests` suite and the UTS objects tier both consume. (The other
+// `build_*` operation and `*ObjectState` builders the spec defines live on `TestFactories` in
+// `Helpers/TestFactories.swift` — they keep that namespace, so they stay with the rest of the
+// 500+-reference factory family.)
 //
-// The other `build_*` operation builders from the shared UTS helper are already covered by
-// `TestFactories`: `build_counter_inc` (counterIncOperationMessage), `build_map_set`
-// (mapSetOperationMessage), `build_map_remove` (mapRemoveOperationMessage), `build_map_clear`
-// (mapClearOperationMessage), `build_map_create` (mapCreateOperationMessage),
-// `build_counter_create` (counterCreateOperationMessage); and the state builders
-// `build_object_state` variants via mapObjectState/counterObjectState/objectState.
+// Two parts of the spec file are deliberately NOT here:
+// 1. The transport-level helpers (`setup_synced_channel`, `build_object_message` /
+//    `build_object_sync_message` / `build_ack_message`) are NOT-APPLICABLE — the unit tier has no
+//    mock transport (see `objects-mapping.md` §13, "Transport-level stand-ins").
+// 2. The UTS-port parallel builders live in `Test/UTS/unit/objects/ObjectsUTSHelpers.swift`
+//    (`ObjectsUTS.*`), the port-only harness reserved by the §13 placement boundary — which is
+//    where ably-js and ably-java keep their single equivalent file too.
+//
+// The authoritative spec-symbol → cocoa-symbol index is the `objects-mapping.md` §13 coverage table.
+
+// MARK: - Serial vocabulary
+
+// Spec format definitions (quoted from `standard_test_pool.md`):
+//
+//   SITE_CODE = "test-site"
+//   POOL_SERIAL = "t:0"
+//   ack_serial(msgSerial, i) => "t:" + (msgSerial + 1) + ":" + i
+//   remote_serial(i) => "t:" + (i + 1)
+//   below_ack_serial(i) => "t:0:" + i
+//
+// Serials compare as strings (RTLM9e) and ad-hoc values silently sort wrong — always call these;
+// never inline a `"t:N"` serial or siteCode literal.
+
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+enum StandardTestPool {
+    /// The harness ConnectionDetails siteCode (spec `SITE_CODE`).
+    static let siteCode = "test-site"
+
+    /// The timeserial every standard-pool entry/object is seeded with (spec `POOL_SERIAL`).
+    static let poolSerial = "t:0"
+
+    /// Local apply-on-ACK serial (spec `ack_serial(msgSerial, i) => "t:" + (msgSerial + 1) + ":" + i`).
+    /// e.g. `ackSerial(msgSerial: 0, i: 0) == "t:1:0"`. Sorts AFTER `poolSerial`.
+    static func ackSerial(msgSerial: Int, i: Int) -> String { "t:\(msgSerial + 1):\(i)" }
+
+    /// Remote inbound "winning" serial (spec `remote_serial(i) => "t:" + (i + 1)`).
+    /// e.g. `remoteSerial(0) == "t:1"`. Sorts AFTER `poolSerial`.
+    static func remoteSerial(_ i: Int) -> String { "t:\(i + 1)" }
+
+    /// "Loses to the ACK serial" probe (spec `below_ack_serial(i) => "t:0:" + i`).
+    /// e.g. `belowAckSerial(9) == "t:0:9"`. Sorts BELOW `ackSerial(msgSerial: 0, i: 0)` but ABOVE `poolSerial`.
+    static func belowAckSerial(_ i: Int) -> String { "t:0:\(i)" }
+}
 
 // MARK: - SyncObjectsPool construction
 
@@ -36,7 +75,7 @@ extension SyncObjectsPool {
     }
 }
 
-// MARK: - build_object_delete (audit D-3)
+// MARK: - Spec-pool operation-message builders
 
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 extension TestFactories {
@@ -64,12 +103,13 @@ extension TestFactories {
     }
 
     /// Creates an InboundObjectMessage with a MAP_SET operation carrying an arbitrary `ObjectData`
-    /// value (the `value:`-based `TestFactories.mapSetOperationMessage` only supports a `String`).
+    /// value — the general form of the spec's `build_map_set` (the `String`-taking
+    /// `TestFactories.mapSetOperationMessage` overload is the convenience for string values).
     /// Used by the UTS map ports for `{ objectId: … }` / `{ number: … }` MapSet values.
     static func mapSetOperationMessage(
         objectId: String,
         key: String,
-        data: ProtocolTypes.ObjectData,
+        value: ProtocolTypes.ObjectData,
         serial: String,
         siteCode: String,
     ) -> ProtocolTypes.InboundObjectMessage {
@@ -77,7 +117,7 @@ extension TestFactories {
             operation: objectOperation(
                 action: .known(.mapSet),
                 objectId: objectId,
-                mapSet: ProtocolTypes.MapSet(key: key, value: data),
+                mapSet: ProtocolTypes.MapSet(key: key, value: value),
             ),
             serial: serial,
             siteCode: siteCode,

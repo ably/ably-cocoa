@@ -38,8 +38,10 @@ The module's files are split into two subdirectories by role. `AblyLiveObjectsTe
   public/testable surface: `Assertions.swift`, `MockCoreSDK.swift`,
   `MockLiveMapObjectsPoolDelegate.swift`, `MockRealtimeObjects.swift`,
   `MockSimpleClock.swift`, `Subscriber.swift`, `TestFactories.swift`, `TestLogger.swift`,
-  and `PoolFactories.swift` (shared `SyncObjectsPool` and operation-message builders used
-  by both `AblyLiveObjectsTests` and the UTS objects tier).
+  and `StandardTestPool.swift` (the shared-module mirror of the UTS spec helper
+  `uts/objects/helpers/standard_test_pool.md`: the serial/siteCode vocabulary plus the shared
+  `SyncObjectsPool` and spec-pool operation-message builders used by both
+  `AblyLiveObjectsTests` and the UTS objects tier).
 
 **Classification rule:** a file goes in `Internals/` if it is a `<Type>+TestsOnly.swift`
 extension whose purpose is to expose internal members via `@testable` access; everything

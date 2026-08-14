@@ -785,9 +785,10 @@ queue-ordering workaround) is **not** an SDK deviation — explain it in a code 
 
 ### Deviations file
 
-Append to the deviations file that belongs to the tier's module, using the manual's **Recording
-deviations** entry format and sections (the `writing-derived-tests.md` you fetched up front — not a
-home-grown format). For most tiers that is the shared `Test/UTS/deviations.md`; a module whose notes
+Record in the respective section of the deviations file that belongs to the tier's module, using the
+manual's **Recording deviations** entry format and sections (the `writing-derived-tests.md` you fetched
+up front — not a home-grown format). New entries are inserted into their category's section, never
+appended at the file end. For most tiers that is the shared `Test/UTS/deviations.md`; a module whose notes
 declare a module-scoped deviations file (Step 1) uses that one instead. The ably-cocoa-specific section
 mapping: a **UTS Spec Error**
 (test fails fast — fix in the spec) goes under the manual's *UTS Spec Errors* section (add the heading on
