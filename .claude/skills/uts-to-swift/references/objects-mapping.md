@@ -577,7 +577,14 @@ do {
 
 Assert the code as a plain `Int` — `#expect(error.code == 90001)` — matching the spec's
 `error.code == 90001`; error codes are int literals, not enums (unlike the action / semantics /
-value-type tags). The `90000` a spec injects via a mocked `ERROR`/`DETACHED` `ProtocolMessage` is
+value-type tags).
+
+> **Never write `error as? ARTErrorInfo` in a typed-throws `catch`.** The catch binding is already
+> `ARTErrorInfo` there, so the cast is an "always succeeds" compiler warning — and the LiveObjects
+> CI build treats warnings as errors, so it FAILS the SPM job even though a local
+> `swift build --build-tests` only warns (check build output for warnings, not just the tail). The
+> re-narrowing cast is correct in exactly one place: the `catch` of a deferred `try await task.value`
+> (§3 — `Task` erases the typed throw). The `90000` a spec injects via a mocked `ERROR`/`DETACHED` `ProtocolMessage` is
 the channel-level error, not an objects code — it's what drives the channel into the state that
 makes the objects call fail.
 

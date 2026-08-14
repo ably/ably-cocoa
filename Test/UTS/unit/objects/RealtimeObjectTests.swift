@@ -257,7 +257,7 @@ struct RealtimeObjectTests {
             Issue.record("expected get() to fail with 40024")
         } catch {
             // Assertions
-            #expect(try #require(error as? ARTErrorInfo).code == 40024) // ASSERT error.code == 40024
+            #expect(error.code == 40024) // ASSERT error.code == 40024
         }
     }
 
@@ -665,7 +665,7 @@ struct RealtimeObjectTests {
             Issue.record("expected set() to fail with 40024")
         } catch {
             // Assertions
-            #expect(try #require(error as? ARTErrorInfo).code == 40024) // ASSERT error.code == 40024
+            #expect(error.code == 40024) // ASSERT error.code == 40024
         }
     }
 
@@ -683,7 +683,6 @@ struct RealtimeObjectTests {
             Issue.record("expected get() to fail with 90001")
         } catch {
             // Assertions
-            let error = try #require(error as? ARTErrorInfo)
             #expect(error.code == 90001) // ASSERT error.code == 90001
             #expect(error.statusCode == 400) // ASSERT error.statusCode == 400
         }
@@ -703,7 +702,6 @@ struct RealtimeObjectTests {
             Issue.record("expected get() to fail with 40024")
         } catch {
             // Assertions
-            let error = try #require(error as? ARTErrorInfo)
             #expect(error.code == 40024) // ASSERT error.code == 40024
             #expect(error.statusCode == 400) // ASSERT error.statusCode == 400
         }
@@ -726,7 +724,6 @@ struct RealtimeObjectTests {
             Issue.record("expected keys() to fail with 90001")
         } catch {
             // Assertions
-            let error = try #require(error as? ARTErrorInfo)
             #expect(error.code == 90001) // ASSERT error.code == 90001
             #expect(error.statusCode == 400) // ASSERT error.statusCode == 400
         }
@@ -749,7 +746,6 @@ struct RealtimeObjectTests {
             Issue.record("expected keys() to fail with 90001")
         } catch {
             // Assertions
-            let error = try #require(error as? ARTErrorInfo)
             #expect(error.code == 90001) // ASSERT error.code == 90001
             #expect(error.statusCode == 400) // ASSERT error.statusCode == 400
         }
@@ -771,7 +767,6 @@ struct RealtimeObjectTests {
             Issue.record("expected set() to fail with 40024")
         } catch {
             // Assertions
-            let error = try #require(error as? ARTErrorInfo)
             #expect(error.code == 40024) // ASSERT error.code == 40024
             #expect(error.statusCode == 400) // ASSERT error.statusCode == 400
         }
@@ -794,7 +789,6 @@ struct RealtimeObjectTests {
             Issue.record("expected set() to fail with 90001")
         } catch {
             // Assertions
-            let error = try #require(error as? ARTErrorInfo)
             #expect(error.code == 90001) // ASSERT error.code == 90001
             #expect(error.statusCode == 400) // ASSERT error.statusCode == 400
         }
@@ -817,7 +811,6 @@ struct RealtimeObjectTests {
             Issue.record("expected set() to fail with 90001")
         } catch {
             // Assertions
-            let error = try #require(error as? ARTErrorInfo)
             #expect(error.code == 90001) // ASSERT error.code == 90001
             #expect(error.statusCode == 400) // ASSERT error.statusCode == 400
         }
@@ -839,7 +832,6 @@ struct RealtimeObjectTests {
             Issue.record("expected set() to fail with 40000")
         } catch {
             // Assertions
-            let error = try #require(error as? ARTErrorInfo)
             #expect(error.code == 40000) // ASSERT error.code == 40000
             #expect(error.statusCode == 400) // ASSERT error.statusCode == 400
         }
