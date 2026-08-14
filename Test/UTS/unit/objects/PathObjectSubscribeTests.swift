@@ -461,8 +461,12 @@ struct PathObjectSubscribeTests {
     // UTS: objects/unit/RTPO19f/subscribe-follows-path-0
     @Test
     func subscribeFollowsPathNotIdentity() async throws {
-        // Setup
-        let fixture = Self.makeFixture()
+        // Setup — pre-seed counter:new@2000 (reachable at ["score"]) so the increment on the NEW object
+        // below can dispatch; without it the fixture yields no path for the replacement counter and the
+        // second Test Step would be a silent no-op (the MAP_SET event alone would satisfy found_new).
+        let fixture = Self.makeFixture(extraCounters: [
+            (objectID: "counter:new@2000", parentReferences: ["root": ["score"]]),
+        ])
         let events = ObjectsUTSPathEventCollector()
         _ = try fixture.root.get(key: "score").subscribe(listener: events.listener)
 
@@ -486,6 +490,14 @@ struct PathObjectSubscribeTests {
             foundNew = true
         }
         #expect(foundNew)
+        // The second dispatch is the increment on the NEW counter — this is what proves the subscription
+        // followed the path to the replacement object rather than staying bound to the old identity
+        // (the MAP_SET dispatch alone would already satisfy found_new above)
+        #expect(events.events.count == 2)
+        let incrementEvent = try #require(events.events.last)
+        #expect(incrementEvent.object.path == "score")
+        #expect(incrementEvent.message?.operation.action == .counterInc)
+        #expect(incrementEvent.message?.operation.objectId == "counter:new@2000")
     }
 
     // MARK: - RTPO19g: subscribe() has no side effects

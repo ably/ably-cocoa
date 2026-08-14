@@ -34,9 +34,11 @@ struct ObjectIdTests {
         #expect(objectId.hasPrefix("counter:"))
         #expect(objectId.contains("@1700000000000"))
         let parts = objectId.split(separator: ":", maxSplits: 1)
+        try #require(parts.count == 2) // a shape regression fails the test instead of trapping on the subscript
         let typePart = String(parts[0])
         let rest = String(parts[1])
         let hashAndTs = rest.split(separator: "@", maxSplits: 1)
+        try #require(hashAndTs.count == 2)
         let hashPart = String(hashAndTs[0])
         let tsPart = String(hashAndTs[1])
         #expect(typePart == "counter")
@@ -126,7 +128,11 @@ struct ObjectIdTests {
             nonce: "test-nonce-12345678",
             timestamp: Date(timeIntervalSince1970: 1_700_000_000),
         )
-        let hashPart = String(objectId.split(separator: ":", maxSplits: 1)[1].split(separator: "@", maxSplits: 1)[0])
+        let idParts = objectId.split(separator: ":", maxSplits: 1)
+        try #require(idParts.count == 2) // a shape regression fails the test instead of trapping on the subscript
+        let hashAndTs = idParts[1].split(separator: "@", maxSplits: 1)
+        try #require(hashAndTs.count == 2)
+        let hashPart = String(hashAndTs[0])
 
         // Assertions
         // RTO14b2: Must use URL-safe Base64 per RFC 4648 s.5, not standard Base64
