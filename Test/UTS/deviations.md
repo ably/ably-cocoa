@@ -52,8 +52,9 @@ RUN_DEVIATIONS=1 swift test --filter UTS.<TestClass>/<testMethod>
    point the unit tier asserts at.
 4. **Root cause**: `LiveObjects/Sources/AblyLiveObjects/Protocol/ObjectMessage.swift` — OD4
    encoding runs in `toWire(format:)`, after the capture seam.
-5. **Test impact**: `UTS.InternalLiveMapApiTests/setWithBytesValue` asserts `Data([1, 2, 3])`
-   (which base64-encodes to `AQID`); the spec line is kept as a comment.
+5. **Test impact**: `UTS.InternalLiveMapApiTests/setWithBytesValue` and the bytes row of
+   `UTS.ValueTypesTests/evaluateMapAllValueTypesTable` (`objects/unit/RTLMV4d/map-set-all-types-table-0`)
+   assert `Data([1, 2, 3])` (which base64-encodes to `AQID`); the spec lines are kept as comments.
 6. **Status**: intentional deviation (layering — same wire bytes, asserted pre-encoding).
 
 ### RTLC12e1 — non-numeric increment amounts are compile-time-unrepresentable
@@ -86,6 +87,157 @@ RUN_DEVIATIONS=1 swift test --filter UTS.<TestClass>/<testMethod>
    guarantee.
 6. **Status**: intentional deviation (type-system guarantee).
 
+### RTINS3b / RTINS4d / RTINS9c — Instance payloads expose only kind-applicable members
+
+1. **Spec point**: RTINS3b, RTINS4d, RTINS9c (UTS `objects/unit/RTINS3/id-0`,
+   `objects/unit/RTINS4/value-counter-0`, `objects/unit/RTINS9/size-0`)
+2. **Spec requirement**: on the polymorphic `Instance`, `id()` returns null for a primitive,
+   `value()` returns null for a map, and `size()` returns null for a non-map.
+3. **Actual SDK behaviour**: the `Instance` enum's payload protocols expose only members
+   applicable to the wrapped kind — `PrimitiveInstance` has no `id`, `LiveMapInstance` no
+   `value()`, `LiveCounterInstance` no `size()` — so the wrong-kind-returns-null cases are
+   absent-member compile-time guarantees.
+4. **Root cause**: typed Swift API surface (`Path Based API/Public/Instance.swift`,
+   objects-mapping §5).
+5. **Test impact**: `UTS.InstanceTests/idReturnsObjectId`, `valueReturnsCounterNumberOrPrimitive`,
+   and `sizeReturnsNonTombstonedCount` port the expressible right-kind half of each case; the
+   null-returning spec lines are kept as comments noting the structural guarantee.
+6. **Status**: intentional deviation (type-system guarantee).
+
+### RTINS12d / RTINS14d / RTINS16c — wrong-type Instance calls are unreachable (no casts)
+
+1. **Spec point**: RTINS12d, RTINS14d, RTINS16c (UTS `objects/unit/RTINS12d/set-non-map-throws-0`,
+   `objects/unit/RTINS14d/increment-non-counter-throws-0`,
+   `objects/unit/RTINS16c/subscribe-primitive-throws-0`)
+2. **Spec requirement**: `set` on a non-map, `increment` on a non-counter, and `subscribe` on a
+   primitive instance each fail with error 92007.
+3. **Actual SDK behaviour**: `Instance` is a Swift enum with no `as*` casts (the RTTS9d mismatch
+   path is unrepresentable); a `.liveCounter` payload has no `set`, a `.liveMap` payload no
+   `increment`, and a `.primitive` payload no `subscribe` — the failing call cannot be issued.
+4. **Root cause**: typed Swift API surface (objects-mapping §5/§12).
+5. **Test impact**: `UTS.InstanceTests/setOnNonMapThrows`, `incrementOnNonCounterThrows`, and
+   `subscribeOnPrimitiveThrows` retain the spec pseudocode as comments, `guard case`-confirm the
+   wrong payload kind, and pass documenting the compile-time guarantee.
+6. **Status**: intentional deviation (type-system guarantee).
+
+### RTINS10 / RTTS7d — `compact()` is not implemented; adapted to `compactJson()`
+
+1. **Spec point**: RTINS10 (UTS `objects/unit/RTINS10/compact-0`)
+2. **Spec requirement**: `instance.compact()` recursively compacts the object graph into plain
+   language values.
+3. **Actual SDK behaviour**: ably-cocoa does not implement the non-JSON `compact()` — RTTS7d
+   permits typed SDKs to omit it; `compactJson()` is the provided equivalent, whose recursive
+   compaction values are identical (nested counter → its number, nested map → JSON object).
+4. **Root cause**: deliberate API surface decision (objects-mapping §5).
+5. **Test impact**: `UTS.InstanceTests/compactRecursivelyCompacts` asserts the spec's values
+   against the `compactJson()` result; the `compact()` spec line is kept as a comment.
+6. **Status**: intentional deviation (documented API omission per RTTS7d).
+
+### RTLCV4a — non-Number counter initial value is compile-time-unrepresentable
+
+1. **Spec point**: RTLCV4a (UTS `objects/unit/RTLCV4a/evaluate-validates-count-0`)
+2. **Spec requirement**: evaluating a counter blueprint whose count is not a Number (or not
+   finite) throws 40003.
+3. **Actual SDK behaviour**: `LiveCounter.create(initialCount: Double)` rejects a non-Number at
+   compile time; only a non-finite `Double` (`NaN` / `Infinity`) reaches the runtime RTLCV4a
+   check.
+4. **Root cause**: typed Swift API surface (same class as RTLC12e1 / RTLMV4c).
+5. **Test impact**: `UTS.ValueTypesTests/evaluateCounterValidatesCountType` ports the expressible
+   non-finite case as a runtime 40003 assertion (via the production
+   `ObjectCreationHelpers.evaluate(liveCounter:...)`); the `"not_a_number"` spec line is kept as
+   a comment.
+6. **Status**: intentional deviation (type-system guarantee).
+
+### RTLMV4a / RTLMV4b — invalid map entries container / non-string keys are compile-time-unrepresentable
+
+1. **Spec point**: RTLMV4a, RTLMV4b (UTS `objects/unit/RTLMV4a/evaluate-validates-entries-0`,
+   `objects/unit/RTLMV4b/evaluate-validates-keys-0`)
+2. **Spec requirement**: entries that are null / not a Dict (RTLMV4a) or contain a non-String key
+   (RTLMV4b) throw 40003 at evaluation.
+3. **Actual SDK behaviour**: `LiveMap.create(entries: [String: LiveMapValue])` takes a Swift
+   dictionary with `String` keys; null/non-dict entries and non-string keys cannot be
+   constructed. `LiveMap.create()` (no entries) is a valid empty map (RTLMV4e2), not an error.
+4. **Root cause**: typed Swift API surface. RTLMV4b is additionally marked non-applicable by the
+   spec for string-keyed languages.
+5. **Test impact**: `UTS.ValueTypesTests/evaluateMapValidatesEntriesType` and
+   `evaluateMapValidatesKeyTypes` retain the spec pseudocode as comments and pass trivially,
+   documenting the compile-time guarantee.
+6. **Status**: intentional deviation (type-system guarantee).
+
+### RTLO4b4c1 — noop increment shape is an absent `counterInc`, not an empty `{}`
+
+1. **Spec point**: RTLO4b4c1 / RTLC9h (UTS `objects/unit/RTLO4b4c1/noop-no-trigger-0`)
+2. **Spec requirement**: an increment with no `number` — modelled as `counterInc: {}` (present
+   but empty) — yields a `.noop` LiveObjectUpdate (RTLC9h) that must not fire subscribe
+   listeners.
+3. **Actual SDK behaviour**: cocoa's `WireCounterInc.number` is non-optional, so a
+   present-but-empty `counterInc` cannot be constructed; the same RTLC9h noop branch is reached
+   with an **absent** `counterInc`. (A `number: 0` would EXIST per RTLC9g and produce a non-noop
+   amount-0 update, so it is not a valid noop stand-in.)
+4. **Root cause**: wire-type surface (`ProtocolTypes.WireCounterInc.number: NSNumber`) — no
+   representation for an empty counterInc object.
+5. **Test impact**: `UTS.LiveObjectSubscribeTests/noopUpdateDoesNotTriggerListener` builds the
+   noop via `ObjectsUTS.counterIncNoopMessage` (absent counterInc); the spec-correct assertion
+   (`updates.length == 2`, noop suppressed) runs ungated. (`counterIncNoopMessage`'s doc comment
+   references this entry.)
+6. **Status**: intentional deviation (wire-representation; identical RTLC9h branch and observable
+   behaviour).
+
+### RTO8a — OBJECT messages in INITIALIZED are applied immediately, not buffered
+
+1. **Spec point**: RTO8a (UTS `objects/unit/RTO7-RTO8/buffer-without-attached-0`)
+2. **Spec requirement**: if sync state is not SYNCED, buffer ObjectMessages — including the
+   INITIALIZED state (before any ATTACHED), so `bufferedObjectOperations.length == 1`.
+3. **Actual SDK behaviour**: cocoa buffers iff SYNCING; an OBJECT message received in INITIALIZED
+   is applied immediately (RTO8b path), so no buffer is created and the object lands in the pool.
+4. **Root cause**: `LiveObjects/Sources/AblyLiveObjects/Internal/InternalDefaultRealtimeObjects.swift`
+   (`nosync_handleObjectProtocolMessage`) — the code documents that "buffer iff SYNCING" is
+   equivalent because operations only arrive after ATTACHED (→ SYNCING) in production.
+5. **Test impact**: `UTS.ObjectsPoolTests/objectMessagesBufferedEvenWithoutPrecedingAttached`
+   asserts the actual behaviour (no buffer, counter applied to 5); the spec
+   `bufferedObjectOperations.length == 1` ASSERT is kept as a comment.
+6. **Status**: intentional deviation (production-equivalent — INITIALIZED never receives OBJECT
+   messages in a real connection).
+
+### RTO24b2c — subscription listeners are non-throwing; a throwing listener is not expressible
+
+1. **Spec point**: RTO24b2c (UTS `objects/unit/RTO24b2c/listener-exception-caught-0`)
+2. **Spec requirement**: a subscription listener that throws must not affect delivery to other
+   listeners.
+3. **Actual SDK behaviour**: `PathObjectSubscriptionCallback` is a non-throwing
+   `@Sendable (PathObjectSubscriptionEvent) -> Void` (objects-mapping §8), so a throwing
+   listener cannot be written; the failure mode the spec guards against is unrepresentable.
+4. **Root cause**: typed Swift API surface (non-throwing callback signature).
+5. **Test impact**: `UTS.PathObjectSubscribeTests/listenerExceptionDoesNotAffectOthers` models
+   the first listener as a benign no-op and still asserts the second listener fires exactly once
+   (the observable behaviour); the spec's `THROW` line is kept as a comment.
+6. **Status**: intentional deviation (type-system guarantee).
+
 ## Mock Infrastructure Limitations
 
 *(none)*
+
+## Shape-deviation vocabulary (objects unit tier)
+
+Recurring internal-API **shape** differences (white-box unit ports only, per
+`writing-derived-tests.md`'s unit-only deviation rule): each is named once here and cited by tag
+from the suites that hit it. Observable coverage is always preserved.
+
+- **(S-1) The pool sync state machine lives on `InternalDefaultRealtimeObjects`, not
+  `ObjectsPool`.** The UTS specs model the sync state machine (INITIALIZED→SYNCING→SYNCED,
+  `bufferedObjectOperations`, `appliedOnAckSerials`) as methods/fields on the `ObjectsPool`; in
+  cocoa the pool value type is only the object dictionary, and the state machine lives on
+  `InternalDefaultRealtimeObjects`, which owns the pool. `pool.processAttached` /
+  `pool.processObjectSync` / `pool.processObjectMessage` / `pool.syncState` map onto
+  `nosync_onChannelAttached` / `nosync_handleObjectSyncProtocolMessage` /
+  `nosync_handleObjectProtocolMessage` and `testsOnly_syncState`. Where a spec asserts
+  `pool.syncState` in a fixture that seeds the pool directly (no realtime-objects layer), the
+  assertion is kept as an annotated comment. Cited by: `UTS.ObjectsPoolTests`,
+  `UTS.ParentReferencesTests` (the RTO5c10 `syncState == SYNCED` annotations).
+- **(S-2) The retained local create lives on `*CreateWithObjectId.derivedFrom`.** The spec's
+  outbound `operation.counterCreate` / `operation.mapCreate` (RTLCV4g5 / RTLMV4j5) map to
+  `operation.counterCreateWithObjectId.derivedFrom` / `operation.mapCreateWithObjectId.derivedFrom`
+  on cocoa's `ProtocolTypes.OutboundObjectMessage` — the `*WithObjectId` variant carries the wire
+  `initialValue` + `nonce`, and the retained create is local-only on `derivedFrom` (not a wire
+  field). The public `ObjectOperation` resolves it back per PAOOP3b2/PAOOP3c2. Cited by:
+  `UTS.ValueTypesTests`, `UTS.PublicObjectMessageTests`.
