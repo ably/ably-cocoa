@@ -3,6 +3,7 @@
 // platforms this file compiles to nothing and the proxy suites are excluded by the same condition).
 #if os(macOS)
 
+import AblyTesting
 import Foundation
 import CryptoKit
 
@@ -202,12 +203,15 @@ actor ProxyManager {
     private static func downloadArchive() async throws -> Data {
         FileHandle.standardError.write(Data("Downloading uts-proxy \(proxyVersion) (\(archiveName))…\n".utf8))
         // GitHub release downloads 302-redirect to the asset CDN; URLSession follows by default.
+        // Retried (idempotent GET).
         let url = URL(string: "\(githubBase)/\(archiveName)")!
-        let (data, status) = try await httpRequest(URLRequest(url: url), session: downloadSession)
-        guard status == 200 else {
-            throw HTTPError("Failed to download uts-proxy from \(url): HTTP \(status)")
+        return try await withProvisioningRetries {
+            let (data, status) = try await httpRequest(URLRequest(url: url), session: downloadSession)
+            guard status == 200 else {
+                throw HTTPError("Failed to download uts-proxy from \(url): HTTP \(status)")
+            }
+            return data
         }
-        return data
     }
 
     private static func verifyChecksum(_ bytes: Data) throws {

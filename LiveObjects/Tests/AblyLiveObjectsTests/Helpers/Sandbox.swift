@@ -1,4 +1,5 @@
 import Ably
+import AblyTesting
 import Foundation
 
 /// Provides the ``createAPIKey()`` function to create an API key for the Ably sandbox environment.
@@ -6,7 +7,7 @@ enum Sandbox {
     /// The Ably **nonprod sandbox** host (the same endpoint the UTS integration tier and ably-java
     /// use). Keys created by ``createAPIKey()`` are only valid against this environment, so clients
     /// must point `restHost`/`realtimeHost` here.
-    static let sandboxHost = "sandbox.realtime.ably-nonprod.net"
+    static let sandboxHost = SandboxEnvironment.nonprodHost
 
     private struct TestApp: Codable {
         var keys: [Key]
@@ -37,11 +38,17 @@ enum Sandbox {
         return try JSONSerialization.data(withJSONObject: dictionary["post_apps"]!)
     }
 
+    /// Retried against transient network stalls on CI (a single stalled request otherwise fails
+    /// every test awaiting the shared key). Retrying the non-idempotent POST is safe: an orphaned
+    /// app from a timed-out create is auto-deleted by the sandbox after a few minutes of no use.
     static func createAPIKey() async throws -> String {
+        try await withProvisioningRetries { try await provisionApp() }
+    }
+
+    private static func provisionApp() async throws -> String {
         var request = URLRequest(url: .init(string: "https://\(sandboxHost)/apps")!)
         request.httpMethod = "POST"
-        // Not retried (a timed-out POST may still have provisioned an app); fail fast instead of
-        // the 60s URLSession default.
+        // Fail fast instead of the 60s URLSession default.
         request.timeoutInterval = 30
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try await loadAppCreationRequestBody()

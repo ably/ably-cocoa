@@ -1,3 +1,4 @@
+import AblyTesting
 import Foundation
 
 /// A test app provisioned in the Ably sandbox (`sandbox.realtime.ably-nonprod.net`).
@@ -20,7 +21,7 @@ final class SandboxApp: Sendable {
     /// realtime/objects/rest integration specs), resolved to a hostname. Realtime and REST share
     /// this single host, so point both transports at it: set `realtimeHost` and/or `restHost` from
     /// here.
-    static let sandboxHost = "sandbox.realtime.ably-nonprod.net"
+    static let sandboxHost = SandboxEnvironment.nonprodHost
 
     private static let sandboxBaseURL = URL(string: "https://\(sandboxHost)")!
 
@@ -43,24 +44,28 @@ final class SandboxApp: Sendable {
         self.keys = keys
     }
 
-    /// Provisions a fresh sandbox app and returns its id and keys.
+    /// Provisions a fresh sandbox app and returns its id and keys. Retried, including the
+    /// non-idempotent POST — an orphaned app from a timed-out create is auto-deleted by the
+    /// sandbox after a few minutes of no use.
     static func create() async throws -> SandboxApp {
         let appSpec = try await loadAppCreationJSON()
-        let request = try jsonRequest("POST", sandboxBaseURL.appendingPathComponent("apps"), body: appSpec)
-        let (data, status) = try await httpRequest(request, session: session)
-        guard (200..<300).contains(status) else {
-            throw HTTPError("Sandbox POST /apps returned \(status): \(String(decoding: data, as: UTF8.self))")
+        return try await withProvisioningRetries {
+            let request = try jsonRequest("POST", sandboxBaseURL.appendingPathComponent("apps"), body: appSpec)
+            let (data, status) = try await httpRequest(request, session: session)
+            guard (200..<300).contains(status) else {
+                throw HTTPError("Sandbox POST /apps returned \(status): \(String(decoding: data, as: UTF8.self))")
+            }
+            guard let body = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let appId = body["appId"] as? String,
+                  let keyObjects = body["keys"] as? [[String: Any]] else {
+                throw HTTPError("Sandbox POST /apps returned an unexpected body")
+            }
+            let keys = keyObjects.compactMap { $0["keyStr"] as? String }
+            guard let defaultKey = keys.first else {
+                throw HTTPError("Sandbox POST /apps returned no keys")
+            }
+            return SandboxApp(appId: appId, defaultKey: defaultKey, keys: keys)
         }
-        guard let body = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let appId = body["appId"] as? String,
-              let keyObjects = body["keys"] as? [[String: Any]] else {
-            throw HTTPError("Sandbox POST /apps returned an unexpected body")
-        }
-        let keys = keyObjects.compactMap { $0["keyStr"] as? String }
-        guard let defaultKey = keys.first else {
-            throw HTTPError("Sandbox POST /apps returned no keys")
-        }
-        return SandboxApp(appId: appId, defaultKey: defaultKey, keys: keys)
     }
 
     /// Deletes the provisioned app. Errors are ignored — best-effort cleanup must never mask a
@@ -73,30 +78,18 @@ final class SandboxApp: Sendable {
         _ = try? await httpRequest(request, session: Self.session)
     }
 
-    /// Fetches the `post_apps` body from the shared `test-app-setup.json` in ably-common.
-    /// Retried (idempotent GET only — retrying POST /apps could provision duplicate apps).
+    /// Fetches the `post_apps` body from the shared `test-app-setup.json` in ably-common. Retried.
     private static func loadAppCreationJSON() async throws -> Any {
-        var lastError: Error = HTTPError("unreachable")
-        for attempt in 0..<5 {
-            do {
-                let (data, status) = try await httpRequest(URLRequest(url: appSetupURL), session: session)
-                guard status == 200 else {
-                    throw HTTPError("GET test-app-setup.json returned \(status)")
-                }
-                guard let setup = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-                      let postApps = setup["post_apps"] else {
-                    throw HTTPError("test-app-setup.json has no post_apps key")
-                }
-                return postApps
-            } catch {
-                lastError = error
-                if attempt < 4 {
-                    // Exponential backoff between attempts: 0.5s, 1s, 2s, 4s. A cancelled task
-                    // propagates out of the throwing sleep instead of burning the remaining retries.
-                    try await Task.sleep(nanoseconds: UInt64(500_000_000 * (1 << attempt)))
-                }
+        try await withProvisioningRetries {
+            let (data, status) = try await httpRequest(URLRequest(url: appSetupURL), session: session)
+            guard status == 200 else {
+                throw HTTPError("GET test-app-setup.json returned \(status)")
             }
+            guard let setup = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let postApps = setup["post_apps"] else {
+                throw HTTPError("test-app-setup.json has no post_apps key")
+            }
+            return postApps
         }
-        throw lastError
     }
 }

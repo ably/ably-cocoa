@@ -1,23 +1,31 @@
 import Ably
+import AblyTesting
 import Foundation
 import Nimble
 import XCTest
 
 private func postTestStats(_ stats: [[String: Any]], for test: Test) throws -> ARTClientOptions {
-    let options = try AblyTests.commonAppSetup(for: test, forceNewApp: true)
+    func provisionAppAndIngestStats() throws -> ARTClientOptions {
+        let options = try AblyTests.commonAppSetup(for: test, forceNewApp: true)
 
-    let keyBase64 = encodeBase64(options.key ?? "")
+        let keyBase64 = encodeBase64(options.key ?? "")
 
-    let request = NSMutableURLRequest(url: URL(string: "\(try AblyTests.clientOptions(for: test).restUrl().absoluteString)/stats")!)
+        let request = NSMutableURLRequest(url: URL(string: "\(try AblyTests.clientOptions(for: test).restUrl().absoluteString)/stats")!)
 
-    request.httpMethod = "POST"
-    request.httpBody = try JSONUtility.serialize(stats)
-    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-    request.setValue("Basic \(keyBase64)", forHTTPHeaderField: "Authorization")
+        request.httpMethod = "POST"
+        request.httpBody = try JSONUtility.serialize(stats)
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Basic \(keyBase64)", forHTTPHeaderField: "Authorization")
 
-    try SynchronousHTTPClient().perform(request)
+        try SynchronousHTTPClient().perform(request)
 
-    return options
+        return options
+    }
+
+    // Retried with a fresh app per attempt: stats ingestion is not idempotent, so retrying the
+    // POST onto the same app could double-count a timed-out-but-ingested attempt and break the
+    // exact-count assertions; a fresh app starts at zero.
+    return try withProvisioningRetriesSync { try provisionAppAndIngestStats() }
 }
 
 private func queryStats(_ client: ARTRest, _ query: ARTStatsQuery, file: FileString = #file, line: UInt = #line) throws -> ARTPaginatedResult<ARTStats> {

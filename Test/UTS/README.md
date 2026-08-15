@@ -629,8 +629,9 @@ Components:
 
 Provisions a real backend app **directly** (not through the proxy, so provisioning is independent
 of any fault rules under test): fetches the canonical `test-app-setup.json` from ably-common,
-`POST`s its `post_apps` body to `https://sandbox.realtime.ably-nonprod.net/apps` (GETs are retried
-with backoff; the POST is never retried, to avoid duplicate apps), and exposes `appId`,
+`POST`s its `post_apps` body to `https://sandbox.realtime.ably-nonprod.net/apps` (both are
+retried with backoff via `AblyTesting`'s `withProvisioningRetries` — retrying the POST is safe
+because an orphaned app from a timed-out create is auto-deleted by the sandbox), and exposes `appId`,
 `defaultKey` (full-capability `appId.keyId:keySecret`), and the full `keys` list. `delete()`
 removes the app in teardown (best-effort — cleanup must never mask a test failure). Owns the single
 upstream host constant `SandboxApp.sandboxHost` — the `nonprod:sandbox` endpoint used uniformly
