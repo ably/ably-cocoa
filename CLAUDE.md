@@ -58,12 +58,18 @@ Key classes follow the `ART` prefix convention: `ARTRealtime`, `ARTRest`, `ARTAu
 
 Plugins are passed via `ARTClientOptions.plugins`. Plugin support is gated behind `#ifdef ABLY_SUPPORTS_PLUGINS` (enabled only in SPM builds). See `Docs/plugins.md`.
 
+## LiveObjects
+
+The LiveObjects plugin (the `AblyLiveObjects` product, in Swift) lives in `LiveObjects/`, which has its own CLAUDE.md with build/test/lint instructions; consult it when working on LiveObjects code. Its targets are declared in this repo's root `Package.swift`, and every top-level declaration in its sources must carry an `@available` annotation (enforced by `Scripts/annotate-liveobjects-availability.py`; see that script for details).
+
 ## Test Structure
 
 - `Test/AblyTests/Tests/` — Swift test files.
 - `Test/AblyTestsObjC/` — Objective-C tests (separate target because SPM doesn't allow mixed-language targets).
 - `Test/AblyTesting/` — Shared Swift test helpers.
 - `Test/AblyTestingObjC/` — Shared Objective-C test helpers.
+- `Test/UTS/` — the Universal Test Suite target (tests derived from the cross-SDK UTS specs; the LiveObjects objects unit tier lives at `Test/UTS/unit/objects/`).
+- `Test/AblyLiveObjectsTesting/` — LiveObjects test-support target (`testsOnly_` internal-access extensions plus shared test helpers/mocks; consumed via `@testable import` by both `AblyLiveObjectsTests` and `UTS`, never shipped).
 
 ## Adding New Files
 

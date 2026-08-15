@@ -63,15 +63,21 @@
 }
 
 - (NSInteger)messageSize {
-    // TO3l8*
+    // TO3l8*, TM6
     NSInteger finalResult = 0;
-    finalResult += [[self.extras toJSONString] lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+    // TM6d: extras is "the string length of its JSON representation" (per Ably's published
+    // message-size accounting), i.e. the number of UTF-16 code units (`NSString.length`),
+    // not its UTF-8 byte length.
+    finalResult += [[self.extras toJSONString] length];
+    // TO3l8f: clientId is measured as its UTF-8 byte length.
     finalResult += [self.clientId lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
     if (self.data) {
         if ([self.data isKindOfClass:[NSString class]]) {
+            // TM6f: string data is measured as its UTF-8 byte length.
             finalResult += [self.data lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
         }
         else if ([self.data isKindOfClass:[NSData class]]) {
+            // TM6c: binary data is measured as its size in bytes.
             finalResult += [self.data length];
         }
         else {
@@ -87,7 +93,10 @@
                                                                options:options
                                                                  error:&error];
             if (!error) {
-                finalResult += [jsonData length];
+                // TM6b: object/array data is measured as its string length (the number of UTF-16
+                // code units) after being JSON-stringified, not its UTF-8 byte length.
+                NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+                finalResult += [jsonString length];
             }
         }
     }

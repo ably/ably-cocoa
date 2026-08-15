@@ -42,26 +42,50 @@ func pollUntil(_ description: String,
 
 /// Suspends until `client.connection.state == expected` (the integration tier's `AWAIT_STATE`,
 /// against a real backend — the async counterpart of `UTSTestCase.awaitConnectionState`).
+///
+/// A state-change listener latches the transition (registered before the current-state check), so a
+/// transient state — e.g. `.disconnected` under the RTN15a immediate reconnect — cannot be missed.
 @discardableResult
 func awaitState(_ client: ARTRealtime,
                 _ expected: ARTRealtimeConnectionState,
                 timeout: TimeInterval = 15,
                 sourceLocation: SourceLocation = #_sourceLocation) async -> Bool {
-    await pollUntil("connection.state == \(ARTRealtimeConnectionStateToStr(expected))",
-                    timeout: timeout, sourceLocation: sourceLocation) {
-        client.connection.state == expected
+    let reached = Captured<Bool>()
+    let listener = client.connection.on { change in
+        if change.current == expected {
+            reached.append(true)
+        }
+    }
+    defer { client.connection.off(listener) }
+    if client.connection.state == expected {
+        reached.append(true)
+    }
+    return await pollUntil("connection.state == \(ARTRealtimeConnectionStateToStr(expected))",
+                           timeout: timeout, sourceLocation: sourceLocation) {
+        reached.count > 0
     }
 }
 
-/// Suspends until `channel.state == expected` (the integration tier's `AWAIT_STATE` for channels).
+/// Suspends until `channel.state == expected` (the integration tier's `AWAIT_STATE` for channels),
+/// latching the transition like `awaitState` above.
 @discardableResult
 func awaitChannelState(_ channel: ARTRealtimeChannel,
                        _ expected: ARTRealtimeChannelState,
                        timeout: TimeInterval = 15,
                        sourceLocation: SourceLocation = #_sourceLocation) async -> Bool {
-    await pollUntil("channel '\(channel.name)'.state == \(ARTRealtimeChannelStateToStr(expected))",
-                    timeout: timeout, sourceLocation: sourceLocation) {
-        channel.state == expected
+    let reached = Captured<Bool>()
+    let listener = channel.on { change in
+        if change.current == expected {
+            reached.append(true)
+        }
+    }
+    defer { channel.off(listener) }
+    if channel.state == expected {
+        reached.append(true)
+    }
+    return await pollUntil("channel '\(channel.name)'.state == \(ARTRealtimeChannelStateToStr(expected))",
+                           timeout: timeout, sourceLocation: sourceLocation) {
+        reached.count > 0
     }
 }
 

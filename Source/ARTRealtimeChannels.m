@@ -3,6 +3,7 @@
 #import "ARTChannels+Private.h"
 #import "ARTRealtimeChannel+Private.h"
 #import "ARTRealtime+Private.h"
+#import "ARTClientOptions+Private.h"
 #import "ARTRealtimePresence+Private.h"
 #import "ARTClientOptions+TestConfiguration.h"
 #import "ARTTestClientOptions.h"
@@ -126,6 +127,12 @@ art_dispatch_sync(_queue, ^{
         // one and the second call's detach callback is called, can be
         // released unwillingly.
         if ([self->_channels _exists:name] && [self->_channels _get:name] == channel) {
+#ifdef ABLY_SUPPORTS_PLUGINS
+            // Runs on the internal queue (the `_detach:` callback queue). See
+            // `-nosync_onChannelRelease:` for what the plugin does with this.
+            [self.realtime.options.liveObjectsPlugin nosync_onChannelRelease:channel];
+#endif
+
             [self->_channels _release:name];
         }
 

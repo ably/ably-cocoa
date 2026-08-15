@@ -1,4 +1,4 @@
-// swift-tools-version:5.3.0
+// swift-tools-version: 6.1
 
 import PackageDescription
 
@@ -14,20 +14,76 @@ let package = Package(
             name: "Ably",
             targets: ["Ably"]
         ),
+        .library(
+            name: "AblyLiveObjects",
+            targets: ["AblyLiveObjects"]
+        ),
     ],
     dependencies: [
-        .package(name: "msgpack", url: "https://github.com/rvi/msgpack-objective-C", from: "0.4.0"),
-        .package(name: "AblyDeltaCodec", url: "https://github.com/ably/delta-codec-cocoa", from: "1.3.5"),
-        .package(name: "Nimble", url: "https://github.com/quick/nimble", from: "11.2.2"),
-        .package(name: "ably-cocoa-plugin-support", url: "https://github.com/ably/ably-cocoa-plugin-support.git", from: "2.0.0")
+        .package(url: "https://github.com/rvi/msgpack-objective-C", from: "0.4.0"),
+        .package(url: "https://github.com/ably/delta-codec-cocoa", from: "1.3.5"),
+        .package(url: "https://github.com/quick/nimble", from: "11.2.2")
     ],
     targets: [
+        // The LiveObjects plugin. Formerly the separate
+        // ably-liveobjects-swift-plugin repository. Unlike the rest of the
+        // package it requires macOS 11 / iOS 14 / tvOS 14, which it declares
+        // through @available annotations on all of its top-level declarations
+        // (see Scripts/annotate-liveobjects-availability.py).
+        .target(
+            name: "AblyLiveObjects",
+            dependencies: [
+                .target(name: "Ably"),
+                .target(name: "_AblyPluginSupportPrivate"),
+            ],
+            path: "LiveObjects/Sources/AblyLiveObjects"
+        ),
+        .testTarget(
+            name: "AblyLiveObjectsTests",
+            dependencies: [
+                .target(name: "AblyLiveObjects"),
+                .target(name: "AblyLiveObjectsTesting"),
+                .target(name: "Ably"),
+                .target(name: "_AblyPluginSupportPrivate"),
+            ],
+            path: "LiveObjects/Tests/AblyLiveObjectsTests",
+            exclude: [
+                "CLAUDE.md"
+            ]
+        ),
+        // Test-support module hosting internal-access extensions of
+        // AblyLiveObjects types (via @testable import), plus shared test
+        // helpers/mocks, so production sources stay free of test plumbing.
+        // Consumed by the LiveObjects test targets via
+        // @testable import AblyLiveObjectsTesting; deliberately not a
+        // product member, so it is unreachable from — and never built by —
+        // consumers of the shipped AblyLiveObjects library. See
+        // Test/AblyLiveObjectsTesting/README.md.
+        .target(
+            name: "AblyLiveObjectsTesting",
+            dependencies: [
+                .target(name: "AblyLiveObjects"),
+                .target(name: "Ably"),
+                .target(name: "_AblyPluginSupportPrivate"),
+            ],
+            path: "Test/AblyLiveObjectsTesting",
+            exclude: [
+                "README.md"
+            ]
+        ),
+        // Private API of the core SDK, exposed to Ably-authored plugins. Formerly
+        // the separate ably-cocoa-plugin-support repository; deliberately not
+        // vended as a product.
+        .target(
+            name: "_AblyPluginSupportPrivate",
+            path: "_AblyPluginSupportPrivate"
+        ),
         .target(
             name: "Ably",
             dependencies: [
-                .byName(name: "msgpack"),
-                .byName(name: "AblyDeltaCodec"),
-                .product(name: "_AblyPluginSupportPrivate", package: "ably-cocoa-plugin-support")
+                .product(name: "msgpack", package: "msgpack-objective-C"),
+                .product(name: "AblyDeltaCodec", package: "delta-codec-cocoa"),
+                .target(name: "_AblyPluginSupportPrivate")
             ],
             path: "Source",
             exclude: [
@@ -58,12 +114,16 @@ let package = Package(
                 .byName(name: "Ably"),
                 .byName(name: "AblyTesting"),
                 .byName(name: "AblyTestingObjC"),
-                .byName(name: "Nimble"),
-                .product(name: "_AblyPluginSupportPrivate", package: "ably-cocoa-plugin-support")
+                .product(name: "Nimble", package: "nimble"),
+                .target(name: "_AblyPluginSupportPrivate")
             ],
             path: "Test/AblyTests",
             resources: [
                 .copy("ably-common")
+            ],
+            swiftSettings: [
+                // This test code predates the Swift 6 language mode.
+                .swiftLanguageMode(.v5)
             ]
         ),
         // Universal Test Suite (UTS)
@@ -73,19 +133,25 @@ let package = Package(
             name: "UTS",
             dependencies: [
                 .byName(name: "Ably"),
-                .product(name: "_AblyPluginSupportPrivate", package: "ably-cocoa-plugin-support")
+                .target(name: "_AblyPluginSupportPrivate"),
+                // The `objects` UTS module tests the LiveObjects plugin's public API.
+                .target(name: "AblyLiveObjects"),
+                // Shared LiveObjects test helpers/mocks + internal-access seams,
+                // used by the objects UTS ports.
+                .target(name: "AblyLiveObjectsTesting"),
             ],
             path: "Test/UTS",
             exclude: [
                 "README.md",
-                "deviations.md"
+                "deviations.md",
+                "unit/objects/README.md",
+                "unit/objects/deviations.md"
             ],
             swiftSettings: [
                 // Build the UTS suite in the Swift 6 language mode (strict concurrency checking) so the
-                // compiler catches data races in the harness/tests. The package manifest is still
-                // swift-tools-version 5.3, which predates `.swiftLanguageMode`, so this is applied via
-                // the compiler flag. Only affects this test target (not the shipped product).
-                .unsafeFlags(["-swift-version", "6"])
+                // compiler catches data races in the harness/tests. Only affects this test target (not
+                // the shipped product).
+                .swiftLanguageMode(.v6)
             ]
         ),
         // A handful of tests written in Objective-C (they can't be part of AblyTests because SPM doesn't allow mixed-language targets).
@@ -104,7 +170,11 @@ let package = Package(
             dependencies: [
                 .byName(name: "Ably"),
             ],
-            path: "Test/AblyTesting"
+            path: "Test/AblyTesting",
+            swiftSettings: [
+                // This test code predates the Swift 6 language mode.
+                .swiftLanguageMode(.v5)
+            ]
         ),
         // Provides test helpers written in Objective-C (they can't be part of AblyTests because SPM doesn't allow mixed-language targets).
         .target(

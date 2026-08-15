@@ -10,6 +10,8 @@
 #import "ARTConnectionDetails+Private.h"
 #import "ARTPublishResult+Private.h"
 #import "ARTPublishResultSerial+Private.h"
+#import "ARTConnection+Private.h"
+#import "ARTRealtimeChannelOptions.h"
 
 static ARTErrorInfo *_ourPublicErrorInfo(id<APPublicErrorInfo> pluginPublicErrorInfo) {
     if (![pluginPublicErrorInfo isKindOfClass:[ARTErrorInfo class]]) {
@@ -135,6 +137,11 @@ static ARTLogLevel _convertPluginLogLevel(APLogLevel pluginLogLevel) {
     return _internalRealtimeChannel(channel).logger;
 }
 
+- (NSString *)nameForChannel:(id<APRealtimeChannel>)channel {
+    // The name is immutable (set at channel creation), so no queue assertion is needed.
+    return _internalRealtimeChannel(channel).name;
+}
+
 - (void)setPluginOptionsValue:(id)value forKey:(NSString *)key clientOptions:(id<APPublicClientOptions>)options {
     [_ourPublicClientOptions(options) setPluginOptionsValue:value forKey:key];
 }
@@ -174,6 +181,71 @@ static ARTLogLevel _convertPluginLogLevel(APLogLevel pluginLogLevel) {
     dispatch_assert_queue(internalChannel.queue);
 
     return ARTConvertToPluginChannelState(internalChannel.state_nosync);
+}
+
+- (APChannelMode)nosync_objectChannelModesForChannel:(id<APRealtimeChannel>)channel {
+    ARTRealtimeChannelInternal *internalChannel = _internalRealtimeChannel(channel);
+    dispatch_assert_queue(internalChannel.queue);
+
+    // RTO2a: use the attached modes if present (non-empty); RTO2b: otherwise fall back to the
+    // user-provided channel-options modes.
+    ARTChannelMode effectiveModes = internalChannel.modes_nosync;
+    if (effectiveModes == 0) {
+        ARTRealtimeChannelOptions *options = internalChannel.options_nosync;
+        if (options) {
+            effectiveModes = options.modes;
+        }
+    }
+
+    // `ARTChannelMode` and `APChannelMode` are distinct option types: this both masks out the
+    // non-object modes (this accessor exposes only the object modes to the plugin) and maps each
+    // object bit to its `APChannelMode` counterpart, so the result does not depend on the two
+    // types' raw bit values coinciding.
+    APChannelMode result = 0;
+    if (effectiveModes & ARTChannelModeObjectSubscribe) {
+        result |= APChannelModeObjectSubscribe;
+    }
+    if (effectiveModes & ARTChannelModeObjectPublish) {
+        result |= APChannelModeObjectPublish;
+    }
+    return result;
+}
+
+- (id<APPublicErrorInfo>)nosync_connectionStateErrorForClient:(id<APRealtimeClient>)client {
+    ARTRealtimeInternal *internalRealtimeClient = _internalRealtimeClient(client);
+    dispatch_assert_queue(internalRealtimeClient.queue);
+
+    // Object publishing must meet the same connection-state preconditions as message publishing
+    // (RTO15b -> RTL6c): if the connection is not active, publishing cannot proceed (RTL6c4), so
+    // report the connection's error to the caller.
+    ARTConnectionInternal *connection = internalRealtimeClient.connection;
+    if ([connection isActive_nosync]) {
+        return nil;
+    }
+
+    ARTErrorInfo *errorReason = [connection errorReason_nosync];
+    if (errorReason) {
+        return errorReason;
+    }
+    // RTL6c4: the operation must result in an error even when the inactive connection carries no
+    // error reason (e.g. a cleanly closed connection), so fall back to the same error this SDK's
+    // attach/detach use for an inactive connection.
+    return [ARTErrorInfo createWithCode:ARTErrorChannelOperationFailed
+                                message:@"Can't publish when not in an active state"];
+}
+
+- (void)nosync_attachChannel:(id<APRealtimeChannel>)channel
+                  completion:(void (^)(id<APPublicErrorInfo> _Nullable error))completion {
+    ARTRealtimeChannelInternal *internalChannel = _internalRealtimeChannel(channel);
+    dispatch_assert_queue(internalChannel.queue);
+
+    // `-_attach:` is the internal (already-on-queue) form of the public `-[ARTRealtimeChannel attach:]`;
+    // it invokes its callback on the channel's internal queue when the attach resolves.
+    [internalChannel _attach:^(ARTErrorInfo *_Nullable error) {
+        if (completion) {
+            completion(error);
+        }
+    }];
 }
 
 - (void)nosync_fetchServerTimeForClient:(id<APRealtimeClient>)client
