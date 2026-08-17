@@ -31,8 +31,8 @@ import ObjectiveC.NSObject
 ///     }
 /// }
 ///
-/// // You can now access LiveObjects functionality via the channel's `objects` property:
-/// let rootObject = try await channel.objects.getRoot()
+/// // You can now access LiveObjects functionality via the channel's `object` property:
+/// let root = try await channel.object.get()
 /// // …and so on
 /// ```
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)

@@ -45,6 +45,9 @@ The following platforms are supported:
 
 You can install Ably for iOS and macOS through [Swift package manager](#swift-package-manager), [CocoaPods](#cocoapods), [Carthage](#carthage) or [install manually](#manual-install).
 
+To use the [Ably LiveObjects plugin](#liveobjects), see its installation notes below — it is
+available via Swift Package Manager only.
+
 ### Swift Package Manager
 
 The Ably Pub/Sub SDK includes installation support for [Swift Package Manager](https://swift.org/package-manager/).
@@ -185,10 +188,86 @@ realtime.connection.on { stateChange in
 
 ## LiveObjects
 
-This repository also contains the Ably LiveObjects plugin, which enables real-time, collaborative data synchronisation on top of the core SDK. It is available via Swift Package Manager only: add this package as above and additionally select the `AblyLiveObjects` product for your target. See the [LiveObjects README](LiveObjects/README.md) and the [LiveObjects documentation](https://ably.com/docs/liveobjects) to get started.
+[Ably LiveObjects](https://ably.com/docs/liveobjects) provides realtime, collaborative data
+structures that automatically synchronize state across all connected clients. Build interactive
+applications with shared data that updates instantly across devices.
+
+This repository contains the Ably LiveObjects plugin, which enables LiveObjects on top of the
+core Pub/Sub SDK. See the [LiveObjects README](LiveObjects/README.md) for full details.
 
 > [!WARNING]
-> LiveObjects is currently experimental. Breaking changes to the `AblyLiveObjects` API may be made in minor or patch releases of ably-cocoa, without a major version bump; ably-cocoa's semantic versioning guarantees apply only to the `Ably` product.
+> LiveObjects is currently experimental. Breaking changes to the `AblyLiveObjects` API may be
+> made in minor or patch releases of ably-cocoa, without a major version bump; ably-cocoa's
+> semantic versioning guarantees apply only to the `Ably` product.
+
+If you are migrating from the standalone [ably-liveobjects-swift-plugin](https://github.com/ably/ably-liveobjects-swift-plugin)
+package, see the [migration guide](LiveObjects/README.md#migrating-from-the-standalone-plugin-package).
+
+### Install LiveObjects
+
+The plugin is available via **Swift Package Manager only** (there is no CocoaPods or Carthage
+distribution). There is no separate package or version to install: the plugin ships as a product
+of this package and is versioned and released as part of ably-cocoa.
+
+To install it in your Xcode project, add the `ably-cocoa` package [as above](#swift-package-manager)
+and additionally select the `AblyLiveObjects` product for your target.
+
+To install it in another Swift package, add the product to your target's dependencies:
+
+```swift
+.target(
+    name: "MyTarget",
+    dependencies: [
+        .product(name: "Ably", package: "ably-cocoa"),
+        .product(name: "AblyLiveObjects", package: "ably-cocoa"),
+    ]
+)
+```
+
+Then pass the plugin to the client via `ARTClientOptions`, and fetch channels with the
+LiveObjects channel modes:
+
+```swift
+import Ably
+import AblyLiveObjects
+
+let clientOptions = ARTClientOptions(key: "your-ably-api-key")
+clientOptions.plugins = [.liveObjects: AblyLiveObjects.Plugin.self]
+let realtime = ARTRealtime(options: clientOptions)
+
+// Fetch a channel, specifying the LiveObjects channel modes
+let channelOptions = ARTRealtimeChannelOptions()
+channelOptions.modes = [.objectPublish, .objectSubscribe]
+let channel = realtime.channels.get("my-channel", options: channelOptions)
+
+// `channel.object` is the entry point into the LiveObjects API. Attach the
+// channel, then fetch the channel's root map once objects are synchronized:
+let root = try await channel.object.get()
+```
+
+The plugin has higher platform requirements than the core SDK:
+
+| Platform | Support |
+|----------|---------|
+| iOS      | >= 14.0 |
+| macOS    | >= 11.0 |
+| tvOS     | >= 14.0 |
+
+> [!NOTE]
+> Xcode 16.3 or later is required.
+
+### LiveObjects example app
+
+The [LiveObjects example app](LiveObjects/Example) is an interactive SwiftUI demo showcasing
+LiveObjects. To run it, follow the instructions in the
+[LiveObjects README](LiveObjects/README.md#example-app).
+
+Find out more:
+
+- [Learn about Ably LiveObjects.](https://ably.com/docs/liveobjects)
+- [Getting started with LiveObjects in Swift.](https://ably.com/docs/liveobjects/quickstart/swift)
+
+---
 
 ## Contribute
 
