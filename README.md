@@ -189,19 +189,11 @@ realtime.connection.on { stateChange in
 ## LiveObjects
 
 [Ably LiveObjects](https://ably.com/docs/liveobjects) provides realtime, collaborative data
-structures that automatically synchronize state across all connected clients. Build interactive
-applications with shared data that updates instantly across devices.
-
-This repository contains the Ably LiveObjects plugin, which enables LiveObjects on top of the
-core Pub/Sub SDK. See the [LiveObjects README](LiveObjects/README.md) for full details.
+structures that automatically synchronize state across all connected clients. This repository
+contains the Ably LiveObjects plugin, which enables LiveObjects on top of the core Pub/Sub SDK.
 
 > [!WARNING]
-> LiveObjects is currently experimental. Breaking changes to the `AblyLiveObjects` API may be
-> made in minor or patch releases of ably-cocoa, without a major version bump; ably-cocoa's
-> semantic versioning guarantees apply only to the `Ably` product.
-
-If you are migrating from the standalone [ably-liveobjects-swift-plugin](https://github.com/ably/ably-liveobjects-swift-plugin)
-package, see the [migration guide](LiveObjects/README.md#migrating-from-the-standalone-plugin-package).
+> LiveObjects is currently experimental — see the [LiveObjects README](LiveObjects/README.md) for details.
 
 ### Install LiveObjects
 
@@ -224,48 +216,9 @@ To install it in another Swift package, add the product to your target's depende
 )
 ```
 
-Then pass the plugin to the client via `ARTClientOptions`, and fetch channels with the
-LiveObjects channel modes:
-
-```swift
-import Ably
-import AblyLiveObjects
-
-let clientOptions = ARTClientOptions(key: "your-ably-api-key")
-clientOptions.plugins = [.liveObjects: AblyLiveObjects.Plugin.self]
-let realtime = ARTRealtime(options: clientOptions)
-
-// Fetch a channel, specifying the LiveObjects channel modes
-let channelOptions = ARTRealtimeChannelOptions()
-channelOptions.modes = [.objectPublish, .objectSubscribe]
-let channel = realtime.channels.get("my-channel", options: channelOptions)
-
-// `channel.object` is the entry point into the LiveObjects API. Attach the
-// channel, then fetch the channel's root map once objects are synchronized:
-let root = try await channel.object.get()
-```
-
-The plugin has higher platform requirements than the core SDK:
-
-| Platform | Support |
-|----------|---------|
-| iOS      | >= 14.0 |
-| macOS    | >= 11.0 |
-| tvOS     | >= 14.0 |
-
-> [!NOTE]
-> Xcode 16.3 or later is required.
-
-### LiveObjects example app
-
-The [LiveObjects example app](LiveObjects/Example) is an interactive SwiftUI demo showcasing
-LiveObjects. To run it, follow the instructions in the
-[LiveObjects README](LiveObjects/README.md#example-app).
-
-Find out more:
-
-- [Learn about Ably LiveObjects.](https://ably.com/docs/liveobjects)
-- [Getting started with LiveObjects in Swift.](https://ably.com/docs/liveobjects/quickstart/swift)
+For usage, platform requirements, the example app and the
+[migration guide](LiveObjects/README.md#migrating-from-the-standalone-plugin-package) for users
+of the standalone plugin package, see the [LiveObjects README](LiveObjects/README.md).
 
 ---
 

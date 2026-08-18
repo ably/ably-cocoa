@@ -26,6 +26,48 @@ Everything you need to get started with Ably LiveObjects:
 
 ---
 
+## Supported platforms
+
+Ably aims to support a wide range of platforms. If you experience any compatibility issues, open an issue in the repository or contact [Ably support](https://ably.com/support).
+
+This plugin supports the following platforms:
+
+| Platform | Support |
+| -------- | ------- |
+| iOS      | >= 14.0 |
+| macOS    | >= 11.0 |
+| tvOS     | >= 14.0 |
+
+> [!NOTE]
+> Xcode 16.3 or later is required.
+
+---
+
+## Usage
+
+After [installing the plugin](../README.md#liveobjects), pass it to the client via
+`ARTClientOptions`, and fetch channels with the LiveObjects channel modes:
+
+```swift
+import Ably
+import AblyLiveObjects
+
+let clientOptions = ARTClientOptions(key: "your-ably-api-key")
+clientOptions.plugins = [.liveObjects: AblyLiveObjects.Plugin.self]
+let realtime = ARTRealtime(options: clientOptions)
+
+// Fetch a channel, specifying the LiveObjects channel modes
+let channelOptions = ARTRealtimeChannelOptions()
+channelOptions.modes = [.objectPublish, .objectSubscribe]
+let channel = realtime.channels.get("my-channel", options: channelOptions)
+
+// `channel.object` is the entry point into the LiveObjects API. Attach the
+// channel, then fetch the channel's root map once objects are synchronized:
+let root = try await channel.object.get()
+```
+
+---
+
 ## Migrating from the standalone plugin package
 
 As of ably-cocoa 1.3.0, the plugin is developed, versioned and released from the ably-cocoa repository as the `AblyLiveObjects` product of the ably-cocoa package. The standalone [ably-liveobjects-swift-plugin](https://github.com/ably/ably-liveobjects-swift-plugin) package is deprecated: no further releases will be published from it, and its final release is 0.4.1. Migrating takes two steps.
@@ -82,23 +124,6 @@ let value = try root.get(key: "myKey").asPrimitive().value()?.stringValue
 ```
 
 A `PathObject` is purely navigational: it can be created before the data at its path exists, and it survives the object at its path being replaced — there is no need to re-fetch anything when the underlying object changes. The [example app](Example) demonstrates the path-based API.
-
----
-
-## Supported platforms
-
-Ably aims to support a wide range of platforms. If you experience any compatibility issues, open an issue in the repository or contact [Ably support](https://ably.com/support).
-
-This plugin supports the following platforms:
-
-| Platform | Support |
-| -------- | ------- |
-| iOS      | >= 14.0 |
-| macOS    | >= 11.0 |
-| tvOS     | >= 14.0 |
-
-> [!NOTE]
-> Xcode 16.3 or later is required.
 
 ---
 
