@@ -19,7 +19,7 @@
 
 ### Breaking changes
 
-This release replaces the previous experimental instance-based LiveObjects API (as last published in the standalone plugin's 0.4.0 release) with the new path-based API. The module name (`AblyLiveObjects`) and plugin registration (`clientOptions.plugins = [.liveObjects: AblyLiveObjects.Plugin.self]`) are unchanged, but:
+This release replaces the previous experimental instance-based LiveObjects API (as last published in the standalone plugin's 0.4.1 release) with the new path-based API. The module name (`AblyLiveObjects`) and plugin registration (`clientOptions.plugins = [.liveObjects: AblyLiveObjects.Plugin.self]`) are unchanged, but:
 
 * The `channel.objects` property (returning `RealtimeObjects`, with `getRoot()`) has been replaced by the `channel.object` property (returning `RealtimeObject`, with `get()`)
 * Instead of obtaining and operating on explicit `LiveMap`/`LiveCounter` instances, data is accessed and mutated through `PathObject` references

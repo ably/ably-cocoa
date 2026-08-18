@@ -28,7 +28,7 @@ Everything you need to get started with Ably LiveObjects:
 
 ## Migrating from the standalone plugin package
 
-As of ably-cocoa 1.3.0, the plugin is developed, versioned and released from the ably-cocoa repository as the `AblyLiveObjects` product of the ably-cocoa package. The standalone [ably-liveobjects-swift-plugin](https://github.com/ably/ably-liveobjects-swift-plugin) package is deprecated: no further releases will be published from it, and its final release is 0.4.0. Migrating takes two steps.
+As of ably-cocoa 1.3.0, the plugin is developed, versioned and released from the ably-cocoa repository as the `AblyLiveObjects` product of the ably-cocoa package. The standalone [ably-liveobjects-swift-plugin](https://github.com/ably/ably-liveobjects-swift-plugin) package is deprecated: no further releases will be published from it, and its final release is 0.4.1. Migrating takes two steps.
 
 ### Step 1: Swap the package dependency
 
@@ -57,11 +57,11 @@ clientOptions.plugins = [.liveObjects: AblyLiveObjects.Plugin.self]
 
 ### Step 2: Adopt the path-based API
 
-ably-cocoa 1.3.0 replaces the instance-based API of the standalone plugin (last published in its 0.4.0 release) with the path-based API: instead of obtaining and operating on explicit `LiveMap`/`LiveCounter` instances, data is accessed and mutated through `PathObject`s — stable references to locations within the channel object that resolve to values dynamically at runtime. See the [PathObject documentation](https://ably.com/docs/liveobjects/concepts/path-object).
+ably-cocoa 1.3.0 replaces the instance-based API of the standalone plugin (last published in its 0.4.1 release) with the path-based API: instead of obtaining and operating on explicit `LiveMap`/`LiveCounter` instances, data is accessed and mutated through `PathObject`s — stable references to locations within the channel object that resolve to values dynamically at runtime. See the [PathObject documentation](https://ably.com/docs/liveobjects/concepts/path-object).
 
 The headline API changes:
 
-| Standalone plugin (≤ 0.4.x)                                    | ably-cocoa 1.3.0+                                                                                                 |
+| Standalone plugin (≤ 0.4.1)                                    | ably-cocoa 1.3.0+                                                                                                 |
 | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | `channel.objects`, returning `RealtimeObjects`                 | `channel.object`, returning `RealtimeObject`                                                                      |
 | `try await channel.objects.getRoot()`, returning `any LiveMap` | `try await channel.object.get()`, returning `any LiveMapPathObject`                                               |
@@ -70,10 +70,10 @@ The headline API changes:
 For example:
 
 ```swift
-// Standalone plugin (≤ 0.4.x) — instance-based
+// Standalone plugin (≤ 0.4.1) — instance-based
 let root = try await channel.objects.getRoot()
 try await root.set(key: "myKey", value: "myValue")
-let value = try root.get(key: "myKey")
+let value = try root.get(key: "myKey")?.stringValue
 
 // ably-cocoa 1.3.0+ — path-based
 let root = try await channel.object.get()
@@ -81,7 +81,7 @@ try await root.set(key: "myKey", value: "myValue")
 let value = try root.get(key: "myKey").asPrimitive().value()?.stringValue
 ```
 
-A `PathObject` is purely navigational: it can be created before the data at its path exists, and it survives the object at its path being replaced — there is no need to re-fetch anything when the underlying object changes. The [example app](Example) demonstrates the path-based API end-to-end.
+A `PathObject` is purely navigational: it can be created before the data at its path exists, and it survives the object at its path being replaced — there is no need to re-fetch anything when the underlying object changes. The [example app](Example) demonstrates the path-based API.
 
 ---
 
