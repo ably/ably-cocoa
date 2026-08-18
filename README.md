@@ -45,6 +45,9 @@ The following platforms are supported:
 
 You can install Ably for iOS and macOS through [Swift package manager](#swift-package-manager), [CocoaPods](#cocoapods), [Carthage](#carthage) or [install manually](#manual-install).
 
+To use the [Ably LiveObjects plugin](#liveobjects), see its installation notes below — it is
+available via Swift Package Manager only.
+
 ### Swift Package Manager
 
 The Ably Pub/Sub SDK includes installation support for [Swift Package Manager](https://swift.org/package-manager/).
@@ -60,7 +63,7 @@ To install the `ably-cocoa` package in your Xcode project:
 To install the `ably-cocoa` package in another Swift package, add the following to your `Package.Swift`:
 
 ```swift
- .package(url: "https://github.com/ably/ably-cocoa", from: "1.2.62"),
+ .package(url: "https://github.com/ably/ably-cocoa", from: "1.3.0"),
 ```
 
 See Apple's [adding package dependencies to your app](https://developer.apple.com/documentation/swift_packages/adding_package_dependencies_to_your_app) guide for more detail.
@@ -185,10 +188,39 @@ realtime.connection.on { stateChange in
 
 ## LiveObjects
 
-This repository also contains the Ably LiveObjects plugin, which enables real-time, collaborative data synchronisation on top of the core SDK. It is available via Swift Package Manager only: add this package as above and additionally select the `AblyLiveObjects` product for your target. See the [LiveObjects README](LiveObjects/README.md) and the [LiveObjects documentation](https://ably.com/docs/liveobjects) to get started.
+[Ably LiveObjects](https://ably.com/docs/liveobjects) provides realtime, collaborative data
+structures that automatically synchronize state across all connected clients. This repository
+contains the Ably LiveObjects plugin, which enables LiveObjects on top of the core Pub/Sub SDK.
 
 > [!WARNING]
-> LiveObjects is currently experimental. Breaking changes to the `AblyLiveObjects` API may be made in minor or patch releases of ably-cocoa, without a major version bump; ably-cocoa's semantic versioning guarantees apply only to the `Ably` product.
+> LiveObjects is currently experimental — see the [LiveObjects README](LiveObjects/README.md) for details.
+
+### Install LiveObjects
+
+The plugin is available via **Swift Package Manager only** (there is no CocoaPods or Carthage
+distribution). There is no separate package or version to install: the plugin ships as a product
+of this package and is versioned and released as part of ably-cocoa.
+
+To install it in your Xcode project, add the `ably-cocoa` package [as above](#swift-package-manager)
+and additionally select the `AblyLiveObjects` product for your target.
+
+To install it in another Swift package, add the product to your target's dependencies:
+
+```swift
+.target(
+    name: "MyTarget",
+    dependencies: [
+        .product(name: "Ably", package: "ably-cocoa"),
+        .product(name: "AblyLiveObjects", package: "ably-cocoa"),
+    ]
+)
+```
+
+For usage, platform requirements, the example app and the
+[migration guide](LiveObjects/README.md#migrating-from-the-standalone-plugin-package) for users
+of the standalone plugin package, see the [LiveObjects README](LiveObjects/README.md).
+
+---
 
 ## Contribute
 

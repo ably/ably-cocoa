@@ -1,11 +1,30 @@
 # Change Log
 
-## Unreleased
+## [1.3.0](https://github.com/ably/ably-cocoa/tree/1.3.0)
 
 ### What's Changed
 
-* The Ably LiveObjects plugin has moved into this repository and is now available as the `AblyLiveObjects` product of this package. Users of the standalone [ably-liveobjects-swift-plugin](https://github.com/ably/ably-liveobjects-swift-plugin) package should replace that dependency with this package's `AblyLiveObjects` product; the module name and API are unchanged. Note that LiveObjects remains experimental: breaking changes to the `AblyLiveObjects` API may be made in minor or patch releases, and ably-cocoa's semantic versioning guarantees apply only to the `Ably` product.
+* The Ably LiveObjects plugin now lives in this repository and has a new path-based API. It is available as the `AblyLiveObjects` product of this package, and LiveObjects data is now accessed through `channel.object`, which returns a `RealtimeObject` exposing `PathObject`s — stable references to locations within the channel object that resolve to values dynamically at runtime, instead of explicit `LiveMap`/`LiveCounter` instances. See the [PathObject documentation](https://ably.com/docs/liveobjects/concepts/path-object) for details, and the breaking changes below if you are migrating from the standalone [ably-liveobjects-swift-plugin](https://github.com/ably/ably-liveobjects-swift-plugin) package. LiveObjects remains experimental: breaking changes to the `AblyLiveObjects` API may be made in minor or patch releases, and ably-cocoa's semantic versioning guarantees apply only to the `Ably` product. This work was integrated by @sacOO7 in https://github.com/ably/ably-cocoa/pull/2230 and delivered through the following PRs:
+  * Merge LiveObjects plugin and plugin-support into ably-cocoa by @lawrence-forooghian in https://github.com/ably/ably-cocoa/pull/2222
+  * Add path-based LiveObjects public API by @sacOO7 in https://github.com/ably/ably-cocoa/pull/2227
+  * Move `_AblyPluginSupportPrivate` out of `Sources/` to the repo root by @maratal in https://github.com/ably/ably-cocoa/pull/2228
+  * Implement path-based public API end-to-end with UTS tests by @sacOO7 in https://github.com/ably/ably-cocoa/pull/2234
+  * Enable UTS integration test suites for the objects tier by @sacOO7 in https://github.com/ably/ably-cocoa/pull/2235
+  * Restructure LiveObjects test-support and native test suites by role and tier by @sacOO7 in https://github.com/ably/ably-cocoa/pull/2239
+  * Align UTS objects test helpers with the spec's `standard_test_pool` by @sacOO7 in https://github.com/ably/ably-cocoa/pull/2240
+* Universal Test Suite (UTS) integration and proxy test infrastructure by @sacOO7 in https://github.com/ably/ably-cocoa/pull/2223
+* First spec-derived UTS integration and proxy tests via the rewritten uts-to-swift skill by @sacOO7 in https://github.com/ably/ably-cocoa/pull/2224
 * Swift Package Manager consumers of this package now require Xcode 16.3 or later (the package manifest's swift-tools-version is now 6.1). CocoaPods and Carthage consumers are unaffected.
+* The `AblyLiveObjects` product is available via Swift Package Manager only. CocoaPods and Carthage consumers receive the core `Ably` product alone; for them this release contains no functional changes.
+
+### Breaking changes
+
+This release replaces the previous experimental instance-based LiveObjects API (as last published in the standalone plugin's 0.4.1 release) with the new path-based API. The module name (`AblyLiveObjects`) and plugin registration (`clientOptions.plugins = [.liveObjects: AblyLiveObjects.Plugin.self]`) are unchanged, but:
+
+* The `channel.objects` property (returning `RealtimeObjects`, with `getRoot()`) has been replaced by the `channel.object` property (returning `RealtimeObject`, with `get()`)
+* Instead of obtaining and operating on explicit `LiveMap`/`LiveCounter` instances, data is accessed and mutated through `PathObject` references
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.2.62...1.3.0
 
 ## [1.2.62](https://github.com/ably/ably-cocoa/tree/1.2.62)
 
