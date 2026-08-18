@@ -1,5 +1,13 @@
 # Change Log
 
+## [0.4.1](https://github.com/ably/ably-liveobjects-swift-plugin/tree/0.4.1)
+
+**This is the final release of this package.** This package is deprecated and there will be no further releases from this repository: the LiveObjects plugin is now developed, versioned and released from the [ably-cocoa](https://github.com/ably/ably-cocoa) repository, as the `AblyLiveObjects` product of the ably-cocoa package (as of ably-cocoa 1.3.0). See the deprecation notice in the README (https://github.com/ably/ably-liveobjects-swift-plugin/pull/137) for details.
+
+- Restrict the ably-cocoa dependency to versions `1.2.59` through `1.2.62` — the ably-cocoa versions compatible with this standalone plugin. This ensures that if you depend on this plugin, SwiftPM keeps resolving the last working plugin/ably-cocoa pair, and a deliberate bump of ably-cocoa past `1.2.62` produces a clear version conflict naming this plugin as the blocker rather than a confusing build failure. To use LiveObjects with ably-cocoa 1.3.0 or later, remove this package and use the `AblyLiveObjects` product of the ably-cocoa package instead (the module name and API are unchanged).
+
+**Full Changelog**: https://github.com/ably/ably-liveobjects-swift-plugin/compare/0.4.0...0.4.1
+
 ## [0.4.0](https://github.com/ably/ably-liveobjects-swift-plugin/tree/0.4.0)
 
 ### Operations are now applied on acknowledgement
