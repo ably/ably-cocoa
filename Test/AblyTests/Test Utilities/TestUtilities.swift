@@ -3,6 +3,7 @@ import CommonCrypto
 import Foundation
 import XCTest
 import Nimble
+import AblyTesting
 import AblyTestingObjC
 
 import Ably.Private
@@ -135,10 +136,33 @@ class AblyTests {
                 "Accept" : "application/json",
                 "Content-Type" : "application/json"
             ]
+            request.timeoutInterval = SandboxEnvironment.provisioningTimeout
 
-            let (responseData, _) = try SynchronousHTTPClient().perform(request)
+            func provisionApp() throws -> [String: Any] {
+                let (responseData, response) = try SynchronousHTTPClient().perform(request)
+                guard (200 ..< 300).contains(response.statusCode) else {
+                    throw NSError(domain: "AblyTests", code: response.statusCode, userInfo: [
+                        NSLocalizedDescriptionKey: "POST /apps returned HTTP \(response.statusCode)",
+                    ])
+                }
+                let body: [String: Any] = try JSONUtility.jsonObject(data: responseData)
+                // Validate here so an unexpected body (e.g. a sandbox error response with a
+                // 2xx status) engages the retry instead of crashing the `keys` unwrap below.
+                // The body itself stays out of the error: it can contain valid API keys, and
+                // test failures land in public CI logs.
+                guard let keys = body["keys"] as? [[String: Any]], keys.first?["keyStr"] is String else {
+                    throw NSError(domain: "AblyTests", code: 0, userInfo: [
+                        NSLocalizedDescriptionKey: "POST /apps returned HTTP \(response.statusCode) with no usable keys; body fields: \(body.keys.sorted())",
+                    ])
+                }
+                return body
+            }
 
-            app = try JSONUtility.jsonObject(data: responseData)
+            // Retried against transient network stalls on CI (a single stalled request otherwise
+            // fails every test sharing the app). Retrying the non-idempotent POST is safe — an
+            // orphaned app from a timed-out create is auto-deleted by the sandbox after a few
+            // minutes of no use.
+            app = try withProvisioningRetriesSync { try provisionApp() }
             testApplication = app
 
             if debug {
@@ -642,7 +666,18 @@ private func getEmbeddedJWTTokenViaEchoServer(keyName: String, keySecret: String
     ]
 
     let request = NSMutableURLRequest(url: urlComponents!.url!)
-    let (responseData, _) = try SynchronousHTTPClient().perform(request)
+    // Retried against transient network stalls on CI (idempotent GET to the echo server). A
+    // non-2xx body must not be returned as a "JWT", so the status check lives inside the retried
+    // closure; the error deliberately omits the URL, whose query string carries the key secret.
+    let responseData = try withProvisioningRetriesSync { () throws -> Data in
+        let (data, response) = try SynchronousHTTPClient().perform(request)
+        guard (200 ..< 300).contains(response.statusCode) else {
+            throw NSError(domain: "AblyTests", code: response.statusCode, userInfo: [
+                NSLocalizedDescriptionKey: "GET /createJWT (echo server) returned HTTP \(response.statusCode)",
+            ])
+        }
+        return data
+    }
     return String(data: responseData, encoding: String.Encoding.utf8)
 }
 

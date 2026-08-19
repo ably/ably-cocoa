@@ -1,3 +1,4 @@
+import AblyTesting
 import Foundation
 
 /// REST fixture provisioning for the `objects` integration specs — the Swift implementation of the
@@ -30,15 +31,28 @@ func provisionObjectsViaRest(apiKey: String,
     ) ?? channelName
     let url = URL(string: "https://\(SandboxApp.sandboxHost)/channels/\(encodedChannelName)/object")!
 
+    // Ensure every operation carries an idempotency `id` so the whole batch can be retried
+    // against transient network stalls without double-applying (the server dedupes by `id`).
+    let idempotentOperations = operations.map { operation -> [String: Any] in
+        var operation = operation
+        if operation["id"] == nil {
+            operation["id"] = UUID().uuidString
+        }
+        return operation
+    }
+
     // operations: a single operation object, or an array of operation objects (batch)
-    let body: Any = operations.count == 1 ? operations[0] : operations
+    let body: Any = idempotentOperations.count == 1 ? idempotentOperations[0] : idempotentOperations
     var request = try jsonRequest("POST", url, body: body)
     let basic = Data(apiKey.utf8).base64EncodedString()
     request.setValue("Basic \(basic)", forHTTPHeaderField: "Authorization")
 
-    let (data, status) = try await httpRequest(request, session: objectsProvisioningSession)
-    guard (200..<300).contains(status) else {
-        throw HTTPError("POST /channels/\(channelName)/object returned \(status): \(String(decoding: data, as: UTF8.self))")
+    let data = try await withProvisioningRetries {
+        let (responseData, status) = try await httpRequest(request, session: objectsProvisioningSession)
+        guard (200..<300).contains(status) else {
+            throw HTTPError("POST /channels/\(channelName)/object returned \(status): \(String(decoding: responseData, as: UTF8.self))")
+        }
+        return responseData
     }
 
     // The response is a single result object or an array of them, each carrying `objectIds`.

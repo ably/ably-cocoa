@@ -45,6 +45,8 @@ let package = Package(
                 .target(name: "AblyLiveObjectsTesting"),
                 .target(name: "Ably"),
                 .target(name: "_AblyPluginSupportPrivate"),
+                // Shared provisioning-retry helper + nonprod sandbox host constant.
+                .byName(name: "AblyTesting"),
             ],
             path: "LiveObjects/Tests/AblyLiveObjectsTests",
             exclude: [
@@ -139,6 +141,8 @@ let package = Package(
                 // Shared LiveObjects test helpers/mocks + internal-access seams,
                 // used by the objects UTS ports.
                 .target(name: "AblyLiveObjectsTesting"),
+                // Shared provisioning-retry helper (Helpers/ProvisioningRetry.swift).
+                .byName(name: "AblyTesting"),
             ],
             path: "Test/UTS",
             exclude: [
