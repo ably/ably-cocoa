@@ -140,6 +140,11 @@ class AblyTests {
 
             func provisionApp() throws -> [String: Any] {
                 let (responseData, response) = try SynchronousHTTPClient().perform(request)
+                guard (200 ..< 300).contains(response.statusCode) else {
+                    throw NSError(domain: "AblyTests", code: response.statusCode, userInfo: [
+                        NSLocalizedDescriptionKey: "POST /apps returned HTTP \(response.statusCode)",
+                    ])
+                }
                 let body: [String: Any] = try JSONUtility.jsonObject(data: responseData)
                 // Validate here so an unexpected body (e.g. a sandbox error response with a
                 // 2xx status) engages the retry instead of crashing the `keys` unwrap below.
@@ -661,8 +666,18 @@ private func getEmbeddedJWTTokenViaEchoServer(keyName: String, keySecret: String
     ]
 
     let request = NSMutableURLRequest(url: urlComponents!.url!)
-    // Retried against transient network stalls on CI (idempotent GET to the echo server).
-    let (responseData, _) = try withProvisioningRetriesSync { try SynchronousHTTPClient().perform(request) }
+    // Retried against transient network stalls on CI (idempotent GET to the echo server). A
+    // non-2xx body must not be returned as a "JWT", so the status check lives inside the retried
+    // closure; the error deliberately omits the URL, whose query string carries the key secret.
+    let responseData = try withProvisioningRetriesSync { () throws -> Data in
+        let (data, response) = try SynchronousHTTPClient().perform(request)
+        guard (200 ..< 300).contains(response.statusCode) else {
+            throw NSError(domain: "AblyTests", code: response.statusCode, userInfo: [
+                NSLocalizedDescriptionKey: "GET /createJWT (echo server) returned HTTP \(response.statusCode)",
+            ])
+        }
+        return data
+    }
     return String(data: responseData, encoding: String.Encoding.utf8)
 }
 
