@@ -105,6 +105,7 @@
 			);
 			mainGroup = 21F09A932C60CAF00025AF73;
 			packageReferences = (
+				84BEEEB83035F8380074797C /* XCLocalSwiftPackageReference "../../../ably-cocoa" */,
 			);
 			productRefGroup = 21F09A9D2C60CAF00025AF73 /* Products */;
 			projectDirPath = "";
@@ -362,6 +363,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		84BEEEB83035F8380074797C /* XCLocalSwiftPackageReference "../../../ably-cocoa" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../../../ably-cocoa";
+		};
+/* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		21971DFE2C60D89C0074B8AE /* AblyLiveObjects */ = {
