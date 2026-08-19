@@ -136,9 +136,7 @@ class AblyTests {
                 "Accept" : "application/json",
                 "Content-Type" : "application/json"
             ]
-            // Fail fast instead of the 60s URLSession default, so a stalled attempt doesn't
-            // dominate the retry budget.
-            request.timeoutInterval = 30
+            request.timeoutInterval = SandboxEnvironment.provisioningTimeout
 
             func provisionApp() throws -> [String: Any] {
                 let (responseData, response) = try SynchronousHTTPClient().perform(request)

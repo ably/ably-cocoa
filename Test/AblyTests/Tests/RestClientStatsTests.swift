@@ -16,9 +16,7 @@ private func postTestStats(_ stats: [[String: Any]], for test: Test) throws -> A
         request.httpBody = try JSONUtility.serialize(stats)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Basic \(keyBase64)", forHTTPHeaderField: "Authorization")
-        // Fail fast instead of the 60s URLSession default, so a stalled attempt doesn't dominate
-        // the retry budget.
-        request.timeoutInterval = 30
+        request.timeoutInterval = SandboxEnvironment.provisioningTimeout
 
         // `perform` only throws on transport errors; a non-2xx ingestion response would otherwise
         // count as success and skip the fresh-app retry below.

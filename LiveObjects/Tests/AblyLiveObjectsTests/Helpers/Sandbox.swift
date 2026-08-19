@@ -48,8 +48,7 @@ enum Sandbox {
     private static func provisionApp() async throws -> String {
         var request = URLRequest(url: .init(string: "https://\(sandboxHost)/apps")!)
         request.httpMethod = "POST"
-        // Fail fast instead of the 60s URLSession default.
-        request.timeoutInterval = 30
+        request.timeoutInterval = SandboxEnvironment.provisioningTimeout
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try await loadAppCreationRequestBody()
 
