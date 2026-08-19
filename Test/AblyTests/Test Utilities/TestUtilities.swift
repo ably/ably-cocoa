@@ -136,15 +136,20 @@ class AblyTests {
                 "Accept" : "application/json",
                 "Content-Type" : "application/json"
             ]
+            // Fail fast instead of the 60s URLSession default, so a stalled attempt doesn't
+            // dominate the retry budget.
+            request.timeoutInterval = 30
 
             func provisionApp() throws -> [String: Any] {
-                let (responseData, _) = try SynchronousHTTPClient().perform(request)
+                let (responseData, response) = try SynchronousHTTPClient().perform(request)
                 let body: [String: Any] = try JSONUtility.jsonObject(data: responseData)
                 // Validate here so an unexpected body (e.g. a sandbox error response with a
                 // 2xx status) engages the retry instead of crashing the `keys` unwrap below.
+                // The body itself stays out of the error: it can contain valid API keys, and
+                // test failures land in public CI logs.
                 guard let keys = body["keys"] as? [[String: Any]], keys.first?["keyStr"] is String else {
                     throw NSError(domain: "AblyTests", code: 0, userInfo: [
-                        NSLocalizedDescriptionKey: "POST /apps returned a body with no usable keys: \(body)",
+                        NSLocalizedDescriptionKey: "POST /apps returned HTTP \(response.statusCode) with no usable keys; body fields: \(body.keys.sorted())",
                     ])
                 }
                 return body
