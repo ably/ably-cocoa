@@ -1,5 +1,16 @@
 # Change Log
 
+## [1.3.1](https://github.com/ably/ably-cocoa/tree/1.3.1)
+
+### What's Changed
+
+* Update/fix local cocoa package reference so the Xcode project compiles after a fresh clone by @maratal in https://github.com/ably/ably-cocoa/pull/2246
+* Retry test provisioning requests to fix flaky CI (sandbox timeouts) by @sacOO7 in https://github.com/ably/ably-cocoa/pull/2241
+* Fix remaining flaky CI: runner-level retries, test race fixes, UTS harness + spec alignment by @sacOO7 in https://github.com/ably/ably-cocoa/pull/2249
+* LiveObjects example app: rely on `object.get()`'s implicit attach; remove the channel async helper by @sacOO7 in https://github.com/ably/ably-cocoa/pull/2250
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.3.0...1.3.1
+
 ## [1.3.0](https://github.com/ably/ably-cocoa/tree/1.3.0)
 
 ### What's Changed
