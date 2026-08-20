@@ -34,11 +34,12 @@ final class HistoryTests: IntegrationTestCase {
             await self.awaitPublish(channel, name: "event2", data: "data2")
             await self.awaitPublish(channel, name: "event3", data: ["key": "value"])
 
-            // Poll until messages appear in history
-            guard await pollUntil("channel history contains all 3 messages", timeout: 10, interval: 0.5, {
-                await self.historyItemsQuietly(of: channel).count == 3
+            // Poll until messages appear in history, keeping the page the poll settled on —
+            // a refetch could hit a less-replicated frontend and under-return.
+            guard let history = await pollUntil("channel history contains all 3 messages", timeout: 10, interval: 0.5, {
+                let items = await self.historyItemsQuietly(of: channel)
+                return items.count == 3 ? items : nil
             }) else { return }
-            let history = await historyItems(of: channel)
 
             // Assertions
             try #require(history.count == 3)

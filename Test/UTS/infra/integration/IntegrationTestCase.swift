@@ -35,8 +35,13 @@ class IntegrationTestCase {
     func withRealtimeClient(_ options: ARTClientOptions, _ body: (ARTRealtime) async throws -> Void) async throws {
         let client = ARTRealtime(options: options)
         try await runThenCleanUp(client, body: body) { client in
-            client.close()
-            await awaitState(client, .closed, timeout: 10)
+            // Per the specs' common cleanup: only close from a closable state. close() from
+            // FAILED is a no-op (the connection is already terminal), so awaiting CLOSED there
+            // would burn the timeout and record a spurious failure after the body passed.
+            if client.connection.state != .failed {
+                client.close()
+                await awaitState(client, .closed)
+            }
         }
     }
 

@@ -40,6 +40,7 @@ final class ChannelHistoryTests: IntegrationTestCase {
                     publisher.connect()
                     subscriber.connect()
 
+                    // The spec times these in-body connect-awaits explicitly (WITH timeout: 10 seconds).
                     guard await awaitState(publisher, .connected, timeout: 10) else { return }
                     guard await awaitState(subscriber, .connected, timeout: 10) else { return }
 

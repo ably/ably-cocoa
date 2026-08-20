@@ -107,11 +107,12 @@ final class PublishTests: IntegrationTestCase {
                 await self.awaitPublish(channel, message: message)
             }
 
-            // Poll history until message appears (avoid fixed wait)
-            guard await pollUntil("channel history has at least one message", timeout: 10, interval: 0.5, {
-                await self.historyItemsQuietly(of: channel).count > 0
+            // Poll history until the message appears, keeping the page the poll settled on —
+            // a refetch could hit a less-replicated frontend and under-return.
+            guard let history = await pollUntil("channel history has at least one message", timeout: 10, interval: 0.5, {
+                let items = await self.historyItemsQuietly(of: channel)
+                return items.isEmpty ? nil : items
             }) else { return }
-            let history = await historyItems(of: channel)
 
             // Verify only one message in history
             #expect(history.count == 1)

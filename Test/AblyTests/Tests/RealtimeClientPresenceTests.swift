@@ -545,8 +545,8 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
         }
 
-        XCTAssertEqual(channel.internal.presence.members.count, 1)
-        XCTAssertEqual(channel.internal.presence.internalMembers.count, 1)
+        expect(channel.internal.presence.members).toEventually(haveCount(1), timeout: testTimeout)
+        expect(channel.internal.presence.internalMembers).toEventually(haveCount(1), timeout: testTimeout)
 
         channel.subscribe { _ in
             fail("Shouldn't receive any presence event")
@@ -555,14 +555,18 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.once(.failed) { _ in
-                expect(channel.internal.presence.members).to(beEmpty())
-                expect(channel.internal.presence.internalMembers).to(beEmpty())
                 done()
             }
             AblyTests.queue.async {
                 channel.internal.onError(AblyTests.newErrorProtocolMessage())
             }
         }
+
+        // The map is cleared on the internal queue; the FAILED event can be delivered to the
+        // user queue before the clear lands, so assert the settled state rather than inside
+        // the state-change callback.
+        expect(channel.internal.presence.members).toEventually(beEmpty(), timeout: testTimeout)
+        expect(channel.internal.presence.internalMembers).toEventually(beEmpty(), timeout: testTimeout)
     }
 
     // RTP5a
@@ -1343,7 +1347,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
         }
 
-        XCTAssertEqual(channel.internal.presence.members.count, 0)
+        expect(channel.internal.presence.members).toEventually(haveCount(0), timeout: testTimeout)
         waitUntil(timeout: testTimeout) { done in
             channel.presence.subscribe(.enter) { member in
                 XCTAssertEqual(member.clientId, "john")
