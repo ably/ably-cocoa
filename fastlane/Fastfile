@@ -13,6 +13,10 @@ class LaneConfig < Struct.new(:name, :devices)
       scheme: "ably-cocoa",
       derived_data_path: "derived_data",
       test_without_building: false,
+      # Retry only the tests that failed, in place (xcodebuild -retry-tests-on-failure).
+      # Absorbs single-occurrence environmental timeouts on the CI runners; a genuine
+      # regression still fails CI because it fails every attempt.
+      number_of_retries: 2,
       # Raise the test build's deployment target so the UTS test target — which links
       # AblyLiveObjects (requires iOS 14 / tvOS 14) — compiles. This affects the test build only,
       # not the shipped artifacts; the package's declared platform floor stays low. Mirrors

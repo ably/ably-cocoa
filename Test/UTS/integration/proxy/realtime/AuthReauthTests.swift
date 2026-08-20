@@ -84,9 +84,10 @@ final class AuthReauthTests: ProxyTestCase {
                 // TokenRequest that the SDK still exchanges for a token (a REST round-trip through
                 // the proxy) before sending AUTH — so also wait for the AUTH frame to reach the
                 // proxy log before asserting on it.
-                guard await pollUntil("client-to-server AUTH frame recorded in the proxy log", timeout: 15, {
+                guard let clientAuthFrames = await pollUntil("client-to-server AUTH frame recorded in the proxy log", timeout: 15, interval: 0.5, {
                     let log = (try? await session.getLog()) ?? []
-                    return !self.clientToServerAuthFrames(in: log).isEmpty
+                    let frames = self.clientToServerAuthFrames(in: log)
+                    return frames.isEmpty ? nil : frames
                 }) else { return }
 
                 // Assertions
@@ -106,8 +107,7 @@ final class AuthReauthTests: ProxyTestCase {
                 #expect(nonConnectedChanges.count == 0)
 
                 // Proxy log shows the SDK sent an AUTH frame (action 17) from client to server
-                let log = try await session.getLog()
-                let clientAuthFrames = clientToServerAuthFrames(in: log)
+                // (the frames the poll above settled on — the log is append-only, so they stand)
                 #expect(clientAuthFrames.count >= 1)
 
                 // Spec note: after the SDK sends the AUTH response, the server may respond with a
@@ -116,7 +116,7 @@ final class AuthReauthTests: ProxyTestCase {
                 // key assertions are that the SDK's auth machinery was triggered (authCallback
                 // invoked, AUTH frame sent) and that the connection was not disrupted.
             }
-            // Cleanup (per spec): client.connection.close() + AWAIT_STATE closed (10s) is handled
+            // Cleanup (per spec): client.connection.close() + AWAIT_STATE closed (15s) is handled
             // by the withRealtimeClient scope; session.close() by the withProxySession scope.
         }
     }

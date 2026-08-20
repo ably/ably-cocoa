@@ -40,6 +40,7 @@ final class ChannelHistoryTests: IntegrationTestCase {
                     publisher.connect()
                     subscriber.connect()
 
+                    // The spec times these in-body connect-awaits explicitly (WITH timeout: 10 seconds).
                     guard await awaitState(publisher, .connected, timeout: 10) else { return }
                     guard await awaitState(subscriber, .connected, timeout: 10) else { return }
 
@@ -58,11 +59,12 @@ final class ChannelHistoryTests: IntegrationTestCase {
                     await awaitPublish(pubChannel, name: "event3", data: "data3")
 
                     // Retrieve history from subscriber client
-                    // Poll until all messages appear
-                    guard await pollUntil("subscriber history contains all 3 messages", timeout: 10, interval: 0.5, {
-                        await self.historyItemsQuietly(of: subChannel).count == 3
+                    // Poll until all messages appear, keeping the page the poll settled on —
+                    // a refetch could hit a less-replicated frontend and return fewer items than the poll just observed.
+                    guard let historyItems = try await pollUntil("subscriber history contains all 3 messages", timeout: 10, interval: 0.5, {
+                        let items = try await self.historyItems(of: subChannel)
+                        return items.count == 3 ? items : nil
                     }) else { return }
-                    let historyItems = await historyItems(of: subChannel)
 
                     // Assertions
                     try #require(historyItems.count == 3)
@@ -103,26 +105,18 @@ extension ChannelHistoryTests {
     }
 
     /// Fetches the channel's history (default query — backwards order) and returns its items,
-    /// recording an issue on error.
-    private func historyItems(of channel: ARTRealtimeChannel,
-                              sourceLocation: SourceLocation = #_sourceLocation) async -> [ARTMessage] {
-        await withCheckedContinuation { (continuation: CheckedContinuation<[ARTMessage], Never>) in
+    /// propagating any `history()` error so it aborts the enclosing `pollUntil` and surfaces the
+    /// real failure — matching the plain `poll_until` reference semantics (js/java do the same).
+    /// The eventual-consistency race is an under-count, absorbed by the poll's count check, not an
+    /// error.
+    private func historyItems(of channel: ARTRealtimeChannel) async throws -> [ARTMessage] {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<[ARTMessage], Error>) in
             channel.history { result, error in
                 if let error {
-                    Issue.record("history() failed: \(error)", sourceLocation: sourceLocation)
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: result?.items ?? [])
                 }
-                continuation.resume(returning: result?.items ?? [])
-            }
-        }
-    }
-
-    /// Non-reporting variant of `historyItems` for use inside `pollUntil` predicates: a transient
-    /// `history()` error must surface as a retry — and, at worst, as the poll's own timeout issue —
-    /// not fail the test. Returns an empty list on error.
-    private func historyItemsQuietly(of channel: ARTRealtimeChannel) async -> [ARTMessage] {
-        await withCheckedContinuation { (continuation: CheckedContinuation<[ARTMessage], Never>) in
-            channel.history { result, _ in
-                continuation.resume(returning: result?.items ?? [])
             }
         }
     }

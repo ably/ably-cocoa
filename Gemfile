@@ -8,5 +8,5 @@ gem 'jazzy'
 
 gem 'fastlane'
 
-plugins_path = File.join(File.dirname(__FILE__), 'fastlane', 'Pluginfile')
-eval_gemfile(plugins_path) if File.exist?(plugins_path)
+# A literal path (not a variable) — Dependabot rejects interpolated eval_gemfile arguments.
+eval_gemfile("fastlane/Pluginfile")

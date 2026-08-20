@@ -870,6 +870,9 @@ This is the guarantee that no setup step, operation, or assertion was dropped �
       `setup_synced_channel(...)`) is performed via `awaitConnectionState` / `awaitChannelState` /
       `poll` (unit tier) or `awaitState` / `awaitChannelState` / `pollUntil` (integration tiers) or
       the corresponding SDK call
+- [ ] A value-assigned `poll_until` (`x = poll_until(…)`) maps to the generic value-returning
+      `pollUntil` with later assertions on the returned value — **no re-read after the poll** (the
+      rule lives in `writing-derived-tests.md`; the overloads in `infra/Utils.swift`)
 - [ ] Every `step` line — client/mock construction, `ClientOptions`, installed mocks, channel ops — is
       reflected in the test setup or body. Multi-line spec constructs split across several `step` lines;
       reconcile them as a group.
@@ -919,8 +922,13 @@ Some specs are **integration tests** — they run against the **real Ably sandbo
 
 **Shared foundation (both tiers, covered once):** `SandboxApp` provisioning and teardown via the tier's
 base test case, real (unmocked) clients, and the async `awaitState` / `awaitChannelState` / `pollUntil`
-waits — never a fixed sleep, since real network is involved (use generous 10–30s timeouts; the helpers
-default to 15s). Swift Testing has no `setUp()`/`tearDown()` and `deinit` can't `await`, so the base cases
+waits — never a fixed sleep, since real network is involved. The helpers' defaults (15s) already
+satisfy the spec's generous-timeout guidance: pass an explicit `timeout:` only when the spec itself
+states one; for steps the spec doesn't time (including plumbing the port adds, per
+`writing-derived-tests.md`), omit it. The `poll_until` form mapping (value-assigned → the generic
+value-returning `pollUntil`, bare condition → the Bool overload) is documented on the helpers
+themselves (`infra/Utils.swift` doc comments, `Test/UTS/README.md` §11.3) and its semantics in
+`writing-derived-tests.md`. Swift Testing has no `setUp()`/`tearDown()` and `deinit` can't `await`, so the base cases
 provide **scoped-resource methods** instead — each `with…` method provisions its resource, runs your body,
 and *always* tears it down, rethrowing the body's error afterwards. **Never hand-roll teardown**; wrap the
 scenario in the scopes. Only the *wiring* differs per tier; that's what the two tier subsections below
