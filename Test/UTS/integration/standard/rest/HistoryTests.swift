@@ -155,11 +155,12 @@ final class HistoryTests: IntegrationTestCase {
             await self.awaitPublish(channel, name: "late1", data: "l1")
             await self.awaitPublish(channel, name: "late2", data: "l2")
 
-            // Poll until all messages appear and retrieve with server timestamps
-            guard await pollUntil("channel history contains all 4 messages", timeout: 10, interval: 0.5, {
-                await self.historyItemsQuietly(of: channel).count == 4
+            // Poll until all messages appear, keeping the page the poll settled on — its
+            // server-assigned timestamps drive the boundary below, and a refetch could under-return.
+            guard let allMessages = await pollUntil("channel history contains all 4 messages", timeout: 10, interval: 0.5, {
+                let items = await self.historyItemsQuietly(of: channel)
+                return items.count == 4 ? items : nil
             }) else { return }
-            let allMessages = await historyItems(of: channel)
 
             // Use server-assigned timestamps to define the time boundary.
             // Client-side now() must not be used here — client and server clocks may
