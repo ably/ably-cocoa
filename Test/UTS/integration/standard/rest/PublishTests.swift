@@ -108,9 +108,9 @@ final class PublishTests: IntegrationTestCase {
             }
 
             // Poll history until the message appears, keeping the page the poll settled on —
-            // a refetch could hit a less-replicated frontend and under-return.
-            guard let history = await pollUntil("channel history has at least one message", timeout: 10, interval: 0.5, {
-                let items = await self.historyItemsQuietly(of: channel)
+            // a refetch could hit a less-replicated frontend and return fewer items than the poll just observed.
+            guard let history = try await pollUntil("channel history has at least one message", timeout: 10, interval: 0.5, {
+                let items = try await self.historyItems(of: channel)
                 return items.isEmpty ? nil : items
             }) else { return }
 
@@ -274,13 +274,17 @@ extension PublishTests {
         }
     }
 
-    /// Non-reporting variant of `historyItems` for use inside `pollUntil` predicates: a transient
-    /// `history()` error must surface as a retry — and, at worst, as the poll's own timeout issue —
-    /// not fail the test. Returns an empty list on error.
-    private func historyItemsQuietly(of channel: ARTRestChannel) async -> [ARTMessage] {
-        await withCheckedContinuation { (continuation: CheckedContinuation<[ARTMessage], Never>) in
-            channel.history { result, _ in
-                continuation.resume(returning: result?.items ?? [])
+    /// Fetches the channel's history (default query) and returns its items, propagating any
+    /// `history()` error so it aborts the enclosing `pollUntil` and surfaces the real failure
+    /// (matching the plain `poll_until` reference semantics; js/java do the same).
+    private func historyItems(of channel: ARTRestChannel) async throws -> [ARTMessage] {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<[ARTMessage], Error>) in
+            channel.history { result, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: result?.items ?? [])
+                }
             }
         }
     }

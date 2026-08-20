@@ -705,13 +705,14 @@ callbacks — ably-java's `AuthReauthTest` does the same).
 **The shared async helpers** both integration walkthroughs below lean on (from
 `infra/Utils.swift` — java's `infra/Utils.kt`, see §6.9). All are wall-clock and poll-based
 (never a fixed sleep); on timeout they record a Swift Testing `Issue` (and return `false`)
-rather than throwing:
+rather than throwing — though `pollUntil` re-throws an error thrown by its condition, aborting
+the poll (a thrown error is a genuine failure; "not ready yet" is signalled by returning nil):
 
 | Helper | Shape | Purpose |
 |--------|-------|---------|
 | `awaitState` | `await awaitState(client, .connected, timeout: 15)` | suspend until `connection.state == target` (or already there) |
 | `awaitChannelState` | `await awaitChannelState(channel, .attached, timeout: 15)` | same, for a channel's state |
-| `pollUntil` | `let page = await pollUntil("…") { cond ? value : nil }` or `await pollUntil("…") { condition }` | the spec's `poll_until`: the generic form returns the settled value (assert on it — a refetch can under-return); the Bool form is for latch/monotonic conditions with no page to keep |
+| `pollUntil` | `let page = await pollUntil("…") { cond ? value : nil }` or `await pollUntil("…") { condition }` | the spec's `poll_until`: the generic form returns the settled value (assert on it — a refetch can return fewer items); the Bool form is for latch/monotonic conditions with no page to keep |
 
 ### 11.4 Walkthrough: the direct-sandbox test (`ChannelHistoryTests`)
 

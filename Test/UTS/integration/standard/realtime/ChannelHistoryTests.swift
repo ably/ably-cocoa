@@ -60,9 +60,9 @@ final class ChannelHistoryTests: IntegrationTestCase {
 
                     // Retrieve history from subscriber client
                     // Poll until all messages appear, keeping the page the poll settled on —
-                    // a refetch could hit a less-replicated frontend and under-return.
-                    guard let historyItems = await pollUntil("subscriber history contains all 3 messages", timeout: 10, interval: 0.5, {
-                        let items = await self.historyItemsQuietly(of: subChannel)
+                    // a refetch could hit a less-replicated frontend and return fewer items than the poll just observed.
+                    guard let historyItems = try await pollUntil("subscriber history contains all 3 messages", timeout: 10, interval: 0.5, {
+                        let items = try await self.historyItems(of: subChannel)
                         return items.count == 3 ? items : nil
                     }) else { return }
 
@@ -105,13 +105,18 @@ extension ChannelHistoryTests {
     }
 
     /// Fetches the channel's history (default query — backwards order) and returns its items,
-    /// swallowing errors, for use inside `pollUntil` predicates: a transient `history()` error
-    /// must surface as a retry — and, at worst, as the poll's own timeout issue — not fail the
-    /// test. Returns an empty list on error.
-    private func historyItemsQuietly(of channel: ARTRealtimeChannel) async -> [ARTMessage] {
-        await withCheckedContinuation { (continuation: CheckedContinuation<[ARTMessage], Never>) in
-            channel.history { result, _ in
-                continuation.resume(returning: result?.items ?? [])
+    /// propagating any `history()` error so it aborts the enclosing `pollUntil` and surfaces the
+    /// real failure — matching the plain `poll_until` reference semantics (js/java do the same).
+    /// The eventual-consistency race is an under-count, absorbed by the poll's count check, not an
+    /// error.
+    private func historyItems(of channel: ARTRealtimeChannel) async throws -> [ARTMessage] {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<[ARTMessage], Error>) in
+            channel.history { result, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: result?.items ?? [])
+                }
             }
         }
     }

@@ -191,10 +191,10 @@ final class PresenceTests: IntegrationTestCase {
             // Poll REST history until events appear
             let restChannel = client.channels.get(channelName)
 
-            // Keep the page the poll settled on — a refetch could under-return.
-            guard let history = await pollUntil("presence history has at least 3 events", timeout: 10, interval: 0.5, {
-                let result = await self.presenceHistoryQuietly(restChannel.presence)
-                return (result?.items.count ?? 0) >= 3 ? result : nil
+            // Keep the page the poll settled on — a refetch could return fewer items.
+            guard let history = try await pollUntil("presence history has at least 3 events", timeout: 10, interval: 0.5, {
+                let result = try await self.presenceHistoryPage(restChannel.presence)
+                return result.items.count >= 3 ? result : nil
             }) else { return }
 
             #expect(history.items.count >= 3)
@@ -237,11 +237,11 @@ final class PresenceTests: IntegrationTestCase {
             } // AWAIT realtime.close() — performed by the withRealtimeClient scope (close + await CLOSED)
 
             // Poll until events appear, keeping the page the poll settled on (its server-assigned
-            // timestamps drive the query below) — a refetch could under-return.
+            // timestamps drive the query below) — a refetch could return fewer items.
             let restChannel = client.channels.get(channelName)
-            guard let events = await pollUntil("presence history has at least 2 events", timeout: 10, interval: 0.5, {
-                let result = await self.presenceHistoryQuietly(restChannel.presence)
-                return (result?.items.count ?? 0) >= 2 ? result?.items : nil
+            guard let events = try await pollUntil("presence history has at least 2 events", timeout: 10, interval: 0.5, {
+                let result = try await self.presenceHistoryPage(restChannel.presence)
+                return result.items.count >= 2 ? result.items : nil
             }) else { return }
 
             // Use server-assigned timestamps to define the queried range. Client-side now() must
@@ -292,8 +292,8 @@ final class PresenceTests: IntegrationTestCase {
 
             // Poll until events appear
             let restChannel = client.channels.get(channelName)
-            guard await pollUntil("presence history has at least 3 events", timeout: 10, interval: 0.5, {
-                await (self.presenceHistoryQuietly(restChannel.presence)?.items.count ?? 0) >= 3
+            guard try await pollUntil("presence history has at least 3 events", timeout: 10, interval: 0.5, {
+                try await self.presenceHistoryPage(restChannel.presence).items.count >= 3
             }) else { return }
 
             // Get history forwards (oldest first)
@@ -344,8 +344,8 @@ final class PresenceTests: IntegrationTestCase {
 
             // Poll until all events appear
             let restChannel = client.channels.get(channelName)
-            guard await pollUntil("presence history has at least 5 events", timeout: 10, interval: 0.5, {
-                await (self.presenceHistoryQuietly(restChannel.presence)?.items.count ?? 0) >= 5
+            guard try await pollUntil("presence history has at least 5 events", timeout: 10, interval: 0.5, {
+                try await self.presenceHistoryPage(restChannel.presence).items.count >= 5
             }) else { return }
 
             // Request with small limit
@@ -467,9 +467,9 @@ final class PresenceTests: IntegrationTestCase {
 
             // Poll and retrieve history, keeping the page the poll settled on.
             let restChannel = client.channels.get(channelName)
-            guard let history = await pollUntil("presence history has at least 1 event", timeout: 10, interval: 0.5, {
-                let result = await self.presenceHistoryQuietly(restChannel.presence)
-                return (result?.items.count ?? 0) >= 1 ? result : nil
+            guard let history = try await pollUntil("presence history has at least 1 event", timeout: 10, interval: 0.5, {
+                let result = try await self.presenceHistoryPage(restChannel.presence)
+                return result.items.count >= 1 ? result : nil
             }) else { return }
 
             // ASSERT history.items[0].data IS Object/Map (the #require's cast covers it)
@@ -619,13 +619,19 @@ extension PresenceTests {
         }
     }
 
-    /// Non-reporting variant of `presenceHistory` (default query) for use inside `pollUntil`
-    /// predicates: a transient `presence.history()` error must surface as a retry — and, at worst,
-    /// as the poll's own timeout issue — not fail the test. Returns nil on error.
-    private func presenceHistoryQuietly(_ presence: ARTRestPresence) async -> ARTPaginatedResult<ARTPresenceMessage>? {
-        await withCheckedContinuation { (continuation: CheckedContinuation<ARTPaginatedResult<ARTPresenceMessage>?, Never>) in
-            presence.history { result, _ in
-                continuation.resume(returning: result)
+    /// Fetches presence history (default query), propagating any `presence.history()` error so it
+    /// aborts the enclosing `pollUntil` and surfaces the real failure (plain `poll_until`
+    /// semantics; js/java do the same).
+    private func presenceHistoryPage(_ presence: ARTRestPresence) async throws -> ARTPaginatedResult<ARTPresenceMessage> {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<ARTPaginatedResult<ARTPresenceMessage>, Error>) in
+            presence.history { result, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else if let result {
+                    continuation.resume(returning: result)
+                } else {
+                    continuation.resume(throwing: HTTPError("presence.history returned no result and no error"))
+                }
             }
         }
     }

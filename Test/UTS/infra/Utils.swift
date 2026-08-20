@@ -16,17 +16,22 @@ import Ably.Private
 /// same loop shape as ably-java's `Utils.pollUntil`): polls `condition` every `interval` seconds
 /// until it yields a value and returns that settled value, or records a test failure once
 /// `timeout` (wall-clock seconds) elapses. Callers assert on the returned page rather than
-/// refetching — a refetch can hit a less-replicated frontend and under-return, reintroducing the
-/// eventual-consistency race the poll just absorbed.
+/// refetching — a refetch can hit a less-replicated frontend and return fewer items than the poll
+/// just observed, reintroducing the eventual-consistency race the poll just absorbed.
+///
+/// `condition` is `rethrows`: if it throws, the poll aborts immediately and the error propagates
+/// to the caller (failing the test) — no timeout `Issue` is recorded. This matches the spec's
+/// plain `poll_until`: a thrown error is a genuine failure, whereas a not-ready state is
+/// signalled by returning nil (e.g. an under-replicated item count), not by throwing.
 @discardableResult
 func pollUntil<T>(_ description: String,
                   timeout: TimeInterval = 15,
                   interval: TimeInterval = 0.1,
                   sourceLocation: SourceLocation = #_sourceLocation,
-                  _ condition: () async -> T?) async -> T? {
+                  _ condition: () async throws -> T?) async rethrows -> T? {
     let deadline = Date().addingTimeInterval(timeout)
     while Date() < deadline, !Task.isCancelled {
-        if let value = await condition() {
+        if let value = try await condition() {
             return value
         }
         try? await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
@@ -44,9 +49,9 @@ func pollUntil(_ description: String,
                timeout: TimeInterval = 15,
                interval: TimeInterval = 0.1,
                sourceLocation: SourceLocation = #_sourceLocation,
-               _ condition: () async -> Bool) async -> Bool {
-    await pollUntil(description, timeout: timeout, interval: interval, sourceLocation: sourceLocation) {
-        await condition() ? true : nil
+               _ condition: () async throws -> Bool) async rethrows -> Bool {
+    try await pollUntil(description, timeout: timeout, interval: interval, sourceLocation: sourceLocation) {
+        try await condition() ? true : nil
     } != nil
 }
 

@@ -35,9 +35,9 @@ final class HistoryTests: IntegrationTestCase {
             await self.awaitPublish(channel, name: "event3", data: ["key": "value"])
 
             // Poll until messages appear in history, keeping the page the poll settled on —
-            // a refetch could hit a less-replicated frontend and under-return.
-            guard let history = await pollUntil("channel history contains all 3 messages", timeout: 10, interval: 0.5, {
-                let items = await self.historyItemsQuietly(of: channel)
+            // a refetch could hit a less-replicated frontend and return fewer items than the poll just observed.
+            guard let history = try await pollUntil("channel history contains all 3 messages", timeout: 10, interval: 0.5, {
+                let items = try await self.historyItems(of: channel)
                 return items.count == 3 ? items : nil
             }) else { return }
 
@@ -78,8 +78,8 @@ final class HistoryTests: IntegrationTestCase {
             await self.awaitPublish(channel, name: "third", data: "3")
 
             // Poll until all messages appear
-            guard await pollUntil("channel history contains all 3 messages", timeout: 10, interval: 0.5, {
-                await self.historyItemsQuietly(of: channel).count == 3
+            guard try await pollUntil("channel history contains all 3 messages", timeout: 10, interval: 0.5, {
+                try await self.historyItems(of: channel).count == 3
             }) else { return }
 
             let forwardsQuery = ARTDataQuery()
@@ -113,8 +113,8 @@ final class HistoryTests: IntegrationTestCase {
             }
 
             // Poll until all messages are persisted
-            guard await pollUntil("channel history contains all 10 messages", timeout: 10, interval: 0.5, {
-                await self.historyItemsQuietly(of: channel).count == 10
+            guard try await pollUntil("channel history contains all 10 messages", timeout: 10, interval: 0.5, {
+                try await self.historyItems(of: channel).count == 10
             }) else { return }
 
             let limitQuery = ARTDataQuery()
@@ -156,9 +156,9 @@ final class HistoryTests: IntegrationTestCase {
             await self.awaitPublish(channel, name: "late2", data: "l2")
 
             // Poll until all messages appear, keeping the page the poll settled on — its
-            // server-assigned timestamps drive the boundary below, and a refetch could under-return.
-            guard let allMessages = await pollUntil("channel history contains all 4 messages", timeout: 10, interval: 0.5, {
-                let items = await self.historyItemsQuietly(of: channel)
+            // server-assigned timestamps drive the boundary below, and a refetch could return fewer items.
+            guard let allMessages = try await pollUntil("channel history contains all 4 messages", timeout: 10, interval: 0.5, {
+                let items = try await self.historyItems(of: channel)
                 return items.count == 4 ? items : nil
             }) else { return }
 
@@ -267,13 +267,17 @@ extension HistoryTests {
         }
     }
 
-    /// Non-reporting variant of `historyItems` (default query) for use inside `pollUntil`
-    /// predicates: a transient `history()` error must surface as a retry — and, at worst, as the
-    /// poll's own timeout issue — not fail the test. Returns an empty list on error.
-    private func historyItemsQuietly(of channel: ARTRestChannel) async -> [ARTMessage] {
-        await withCheckedContinuation { (continuation: CheckedContinuation<[ARTMessage], Never>) in
-            channel.history { result, _ in
-                continuation.resume(returning: result?.items ?? [])
+    /// Fetches the channel's history (default query) and returns its items, propagating any
+    /// `history()` error so it aborts the enclosing `pollUntil` and surfaces the real failure
+    /// (matching the plain `poll_until` reference semantics; js/java do the same).
+    private func historyItems(of channel: ARTRestChannel) async throws -> [ARTMessage] {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<[ARTMessage], Error>) in
+            channel.history { result, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: result?.items ?? [])
+                }
             }
         }
     }
