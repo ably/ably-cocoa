@@ -11,7 +11,6 @@ final class TaskBoardViewModel: ObservableObject {
     @Published var isLoading = true
     @Published var errorMessage: String?
 
-    private var realtime: ARTRealtime
     private var channel: ARTRealtimeChannel
     private var object: any RealtimeObject
     private var root: (any LiveMapPathObject)?
@@ -19,8 +18,6 @@ final class TaskBoardViewModel: ObservableObject {
     private var subscriptions: [String: any Subscription] = [:]
 
     init(realtime: ARTRealtime, channelName: String = "objects-live-map") {
-        self.realtime = realtime
-
         let channelOptions = ARTRealtimeChannelOptions()
         channelOptions.modes = [.objectPublish, .objectSubscribe]
         channel = realtime.channels.get(channelName, options: channelOptions)
@@ -49,10 +46,9 @@ final class TaskBoardViewModel: ObservableObject {
             isLoading = true
             errorMessage = nil
 
-            // Attach channel first
-            try await channel.attachAsync()
-
-            // Get the root map path object, once objects are synchronized
+            // Get the root map path object. `object.get()` performs the ensure-active-channel
+            // procedure (RTO23e/RTL33), so it implicitly attaches the channel — no explicit
+            // attach needed — and resolves once the objects are synchronized.
             let root = try await object.get()
             self.root = root
 
