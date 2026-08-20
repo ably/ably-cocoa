@@ -34,7 +34,6 @@ final class LiveCounterViewModel: ObservableObject {
     @Published var isLoading = true
     @Published var errorMessage: String?
 
-    private var realtime: ARTRealtime
     private var channel: ARTRealtimeChannel
     private var object: any RealtimeObject
     private var root: (any LiveMapPathObject)?
@@ -42,8 +41,6 @@ final class LiveCounterViewModel: ObservableObject {
     private var subscriptions: [String: any Subscription] = [:]
 
     init(realtime: ARTRealtime) {
-        self.realtime = realtime
-
         // Use URL parameters or default channel name
         let channelName = "live-objects-counter"
         let channelOptions = ARTRealtimeChannelOptions()
@@ -74,10 +71,9 @@ final class LiveCounterViewModel: ObservableObject {
             isLoading = true
             errorMessage = nil
 
-            // Attach channel first
-            try await channel.attachAsync()
-
-            // Get the root map path object, once objects are synchronized
+            // Get the root map path object. `object.get()` performs the ensure-active-channel
+            // procedure (RTO23e/RTL33), so it implicitly attaches the channel — no explicit
+            // attach needed — and resolves once the objects are synchronized.
             let root = try await object.get()
             self.root = root
 
