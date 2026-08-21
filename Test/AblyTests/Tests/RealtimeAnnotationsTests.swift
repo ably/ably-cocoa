@@ -379,4 +379,75 @@ class RealtimeAnnotationsTests: XCTestCase {
             }
         }
     }
+
+    // The annotations object must read the channel's data encoder at encode/decode time
+    // rather than capturing it at construction, so that a cipher added by setOptions
+    // after the channel was created is still applied to annotation data.
+    func test__annotation_data_uses_a_cipher_added_by_setOptions_after_channel_creation() throws {
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        options.testOptions.channelNamePrefix = nil
+
+        let realtimeClient = ARTRealtime(options: options)
+        defer { realtimeClient.dispose(); realtimeClient.close() }
+
+        let channelName = test.uniqueChannelName(prefix: "mutable:")
+
+        // Create the channel with no cipher, so the annotations object would capture a
+        // cipher-less encoder if it cached one.
+        let initialOptions = ARTRealtimeChannelOptions()
+        initialOptions.modes = [.publish, .subscribe, .annotationPublish, .annotationSubscribe]
+        let channel = realtimeClient.channels.get(channelName, options: initialOptions)
+
+        // Now add a cipher.
+        let key = ARTCrypto.generateRandomKey()
+        let encryptedOptions = ARTRealtimeChannelOptions(cipherKey: key as ARTCipherKeyCompatible)
+        encryptedOptions.modes = [.publish, .subscribe, .annotationPublish, .annotationSubscribe]
+        waitUntil(timeout: testTimeout) { done in
+            channel.setOptions(encryptedOptions) { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+
+        let annotationData = "secret annotation data"
+        var receivedAnnotation: ARTAnnotation!
+
+        waitUntil(timeout: testTimeout) { done in
+            channel.subscribe { message in
+                guard message.action == .create else {
+                    return
+                }
+                // multiple.v1 because an anonymous client may only publish the
+                // multiple.v1 and total.v1 aggregation methods
+                let annotation = ARTOutboundAnnotation(
+                    id: nil,
+                    type: "reaction:multiple.v1",
+                    clientId: nil,
+                    name: "👍",
+                    count: 1,
+                    data: annotationData,
+                    extras: nil
+                )
+                channel.annotations.publish(for: message, annotation: annotation) { error in
+                    XCTAssertNil(error)
+                }
+            }
+
+            channel.annotations.subscribe { annotation in
+                receivedAnnotation = annotation
+                done()
+            }
+
+            channel.publish([ARTMessage(name: "test", data: "test message")])
+        }
+
+        // Decrypted with the cipher set by setOptions; if the stale encoder were used the
+        // data would have been published as plaintext and arrive as ciphertext.
+        guard let receivedAnnotation else {
+            XCTFail("No annotation received")
+            return
+        }
+        XCTAssertEqual(receivedAnnotation.data as? String, annotationData)
+    }
 }
