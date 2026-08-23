@@ -333,3 +333,154 @@ internal extension JSONObjectOrArray {
         return string
     }
 }
+
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+extension JSONValue: CustomStringConvertible {
+    /// Compact JSON text, with object keys sorted for deterministic output.
+    ///
+    /// ```swift
+    /// let jsonValue: JSONValue = ["likes": 10, "hearts": 0]
+    /// print("Reactions updated: \(jsonValue)") // Reactions updated: {"hearts":0,"likes":10}
+    /// ```
+    ///
+    /// > Note: JSON has no representation for the non-finite `Double` values, so a `number` whose value
+    /// > is NaN or infinite is written as `null`.
+    ///
+    public var description: String {
+        // The text is built here rather than by `JSONSerialization`, which offers no option to change
+        // any of the three things that make its output unsuitable: it writes numbers to a fixed 17
+        // significant digits rather than the shortest form that round-trips, so `0.1` prints as
+        // `0.10000000000000001`; it escapes the forward slash, so URLs print as
+        // `https:\/\/example.com`; and it raises an Objective-C exception, uncatchable from Swift, when
+        // asked to write a non-finite number, which `number(_:)` makes constructible.
+        //
+        // Sorting the keys also gives a plain lexicographic order, where `JSONSerialization`'s
+        // `sortedKeys` compares digits numerically and treats case as secondary.
+        switch self {
+        case let .object(object):
+            let members = object
+                .sorted { $0.key < $1.key }
+                .map { key, value in "\(Self.jsonText(forString: key)):\(value.description)" }
+            return "{\(members.joined(separator: ","))}"
+        case let .array(array):
+            return "[\(array.map(\.description).joined(separator: ","))]"
+        case let .string(string):
+            return Self.jsonText(forString: string)
+        case let .number(number):
+            return Self.jsonText(forNumber: number)
+        case let .bool(bool):
+            return bool ? "true" : "false"
+        case .null:
+            return "null"
+        }
+    }
+}
+
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+extension JSONValue: CustomDebugStringConvertible {
+    /// Compact JSON text, with object keys sorted for deterministic output; the same as ``description``,
+    /// so that `String(reflecting:)` and LLDB's `po` also show the value rather than the enum's structure.
+    public var debugDescription: String {
+        description
+    }
+}
+
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+private extension JSONValue {
+    /// The JSON text for a string, including the surrounding quotation marks.
+    ///
+    /// Only the escapes that JSON requires are applied. In particular the forward slash, which JSON
+    /// permits escaping but does not require it to be escaped, is left alone so that URLs stay readable.
+    static func jsonText(forString string: String) -> String {
+        var result = "\""
+
+        for scalar in string.unicodeScalars {
+            switch scalar {
+            case "\"":
+                result += #"\""#
+            case "\\":
+                result += #"\\"#
+            case "\n":
+                result += #"\n"#
+            case "\r":
+                result += #"\r"#
+            case "\t":
+                result += #"\t"#
+            case "\u{08}":
+                result += #"\b"#
+            case "\u{0C}":
+                result += #"\f"#
+            case _ where scalar.value < 0x20:
+                result += String(format: #"\u%04x"#, scalar.value)
+            default:
+                result.unicodeScalars.append(scalar)
+            }
+        }
+
+        return result + "\""
+    }
+
+    /// The JSON text for a number.
+    ///
+    /// `Double`'s own description is the shortest representation that round-trips, so it supplies the
+    /// digits. Two pieces of its punctuation are dropped: the zeros that trail a fractional part, so
+    /// that `10` is not written as `10.0`, and the zeros that pad an exponent, so that `1e-7` is not
+    /// written as `1e-07`.
+    ///
+    /// Where `Double`'s description chooses exponent notation is left as it is, which is not always
+    /// where `JSON.stringify` chooses it: `4.4854284003116864e+17` here is `448542840031168640` there.
+    /// Both are valid JSON carrying the same digits, and both parse back to this value.
+    static func jsonText(forNumber number: Double) -> String {
+        guard number.isFinite else {
+            // NaN and the infinities have no JSON representation.
+            return "null" // .nan, .infinity -> null
+        }
+
+        let text = String(number)
+
+        guard let exponentIndex = text.firstIndex(where: { $0 == "e" || $0 == "E" }) else {
+            return withoutTrailingFractionZeros(text) // 10.0 -> 10; 0.1 -> 0.1; -0.0 -> -0
+        }
+
+        let mantissa = withoutTrailingFractionZeros(String(text[..<exponentIndex]))
+        let exponent = withoutExponentPadding(String(text[text.index(after: exponentIndex)...]))
+
+        return "\(mantissa)e\(exponent)" // 1e-07 -> 1e-7; 1.7976931348623157e+308 unchanged
+    }
+
+    /// Drops the zeros trailing a fractional part, and the decimal point too if they were all of it.
+    static func withoutTrailingFractionZeros(_ text: String) -> String {
+        // Without a point the trailing zeros are significant: 100 must not become 1.
+        guard text.contains(".") else {
+            return text
+        }
+
+        var result = text
+        while result.hasSuffix("0") {
+            result.removeLast()
+        }
+        if result.hasSuffix(".") {
+            result.removeLast()
+        }
+
+        return result // 10.0 -> 10; 1.10 -> 1.1; 0.0 -> 0; 123.456 -> 123.456
+    }
+
+    /// Drops the zeros `Double`'s description pads a single-digit exponent with.
+    static func withoutExponentPadding(_ text: String) -> String {
+        var sign = ""
+        var digits = Substring(text)
+
+        if let first = digits.first, first == "+" || first == "-" {
+            sign = String(first)
+            digits = digits.dropFirst()
+        }
+
+        // Keep the last digit even if it is a zero, so that an exponent of 0 survives.
+        while digits.count > 1, digits.first == "0" {
+            digits = digits.dropFirst()
+        }
+
+        return sign + digits // -07 -> -7; +308 -> +308
+    }
+}
