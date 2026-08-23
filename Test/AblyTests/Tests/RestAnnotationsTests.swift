@@ -320,4 +320,88 @@ class RestAnnotationsTests: XCTestCase {
             }
         }
     }
+
+    // The annotations object must read the channel's data encoder at encode time rather
+    // than capturing it at construction, so that a cipher added by setOptions after the
+    // channel was created is still applied to annotation data. Mirrors the realtime test
+    // in RealtimeAnnotationsTests; only the publish path is asserted here because the REST
+    // decode path already read the encoder live.
+    func test__annotation_data_uses_a_cipher_added_by_setOptions_after_channel_creation() throws {
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        options.testOptions.channelNamePrefix = nil
+
+        // Realtime client only to publish the message that gets annotated, since the
+        // annotation needs a message serial.
+        let realtimeClient = ARTRealtime(options: options)
+        defer { realtimeClient.dispose(); realtimeClient.close() }
+
+        let restClient = ARTRest(options: options)
+        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        restClient.internal.httpExecutor = testHTTPExecutor
+
+        let channelName = test.uniqueChannelName(prefix: "mutable:")
+
+        let realtimeChannelOptions = ARTRealtimeChannelOptions()
+        realtimeChannelOptions.modes = [.publish, .subscribe, .annotationPublish, .annotationSubscribe]
+        let realtimeChannel = realtimeClient.channels.get(channelName, options: realtimeChannelOptions)
+
+        // Create the REST channel with no cipher, so the annotations object would capture a
+        // cipher-less encoder if it cached one.
+        let restChannel = restClient.channels.get(channelName)
+
+        // Now add a cipher. `ARTRestChannel.setOptions` is not visible from Swift — the ObjC
+        // importer folds it into the read-only `options` property — so go through
+        // `channels.get`, which applies the options to the already-created channel via
+        // `setOptions_nosync:`: the same path, recreating the channel's data encoder.
+        let key = ARTCrypto.generateRandomKey()
+        _ = restClient.channels.get(channelName, options: ARTChannelOptions(cipherKey: key as ARTCipherKeyCompatible))
+
+        let annotationData = "secret annotation data"
+
+        waitUntil(timeout: testTimeout) { done in
+            realtimeChannel.subscribe { message in
+                guard message.action == .create else {
+                    return
+                }
+                realtimeChannel.unsubscribe()
+
+                // multiple.v1 because an anonymous client may only publish the
+                // multiple.v1 and total.v1 aggregation methods
+                let annotation = ARTOutboundAnnotation(
+                    id: nil,
+                    type: "reaction:multiple.v1",
+                    clientId: nil,
+                    name: "👍",
+                    count: 1,
+                    data: annotationData,
+                    extras: nil
+                )
+                restChannel.annotations.publish(for: message, annotation: annotation) { error in
+                    XCTAssertNil(error)
+                    done()
+                }
+            }
+
+            realtimeChannel.publish([ARTMessage(name: "test", data: "test message")])
+        }
+
+        // Assert on the body that went on the wire: a stale cipher-less encoder would have
+        // POSTed the data as plaintext, with no cipher in the encoding.
+        let request = try XCTUnwrap(
+            testHTTPExecutor.requests.last { $0.url?.path.hasSuffix("/annotations") == true },
+            "No annotation publish request found"
+        )
+        let rawBody = try XCTUnwrap(request.httpBody, "Annotation publish request should have a body")
+        let decodedBody = try XCTUnwrap(restClient.internal.defaultEncoder.decode(rawBody), "Decode request body failed")
+        let publishedAnnotations = try XCTUnwrap(decodedBody as? [NSDictionary], "Request body is invalid")
+        let publishedAnnotation = try XCTUnwrap(publishedAnnotations.first, "Request body contained no annotation")
+
+        let encoding = publishedAnnotation.value(forKey: "encoding") as? String
+        XCTAssertTrue(
+            encoding?.contains("cipher+aes-256-cbc") == true,
+            "Expected published annotation data to be encrypted, got encoding \(encoding ?? "nil")"
+        )
+        XCTAssertNotEqual(publishedAnnotation.value(forKey: "data") as? String, annotationData)
+    }
 }

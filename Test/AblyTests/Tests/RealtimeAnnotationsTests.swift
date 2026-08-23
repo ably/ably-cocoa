@@ -388,7 +388,7 @@ class RealtimeAnnotationsTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         options.testOptions.channelNamePrefix = nil
 
-        let realtimeClient = ARTRealtime(options: options)
+        let realtimeClient = AblyTests.newRealtime(options).client
         defer { realtimeClient.dispose(); realtimeClient.close() }
 
         let channelName = test.uniqueChannelName(prefix: "mutable:")
@@ -411,7 +411,7 @@ class RealtimeAnnotationsTests: XCTestCase {
         }
 
         let annotationData = "secret annotation data"
-        var receivedAnnotation: ARTAnnotation!
+        var receivedAnnotation: ARTAnnotation?
 
         waitUntil(timeout: testTimeout) { done in
             channel.subscribe { message in
@@ -442,12 +442,28 @@ class RealtimeAnnotationsTests: XCTestCase {
             channel.publish([ARTMessage(name: "test", data: "test message")])
         }
 
-        // Decrypted with the cipher set by setOptions; if the stale encoder were used the
-        // data would have been published as plaintext and arrive as ciphertext.
-        guard let receivedAnnotation else {
-            XCTFail("No annotation received")
-            return
-        }
-        XCTAssertEqual(receivedAnnotation.data as? String, annotationData)
+        // A stale encoder fails symmetrically: publish and receive would both use the same
+        // cipher-less encoder, so the annotation still round-trips to the original string.
+        // The observable difference is on the wire, so assert there.
+        let transport = try XCTUnwrap(realtimeClient.internal.transport as? TestProxyTransport)
+
+        let sentAnnotations = transport.protocolMessagesSent
+            .filter { $0.action == .annotation }
+            .compactMap { $0.annotations }
+            .flatMap { $0 }
+        let sentAnnotation = try XCTUnwrap(sentAnnotations.first, "No ANNOTATION protocol message was sent")
+
+        // Encoded with the cipher set by setOptions. With a stale encoder the data would
+        // go out as plaintext, with no cipher in the encoding.
+        XCTAssertTrue(
+            sentAnnotation.encoding?.contains("cipher+aes-256-cbc") == true,
+            "Expected published annotation data to be encrypted, got encoding \(sentAnnotation.encoding ?? "nil")"
+        )
+        XCTAssertNotEqual(sentAnnotation.data as? String, annotationData)
+
+        // And the decode side must read the encoder live too, so what the subscriber is
+        // handed is the original plaintext.
+        let decodedAnnotation = try XCTUnwrap(receivedAnnotation, "No annotation received")
+        XCTAssertEqual(decodedAnnotation.data as? String, annotationData)
     }
 }
