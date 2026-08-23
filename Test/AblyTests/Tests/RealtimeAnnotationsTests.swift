@@ -379,4 +379,91 @@ class RealtimeAnnotationsTests: XCTestCase {
             }
         }
     }
+
+    // The annotations object must read the channel's data encoder at encode/decode time
+    // rather than capturing it at construction, so that a cipher added by setOptions
+    // after the channel was created is still applied to annotation data.
+    func test__annotation_data_uses_a_cipher_added_by_setOptions_after_channel_creation() throws {
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        options.testOptions.channelNamePrefix = nil
+
+        let realtimeClient = AblyTests.newRealtime(options).client
+        defer { realtimeClient.dispose(); realtimeClient.close() }
+
+        let channelName = test.uniqueChannelName(prefix: "mutable:")
+
+        // Create the channel with no cipher, so the annotations object would capture a
+        // cipher-less encoder if it cached one.
+        let initialOptions = ARTRealtimeChannelOptions()
+        initialOptions.modes = [.publish, .subscribe, .annotationPublish, .annotationSubscribe]
+        let channel = realtimeClient.channels.get(channelName, options: initialOptions)
+
+        // Now add a cipher.
+        let key = ARTCrypto.generateRandomKey()
+        let encryptedOptions = ARTRealtimeChannelOptions(cipherKey: key as ARTCipherKeyCompatible)
+        encryptedOptions.modes = [.publish, .subscribe, .annotationPublish, .annotationSubscribe]
+        waitUntil(timeout: testTimeout) { done in
+            channel.setOptions(encryptedOptions) { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+
+        let annotationData = "secret annotation data"
+        var receivedAnnotation: ARTAnnotation?
+
+        waitUntil(timeout: testTimeout) { done in
+            channel.subscribe { message in
+                guard message.action == .create else {
+                    return
+                }
+                // multiple.v1 because an anonymous client may only publish the
+                // multiple.v1 and total.v1 aggregation methods
+                let annotation = ARTOutboundAnnotation(
+                    id: nil,
+                    type: "reaction:multiple.v1",
+                    clientId: nil,
+                    name: "👍",
+                    count: 1,
+                    data: annotationData,
+                    extras: nil
+                )
+                channel.annotations.publish(for: message, annotation: annotation) { error in
+                    XCTAssertNil(error)
+                }
+            }
+
+            channel.annotations.subscribe { annotation in
+                receivedAnnotation = annotation
+                done()
+            }
+
+            channel.publish([ARTMessage(name: "test", data: "test message")])
+        }
+
+        // A stale encoder fails symmetrically: publish and receive would both use the same
+        // cipher-less encoder, so the annotation still round-trips to the original string.
+        // The observable difference is on the wire, so assert there.
+        let transport = try XCTUnwrap(realtimeClient.internal.transport as? TestProxyTransport)
+
+        let sentAnnotations = transport.protocolMessagesSent
+            .filter { $0.action == .annotation }
+            .compactMap { $0.annotations }
+            .flatMap { $0 }
+        let sentAnnotation = try XCTUnwrap(sentAnnotations.first, "No ANNOTATION protocol message was sent")
+
+        // Encoded with the cipher set by setOptions. With a stale encoder the data would
+        // go out as plaintext, with no cipher in the encoding.
+        XCTAssertTrue(
+            sentAnnotation.encoding?.contains("cipher+aes-256-cbc") == true,
+            "Expected published annotation data to be encrypted, got encoding \(sentAnnotation.encoding ?? "nil")"
+        )
+        XCTAssertNotEqual(sentAnnotation.data as? String, annotationData)
+
+        // And the decode side must read the encoder live too, so what the subscriber is
+        // handed is the original plaintext.
+        let decodedAnnotation = try XCTUnwrap(receivedAnnotation, "No annotation received")
+        XCTAssertEqual(decodedAnnotation.data as? String, annotationData)
+    }
 }

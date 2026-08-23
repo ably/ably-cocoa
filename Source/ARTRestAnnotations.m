@@ -100,7 +100,6 @@ NS_ASSUME_NONNULL_END
     __weak ARTRestChannelInternal *_channel; // weak because channel owns self
     dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;
-    ARTDataEncoder *_dataEncoder;
 }
 
 - (instancetype)initWithChannel:(ARTRestChannelInternal *)channel logger:(ARTInternalLog *)logger {
@@ -109,7 +108,6 @@ NS_ASSUME_NONNULL_END
         _userQueue = channel.rest.userQueue;
         _queue = channel.rest.queue;
         _logger = logger;
-        _dataEncoder = _channel.dataEncoder;
     }
     return self;
 }
@@ -158,7 +156,8 @@ NS_ASSUME_NONNULL_END
 art_dispatch_async(_queue, ^{
     // RSAN1c3: encode annotation data
     NSError *encodeError = nil;
-    ARTAnnotation *annotationToPublish = self->_dataEncoder ? [annotation encodeDataWithEncoder:self->_dataEncoder error:&encodeError] : annotation;
+    ARTDataEncoder *dataEncoder = self->_channel.dataEncoder;
+    ARTAnnotation *annotationToPublish = dataEncoder ? [annotation encodeDataWithEncoder:dataEncoder error:&encodeError] : annotation;
     if (encodeError) {
         if (callback) {
             callback([ARTErrorInfo createFromNSError:encodeError]);
