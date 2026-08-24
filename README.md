@@ -218,7 +218,9 @@ To install it in another Swift package, add the product to your target's depende
 
 For usage, platform requirements, the example app and the
 [migration guide](LiveObjects/README.md#migrating-from-the-standalone-plugin-package) for users
-of the standalone plugin package, see the [LiveObjects README](LiveObjects/README.md).
+of the standalone plugin package, see the [LiveObjects README](LiveObjects/README.md). For a
+comprehensive guide, check the [LiveObjects documentation](https://ably.com/docs/liveobjects),
+starting with the [Swift quickstart](https://ably.com/docs/liveobjects/quickstart/swift).
 
 ---
 

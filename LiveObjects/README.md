@@ -45,6 +45,8 @@ This plugin supports the following platforms:
 
 ## Usage
 
+The examples below are a quick tour of the API. Check the [LiveObjects documentation](https://ably.com/docs/liveobjects) for a comprehensive guide — starting with the [Swift quickstart](https://ably.com/docs/liveobjects/quickstart/swift), it covers maps, counters, path objects, subscriptions, lifecycle events and more.
+
 After [installing the plugin](../README.md#liveobjects), pass it to the client via
 `ARTClientOptions`, and fetch channels with the LiveObjects channel modes:
 
@@ -60,10 +62,61 @@ let realtime = ARTRealtime(options: clientOptions)
 let channelOptions = ARTRealtimeChannelOptions()
 channelOptions.modes = [.objectPublish, .objectSubscribe]
 let channel = realtime.channels.get("my-channel", options: channelOptions)
+```
 
-// `channel.object` is the entry point into the LiveObjects API. Attach the
-// channel, then fetch the channel's root map once objects are synchronized:
-let root = try await channel.object.get()
+`channel.object` is the entry point into the LiveObjects API. Fetch the channel's root map — this implicitly attaches the channel and waits for the channel's objects to be synchronized:
+
+```swift
+let rootObject = try await channel.object.get()
+```
+
+### Create and update objects
+
+LiveObjects provides two synchronized data structures — `LiveMap`, a key/value map, and `LiveCounter`, a numeric counter — which you create and assign to keys on the root object:
+
+```swift
+// Create a counter and a map, and assign them to keys on the root object
+try await rootObject.set(key: "visits", value: .liveCounter(LiveCounter.create(initialCount: 0)))
+try await rootObject.set(key: "reactions", value: .liveMap(LiveMap.create(entries: [
+    "likes": 0,
+    "hearts": 0,
+])))
+```
+
+Navigate the object graph with [path objects](https://ably.com/docs/liveobjects/concepts/path-object) — stable references to locations within the channel's objects that resolve to values at the time each method is called — and send operations to update the objects. Updates are synchronized to all clients subscribed to the channel:
+
+```swift
+let visits = rootObject.get(key: "visits").asLiveCounter()
+try await visits.increment(amount: 5)
+
+let reactions = rootObject.get(key: "reactions").asLiveMap()
+try await reactions.set(key: "likes", value: 10)
+try await reactions.remove(key: "hearts")
+```
+
+### Read values
+
+```swift
+// Read individual values
+let visitCount = try visits.value() // 5.0
+let likes = try reactions.get(key: "likes").asPrimitive().value()?.numberValue // 10.0
+
+// Or take a JSON-serializable snapshot of an entire object
+let snapshot = try rootObject.compactJson() // {"visits":5.0,"reactions":{"likes":10.0}}
+```
+
+### Subscribe to updates
+
+Subscribe to a path object to be notified whenever the object at that path is updated, by any client:
+
+```swift
+let subscription = try visits.subscribe { event in
+    guard let value = try? event.object.asLiveCounter().value() else { return }
+    print("Visits updated: \(value)")
+}
+
+// Later, stop receiving updates
+subscription.unsubscribe()
 ```
 
 ---
@@ -103,24 +156,24 @@ ably-cocoa 1.3.0 replaces the instance-based API of the standalone plugin (last 
 
 The headline API changes:
 
-| Standalone plugin (≤ 0.4.1)                                    | ably-cocoa 1.3.0+                                                                                                 |
-| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `channel.objects`, returning `RealtimeObjects`                 | `channel.object`, returning `RealtimeObject`                                                                      |
-| `try await channel.objects.getRoot()`, returning `any LiveMap` | `try await channel.object.get()`, returning `any LiveMapPathObject`                                               |
-| Operate on explicit `LiveMap`/`LiveCounter` instances          | Navigate with `PathObject`s: `root.get(key:)`, then cast with `asLiveMap()` / `asLiveCounter()` / `asPrimitive()` |
+| Standalone plugin (≤ 0.4.1)                                    | ably-cocoa 1.3.0+                                                                                                       |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `channel.objects`, returning `RealtimeObjects`                 | `channel.object`, returning `RealtimeObject`                                                                            |
+| `try await channel.objects.getRoot()`, returning `any LiveMap` | `try await channel.object.get()`, returning `any LiveMapPathObject`                                                     |
+| Operate on explicit `LiveMap`/`LiveCounter` instances          | Navigate with `PathObject`s: `rootObject.get(key:)`, then cast with `asLiveMap()` / `asLiveCounter()` / `asPrimitive()` |
 
 For example:
 
 ```swift
 // Standalone plugin (≤ 0.4.1) — instance-based
-let root = try await channel.objects.getRoot()
-try await root.set(key: "myKey", value: "myValue")
-let value = try root.get(key: "myKey")?.stringValue
+let rootObject = try await channel.objects.getRoot()
+try await rootObject.set(key: "myKey", value: "myValue")
+let value = try rootObject.get(key: "myKey")?.stringValue
 
 // ably-cocoa 1.3.0+ — path-based
-let root = try await channel.object.get()
-try await root.set(key: "myKey", value: "myValue")
-let value = try root.get(key: "myKey").asPrimitive().stringValue()
+let rootObject = try await channel.object.get()
+try await rootObject.set(key: "myKey", value: "myValue")
+let value = try rootObject.get(key: "myKey").asPrimitive().stringValue()
 ```
 
 A `PathObject` is purely navigational: it can be created before the data at its path exists, and it survives the object at its path being replaced — there is no need to re-fetch anything when the underlying object changes. The [example app](Example) demonstrates the path-based API.
