@@ -132,7 +132,9 @@ struct PendingHTTPRequest {
     /// JSON-serialisable value (dictionary/array); defaults to a JSON content type.
     func respondWith(status: Int, body: Any, headers: [String: String] = [:]) {
         var headerFields = headers
-        if headerFields["Content-Type"] == nil {
+        // Default the content type only when the caller supplied none — the presence check is
+        // case-insensitive so a caller passing e.g. "content-type" is honoured, not duplicated.
+        if !headerFields.keys.contains(where: { $0.caseInsensitiveCompare("Content-Type") == .orderedSame }) {
             headerFields["Content-Type"] = "application/json"
         }
         let response = HTTPURLResponse(url: url, statusCode: status, httpVersion: "HTTP/1.1", headerFields: headerFields)
@@ -146,7 +148,9 @@ struct PendingHTTPRequest {
     /// unit tests" rule; otherwise it falls back to a real delay.
     func respondWithDelay(_ delay: TimeInterval, status: Int, body: Any, headers: [String: String] = [:]) {
         var headerFields = headers
-        if headerFields["Content-Type"] == nil {
+        // Default the content type only when the caller supplied none — the presence check is
+        // case-insensitive so a caller passing e.g. "content-type" is honoured, not duplicated.
+        if !headerFields.keys.contains(where: { $0.caseInsensitiveCompare("Content-Type") == .orderedSame }) {
             headerFields["Content-Type"] = "application/json"
         }
         let response = HTTPURLResponse(url: url, statusCode: status, httpVersion: "HTTP/1.1", headerFields: headerFields)
