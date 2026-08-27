@@ -166,6 +166,11 @@ internal extension JSONValue {
 // MARK: - JSON objects and arrays
 
 /// A subset of ``JSONValue`` that has only `object` or `array` cases.
+///
+/// > Note: These are the two cases a JSON *text* was restricted to under RFC 4627, so `JSON` would be a
+/// > natural name for this type. It is spelled out instead: `JSON` is broad enough to be mistaken for
+/// > `JSONValue`, and current JSON (RFC 8259, and the json.org grammar linked above) allows any value at
+/// > the top level, so the short name would no longer say what the restriction is.
 @available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
 internal enum JSONObjectOrArray: Equatable {
     case object([String: JSONValue])
@@ -343,9 +348,11 @@ extension JSONValue: CustomStringConvertible {
     /// print("Reactions updated: \(jsonValue)") // Reactions updated: {"hearts":0,"likes":10}
     /// ```
     ///
+    /// > Note: This is a display and debugging aid, not a guaranteed-stable serialization format; the
+    /// > exact bytes — for example where exponent notation is used — may change.
+    ///
     /// > Note: JSON has no representation for the non-finite `Double` values, so a `number` whose value
     /// > is NaN or infinite is written as `null`.
-    ///
     public var description: String {
         // The text is built here rather than by `JSONSerialization`, which offers no option to change
         // any of the three things that make its output unsuitable: it writes numbers to a fixed 17
@@ -482,5 +489,31 @@ private extension JSONValue {
         }
 
         return sign + digits // -07 -> -7; +308 -> +308
+    }
+}
+
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+extension JSONObjectOrArray: CustomStringConvertible {
+    /// Compact JSON text, with object keys sorted for deterministic output.
+    ///
+    /// ```swift
+    /// let jsonObject: JSONObjectOrArray = ["likes": 10, "hearts": 0]
+    /// print("Reactions updated: \(jsonObject)") // Reactions updated: {"hearts":0,"likes":10}
+    /// ```
+    ///
+    /// Since this type is the `object`/`array` subset of ``JSONValue``, it defers to that type's
+    /// ``JSONValue/description`` rather than repeating the rendering; see there for how numbers and
+    /// strings are written.
+    internal var description: String {
+        toJSONValue.description
+    }
+}
+
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+extension JSONObjectOrArray: CustomDebugStringConvertible {
+    /// Compact JSON text, with object keys sorted for deterministic output; the same as ``description``,
+    /// so that `String(reflecting:)` and LLDB's `po` also show the value rather than the enum's structure.
+    internal var debugDescription: String {
+        description
     }
 }

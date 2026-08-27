@@ -222,6 +222,13 @@ struct JSONValueDescriptionTests {
         #expect(value.description == #"{"a\"b":1}"#)
     }
 
+    @Test
+    func emptyKeyIsValid() {
+        let value = JSONValue.object(["": 1])
+
+        #expect(value.description == #"{"":1}"#)
+    }
+
     // Unlike objects, arrays keep their order.
     @Test
     func arrayOrderIsPreserved() {
@@ -314,6 +321,11 @@ struct JSONValueDescriptionTests {
         -42,
         123.456,
         0.1,
+        // `JSONSerialization` hands these back as `NSDecimalNumber` rather than as a `Double`. Both
+        // sides of the comparison go through the same bridge, so what is checked is that the printer
+        // and the bridge agree, whatever that conversion does to the value.
+        0.015034388851090229,
+        0.023942638935083197,
         "someString",
         "https://example.com/a/b",
         "日本語 👍🏽",
