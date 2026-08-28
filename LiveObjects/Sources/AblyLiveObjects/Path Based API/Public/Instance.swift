@@ -171,6 +171,55 @@ public protocol PrimitiveInstance: Sendable {
     func compactJson() throws(ARTErrorInfo) -> JSONValue
 }
 
+/// Convenience accessors for a single expected primitive type.
+///
+/// Each of these reads ``PrimitiveInstance/value`` and then the correspondingly-named getter on the
+/// resulting ``Primitive``, so `nil` means that the wrapped primitive is of a different case.
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+public extension PrimitiveInstance {
+    /// If the wrapped primitive has case `string`, this returns the associated value. Else, it returns `nil`.
+    var stringValue: String? {
+        get throws(ARTErrorInfo) {
+            try value.stringValue
+        }
+    }
+
+    /// If the wrapped primitive has case `number`, this returns the associated value. Else, it returns `nil`.
+    var numberValue: Double? {
+        get throws(ARTErrorInfo) {
+            try value.numberValue
+        }
+    }
+
+    /// If the wrapped primitive has case `bool`, this returns the associated value. Else, it returns `nil`.
+    var boolValue: Bool? {
+        get throws(ARTErrorInfo) {
+            try value.boolValue
+        }
+    }
+
+    /// If the wrapped primitive has case `data`, this returns the associated value. Else, it returns `nil`.
+    var dataValue: Data? {
+        get throws(ARTErrorInfo) {
+            try value.dataValue
+        }
+    }
+
+    /// If the wrapped primitive has case `jsonArray`, this returns the associated value. Else, it returns `nil`.
+    var jsonArrayValue: [JSONValue]? {
+        get throws(ARTErrorInfo) {
+            try value.jsonArrayValue
+        }
+    }
+
+    /// If the wrapped primitive has case `jsonObject`, this returns the associated value. Else, it returns `nil`.
+    var jsonObjectValue: [String: JSONValue]? {
+        get throws(ARTErrorInfo) {
+            try value.jsonObjectValue
+        }
+    }
+}
+
 // MARK: - AsyncSequence subscription variants
 
 /// `AsyncStream`-based subscription for map instances.

@@ -185,3 +185,44 @@ public protocol PrimitivePathObject: PathObject {
     /// `RTTS6b`.
     func value() throws(ARTErrorInfo) -> Primitive?
 }
+
+/// Convenience accessors for a single expected primitive type.
+///
+/// Each of these resolves the path via ``PrimitivePathObject/value()`` and then reads the
+/// correspondingly-named getter on the resulting ``Primitive``, so `nil` means either that nothing
+/// primitive resolved at the path or that what did resolve was a primitive of a different case.
+///
+/// These are methods, not properties, for the same reason as the rest of ``PathObject``'s
+/// path-resolving accessors: each resolves the path at call time and is therefore O(path length).
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+public extension PrimitivePathObject {
+    /// If the value at this path is a `string` primitive, this returns the associated value. Else, it returns `nil`.
+    func stringValue() throws(ARTErrorInfo) -> String? {
+        try value()?.stringValue
+    }
+
+    /// If the value at this path is a `number` primitive, this returns the associated value. Else, it returns `nil`.
+    func numberValue() throws(ARTErrorInfo) -> Double? {
+        try value()?.numberValue
+    }
+
+    /// If the value at this path is a `bool` primitive, this returns the associated value. Else, it returns `nil`.
+    func boolValue() throws(ARTErrorInfo) -> Bool? {
+        try value()?.boolValue
+    }
+
+    /// If the value at this path is a `data` primitive, this returns the associated value. Else, it returns `nil`.
+    func dataValue() throws(ARTErrorInfo) -> Data? {
+        try value()?.dataValue
+    }
+
+    /// If the value at this path is a `jsonArray` primitive, this returns the associated value. Else, it returns `nil`.
+    func jsonArrayValue() throws(ARTErrorInfo) -> [JSONValue]? {
+        try value()?.jsonArrayValue
+    }
+
+    /// If the value at this path is a `jsonObject` primitive, this returns the associated value. Else, it returns `nil`.
+    func jsonObjectValue() throws(ARTErrorInfo) -> [String: JSONValue]? {
+        try value()?.jsonObjectValue
+    }
+}

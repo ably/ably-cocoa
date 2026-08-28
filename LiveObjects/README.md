@@ -120,7 +120,7 @@ let value = try root.get(key: "myKey")?.stringValue
 // ably-cocoa 1.3.0+ — path-based
 let root = try await channel.object.get()
 try await root.set(key: "myKey", value: "myValue")
-let value = try root.get(key: "myKey").asPrimitive().value()?.stringValue
+let value = try root.get(key: "myKey").asPrimitive().stringValue()
 ```
 
 A `PathObject` is purely navigational: it can be created before the data at its path exists, and it survives the object at its path being replaced — there is no need to re-fetch anything when the underlying object changes. The [example app](Example) demonstrates the path-based API.

@@ -76,7 +76,7 @@ final class TaskBoardViewModel: ObservableObject {
 
             var currentTasks: [String: String] = [:]
             for (key, value) in try tasksMapPath.entries() {
-                if let primitive = try value.asPrimitive().value(), let stringValue = primitive.stringValue {
+                if let stringValue = try value.asPrimitive().stringValue() {
                     currentTasks[key] = stringValue
                 }
             }
