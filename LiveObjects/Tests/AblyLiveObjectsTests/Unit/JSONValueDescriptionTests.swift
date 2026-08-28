@@ -92,11 +92,18 @@ struct JSONValueDescriptionTests {
         #expect(JSONValue.number(value).description == expected)
     }
 
-    // Whatever layout is chosen, the digits have to identify the original value exactly.
+    // Whatever layout is chosen, the digits have to identify the original value exactly. `Double(_:)`
+    // is the oracle because it is correctly rounded, which `JSONSerialization`'s number parser is not;
+    // this is where numeric fidelity is guaranteed, rather than in the container round-trip below.
     @Test(arguments: [
         0.1,
         0.1 + 0.2,
         123.456,
+        // Awkward fractional values — the motivating case, a `LiveCounter` holding a fractional
+        // amount. `JSONSerialization` re-parses both of these one ULP out, so they would not survive
+        // that parser; they do survive a correctly-rounded one, which is what this asserts.
+        0.015034388851090229,
+        0.023942638935083197,
         1e-7,
         1e-21,
         1_000_000_000_000_000_128,
@@ -283,7 +290,13 @@ struct JSONValueDescriptionTests {
 
     // MARK: - Output is valid JSON
 
-    // Whatever is printed has to parse back to the value it came from.
+    // Whatever is printed has to be valid JSON that parses back to the same structure — the same keys,
+    // the same nesting, the same cases.
+    //
+    // This deliberately does not claim numeric fidelity. The oracle is `JSONSerialization`, whose
+    // number parser is not correctly rounded, so it cannot witness that a fractional value survives
+    // exactly; the arguments below stay clear of values it would misparse. `numbersRoundTrip` covers
+    // fidelity instead, through the correctly-rounded `Double(_:)`.
     @Test(arguments: [
         JSONValue.null,
         true,
