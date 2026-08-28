@@ -192,9 +192,6 @@ realtime.connection.on { stateChange in
 structures that automatically synchronize state across all connected clients. This repository
 contains the Ably LiveObjects plugin, which enables LiveObjects on top of the core Pub/Sub SDK.
 
-> [!WARNING]
-> LiveObjects is currently experimental — see the [LiveObjects README](LiveObjects/README.md) for details.
-
 ### Install LiveObjects
 
 The plugin is available via **Swift Package Manager only** (there is no CocoaPods or Carthage

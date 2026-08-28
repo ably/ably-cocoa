@@ -180,10 +180,9 @@ make lint
 
 The repository has a single version number, applied to everything it publishes. Since the LiveObjects plugin moved into this repository it no longer has a version of its own: the standalone [ably-liveobjects-swift-plugin](https://github.com/ably/ably-liveobjects-swift-plugin) package stopped at 0.4.1, and the first release of `AblyLiveObjects` from here carries this repository's next version number. There is no 0.x line to continue, and the plugin's [historical changelog](LiveObjects/CHANGELOG.md) is kept only for reference.
 
-Because a shared version number implies more than it delivers, two things are worth stating explicitly in release notes:
+Because a shared version number implies more than it delivers, one thing is worth stating explicitly in release notes:
 
 * **A tag does not mean the same thing on every channel.** CocoaPods and Carthage consumers receive only the `Ably` product; see [Distribution](#distribution). A release whose only change is to LiveObjects is a no-op for them, and the changelog entry should say so.
-* **`AblyLiveObjects` is exempt from semantic versioning.** It is experimental: breaking changes to its API may be made in minor or patch releases without a major version bump, and the repository's semver guarantees apply to the `Ably` product only. Repeat this in the changelog entry of any release that changes the LiveObjects API.
 
 Minor versions are not bumped ahead of 2.0.0; use `make bump_patch` unless the `Ably` product's public API has changed. Standard semantic versioning begins at 2.0.0.
 
