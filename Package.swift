@@ -180,7 +180,7 @@ let package = Package(
                 .swiftLanguageMode(.v5)
             ]
         ),
-        // Provides test helpers written in Objective-C (they can't be part of AblyTests because SPM doesn't allow mixed-language targets).
+        // Provides test helpers written in Objective-C (they can't be part of AblyTesting because SPM doesn't allow mixed-language targets).
         .target(
             name: "AblyTestingObjC",
             path: "Test/AblyTestingObjC",
