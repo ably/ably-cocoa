@@ -7,13 +7,21 @@
 @implementation ARTMessageVersion
 
 - (instancetype)init {
+    return [self initWithSerial:nil timestamp:nil clientId:nil descriptionText:nil metadata:nil];
+}
+
+- (instancetype)initWithSerial:(nullable NSString *)serial
+                     timestamp:(nullable NSDate *)timestamp
+                      clientId:(nullable NSString *)clientId
+               descriptionText:(nullable NSString *)descriptionText
+                      metadata:(nullable NSDictionary<NSString *, NSString *> *)metadata {
     self = [super init];
     if (self) {
-        _serial = nil;
-        _timestamp = nil;
-        _clientId = nil;
-        _descriptionText = nil;
-        _metadata = nil;
+        _serial = serial;
+        _timestamp = timestamp;
+        _clientId = clientId;
+        _descriptionText = descriptionText;
+        _metadata = metadata;
     }
     return self;
 }
@@ -29,13 +37,11 @@
 }
 
 - (id)copyWithZone:(NSZone *)zone {
-    ARTMessageVersion *version = [[[self class] allocWithZone:zone] init];
-    version.serial = self.serial;
-    version.timestamp = self.timestamp;
-    version.clientId = self.clientId;
-    version.descriptionText = self.descriptionText;
-    version.metadata = self.metadata;
-    return version;
+    return [[self.class allocWithZone:zone] initWithSerial:self.serial
+                                                 timestamp:self.timestamp
+                                                  clientId:self.clientId
+                                           descriptionText:self.descriptionText
+                                                  metadata:self.metadata];
 }
 
 - (void)writeToDictionary:(NSMutableDictionary<NSString *, id> *)dictionary {
@@ -57,18 +63,17 @@
 }
 
 + (instancetype)createFromDictionary:(NSDictionary<NSString *, id> *)jsonObject {
-    ARTMessageVersion *version = [[ARTMessageVersion alloc] init];
-    version.serial = [jsonObject artString:@"serial"];
-    version.timestamp = [jsonObject artTimestamp:@"timestamp"];
-    version.clientId = [jsonObject artString:@"clientId"];
-    version.descriptionText = [jsonObject artString:@"description"];
-
     id metadata = jsonObject[@"metadata"];
+    NSDictionary<NSString *, NSString *> *metadataDict = nil;
     if (metadata && [metadata isKindOfClass:[NSDictionary class]]) {
-        version.metadata = metadata;
+        metadataDict = metadata;
     }
-
-    return version;
+    
+    return [[ARTMessageVersion alloc] initWithSerial:[jsonObject artString:@"serial"]
+                                           timestamp:[jsonObject artTimestamp:@"timestamp"]
+                                            clientId:[jsonObject artString:@"clientId"]
+                                     descriptionText:[jsonObject artString:@"description"]
+                                            metadata:metadataDict];
 }
 
 - (NSString *)description {
