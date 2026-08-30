@@ -96,10 +96,10 @@ try await reactions.remove(key: "hearts")
 ```swift
 // Read individual values
 let visitCount = try visits.value() // 5.0
-let likes = try reactions.get(key: "likes").asPrimitive().value()?.numberValue // 10.0
+let likes = try reactions.get(key: "likes").asPrimitive().numberValue() // 10.0
 
 // Or take a JSON-serializable snapshot of an entire object
-let snapshot = try rootObject.compactJson() // {"visits":5.0,"reactions":{"likes":10.0}}
+let snapshot = try rootObject.compactJson() // {"reactions":{"likes":10},"visits":5}
 ```
 
 ### Subscribe to updates
