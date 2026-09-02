@@ -167,8 +167,8 @@ struct ValueTypesTests {
         // Assertions
         // ASSERT vt IS LiveMap — statically guaranteed: `create` returns `LiveMap` (RTLMV3b/RTLMV3d).
         // ASSERT vt.entries["name"] == "Alice" / vt.entries["age"] == 30
-        #expect(vt.entries?["name"]?.stringValue == "Alice")
-        #expect(vt.entries?["age"]?.numberValue == 30)
+        #expect(vt.entries?["name"] == "Alice")
+        #expect(vt.entries?["age"] == 30)
     }
 
     // UTS: objects/unit/RTLMV3/create-no-entries-0

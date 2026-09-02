@@ -44,14 +44,12 @@ func counterValue(at node: any PathObject) -> Double? {
 
 /// The spec's `pathObj.value()` against an expected **string** primitive.
 func stringValue(at node: any PathObject) -> String? {
-    guard let primitive = try? node.asPrimitive().value() else { return nil }
-    return primitive.stringValue
+    try? node.asPrimitive().stringValue()
 }
 
 /// The spec's `pathObj.value()` against an expected **number** primitive.
 func numberValue(at node: any PathObject) -> Double? {
-    guard let primitive = try? node.asPrimitive().value() else { return nil }
-    return primitive.numberValue
+    try? node.asPrimitive().numberValue()
 }
 
 /// Signals that a UTS objects helper could not satisfy its expected-type contract. The paired

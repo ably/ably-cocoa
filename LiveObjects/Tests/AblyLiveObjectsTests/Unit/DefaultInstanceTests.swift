@@ -163,6 +163,33 @@ struct DefaultInstanceTests {
         #expect(primitive.type == .string)
     }
 
+    @Test
+    func primitiveConvenienceAccessors() throws {
+        let internalQueue = TestFactories.createInternalQueue()
+        let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+
+        func primitiveInstance(_ value: InternalLiveMapValue) throws -> any PrimitiveInstance {
+            let instance = Instance.from(internalValue: value, coreSDK: coreSDK, realtimeObjects: MockRealtimeObjects(), internalQueue: internalQueue)
+            let primitive: (any PrimitiveInstance)? = switch instance {
+            case let .primitive(primitive):
+                primitive
+            case .liveMap, .liveCounter:
+                nil
+            }
+            return try #require(primitive)
+        }
+
+        #expect(try primitiveInstance(.string("hi")).stringValue == "hi")
+        #expect(try primitiveInstance(.number(5)).numberValue == 5)
+        #expect(try primitiveInstance(.bool(true)).boolValue == true)
+        #expect(try primitiveInstance(.data(Data([1, 2, 3]))).dataValue == Data([1, 2, 3]))
+        #expect(try primitiveInstance(.jsonArray(["a"])).jsonArrayValue == ["a"])
+        #expect(try primitiveInstance(.jsonObject(["k": "v"])).jsonObjectValue == ["k": "v"])
+
+        // An accessor for a case other than the wrapped one yields nil.
+        #expect(try primitiveInstance(.string("hi")).numberValue == nil)
+    }
+
     // @spec RTO25b - a read on a DETACHED channel throws
     @Test
     func readOnDetachedChannelThrows() throws {
@@ -184,6 +211,11 @@ struct DefaultInstanceTests {
         }
         #expect(throws: ARTErrorInfo.self) {
             _ = try primitive.value
+        }
+
+        // The convenience accessors delegate to `value`, so they must propagate the same error.
+        #expect(throws: ARTErrorInfo.self) {
+            _ = try primitive.stringValue
         }
     }
 

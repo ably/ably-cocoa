@@ -231,6 +231,55 @@ struct DefaultPathObjectTests {
         #expect(try root.get(key: "s").asLiveCounter().value() == nil)
     }
 
+    // MARK: - Primitive reads (RTTS6b) and the per-case convenience accessors
+
+    /// A root map holding one entry per ``Primitive`` case, keyed by the case name. Separate from
+    /// ``makeFixture()`` so that the entry count the map-read tests assert on stays fixed.
+    private static func makePrimitivesRootPathObject() -> DefaultLiveMapPathObject {
+        let internalQueue = TestFactories.createInternalQueue()
+        let coreSDK = MockCoreSDK(channelState: .attached, internalQueue: internalQueue)
+
+        let root = makeMap(
+            objectID: ObjectsPool.rootKey,
+            data: [
+                "string": TestFactories.internalMapEntry(data: ProtocolTypes.ObjectData(string: "hi")),
+                "number": TestFactories.internalMapEntry(data: ProtocolTypes.ObjectData(number: NSNumber(value: 5))),
+                "bool": TestFactories.internalMapEntry(data: ProtocolTypes.ObjectData(boolean: true)),
+                "data": TestFactories.internalMapEntry(data: ProtocolTypes.ObjectData(bytes: Data([1, 2, 3]))),
+                "jsonArray": TestFactories.internalMapEntry(data: ProtocolTypes.ObjectData(json: ["a"])),
+                "jsonObject": TestFactories.internalMapEntry(data: ProtocolTypes.ObjectData(json: ["k": "v"])),
+            ],
+            internalQueue: internalQueue,
+        )
+
+        var pool = ObjectsPool(logger: TestLogger(), internalQueue: internalQueue, userCallbackQueue: .main, clock: MockSimpleClock())
+        pool.testsOnly_setEntry(.map(root), forObjectID: ObjectsPool.rootKey)
+
+        return DefaultLiveMapPathObject(
+            channelObject: SeededRealtimeObjects(pool: pool, internalQueue: internalQueue),
+            coreSDK: coreSDK,
+            internalQueue: internalQueue,
+            segments: [],
+        )
+    }
+
+    @Test
+    func primitiveConvenienceAccessors() throws {
+        let root = Self.makePrimitivesRootPathObject()
+
+        #expect(try root.get(key: "string").asPrimitive().stringValue() == "hi")
+        #expect(try root.get(key: "number").asPrimitive().numberValue() == 5)
+        #expect(try root.get(key: "bool").asPrimitive().boolValue() == true)
+        #expect(try root.get(key: "data").asPrimitive().dataValue() == Data([1, 2, 3]))
+        #expect(try root.get(key: "jsonArray").asPrimitive().jsonArrayValue() == ["a"])
+        #expect(try root.get(key: "jsonObject").asPrimitive().jsonObjectValue() == ["k": "v"])
+
+        // An accessor for a case other than the one that resolved yields nil, as does any accessor on
+        // a path that does not resolve to a primitive at all.
+        #expect(try root.get(key: "string").asPrimitive().numberValue() == nil)
+        #expect(try root.get(key: "nope").asPrimitive().stringValue() == nil)
+    }
+
     // MARK: - Writes via the publish path (RTPO15, RTPO17)
 
     // @spec RTPO15d - set publishes a MAP_SET operation for the resolved map
@@ -294,6 +343,11 @@ struct DefaultPathObjectTests {
         }
         #expect(throws: ARTErrorInfo.self) {
             _ = try root.get(key: "s").type()
+        }
+
+        // The convenience accessors delegate to `value()`, so they must propagate the same error.
+        #expect(throws: ARTErrorInfo.self) {
+            _ = try root.get(key: "s").asPrimitive().stringValue()
         }
     }
 

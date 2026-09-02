@@ -46,11 +46,16 @@ public enum Primitive: Sendable, Equatable {
     case data(Data)
     case jsonArray([JSONValue])
     case jsonObject([String: JSONValue])
+}
 
-    // MARK: - Convenience getters for associated values
+// MARK: - Primitive convenience getters for associated values
 
+/// These back the same-named accessors on ``PrimitivePathObject`` and ``PrimitiveInstance``, which is
+/// how callers outside the SDK reach them; on a `Primitive` in hand, `switch` over the cases.
+@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
+internal extension Primitive {
     /// If this `Primitive` has case `string`, this returns the associated value. Else, it returns `nil`.
-    public var stringValue: String? {
+    var stringValue: String? {
         if case let .string(value) = self {
             return value
         }
@@ -58,7 +63,7 @@ public enum Primitive: Sendable, Equatable {
     }
 
     /// If this `Primitive` has case `number`, this returns the associated value. Else, it returns `nil`.
-    public var numberValue: Double? {
+    var numberValue: Double? {
         if case let .number(value) = self {
             return value
         }
@@ -66,7 +71,7 @@ public enum Primitive: Sendable, Equatable {
     }
 
     /// If this `Primitive` has case `bool`, this returns the associated value. Else, it returns `nil`.
-    public var boolValue: Bool? {
+    var boolValue: Bool? {
         if case let .bool(value) = self {
             return value
         }
@@ -74,7 +79,7 @@ public enum Primitive: Sendable, Equatable {
     }
 
     /// If this `Primitive` has case `data`, this returns the associated value. Else, it returns `nil`.
-    public var dataValue: Data? {
+    var dataValue: Data? {
         if case let .data(value) = self {
             return value
         }
@@ -82,7 +87,7 @@ public enum Primitive: Sendable, Equatable {
     }
 
     /// If this `Primitive` has case `jsonArray`, this returns the associated value. Else, it returns `nil`.
-    public var jsonArrayValue: [JSONValue]? {
+    var jsonArrayValue: [JSONValue]? {
         if case let .jsonArray(value) = self {
             return value
         }
@@ -90,7 +95,7 @@ public enum Primitive: Sendable, Equatable {
     }
 
     /// If this `Primitive` has case `jsonObject`, this returns the associated value. Else, it returns `nil`.
-    public var jsonObjectValue: [String: JSONValue]? {
+    var jsonObjectValue: [String: JSONValue]? {
         if case let .jsonObject(value) = self {
             return value
         }
@@ -218,24 +223,6 @@ public enum LiveMapValue: Sendable, Equatable {
         }
         return nil
     }
-
-    /// If this `LiveMapValue` wraps a `string` primitive, this returns the associated value. Else, it returns `nil`.
-    public var stringValue: String? { primitiveValue?.stringValue }
-
-    /// If this `LiveMapValue` wraps a `number` primitive, this returns the associated value. Else, it returns `nil`.
-    public var numberValue: Double? { primitiveValue?.numberValue }
-
-    /// If this `LiveMapValue` wraps a `bool` primitive, this returns the associated value. Else, it returns `nil`.
-    public var boolValue: Bool? { primitiveValue?.boolValue }
-
-    /// If this `LiveMapValue` wraps a `data` primitive, this returns the associated value. Else, it returns `nil`.
-    public var dataValue: Data? { primitiveValue?.dataValue }
-
-    /// If this `LiveMapValue` wraps a `jsonArray` primitive, this returns the associated value. Else, it returns `nil`.
-    public var jsonArrayValue: [JSONValue]? { primitiveValue?.jsonArrayValue }
-
-    /// If this `LiveMapValue` wraps a `jsonObject` primitive, this returns the associated value. Else, it returns `nil`.
-    public var jsonObjectValue: [String: JSONValue]? { primitiveValue?.jsonObjectValue }
 }
 
 // MARK: - ExpressibleBy*Literal conformances
