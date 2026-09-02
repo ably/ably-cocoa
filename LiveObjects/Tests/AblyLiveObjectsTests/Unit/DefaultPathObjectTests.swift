@@ -344,6 +344,11 @@ struct DefaultPathObjectTests {
         #expect(throws: ARTErrorInfo.self) {
             _ = try root.get(key: "s").type()
         }
+
+        // The convenience accessors delegate to `value()`, so they must propagate the same error.
+        #expect(throws: ARTErrorInfo.self) {
+            _ = try root.get(key: "s").asPrimitive().stringValue()
+        }
     }
 
     // @spec RTO26 - a write on a SUSPENDED channel throws (implementable state-check portion of the guard)

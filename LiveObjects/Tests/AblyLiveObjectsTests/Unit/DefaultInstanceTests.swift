@@ -212,6 +212,11 @@ struct DefaultInstanceTests {
         #expect(throws: ARTErrorInfo.self) {
             _ = try primitive.value
         }
+
+        // The convenience accessors delegate to `value`, so they must propagate the same error.
+        #expect(throws: ARTErrorInfo.self) {
+            _ = try primitive.stringValue
+        }
     }
 
     // MARK: - compactJson (RTINS11 -> RTPO13c / RTPO14b)
