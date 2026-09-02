@@ -223,24 +223,6 @@ public enum LiveMapValue: Sendable, Equatable {
         }
         return nil
     }
-
-    /// If this `LiveMapValue` wraps a `string` primitive, this returns the associated value. Else, it returns `nil`.
-    public var stringValue: String? { primitiveValue?.stringValue }
-
-    /// If this `LiveMapValue` wraps a `number` primitive, this returns the associated value. Else, it returns `nil`.
-    public var numberValue: Double? { primitiveValue?.numberValue }
-
-    /// If this `LiveMapValue` wraps a `bool` primitive, this returns the associated value. Else, it returns `nil`.
-    public var boolValue: Bool? { primitiveValue?.boolValue }
-
-    /// If this `LiveMapValue` wraps a `data` primitive, this returns the associated value. Else, it returns `nil`.
-    public var dataValue: Data? { primitiveValue?.dataValue }
-
-    /// If this `LiveMapValue` wraps a `jsonArray` primitive, this returns the associated value. Else, it returns `nil`.
-    public var jsonArrayValue: [JSONValue]? { primitiveValue?.jsonArrayValue }
-
-    /// If this `LiveMapValue` wraps a `jsonObject` primitive, this returns the associated value. Else, it returns `nil`.
-    public var jsonObjectValue: [String: JSONValue]? { primitiveValue?.jsonObjectValue }
 }
 
 // MARK: - ExpressibleBy*Literal conformances
