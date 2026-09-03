@@ -2,9 +2,6 @@ import Ably
 import AblyLiveObjects
 import SwiftUI
 
-// NOTE: This view model uses the path-based LiveObjects API, whose implementation is currently a
-// skeleton: every operation traps via `notImplemented()` at runtime. The example compiles against
-// the final API shape but is not runnable end-to-end until the path-based API is implemented.
 @MainActor
 final class TaskBoardViewModel: ObservableObject {
     @Published var tasks: [String: String] = [:]

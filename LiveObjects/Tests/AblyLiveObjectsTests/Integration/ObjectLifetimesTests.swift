@@ -100,11 +100,7 @@ struct ObjectLifetimesTests {
         #expect(remainingObjects.weakInternalRealtimeObjects == nil)
     }
 
-    // TODO: uncomment @Test
-    // The `@Test` attribute is commented out because this test relies on the public path-based API,
-    // which is currently an unimplemented skeleton: `RealtimeObject.get()` traps via
-    // `notImplemented()`. Re-enable (uncomment `@Test`) once that API is implemented.
-    // @Test("LiveObjects functionality works with only a strong reference to a public LiveObject")
+    @Test("LiveObjects functionality works with only a strong reference to a public LiveObject")
     func withStrongReferenceToPublicLiveObject() async throws {
         // Note: This test is very similar to withStrongReferenceToPublicObjectsProperty but "one layer down" — i.e. it checks that instead of a RealtimeObjects reference keeping everything working, a LiveObject reference keeps everything working. Keep these two tests in sync.
 
@@ -217,12 +213,12 @@ struct ObjectLifetimesTests {
         #expect(remainingObjects.weakInternalRealtimeObjects == nil)
     }
 
-    // TODO: uncomment @Test
-    // The `@Test` attribute is commented out because the map-identity half of this test relies on
-    // `RealtimeObject.get()`, which currently traps via `notImplemented()`. Re-enable (uncomment
-    // `@Test`) once the public path-based API is implemented and the path-based objects are cached in
-    // `PublicObjectsStore`.
-    // @Test("Public objects have a stable identity")
+    // Only the `RealtimeObject` is covered here: it is the one public object `PublicObjectsStore`
+    // caches, keyed by the internal objects it proxies. `PathObject`s are deliberately excluded —
+    // `get()` builds a fresh one per call, because a path object is a navigational reference rather
+    // than a handle on a particular object, and pointer identity is offered only at the level of the
+    // internal objects a path resolves through. See `PublicObjectsStore` for more.
+    @Test("The public RealtimeObject has a stable identity")
     func publicObjectIdentity() async throws {
         let realtime = try await ClientHelper.realtimeWithObjects()
         defer { realtime.close() }
@@ -230,13 +226,8 @@ struct ObjectLifetimesTests {
         try await channel.attachAsync()
 
         let object = try #require(channel.object as? PublicDefaultRealtimeObject)
-        let root = try #require(try await object.get() as? DefaultLiveMapPathObject)
-
         let objectAgain = try #require(channel.object as? PublicDefaultRealtimeObject)
-        let rootAgain = try #require(try await objectAgain.get() as? DefaultLiveMapPathObject)
 
         #expect(object === objectAgain)
-        #expect(root === rootAgain)
-        // TODO: when we have an easy way of populating the ObjectsPool (i.e. once we have a write API) then also test with a non-root LiveMap and a counter (https://github.com/ably/ably-liveobjects-swift-plugin/issues/30)
     }
 }
