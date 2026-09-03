@@ -147,9 +147,7 @@ let package = Package(
             path: "Test/UTS",
             exclude: [
                 "README.md",
-                "deviations.md",
-                "unit/objects/README.md",
-                "unit/objects/deviations.md"
+                "deviations.md"
             ],
             swiftSettings: [
                 // Build the UTS suite in the Swift 6 language mode (strict concurrency checking) so the
