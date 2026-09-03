@@ -184,8 +184,6 @@ Because a shared version number implies more than it delivers, one thing is wort
 
 * **A tag does not mean the same thing on every channel.** CocoaPods and Carthage consumers receive only the `Ably` product; see [Distribution](#distribution). A release whose only change is to LiveObjects is a no-op for them, and the changelog entry should say so.
 
-Minor versions are not bumped ahead of 2.0.0; use `make bump_patch` unless the `Ably` product's public API has changed. Standard semantic versioning begins at 2.0.0.
-
 ### Steps
 
 For each release, the following needs to be done:
@@ -195,11 +193,11 @@ For each release, the following needs to be done:
 * Run `make bump_[major|minor|patch]` to bump the new version number. This will create a Git commit, push it to origin: `git push -u origin release/x.x.x`
 * Go to [Github releases](https://github.com/ably/ably-cocoa/releases) and press the `Draft a new release` button. Choose your new branch as a target
 * Press the `Choose a tag` dropdown and start typing a new tag, Github will suggest the `Create new tag x.x.x on publish` option. After you select it Github will unveil the `Generate release notes` button
-* From the newly generated changes remove everything that don't make much sense to the library user
+* From the newly generated changes remove everything that doesn't make much sense to the library user
 * Copy the final list of changes to the top of the `CHANGELOG.md` file. Modify as necessary to fit the existing format of this file
 * Commit these changes and push to the origin `git add CHANGELOG.md && git commit -m "Update change log." && git push -u origin release/x.x.x`
 * Make a pull request against `main` and await approval of reviewer(s)
-* Once approved and/or any additional commits have been added, merge the PR (f you do this from Github's web interface then use the "Rebase and merge" option)
+* Once approved and/or any additional commits have been added, merge the PR (if you do this from Github's web interface then use the "Rebase and merge" option)
 * After merging the PR, wait for all CI jobs for `main` to pass
 * Publish your drafted release:
     * refer to previous releases for release notes format

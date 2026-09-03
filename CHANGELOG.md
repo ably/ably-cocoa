@@ -1,5 +1,25 @@
 # Change Log
 
+## [1.4.0](https://github.com/ably/ably-cocoa/tree/1.4.0)
+
+### What's Changed
+
+* Read the channel's data encoder live when encoding annotations by @SimonWoolf in https://github.com/ably/ably-cocoa/pull/2231
+* Render `JSONValue` as compact JSON text by @maratal in https://github.com/ably/ably-cocoa/pull/2257
+* Add per-case value accessors to the primitive path object and instance by @maratal in https://github.com/ably/ably-cocoa/pull/2260
+* Expand the LiveObjects README usage section and point to the web docs by @sacOO7 in https://github.com/ably/ably-cocoa/pull/2258
+
+CocoaPods and Carthage consumers receive only the `Ably` product, for which the sole change in this release is the annotations fix (#2231); everything else is in the `AblyLiveObjects` product, available via Swift Package Manager only.
+
+### Breaking LiveObjects API changes
+
+The `AblyLiveObjects` public API changed in this release:
+
+* `PrimitivePathObject` gains six per-case value accessors (`stringValue()` … `jsonObjectValue()`), and `PrimitiveInstance` gains the same six as throwing properties, for reading a primitive whose type is known at the call site.
+* The per-case getters on `Primitive` (`stringValue`, `numberValue`, `boolValue`, `dataValue`, `jsonArrayValue`, `jsonObjectValue`) and the same six on `LiveMapValue` are no longer public. Read one expected primitive type through the new accessors on `PrimitivePathObject` (`try node.asPrimitive().stringValue()`) or `PrimitiveInstance` (`try instance.stringValue`), or `switch` over `Primitive`'s cases. `LiveMapValue` keeps `primitiveValue`, `liveMapValue`, `liveCounterValue` and its `ExpressibleBy*Literal` conformances.
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.3.0...1.4.0
+
 ## [1.3.0](https://github.com/ably/ably-cocoa/tree/1.3.0)
 
 ### What's Changed
