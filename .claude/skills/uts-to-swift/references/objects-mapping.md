@@ -23,9 +23,7 @@ ground truth for this SDK, including the two consolidations above.
 > ✅ **Runtime status.** The path-based public API is **implemented** — the `Default*` path-object
 > and instance types no longer trap, so `objects` specs are translate **and** evaluate (Steps 5
 > and 6), with **no** `.disabled` trait required. (The `.disabled("…not yet implemented…")` traits
-> the earlier skeleton needed have been removed; evaluate mode is now the normal path.) If in doubt,
-> re-confirm with `grep -rn "notImplemented(" LiveObjects/Sources` — it should return only the
-> definition in `Path Based API/NotImplemented.swift` and **zero call sites**.
+> the earlier skeleton needed have been removed; evaluate mode is now the normal path.)
 
 ## Table of contents
 
@@ -931,8 +929,8 @@ impls are `DefaultLiveMapPathObject` / `DefaultLiveCounterInstance` / … (`Path
 now fully implemented), wire forms are `ProtocolTypes.ObjectMessage` / `WireObjectMessage` /
 `WireObjectOperation` etc.
 
-> **Runtime status recap (top of doc):** the path-based public surface is **implemented** (no
-> `notImplemented()` call sites remain). Both the internal-layer specs and the public-API specs are
+> **Runtime status recap (top of doc):** the path-based public surface is **implemented** (the
+> skeleton that trapped on every call is gone). Both the internal-layer specs and the public-API specs are
 > runnable — pick translate-and-evaluate for either; just check what the spec actually calls so you
 > import and assert at the right layer.
 
