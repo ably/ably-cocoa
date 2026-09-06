@@ -21,8 +21,10 @@ jobs:
         with:
           persist-credentials: false
 
+      # v3.0.0 is the first release that resolves editorconfig-checker v4's
+      # asset names; earlier ones fail against `version: latest`.
       - name: Set up editorconfig-checker
-        uses: editorconfig-checker/action-editorconfig-checker@840e866d93b8e032123c23bac69dece044d4d84c # v2.2.0
+        uses: editorconfig-checker/action-editorconfig-checker@51f63319f592f97930c73d9c46184d20bd206393 # v3.0.0
 
       - name: Run editorconfig-checker
         run: editorconfig-checker
