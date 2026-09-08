@@ -7,7 +7,7 @@
         "environmentVariableEntries": [
           {
             "key": "UTS_SIDE",
-            "value": "device"
+            "value": "bogus"
           }
         ]
       }

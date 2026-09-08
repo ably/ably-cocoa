@@ -13,7 +13,7 @@ class LaneConfig < Struct.new(:name, :devices)
   # UTS_SIDE=device, so the suite reaches the SDK through AblyPubSubDevice's factory
   # instead. Plans are declared in
   # .swiftpm/xcode/xcshareddata/xcschemes/ably-cocoa.xcscheme.
-  def args_for_run_tests(suite: nil, test_plan: nil)
+  def args_for_run_tests(suite: nil, test_plan: nil, only_testing: nil)
     ably_env = ENV['ABLY_ENV']
 
     unless ably_env && !ably_env.empty?
@@ -39,6 +39,7 @@ class LaneConfig < Struct.new(:name, :devices)
     }
 
     args[:testplan] = test_plan if test_plan && !test_plan.empty?
+    args[:only_testing] = [only_testing] if only_testing && !only_testing.empty?
 
     case suite
     when 'uts'
@@ -75,7 +76,7 @@ platform :ios do
 
   LANE_CONFIGS.each do |lane_config|
     lane(lane_config.name) do |options|
-      run_tests(**lane_config.args_for_run_tests(suite: options[:suite], test_plan: options[:test_plan]))
+      run_tests(**lane_config.args_for_run_tests(suite: options[:suite], test_plan: options[:test_plan], only_testing: options[:only_testing]))
     end
   end
 

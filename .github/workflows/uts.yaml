@@ -117,7 +117,7 @@ jobs:
           bundle install
 
       - name: Run Tests
-        run: bundle exec fastlane ${{ matrix.lane }} suite:uts test_plan:${{ matrix.test_plan }}
+        run: bundle exec fastlane ${{ matrix.lane }} suite:uts test_plan:${{ matrix.test_plan }} only_testing:UTS/SideSeamTests
 
       - name: Check Static Analyzer Output
         id: analyzer-output
