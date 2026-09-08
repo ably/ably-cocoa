@@ -1,4 +1,4 @@
-name: "Integration Test"
+name: "UTS"
 
 on:
   workflow_dispatch:
@@ -18,16 +18,29 @@ jobs:
   check:
     runs-on: macos-15
 
-    # These Fastlane lanes build the `ably-cocoa` scheme against
-    # Test/Ably.xctestplan, passing `suite:sdk` so that the AblyTests and
-    # AblyTestsObjC targets run here and the UTS target does not. The UTS runs
-    # in uts.yaml instead: it is mostly a unit suite, so grouping it under
-    # "Integration Test" misnamed it, and splitting the two means a UTS failure
-    # is distinguishable at a glance and either can be re-run without the
-    # other's sandbox time. The lanes raise the iOS/tvOS test deployment
-    # targets in fastlane/Fastfile so that UTS code linking AblyLiveObjects
-    # (iOS 14 / tvOS 14 floor) compiles — that applies to the whole test build,
-    # so it is needed here too.
+    # Runs the Universal Test Suite (Test/UTS, derived from the
+    # ably/specification `uts/` specs) and nothing else, via `suite:uts` —
+    # fastlane turns that into -only-testing:UTS. This is the only place CI
+    # executes it, including the LiveObjects `objects` unit tier at
+    # Test/UTS/unit/objects, the sandbox-network integration tier, and
+    # (macOS only) the proxy tier.
+    #
+    # It has its own workflow rather than a leg of integration-test.yaml
+    # because the UTS is primarily a unit suite, so "Integration Test" was the
+    # wrong name for it, and because a separate workflow can be dispatched and
+    # re-run on its own. liveobjects.yaml deliberately has no UTS job (see the
+    # note in that file); its SPM job still compiles the UTS target under
+    # -warnings-as-errors.
+    #
+    # The lanes raise the iOS/tvOS test deployment targets in fastlane/Fastfile
+    # so that UTS code linking AblyLiveObjects (iOS 14 / tvOS 14 floor)
+    # compiles.
+    #
+    # Results are not uploaded to test-observability, and so there is no
+    # xcparse checkout here either (the upload script needs it to extract crash
+    # reports). That upload exists for the SDK's own suite, whose value is in
+    # analysing which tests fail intermittently over time. This suite is new,
+    # like the LiveObjects one, which does not upload either.
     strategy:
       fail-fast: false
       matrix:
@@ -62,26 +75,6 @@ jobs:
       - name: Environment Info
         run: ./Scripts/log-environment-information.sh
 
-      - name: Check out xcparse repo
-        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
-        with:
-          repository: ably-forks/xcparse
-          ref: emit-test-case-info
-          path: xcparse
-          persist-credentials: false
-
-      - id: get-xcparse-commit-sha
-        name: Get xcparse commit SHA
-        run: |
-          cd xcparse
-          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-
-      - name: "actions/cache (xcparse binary)"
-        uses: actions/cache@6f8efc29b200d32929f49075959781ed54ec270c # v3.5.0
-        with:
-          path: xcparse/.build/debug/xcparse
-          key: ${{ runner.os }}-xcparse-${{ steps.get-xcparse-commit-sha.outputs.sha }}
-
       - name: Reset Simulators
         run: xcrun simctl erase all
 
@@ -92,7 +85,7 @@ jobs:
           bundle install
 
       - name: Run Tests
-        run: bundle exec fastlane ${{ matrix.lane }} suite:sdk
+        run: bundle exec fastlane ${{ matrix.lane }} suite:uts
 
       - name: Check Static Analyzer Output
         id: analyzer-output
@@ -124,12 +117,3 @@ jobs:
         with:
           name: test-output-${{ matrix.lane }}
           path: fastlane/test_output
-
-      - name: Upload Test Results
-        if: always()
-        env:
-          TEST_OBSERVABILITY_SERVER_AUTH_KEY: ${{ secrets.TEST_OBSERVABILITY_SERVER_AUTH_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-           Scripts/upload_test_results.sh --job-name "check (${{ matrix.platform }}, ${{ matrix.lane }})"
-
