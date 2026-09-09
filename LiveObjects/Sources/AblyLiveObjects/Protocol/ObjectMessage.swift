@@ -309,7 +309,7 @@ internal extension ProtocolTypes.ObjectData {
             case .messagePack:
                 // OD4c: When the MessagePack protocol is used
                 // OD4c3 A number payload is encoded as a MessagePack float64 type, and the result is set on the ObjectData.number attribute
-                .init(value: number.doubleValue)
+                .init(value: number.doubleValue) // `doubleValue`, not `art_doubleValue`: an outbound number is always one we built from a Swift Double (RTLMV4d), not a JSON-decoded NSDecimalNumber, so there are no digits to recover here.
             }
         } else {
             nil
@@ -570,8 +570,10 @@ internal extension ProtocolTypes.ObjectOperation {
             mapCreate: resolvedMapCreate?.toPublicMapCreate(), // PAOOP2c/PAOOP3b
             mapSet: mapSet.map { .init(key: $0.key, value: $0.value?.toPublicObjectData() ?? .init()) }, // PAOOP2d
             mapRemove: mapRemove.map { .init(key: $0.key) }, // PAOOP2e
-            counterCreate: resolvedCounterCreate.map { .init(count: $0.count?.doubleValue ?? 0) }, // PAOOP2f/PAOOP3c
-            counterInc: counterInc.map { .init(number: $0.number.doubleValue) }, // PAOOP2g
+            // art_doubleValue on both counts below: this operation came off the wire, where JSON decoding
+            // can give us an NSDecimalNumber
+            counterCreate: resolvedCounterCreate.map { .init(count: $0.count?.art_doubleValue ?? 0) }, // PAOOP2f/PAOOP3c
+            counterInc: counterInc.map { .init(number: $0.number.art_doubleValue) }, // PAOOP2g
             objectDelete: objectDelete.map { _ in .init() }, // PAOOP2h
             mapClear: mapClear.map { _ in .init() }, // PAOOP2i
         )
@@ -613,7 +615,7 @@ internal extension ProtocolTypes.ObjectData {
             encoding: nil, // OD2b — internal data is already decoded
             boolean: boolean, // OD2c
             bytes: bytes, // OD2d
-            number: number?.doubleValue, // OD2e
+            number: number?.art_doubleValue, // OD2e — art_doubleValue: this data came off the wire, as JSON decoded it
             string: string, // OD2f
             json: json?.toJSONValue, // OD2g — pass the decoded value through, no re-serialization
         )

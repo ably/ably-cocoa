@@ -247,7 +247,8 @@ internal extension WireValue {
     var toJSONValue: JSONValue {
         get throws(ARTErrorInfo) {
             let neverExtended = try toExtendedJSONValue.map(number: { (number: NSNumber) throws(ARTErrorInfo) -> Double in
-                number.doubleValue
+                // art_doubleValue: an inbound WireValue's numbers are as JSON decoded them
+                number.art_doubleValue
             }, extra: { (extra: ExtraValue) throws(ARTErrorInfo) -> Never in
                 switch extra {
                 case .data:

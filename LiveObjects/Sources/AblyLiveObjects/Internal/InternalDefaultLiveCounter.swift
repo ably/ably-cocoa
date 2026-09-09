@@ -332,7 +332,8 @@ internal final class InternalDefaultLiveCounter: Sendable {
             liveObjectMutableState.createOperationIsMerged = false
 
             // RTLC6c: Set data to the value of ObjectState.counter.count, or to 0 if it does not exist
-            data = state.counter?.count?.doubleValue ?? 0
+            // art_doubleValue: this count came off the wire, where JSON decoding can give us an NSDecimalNumber
+            data = state.counter?.count?.art_doubleValue ?? 0
 
             // RTLC6d: If ObjectState.createOp is present, merge the initial value into the LiveCounter as described in RTLC16
             // Discard the LiveCounterUpdate object returned by the merge operation
@@ -353,7 +354,9 @@ internal final class InternalDefaultLiveCounter: Sendable {
             let counterCreate = operation.counterCreate ?? operation.counterCreateWithObjectId?.derivedFrom
 
             // RTLC16a: Add counterCreate.count to data, if it exists
-            if let operationCount = counterCreate?.count?.doubleValue {
+            // art_doubleValue: for a remotely-created counter this count came off the wire (a locally-created
+            // one comes from `derivedFrom`, where it is already a Double, and is unaffected)
+            if let operationCount = counterCreate?.count?.art_doubleValue {
                 data += operationCount
                 // RTLC16c
                 update = .update(DefaultLiveCounterUpdate(amount: operationCount))
@@ -457,7 +460,8 @@ internal final class InternalDefaultLiveCounter: Sendable {
             }
 
             // RTLC9f, RTLC9g
-            let amount = operation.number.doubleValue
+            // art_doubleValue: an inbound counterInc number arrives as JSON decoded it
+            let amount = operation.number.art_doubleValue
             data += amount
             return .update(DefaultLiveCounterUpdate(amount: amount))
         }

@@ -1178,7 +1178,8 @@ internal final class InternalDefaultLiveMap: Sendable {
 
             // RTLM5d2d: If ObjectsMapEntry.data.number exists, return it
             if let number = entry.data?.number {
-                return .number(number.doubleValue)
+                // art_doubleValue: an entry set by another client holds the number as JSON decoded it
+                return .number(number.art_doubleValue)
             }
 
             // RTLM5d2e: If ObjectsMapEntry.data.string exists, return it

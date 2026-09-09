@@ -144,7 +144,9 @@ internal extension JSONValue {
     /// - The result of serializing an array or dictionary using `JSONSerialization`
     /// - Some nested element of the result of serializing such an array or dictionary
     init(jsonSerializationOutput: Any) {
-        let extended = ExtendedJSONValue<Double, Never>(deserialized: jsonSerializationOutput, createNumberValue: { $0.doubleValue }, createExtraValue: { deserializedExtraValue in
+        // art_doubleValue, not doubleValue: this is the JSONSerialization boundary itself, where a
+        // high-precision number arrives as an NSDecimalNumber
+        let extended = ExtendedJSONValue<Double, Never>(deserialized: jsonSerializationOutput, createNumberValue: { $0.art_doubleValue }, createExtraValue: { deserializedExtraValue in
             // JSONSerialization is not conforming to our assumptions; our assumptions are probably wrong. Either way, bring this loudly to our attention instead of trying to carry on
             preconditionFailure("JSONValue(jsonSerializationOutput:) was given unsupported value \(deserializedExtraValue)")
         })
