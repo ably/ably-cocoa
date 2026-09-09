@@ -4,16 +4,19 @@
 @implementation ARTMessageAnnotations
 
 - (instancetype)init {
+    return [self initWithSummary:nil];
+}
+
+- (instancetype)initWithSummary:(nullable ARTJsonObject *)summary {
     self = [super init];
     if (self) {
-        _summary = nil;
+        _summary = summary;
     }
     return self;
 }
 
 - (id)copyWithZone:(NSZone *)zone {
-    ARTMessageAnnotations *annotations = [[[self class] allocWithZone:zone] init];
-    annotations.summary = self.summary;
+    ARTMessageAnnotations *annotations = [[[self class] allocWithZone:zone] initWithSummary:self.summary];
     return annotations;
 }
 
@@ -24,9 +27,7 @@
 }
 
 + (instancetype)createFromDictionary:(NSDictionary<NSString *, id> *)jsonObject {
-    ARTMessageAnnotations *annotations = [[ARTMessageAnnotations alloc] init];
-    annotations.summary = [jsonObject objectForKey:@"summary"];
-    return annotations;
+    return [[ARTMessageAnnotations alloc] initWithSummary:[jsonObject objectForKey:@"summary"]];
 }
 
 - (NSString *)description {
