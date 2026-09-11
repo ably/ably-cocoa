@@ -70,7 +70,7 @@ The `make test_*` commands are used by CI and expect you to have a simulator dev
 | --- | --- | --- |
 | `AblyTests` | `Test/AblyTests` | Swift tests for the core SDK |
 | `AblyTestsObjC` | `Test/AblyTestsObjC` | Objective-C tests for the core SDK |
-| `UTS` | `Test/UTS` | Universal Test Suite, derived from the language-neutral specs in the [`specification`](https://github.com/ably/specification) repository — including the ported LiveObjects `objects` unit specs under `unit/objects/`. Its `objects` suites link `AblyLiveObjects`, which is why the Fastlane lanes raise their deployment target — see [Supported OS versions](#supported-os-versions) |
+| `UTS` | `Test/UTS` | Universal Test Suite, derived from the language-neutral specs in the [`specification`](https://github.com/ably/specification) repository — including the ported LiveObjects `objects` unit specs under `unit/objects/`. Its `objects` suites link `AblyLiveObjects` — see [Supported OS versions](#supported-os-versions) |
 | `AblyLiveObjectsTests` | `LiveObjects/Tests/AblyLiveObjectsTests` | LiveObjects native unit and integration tests |
 | `AblySoakTests` | `Test/AblySoakTests` | The soak test — see [Soak test](#soak-test) below. Skipped unless `RUN_SOAK_TEST` is set |
 
@@ -126,32 +126,9 @@ Two things about the plugin affect the repository as a whole, and so are documen
 
 ### Supported OS versions
 
-The package's declared platform floor in [`Package.swift`](Package.swift) is that of the core SDK: macOS 10.11, iOS 9, tvOS 10. LiveObjects requires **macOS 11, iOS 14, tvOS 14** — the versions mandated by [ADR-114](https://ably.atlassian.net/wiki/spaces/ENG/pages/3199500291/ADR-114+Increase+Cocoa+SDK+minimum+supported+version+to+iOS+14) and the [RFC](https://ably.atlassian.net/wiki/spaces/SDKs/pages/2986147844/RFC+Deprecate+iOS+13+support+for+ably-cocoa) behind it, which the core SDK has not yet adopted.
+[`Package.swift`](Package.swift) declares **macOS 11, iOS 14, tvOS 14** for the whole package — the versions mandated by [ADR-114](https://ably.atlassian.net/wiki/spaces/ENG/pages/3199500291/ADR-114+Increase+Cocoa+SDK+minimum+supported+version+to+iOS+14) and the [RFC](https://ably.atlassian.net/wiki/spaces/SDKs/pages/2986147844/RFC+Deprecate+iOS+13+support+for+ably-cocoa) behind it. SwiftPM platform requirements are package-wide, so one floor applies to every product.
 
-SwiftPM platform requirements are package-wide, so a single package hosts both floors by annotating every top-level declaration in `LiveObjects/Sources/AblyLiveObjects` with:
-
-```swift
-@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)
-```
-
-Don't write these annotations by hand. After adding a declaration, run [`Scripts/annotate-liveobjects-availability.py`](Scripts/annotate-liveobjects-availability.py) from the repo root:
-
-```sh
-python3 Scripts/annotate-liveobjects-availability.py
-```
-
-It annotates every unannotated top-level declaration under `LiveObjects/Sources/AblyLiveObjects` (pass another directory as its sole argument to override that), and is idempotent — running it on an already-annotated tree changes nothing.
-
-CI enforces this two ways: it runs the script and fails on a non-empty diff, which covers all top-level declarations; and it separately builds the target with `-require-explicit-availability=error`, which covers the public ones.
-
-Test code cannot use the same mechanism, because swift-testing's `@Suite` macro rejects types marked `@available`. Instead, any test build that links `AblyLiveObjects` raises its own deployment target to the plugin's floor. Two places do this today, both by passing `IPHONEOS_DEPLOYMENT_TARGET=14.0` and `TVOS_DEPLOYMENT_TARGET=14.0` to `xcodebuild`:
-
-- `LiveObjects/BuildTool` (`testDeploymentTargetOverrides`), for the invocations that build and run `AblyLiveObjectsTests`.
-- [`fastlane/Fastfile`](fastlane/Fastfile), in the `xcargs` shared by the integration-test lanes, because the `UTS` target links `AblyLiveObjects` too. Without it the harness fails on the iOS and tvOS simulators with errors of the form `'…' is only available in iOS 14.0 or newer`.
-
-Neither overrides macOS: xcodebuild raises the macOS test bundle's floor well above the package's of its own accord, and the test code relies on that. Both affect the test build only — the package's declared platform floor and the shipped artifacts are unchanged.
-
-If you add another `xcodebuild`-based path that compiles a test target linking `AblyLiveObjects`, it will need the same override. Test code that needs a newer OS than the plugin's floor must still carry its own `@available` — for example `Subscriber.swift`, whose parameter packs require iOS/tvOS 17, along with every test that uses it.
+Code that needs a newer OS than the package floor carries its own `@available` — for example `Subscriber.swift`, whose parameter packs require iOS/tvOS 17, along with every test that uses it. Note that swift-testing's `@Suite` macro rejects types marked `@available`, so a suite needing a newer OS has to annotate its test functions instead.
 
 ### Distribution
 
