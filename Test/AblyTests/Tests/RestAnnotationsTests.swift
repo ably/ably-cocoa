@@ -30,9 +30,9 @@ class RestAnnotationsTests: XCTestCase {
         let restChannel = restClient.channels.get(channelName)
 
         // Message and annotation to track
-        var receivedMessage: ARTMessage!
+        var capturedReceivedMessage: ARTMessage?
         var receivedSummary: ARTMessage!
-        var createdAnnotation: ARTAnnotation!
+        var capturedCreatedAnnotation: ARTAnnotation?
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(4, done: done)
@@ -40,7 +40,7 @@ class RestAnnotationsTests: XCTestCase {
             // Subscribe to messages
             realtimeChannel.subscribe { message in
                 if message.action == .create {
-                    receivedMessage = message
+                    capturedReceivedMessage = message
 
                     // When message is received, create and publish annotation via REST
                     let annotation = ARTOutboundAnnotation(
@@ -65,7 +65,7 @@ class RestAnnotationsTests: XCTestCase {
 
                     // Verify summary properties
                     XCTAssertEqual(receivedSummary.action, .messageSummary)
-                    XCTAssertEqual(receivedSummary.serial, receivedMessage.serial)
+                    XCTAssertEqual(receivedSummary.serial, capturedReceivedMessage?.serial)
                     XCTAssertEqual(receivedSummary.annotations?.summary?.count, 1)
 
                     partialDone()
@@ -77,17 +77,17 @@ class RestAnnotationsTests: XCTestCase {
                 // only interested in the first annotation which is with action `create`
                 realtimeChannel.annotations.unsubscribe()
 
-                createdAnnotation = annotation
+                capturedCreatedAnnotation = annotation
 
                 // Verify annotation properties
                 XCTAssertEqual(annotation.action, .create)
-                XCTAssertEqual(annotation.messageSerial, receivedMessage.serial)
+                XCTAssertEqual(annotation.messageSerial, capturedReceivedMessage?.serial)
                 XCTAssertEqual(annotation.type, "reaction:multiple.v1")
                 XCTAssertEqual(annotation.name, "👍")
                 XCTAssertEqual(annotation.count?.intValue, 10)
 
                 // Verify it matches the message
-                XCTAssertEqual(annotation.messageSerial, receivedMessage.serial)
+                XCTAssertEqual(annotation.messageSerial, capturedReceivedMessage?.serial)
 
                 partialDone()
             }
@@ -101,6 +101,8 @@ class RestAnnotationsTests: XCTestCase {
             }
             realtimeChannel.attach()
         }
+        let receivedMessage = try XCTUnwrap(capturedReceivedMessage, "waitUntil timed out before receivedMessage was set")
+        let createdAnnotation = try XCTUnwrap(capturedCreatedAnnotation, "waitUntil timed out before createdAnnotation was set")
 
         // RSAN2: Now delete the annotation
         waitUntil(timeout: testTimeout) { done in
@@ -181,8 +183,8 @@ class RestAnnotationsTests: XCTestCase {
         let restChannel = restClient.channels.get(channelName)
 
         // Message and annotation to track
-        var receivedMessage: ARTMessage!
-        var createdAnnotation: ARTAnnotation!
+        var capturedReceivedMessage: ARTMessage?
+        var capturedCreatedAnnotation: ARTAnnotation?
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(3, done: done)
@@ -190,7 +192,7 @@ class RestAnnotationsTests: XCTestCase {
             // Subscribe to messages
             realtimeChannel.subscribe { message in
                 if message.action == .create {
-                    receivedMessage = message
+                    capturedReceivedMessage = message
 
                     // When message is received, create and publish annotation via REST
                     let annotation = ARTOutboundAnnotation(
@@ -204,7 +206,7 @@ class RestAnnotationsTests: XCTestCase {
                     )
 
                     // RSAN1
-                    restChannel.annotations.publish(for: receivedMessage, annotation: annotation) { error in
+                    restChannel.annotations.publish(for: message, annotation: annotation) { error in
                         XCTAssertNil(error)
                         partialDone()
                     }
@@ -213,16 +215,16 @@ class RestAnnotationsTests: XCTestCase {
 
             // Subscribe to annotations
             realtimeChannel.annotations.subscribe { annotation in
-                createdAnnotation = annotation
+                capturedCreatedAnnotation = annotation
 
                 // Verify annotation properties
                 XCTAssertNotNil(annotation.id)
                 XCTAssertEqual(annotation.action, .create)
-                XCTAssertEqual(annotation.messageSerial, receivedMessage.serial)
+                XCTAssertEqual(annotation.messageSerial, capturedReceivedMessage?.serial)
                 XCTAssertEqual(annotation.type, "reaction:multiple.v1")
                 XCTAssertEqual(annotation.name, "👍")
                 XCTAssertEqual(annotation.count?.intValue, 10)
-                XCTAssertEqual(annotation.messageSerial, receivedMessage.serial)
+                XCTAssertEqual(annotation.messageSerial, capturedReceivedMessage?.serial)
 
                 partialDone()
             }
@@ -236,6 +238,8 @@ class RestAnnotationsTests: XCTestCase {
             }
             realtimeChannel.attach()
         }
+        let receivedMessage = try XCTUnwrap(capturedReceivedMessage, "waitUntil timed out before receivedMessage was set")
+        let createdAnnotation = try XCTUnwrap(capturedCreatedAnnotation, "waitUntil timed out before createdAnnotation was set")
 
         // RSAN1c4: Now publish the created annotation again (to verify idempotent publishing)
         waitUntil(timeout: testTimeout) { done in

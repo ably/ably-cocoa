@@ -1981,7 +1981,7 @@ class RestClientTests: XCTestCase {
         let proxyHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = proxyHTTPExecutor
 
-        var httpPaginatedResponse: ARTHTTPPaginatedResponse!
+        var capturedHttpPaginatedResponse: ARTHTTPPaginatedResponse?
         waitUntil(timeout: testTimeout) { done in
             do {
                 try rest.request("get", path: "/channels/\(channel.name)", params: nil, body: nil, headers: nil) { paginatedResponse, error in
@@ -2001,7 +2001,7 @@ class RestClientTests: XCTestCase {
                     XCTAssertEqual(paginatedResponse.errorCode, 0)
                     XCTAssertNil(paginatedResponse.errorMessage)
                     expect(paginatedResponse.headers).toNot(beEmpty())
-                    httpPaginatedResponse = paginatedResponse
+                    capturedHttpPaginatedResponse = paginatedResponse
                     done()
                 }
             } catch {
@@ -2009,6 +2009,7 @@ class RestClientTests: XCTestCase {
                 done()
             }
         }
+        let httpPaginatedResponse = try XCTUnwrap(capturedHttpPaginatedResponse, "waitUntil timed out before httpPaginatedResponse was set")
 
         let response = try XCTUnwrap(proxyHTTPExecutor.responses.first, "No responses found")
 

@@ -108,16 +108,17 @@ class MessageUpdatesDeletesTests: XCTestCase {
             return
         }
 
-        var retrievedMessage: ARTMessage!
+        var capturedRetrievedMessage: ARTMessage?
 
         // RSL11a: Get the message by serial string
         waitUntil(timeout: testTimeout) { done in
             channel.getMessageWithSerial(publishedMessageSerial) { message, error in
                 XCTAssertNil(error)
-                retrievedMessage = message
+                capturedRetrievedMessage = message
                 done()
             }
         }
+        let retrievedMessage = try XCTUnwrap(capturedRetrievedMessage, "waitUntil timed out before retrievedMessage was set")
 
         // RSL11b: Verify GET request to correct endpoint
         guard let request = testEnvironment.requests.last, let requestUrl = request.url else {
@@ -216,19 +217,20 @@ class MessageUpdatesDeletesTests: XCTestCase {
             }
         }
 
-        var updatedMessage: ARTMessage!
+        var capturedUpdatedMessage: ARTMessage?
 
         // Fetch the updated message (poll getMessageWithSerial until it returns the updated message)
-        while updatedMessage == nil || updatedMessage!.version?.serial == publishedMessage.version?.serial {
+        while capturedUpdatedMessage == nil || capturedUpdatedMessage!.version?.serial == publishedMessage.version?.serial {
             // Get the updated message by serial string
             waitUntil(timeout: testTimeout) { done in
                 channel.getMessageWithSerial(publishedMessageSerial) { message, error in
                     XCTAssertNil(error)
-                    updatedMessage = message
+                    capturedUpdatedMessage = message
                     done()
                 }
             }
         }
+        let updatedMessage = try XCTUnwrap(capturedUpdatedMessage, "waitUntil timed out before updatedMessage was set")
 
         XCTAssertNotNil(updatedMessage)
         XCTAssertEqual(updatedMessage.serial, publishedMessageSerial)

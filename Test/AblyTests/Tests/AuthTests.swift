@@ -4457,7 +4457,7 @@ class AuthTests: XCTestCase {
     // https://github.com/ably/ably-cocoa/issues/1093
     func test__002__should_accept_authURL_response_with_timestamp_argument_as_string() throws {
         let test = Test()
-        var originalTokenRequest: ARTTokenRequest!
+        var capturedOriginalTokenRequest: ARTTokenRequest?
         let tmpRest = ARTRest(options: try AblyTests.commonAppSetup(for: test))
 
         let channelName = test.uniqueChannelName()
@@ -4470,10 +4470,11 @@ class AuthTests: XCTestCase {
             tokenParams.ttl = 43200
             tmpRest.auth.createTokenRequest(tokenParams, options: nil) { tokenRequest, error in
                 XCTAssertNil(error)
-                originalTokenRequest = try! XCTUnwrap(tokenRequest)
+                capturedOriginalTokenRequest = tokenRequest
                 done()
             }
         }
+        let originalTokenRequest = try XCTUnwrap(capturedOriginalTokenRequest, "waitUntil timed out before originalTokenRequest was set")
         // "timestamp" as String
         let tokenRequestJsonString = """
         {"keyName":"\(originalTokenRequest.keyName)","timestamp":"\(String(dateToMilliseconds(originalTokenRequest.timestamp))))","clientId":"\(originalTokenRequest.clientId!)","nonce":"\(originalTokenRequest.nonce)","mac":"\(originalTokenRequest.mac)","ttl":"\(String(originalTokenRequest.ttl!.intValue * 1000)))","capability":"\(originalTokenRequest.capability!.replace("\"", withString: "\\\""))"}

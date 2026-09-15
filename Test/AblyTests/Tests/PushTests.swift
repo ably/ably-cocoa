@@ -146,13 +146,14 @@ class PushTests: XCTestCase {
 
         rest.internal.resetDeviceSingleton()
 
-        var stateMachine: ARTPushActivationStateMachine!
+        var capturedStateMachine: ARTPushActivationStateMachine?
         waitUntil(timeout: testTimeout) { done in
             rest.push.internal.getActivationMachine { machine in
-                stateMachine = machine
+                capturedStateMachine = machine
                 done()
             }
         }
+        let stateMachine = try XCTUnwrap(capturedStateMachine, "waitUntil timed out before stateMachine was set")
 
         let testDeviceToken = "xxxx-xxxx-xxxx-xxxx-xxxx"
         stateMachine.rest.device.setAndPersistAPNSDeviceToken(testDeviceToken)
@@ -341,7 +342,7 @@ class PushTests: XCTestCase {
     }
 
     // RSH8e
-    func test__010__LocalDevice__authentication_on_registered_device_sends_a_GotPushDeviceDetails_with_new_clientID() {
+    func test__010__LocalDevice__authentication_on_registered_device_sends_a_GotPushDeviceDetails_with_new_clientID() throws {
         let testDeviceToken = "testDeviceToken"
         let testDeviceIdentity = ARTDeviceIdentityTokenDetails(
             token: "123456",
@@ -386,13 +387,14 @@ class PushTests: XCTestCase {
         storage.simulateOnNextRead(data: testDeviceIdentity.art_archive(withLogger: nil)!, for: ARTDeviceIdentityTokenKey)
         realtime.internal.rest.resetDeviceSingleton()
 
-        var stateMachine: ARTPushActivationStateMachine!
+        var capturedStateMachine: ARTPushActivationStateMachine?
         waitUntil(timeout: testTimeout) { done in
             realtime.internal.rest.push.getActivationMachine { machine in
-                stateMachine = machine
+                capturedStateMachine = machine
                 done()
             }
         }
+        let stateMachine = try XCTUnwrap(capturedStateMachine, "waitUntil timed out before stateMachine was set")
         let delegate = StateMachineDelegate()
         stateMachine.delegate = delegate
 
@@ -525,13 +527,14 @@ class PushTests: XCTestCase {
 
         rest.internal.resetDeviceSingleton()
 
-        var stateMachine: ARTPushActivationStateMachine!
+        var capturedStateMachine: ARTPushActivationStateMachine?
         waitUntil(timeout: testTimeout) { done in
             rest.push.internal.getActivationMachine { machine in
-                stateMachine = machine
+                capturedStateMachine = machine
                 done()
             }
         }
+        let stateMachine = try XCTUnwrap(capturedStateMachine, "waitUntil timed out before stateMachine was set")
 
         let testDeviceToken = "xxxx-xxxx-xxxx-xxxx-xxxx"
         stateMachine.rest.device.setAndPersistAPNSDeviceToken(testDeviceToken)
