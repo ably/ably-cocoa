@@ -98,7 +98,7 @@ Ably depends on our [MessagePack Fork](https://github.com/ably-forks/msgpack-obj
 // Initialize Ably Realtime client
 let clientOptions = ARTClientOptions(key: "your-ably-api-key")
 clientOptions.clientId = "me"
-let realtime = ARTRealtimeClient(options: clientOptions)
+let realtime = PubSubDevice.createClient(options: clientOptions)
 
 // Wait for connection to be established
 realtime.connection.on { stateChange in
