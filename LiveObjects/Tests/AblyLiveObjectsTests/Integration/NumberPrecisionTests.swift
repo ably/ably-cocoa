@@ -24,7 +24,7 @@ private let impreciselyConvertedValues: [Double] = [
 ///
 /// The MessagePack tests pass either way — a float64 on the wire decodes to a plain `NSNumber` that
 /// already holds the closest `Double` — and are here to pin that down.
-@Suite(.tags(.integration))
+@Suite(.tags(.integration), .serialized)
 struct NumberPrecisionTests {
     @Test(arguments: impreciselyConvertedValues)
     func mapNumberSurvivesJSONRoundTrip(value: Double) async throws {
