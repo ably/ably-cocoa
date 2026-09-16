@@ -12,15 +12,15 @@ class HttpAnnotationsTests: XCTestCase {
         options.testOptions.channelNamePrefix = nil
 
         // Create realtime client
-        let realtimeClient = ARTRealtimeClient(options: options)
+        let realtimeClient = RealtimeClient(options: options)
         defer { realtimeClient.dispose(); realtimeClient.close() }
 
         // Create rest client
-        let restClient = ARTHttpClient(options: options)
+        let restClient = HttpClient(options: options)
 
         // Channel name and options
         let channelName = test.uniqueChannelName(prefix: "mutable:")
-        let channelOptions = ARTRealtimeChannelOptions()
+        let channelOptions = RealtimeChannelOptions()
         channelOptions.modes = [.publish, .subscribe, .annotationPublish, .annotationSubscribe]
 
         // Get realtime channel with options
@@ -30,9 +30,9 @@ class HttpAnnotationsTests: XCTestCase {
         let restChannel = restClient.channels.get(channelName)
 
         // Message and annotation to track
-        var receivedMessage: ARTMessage!
-        var receivedSummary: ARTMessage!
-        var createdAnnotation: ARTAnnotation!
+        var receivedMessage: Message!
+        var receivedSummary: Message!
+        var createdAnnotation: Annotation!
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(4, done: done)
@@ -43,7 +43,7 @@ class HttpAnnotationsTests: XCTestCase {
                     receivedMessage = message
 
                     // When message is received, create and publish annotation via REST
-                    let annotation = ARTOutboundAnnotation(
+                    let annotation = OutboundAnnotation(
                         id: nil,
                         type: "reaction:multiple.v1",
                         clientId: nil,
@@ -95,7 +95,7 @@ class HttpAnnotationsTests: XCTestCase {
             // Wait for channel to be attached before publishing
             realtimeChannel.once(.attached) { stateChange in
                 // Publish a message
-                let message = ARTMessage(name: "test", data: "test message")
+                let message = Message(name: "test", data: "test message")
                 realtimeChannel.publish([message])
                 partialDone()
             }
@@ -104,7 +104,7 @@ class HttpAnnotationsTests: XCTestCase {
 
         // RSAN2: Now delete the annotation
         waitUntil(timeout: testTimeout) { done in
-            let deleteAnnotation = ARTOutboundAnnotation(
+            let deleteAnnotation = OutboundAnnotation(
                 id: nil,
                 type: createdAnnotation.type,
                 clientId: nil,
@@ -163,15 +163,15 @@ class HttpAnnotationsTests: XCTestCase {
         options.idempotentRestPublishing = true // for visibility, true by default
 
         // Create realtime client
-        let realtimeClient = ARTRealtimeClient(options: options)
+        let realtimeClient = RealtimeClient(options: options)
         defer { realtimeClient.dispose(); realtimeClient.close() }
 
         // Create rest client
-        let restClient = ARTHttpClient(options: options)
+        let restClient = HttpClient(options: options)
 
         // Channel name and options
         let channelName = test.uniqueChannelName(prefix: "mutable:")
-        let channelOptions = ARTRealtimeChannelOptions()
+        let channelOptions = RealtimeChannelOptions()
         channelOptions.modes = [.publish, .subscribe, .annotationPublish, .annotationSubscribe]
 
         // Get realtime channel with options
@@ -181,8 +181,8 @@ class HttpAnnotationsTests: XCTestCase {
         let restChannel = restClient.channels.get(channelName)
 
         // Message and annotation to track
-        var receivedMessage: ARTMessage!
-        var createdAnnotation: ARTAnnotation!
+        var receivedMessage: Message!
+        var createdAnnotation: Annotation!
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(3, done: done)
@@ -193,7 +193,7 @@ class HttpAnnotationsTests: XCTestCase {
                     receivedMessage = message
 
                     // When message is received, create and publish annotation via REST
-                    let annotation = ARTOutboundAnnotation(
+                    let annotation = OutboundAnnotation(
                         id: nil,
                         type: "reaction:multiple.v1",
                         clientId: nil,
@@ -230,7 +230,7 @@ class HttpAnnotationsTests: XCTestCase {
             // Wait for channel to be attached before publishing
             realtimeChannel.once(.attached) { stateChange in
                 // Publish a message
-                let message = ARTMessage(name: "test", data: "test message")
+                let message = Message(name: "test", data: "test message")
                 realtimeChannel.publish([message])
                 partialDone()
             }
@@ -239,8 +239,8 @@ class HttpAnnotationsTests: XCTestCase {
 
         // RSAN1c4: Now publish the created annotation again (to verify idempotent publishing)
         waitUntil(timeout: testTimeout) { done in
-            // Convert the received ARTAnnotation to ARTOutboundAnnotation for publishing with the same ID
-            let outboundAnnotation = ARTOutboundAnnotation(
+            // Convert the received Annotation to OutboundAnnotation for publishing with the same ID
+            let outboundAnnotation = OutboundAnnotation(
                 id: createdAnnotation.id,
                 type: createdAnnotation.type,
                 clientId: createdAnnotation.clientId,
@@ -293,14 +293,14 @@ class HttpAnnotationsTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         options.testOptions.channelNamePrefix = nil
 
-        let restClient = ARTHttpClient(options: options)
+        let restClient = HttpClient(options: options)
         let channel = restClient.channels.get(test.uniqueChannelName(prefix: "mutable:"))
 
-        let largeString = String(repeating: "f", count: ARTDefault.maxMessageSize() + 100) // Create a string larger than maxMessageSize
+        let largeString = String(repeating: "f", count: Default.maxMessageSize() + 100) // Create a string larger than maxMessageSize
 
         waitUntil(timeout: testTimeout) { done in
             // Create an annotation with the large string as name
-            let annotation = ARTOutboundAnnotation(
+            let annotation = OutboundAnnotation(
                 id: nil,
                 type: "test",
                 clientId: nil,
@@ -333,16 +333,16 @@ class HttpAnnotationsTests: XCTestCase {
 
         // Realtime client only to publish the message that gets annotated, since the
         // annotation needs a message serial.
-        let realtimeClient = ARTRealtimeClient(options: options)
+        let realtimeClient = RealtimeClient(options: options)
         defer { realtimeClient.dispose(); realtimeClient.close() }
 
-        let restClient = ARTHttpClient(options: options)
+        let restClient = HttpClient(options: options)
         let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         restClient.internal.httpExecutor = testHTTPExecutor
 
         let channelName = test.uniqueChannelName(prefix: "mutable:")
 
-        let realtimeChannelOptions = ARTRealtimeChannelOptions()
+        let realtimeChannelOptions = RealtimeChannelOptions()
         realtimeChannelOptions.modes = [.publish, .subscribe, .annotationPublish, .annotationSubscribe]
         let realtimeChannel = realtimeClient.channels.get(channelName, options: realtimeChannelOptions)
 
@@ -350,12 +350,12 @@ class HttpAnnotationsTests: XCTestCase {
         // cipher-less encoder if it cached one.
         let restChannel = restClient.channels.get(channelName)
 
-        // Now add a cipher. `ARTHttpChannel.setOptions` is not visible from Swift — the ObjC
+        // Now add a cipher. `HttpChannel.setOptions` is not visible from Swift — the ObjC
         // importer folds it into the read-only `options` property — so go through
         // `channels.get`, which applies the options to the already-created channel via
         // `setOptions_nosync:`: the same path, recreating the channel's data encoder.
-        let key = ARTCrypto.generateRandomKey()
-        _ = restClient.channels.get(channelName, options: ARTChannelOptions(cipherKey: key as ARTCipherKeyCompatible))
+        let key = Crypto.generateRandomKey()
+        _ = restClient.channels.get(channelName, options: ChannelOptions(cipherKey: key as CipherKeyCompatible))
 
         let annotationData = "secret annotation data"
 
@@ -368,7 +368,7 @@ class HttpAnnotationsTests: XCTestCase {
 
                 // multiple.v1 because an anonymous client may only publish the
                 // multiple.v1 and total.v1 aggregation methods
-                let annotation = ARTOutboundAnnotation(
+                let annotation = OutboundAnnotation(
                     id: nil,
                     type: "reaction:multiple.v1",
                     clientId: nil,
@@ -383,7 +383,7 @@ class HttpAnnotationsTests: XCTestCase {
                 }
             }
 
-            realtimeChannel.publish([ARTMessage(name: "test", data: "test message")])
+            realtimeChannel.publish([Message(name: "test", data: "test message")])
         }
 
         // Assert on the body that went on the wire: a stale cipher-less encoder would have
