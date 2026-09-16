@@ -91,7 +91,7 @@ class PluginAPITests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
 
-        let client = ARTRealtime(options: options)
+        let client = ARTRealtimeClient(options: options)
         defer { client.dispose(); client.close() }
 
         var serverTimeRequestCount = 0
@@ -135,7 +135,7 @@ class PluginAPITests: XCTestCase {
 
         options.testOptions.transportFactory = TestProxyTransportFactory()
 
-        let client = ARTRealtime(options: options)
+        let client = ARTRealtimeClient(options: options)
         defer { client.dispose(); client.close() }
 
         let channels = ["a", "b"].map { test.uniqueChannelName(prefix: $0) }.map { client.channels.get($0) }
@@ -182,7 +182,7 @@ class PluginAPITests: XCTestCase {
 
         options.testOptions.transportFactory = TestProxyTransportFactory()
 
-        let client = ARTRealtime(options: options)
+        let client = ARTRealtimeClient(options: options)
         defer { client.dispose(); client.close() }
 
         let pluginAPI = DependencyStore.sharedInstance().fetchPluginAPI()
@@ -235,7 +235,7 @@ class PluginAPITests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         options.plugins = [.liveObjects: MockLiveObjectsPlugin.self]
 
-        let client = ARTRealtime(options: options)
+        let client = ARTRealtimeClient(options: options)
         defer { client.dispose(); client.close() }
 
         let channelWithoutObjects = client.channels.get(test.uniqueChannelName(prefix: "no-objects"))
@@ -270,7 +270,7 @@ class PluginAPITests: XCTestCase {
         options.plugins = [.liveObjects: MockLiveObjectsPlugin.self]
         options.testOptions.transportFactory = TestProxyTransportFactory()
 
-        let client = ARTRealtime(options: options)
+        let client = ARTRealtimeClient(options: options)
         defer { client.dispose(); client.close() }
 
         let channel = client.channels.get(test.uniqueChannelName())
@@ -316,7 +316,7 @@ class PluginAPITests: XCTestCase {
         options.useBinaryProtocol = false
         options.testOptions.transportFactory = TestProxyTransportFactory()
 
-        let client = ARTRealtime(options: options)
+        let client = ARTRealtimeClient(options: options)
         defer { client.dispose(); client.close() }
 
         let channel = client.channels.get(test.uniqueChannelName(), options: Self.liveObjectsChannelOptions)
