@@ -4,7 +4,7 @@ import Ably
 @testable import AblyLiveObjectsTesting
 import Testing
 
-@Suite(.tags(.integration))
+@Suite(.tags(.integration), .serialized)
 struct AblyLiveObjectsTests {
     @Test
     func objectsProperty() async throws {
