@@ -2,7 +2,7 @@
 #if os(macOS)
 
 import Foundation
-import Ably
+import AblyPubSubDevice
 
 // MARK: - Rule type + factory helpers
 
@@ -141,12 +141,12 @@ struct ProxyEvent: @unchecked Sendable {
 /// ])
 /// // The proxy serves plain ws (`tls = false`) and basic (key) auth is TLS-only (RSA1),
 /// // so authenticate with a TokenRequest signed locally by a TLS "token signer" client:
-/// let options = ARTClientOptions()
+/// let options = ClientOptions()
 /// options.authCallback = { params, callback in
 ///     tokenSigner.auth.createTokenRequest(params, options: nil) { callback($0, $1) }
 /// }
 /// options.connectThroughProxy(session)
-/// let client = ARTRealtime(options: options)
+/// let client = makeRealtimeForSide(options: options)
 /// // … test scenario …
 /// await session.close()   // always — `defer` can't await, so close at the end of every path
 /// ```
@@ -283,7 +283,7 @@ final class ProxySession: Sendable {
 
 // MARK: - Client wiring
 
-extension ARTClientOptions {
+extension ClientOptions {
     /// Routes a client through the given proxy `session`.
     ///
     /// Sets `realtimeHost` and `restHost` to the proxy host, `port` to the session's assigned

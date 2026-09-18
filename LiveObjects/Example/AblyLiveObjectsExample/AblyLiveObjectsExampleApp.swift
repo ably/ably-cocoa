@@ -1,13 +1,13 @@
-import Ably
 import AblyLiveObjects
+import AblyPubSubDevice
 import SwiftUI
 
 @main
 struct AblyLiveObjectsExampleApp: App {
-    private func getRealtime() -> ARTRealtime {
-        let clientOptions = ARTClientOptions(key: Secrets.ablyAPIKey)
+    private func getRealtime() -> RealtimeClient {
+        let clientOptions = ClientOptions(key: Secrets.ablyAPIKey)
         clientOptions.plugins = [.liveObjects: AblyLiveObjects.Plugin.self]
-        return ARTRealtime(options: clientOptions)
+        return PubSubDevice.createClient(options: clientOptions)
     }
 
     var body: some Scene {

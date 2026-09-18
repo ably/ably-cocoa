@@ -7,8 +7,8 @@ import Darwin.C
 let package = Package(
     name: "SPMIntegration",
     platforms: [
-        .iOS(.v9),
-        .macOS(.v10_11)
+        .iOS(.v14),
+        .macOS(.v11)
     ],
     dependencies: [
         .package(path: "../../")
@@ -17,7 +17,9 @@ let package = Package(
         .target(
             name: "SPMIntegration",
             dependencies: [
-                .product(name: "Ably", package: "ably-cocoa")
+                // `package:` is the dependency's identity, which for a path
+                // dependency is the directory name, not the manifest's `name`.
+                .product(name: "AblyPubSubDevice", package: "ably-cocoa")
             ],
             swiftSettings: [
                 .unsafeFlags(["-warnings-as-errors"])
