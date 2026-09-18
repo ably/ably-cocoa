@@ -2141,7 +2141,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.close()
         }
 
-        var transport: TestProxyTransport!
+        var capturedTransport: TestProxyTransport?
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.on { stateChange in
@@ -2162,8 +2162,9 @@ class RealtimeClientConnectionTests: XCTestCase {
                 }
             }
             client.connect()
-            transport = (client.internal.transport as! TestProxyTransport)
+            capturedTransport = (client.internal.transport as! TestProxyTransport)
         }
+        let transport = try XCTUnwrap(capturedTransport, "waitUntil timed out before transport was set")
 
         let failures = transport.protocolMessagesReceived.filter { $0.action == .error }
 
@@ -3531,18 +3532,23 @@ class RealtimeClientConnectionTests: XCTestCase {
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
 
-        var recoveryKey: ARTConnectionRecoveryKey!
+        var capturedRecoveryKey: ARTConnectionRecoveryKey?
 
         waitUntil(timeout: testTimeout) { done in
             publishFirstTestMessage(client, channelName: test.uniqueChannelName(), completion: { error in
                 XCTAssertNil(error)
-                let recoveryKeyString = client.connection.createRecoveryKey()!
-                recoveryKey = try! ARTConnectionRecoveryKey.fromJsonString(recoveryKeyString)
-                XCTAssertEqual(recoveryKey.msgSerial, client.internal.msgSerial)
+                guard let recoveryKeyString = client.connection.createRecoveryKey() else {
+                    XCTFail("createRecoveryKey() returned nil")
+                    done()
+                    return
+                }
+                capturedRecoveryKey = try? ARTConnectionRecoveryKey.fromJsonString(recoveryKeyString)
+                XCTAssertEqual(capturedRecoveryKey?.msgSerial, client.internal.msgSerial)
                 options.recover = recoveryKeyString
                 done()
             })
         }
+        let recoveryKey = try XCTUnwrap(capturedRecoveryKey, "waitUntil timed out before recoveryKey was set")
         let recoverClient = AblyTests.newRealtime(options).client
         expect(recoverClient.internal.msgSerial).to(equal(recoveryKey.msgSerial))
     }

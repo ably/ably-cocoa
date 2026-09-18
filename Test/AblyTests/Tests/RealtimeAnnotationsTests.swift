@@ -26,9 +26,9 @@ class RealtimeAnnotationsTests: XCTestCase {
         let realtimeChannel = realtimeClient.channels.get(channelName, options: channelOptions)
 
         // Message and annotation to track
-        var receivedMessage: ARTMessage!
+        var capturedReceivedMessage: ARTMessage?
         var receivedSummary: ARTMessage!
-        var createdAnnotation: ARTAnnotation!
+        var capturedCreatedAnnotation: ARTAnnotation?
 
         // Filtered by type annotations subscription callback calls counter
         var filteredCallbackCalls = 0
@@ -43,7 +43,7 @@ class RealtimeAnnotationsTests: XCTestCase {
             // Subscribe to messages
             realtimeChannel.subscribe { message in
                 if message.action == .create {
-                    receivedMessage = message
+                    capturedReceivedMessage = message
 
                     // When message is received, create and publish annotation via realtime
                     let annotation = ARTOutboundAnnotation(
@@ -68,7 +68,7 @@ class RealtimeAnnotationsTests: XCTestCase {
 
                     // Verify summary properties
                     XCTAssertEqual(receivedSummary.action, .messageSummary)
-                    XCTAssertEqual(receivedSummary.serial, receivedMessage.serial)
+                    XCTAssertEqual(receivedSummary.serial, capturedReceivedMessage?.serial)
                     XCTAssertEqual(receivedSummary.annotations?.summary?.count, 1)
 
                     partialDone()
@@ -80,17 +80,17 @@ class RealtimeAnnotationsTests: XCTestCase {
                 // only interested in the first annotation which is with action `create` (testing RTAN5 along the way)
                 realtimeChannel.annotations.unsubscribe()
 
-                createdAnnotation = annotation
+                capturedCreatedAnnotation = annotation
 
                 // Verify annotation properties
                 XCTAssertEqual(annotation.action, .create)
-                XCTAssertEqual(annotation.messageSerial, receivedMessage.serial)
+                XCTAssertEqual(annotation.messageSerial, capturedReceivedMessage?.serial)
                 XCTAssertEqual(annotation.type, "reaction:multiple.v1")
                 XCTAssertEqual(annotation.name, "👍")
                 XCTAssertEqual(annotation.count?.intValue, 10)
 
                 // Verify it matches the message
-                XCTAssertEqual(annotation.messageSerial, receivedMessage.serial)
+                XCTAssertEqual(annotation.messageSerial, capturedReceivedMessage?.serial)
 
                 partialDone()
             }
@@ -106,13 +106,10 @@ class RealtimeAnnotationsTests: XCTestCase {
                 XCTFail("Callback shouldn't be called for this type.")
             }
         }
+        let receivedMessage = try XCTUnwrap(capturedReceivedMessage, "waitUntil timed out before receivedMessage was set")
+        let createdAnnotation = try XCTUnwrap(capturedCreatedAnnotation, "waitUntil timed out before createdAnnotation was set")
 
         XCTAssertEqual(filteredCallbackCalls, 1)
-
-        guard let createdAnnotation else {
-            XCTFail("Annotation should not be nil")
-            return
-        }
 
         // RTAN2: Now delete the annotation
         waitUntil(timeout: testTimeout) { done in

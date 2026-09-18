@@ -143,13 +143,14 @@ class PluginAPITests: XCTestCase {
         // When: The connection becomes CONNECTED
 
         client.connect()
-        var transport: TestProxyTransport!
+        var capturedTransport: TestProxyTransport?
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { _ in
-                transport = client.internal.transport as? TestProxyTransport
+                capturedTransport = client.internal.transport as? TestProxyTransport
                 done()
             }
         }
+        let transport = try XCTUnwrap(capturedTransport, "waitUntil timed out before transport was set")
 
         // Then: the connection details are passed to the plugin's onReceivedConnectionDetails, once for each channel, and they include the objectsGCGracePeriod
         var receivedConnectionDetails = MockLiveObjectsPlugin._internalPlugin.receivedConnectionDetails
@@ -198,13 +199,14 @@ class PluginAPITests: XCTestCase {
 
         // When: The connection becomes CONNECTED
         client.connect()
-        var transport: TestProxyTransport!
+        var capturedTransport: TestProxyTransport?
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { _ in
-                transport = client.internal.transport as? TestProxyTransport
+                capturedTransport = client.internal.transport as? TestProxyTransport
                 done()
             }
         }
+        let transport = try XCTUnwrap(capturedTransport, "waitUntil timed out before transport was set")
 
         // Then: the plugin API latestConnectionDetails returns the associated connection details
         internalQueue.sync {
