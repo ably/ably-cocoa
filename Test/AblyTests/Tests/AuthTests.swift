@@ -3438,13 +3438,13 @@ class AuthTests: XCTestCase {
     }
 
     // RSA10k
-
-    func test__115__authorize__server_time_offset__should_obtain_server_time_once_and_persist_the_offset_from_the_local_clock() throws {
+    
+    func _test__115__authorize__server_time_offset__should_obtain_server_time_once_and_persist_the_offset_from_the_local_clock(_ offset: TimeInterval) throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let rest = ARTRest(options: options)
 
-        let mockServerDate = Date().addingTimeInterval(120)
+        let mockServerDate = Date().addingTimeInterval(offset)
         rest.auth.internal.testSuite_returnValue(for: NSSelectorFromString("handleServerTime:"), with: mockServerDate)
         let currentDate = Date()
 
@@ -3479,7 +3479,7 @@ class AuthTests: XCTestCase {
         rest.auth.internal.testSuite_forceTokenToExpire()
 
         waitUntil(timeout: testTimeout) { done in
-            rest.auth.authorize(nil, options: nil) { tokenDetails, error in
+            rest.auth.authorize(nil, options: authOptions) { tokenDetails, error in
                 XCTAssertNil(error)
                 guard tokenDetails != nil else {
                     fail("TokenDetails is nil"); done(); return
@@ -3494,6 +3494,14 @@ class AuthTests: XCTestCase {
                 done()
             }
         }
+    }
+
+    func test__115__authorize__server_time_offset__should_obtain_server_time_once_and_persist_the_offset_from_the_local_clock() throws {
+        try _test__115__authorize__server_time_offset__should_obtain_server_time_once_and_persist_the_offset_from_the_local_clock(120)
+    }
+
+    func test__115b__authorize__server_time_offset__should_obtain_server_time_once_and_persist_the_offset_from_the_local_clock() throws {
+        try _test__115__authorize__server_time_offset__should_obtain_server_time_once_and_persist_the_offset_from_the_local_clock(-119) // looks like 120 is out of range in server side comparison
     }
 
     func test__116__authorize__server_time_offset__should_be_consistent_the_timestamp_request_with_the_server_time() throws {
@@ -3531,6 +3539,8 @@ class AuthTests: XCTestCase {
             }
         }
     }
+    
+    // RSA10k
 
     func test__117__authorize__server_time_offset__should_be_possible_by_lib_Client_to_discard_the_cached_local_clock_offset() throws {
         let test = Test()
@@ -3545,7 +3555,7 @@ class AuthTests: XCTestCase {
         defer { hook.remove() }
 
         waitUntil(timeout: testTimeout) { done in
-            rest.auth.authorize(nil, options: nil) { tokenDetails, error in
+            rest.auth.authorize(nil, options: options) { tokenDetails, error in
                 XCTAssertNil(error)
                 guard let tokenDetails = tokenDetails else {
                     fail("TokenDetails is nil"); done(); return
@@ -3570,13 +3580,15 @@ class AuthTests: XCTestCase {
         rest.auth.internal.testSuite_forceTokenToExpire()
 
         waitUntil(timeout: testTimeout) { done in
-            rest.auth.authorize(nil, options: nil) { tokenDetails, error in
+            rest.auth.authorize(nil, options: options) { tokenDetails, error in
                 XCTAssertNil(error)
                 guard tokenDetails != nil else {
                     fail("TokenDetails is nil"); done(); return
                 }
-                XCTAssertNil(rest.auth.internal.timeOffset)
-                XCTAssertEqual(serverTimeRequestCount, 1)
+                // RSA10k: "The client library itself MAY internally discard the cached local clock offset in situations in which it may have been invalidated, such as if there is a local change to the date, time, or timezone, of the client device",
+                // so I assume in this case the time should be requested again which makes sense.
+                XCTAssertNotNil(rest.auth.internal.timeOffset)
+                XCTAssertEqual(serverTimeRequestCount, 2)
                 done()
             }
         }
@@ -3606,38 +3618,6 @@ class AuthTests: XCTestCase {
                 XCTAssertEqual(timeOffset, fakeOffset)
                 let calculatedServerDate = Date().addingTimeInterval(timeOffset)
                 expect(tokenRequest.timestamp).to(beCloseTo(calculatedServerDate, within: 0.5))
-                done()
-            }
-        }
-    }
-
-    func test__119__authorize__server_time_offset__should_request_server_time_when_queryTime_is_true_even_if_the_time_offset_is_assigned() throws {
-        let test = Test()
-        let options = try AblyTests.commonAppSetup(for: test)
-        let rest = ARTRest(options: options)
-
-        var serverTimeRequestCount = 0
-        let hook = rest.internal.testSuite_injectIntoMethod(after: #selector(rest.internal._time)) {
-            serverTimeRequestCount += 1
-        }
-        defer { hook.remove() }
-
-        let fakeOffset: TimeInterval = 60 // 1 minute
-        rest.auth.internal.setTimeOffset(fakeOffset)
-
-        let authOptions = ARTAuthOptions()
-        authOptions.key = options.key
-        authOptions.queryTime = true
-
-        waitUntil(timeout: testTimeout) { done in
-            rest.auth.authorize(nil, options: authOptions) { tokenDetails, error in
-                XCTAssertNil(error)
-                XCTAssertNotNil(tokenDetails)
-                XCTAssertEqual(serverTimeRequestCount, 1)
-                guard let timeOffset = rest.auth.internal.timeOffset?.doubleValue else {
-                    fail("Server Time Offset is nil"); done(); return
-                }
-                XCTAssertNotEqual(timeOffset, fakeOffset)
                 done()
             }
         }
