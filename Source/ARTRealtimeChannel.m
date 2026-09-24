@@ -2,7 +2,7 @@
 #import "ARTChannel+Private.h"
 #import "ARTDataQuery+Private.h"
 
-#import "ARTRealtime+Private.h"
+#import "ARTPubSubClient+Private.h"
 #import "ARTMessage.h"
 #import "ARTBaseMessage+Private.h"
 #import "ARTAuth.h"
@@ -16,7 +16,7 @@
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTStatus.h"
 #import "ARTDefault.h"
-#import "ARTRest.h"
+#import "ARTHttpClient.h"
 #import "ARTClientOptions.h"
 #import "ARTClientOptions+TestConfiguration.h"
 #import "ARTClientOptions+Private.h"
@@ -25,7 +25,7 @@
 #import "ARTTypes+Private.h"
 #import "ARTGCD.h"
 #import "ARTConnection+Private.h"
-#import "ARTRestChannels+Private.h"
+#import "ARTHttpChannels+Private.h"
 #import "ARTEventEmitter+Private.h"
 #import "ARTChannelStateChangeParams.h"
 #import "ARTAttachRequestParams.h"
@@ -63,11 +63,11 @@
     });
 }
 
-- (instancetype)initWithInternal:(ARTRealtimeChannelInternal *)internal realtimeInternal:(ARTRealtimeInternal *)realtimeInternal queuedDealloc:(ARTQueuedDealloc *)dealloc {
+- (instancetype)initWithInternal:(ARTRealtimeChannelInternal *)internal pubsubInternal:(ARTPubSubClientInternal *)pubsubInternal queuedDealloc:(ARTQueuedDealloc *)dealloc {
     self = [super init];
     if (self) {
         _internal = internal;
-        _realtimeInternal = realtimeInternal;
+        _realtimeInternal = pubsubInternal;
         _dealloc = dealloc;
     }
     return self;
@@ -305,12 +305,12 @@ NS_ASSUME_NONNULL_END
     ARTChannelMode _modes;
 }
 
-- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTRealtimeChannelOptions *)options logger:(ARTInternalLog *)logger {
-    self = [super initWithName:name andOptions:options rest:realtime.rest logger:logger];
+- (instancetype)initWithPubSub:(ARTPubSubClientInternal *)pubsub andName:(NSString *)name withOptions:(ARTRealtimeChannelOptions *)options logger:(ARTInternalLog *)logger {
+    self = [super initWithName:name andOptions:options rest:pubsub.rest logger:logger];
     if (self) {
-        _realtime = realtime;
-        _queue = realtime.rest.queue;
-        _userQueue = realtime.rest.userQueue;
+        _realtime = pubsub;
+        _queue = pubsub.rest.queue;
+        _userQueue = pubsub.rest.userQueue;
         _restChannel = [_realtime.rest.channels _getChannel:self.name options:options addPrefix:true];
         _state = ARTRealtimeChannelInitialized;
         _modes = 0;
@@ -322,8 +322,8 @@ NS_ASSUME_NONNULL_END
         _attachedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue timeProvider:_realtime.rest.timeProvider];
         _detachedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue timeProvider:_realtime.rest.timeProvider];
         _internalEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue timeProvider:_realtime.rest.timeProvider];
-        const id<ARTRetryDelayCalculator> attachRetryDelayCalculator = [[ARTBackoffRetryDelayCalculator alloc] initWithInitialRetryTimeout:realtime.options.channelRetryTimeout
-                                                                                                                jitterCoefficientGenerator:realtime.options.testOptions.jitterCoefficientGenerator];
+        const id<ARTRetryDelayCalculator> attachRetryDelayCalculator = [[ARTBackoffRetryDelayCalculator alloc] initWithInitialRetryTimeout:pubsub.options.channelRetryTimeout
+                                                                                                                jitterCoefficientGenerator:pubsub.options.testOptions.jitterCoefficientGenerator];
         _attachRetryState = [[ARTAttachRetryState alloc] initWithRetryDelayCalculator:attachRetryDelayCalculator
                                                                                logger:logger
                                                                      logMessagePrefix:[NSString stringWithFormat:@"RT: %p C:%p ", _realtime, self]];
@@ -334,9 +334,9 @@ NS_ASSUME_NONNULL_END
         [ARTPluginAPI registerSelf];
 
         // If the LiveObjects plugin has been provided, set up LiveObjects functionality for this channel.
-        id<APLiveObjectsInternalPluginProtocol> liveObjectsPlugin = realtime.options.liveObjectsPlugin;
+        id<APLiveObjectsInternalPluginProtocol> liveObjectsPlugin = pubsub.options.liveObjectsPlugin;
         if (liveObjectsPlugin) {
-            [liveObjectsPlugin nosync_prepareChannel:self client:realtime];
+            [liveObjectsPlugin nosync_prepareChannel:self client:pubsub];
         }
 #endif
     }
