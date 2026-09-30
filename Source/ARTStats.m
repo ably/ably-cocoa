@@ -1,5 +1,6 @@
 #import "ARTStats.h"
 #import "ARTDataQuery+Private.h"
+#import "ARTStatus.h"
 
 @implementation ARTStatsQuery
 
@@ -239,10 +240,6 @@ static NSString *statsUnitToString(ARTStatsGranularity unit) {
     formatter.dateFormat = [[ARTStats intervalFormatString] objectAtIndex:granularity];
     formatter.timeZone = [NSTimeZone timeZoneWithName:@"UTC"];
     return [formatter stringFromDate:time];
-}
-
-- (ARTStatsGranularity)intervalGranularity {
-    return [[self class] granularityFromIntervalId:self.intervalId];
 }
 
 - (NSDate *)intervalTime {

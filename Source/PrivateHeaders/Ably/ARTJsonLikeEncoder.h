@@ -1,9 +1,9 @@
-#import "ARTRest+Private.h"
+#import "ARTHttpClient+Private.h"
 #import "ARTEncoder.h"
-#import <Ably/ARTTokenDetails.h>
-#import <Ably/ARTTokenRequest.h>
-#import <Ably/ARTAuthDetails.h>
-#import <Ably/ARTStats.h>
+#import <AblyPubSubDevice/ARTTokenDetails.h>
+#import <AblyPubSubDevice/ARTTokenRequest.h>
+#import <AblyPubSubDevice/ARTAuthDetails.h>
+#import <AblyPubSubDevice/ARTStats.h>
 
 @class ARTPublishResult;
 @class ARTPublishResultSerial;
@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithDelegate:(id<ARTJsonLikeEncoderDelegate>)delegate timeProvider:(id<ARTTimeProvider>)timeProvider;
-- (instancetype)initWithRest:(ARTRestInternal *)rest delegate:(nullable id<ARTJsonLikeEncoderDelegate>)delegate logger:(ARTInternalLog *)logger;
+- (instancetype)initWithRest:(ARTHttpClientInternal *)rest delegate:(nullable id<ARTJsonLikeEncoderDelegate>)delegate logger:(ARTInternalLog *)logger;
 
 @end
 

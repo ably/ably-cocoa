@@ -2,7 +2,7 @@
 #import "ARTRealtimeChannels+Private.h"
 #import "ARTChannels+Private.h"
 #import "ARTRealtimeChannel+Private.h"
-#import "ARTRealtime+Private.h"
+#import "ARTPubSubClient+Private.h"
 #import "ARTClientOptions+Private.h"
 #import "ARTRealtimePresence+Private.h"
 #import "ARTClientOptions+TestConfiguration.h"
@@ -13,11 +13,11 @@
     ARTQueuedDealloc *_dealloc;
 }
 
-- (instancetype)initWithInternal:(ARTRealtimeChannelsInternal *)internal realtimeInternal:(ARTRealtimeInternal *)realtimeInternal queuedDealloc:(ARTQueuedDealloc *)dealloc {
+- (instancetype)initWithInternal:(ARTRealtimeChannelsInternal *)internal pubsubInternal:(ARTPubSubClientInternal *)pubsubInternal queuedDealloc:(ARTQueuedDealloc *)dealloc {
     self = [super init];
     if (self) {
         _internal = internal;
-        _realtimeInternal = realtimeInternal;
+        _realtimeInternal = pubsubInternal;
         _dealloc = dealloc;
     }
     return self;
@@ -28,11 +28,11 @@
 }
 
 - (ARTRealtimeChannel *)get:(NSString *)name {
-    return [[ARTRealtimeChannel alloc] initWithInternal:[_internal get:(NSString *)name] realtimeInternal:_realtimeInternal queuedDealloc:_dealloc];
+    return [[ARTRealtimeChannel alloc] initWithInternal:[_internal get:(NSString *)name] pubsubInternal:_realtimeInternal queuedDealloc:_dealloc];
 }
 
 - (ARTRealtimeChannel *)get:(NSString *)name options:(ARTRealtimeChannelOptions *)options {
-    return [[ARTRealtimeChannel alloc] initWithInternal:[_internal get:(NSString *)name options:options] realtimeInternal:_realtimeInternal queuedDealloc:_dealloc];
+    return [[ARTRealtimeChannel alloc] initWithInternal:[_internal get:(NSString *)name options:options] pubsubInternal:_realtimeInternal queuedDealloc:_dealloc];
 }
 
 - (void)release:(NSString *)name callback:(nullable ARTCallback)errorInfo {
@@ -45,7 +45,7 @@
 
 - (id<NSFastEnumeration>)iterate {
     return [_internal copyIntoIteratorWithMapper:^ARTRealtimeChannel *(ARTRealtimeChannelInternal *internalChannel) {
-        return [[ARTRealtimeChannel alloc] initWithInternal:internalChannel realtimeInternal:self->_realtimeInternal queuedDealloc:self->_dealloc];
+        return [[ARTRealtimeChannel alloc] initWithInternal:internalChannel pubsubInternal:self->_realtimeInternal queuedDealloc:self->_dealloc];
     }];
 }
 
@@ -54,7 +54,7 @@
 @interface ARTRealtimeChannelsInternal ()
 
 @property (nonatomic, readonly) ARTInternalLog *logger;
-@property (weak, nonatomic) ARTRealtimeInternal *realtime; // weak because realtime owns self
+@property (weak, nonatomic) ARTPubSubClientInternal *realtime; // weak because realtime owns self
 
 @end
 
@@ -66,9 +66,9 @@
     dispatch_queue_t _userQueue;
 }
 
-- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime logger:(ARTInternalLog *)logger {
+- (instancetype)initWithPubSub:(ARTPubSubClientInternal *)pubsub logger:(ARTInternalLog *)logger {
     if (self = [super init]) {
-        _realtime = realtime;
+        _realtime = pubsub;
         _userQueue = _realtime.rest.userQueue;
         _queue = _realtime.rest.queue;
         _logger = logger;
@@ -78,7 +78,7 @@
 }
 
 - (id)makeChannel:(NSString *)name options:(ARTRealtimeChannelOptions *)options {
-    return [[ARTRealtimeChannelInternal alloc] initWithRealtime:_realtime andName:name withOptions:options logger:_logger];
+    return [[ARTRealtimeChannelInternal alloc] initWithPubSub:_realtime andName:name withOptions:options logger:_logger];
 }
 
 - (id<NSFastEnumeration>)copyIntoIteratorWithMapper:(ARTRealtimeChannel *(^)(ARTRealtimeChannelInternal *))mapper {

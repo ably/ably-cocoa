@@ -1,8 +1,8 @@
 #import "ARTRealtimeAnnotations+Private.h"
-#import "ARTRealtime+Private.h"
+#import "ARTPubSubClient+Private.h"
 #import "ARTChannel+Private.h"
 #import "ARTRealtimeChannel+Private.h"
-#import "ARTStatus.h"
+#import "ARTErrorInfo.h"
 #import "ARTDataQuery+Private.h"
 #import "ARTConnection+Private.h"
 #import "ARTNSArray+ARTFunctional.h"
@@ -15,7 +15,7 @@
 #import "ARTEventEmitter+Private.h"
 #import "ARTClientOptions.h"
 #import "ARTRealtimeChannelOptions.h"
-#import "ARTRestAnnotations+Private.h"
+#import "ARTHttpAnnotations+Private.h"
 #import "ARTGCD.h"
 
 @implementation ARTRealtimeAnnotations {
@@ -95,7 +95,7 @@
 
 @implementation ARTRealtimeAnnotationsInternal {
     __weak ARTRealtimeChannelInternal *_channel; // weak because channel owns self
-    __weak ARTRealtimeInternal *_realtime;
+    __weak ARTPubSubClientInternal *_realtime;
     dispatch_queue_t _userQueue;
     ARTEventEmitter<ARTEvent *, ARTAnnotation *> *_eventEmitter;
 }

@@ -1,5 +1,5 @@
 #import <Foundation/Foundation.h>
-#import <Ably/ARTEventEmitter.h>
+#import <AblyPubSubDevice/ARTEventEmitter.h>
 
 @protocol ARTRealtimeTransport;
 
@@ -7,7 +7,7 @@
 @class ARTStatus;
 @class ARTErrorInfo;
 @class ARTClientOptions;
-@class ARTRestInternal;
+@class ARTHttpClientInternal;
 @class ARTInternalLog;
 
 NS_ASSUME_NONNULL_BEGIN

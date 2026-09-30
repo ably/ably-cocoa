@@ -1,7 +1,7 @@
 import _AblyPluginSupportPrivate
-import Ably
 @testable import AblyLiveObjects
 @testable import AblyLiveObjectsTesting
+import AblyPubSubDevice
 import Foundation
 import Testing
 
@@ -12,7 +12,7 @@ struct DefaultInternalPluginTests {
 
     /// An empty marker conformer for `RealtimeChannel`.
     final class StubChannel: NSObject, _AblyPluginSupportPrivate.RealtimeChannel {}
-    /// An empty marker conformer for `RealtimeClient`.
+    /// An empty marker conformer for `PubSubClient`.
     final class StubClient: NSObject, _AblyPluginSupportPrivate.RealtimeClient {}
     /// An empty marker conformer for `Logger`.
     final class StubLogger: NSObject, _AblyPluginSupportPrivate.Logger {}
@@ -34,7 +34,7 @@ struct DefaultInternalPluginTests {
     final class MockPluginAPI: NSObject, _AblyPluginSupportPrivate.PluginAPIProtocol, @unchecked Sendable {
         let internalQueue: DispatchQueue
         let callbackQueue: DispatchQueue
-        let clientOptions: ARTClientOptions
+        let clientOptions: ClientOptions
         let connectionDetails: (any _AblyPluginSupportPrivate.ConnectionDetailsProtocol)?
         let channelName: String
 
@@ -44,7 +44,7 @@ struct DefaultInternalPluginTests {
         init(
             internalQueue: DispatchQueue,
             callbackQueue: DispatchQueue,
-            clientOptions: ARTClientOptions = ARTClientOptions(),
+            clientOptions: ClientOptions = ClientOptions(),
             connectionDetails: (any _AblyPluginSupportPrivate.ConnectionDetailsProtocol)?,
             channelName: String = "test-channel"
         ) {
