@@ -42,6 +42,19 @@ RUN_DEVIATIONS=1 swift test --filter UTS.<TestClass>/<testMethod>
 
 ## Adapted Tests (assert actual SDK behaviour, deviation documented)
 
+### RSC15l4 — the default primary host is `rest.ably.io`
+
+1. **Spec point**: RSC15l4 (UTS `rest/unit/RSC15l4/cloudfront-error-triggers-fallback-0`)
+2. **Spec requirement**: the first request goes to `main.realtime.ably.net`, the default primary
+   domain (REC1a), and the retry after the CloudFront error goes to a different host.
+3. **Actual SDK behaviour**: the default REST host is `rest.ably.io`. This SDK version has no
+   `endpoint` option and doesn't implement REC1.
+4. **Root cause**: `Source/ARTDefault.m` — `+restHost` returns `rest.ably.io`.
+5. **Test impact**: `UTS.FallbackTests/test_RSC15l4_cloudfront_error_triggers_fallback` asserts that
+   the first request goes to the client's own primary host (`restUrl().host`) and the retry to a
+   different host. The spec lines are kept as comments.
+6. **Status**: intentional deviation (the fallback behaviour under test is unaffected).
+
 ### RTLM20e7f — outbound binary is raw `Data`, base64 applies at wire serialization
 
 1. **Spec point**: RTLM20e7f (UTS `objects/unit/RTLM20/set-bytes-value-0`)
