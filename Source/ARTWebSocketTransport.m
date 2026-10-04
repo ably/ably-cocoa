@@ -349,9 +349,11 @@ NS_ASSUME_NONNULL_END
     } else if ([error.domain isEqualToString:ARTSRWebSocketErrorDomain] && error.code == 2132) {
         id status = error.userInfo[ARTSRHTTPResponseErrorKey];
         if (status) {
-            return [[ARTRealtimeTransportError alloc] initWithError:error
-                                                    badResponseCode:[(NSNumber *)status integerValue]
-                                                                url:self.websocketURL];
+            ARTRealtimeTransportError *const transportError = [[ARTRealtimeTransportError alloc] initWithError:error
+                                                                                                badResponseCode:[(NSNumber *)status integerValue]
+                                                                                                            url:self.websocketURL];
+            transportError.badResponseServerHeader = error.userInfo[ARTSRHTTPResponseServerHeaderKey];
+            return transportError;
         }
     }
 
