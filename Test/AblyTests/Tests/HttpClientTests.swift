@@ -460,7 +460,7 @@ class HttpClientTests: XCTestCase {
         XCTAssertTrue(authOptions == options)
     }
 
-    // RSC12
+    // RSC25, TO3k8
     func test__003__RestClient__REST_endpoint_host_should_be_configurable_in_the_Client_constructor_with_the_option_endpoint() throws {
         let test = Test()
         let options = ClientOptions(key: "xxxx:xxxx")
