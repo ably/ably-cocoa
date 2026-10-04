@@ -176,7 +176,7 @@ final class TimeTests: UTSTestCase {
 
 // MARK: - time() continuation helpers
 
-extension TimeTests {
+extension UTSTestCase {
     /// Bridges the completion-handler `time:` API (UTS `AWAIT client.time()`, success path).
     func awaitTime(_ rest: ARTRest, sourceLocation: SourceLocation = #_sourceLocation) async throws -> Date {
         let date: Date? = await withCheckedContinuation { continuation in

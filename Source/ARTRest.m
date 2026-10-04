@@ -510,6 +510,11 @@ NS_ASSUME_NONNULL_END
     if (response.statusCode >= 500 && response.statusCode <= 504) {
         return YES;
     }
+    // RSC15l4
+    NSString *const server = [response valueForHTTPHeaderField:@"Server"];
+    if (response.statusCode >= 400 && server && [server caseInsensitiveCompare:@"CloudFront"] == NSOrderedSame) {
+        return YES;
+    }
     if (error && (error.domain == NSURLErrorDomain && (
         error.code == -1003 || // Unreachable
         error.code == -1001 // timed out
