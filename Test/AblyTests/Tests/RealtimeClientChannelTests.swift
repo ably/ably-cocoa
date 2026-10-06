@@ -4032,7 +4032,11 @@ class RealtimeClientChannelTests: XCTestCase {
             let partialDone = AblyTests.splitDone(3, done: done)
             channel.attach { error in
                 expect(error).to(beNil())
-                let attachMessage = transport.protocolMessagesReceived.filter { $0.action == .attached }[0]
+                guard let attachMessage = transport.protocolMessagesReceived.first(where: { $0.action == .attached }) else {
+                    fail("No ATTACHED message was received")
+                    partialDone()
+                    return
+                }
                 if attachMessage.channelSerial != nil {
                     expect(attachMessage.channelSerial).to(equal(channel.properties.attachSerial)) // RTL15a
                     expect(attachMessage.channelSerial).to(equal(channel.properties.channelSerial)) // RTL15b
@@ -4040,15 +4044,24 @@ class RealtimeClientChannelTests: XCTestCase {
                 partialDone()
 
                 channel.subscribe { message in
-                    let messageMessage = transport.protocolMessagesReceived.filter { $0.action == .message }[0]
+                    guard let messageMessage = transport.protocolMessagesReceived.first(where: { $0.action == .message }) else {
+                        fail("No MESSAGE message was received")
+                        partialDone()
+                        return
+                    }
                     if messageMessage.channelSerial != nil {
                         expect(messageMessage.channelSerial).to(equal(channel.properties.channelSerial)) // RTL15b
                     }
                     channel.presence.enterClient("client1", data: "Hey")
                     partialDone()
                 }
-                channel.presence.subscribe { presenceMessage in
-                    let presenceMessage = transport.protocolMessagesReceived.filter { $0.action == .presence }[0]
+                channel.presence.subscribe { _ in
+                    // A presence event can also come from a SYNC, for example after a reattach.
+                    guard let presenceMessage = transport.protocolMessagesReceived.first(where: { $0.action == .presence }) else {
+                        fail("No PRESENCE message was received")
+                        partialDone()
+                        return
+                    }
                     if presenceMessage.channelSerial != nil {
                         expect(presenceMessage.channelSerial).to(equal(channel.properties.channelSerial)) // RTL15b
                     }
