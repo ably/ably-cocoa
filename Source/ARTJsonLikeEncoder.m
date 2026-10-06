@@ -22,8 +22,8 @@
 #import "ARTNSDictionary+ARTDictionaryUtil.h"
 #import "ARTNSDate+ARTUtil.h"
 #import "ARTInternalLog.h"
-#import "ARTHttp.h"
-#import "ARTStatus.h"
+#import "ARTHTTPExecutor.h"
+#import "ARTErrorInfo.h"
 #import "ARTTokenDetails.h"
 #import "ARTTokenRequest.h"
 #import "ARTAuthDetails.h"
@@ -34,7 +34,7 @@
 #import "ARTDevicePushDetails.h"
 #import "ARTDevicePushDetails+Private.h"
 #import "ARTConnectionDetails.h"
-#import "ARTRest+Private.h"
+#import "ARTHttpClient+Private.h"
 #import "ARTJsonEncoder.h"
 #import "ARTPushChannelSubscription.h"
 #import "ARTClientOptions+Private.h"
@@ -45,7 +45,7 @@
 #endif
 
 @implementation ARTJsonLikeEncoder {
-    __weak ARTRestInternal *_rest; // weak because rest owns self
+    __weak ARTHttpClientInternal *_rest; // weak because rest owns self
     ARTInternalLog *_logger;
     id<ARTTimeProvider> _timeProvider;
 }
@@ -60,7 +60,7 @@
     return self;
 }
 
-- (instancetype)initWithRest:(ARTRestInternal *)rest delegate:(id<ARTJsonLikeEncoderDelegate>)delegate logger:(ARTInternalLog *)logger {
+- (instancetype)initWithRest:(ARTHttpClientInternal *)rest delegate:(id<ARTJsonLikeEncoderDelegate>)delegate logger:(ARTInternalLog *)logger {
     if (self = [super init]) {
         _rest = rest;
         _logger = logger;
@@ -308,34 +308,15 @@
     message.connectionId = [input artString:@"connectionId"];
     message.extras = [input objectForKey:@"extras"];
 
+    // TM2s: there is always a version. TM2s1 and TM2s2: its serial and timestamp default to the message's own.
     id version = input[@"version"];
-    if ([version isKindOfClass:[NSDictionary class]]) {
-        message.version = [ARTMessageVersion createFromDictionary:version];
-    } else {
-        // TM2s
-        message.version = [[ARTMessageVersion alloc] init];
-    }
+    message.version = [ARTMessageVersion createFromDictionary:[version isKindOfClass:[NSDictionary class]] ? version : nil
+                                                defaultSerial:message.serial
+                                             defaultTimestamp:message.timestamp];
 
-    if (!message.version.serial) { // TM2s1
-        message.version.serial = message.serial;
-    }
-
-    if (!message.version.timestamp) { // TM2s2
-        message.version.timestamp = message.timestamp;
-    }
-
+    // TM2u: there are always annotations. TM8a: their summary defaults to an empty object.
     id annotations = input[@"annotations"];
-    if (annotations && [annotations isKindOfClass:[NSDictionary class]]) {
-        message.annotations = [ARTMessageAnnotations createFromDictionary:annotations];
-    } else {
-        // TM2u
-        message.annotations = [[ARTMessageAnnotations alloc] init];
-    }
-
-    if (!message.annotations.summary) {
-        // TM8a
-        message.annotations.summary = @{};
-    }
+    message.annotations = [ARTMessageAnnotations createFromDictionary:[annotations isKindOfClass:[NSDictionary class]] ? annotations : nil];
 
     return message;
 }

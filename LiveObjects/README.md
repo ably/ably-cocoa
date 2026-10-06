@@ -45,18 +45,18 @@ This plugin supports the following platforms:
 The examples below are a quick tour of the API. Check the [LiveObjects documentation](https://ably.com/docs/liveobjects) for a comprehensive guide — starting with the [Swift quickstart](https://ably.com/docs/liveobjects/quickstart/swift), it covers maps, counters, path objects, subscriptions, lifecycle events and more.
 
 After [installing the plugin](../README.md#liveobjects), pass it to the client via
-`ARTClientOptions`, and fetch channels with the LiveObjects channel modes:
+`ClientOptions`, and fetch channels with the LiveObjects channel modes:
 
 ```swift
-import Ably
+import AblyPubSubDevice
 import AblyLiveObjects
 
-let clientOptions = ARTClientOptions(key: "your-ably-api-key")
+let clientOptions = ClientOptions(key: "your-ably-api-key")
 clientOptions.plugins = [.liveObjects: AblyLiveObjects.Plugin.self]
-let realtime = ARTRealtime(options: clientOptions)
+let realtime = PubSubDevice.createClient(options: clientOptions)
 
 // Fetch a channel, specifying the LiveObjects channel modes
-let channelOptions = ARTRealtimeChannelOptions()
+let channelOptions = RealtimeChannelOptions()
 channelOptions.modes = [.objectPublish, .objectSubscribe]
 let channel = realtime.channels.get("my-channel", options: channelOptions)
 ```
@@ -130,10 +130,10 @@ As of ably-cocoa 1.3.0, the plugin is developed, versioned and released from the
 Your imports and plugin registration are unchanged:
 
 ```swift
-import Ably
+import AblyPubSubDevice
 import AblyLiveObjects
 
-let clientOptions = ARTClientOptions(key: "your-ably-api-key")
+let clientOptions = ClientOptions(key: "your-ably-api-key")
 clientOptions.plugins = [.liveObjects: AblyLiveObjects.Plugin.self]
 ```
 

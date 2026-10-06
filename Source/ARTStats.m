@@ -1,5 +1,6 @@
 #import "ARTStats.h"
 #import "ARTDataQuery+Private.h"
+#import "ARTStatus.h"
 
 @implementation ARTStatsQuery
 
@@ -25,9 +26,9 @@ static NSString *statsUnitToString(ARTStatsGranularity unit) {
     }
 }
 
-- (NSMutableArray *)asQueryItems:(NSError **)error {
-    NSMutableArray *items = [super asQueryItems:error];
-    if (*error) {
+- (NSMutableArray *)asQueryItems:(ARTErrorInfo *_Nullable *_Nullable)errorPtr {
+    NSMutableArray *items = [super asQueryItems:errorPtr];
+    if (!items) {
         return nil;
     }
     [items addObject:[NSURLQueryItem queryItemWithName:@"unit" value:statsUnitToString(self.unit)]];
@@ -239,10 +240,6 @@ static NSString *statsUnitToString(ARTStatsGranularity unit) {
     formatter.dateFormat = [[ARTStats intervalFormatString] objectAtIndex:granularity];
     formatter.timeZone = [NSTimeZone timeZoneWithName:@"UTC"];
     return [formatter stringFromDate:time];
-}
-
-- (ARTStatsGranularity)intervalGranularity {
-    return [[self class] granularityFromIntervalId:self.intervalId];
 }
 
 - (NSDate *)intervalTime {
