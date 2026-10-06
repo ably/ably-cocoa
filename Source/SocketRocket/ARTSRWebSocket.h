@@ -51,6 +51,8 @@ extern NSString *const ARTSRWebSocketErrorDomain;
  Key used for HTTP status code if bad response was received from the server.
  */
 extern NSString *const ARTSRHTTPResponseErrorKey;
+/// The value of the `Server` header in a failed handshake response, when the response had one.
+extern NSString *const ARTSRHTTPResponseServerHeaderKey;
 
 @protocol ARTWebSocketDelegate;
 

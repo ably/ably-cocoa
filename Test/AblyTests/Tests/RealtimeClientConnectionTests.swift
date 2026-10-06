@@ -4094,6 +4094,12 @@ class RealtimeClientConnectionTests: XCTestCase {
         testUsesAlternativeHostOnResponse(.hostInternalError(code: 501), channelName: test.uniqueChannelName())
     }
 
+    // RTN17f, RSC15l4
+    func test__099b__Connection__Host_Fallback__should_use_an_alternative_host_when___cloudFrontError_code__403() {
+        let test = Test()
+        testUsesAlternativeHostOnResponse(.cloudFrontError(code: 403), channelName: test.uniqueChannelName())
+    }
+
     func test__100__Connection__Host_Fallback__should_move_to_disconnected_when_there_s_no_internet__with_NSPOSIXErrorDomain_with_code_57() throws {
         let test = Test()
         try testMovesToDisconnectedWithNetworkingError(NSError(domain: "NSPOSIXErrorDomain", code: 57, userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"]), for: test)

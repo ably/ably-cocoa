@@ -18,7 +18,13 @@ RUN_DEVIATIONS=1 swift test --filter UTS.<TestClass>/<testMethod>
 
 ## UTS Spec Errors
 
-*(none)*
+### RTN17f1 — the connectivity check isn't mocked
+
+1. **Spec point**: RTN17f1 (UTS `realtime/unit/RTN17f1/disconnected-5xx-fallback-0`)
+2. **Error**: the setup mocks only the WebSocket. Before the client tries a fallback host, RTN17j
+   requires it to check connectivity with an HTTP `GET`, and the setup doesn't mock that request.
+3. **Fix in the port**: `UTS.FallbackHostsTests/test_RTN17f1_disconnected_with_5xx_status_triggers_fallback`
+   installs a `MockHTTPClient` that answers the connectivity check with `yes`.
 
 ## Failing Tests (SDK non-compliance, spec-correct test skipped)
 
