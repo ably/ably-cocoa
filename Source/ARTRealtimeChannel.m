@@ -946,7 +946,11 @@ art_dispatch_sync(_queue, ^{
         }
 
         if (!msg.timestamp) {
-            msg.timestamp = pm.timestamp;
+            msg.timestamp = pm.timestamp; // TM2f
+        }
+        // TM2s2: decoding set version.timestamp from the message's own timestamp, which may only now be set by TM2f.
+        if (!msg.version.timestamp) {
+            msg.version.timestamp = msg.timestamp;
         }
         if (!msg.id) {
             msg.id = [NSString stringWithFormat:@"%@:%d", pm.id, i];
