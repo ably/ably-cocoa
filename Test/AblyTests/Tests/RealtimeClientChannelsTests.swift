@@ -117,4 +117,63 @@ class RealtimeClientChannelsTests: XCTestCase {
             sameChannel.publish("foo", data: nil)
         }
     }
+
+    // RTS4b
+    func test__006__Channels__release__should_log_a_deprecation_warning_when_releasing_an_attached_channel() throws {
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        options.logHandler = ARTLog(capturingOutput: true)
+        let client = ARTRealtime(options: options)
+        defer { client.dispose(); client.close() }
+
+        let channelName = test.uniqueChannelName()
+        let channel = client.channels.get(channelName)
+        waitUntil(timeout: testTimeout) { done in
+            channel.attach { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+
+        waitUntil(timeout: testTimeout) { done in
+            client.channels.release(channelName) { errorInfo in
+                XCTAssertNil(errorInfo)
+                XCTAssertEqual(channel.state, ARTRealtimeChannelState.detached)
+                done()
+            }
+        }
+        XCTAssertFalse(client.channels.exists(channelName))
+
+        let deprecationWarnings = options.logHandler.captured.filter { $0.level == .warn && $0.message.contains("is deprecated") }
+        XCTAssertEqual(deprecationWarnings.count, 1)
+        expect(deprecationWarnings.first?.message).to(contain("in the attached state"))
+    }
+
+    // RTS4d
+    func test__007__Channels__release__should_not_log_a_deprecation_warning_when_releasing_a_detached_channel() throws {
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        options.logHandler = ARTLog(capturingOutput: true)
+        let client = ARTRealtime(options: options)
+        defer { client.dispose(); client.close() }
+
+        let channelName = test.uniqueChannelName()
+        let channel = client.channels.get(channelName)
+        waitUntil(timeout: testTimeout) { done in
+            channel.attach { error in
+                XCTAssertNil(error)
+                channel.detach { error in
+                    XCTAssertNil(error)
+                    done()
+                }
+            }
+        }
+        XCTAssertEqual(channel.state, ARTRealtimeChannelState.detached)
+
+        client.channels.release(channelName)
+        XCTAssertFalse(client.channels.exists(channelName))
+
+        let deprecationWarnings = options.logHandler.captured.filter { $0.message.contains("is deprecated") }
+        XCTAssertTrue(deprecationWarnings.isEmpty)
+    }
 }
