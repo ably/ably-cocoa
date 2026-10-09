@@ -41,7 +41,7 @@ NS_SWIFT_NAME(Channels)
 
 /**
  * Releases an `ARTHttpChannel` or an `ARTRealtimeChannel` object by deleting it. It also removes any listeners associated with the channel.
- * To release an `ARTRealtimeChannel` channel, the `ARTRealtimeChannelProtocol.state` must be `ARTRealtimeChannelState.ARTRealtimeChannelInitialized`, `ARTRealtimeChannelState.ARTRealtimeChannelDetached`, or `ARTRealtimeChannelState.ARTRealtimeChannelFailed`.
+ * A realtime channel can only be released when it is in the `ARTRealtimeChannelState.ARTRealtimeChannelInitialized`, `ARTRealtimeChannelState.ARTRealtimeChannelDetached`, or `ARTRealtimeChannelState.ARTRealtimeChannelFailed` state.
  *
  * @param name The channel name.
  */

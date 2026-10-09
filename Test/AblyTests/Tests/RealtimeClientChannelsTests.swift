@@ -84,9 +84,35 @@ class RealtimeClientChannelsTests: XCTestCase {
         XCTAssertTrue(channel.options === options)
     }
 
-    // RTS4
+    // RTS4c
+    func test__005__Channels__release__should_do_nothing_if_the_channel_does_not_exist() throws {
+        let test = Test()
+        let client = PubSubClient(options: try AblyTests.commonAppSetup(for: test))
+        defer { client.dispose(); client.close() }
 
-    func test__005__Channels__release__should_release_a_channel() throws {
+        let channelName = test.uniqueChannelName()
+        try client.channels.release(channelName)
+        XCTAssertFalse(client.channels.exists(channelName))
+    }
+
+    // RTS4d
+    func test__006__Channels__release__should_remove_an_initialized_channel() throws {
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        options.autoConnect = false
+        let client = PubSubClient(options: options)
+        defer { client.dispose(); client.close() }
+
+        let channelName = test.uniqueChannelName()
+        let channel = client.channels.get(channelName)
+        XCTAssertEqual(channel.state, RealtimeChannelState.initialized)
+
+        try client.channels.release(channelName)
+        XCTAssertFalse(client.channels.exists(channelName))
+    }
+
+    // RTS4d
+    func test__007__Channels__release__should_remove_a_detached_channel() throws {
         let test = Test()
         let client = PubSubClient(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
@@ -99,15 +125,19 @@ class RealtimeClientChannelsTests: XCTestCase {
         channel.presence.subscribe { _ in
             fail("shouldn't happen")
         }
+        expect(channel.state).toEventually(equal(RealtimeChannelState.attached), timeout: testTimeout)
         waitUntil(timeout: testTimeout) { done in
-            client.channels.release(channelName) { errorInfo in
-                XCTAssertNil(errorInfo)
-                XCTAssertEqual(channel.state, RealtimeChannelState.detached)
+            channel.detach { error in
+                XCTAssertNil(error)
                 done()
             }
         }
 
+        try client.channels.release(channelName)
+        XCTAssertFalse(client.channels.exists(channelName))
+
         let sameChannel = client.channels.get(channelName)
+        XCTAssertFalse(sameChannel.internal === channel.internal)
         waitUntil(timeout: testTimeout) { done in
             sameChannel.subscribe { _ in
                 sameChannel.presence.enterClient("foo", data: nil) { _ in
@@ -116,5 +146,33 @@ class RealtimeClientChannelsTests: XCTestCase {
             }
             sameChannel.publish("foo", data: nil)
         }
+    }
+
+    // RTS4e
+    func test__008__Channels__release__should_fail_without_releasing_an_attached_channel() throws {
+        let test = Test()
+        let client = PubSubClient(options: try AblyTests.commonAppSetup(for: test))
+        defer { client.dispose(); client.close() }
+
+        let channelName = test.uniqueChannelName()
+        let channel = client.channels.get(channelName)
+        waitUntil(timeout: testTimeout) { done in
+            channel.attach { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+
+        XCTAssertThrowsError(try client.channels.release(channelName)) { error in
+            guard let error = error as? ErrorInfo else {
+                XCTFail("Expected an ErrorInfo, got \(error)")
+                return
+            }
+            XCTAssertEqual(error.code, ErrorCode.channelReleaseInvalidState.intValue)
+            XCTAssertEqual(error.statusCode, 400)
+        }
+        XCTAssertEqual(channel.state, RealtimeChannelState.attached)
+        XCTAssertTrue(client.channels.exists(channelName))
+        XCTAssertTrue(client.channels.get(channelName).internal === channel.internal)
     }
 }
