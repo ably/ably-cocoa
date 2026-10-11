@@ -3211,6 +3211,39 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
     }
 
+    // A client that can't renew its token disconnects when Ably asks it to reauthenticate (RTN22), and its next connection attempt fails at once.
+    // That attempt used to crash: it activated reachability for the transport that the failure had already released.
+    func test__078b__Connection__connection_failures_once_CONNECTED__reconnecting_without_a_means_to_renew_the_token_does_not_crash() throws {
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        options.autoConnect = false
+        let key = options.key
+        // set the key to nil so that the client can't sign further token requests
+        options.key = nil
+        options.token = try getTestToken(for: test, key: key, ttl: 60.0)
+        options.testOptions.transportFactory = TestProxyTransportFactory()
+        let client = ARTRealtime(options: options)
+        defer { client.dispose(); client.close() }
+
+        waitUntil(timeout: testTimeout) { done in
+            client.connection.once(.connected) { _ in
+                done()
+            }
+            client.connect()
+        }
+
+        waitUntil(timeout: testTimeout) { done in
+            client.connection.once(.disconnected) { _ in
+                client.connection.once(.connecting) { _ in
+                    done()
+                }
+            }
+            let authMessage = ARTProtocolMessage()
+            authMessage.action = .auth
+            client.internal.transport?.receive(authMessage)
+        }
+    }
+
     // RTN15h2
     func test__079__Connection__connection_failures_once_CONNECTED__DISCONNECTED_message_contains_a_token_error__should_transition_to_disconnected_when_the_token_renewal_fails_and_the_error_should_be_emitted() throws {
         let test = Test()

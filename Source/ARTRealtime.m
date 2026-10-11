@@ -701,7 +701,11 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
                                   stateChange.previous == ARTRealtimeSuspended;
                     [self createAndConnectTransportWithConnectionResume:resume];
                 }
-                [self setReachabilityActive:YES];
+                // Connecting can fail synchronously (e.g. the token can't be renewed), running a nested
+                // transition that changes the state and releases the transport before we get here
+                if (self.connection.state_nosync == ARTRealtimeConnecting && _transport) {
+                    [self setReachabilityActive:YES];
+                }
             }
 
             break;

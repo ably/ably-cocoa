@@ -35,6 +35,11 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
 
 - (void)listenForHost:(NSString *)host callback:(void (^)(BOOL))callback {
     [self off];
+
+    if (host == nil) {
+        ARTLogWarn(_logger, @"Reachability: no host to listen for");
+        return;
+    }
     _host = host;
 
     // This strategy is taken from Mike Ash's book "The Complete Friday Q&A: Volume III".
@@ -55,6 +60,10 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
     };
 
     _reachabilityRef = SCNetworkReachabilityCreateWithName(NULL, [host UTF8String]);
+    if (_reachabilityRef == NULL) {
+        ARTLogWarn(_logger, @"Reachability: failed creating a reference for host %@", host);
+        return;
+    }
 
     SCNetworkReachabilityContext context = {
         .version = 0,
