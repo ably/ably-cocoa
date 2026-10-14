@@ -1651,6 +1651,18 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     }
 }
 
+// As in ably-js, a transport that fails or disconnects is reported as disconnected (80003), with an error from outside Ably as the underlying error.
+- (ARTErrorInfo *)errorInfoForTransportError:(nullable NSError *)error {
+    if ([error.domain isEqualToString:ARTAblyErrorDomain]) {
+        return [ARTErrorInfo createFromNSError:error];
+    }
+    return [ARTErrorInfo createWithCode:ARTErrorDisconnected
+                                 status:400
+                                message:error.localizedDescription ?: @"Transport disconnected"
+                              requestId:nil
+                     additionalUserInfo:error ? @{NSUnderlyingErrorKey: error} : nil];
+}
+
 - (void)realtimeTransportDisconnected:(id<ARTRealtimeTransport>)transport withError:(ARTRealtimeTransportError *)error {
     if (transport != self.transport) {
         // Old connection
@@ -1660,7 +1672,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
     if (self.connection.state_nosync == ARTRealtimeClosing) {
         [self performTransitionToState:ARTRealtimeClosed withParams:[[ARTConnectionStateChangeParams alloc] init]];
     } else {
-        ARTErrorInfo *const errorInfo = [ARTErrorInfo createFromNSError:error.error];
+        ARTErrorInfo *const errorInfo = [self errorInfoForTransportError:error.error];
         ARTConnectionStateChangeParams *const params = [[ARTConnectionStateChangeParams alloc] initWithErrorInfo:errorInfo];
         [self performTransitionToDisconnectedOrSuspendedWithParams:params];
     }
@@ -1674,7 +1686,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
 
     ARTLogDebug(self.logger, @"R:%p realtime transport failed: %@", self, transportError);
 
-    ARTErrorInfo *const errorInfo = [ARTErrorInfo createFromNSError:transportError.error];
+    ARTErrorInfo *const errorInfo = [self errorInfoForTransportError:transportError.error];
     ARTConnectionStateChangeParams *const params = [[ARTConnectionStateChangeParams alloc] initWithErrorInfo:errorInfo];
 
     ARTClientOptions *const clientOptions = [self getClientOptions];
@@ -1718,7 +1730,7 @@ wrapperSDKAgents:(nullable NSStringDictionary *)wrapperSDKAgents
         [self performTransitionToDisconnectedOrSuspendedWithParams:params];
     }
     else if (error) {
-        ARTErrorInfo *const errorInfo = [ARTErrorInfo createFromNSError:error.error];
+        ARTErrorInfo *const errorInfo = [self errorInfoForTransportError:error.error];
         ARTConnectionStateChangeParams *const params = [[ARTConnectionStateChangeParams alloc] initWithErrorInfo:errorInfo];
         [self performTransitionToDisconnectedOrSuspendedWithParams:params];
     }
