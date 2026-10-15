@@ -468,12 +468,14 @@ class PushTests: XCTestCase {
         options.pushRegistererDelegate = pushRegistererDelegate
         let rest = ARTRest(options: options)
         waitUntil(timeout: testTimeout) { done in
-            pushRegistererDelegate.onDidActivateAblyPush = { _ in
+            pushRegistererDelegate.onDidActivateAblyPush = { error in
+                XCTAssertNil(error)
                 done()
             }
             pushRegistererDelegate.onDidDeactivateAblyPush = { _ in
                 fail("should not be called")
             }
+            rest.internal.httpExecutor = MockHTTPExecutor()
             rest.push.activate()
             ARTPush.didRegisterForRemoteNotifications(withDeviceToken: TestDeviceToken.tokenData, rest: rest)
         }
@@ -612,7 +614,8 @@ class PushTests: XCTestCase {
         }
 
         waitUntil(timeout: testTimeout) { done in
-            pushRegistererDelegate.onDidActivateAblyPush = { _ in
+            pushRegistererDelegate.onDidActivateAblyPush = { error in
+                XCTAssertNil(error)
                 requestLocationDeviceToken()
             }
             pushRegistererDelegate.onDidUpdateAblyPush = { _ in
