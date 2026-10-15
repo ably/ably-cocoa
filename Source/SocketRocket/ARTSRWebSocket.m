@@ -69,6 +69,7 @@ static uint8_t const ARTSRWebSocketProtocolVersion = 13;
 
 NSString *const ARTSRWebSocketErrorDomain = @"ARTSRWebSocketErrorDomain";
 NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
+NSString *const ARTSRHTTPResponseServerHeaderKey = @"HTTPResponseServerHeader";
 
 @interface ARTSRWebSocket ()  <NSStreamDelegate>
 
@@ -392,6 +393,12 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
         NSError *error = ARTSRHTTPErrorWithCodeDescription(responseCode, 2132,
                                                         [NSString stringWithFormat:@"Received bad response code from server: %d.",
                                                          (int)responseCode]);
+        NSString *const server = CFBridgingRelease(CFHTTPMessageCopyHeaderFieldValue(_receivedHTTPHeaders, CFSTR("Server")));
+        if (server) {
+            NSMutableDictionary *const userInfo = [error.userInfo mutableCopy];
+            userInfo[ARTSRHTTPResponseServerHeaderKey] = server;
+            error = [NSError errorWithDomain:error.domain code:error.code userInfo:userInfo];
+        }
         [self _failWithError:error];
         return;
     }
