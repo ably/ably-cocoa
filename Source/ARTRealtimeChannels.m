@@ -8,6 +8,7 @@
 #import "ARTClientOptions+TestConfiguration.h"
 #import "ARTTestClientOptions.h"
 #import "ARTGCD.h"
+#import "ARTInternalLog.h"
 
 @implementation ARTRealtimeChannels {
     ARTQueuedDealloc *_dealloc;
@@ -116,6 +117,11 @@ art_dispatch_sync(_queue, ^{
     }
 
     ARTRealtimeChannelInternal *channel = [self->_channels _get:name];
+    const ARTRealtimeChannelState state = channel.state_nosync;
+    if (state != ARTRealtimeChannelInitialized && state != ARTRealtimeChannelDetached && state != ARTRealtimeChannelFailed) {
+        // RTS4b
+        ARTLogWarn(self.logger, @"Calling `channels.release()` on a channel in the %@ state is deprecated, and will throw an error in the next major version. Call `channel.detach()` and wait for it to complete before calling `channels.release(name)`.", [ARTRealtimeChannelStateToStr(state) lowercaseString]);
+    }
     [channel _detach:^(ARTErrorInfo *errorInfo) {
         [channel off_nosync];
         [channel _unsubscribe];

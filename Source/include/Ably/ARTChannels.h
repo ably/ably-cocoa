@@ -40,7 +40,7 @@ NS_SWIFT_SENDABLE
 
 /**
  * Releases an `ARTRestChannel` or an `ARTRealtimeChannel` object by deleting it. It also removes any listeners associated with the channel.
- * To release an `ARTRealtimeChannel` channel, the `ARTRealtimeChannelProtocol.state` must be `ARTRealtimeChannelState.ARTRealtimeChannelInitialized`, `ARTRealtimeChannelState.ARTRealtimeChannelDetached`, or `ARTRealtimeChannelState.ARTRealtimeChannelFailed`.
+ * An `ARTRealtimeChannel` should only be released when its `ARTRealtimeChannelProtocol.state` is `ARTRealtimeChannelState.ARTRealtimeChannelInitialized`, `ARTRealtimeChannelState.ARTRealtimeChannelDetached`, or `ARTRealtimeChannelState.ARTRealtimeChannelFailed`; releasing an `ARTRealtimeChannel` in any other state is deprecated and will be an error in the next major version.
  *
  * @param name The channel name.
  */
