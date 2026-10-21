@@ -149,6 +149,10 @@ Ably depends on our [MessagePack Fork](https://github.com/ably-forks/msgpack-obj
 
 </details>
 
+### Privacy manifest
+
+The SDK ships a privacy manifest (`PrivacyInfo.xcprivacy`), which Xcode merges into your app's privacy report. It declares the Device ID data type, which is collected only if your app uses push notifications: the SDK generates a random device ID and sends it to Ably when it registers the device for push, or subscribes it to push channels. If your app doesn't use push notifications, the SDK doesn't send the device ID off the device, and you can leave Device ID off your App Store privacy label. The device ID is not used for tracking.
+
 ---
 
 ## Usage
