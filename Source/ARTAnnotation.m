@@ -36,6 +36,29 @@
     return self;
 }
 
+- (instancetype)initWithId:(nullable NSString *)annotationId
+                    action:(ARTAnnotationAction)action
+                  clientId:(nullable NSString *)clientId
+                      name:(nullable NSString *)name
+                     count:(nullable NSNumber *)count
+                      data:(nullable id)data
+             messageSerial:(NSString *)messageSerial
+                      type:(NSString *)type
+                    extras:(nullable id<ARTJsonCompatible>)extras {
+    if (self = [self init]) {
+        _id = annotationId;
+        _action = action;
+        _clientId = clientId;
+        _name = name;
+        _count = count;
+        _data = data;
+        _messageSerial = messageSerial;
+        _type = type;
+        _extras = extras;
+    }
+    return self;
+}
+
 - (NSString *)description {
     NSMutableString *description = [[super description] mutableCopy];
     [description deleteCharactersInRange:NSMakeRange(description.length - (description.length>2 ? 2:0), 2)];
