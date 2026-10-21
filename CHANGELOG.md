@@ -1,5 +1,27 @@
 # Change Log
 
+## [1.4.1](https://github.com/ably/ably-cocoa/tree/1.4.1)
+
+### What's Changed
+
+* Fix crash when a connection attempt fails synchronously by @maratal in https://github.com/ably/ably-cocoa/pull/2322
+* Deprecate releasing a channel that isn't detached (RTS4b) by @SimonWoolf in https://github.com/ably/ably-cocoa/pull/2314
+* Don't mark the device ID as used for tracking in the privacy manifest by @maratal in https://github.com/ably/ably-cocoa/pull/2338
+* LiveObjects: preserve exact `Double` values for numbers read over the JSON protocol by @maratal in https://github.com/ably/ably-cocoa/pull/2261
+
+CocoaPods and Carthage consumers receive only the `Ably` product, which gets the first three changes; the LiveObjects fix (#2261) is in the `AblyLiveObjects` product, available via Swift Package Manager only.
+
+### Privacy manifest changes
+
+The SDK's privacy manifest (`PrivacyInfo.xcprivacy`) no longer marks the Device ID data type as used for tracking: `NSPrivacyCollectedDataTypeTracking` is now `false` (#2338). The device ID is a random UUID that the SDK generates and sends to Ably only to register the device for push notifications and to subscribe it to push channels. That is app functionality, not tracking as Apple defines it. Device ID is still declared as collected, linked to the user, for app functionality.
+
+What this means for your app:
+
+* Xcode's privacy report no longer lists Device ID as used for tracking, so the SDK no longer requires you to declare it under "Data Used to Track You" on your App Store privacy label.
+* If your app doesn't use push notifications, the SDK never sends the device ID off the device, and you can leave Device ID off your App Store privacy label.
+
+**Full Changelog**: https://github.com/ably/ably-cocoa/compare/1.4.0...1.4.1
+
 ## [1.4.0](https://github.com/ably/ably-cocoa/tree/1.4.0)
 
 ### What's Changed
