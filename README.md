@@ -1,3 +1,6 @@
+> [!WARNING]
+> **This repository is in maintenance mode.** It hosts the 1.x `Ably` package, which receives only security and critical fixes. New development happens in [ably/ably-pubsub-cocoa](https://github.com/ably/ably-pubsub-cocoa), from version 2.0.0. To upgrade, see the [migration guide](https://github.com/ably/ably-pubsub-cocoa/blob/main/Docs/migration-guides/v2.md).
+
 ![Ably Pub/Sub Cocoa Header](images/CocoaSDK-github.png)
 [![Latest Version](https://img.shields.io/github/v/release/ably/ably-cocoa)](https://swiftpackageindex.com/ably/ably-cocoa)
 [![License](https://badgen.net/github/license/ably/ably-cocoa)](https://github.com/ably/ably-cocoa/blob/main/LICENSE)
